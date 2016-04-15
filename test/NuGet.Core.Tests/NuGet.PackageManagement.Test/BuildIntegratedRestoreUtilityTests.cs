@@ -214,6 +214,7 @@ namespace NuGet.Test
                 var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
                 projectFolder.Create();
                 var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "testproj.project.json"));
+                var msbuildProjectPath = new FileInfo(Path.Combine(projectFolder.FullName, $"{projectName}.csproj"));
 
                 CreateConfigJson(projectConfig.FullName);
 
@@ -225,7 +226,7 @@ namespace NuGet.Test
                 var projectTargetFramework = NuGetFramework.Parse("uap10.0");
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework,
                     new TestNuGetProjectContext());
-                var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
+                var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName, msBuildNuGetProjectSystem);
 
                 var effectiveGlobalPackagesFolder =
                     BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
@@ -258,6 +259,7 @@ namespace NuGet.Test
                 var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
                 projectFolder.Create();
                 var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
+                var msbuildProjectPath = new FileInfo(Path.Combine(projectFolder.FullName, $"{projectName}.csproj"));
 
                 CreateConfigJson(projectConfig.FullName);
 
@@ -277,7 +279,7 @@ namespace NuGet.Test
 
                 var projectTargetFramework = NuGetFramework.Parse("uap10.0");
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
-                var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
+                var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName, msBuildNuGetProjectSystem);
 
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(
                     project,
@@ -319,6 +321,7 @@ namespace NuGet.Test
                 var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
                 projectFolder.Create();
                 var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
+                var msbuildProjectPath = new FileInfo(Path.Combine(projectFolder.FullName, $"{projectName}.csproj"));
 
                 CreateConfigJson(projectConfig.FullName);
 
@@ -338,7 +341,7 @@ namespace NuGet.Test
 
                 var projectTargetFramework = NuGetFramework.Parse("uap10.0");
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
-                var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
+                var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName, msBuildNuGetProjectSystem);
 
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(
                     project,
@@ -380,6 +383,7 @@ namespace NuGet.Test
                 var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
                 projectFolder.Create();
                 var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
+                var msbuildProjectPath = new FileInfo(Path.Combine(projectFolder.FullName, $"{projectName}.csproj"));
 
                 CreateConfigJson(projectConfig.FullName);
 
@@ -399,7 +403,7 @@ namespace NuGet.Test
 
                 var projectTargetFramework = NuGetFramework.Parse("uap10.0");
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
-                var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
+                var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName, msBuildNuGetProjectSystem);
 
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(
                     project,
@@ -437,6 +441,7 @@ namespace NuGet.Test
                 var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
                 projectFolder.Create();
                 var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
+                var msbuildProjectPath = new FileInfo(Path.Combine(projectFolder.FullName, $"{projectName}.csproj"));
 
                 CreateConfigJson(projectConfig.FullName);
 
@@ -456,7 +461,7 @@ namespace NuGet.Test
 
                 var projectTargetFramework = NuGetFramework.Parse("uap10.0");
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
-                var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
+                var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName, msBuildNuGetProjectSystem);
 
                 var effectiveGlobalPackagesFolder =
                     BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
@@ -494,6 +499,7 @@ namespace NuGet.Test
                 var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
                 projectFolder.Create();
                 var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
+                var msbuildProjectPath = new FileInfo(Path.Combine(projectFolder.FullName, $"{projectName}.csproj"));
 
                 CreateConfigJson(projectConfig.FullName);
 
@@ -513,7 +519,7 @@ namespace NuGet.Test
 
                 var projectTargetFramework = NuGetFramework.Parse("uap10.0");
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
-                var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
+                var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName, msBuildNuGetProjectSystem);
 
                 var effectiveGlobalPackagesFolder =
                     BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
@@ -866,6 +872,7 @@ namespace NuGet.Test
                 var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
                 projectFolder.Create();
                 var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
+                var msbuildProjectPath = new FileInfo(Path.Combine(projectFolder.FullName, $"{projectName}.csproj"));
 
                 CreateConfigJson(projectConfig.FullName);
 
@@ -877,7 +884,7 @@ namespace NuGet.Test
                 var projectTargetFramework = NuGetFramework.Parse("uap10.0");
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework,
                     new TestNuGetProjectContext());
-                var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
+                var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName, msBuildNuGetProjectSystem);
 
                 var effectiveGlobalPackagesFolder =
                     BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
@@ -908,6 +915,7 @@ namespace NuGet.Test
                 var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
                 projectFolder.Create();
                 var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
+                var msbuildProjectPath = new FileInfo(Path.Combine(projectFolder.FullName, $"{projectName}.csproj"));
                 CreateConfigJson(projectConfig.FullName);
 
                 var sources = new List<SourceRepository>
@@ -918,7 +926,7 @@ namespace NuGet.Test
                 var projectTargetFramework = NuGetFramework.Parse("uap10.0");
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework,
                     new TestNuGetProjectContext());
-                var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
+                var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName, msBuildNuGetProjectSystem);
 
                 var effectiveGlobalPackagesFolder =
                     BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
@@ -966,6 +974,7 @@ namespace NuGet.Test
                 var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
                 projectFolder.Create();
                 var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
+                var msbuildProjectPath = new FileInfo(Path.Combine(projectFolder.FullName, $"{projectName}.csproj"));
 
                 File.WriteAllText(projectConfig.FullName, ProjectJsonWithPackage);
 
@@ -977,7 +986,7 @@ namespace NuGet.Test
                 var projectTargetFramework = NuGetFramework.Parse("uap10.0");
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework,
                     new TestNuGetProjectContext());
-                var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
+                var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName, msBuildNuGetProjectSystem);
 
                 var configContents = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>

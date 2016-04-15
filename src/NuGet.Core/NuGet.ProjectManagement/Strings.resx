@@ -198,6 +198,9 @@
   <data name="Info_OverwritingExistingFile" xml:space="preserve">
     <value>Overwriting existing file '{0}'..</value>
   </data>
+  <data name="InvalidProjectName" xml:space="preserve">
+    <value>Unable to determine the project name for '{0}'.</value>
+  </data>
   <data name="NoFolderSpecificToTargetFxFound" xml:space="preserve">
     <value>Invalid!! Could not find a folder under artifact type '{0}', so cannot request for artifacts specific to target framework '{1}'</value>
   </data>

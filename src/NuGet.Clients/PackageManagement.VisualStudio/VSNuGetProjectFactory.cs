@@ -68,18 +68,20 @@ namespace NuGet.PackageManagement.VisualStudio
                     envDTEProject, 
                     nuGetProjectContext);
 
-                var projectName = msBuildNuGetProjectSystem.ProjectName;
-
-                string projectPath = EnvDTEProjectUtility.GetFullPath(envDTEProject);
+                var msbuildProjectFile = new FileInfo(EnvDTEProjectUtility.GetFullProjectPath(envDTEProject));
+                var projectNameFromMSBuildPath = Path.GetFileNameWithoutExtension(msbuildProjectFile.Name);
 
                 // Treat projects with project.json as build integrated projects
                 // Search for projectName.project.json first, then project.json
-                string jsonConfig = ProjectJsonPathUtilities.GetProjectConfigPath(projectPath, projectName);
+                var projectJsonPath = ProjectJsonPathUtilities.GetProjectConfigPath(
+                    msbuildProjectFile.DirectoryName,
+                    projectNameFromMSBuildPath);
 
-                if (File.Exists(jsonConfig))
+                if (File.Exists(projectJsonPath))
                 {
                     result = new BuildIntegratedProjectSystem(
-                        jsonConfig,
+                        projectJsonPath,
+                        msbuildProjectFile.FullName,
                         envDTEProject,
                         msBuildNuGetProjectSystem,
                         EnvDTEProjectUtility.GetCustomUniqueName(envDTEProject));
