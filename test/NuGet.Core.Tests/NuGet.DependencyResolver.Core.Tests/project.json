@@ -19,6 +19,11 @@
           "type": "platform",
           "version": "1.0.0-rc2-3002339"
         }
+      },
+      "compilationOptions": {
+        "define": [
+          "IS_CORECLR"
+        ]
       }
     },
     "net46": {
@@ -31,6 +36,11 @@
       },
       "dependencies": {
         "Moq": "4.2.1510.2205"
+      },
+      "compilationOptions": {
+        "define": [
+          "IS_DESKTOP"
+        ]
       }
     }
   },

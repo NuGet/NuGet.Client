@@ -23,9 +23,14 @@
     "net45": {
       "frameworkAssemblies": {
         "System.IO.Compression": ""
+      },
+      "compilationOptions": {
+        "define": [
+          "IS_DESKTOP"
+        ]
       }
     },
-    "netstandard1.5": {
+    "netstandard1.3": {
       "imports": [
         "dotnet5.6",
         "dnxcore50",
@@ -35,6 +40,11 @@
         "NETStandard.Library": "1.5.0-rc2-24008",
         "System.IO.Compression.ZipFile": "4.0.1-rc2-24008",
         "System.Diagnostics.Process": "4.1.0-rc2-24008"
+      },
+      "compilationOptions": {
+        "define": [
+          "IS_CORECLR"
+        ]
       }
     }
   }

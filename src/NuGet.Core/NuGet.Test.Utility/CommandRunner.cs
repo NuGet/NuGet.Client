@@ -27,7 +27,7 @@ namespace NuGet.Test.Utility
                 RedirectStandardInput = inputAction != null
             };
 
-#if !NETSTANDARD1_5
+#if !IS_CORECLR
             psi.EnvironmentVariables["NuGetTestModeEnabled"] = "True";
 #else
             psi.Environment["NuGetTestModeEnabled"] = "True";

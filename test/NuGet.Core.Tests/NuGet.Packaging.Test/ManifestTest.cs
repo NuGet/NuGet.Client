@@ -350,13 +350,13 @@ namespace NuGet.Packaging.Test
         public void ReadFromThrowIfValidateSchemaIsTrue()
         {
             // Switch to invariant culture to ensure the error message is in english.
-#if !NETCOREAPP1_0
+#if !IS_CORECLR
             // REVIEW: Unsupported on CoreCLR
             System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.InvariantCulture;
 #endif
 
             // Act && Assert
-#if !NETCOREAPP1_0
+#if !IS_CORECLR
             // Arrange
             string content = @"<?xml version=""1.0""?>
 <package xmlns=""http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd"">
@@ -399,13 +399,13 @@ namespace NuGet.Packaging.Test
 </package>";
 
             // Switch to invariant culture to ensure the error message is in english.
-#if !NETCOREAPP1_0
+#if !IS_CORECLR
             // REVIEW: Unsupported on CoreCLR
             System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.InvariantCulture;
 #endif
 
             // Act && Assert
-#if !NETCOREAPP1_0
+#if !IS_CORECLR
             ExceptionAssert.Throws<InvalidOperationException>(
                 () => Manifest.ReadFrom(content.AsStream(), validateSchema: true),
                 "The element 'group' in namespace 'http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd' has incomplete content. List of possible elements expected: 'reference' in namespace 'http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd'.");
@@ -437,7 +437,7 @@ namespace NuGet.Packaging.Test
 </package>";
 
             // Switch to invariant culture to ensure the error message is in english.
-#if !NETCOREAPP1_0
+#if !IS_CORECLR
             // REVIEW: Unsupported on CoreCLR
             System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.InvariantCulture;
 #endif

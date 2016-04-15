@@ -9,7 +9,7 @@ namespace NuGet.Configuration
 {
     public class ProxyCache : IProxyCache, IProxyCredentialCache
     {
-#if !NETSTANDARD1_5
+#if !IS_CORECLR
         /// <summary>
         /// Capture the default System Proxy so that it can be re-used by the IProxyFinder
         /// because we can't rely on WebRequest.DefaultWebProxy since someone can modify the DefaultWebProxy
@@ -59,7 +59,7 @@ namespace NuGet.Configuration
                 return configuredProxy;
             }
 
-#if !NETSTANDARD1_5
+#if !IS_CORECLR
             if (IsSystemProxySet(sourceUri))
             {
                 var systemProxy = GetSystemProxy(sourceUri);
@@ -88,7 +88,7 @@ namespace NuGet.Configuration
                 // The host is the minimal value we need to assume a user configured proxy.
                 var webProxy = new WebProxy(host);
 
-#if !NETSTANDARD1_5
+#if !IS_CORECLR
                 var userName = _settings.GetValue(SettingsUtility.ConfigSection, ConfigurationConstants.UserKey);
                 var password = SettingsUtility.GetDecryptedValue(_settings, SettingsUtility.ConfigSection, ConfigurationConstants.PasswordKey);
 
@@ -173,7 +173,7 @@ namespace NuGet.Configuration
             }
         }
 
-#if !NETSTANDARD1_5
+#if !IS_CORECLR
         private static WebProxy GetSystemProxy(Uri uri)
         {
             // WebRequest.DefaultWebProxy seems to be more capable in terms of getting the default

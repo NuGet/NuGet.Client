@@ -297,7 +297,7 @@ namespace NuGet.Packaging
             List<string> creatorInfo = new List<string>();
             var assembly = typeof(PackageBuilder).GetTypeInfo().Assembly;
             creatorInfo.Add(assembly.FullName);
-#if !NETSTANDARD1_5 // CORECLR_TODO: Environment.OSVersion
+#if !IS_CORECLR // CORECLR_TODO: Environment.OSVersion
             creatorInfo.Add(Environment.OSVersion.ToString());
 #endif
 

@@ -1,4 +1,4 @@
-{
+﻿{
   "version": "3.5.0-*",
   "copyright": "Copyright .NET Foundation. All rights reserved.",
   "projectUrl": "https://github.com/NuGet/NuGet.Client",
@@ -32,6 +32,11 @@
         "System.Threading.Tasks": "",
         "System.Runtime": "",
         "System.Runtime.Serialization": ""
+      },
+      "compilationOptions": {
+        "define": [
+          "IS_DESKTOP"
+        ]
       }
     }
   }

@@ -28,9 +28,14 @@
         "System.Xml": "",
         "System.Xml.Linq": "",
         "System.IO.Compression": ""
+      },
+      "compilationOptions": {
+        "define": [
+          "IS_DESKTOP"
+        ]
       }
     },
-    "netstandard1.5": {
+    "netstandard1.3": {
       "dependencies": {
         "NETStandard.Library": "1.5.0-rc2-24008",
         "System.Xml.XDocument": "4.0.11-rc2-24008"
@@ -39,7 +44,12 @@
         "dotnet5.6",
         "dnxcore50",
         "portable-net45+win8"
-      ]
+      ],
+      "compilationOptions": {
+        "define": [
+          "IS_CORECLR"
+        ]
+      }
     }
   }
 }

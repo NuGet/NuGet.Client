@@ -51,7 +51,7 @@ namespace NuGet.Configuration
 
         private IEnumerable<PackageSource> LoadConfigurationDefaultSources(IEnumerable<PackageSource> configurationDefaultSources)
         {
-#if !NETSTANDARD1_5
+#if !IS_CORECLR
             // Global default NuGet source doesn't make sense on Mono
             if (RuntimeEnvironmentHelper.IsMono)
             {

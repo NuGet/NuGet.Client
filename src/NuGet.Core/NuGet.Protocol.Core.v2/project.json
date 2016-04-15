@@ -1,4 +1,4 @@
-{
+﻿{
   "version": "3.5.0-*",
   "authors": [
     "NuGet"
@@ -40,6 +40,11 @@
         "System.Collections.Concurrent": "",
         "System.Runtime.Serialization": "",
         "WindowsBase": ""
+      },
+      "compilationOptions": {
+        "define": [
+          "IS_DESKTOP"
+        ]
       }
     }
   }

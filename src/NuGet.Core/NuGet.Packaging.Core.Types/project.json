@@ -19,8 +19,14 @@
     "../NuGet.Shared/*.cs"
   ],
   "frameworks": {
-    "net45": {},
-    "netstandard1.5": {
+    "net45": {
+      "compilationOptions": {
+        "define": [
+          "IS_DESKTOP"
+        ]
+      }
+    },
+    "netstandard1.3": {
       "dependencies": {
         "NETStandard.Library": "1.5.0-rc2-24008"
       },
@@ -28,7 +34,12 @@
         "dotnet5.6",
         "dnxcore50",
         "portable-net45+win8"
-      ]
+      ],
+      "compilationOptions": {
+        "define": [
+          "IS_CORECLR"
+        ]
+      }
     }
   }
 }

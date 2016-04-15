@@ -49,7 +49,7 @@ namespace NuGet.Protocol
             }
         }
         
-#if !NETSTANDARD1_5
+#if !IS_CORECLR
         public override IAsyncResult BeginRead(
             byte[] buffer,
             int offset,
