@@ -78,7 +78,9 @@ namespace Test.Utility
             projectTargetFramework = projectTargetFramework ?? NuGetFramework.Parse("net46");
             var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext(),
                 projectFullPath, projectName);
-            NuGetProject nuGetProject = new BuildIntegratedNuGetProject(projectJsonPath, msBuildNuGetProjectSystem);
+
+            var projectFilePath = Path.Combine(projectFullPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
+            NuGetProject nuGetProject = new BuildIntegratedNuGetProject(projectJsonPath, projectFilePath, msBuildNuGetProjectSystem);
             NuGetProjects.Add(nuGetProject);
             return nuGetProject;
         }

@@ -28,15 +28,36 @@ namespace NuGet.ProjectManagement.Projects
     {
         private readonly FileInfo _jsonConfig;
 
-        public BuildIntegratedNuGetProject(string jsonConfig, IMSBuildNuGetProjectSystem msbuildProjectSystem)
+        /// <summary>
+        /// MSBuild project file path.
+        /// </summary>
+        public string MSBuildProjectPath { get; }
+
+        /// <summary>
+        /// Project.json based project system.
+        /// </summary>
+        /// <param name="jsonConfig">Path to project.json.</param>
+        /// <param name="msBuildProjectPath">Path to the msbuild project file.</param>
+        /// <param name="msbuildProjectSystem">Underlying msbuild project system.</param>
+        public BuildIntegratedNuGetProject(
+            string jsonConfig,
+            string msBuildProjectPath,
+            IMSBuildNuGetProjectSystem msbuildProjectSystem)
         {
             if (jsonConfig == null)
             {
                 throw new ArgumentNullException(nameof(jsonConfig));
             }
 
+            if (msBuildProjectPath == null)
+            {
+                throw new ArgumentNullException(nameof(msBuildProjectPath));
+            }
+
             _jsonConfig = new FileInfo(jsonConfig);
             MSBuildNuGetProjectSystem = msbuildProjectSystem;
+
+            MSBuildProjectPath = msBuildProjectPath;
 
             JObject projectJson;
             IEnumerable<NuGetFramework> targetFrameworks = Enumerable.Empty<NuGetFramework>();
@@ -171,7 +192,7 @@ namespace NuGet.ProjectManagement.Projects
         {
             get
             {
-                return JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(JsonConfigPath), ProjectName, JsonConfigPath);
+                return JsonPackageSpecReader.GetPackageSpec(ProjectName, JsonConfigPath);
             }
         }
 
@@ -182,7 +203,7 @@ namespace NuGet.ProjectManagement.Projects
         {
             get
             {
-                return MSBuildNuGetProjectSystem.ProjectName;
+                return Path.GetFileNameWithoutExtension(MSBuildProjectPath);
             }
         }
 
