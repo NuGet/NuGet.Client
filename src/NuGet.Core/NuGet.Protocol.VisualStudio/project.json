@@ -1,4 +1,4 @@
-{
+﻿{
   "version": "3.5.0-*",
   "authors": [
     "NuGet"
@@ -36,6 +36,11 @@
       "frameworkAssemblies": {
         "System.ComponentModel.Composition": "",
         "System.Runtime.Serialization": ""
+      },
+      "compilationOptions": {
+        "define": [
+          "IS_DESKTOP"
+        ]
       }
     }
   }

@@ -53,7 +53,7 @@ namespace NuGet.Configuration
         {
             var safeSettings = new XmlReaderSettings
                 {
-#if !NETSTANDARD1_5
+#if !IS_CORECLR
                     XmlResolver = null,
 #endif
                     DtdProcessing = DtdProcessing.Prohibit,

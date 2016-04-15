@@ -1,4 +1,4 @@
-{
+﻿{
   "version": "3.5.0-*",
   "copyright": "Copyright .NET Foundation. All rights reserved.",
   "projectUrl": "https://github.com/NuGet/NuGet.Client",
@@ -35,6 +35,12 @@
     }
   },
   "frameworks": {
-    "net45": { }
+    "net45": {
+      "compilationOptions": {
+        "define": [
+          "IS_DESKTOP"
+        ]
+      }
+    }
   }
 }

@@ -45,7 +45,7 @@ namespace NuGet.Configuration.Test
                 var machineWidePathTuple = Settings.GetFileNameAndItsRoot("test root", machineWidePath);
                 var globalConfigTuple = Settings.GetFileNameAndItsRoot("test root", globalConfigPath);
 
-#if NETCOREAPP1_0
+#if IS_CORECLR
                 var commonApplicationData = Environment.GetEnvironmentVariable("PROGRAMDATA") ??
                     Environment.GetEnvironmentVariable("ALLUSERSPROFILE") ?? null;
                 var userSetting = Environment.GetEnvironmentVariable("APPDATA");
@@ -67,7 +67,7 @@ namespace NuGet.Configuration.Test
                 var machineWidePathTuple = Settings.GetFileNameAndItsRoot("test root", machineWidePath);
                 var globalConfigTuple = Settings.GetFileNameAndItsRoot("test root", globalConfigPath);
 
-#if NETCOREAPP1_0
+#if IS_CORECLR
                 var commonApplicationData = @"/etc/opt";
                 var userSetting = Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".nuget");
 #else
@@ -88,7 +88,7 @@ namespace NuGet.Configuration.Test
                 var machineWidePathTuple = Settings.GetFileNameAndItsRoot("test root", machineWidePath);
                 var globalConfigTuple = Settings.GetFileNameAndItsRoot("test root", globalConfigPath);
 
-#if NETCOREAPP1_0
+#if IS_CORECLR
                 var commonApplicationData = @"/Library/Application Support";
                 var userSetting = Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".nuget");
 #else
@@ -1063,7 +1063,7 @@ namespace NuGet.Configuration.Test
             }
         }
 
-#if !NETCOREAPP1_0
+#if !IS_CORECLR
         [Fact]
         public void SettingsUtility_SetEncryptedValue()
         {
@@ -2193,7 +2193,7 @@ namespace NuGet.Configuration.Test
         public void GetGlobalPackagesFolder_Default()
         {
             // Arrange
-#if !NETCOREAPP1_0
+#if !IS_CORECLR
             var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 #else
             string userProfile = null;

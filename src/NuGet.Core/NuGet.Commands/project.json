@@ -50,6 +50,11 @@
       "frameworkAssemblies": {
         "System.Xml": "",
         "System.Xml.Linq": ""
+      },
+      "compilationOptions": {
+        "define": [
+          "IS_DESKTOP"
+        ]
       }
     },
     "net46": {
@@ -70,9 +75,14 @@
           "version": "1.0.0-rc1-final",
           "type": "build"
         }
+      },
+      "compilationOptions": {
+        "define": [
+          "IS_DESKTOP"
+        ]
       }
     },
-    "netstandard1.5": {
+    "netstandard1.3": {
       "imports": [
         "dotnet5.6",
         "dnxcore50",
@@ -81,6 +91,11 @@
       "dependencies": {
         "NETStandard.Library": "1.5.0-rc2-24008",
         "System.Xml.XDocument": "4.0.11-rc2-24008"
+      },
+      "compilationOptions": {
+        "define": [
+          "IS_CORECLR"
+        ]
       }
     }
   }
