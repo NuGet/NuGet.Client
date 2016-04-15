@@ -12,6 +12,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -77,7 +78,6 @@ namespace NuGet.PackageManagement.UI
         {
             _uiDispatcher = Dispatcher.CurrentDispatcher;
             _uiLogger = uiLogger;
-
             Model = model;
             if (!Model.IsSolution)
             {
@@ -139,7 +139,7 @@ namespace NuGet.PackageManagement.UI
             var solutionManager = Model.Context.SolutionManager;
             solutionManager.NuGetProjectAdded += SolutionManager_ProjectsChanged;
             solutionManager.NuGetProjectRemoved += SolutionManager_ProjectsChanged;
-            solutionManager.NuGetProjectRenamed += SolutionManager_ProjectsChanged;
+            solutionManager.NuGetProjectRenamed += SolutionManager_ProjectRenamed;
             solutionManager.ActionsExecuted += SolutionManager_ActionsExecuted;
 
             Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged += Sources_PackageSourcesChanged;
@@ -150,6 +150,25 @@ namespace NuGet.PackageManagement.UI
             }
 
             _missingPackageStatus = false;
+        }
+
+        private void SolutionManager_ProjectRenamed(object sender, NuGetProjectEventArgs e)
+        {
+            SolutionManager_ProjectsChanged(sender, e);
+            if (!Model.IsSolution)
+            {
+                var currentNugetProject = Model.Context.Projects.First();
+                var newNugetProject = e.NuGetProject;
+                string currentFullPath, newFullPath;
+                currentNugetProject.TryGetMetadata(NuGetProjectMetadataKeys.FullPath, out currentFullPath);
+                e.NuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.FullPath, out newFullPath);
+                if (currentFullPath == newFullPath)
+                {
+                    Model.Context.Projects = new[] {e.NuGetProject};
+                    SetTitle();
+                }
+            }
+
         }
 
         private void SolutionManager_ProjectsChanged(object sender, NuGetProjectEventArgs e)
@@ -828,7 +847,7 @@ namespace NuGet.PackageManagement.UI
             var solutionManager = Model.Context.SolutionManager;
             solutionManager.NuGetProjectAdded -= SolutionManager_ProjectsChanged;
             solutionManager.NuGetProjectRemoved -= SolutionManager_ProjectsChanged;
-            solutionManager.NuGetProjectRenamed -= SolutionManager_ProjectsChanged;
+            solutionManager.NuGetProjectRenamed -= SolutionManager_ProjectRenamed;
             solutionManager.ActionsExecuted -= SolutionManager_ActionsExecuted;
 
             Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged -= Sources_PackageSourcesChanged;
