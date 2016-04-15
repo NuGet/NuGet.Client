@@ -258,56 +258,32 @@ namespace NuGet.PackageManagement.VisualStudio
             return NuGetVSConstants.UnloadedProjectTypeGuid.Equals(envDTEProject.Kind, StringComparison.OrdinalIgnoreCase);
         }
 
-	    public static bool TryUnload(EnvDTEProject envDTEProject)
-	    {
-		    Guid projectGuid;
-		    if (!TryGetProjectGuid(envDTEProject, out projectGuid))
-		    {
-			    return false;
-		    }
+        public static bool TryUnloadReload(EnvDTEProject envDTEProject)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
 
-			var solution = (IVsSolution4)ServiceLocator.GetInstance<SVsSolution>();
-		    return solution.UnloadProject(ref projectGuid, (uint)_VSProjectUnloadStatus.UNLOADSTATUS_UnloadedByUser) == 0;
+            Guid projectGuid;
+            if (!TryGetGuid(envDTEProject, out projectGuid))
+            {
+                return false;
+            }
 
-		    //return solution.CloseSolutionElement((uint) __VSSLNCLOSEOPTIONS.SLNCLOSEOPT_UnloadProject, VsHierarchyUtility.ToVsHierarchy(envDTEProject), 0) == 0;
-	    }
-
-	    public static bool TryUnloadReload(EnvDTEProject envDTEProject)
-	    {
-			Guid projectGuid;
-			if (!TryGetProjectGuid(envDTEProject, out projectGuid))
-			{
-				return false;
-			}
-
-			// Unload
-			var solution = (IVsSolution4)ServiceLocator.GetInstance<SVsSolution>();
-		    if (solution.UnloadProject(ref projectGuid, (uint) _VSProjectUnloadStatus.UNLOADSTATUS_UnloadedByUser) != 0)
-		    {
-			    return false;
-		    }
-
-			// Reload
-			return solution.ReloadProject(ref projectGuid) == 0;
-		}
-
-		public static bool TryReload(EnvDTEProject envDTEProject)
-	    {
-			Guid projectGuid;
-			if (!TryGetProjectGuid(envDTEProject, out projectGuid))
-			{
-				return false;
-			}
-
+            // Unload
             var solution = (IVsSolution4)ServiceLocator.GetInstance<SVsSolution>();
-		    return solution.ReloadProject(ref projectGuid) == 0;
-	    }
+            if (solution.UnloadProject(ref projectGuid, (uint)_VSProjectUnloadStatus.UNLOADSTATUS_LoadPendingIfNeeded) != 0)
+            {
+                return false;
+            }
 
-		private static bool TryGetProjectGuid(EnvDTEProject envDTEProject, out Guid projectGuid)
-	    {
-			var projectHierarchy = VsHierarchyUtility.ToVsHierarchy(envDTEProject);
-		     return projectHierarchy.GetGuidProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_ProjectIDGuid, out projectGuid) == 0;
-	    }
+            // Reload
+            return solution.ReloadProject(ref projectGuid) == 0;
+        }
+
+        private static bool TryGetGuid(EnvDTEProject envDTEProject, out Guid projectGuid)
+        {
+            var projectHierarchy = VsHierarchyUtility.ToVsHierarchy(envDTEProject);
+            return projectHierarchy.GetGuidProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_ProjectIDGuid, out projectGuid) == 0;
+        }
 
         public static EnvDTEProject GetActiveProject(IVsMonitorSelection vsMonitorSelection)
         {
@@ -373,7 +349,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return nuGetProject;
         }
 
-        private static T GetPropertyValue<T>(EnvDTEProject envDTEProject, string propertyName)
+        public static T GetPropertyValue<T>(EnvDTEProject envDTEProject, string propertyName)
         {
             Debug.Assert(ThreadHelper.CheckAccess());
 
@@ -698,6 +674,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (String.IsNullOrEmpty(platformVersion))
                 {
                     platformVersion = "0.0";
+                }
+                else
+                {
+                    // We don't want to include build
+                    var version = Version.Parse(platformVersion);
+                    platformVersion = new Version(version.Major, version.Minor).ToString();
                 }
 
                 if (String.IsNullOrEmpty(platformIdentifier))
@@ -1045,7 +1027,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return IsWebProject(envDTEProject) ? WebConfig : AppConfig;
         }
 
-        internal static FrameworkName GetDotNetFrameworkName(EnvDTEProject envDTEProject)
+        public static FrameworkName GetDotNetFrameworkName(EnvDTEProject envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 

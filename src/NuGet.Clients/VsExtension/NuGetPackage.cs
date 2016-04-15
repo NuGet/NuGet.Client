@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Globalization;
@@ -740,313 +741,134 @@ namespace NuGetVSExtension
             return windowFrame;
         }
 
-		private async void ExecuteConvertPackagesConfigCommand(object sender, EventArgs e)
-		{
-			var outputConsole = this._outputConsoleLogger.OutputConsole;
-			outputConsole.WriteLine("--** DETERMINE IF WE SHOULD ABORT BEFORE WE TAKE ANY ACTION **--");
-			outputConsole.WriteLine("--** SHOULD UTILIZE VSMSBuildNuGetProjectSystem TO DO A LOT OF THE WORK HERE??? **--");
+        private async void ExecuteConvertPackagesConfigCommand(object sender, EventArgs e)
+        {
+            var outputConsole = this._outputConsoleLogger.OutputConsole;
 
-			Project project = EnvDTEProjectUtility.GetActiveProject(VsMonitorSelection);
+            // Get the project's unique name, which we'll use later to get a new reference after reloading
+            Project project = EnvDTEProjectUtility.GetActiveProject(VsMonitorSelection);
+            
 
             var solution = ServiceLocator.GetInstance<IVsSolution>();
             var projectHierarchy = VsHierarchyUtility.ToVsHierarchy(project);
-
-		    string projref;
             string projectUniqueName;
-		    Guid projectGuid;
-
-            solution.GetProjrefOfProject(projectHierarchy, out projref);
             solution.GetUniqueNameOfProject(projectHierarchy, out projectUniqueName);
-            solution.GetGuidOfProject(projectHierarchy, out projectGuid);
 
-            outputConsole.WriteLine("Updating packages.config for " + project.FileName + ".");
+            outputConsole.WriteLine("Updating packages.config for " + projectUniqueName + ".");
 
-			// Verify the project has a packages.config file
-			var packagesConfigFile = EnvDTEProjectUtility.GetPackagesConfigFullPath(project);
-			if (!File.Exists(packagesConfigFile))
-			{
-				outputConsole.WriteLine("No packages.config file found.");
-				return;
-			}
-
-			// Determine minimal dependencies which will be used when creating project.json
-			var packagesConfigDependencies = new PackagesConfigDependencies(project, SolutionManager, Settings, outputConsole);
-			Dictionary<string, Tuple<IPackage, PackageDependency>> allPackagesAndDependencies = packagesConfigDependencies.AllPackagesAndDependencies;
-			Dictionary<string, NuGet.Packaging.Core.PackageDependency> minimalDependencies = packagesConfigDependencies.MinimalDependencies;
-
-			// Uninstall packages from packages.config
-			ISolutionManager solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
-			NuGetProject nuGetProject = solutionManager.GetNuGetProject(EnvDTEProjectUtility.GetCustomUniqueName(project));
-
-			// If we failed to generate a cache entry in the solution manager something went wrong.
-			if (nuGetProject == null)
-			{
-				throw new InvalidOperationException(string.Format(Resources.ProjectHasAnInvalidNuGetConfiguration, project.Name));
-			}
-
-			var installedPackageIdentities = (await nuGetProject.GetInstalledPackagesAsync(CancellationToken.None)).Select(packageRef => packageRef.PackageIdentity);
-			foreach (PackageIdentity packageIdentity in installedPackageIdentities)
-			{
-				outputConsole.WriteLine("Uninstalling package " + packageIdentity.Id +  ".");
-				await nuGetProject.UninstallPackageAsync(packageIdentity, new EmptyNuGetProjectContext(), CancellationToken.None);
-			}
-
-			// Generate project.json
-			JObject json = new JObject();
-
-			// Dependencies
-			/*foreach (var minimalDependency in minimalDependencies.Values)
-			{
-				var dependency = new NuGet.Packaging.Core.PackageDependency(minimalDependency.Id, minimalDependency.VersionRange);
-				JsonConfigUtility.AddDependency(json, dependency);
-			}*/
-
-			// Frameworks
-			string targetFramework = EnvDTEProjectUtility.GetTargetFrameworkString(project);
-			json["frameworks"] = new JObject { [targetFramework] = new JObject() };
-
-			// Runtimes
-			json["runtimes"] = new JObject { ["win"] = new JObject() };
-
-			// Write it out
-			var projectPath = Path.GetDirectoryName(EnvDTEProjectUtility.GetFullProjectPath(project));
-			var projectJsonFileName = Path.Combine(projectPath, PackageSpec.PackageSpecFileName);
-			using (var textWriter = new StreamWriter(projectJsonFileName, false, Encoding.UTF8))
-			using (var jsonWriter = new JsonTextWriter(textWriter))
-			{
-				jsonWriter.Formatting = Formatting.Indented;
-				json.WriteTo(jsonWriter);
-			}
-
-			// Add project.json to the project
-			project.ProjectItems.AddFromFileCopy(projectJsonFileName);
-
-			// Save and reload the project
-			EnvDTEProjectUtility.Save(project);
-			EnvDTEProjectUtility.TryUnloadReload(project);
-
-            // Get a new project reference
-
-            /*
-
-		    string projref;
-            string projectUniqueName;
-		    Guid projectGuid;
-
-             */
-
-            IVsHierarchy projectHierarchy1;
-            IVsHierarchy projectHierarchy2;
-
-		    solution.GetProjectOfGuid(ref projectGuid, out projectHierarchy1);
-		    solution.GetProjectOfUniqueName(projectUniqueName, out projectHierarchy2);
-
-            Project project1 = VsHierarchyUtility.GetProjectFromHierarchy(projectHierarchy1);
-            Project project2 = VsHierarchyUtility.GetProjectFromHierarchy(projectHierarchy2);
-
-            // We've reloaded the project with a project.json file, so we need to create a new NuGetProject
-            nuGetProject = solutionManager.GetNuGetProject(EnvDTEProjectUtility.GetCustomUniqueName(project2));
-
-            // Install packages
-            /*foreach (var dependency in minimalDependencies.Values)
-			{
-				var action = UserAction.CreateInstallAction(dependency.Id, dependency.VersionRange.MaxVersion);
-				await System.Threading.Tasks.Task.Run(() => action());
-			}*/
-
-            //
-            var uiContextFactory = ServiceLocator.GetInstance<INuGetUIContextFactory>();
-			INuGetUIContext uiContext = uiContextFactory.Create(this, new[] { nuGetProject });
-
-			var uiFactory = ServiceLocator.GetInstance<INuGetUIFactory>();
-			var uiController = uiFactory.Create(uiContext, _uiProjectContext);
-			var nuGetUI = uiController as NuGetUI;
-			if (nuGetUI != null)
-			{
-				nuGetUI.Projects = new[] { nuGetProject };
-			    nuGetUI.DisplayPreviewWindow = false;
-			    nuGetUI.DisplayLicenseAcceptanceWindow = false;
-			}
-
-            //var model = new PackageManagerModel(uiController, uiContext, isSolution: false, editorFactoryGuid: GuidList.guidNuGetEditorType);
-            //var nuGetProjects = model.UIController.Projects;
-
-		    var activePackageSourceName = uiContext.SourceProvider.PackageSourceProvider.ActivePackageSourceName;
-            var enabledSources = uiContext.SourceProvider
-                .GetRepositories()
-                .Where(repo => repo.PackageSource.IsEnabled)
-                .ToArray();
-
-
-
-            foreach (var dependency in minimalDependencies.Values)
-			{
-				var action = UserAction.CreateInstallAction(dependency.Id, dependency.VersionRange.MinVersion);
-				await uiContext.UIActionEngine.PerformActionAsync(uiController, action, null, CancellationToken.None);
-			}
-
-			return;
-
-			/*var packagesConfigDependencies = new PackagesConfigDependencies(project, SolutionManager, Settings, outputConsole);
-			Dictionary<string, Tuple<IPackage, PackageDependency>> allPackagesAndDependencies = packagesConfigDependencies.AllPackagesAndDependencies;
-			var minimalDependencies = packagesConfigDependencies.MinimalDependencies;
-
-			foreach (var packages in allPackagesAndDependencies.Values)
-			{
-				//string packagePath = Path.Combine(packagesConfigDependencies.PackagesDir, packagesConfigDependencies.PackageRepository.PathResolver.GetPackageDirectory(packages.Item1));
-				//var packageFolderReader = new PackageFolderReader(packagePath);
-				//var referenceItems = packageFolderReader.GetReferenceItems();
-
-				// Remove package assembly references from project
-				var packageArchiveReader = new PackageArchiveReader(packages.Item1.GetStream());
-				var targetFramework = EnvDTEProjectUtility.GetTargetNuGetFramework(project) ?? NuGetFramework.UnsupportedFramework;
-
-				var compatibleReferenceItemsGroup = GetMostCompatibleGroup(targetFramework, packageArchiveReader.GetReferenceItems());
-				if (compatibleReferenceItemsGroup != null)
-				{
-					foreach (var referenceFile in compatibleReferenceItemsGroup.Items)
-					{
-						var referenceName = Path.GetFileNameWithoutExtension(referenceFile);
-						var reference = EnvDTEProjectUtility.GetReferences(project).Item(referenceName);
-						if (reference != null)
-						{
-							reference.Remove();
-							outputConsole.WriteLine("Removed reference " + referenceName + " from project.");
-						}
-					}
-				}
-
-				var compatibleContentItemGroups = GetMostCompatibleGroup(targetFramework, packageArchiveReader.GetContentItems());
-				if (compatibleContentItemGroups != null && compatibleContentItemGroups.Items.Any())
-				{
-					outputConsole.WriteLine("Aborting: Package " + packages.Item1.Id + ", Version " + packages.Item1.Version + " uses content files.");
-					return;
-				}
-
-				// Remove build imports
-				var compatibleBuildItemGroups = GetMostCompatibleGroup(targetFramework, packageArchiveReader.GetBuildItems());
-				if (compatibleBuildItemGroups != null)
-				{
-					foreach (var buildImportFile in compatibleBuildItemGroups.Items)
-					{
-						var buildImportFileFullPath = Path.Combine(packagesConfigDependencies.PackagesDir, buildImportFile);
-						var buildImportFileRelativePath =
-							NuGet.PathUtility.GetRelativePath(
-								NuGet.PathUtility.EnsureTrailingSlash(packagesConfigDependencies.ProjectFullPath),
-								buildImportFileFullPath);
-						EnvDTEProjectUtility.RemoveImportStatement(project, buildImportFileRelativePath);
-					}
-				}
-
-				// 
-			}*/
-
-			// Remove packages.config
-			//MSBuildNuGetProjectSystem.RemoveFile(Path.GetFileName(PackagesConfigNuGetProject.FullPath));
-
-			// Remove packages folder
-
-			// Step-2: Check if the package directory could be deleted
-			/*if (!(nuGetProject is INuGetIntegratedProject)
-                && !await PackageExistsInAnotherNuGetProject(nuGetProject, packageIdentity, SolutionManager, token))
+            // Verify the project has a packages.config file
+            var packagesConfigFile = EnvDTEProjectUtility.GetPackagesConfigFullPath(project);
+            if (!File.Exists(packagesConfigFile))
             {
-                packageWithDirectoriesToBeDeleted.Add(packageIdentity);
-            }*/
+                outputConsole.WriteLine("No packages.config file found.");
+                return;
+            }
 
-			//** This is from NuGetPackageManager.ExecuteNuGetProjectActionsAsync **//
-
-			/*foreach (var packageWithDirectoryToBeDeleted in packageWithDirectoriesToBeDeleted)
+            // Verify the project doesn't already have a project.json file
+            if (await EnvDTEProjectUtility.IsBuildIntegrated(project))
             {
-                var packageFolderPath = PackagesFolderNuGetProject.GetInstalledPath(packageWithDirectoryToBeDeleted);
-                try
+                outputConsole.WriteLine("Project already contains a project.json file.");
+                return;
+            }
+
+            // Determine minimal dependencies which will be used when creating project.json
+            var packagesConfigDependencies = new PackagesConfigDependencies(project, SolutionManager, Settings, outputConsole);
+            Dictionary<string, NuGet.Packaging.Core.PackageDependency> minimalDependencies = packagesConfigDependencies.MinimalDependencies;
+
+            // Uninstall packages from packages.config
+            ISolutionManager solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
+            NuGetProject nuGetProject = solutionManager.GetNuGetProject(EnvDTEProjectUtility.GetCustomUniqueName(project));
+
+            // If we failed to generate a cache entry in the solution manager something went wrong.
+            if (nuGetProject == null)
+            {
+                throw new InvalidOperationException(string.Format(Resources.ProjectHasAnInvalidNuGetConfiguration, project.Name));
+            }
+
+            var installedPackageIdentities = (await nuGetProject.GetInstalledPackagesAsync(CancellationToken.None)).Select(packageRef => packageRef.PackageIdentity);
+            foreach (PackageIdentity packageIdentity in installedPackageIdentities)
+            {
+                outputConsole.WriteLine("Uninstalling package " + packageIdentity.Id + ".");
+                await nuGetProject.UninstallPackageAsync(packageIdentity, new EmptyNuGetProjectContext(), CancellationToken.None);
+            }
+
+            // Generate project.json
+            JObject json = new JObject();
+
+            // Frameworks
+            var targetNuGetFramework = EnvDTEProjectUtility.GetTargetNuGetFramework(project);
+            json["frameworks"] = new JObject { [targetNuGetFramework.GetShortFolderName()] = new JObject() };
+
+            var runtimeStub = EnvDTEProjectUtility.GetPropertyValue<string>(project, "TargetPlatformIdentifier") == "UAP" ? "win10" : "win";
+
+            // Runtimes
+            var runtimes = new JObject();
+            var configurationManager = project.ConfigurationManager;
+            var supportedPlatforms = configurationManager.SupportedPlatforms as object[];
+            if (supportedPlatforms != null && supportedPlatforms.Length > 0)
+            {
+                foreach (var supportedPlatformString in supportedPlatforms.Cast<string>())
                 {
-                    await DeletePackage(packageWithDirectoryToBeDeleted, nuGetProjectContext, token);
-                }
-                finally
-                {
-                    if (DeleteOnRestartManager != null)
+                    if (string.IsNullOrEmpty(supportedPlatformString) || supportedPlatformString == "Any CPU")
                     {
-                        if (Directory.Exists(packageFolderPath))
-                        {
-                            DeleteOnRestartManager.MarkPackageDirectoryForDeletion(
-                                packageWithDirectoryToBeDeleted,
-                                packageFolderPath,
-                                nuGetProjectContext);
-
-                            // Raise the event to notify listners to update the UI etc.
-                            DeleteOnRestartManager.CheckAndRaisePackageDirectoriesMarkedForDeletion();
-                        }
+                        runtimes[runtimeStub] = new JObject();
+                    }
+                    else
+                    {
+                        runtimes[runtimeStub + "-" + supportedPlatformString.ToLowerInvariant()] = new JObject();
                     }
                 }
-            }*/
-
-			//EnvDTEProjectUtility.Save(project);
-
-			//outputConsole.WriteLine("--** NEED TO CALL VSMSBuildNuGetProjectSystem.UpdateImportStamp() HERE **--");
-			//UpdateImportStamp(project);
-
-
-
-			/*outputConsole.WriteLine("Closing project...");
-
-            IVsSolution solution = ServiceLocator.GetInstance<IVsSolution>();
-            if (solution.CloseSolutionElement((uint)__VSSLNCLOSEOPTIONS.SLNCLOSEOPT_UnloadProject, VsHierarchyUtility.ToVsHierarchy(project), 0) != 0)
+            }
+            else
             {
-                outputConsole.WriteLine("Unable to close project.");
-                return;
-            }*/
-		}
+                runtimes[runtimeStub] = new JObject();
+            }
+            json["runtimes"] = runtimes;
 
-		private static void SetJsonValue(JObject json, string name, string value)
-		{
-			if (value != null)
-			{
-				json[name] = value;
-			}
-		}
+            // Write it out
+            var projectPath = Path.GetDirectoryName(EnvDTEProjectUtility.GetFullProjectPath(project));
+            var projectJsonFileName = Path.Combine(projectPath, PackageSpec.PackageSpecFileName);
+            using (var textWriter = new StreamWriter(projectJsonFileName, false, Encoding.UTF8))
+            using (var jsonWriter = new JsonTextWriter(textWriter))
+            {
+                jsonWriter.Formatting = Formatting.Indented;
+                json.WriteTo(jsonWriter);
+            }
 
-		private static void SetJsonValue(JObject json, string name, JToken value)
-		{
-			if (value != null)
-			{
-				json[name] = value;
-			}
-		}
+            // Add project.json to the project
+            project.ProjectItems.AddFromFileCopy(projectJsonFileName);
 
-		private static FrameworkSpecificGroup GetMostCompatibleGroup(NuGetFramework projectTargetFramework,
-			IEnumerable<FrameworkSpecificGroup> itemGroups)
-		{
-			var reducer = new FrameworkReducer();
-			var mostCompatibleFramework
-				= reducer.GetNearest(projectTargetFramework, itemGroups.Select(i => i.TargetFramework));
-			if (mostCompatibleFramework != null)
-			{
-				var mostCompatibleGroup
-					= itemGroups.FirstOrDefault(i => i.TargetFramework.Equals(mostCompatibleFramework));
+            // Save and reload the project
+            EnvDTEProjectUtility.Save(project);
+            EnvDTEProjectUtility.TryUnloadReload(project);
 
-				if (IsValid(mostCompatibleGroup))
-				{
-					return mostCompatibleGroup;
-				}
-			}
+            // We've unloaded and reloaded the project file, so we need to get a new project reference and create a new NuGetProject.
+            solution.GetProjectOfUniqueName(projectUniqueName, out projectHierarchy);
+            project = VsHierarchyUtility.GetProjectFromHierarchy(projectHierarchy);
+            nuGetProject = solutionManager.GetNuGetProject(EnvDTEProjectUtility.GetCustomUniqueName(project));
 
-			return null;
-		}
+            // Install minimal set of packages
+            var uiContextFactory = ServiceLocator.GetInstance<INuGetUIContextFactory>();
+            INuGetUIContext uiContext = uiContextFactory.Create(this, new[] { nuGetProject });
 
-		private static bool IsValid(FrameworkSpecificGroup frameworkSpecificGroup)
-		{
-			if (frameworkSpecificGroup != null)
-			{
-				return (frameworkSpecificGroup.HasEmptyFolder
-					 || frameworkSpecificGroup.Items.Any()
-					 || !frameworkSpecificGroup.TargetFramework.Equals(NuGetFramework.AnyFramework));
-			}
+            var uiFactory = ServiceLocator.GetInstance<INuGetUIFactory>();
+            var uiController = uiFactory.Create(uiContext, _uiProjectContext);
+            var nuGetUI = uiController as NuGetUI;
+            if (nuGetUI != null)
+            {
+                nuGetUI.Projects = new[] { nuGetProject };
+                nuGetUI.DisplayPreviewWindow = false;
+                nuGetUI.DisplayLicenseAcceptanceWindow = false;
+            }
 
-			return false;
-		}
+            foreach (var dependency in minimalDependencies.Values)
+            {
+                var action = UserAction.CreateInstallAction(dependency.Id, dependency.VersionRange.MinVersion);
+                await uiContext.UIActionEngine.PerformActionAsync(uiController, action, null, CancellationToken.None);
+            }
+        }
 
-
-		private void ShowManageLibraryPackageDialog(object sender, EventArgs e)
+        private void ShowManageLibraryPackageDialog(object sender, EventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
