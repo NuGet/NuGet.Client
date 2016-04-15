@@ -22,6 +22,74 @@ namespace ProjectManagement.Test
     public class BuildIntegratedNuGetProjectTests
     {
         [Fact]
+        public async Task TestBuildIntegratedNuGetPackageSpecNameMatchesFilePath_ProjectNameJson()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
+            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var randomConfig = Path.Combine(randomProjectFolderPath, "fileName.project.json");
+                var token = CancellationToken.None;
+
+                CreateConfigJson(randomConfig);
+
+                var projectTargetFramework = NuGetFramework.Parse("netcore50");
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                    projectTargetFramework,
+                    testNuGetProjectContext,
+                    randomProjectFolderPath,
+                    "msbuildName");
+
+                var projectFilePath = Path.Combine(randomProjectFolderPath, "fileName.csproj");
+
+                var buildIntegratedProject = new BuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+
+                // Assert
+                Assert.Equal(projectFilePath, buildIntegratedProject.MSBuildProjectPath);
+                Assert.Equal("fileName", buildIntegratedProject.ProjectName);
+                Assert.Equal("fileName", buildIntegratedProject.PackageSpec.Name);
+            }
+        }
+
+        [Fact]
+        public async Task TestBuildIntegratedNuGetPackageSpecNameMatchesFilePath()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
+            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
+                var token = CancellationToken.None;
+
+                CreateConfigJson(randomConfig);
+
+                var projectTargetFramework = NuGetFramework.Parse("netcore50");
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                    projectTargetFramework,
+                    testNuGetProjectContext,
+                    randomProjectFolderPath,
+                    "msbuildName");
+
+                var projectFilePath = Path.Combine(randomProjectFolderPath, "fileName.csproj");
+
+                var buildIntegratedProject = new BuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+
+                // Assert
+                Assert.Equal(projectFilePath, buildIntegratedProject.MSBuildProjectPath);
+                Assert.Equal("fileName", buildIntegratedProject.ProjectName);
+                Assert.Equal("fileName", buildIntegratedProject.PackageSpec.Name);
+            }
+        }
+
+        [Fact]
         public async Task TestBuildIntegratedNuGetProjectInstallPackage()
         {
             // Arrange
@@ -38,7 +106,8 @@ namespace ProjectManagement.Test
                 var projectTargetFramework = NuGetFramework.Parse("netcore50");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
-                var buildIntegratedProject = new BuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
+                var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
+                var buildIntegratedProject = new BuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyContentPackage(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
@@ -76,7 +145,8 @@ namespace ProjectManagement.Test
                 var projectTargetFramework = NuGetFramework.Parse("netcore50");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
-                var buildIntegratedProject = new BuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
+                var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
+                var buildIntegratedProject = new BuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyContentPackage(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
@@ -119,7 +189,8 @@ namespace ProjectManagement.Test
                 var projectTargetFramework = NuGetFramework.Parse("netcore50");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
-                var buildIntegratedProject = new BuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
+                var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
+                var buildIntegratedProject = new BuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyContentPackage(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());

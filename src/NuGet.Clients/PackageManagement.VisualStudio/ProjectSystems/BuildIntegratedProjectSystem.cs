@@ -34,10 +34,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public BuildIntegratedProjectSystem(
             string jsonConfigPath,
+            string msbuildProjectFilePath,
             EnvDTEProject envDTEProject,
             IMSBuildNuGetProjectSystem msbuildProjectSystem,
             string uniqueName)
-            : base(jsonConfigPath, msbuildProjectSystem)
+            : base(jsonConfigPath, msbuildProjectFilePath, msbuildProjectSystem)
         {
             InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, uniqueName);
 
