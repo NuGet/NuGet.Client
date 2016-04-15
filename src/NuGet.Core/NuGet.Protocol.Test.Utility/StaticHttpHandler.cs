@@ -99,9 +99,13 @@ namespace Test.Utility
             string source;
             if (_responses.TryGetValue(request.RequestUri.AbsoluteUri, out source))
             {
-                // TODO: allow s to be a status code to return
-
-                if (source == string.Empty)
+                // TODO: Make this test infrastructure not a big hack.
+                if (source == null)
+                {
+                    msg = new HttpResponseMessage(HttpStatusCode.InternalServerError);
+                    msg.Content = new TestContent(_errorContent);
+                }
+                else if (source == string.Empty)
                 {
                     msg = new HttpResponseMessage(HttpStatusCode.NotFound);
                     msg.Content = new TestContent(_errorContent);
@@ -111,10 +115,14 @@ namespace Test.Utility
                     msg = new HttpResponseMessage(HttpStatusCode.NoContent);
                     msg.Content = new TestContent(string.Empty);
                 }
-                else if (source == null)
+                else if (source.StartsWith("301 "))
                 {
-                    msg = new HttpResponseMessage(HttpStatusCode.InternalServerError);
-                    msg.Content = new TestContent(_errorContent);
+                    var url = source.Substring(4);
+                    msg = new HttpResponseMessage(HttpStatusCode.MovedPermanently)
+                    {
+                        RequestMessage = new HttpRequestMessage(HttpMethod.Get, url),
+                        Content = new TestContent(string.Empty)
+                    };
                 }
                 else
                 {

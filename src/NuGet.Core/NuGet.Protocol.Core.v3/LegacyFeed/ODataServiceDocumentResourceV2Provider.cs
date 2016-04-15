@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Globalization;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -96,21 +97,21 @@ namespace NuGet.Protocol.Core.v3
             var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
             var client = httpSourceResource.HttpSource;
 
-            var cacheContext = HttpSourceCacheContext.CreateCacheContext(new SourceCacheContext(), 0);
-
-
-            HttpSourceResult response;
+            // Get the service document and record the URL after any redirects.
+            string lastRequestUri;
             try
             {
-                response = await client.GetAsync(
-                    url,
-                    "odata_service_document",
-                    cacheContext,
-                    log,
-                    ignoreNotFounds: true,
-                    allowNoContent: false,
-                    ensureValidContents: null,
-                    cancellationToken: token);
+                using (var response = await client.GetAsync(new Uri(url), log, token))
+                {
+                    if (response.RequestMessage == null)
+                    {
+                        lastRequestUri = url;
+                    }
+                    else
+                    {
+                        lastRequestUri = response.RequestMessage.RequestUri.ToString();
+                    }
+                }
             }
             catch (Exception ex) when (!(ex is FatalProtocolException) && (!(ex is OperationCanceledException)))
             {
@@ -120,17 +121,11 @@ namespace NuGet.Protocol.Core.v3
                 throw new FatalProtocolException(message, ex);
             }
 
-            string serviceDocumentBaseAddress = null;
-            if (response.Stream != null)
-            {
-                serviceDocumentBaseAddress = V2FeedParser.GetBaseAddress(response.Stream);
-            }
+            // Trim the query string or any trailing slash.
+            var builder = new UriBuilder(lastRequestUri) { Query = null };
+            var baseAddress = builder.Uri.AbsoluteUri.Trim('/');
 
-            var baseAddress = serviceDocumentBaseAddress ?? url.Trim('/');
-
-            var serviceDocument = new ODataServiceDocumentResourceV2(baseAddress, DateTime.UtcNow);
-
-            return serviceDocument;
+            return new ODataServiceDocumentResourceV2(baseAddress, DateTime.UtcNow);
         }
 
         protected class ODataServiceDocumentCacheInfo
