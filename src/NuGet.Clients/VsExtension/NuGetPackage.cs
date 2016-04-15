@@ -196,9 +196,27 @@ namespace NuGetVSExtension
                 if (_solutionManager == null)
                 {
                     _solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
+                    _solutionManager.AfterNuGetProjectRenamed += SolutionManager_NuGetProjectRenamed;
                     Debug.Assert(_solutionManager != null);
                 }
                 return _solutionManager;
+            }
+        }
+
+        private void SolutionManager_NuGetProjectRenamed(object sender, NuGetProjectEventArgs e)
+        {
+            VSSolutionManager manager = SolutionManager as VSSolutionManager;
+            if (manager != null)
+            {
+                Project project = manager.GetDTEProject(manager.GetNuGetProjectSafeName(e.NuGetProject));
+                var windowFrame = FindExistingWindowFrame(project);
+                if (windowFrame != null)
+                {
+                    windowFrame.SetProperty((int) __VSFPROPID.VSFPROPID_OwnerCaption, String.Format(
+                        CultureInfo.CurrentCulture,
+                        Resx.Label_NuGetWindowCaption,
+                        project.Name));
+                }
             }
         }
 

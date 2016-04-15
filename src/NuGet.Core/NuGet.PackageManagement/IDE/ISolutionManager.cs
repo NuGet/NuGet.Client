@@ -23,6 +23,8 @@ namespace NuGet.PackageManagement
 
         event EventHandler<NuGetProjectEventArgs> NuGetProjectRenamed;
 
+        event EventHandler<NuGetProjectEventArgs> AfterNuGetProjectRenamed;
+
         /// <summary>
         /// Event raised after user actions are executed.
         /// </summary>
