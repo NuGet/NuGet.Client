@@ -14,7 +14,7 @@ namespace NuGet.Common
         /// </summary>
         public static void ConfigureSupportedSslProtocols()
         {
-#if !NETSTANDARD1_5
+#if !IS_CORECLR
             ServicePointManager.SecurityProtocol =
                 SecurityProtocolType.Tls |
                 SecurityProtocolType.Tls11 |

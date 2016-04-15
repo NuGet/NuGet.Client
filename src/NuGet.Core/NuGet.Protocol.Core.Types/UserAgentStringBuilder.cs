@@ -90,7 +90,7 @@ namespace NuGet.Protocol.Core.Types
         {
             var nugetVersion = string.Empty;
 
-#if !NETSTANDARD1_5
+#if !IS_CORECLR
             var attr = typeof(Repository).Assembly.GetName().Version;
 
             NuGetVersion version;
@@ -125,7 +125,7 @@ namespace NuGet.Protocol.Core.Types
         {
             if (_osInfo == null)
             {
-#if !NETSTANDARD1_5
+#if !IS_CORECLR
                 // When not on CoreClr and no OSDescription was provided,
                 // we will set it ourselves.
                 _osInfo = Environment.OSVersion.ToString();

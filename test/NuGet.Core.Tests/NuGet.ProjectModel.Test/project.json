@@ -22,6 +22,11 @@
           "type": "platform",
           "version": "1.0.0-rc2-3002339"
         }
+      },
+      "compilationOptions": {
+        "define": [
+          "IS_CORECLR"
+        ]
       }
     },
     "net46": {
@@ -31,6 +36,11 @@
         "System.Core": "",
         "System.Runtime": "",
         "System.Threading.Tasks": ""
+      },
+      "compilationOptions": {
+        "define": [
+          "IS_DESKTOP"
+        ]
       }
     }
   },

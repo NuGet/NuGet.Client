@@ -10,7 +10,7 @@ namespace NuGet.Configuration.Test
 {
     public class ProxyCacheTest
     {
-#if !NETCOREAPP1_0
+#if !IS_CORECLR
         private static readonly string _password = EncryptionUtility.EncryptString("password");
 #else
         private static readonly string _password = null;
@@ -68,7 +68,7 @@ namespace NuGet.Configuration.Test
             var proxy = proxyCache.GetUserConfiguredProxy() as WebProxy;
 
             // Assert
-#if !NETCOREAPP1_0
+#if !IS_CORECLR
             AssertProxy(host, user, "password", proxy);
 #else
             AssertProxy(host, null, null, proxy);

@@ -1037,7 +1037,7 @@ namespace NuGet.Configuration
             ExecuteSynchronized(() => FileSystemUtility.AddFile(ConfigFilePath, ConfigXDocument.Save));
         }
 
-#if NETSTANDARD1_5
+#if IS_CORECLR
         private static Mutex _globalMutex = new Mutex(initiallyOwned: false);
 
         /// <summary>

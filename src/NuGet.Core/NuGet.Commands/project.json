@@ -47,32 +47,22 @@
   },
   "frameworks": {
     "net45": {
+      "imports": [
+        "dotnet5.6",
+        "dnxcore50",
+        "portable-net45+win8"
+      ],
       "frameworkAssemblies": {
         "System.Xml": "",
         "System.Xml.Linq": ""
-      }
-    },
-    "net46": {
-      "frameworkAssemblies": {
-        "System.Xml": "",
-        "System.Xml.Linq": "",
-        "System.Runtime": "",
-        "System.Text.Encoding": "",
-        "System.Collections": "",
-        "System.Threading.Tasks": ""
       },
-      "dependencies": {
-        "Microsoft.CodeAnalysis.CSharp": {
-          "version": "1.1.1",
-          "type": "build"
-        },
-        "Microsoft.Dnx.Compilation.CSharp.Abstractions": {
-          "version": "1.0.0-rc1-final",
-          "type": "build"
-        }
+      "compilationOptions": {
+        "define": [
+          "IS_DESKTOP"
+        ]
       }
     },
-    "netstandard1.5": {
+    "netstandard1.3": {
       "imports": [
         "dotnet5.6",
         "dnxcore50",
@@ -81,6 +71,11 @@
       "dependencies": {
         "NETStandard.Library": "1.5.0-rc2-24008",
         "System.Xml.XDocument": "4.0.11-rc2-24008"
+      },
+      "compilationOptions": {
+        "define": [
+          "IS_CORECLR"
+        ]
       }
     }
   }

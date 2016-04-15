@@ -28,9 +28,14 @@
     "net45": {
       "frameworkAssemblies": {
         "System.Collections": ""
+      },
+      "compilationOptions": {
+        "define": [
+          "IS_DESKTOP"
+        ]
       }
     },
-    "netstandard1.5": {
+    "netstandard1.3": {
       "imports": [
         "dotnet5.6",
         "dnxcore50",
@@ -40,6 +45,11 @@
         "NETStandard.Library": "1.5.0-rc2-24008",
         "System.ObjectModel": "4.0.12-rc2-24008",
         "System.Dynamic.Runtime": "4.0.11-rc2-24008"
+      },
+      "compilationOptions": {
+        "define": [
+          "IS_CORECLR"
+        ]
       }
     }
   }
