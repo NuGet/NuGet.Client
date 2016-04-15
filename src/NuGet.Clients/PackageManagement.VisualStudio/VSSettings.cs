@@ -155,7 +155,7 @@ namespace NuGet.PackageManagement.VisualStudio
             get
             {
                 // The value for SolutionSettings can't possibly be null, but it could be a read-only instance
-                return object.ReferenceEquals(SolutionSettings, Configuration.NullSettings.Instance);
+                return !object.ReferenceEquals(SolutionSettings, Configuration.NullSettings.Instance);
             }
         }
     }
