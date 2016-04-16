@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <Import Project="..\..\..\Build\Common.props" Condition="Exists('..\..\..\Build\Common.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props')" />
+  <Import Project="..\..\..\build\common.props" Condition="Exists('..\..\..\build\common.props')" />
   <PropertyGroup>
     <NoWarn>1762</NoWarn>
     <NuGetPackageImportStamp>d386b432</NuGetPackageImportStamp>
@@ -19,6 +19,7 @@
     <DefineConstants Condition="'$(VisualStudioVersion)'=='14.0'">$(DefineConstants);VS14</DefineConstants>
     <GeneratePkgDefFile>true</GeneratePkgDefFile>
     <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
+    <IncludeCopyLocalReferencesInVSIXContainer>true</IncludeCopyLocalReferencesInVSIXContainer>
     <IncludeDebugSymbolsInVSIXContainer>false</IncludeDebugSymbolsInVSIXContainer>
     <IncludeDebugSymbolsInLocalVSIXDeployment>true</IncludeDebugSymbolsInLocalVSIXDeployment>
     <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
@@ -46,6 +47,10 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <CreateVsixContainer>True</CreateVsixContainer>
+    <DeployExtension>True</DeployExtension>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="DataStreamFromComStream.cs" />
@@ -128,7 +133,6 @@
       <Link>Modules\NuGet\Profile.ps1</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <None Include="app.config" />
     <None Include="project.json" />
     <None Include="Resources\nugetAbout.ico" />
     <None Include="Resources\Toolbar.png" />
@@ -140,68 +144,100 @@
     <ProjectReference Include="..\NuGet.Credentials\NuGet.Credentials.csproj">
       <Project>{32a23995-14c7-483b-98c3-0ae4185373ea}</Project>
       <Name>NuGet.Credentials</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.VisualStudio.Implementation\NuGet.VisualStudio.Implementation.csproj">
       <Project>{9623cf30-192c-4864-b419-29649169ae30}</Project>
       <Name>NuGet.VisualStudio.Implementation</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\Options\Options.csproj">
       <Project>{53ab7187-cdf3-48b5-b90e-8919d3cb904d}</Project>
       <Name>Options</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\PackageManagement.PowerShellCmdlets\PackageManagement.PowerShellCmdlets.csproj">
       <Project>{26dc17ac-a390-4515-a2c0-07a0950036c5}</Project>
       <Name>PackageManagement.PowerShellCmdlets</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\PackageManagement.UI\PackageManagement.UI.csproj">
       <Project>{538adefd-2170-40a9-a2c5-ec8369cfe490}</Project>
       <Name>PackageManagement.UI</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\PackageManagement.VisualStudio\PackageManagement.VisualStudio.csproj">
       <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
       <Name>PackageManagement.VisualStudio</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\TeamFoundationServer14\TeamFoundationServer14.csproj">
       <Project>{e961d080-f10b-4f11-bea0-056509c086cc}</Project>
       <Name>TeamFoundationServer14</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\VisualStudio.Interop\VisualStudio.Interop.csproj">
       <Project>{7DB43FE1-75E1-49F9-B2C8-06A552BA2144}</Project>
       <Name>VisualStudio.Interop</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bBuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\VisualStudio14\VisualStudio14.csproj">
       <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
       <Name>VisualStudio14</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\VisualStudio\VisualStudio.csproj">
       <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
       <Name>VisualStudio</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\VsConsole\Console.Types\Console.Types.csproj">
       <Project>{6fd11460-39a3-4a10-ba63-7541b0a7d053}</Project>
       <Name>Console.Types</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\VsConsole\Console\Console.csproj">
       <Project>{50e33da2-af14-486d-81b8-bd8409744a38}</Project>
       <Name>Console</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\VsConsole\PowerShellHostProvider\PowerShellHostProvider.csproj">
       <Project>{a5e7aeb3-738f-4c39-a459-00f90483b2fe}</Project>
       <Name>PowerShellHostProvider</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\VsConsole\PowerShellHost\PowerShellHost.csproj">
       <Project>{5a79eef3-51c0-4a14-8d37-50ef38ad835d}</Project>
       <Name>PowerShellHost</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -211,33 +247,36 @@
     <Reference Include="envdte80, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Microsoft.VisualStudio.CoreUtility, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-    <Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.CSharp">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.CoreUtility, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Microsoft.VisualStudio.Shell.Interop.14.0.DesignTime, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-    <Reference Include="System" />
-    <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Design" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.IO.Compression" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Net.Http.WebRequest" />
-    <Reference Include="System.Resources.ResourceManager" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Security" />
-    <Reference Include="System.Threading" />
-    <Reference Include="System.Threading.Tasks" />
-    <Reference Include="System.Threading.Tasks.Parallel" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xaml" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PresentationFramework">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.ComponentModel.Composition">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Design">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="WindowsBase">
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx">
@@ -270,10 +309,51 @@
     </Otherwise>
   </Choose>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\..\..\build\common.targets" />
-  <Import Project="..\..\..\build\sign.targets" />
+  <Import Project="$(EnlistmentRoot)\build\common.targets" />
+  <Import Project="$(EnlistmentRoot)\build\sign.targets" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup>
     <PostBuildEvent>copy /y "$(TargetVsixContainer)" "$(ArtifactRoot)\"</PostBuildEvent>
   </PropertyGroup>
+  <ItemGroup>
+    <VsixIncludeFile Include=".vsixinclude" />
+    <VsixIgnoreFile Include=".vsixignore" />
+  </ItemGroup>
+  <Target Name="ReadVsixIncludeListFromFile">
+    <ReadLinesFromFile File="@(VsixIncludeFile)">
+      <Output TaskParameter="Lines" ItemName="IncludeVsixFilesList" />
+    </ReadLinesFromFile>
+    <ItemGroup>
+      <IncludeVsixFilesList Remove="@(IncludeVsixFilesList)" Condition="'%(Identity)' != '' AND $([System.String]::new('%(Identity)').StartsWith('#'))" />
+    </ItemGroup>
+  </Target>
+  <Target Name="ReadVsixIgnoreListFromFile">
+    <ReadLinesFromFile File="@(VsixIgnoreFile)">
+      <Output TaskParameter="Lines" ItemName="IgnoreVsixFilesList" />
+    </ReadLinesFromFile>
+    <ItemGroup>
+      <IgnoreVsixFilesList Remove="@(IgnoreVsixFilesList)" Condition="'%(Identity)' != '' AND $([System.String]::new('%(Identity)').StartsWith('#'))" />
+    </ItemGroup>
+  </Target>
+  <Target Name="RemoveUnsolicitedVsixAssemblies" AfterTargets="GetVsixSourceItems" Condition="'$(IncludeCopyLocalReferencesInVSIXContainer)'=='true'" DependsOnTargets="ReadVsixIncludeListFromFile;ReadVsixIgnoreListFromFile">
+    <Message Text="Filtering VSIX package files..." Importance="high" />
+    <ItemGroup>
+      <AllVsixAssemblies Include="@(VSIXSourceItem->'%(FileName)%(Extension)')" Condition=" '%(Extension)' == '.dll' ">
+        <SourceFile>%(VSIXSourceItem.Identity)</SourceFile>
+      </AllVsixAssemblies>
+    </ItemGroup>
+    <ItemGroup>
+      <SuppressPackaging Include="@(AllVsixAssemblies)" Exclude="@(IncludeVsixFilesList)" />
+      <MissingRequiredAssemblies Include="@(IncludeVsixFilesList)" Exclude="@(AllVsixAssemblies)" />
+      <NotListedDependencies Include="@(SuppressPackaging)" Exclude="@(IgnoreVsixFilesList)" />
+      <MissingIgnoredAssemblies Include="@(IgnoreVsixFilesList)" Exclude="@(AllVsixAssemblies)" />
+      <VSIXSourceItem Remove="@(SuppressPackaging->'%(SourceFile)')" />
+    </ItemGroup>
+    <Message Text="Suppressed file '%(SuppressPackaging.SourceFile)'" Condition=" '@(SuppressPackaging)' != '' " />
+    <Message Text="Included file '%(VSIXSourceItem.Identity)'" Condition=" '@(VSIXSourceItem)' != '' " />
+    <Error Text="Missing @(MissingRequiredAssemblies->Count()) required file(s) '@(MissingRequiredAssemblies)'" Condition=" '@(MissingRequiredAssemblies)' != '' " File=".vsixinclude" />
+    <Error Text="Found @(NotListedDependencies->Count()) not listed file(s) '@(NotListedDependencies)'" Condition=" '@(NotListedDependencies)' != '' " File=".vsixinclude" />
+    <Warning Text="Missing @(MissingIgnoredAssemblies->Count()) ignored file(s) '@(MissingIgnoredAssemblies)'" Condition=" '@(MissingIgnoredAssemblies)' != '' " File=".vsixignore" />
+    <Message Text="Included @(VSIXSourceItem->Count()) file(s). Filtered @(SuppressPackaging->Count()) file(s)." Importance="high" />
+  </Target>
 </Project>
