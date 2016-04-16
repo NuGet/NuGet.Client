@@ -57,7 +57,6 @@ namespace NuGet.Commands.Test
                 var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
 
                 request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
-                request.RequestedRuntimes.Add("win7-x86");
 
                 var packageA = new SimpleTestPackageContext("packageA");
                 packageA.AddFile("lib/netstandard1.1/a.dll");
@@ -130,7 +129,6 @@ namespace NuGet.Commands.Test
                 var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
 
                 request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
-                request.RequestedRuntimes.Add("win7-x86");
 
                 var packageA = new SimpleTestPackageContext("packageA");
                 packageA.AddFile("ref/a.dll");
