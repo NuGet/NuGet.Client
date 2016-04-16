@@ -283,8 +283,9 @@ Function Restore-SolutionPackages{
     if ($MSBuildVersion) {
         $opts += '-MSBuildVersion', $MSBuildVersion
     }
+
     if (-not $VerbosePreference) {
-        $opts += '-Verbosity', 'quiet'
+        $opts += '-verbosity', 'quiet'
     }
 
     Trace-Log "Restoring packages @""$NuGetClientRoot"""
