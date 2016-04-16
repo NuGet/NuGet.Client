@@ -1429,7 +1429,7 @@ namespace NuGet.Test
                 = new List<TestExternalProjectReference>();
 
             public TestBuildIntegratedNuGetProject(string jsonConfig, IMSBuildNuGetProjectSystem msbuildProjectSystem)
-                : base(jsonConfig, msbuildProjectSystem)
+                : base(jsonConfig, $"{msbuildProjectSystem.ProjectFullPath}.{msbuildProjectSystem.ProjectName}.csproj", msbuildProjectSystem)
             {
 
             }

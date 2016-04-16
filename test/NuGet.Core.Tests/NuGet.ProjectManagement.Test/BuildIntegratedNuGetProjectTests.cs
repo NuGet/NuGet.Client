@@ -22,7 +22,7 @@ namespace ProjectManagement.Test
     public class BuildIntegratedNuGetProjectTests
     {
         [Fact]
-        public async Task TestBuildIntegratedNuGetPackageSpecNameMatchesFilePath_ProjectNameJson()
+        public void TestBuildIntegratedNuGetPackageSpecNameMatchesFilePath_ProjectNameJson()
         {
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
@@ -56,7 +56,7 @@ namespace ProjectManagement.Test
         }
 
         [Fact]
-        public async Task TestBuildIntegratedNuGetPackageSpecNameMatchesFilePath()
+        public void TestBuildIntegratedNuGetPackageSpecNameMatchesFilePath()
         {
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
