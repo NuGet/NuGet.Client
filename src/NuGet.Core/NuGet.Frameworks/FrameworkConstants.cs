@@ -80,6 +80,7 @@ namespace NuGet.Frameworks
             public static readonly NuGetFramework Net46 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 6, 0, 0));
             public static readonly NuGetFramework Net461 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 6, 1, 0));
             public static readonly NuGetFramework Net462 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 6, 2, 0));
+            public static readonly NuGetFramework Net463 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 6, 3, 0));
 
             public static readonly NuGetFramework NetCore45 = new NuGetFramework(FrameworkIdentifiers.NetCore, new Version(4, 5, 0, 0));
             public static readonly NuGetFramework NetCore451 = new NuGetFramework(FrameworkIdentifiers.NetCore, new Version(4, 5, 1, 0));
@@ -142,6 +143,8 @@ namespace NuGet.Frameworks
                 = new NuGetFramework(FrameworkIdentifiers.NetStandard, new Version(1, 4, 0, 0));
             public static readonly NuGetFramework NetStandard15
                 = new NuGetFramework(FrameworkIdentifiers.NetStandard, new Version(1, 5, 0, 0));
+            public static readonly NuGetFramework NetStandard16
+                = new NuGetFramework(FrameworkIdentifiers.NetStandard, new Version(1, 6, 0, 0));
 
             public static readonly NuGetFramework NetStandardApp15
                 = new NuGetFramework(FrameworkIdentifiers.NetStandardApp, new Version(1, 5, 0, 0));
