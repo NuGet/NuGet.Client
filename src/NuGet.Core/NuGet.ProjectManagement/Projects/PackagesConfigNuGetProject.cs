@@ -23,6 +23,8 @@ namespace NuGet.ProjectManagement
     /// </summary>
     public class PackagesConfigNuGetProject : NuGetProject
     {
+        private readonly object _configLock = new object();
+
         public string FullPath
         {
             get
@@ -88,31 +90,54 @@ namespace NuGet.ProjectManagement
 
             try
             {
-                // Packages.config exist at full path
-                if (installedPackagesList.Any())
+                // Avoid modifying the packages.config file while it is being read
+                // This can happen when VS API calls are made to get the list of
+                // all installed packages.
+                lock (_configLock)
                 {
-                    var packageReferenceWithSameId = installedPackagesList.FirstOrDefault(
-                        p => p.PackageIdentity.Id.Equals(packageIdentity.Id, StringComparison.OrdinalIgnoreCase));
-
-                    if (packageReferenceWithSameId != null)
+                    // Packages.config exist at full path
+                    if (installedPackagesList.Any())
                     {
-                        if (packageReferenceWithSameId.PackageIdentity.Equals(packageIdentity))
-                        {
-                            nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageAlreadyExistsInPackagesConfig, packageIdentity, Path.GetFileName(FullPath));
-                            return Task.FromResult(false);
-                        }
+                        var packageReferenceWithSameId = installedPackagesList.FirstOrDefault(
+                            p => p.PackageIdentity.Id.Equals(packageIdentity.Id, StringComparison.OrdinalIgnoreCase));
 
-                        // Higher version of an installed package is being installed. Remove old and add new
-                        using (var writer = new PackagesConfigWriter(FullPath, createNew: false))
+                        if (packageReferenceWithSameId != null)
                         {
-                            writer.UpdatePackageEntry(packageReferenceWithSameId, newPackageReference);
+                            if (packageReferenceWithSameId.PackageIdentity.Equals(packageIdentity))
+                            {
+                                nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageAlreadyExistsInPackagesConfig, packageIdentity, Path.GetFileName(FullPath));
+                                return Task.FromResult(false);
+                            }
+
+                            // Higher version of an installed package is being installed. Remove old and add new
+                            using (var writer = new PackagesConfigWriter(FullPath, createNew: false))
+                            {
+                                writer.UpdatePackageEntry(packageReferenceWithSameId, newPackageReference);
+                            }
+                        }
+                        else
+                        {
+                            using (var writer = new PackagesConfigWriter(FullPath, createNew: false))
+                            {
+
+                                if (nuGetProjectContext.OriginalPackagesConfig == null)
+                                {
+                                    // Write a new entry
+                                    writer.AddPackageEntry(newPackageReference);
+                                }
+                                else
+                                {
+                                    // Update the entry based on the original entry if it exists
+                                    writer.UpdateOrAddPackageEntry(nuGetProjectContext.OriginalPackagesConfig, newPackageReference);
+                                }
+                            }
                         }
                     }
+                    // Create new packages.config file and add the package entry
                     else
                     {
-                        using (var writer = new PackagesConfigWriter(FullPath, createNew: false))
+                        using (var writer = new PackagesConfigWriter(FullPath, createNew: true))
                         {
-
                             if (nuGetProjectContext.OriginalPackagesConfig == null)
                             {
                                 // Write a new entry
@@ -123,23 +148,6 @@ namespace NuGet.ProjectManagement
                                 // Update the entry based on the original entry if it exists
                                 writer.UpdateOrAddPackageEntry(nuGetProjectContext.OriginalPackagesConfig, newPackageReference);
                             }
-                        }
-                    }
-                }
-                // Create new packages.config file and add the package entry
-                else
-                {
-                    using (var writer = new PackagesConfigWriter(FullPath, createNew: true))
-                    {
-                        if (nuGetProjectContext.OriginalPackagesConfig == null)
-                        {
-                            // Write a new entry
-                            writer.AddPackageEntry(newPackageReference);
-                        }
-                        else
-                        {
-                            // Update the entry based on the original entry if it exists
-                            writer.UpdateOrAddPackageEntry(nuGetProjectContext.OriginalPackagesConfig, newPackageReference);
                         }
                     }
                 }
@@ -237,9 +245,30 @@ namespace NuGet.ProjectManagement
             {
                 try
                 {
-                    return XDocument.Load(FullPath);
+                    var share = FileShare.ReadWrite | FileShare.Delete;
+
+                    for (int i = 0; i < 3; i++)
+                    {
+                        try
+                        {
+                            // Avoid opening packages.config while an update or install is moving the file
+                            lock (_configLock)
+                            {
+                                using (var stream = new FileStream(FullPath, FileMode.Open, FileAccess.Read, share))
+                                {
+                                    return XDocument.Load(stream);
+                                }
+                            }
+                        }
+                        catch (Exception ex) when ((i < 2) && (ex is IOException || ex is UnauthorizedAccessException))
+                        {
+                            // Retry incase the file temporarily does not exist due to an install or update
+                            Thread.Sleep(100);
+                        }
+                    }
                 }
-                catch (XmlException ex)
+                catch (Exception ex) when 
+                    (ex is IOException || ex is UnauthorizedAccessException || ex is XmlException)
                 {
                     throw new InvalidOperationException(string.Format(
                         CultureInfo.CurrentCulture,
@@ -280,7 +309,7 @@ namespace NuGet.ProjectManagement
                 }
             }
             catch (Exception ex)
-                when (ex is System.Xml.XmlException ||
+                when (ex is XmlException ||
                         ex is PackagesConfigReaderException)
             {
                 throw new InvalidOperationException(string.Format(
