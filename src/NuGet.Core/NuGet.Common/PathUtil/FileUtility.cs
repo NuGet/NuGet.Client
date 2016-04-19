@@ -76,7 +76,7 @@ namespace NuGet.Common
         private static void Sleep(int ms)
         {
             // Sleep sync
-            SpinWait.SpinUntil(() => true, ms);
+            Thread.Sleep(ms);
         }
     }
 }
