@@ -630,7 +630,7 @@ namespace NuGet.CommandLine
 
                         if (NuspecFileExists(fullPath) || File.Exists(ProjectJsonPathUtilities.GetProjectConfigPath(Path.GetDirectoryName(fullPath), Path.GetFileName(fullPath))))
                         {
-                            var dependency = CreateDependencyFromProject(referencedProject);
+                            var dependency = CreateDependencyFromProject(referencedProject, dependencies);
                             dependencies[dependency.Id] = dependency;
                         }
                         else
@@ -650,7 +650,7 @@ namespace NuGet.CommandLine
         // Creates a package dependency from the given project, which has a corresponding
         // nuspec file.
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to continue regardless of any error we encounter extracting metadata.")]
-        private PackageDependency CreateDependencyFromProject(dynamic project)
+        private PackageDependency CreateDependencyFromProject(dynamic project, Dictionary<string, PackageDependency> dependencies)
         {
             try
             {
@@ -675,9 +675,19 @@ namespace NuGet.CommandLine
                     projectFactory.ProcessNuspec(builder, null);
                 }
 
+                VersionRange versionRange = VersionRange.Parse(builder.Version.ToString());
+                if (dependencies.ContainsKey(builder.Id))
+                {
+                    VersionRange nuspecVersion = dependencies[builder.Id].VersionRange;
+                    if (nuspecVersion != null)
+                    {
+                        versionRange = nuspecVersion;
+                    }
+                }
+
                 return new PackageDependency(
                     builder.Id,
-                    VersionRange.Parse(builder.Version.ToString()));
+                    versionRange);
             }
             catch (Exception ex)
             {
