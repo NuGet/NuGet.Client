@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -246,7 +247,7 @@ namespace NuGet.ProjectManagement
                 var share = FileShare.ReadWrite | FileShare.Delete;
 
                 // Try to read the config file up to 3 times
-                for (int i = 0; i < 3; i++)
+                for (int i = 0; i < FileUtility.MaxTries; i++)
                 {
                     try
                     {
@@ -267,7 +268,8 @@ namespace NuGet.ProjectManagement
                             }
                         }
                     }
-                    catch (Exception ex) when ((i < 2) && (ex is IOException || ex is UnauthorizedAccessException))
+                    catch (Exception ex) when ((i < (FileUtility.MaxTries - 1))
+                        && (ex is IOException || ex is UnauthorizedAccessException))
                     {
                         // Retry incase the file temporarily does not exist due to an install or update
                         Thread.Sleep(100);

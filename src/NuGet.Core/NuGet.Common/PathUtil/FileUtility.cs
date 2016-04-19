@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.Common
@@ -13,7 +9,7 @@ namespace NuGet.Common
     /// </summary>
     public static class FileUtility
     {
-        private const int MaxTries = 3;
+        public static readonly int MaxTries = 3;
 
         /// <summary>
         /// Move a file with retries.
@@ -31,7 +27,7 @@ namespace NuGet.Common
             }
 
             // Run at least and continue until the move succeeds or this times out
-            for (int i=0; i < MaxTries; i++)
+            for (int i = 0; i < MaxTries; i++)
             {
                 // Ignore exceptions for the first attempts
                 try
