@@ -253,6 +253,11 @@ namespace NuGet.Packaging
                     if (targetFrameworkName != null)
                     {
                         targetFramework = NuGetFramework.Parse(targetFrameworkName);
+
+                        if (targetFramework.IsUnsupported)
+                        {
+                            throw new Exception(String.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidTargetFramework, targetFrameworkName));
+                        }
                     }
 
                     // REVIEW: Is UnsupportedFramework correct?

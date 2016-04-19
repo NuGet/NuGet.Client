@@ -390,6 +390,8 @@ namespace NuGet.Commands
 
             outputPath = outputPath ?? GetOutputPath(builder, false, builder.Version);
 
+            CheckForUnsupportedFrameworks(builder);
+
             ExcludeFiles(builder.Files);
 
             // Track if the package file was already present on disk
@@ -418,6 +420,20 @@ namespace NuGet.Commands
             WriteLine(String.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandSuccess, outputPath));
 
             return new PackageArchiveReader(outputPath);
+        }
+
+        private void CheckForUnsupportedFrameworks(PackageBuilder builder)
+        {
+            foreach (var reference in builder.FrameworkReferences)
+            {
+                foreach (var framework in reference.SupportedFrameworks)
+                {
+                    if (framework.IsUnsupported)
+                    {
+                        throw new Exception(String.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidTargetFramework, reference.AssemblyName));
+                    }
+                }
+            }
         }
 
         private void PrintVerbose(string outputPath, PackageBuilder builder)

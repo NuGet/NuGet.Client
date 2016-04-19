@@ -96,6 +96,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Unsupported targetFramework value on &apos;{0}&apos;.
+        /// </summary>
+        public static string Error_InvalidTargetFramework {
+            get {
+                return ResourceManager.GetString("Error_InvalidTargetFramework", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Source parameter was not specified..
         /// </summary>
         public static string Error_MissingSourceParameter {

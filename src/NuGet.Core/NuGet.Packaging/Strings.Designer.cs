@@ -22,7 +22,7 @@ namespace NuGet.Packaging {
     // with the /str option, or rebuild your VS project.
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Strings {
+    public class Strings {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -35,7 +35,7 @@ namespace NuGet.Packaging {
         ///    Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.Packaging.Strings", typeof(Strings).GetTypeInfo().Assembly);
@@ -50,7 +50,7 @@ namespace NuGet.Packaging {
         ///    resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -60,9 +60,18 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Unsupported targetFramework value &apos;{0}&apos;.
+        /// </summary>
+        public static string Error_InvalidTargetFramework {
+            get {
+                return ResourceManager.GetString("Error_InvalidTargetFramework", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to There are duplicate packages: {0}.
         /// </summary>
-        internal static string ErrorDuplicatePackages {
+        public static string ErrorDuplicatePackages {
             get {
                 return ResourceManager.GetString("ErrorDuplicatePackages", resourceCulture);
             }
@@ -71,7 +80,7 @@ namespace NuGet.Packaging {
         /// <summary>
         ///    Looks up a localized string similar to Invalid allowedVersions for package id &apos;{0}&apos;: &apos;{1}&apos;.
         /// </summary>
-        internal static string ErrorInvalidAllowedVersions {
+        public static string ErrorInvalidAllowedVersions {
             get {
                 return ResourceManager.GetString("ErrorInvalidAllowedVersions", resourceCulture);
             }
@@ -80,7 +89,7 @@ namespace NuGet.Packaging {
         /// <summary>
         ///    Looks up a localized string similar to Invalid minClientVersion: &apos;{0}&apos;.
         /// </summary>
-        internal static string ErrorInvalidMinClientVersion {
+        public static string ErrorInvalidMinClientVersion {
             get {
                 return ResourceManager.GetString("ErrorInvalidMinClientVersion", resourceCulture);
             }
@@ -89,7 +98,7 @@ namespace NuGet.Packaging {
         /// <summary>
         ///    Looks up a localized string similar to Invalid package version for package id &apos;{0}&apos;: &apos;{1}&apos;.
         /// </summary>
-        internal static string ErrorInvalidPackageVersion {
+        public static string ErrorInvalidPackageVersion {
             get {
                 return ResourceManager.GetString("ErrorInvalidPackageVersion", resourceCulture);
             }
@@ -98,7 +107,7 @@ namespace NuGet.Packaging {
         /// <summary>
         ///    Looks up a localized string similar to Null or empty package id.
         /// </summary>
-        internal static string ErrorNullOrEmptyPackageId {
+        public static string ErrorNullOrEmptyPackageId {
             get {
                 return ResourceManager.GetString("ErrorNullOrEmptyPackageId", resourceCulture);
             }
@@ -107,7 +116,7 @@ namespace NuGet.Packaging {
         /// <summary>
         ///    Looks up a localized string similar to Unable to delete temporary file &apos;{0}&apos;. Error: &apos;{1}&apos;..
         /// </summary>
-        internal static string ErrorUnableToDeleteFile {
+        public static string ErrorUnableToDeleteFile {
             get {
                 return ResourceManager.GetString("ErrorUnableToDeleteFile", resourceCulture);
             }
@@ -116,7 +125,7 @@ namespace NuGet.Packaging {
         /// <summary>
         ///    Looks up a localized string similar to Fail to load packages.config as XML file. Please check it. .
         /// </summary>
-        internal static string FailToLoadPackagesConfig {
+        public static string FailToLoadPackagesConfig {
             get {
                 return ResourceManager.GetString("FailToLoadPackagesConfig", resourceCulture);
             }
@@ -125,7 +134,7 @@ namespace NuGet.Packaging {
         /// <summary>
         ///    Looks up a localized string similar to Failed to write packages.config as XML file &apos;{0}&apos;. Error: &apos;{1}&apos;..
         /// </summary>
-        internal static string FailToWritePackagesConfig {
+        public static string FailToWritePackagesConfig {
             get {
                 return ResourceManager.GetString("FailToWritePackagesConfig", resourceCulture);
             }
@@ -134,7 +143,7 @@ namespace NuGet.Packaging {
         /// <summary>
         ///    Looks up a localized string similar to The nuspec contains an invalid entry &apos;{0}&apos; in package &apos;{1}&apos; ..
         /// </summary>
-        internal static string InvalidNuspecEntry {
+        public static string InvalidNuspecEntry {
             get {
                 return ResourceManager.GetString("InvalidNuspecEntry", resourceCulture);
             }
@@ -143,7 +152,7 @@ namespace NuGet.Packaging {
         /// <summary>
         ///    Looks up a localized string similar to Installing {0} {1}..
         /// </summary>
-        internal static string Log_InstallingPackage {
+        public static string Log_InstallingPackage {
             get {
                 return ResourceManager.GetString("Log_InstallingPackage", resourceCulture);
             }
@@ -152,7 +161,7 @@ namespace NuGet.Packaging {
         /// <summary>
         ///    Looks up a localized string similar to MinClientVersion already exists in packages.config.
         /// </summary>
-        internal static string MinClientVersionAlreadyExist {
+        public static string MinClientVersionAlreadyExist {
             get {
                 return ResourceManager.GetString("MinClientVersionAlreadyExist", resourceCulture);
             }
@@ -161,7 +170,7 @@ namespace NuGet.Packaging {
         /// <summary>
         ///    Looks up a localized string similar to Nuspec file does not exist in package..
         /// </summary>
-        internal static string MissingNuspec {
+        public static string MissingNuspec {
             get {
                 return ResourceManager.GetString("MissingNuspec", resourceCulture);
             }
@@ -170,7 +179,7 @@ namespace NuGet.Packaging {
         /// <summary>
         ///    Looks up a localized string similar to Package contains multiple nuspec files..
         /// </summary>
-        internal static string MultipleNuspecFiles {
+        public static string MultipleNuspecFiles {
             get {
                 return ResourceManager.GetString("MultipleNuspecFiles", resourceCulture);
             }
@@ -179,7 +188,7 @@ namespace NuGet.Packaging {
         /// <summary>
         ///    Looks up a localized string similar to Package entry already exists in packages.config. Id: {0}.
         /// </summary>
-        internal static string PackageEntryAlreadyExist {
+        public static string PackageEntryAlreadyExist {
             get {
                 return ResourceManager.GetString("PackageEntryAlreadyExist", resourceCulture);
             }
@@ -188,7 +197,7 @@ namespace NuGet.Packaging {
         /// <summary>
         ///    Looks up a localized string similar to Package entry does not exists in packages.config. Id: {0}, Version: {1}.
         /// </summary>
-        internal static string PackageEntryNotExist {
+        public static string PackageEntryNotExist {
             get {
                 return ResourceManager.GetString("PackageEntryNotExist", resourceCulture);
             }
@@ -197,7 +206,7 @@ namespace NuGet.Packaging {
         /// <summary>
         ///    Looks up a localized string similar to Packages node does not exists in packages.config at {0}..
         /// </summary>
-        internal static string PackagesNodeNotExist {
+        public static string PackagesNodeNotExist {
             get {
                 return ResourceManager.GetString("PackagesNodeNotExist", resourceCulture);
             }
@@ -206,7 +215,7 @@ namespace NuGet.Packaging {
         /// <summary>
         ///    Looks up a localized string similar to Package stream should be seekable.
         /// </summary>
-        internal static string PackageStreamShouldBeSeekable {
+        public static string PackageStreamShouldBeSeekable {
             get {
                 return ResourceManager.GetString("PackageStreamShouldBeSeekable", resourceCulture);
             }
@@ -215,7 +224,7 @@ namespace NuGet.Packaging {
         /// <summary>
         ///    Looks up a localized string similar to String argument &apos;{0}&apos; cannot be null or empty.
         /// </summary>
-        internal static string StringCannotBeNullOrEmpty {
+        public static string StringCannotBeNullOrEmpty {
             get {
                 return ResourceManager.GetString("StringCannotBeNullOrEmpty", resourceCulture);
             }
@@ -224,7 +233,7 @@ namespace NuGet.Packaging {
         /// <summary>
         ///    Looks up a localized string similar to An error occurred while updating packages.config. The file was closed before the entry could be added..
         /// </summary>
-        internal static string UnableToAddEntry {
+        public static string UnableToAddEntry {
             get {
                 return ResourceManager.GetString("UnableToAddEntry", resourceCulture);
             }
