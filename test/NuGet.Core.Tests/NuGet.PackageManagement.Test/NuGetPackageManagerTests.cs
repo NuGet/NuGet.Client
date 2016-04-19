@@ -1,15 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Moq;
-using NuGet.Frameworks;
-using NuGet.PackageManagement;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using NuGet.Protocol.Core.Types;
-using NuGet.Resolver;
-using NuGet.Test.Utility;
-using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -18,9 +9,18 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Moq;
+using NuGet.Frameworks;
+using NuGet.PackageManagement;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
+using NuGet.Resolver;
+using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
-using Moq;
 
 namespace NuGet.Test
 {
