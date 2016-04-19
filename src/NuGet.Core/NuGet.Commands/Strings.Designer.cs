@@ -123,6 +123,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Error packaging &apos;{0}&apos;..
+        /// </summary>
+        public static string Error_PackFailed {
+            get {
+                return ResourceManager.GetString("Error_PackFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Error occurred when processing file &apos;{0}&apos;: {1}.
         /// </summary>
         public static string Error_ProcessingNuspecFile {

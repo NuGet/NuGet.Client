@@ -336,6 +336,11 @@ namespace NuGet.Commands
             // Create a builder for the main package as well as the sources/symbols package
             PackageBuilder mainPackageBuilder = factory.CreateBuilder(_packArgs.BasePath);
 
+            if (mainPackageBuilder == null)
+            {
+                throw new Exception(String.Format(CultureInfo.CurrentCulture, Strings.Error_PackFailed, path));
+            }
+
             // Build the main package
             PackageArchiveReader package = BuildPackage(mainPackageBuilder);
 

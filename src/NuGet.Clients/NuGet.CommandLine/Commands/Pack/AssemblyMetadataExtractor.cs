@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -9,7 +10,8 @@ using NuGet.Runtime;
 namespace NuGet.CommandLine
 {
     using NuGet.Packaging;
-    using Versioning;
+    using NuGet.Versioning;
+
     public static class AssemblyMetadataExtractor
     {
         public static AssemblyMetadata GetMetadata(string assemblyPath)
@@ -86,7 +88,14 @@ namespace NuGet.CommandLine
                     string assemblyInformationalVersion = GetAttributeValueOrDefault<AssemblyInformationalVersionAttribute>(attributes);
                     if (!NuGetVersion.TryParse(assemblyInformationalVersion, out version))
                     {
-                        version = NuGetVersion.Parse(assemblyName.Version.ToString());
+                        if (string.IsNullOrEmpty(assemblyInformationalVersion))
+                        {
+                            version = NuGetVersion.Parse(assemblyName.Version.ToString());
+                        }
+                        else
+                        {
+                            throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, NuGetResources.Error_AssemblyInformationalVersion, assemblyInformationalVersion));
+                        }
                     }
 
                     return new AssemblyMetadata
