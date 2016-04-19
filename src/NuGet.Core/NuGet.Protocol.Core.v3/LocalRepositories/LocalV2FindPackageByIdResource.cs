@@ -138,12 +138,15 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
                 yield break;
             }
 
-            var filter = id + "*.nupkg";
+            var filter = "*.nupkg";
 
             // Check top level directory
             foreach (var path in rootDirectoryInfo.EnumerateFiles(filter))
             {
-                yield return path;
+                if (path.Name.StartsWith(id, StringComparison.OrdinalIgnoreCase))
+                {
+                    yield return path;
+                }
             }
 
             // Check sub directories
@@ -151,7 +154,10 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
             {
                 foreach (var path in dir.EnumerateFiles(filter))
                 {
-                    yield return path;
+                    if (path.Name.StartsWith(id, StringComparison.OrdinalIgnoreCase))
+                    {
+                        yield return path;
+                    }
                 }
             }
         }
