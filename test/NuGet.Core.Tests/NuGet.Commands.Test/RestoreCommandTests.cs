@@ -67,7 +67,7 @@ namespace NuGet.Commands.Test
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 // Assert
                 Assert.True(result.Success);
@@ -134,7 +134,7 @@ namespace NuGet.Commands.Test
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 // Assert
                 // Verify no stack overflows from circular dependencies
