@@ -58,7 +58,7 @@ namespace NuGet.DependencyResolver
                         }
                     };
 
-                    if (runtimeDependency.Id == libraryRange.Name)
+                    if (StringComparer.OrdinalIgnoreCase.Equals(runtimeDependency.Id, libraryRange.Name))
                     {
                         if (libraryRange.VersionRange != null &&
                             runtimeDependency.VersionRange != null &&
@@ -175,7 +175,7 @@ namespace NuGet.DependencyResolver
 
             return library =>
             {
-                if (item.Data.Match.Library.Name == library.Name)
+                if (StringComparer.OrdinalIgnoreCase.Equals(item.Data.Match.Library.Name, library.Name))
                 {
                     return DependencyResult.Cycle;
                 }

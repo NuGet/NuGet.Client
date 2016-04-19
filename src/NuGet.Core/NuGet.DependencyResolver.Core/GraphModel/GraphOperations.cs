@@ -79,7 +79,7 @@ namespace NuGet.DependencyResolver
                 {
                     foreach (var sideNode in n.InnerNodes)
                     {
-                        if (sideNode != node && sideNode.Key.Name == node.Key.Name)
+                        if (sideNode != node && StringComparer.OrdinalIgnoreCase.Equals(sideNode.Key.Name, node.Key.Name))
                         {
                             // Nodes that have no version range should be ignored as potential downgrades e.g. framework reference
                             if (sideNode.Key.VersionRange != null &&
@@ -127,7 +127,8 @@ namespace NuGet.DependencyResolver
         {
             foreach (var item in path)
             {
-                var childNode = node.InnerNodes.FirstOrDefault(n => n.Key.Name == item);
+                var childNode = node.InnerNodes.FirstOrDefault(n => 
+                    StringComparer.OrdinalIgnoreCase.Equals(n.Key.Name, item));
 
                 if (childNode == null)
                 {
