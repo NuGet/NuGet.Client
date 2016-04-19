@@ -1,20 +1,20 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using NuGet.Common;
+using NuGet.Frameworks;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.Protocol.Core.Types;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
-using NuGet.Frameworks;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using NuGet.Protocol.Core.Types;
 
 namespace NuGet.ProjectManagement
 {
@@ -23,6 +23,8 @@ namespace NuGet.ProjectManagement
     /// </summary>
     public class PackagesConfigNuGetProject : NuGetProject
     {
+        private readonly object _configLock = new object();
+
         public string FullPath
         {
             get
@@ -88,31 +90,54 @@ namespace NuGet.ProjectManagement
 
             try
             {
-                // Packages.config exist at full path
-                if (installedPackagesList.Any())
+                // Avoid modifying the packages.config file while it is being read
+                // This can happen when VS API calls are made to get the list of
+                // all installed packages.
+                lock (_configLock)
                 {
-                    var packageReferenceWithSameId = installedPackagesList.FirstOrDefault(
-                        p => p.PackageIdentity.Id.Equals(packageIdentity.Id, StringComparison.OrdinalIgnoreCase));
-
-                    if (packageReferenceWithSameId != null)
+                    // Packages.config exist at full path
+                    if (installedPackagesList.Any())
                     {
-                        if (packageReferenceWithSameId.PackageIdentity.Equals(packageIdentity))
-                        {
-                            nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageAlreadyExistsInPackagesConfig, packageIdentity, Path.GetFileName(FullPath));
-                            return Task.FromResult(false);
-                        }
+                        var packageReferenceWithSameId = installedPackagesList.FirstOrDefault(
+                            p => p.PackageIdentity.Id.Equals(packageIdentity.Id, StringComparison.OrdinalIgnoreCase));
 
-                        // Higher version of an installed package is being installed. Remove old and add new
-                        using (var writer = new PackagesConfigWriter(FullPath, createNew: false))
+                        if (packageReferenceWithSameId != null)
                         {
-                            writer.UpdatePackageEntry(packageReferenceWithSameId, newPackageReference);
+                            if (packageReferenceWithSameId.PackageIdentity.Equals(packageIdentity))
+                            {
+                                nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageAlreadyExistsInPackagesConfig, packageIdentity, Path.GetFileName(FullPath));
+                                return Task.FromResult(false);
+                            }
+
+                            // Higher version of an installed package is being installed. Remove old and add new
+                            using (var writer = new PackagesConfigWriter(FullPath, createNew: false))
+                            {
+                                writer.UpdatePackageEntry(packageReferenceWithSameId, newPackageReference);
+                            }
+                        }
+                        else
+                        {
+                            using (var writer = new PackagesConfigWriter(FullPath, createNew: false))
+                            {
+
+                                if (nuGetProjectContext.OriginalPackagesConfig == null)
+                                {
+                                    // Write a new entry
+                                    writer.AddPackageEntry(newPackageReference);
+                                }
+                                else
+                                {
+                                    // Update the entry based on the original entry if it exists
+                                    writer.UpdateOrAddPackageEntry(nuGetProjectContext.OriginalPackagesConfig, newPackageReference);
+                                }
+                            }
                         }
                     }
+                    // Create new packages.config file and add the package entry
                     else
                     {
-                        using (var writer = new PackagesConfigWriter(FullPath, createNew: false))
+                        using (var writer = new PackagesConfigWriter(FullPath, createNew: true))
                         {
-
                             if (nuGetProjectContext.OriginalPackagesConfig == null)
                             {
                                 // Write a new entry
@@ -123,23 +148,6 @@ namespace NuGet.ProjectManagement
                                 // Update the entry based on the original entry if it exists
                                 writer.UpdateOrAddPackageEntry(nuGetProjectContext.OriginalPackagesConfig, newPackageReference);
                             }
-                        }
-                    }
-                }
-                // Create new packages.config file and add the package entry
-                else
-                {
-                    using (var writer = new PackagesConfigWriter(FullPath, createNew: true))
-                    {
-                        if (nuGetProjectContext.OriginalPackagesConfig == null)
-                        {
-                            // Write a new entry
-                            writer.AddPackageEntry(newPackageReference);
-                        }
-                        else
-                        {
-                            // Update the entry based on the original entry if it exists
-                            writer.UpdateOrAddPackageEntry(nuGetProjectContext.OriginalPackagesConfig, newPackageReference);
                         }
                     }
                 }
@@ -233,20 +241,49 @@ namespace NuGet.ProjectManagement
         public XDocument GetPackagesConfig()
         {
             UpdateFullPath();
-            if (File.Exists(FullPath))
+
+            try
             {
-                try
+                var share = FileShare.ReadWrite | FileShare.Delete;
+
+                // Try to read the config file up to 3 times
+                for (int i = 0; i < FileUtility.MaxTries; i++)
                 {
-                    return XDocument.Load(FullPath);
+                    try
+                    {
+                        // Avoid opening packages.config while an update or install is moving the file
+                        lock (_configLock)
+                        {
+                            if (File.Exists(FullPath))
+                            {
+                                using (var stream = new FileStream(FullPath, FileMode.Open, FileAccess.Read, share))
+                                {
+                                    return XDocument.Load(stream);
+                                }
+                            }
+                            else
+                            {
+                                // File does not exist
+                                break;
+                            }
+                        }
+                    }
+                    catch (Exception ex) when ((i < (FileUtility.MaxTries - 1))
+                        && (ex is IOException || ex is UnauthorizedAccessException))
+                    {
+                        // Retry incase the file temporarily does not exist due to an install or update
+                        Thread.Sleep(100);
+                    }
                 }
-                catch (XmlException ex)
-                {
-                    throw new InvalidOperationException(string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.ErrorLoadingPackagesConfig,
-                        FullPath,
-                        ex.Message));
-                }
+            }
+            catch (Exception ex) when
+                (ex is IOException || ex is UnauthorizedAccessException || ex is XmlException)
+            {
+                throw new InvalidOperationException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.ErrorLoadingPackagesConfig,
+                    FullPath,
+                    ex.Message));
             }
 
             return null;
@@ -280,7 +317,7 @@ namespace NuGet.ProjectManagement
                 }
             }
             catch (Exception ex)
-                when (ex is System.Xml.XmlException ||
+                when (ex is XmlException ||
                         ex is PackagesConfigReaderException)
             {
                 throw new InvalidOperationException(string.Format(
