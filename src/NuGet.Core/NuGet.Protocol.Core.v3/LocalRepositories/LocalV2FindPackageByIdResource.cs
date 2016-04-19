@@ -106,7 +106,7 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
                         throw new FatalProtocolException(message, ex);
                     }
 
-                    if (string.Equals(reader.GetId(), id, StringComparison.Ordinal))
+                    if (string.Equals(reader.GetId(), id, StringComparison.OrdinalIgnoreCase))
                     {
                         result.Add(new CachedPackageInfo { Path = nupkgInfo.FullName, Reader = reader });
                     }
