@@ -72,7 +72,7 @@ namespace NuGet.Common
             FileSystemUtility.AddFile(ProjectFullPath, path, stream, NuGetProjectContext);
         }
 
-        public void AddFrameworkReference(string name)
+        public void AddFrameworkReference(string name, string packageId)
         {
             // No-op
         }

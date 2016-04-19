@@ -35,7 +35,7 @@ namespace NuGet.ProjectManagement
         /// Adds an assembly reference to a framework assembly (one in the GAC).
         /// </summary>
         /// <param name="name">name of the assembly</param>
-        void AddFrameworkReference(string name);
+        void AddFrameworkReference(string name, string packageId);
 
         void AddImport(string targetFullPath, ImportLocation location);
         void RemoveImport(string targetFullPath);

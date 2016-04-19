@@ -127,7 +127,7 @@
     <value>Failed to add reference to '{0}'.</value>
   </data>
   <data name="FailedToAddGacReference" xml:space="preserve">
-    <value>Failed to add reference to '{0}'. Please make sure that it is in the Global Assembly Cache.</value>
+    <value>Failed to add reference. The package '{0}' tried to add a framework reference to '{1}' which was not found in the GAC. This is possibly a bug in the package. Please contact the package owners for assistance.</value>
   </data>
   <data name="Debug_AddGacReference" xml:space="preserve">
     <value>Added reference '{0}' in the Global Assembly Cache to project '{1}'</value>

@@ -58,7 +58,7 @@ namespace Test.Utility
             }
         }
 
-        public void AddFrameworkReference(string name)
+        public void AddFrameworkReference(string name, string packageId)
         {
             if (FrameworkReferences.Contains(name))
             {
