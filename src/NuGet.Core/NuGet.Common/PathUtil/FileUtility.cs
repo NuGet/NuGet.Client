@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace NuGet.Common
 {
@@ -26,7 +26,7 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(destFileName));
             }
 
-            // Run at least and continue until the move succeeds or this times out
+            // Run up to 3 times
             for (int i = 0; i < MaxTries; i++)
             {
                 // Ignore exceptions for the first attempts
@@ -53,7 +53,7 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(path));
             }
 
-            // Run at least and continue until the move succeeds or this times out
+            // Run up to 3 times
             for (int i = 0; i < MaxTries; i++)
             {
                 // Ignore exceptions for the first attempts
@@ -76,7 +76,7 @@ namespace NuGet.Common
         private static void Sleep(int ms)
         {
             // Sleep sync
-            Task.Delay(ms).ConfigureAwait(false).GetAwaiter().GetResult();
+            SpinWait.SpinUntil(() => true, ms);
         }
     }
 }
