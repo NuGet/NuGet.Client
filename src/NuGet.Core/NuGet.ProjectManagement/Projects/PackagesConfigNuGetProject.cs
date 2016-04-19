@@ -1,20 +1,19 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using NuGet.Frameworks;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.Protocol.Core.Types;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
-using NuGet.Frameworks;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using NuGet.Protocol.Core.Types;
 
 namespace NuGet.ProjectManagement
 {
@@ -241,41 +240,48 @@ namespace NuGet.ProjectManagement
         public XDocument GetPackagesConfig()
         {
             UpdateFullPath();
-            if (File.Exists(FullPath))
-            {
-                try
-                {
-                    var share = FileShare.ReadWrite | FileShare.Delete;
 
-                    for (int i = 0; i < 3; i++)
+            try
+            {
+                var share = FileShare.ReadWrite | FileShare.Delete;
+
+                // Try to read the config file up to 3 times
+                for (int i = 0; i < 3; i++)
+                {
+                    try
                     {
-                        try
+                        // Avoid opening packages.config while an update or install is moving the file
+                        lock (_configLock)
                         {
-                            // Avoid opening packages.config while an update or install is moving the file
-                            lock (_configLock)
+                            if (File.Exists(FullPath))
                             {
                                 using (var stream = new FileStream(FullPath, FileMode.Open, FileAccess.Read, share))
                                 {
                                     return XDocument.Load(stream);
                                 }
                             }
-                        }
-                        catch (Exception ex) when ((i < 2) && (ex is IOException || ex is UnauthorizedAccessException))
-                        {
-                            // Retry incase the file temporarily does not exist due to an install or update
-                            Thread.Sleep(100);
+                            else
+                            {
+                                // File does not exist
+                                break;
+                            }
                         }
                     }
+                    catch (Exception ex) when ((i < 2) && (ex is IOException || ex is UnauthorizedAccessException))
+                    {
+                        // Retry incase the file temporarily does not exist due to an install or update
+                        Thread.Sleep(100);
+                    }
                 }
-                catch (Exception ex) when 
-                    (ex is IOException || ex is UnauthorizedAccessException || ex is XmlException)
-                {
-                    throw new InvalidOperationException(string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.ErrorLoadingPackagesConfig,
-                        FullPath,
-                        ex.Message));
-                }
+            }
+            catch (Exception ex) when
+                (ex is IOException || ex is UnauthorizedAccessException || ex is XmlException)
+            {
+                throw new InvalidOperationException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.ErrorLoadingPackagesConfig,
+                    FullPath,
+                    ex.Message));
             }
 
             return null;

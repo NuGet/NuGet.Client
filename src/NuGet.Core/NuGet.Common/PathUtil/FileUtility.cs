@@ -42,7 +42,7 @@ namespace NuGet.Common
                 }
                 catch (Exception ex) when ((i < (MaxTries - 1)) && (ex is UnauthorizedAccessException || ex is IOException))
                 {
-                    Thread.Sleep(100);
+                    Sleep(100);
                 }
             }
         }
@@ -72,9 +72,15 @@ namespace NuGet.Common
                 }
                 catch (Exception ex) when ((i < (MaxTries - 1)) && (ex is UnauthorizedAccessException || ex is IOException))
                 {
-                    Thread.Sleep(100);
+                    Sleep(100);
                 }
             }
+        }
+
+        private static void Sleep(int ms)
+        {
+            // Sleep sync
+            Task.Delay(ms).ConfigureAwait(false).GetAwaiter().GetResult();
         }
     }
 }
