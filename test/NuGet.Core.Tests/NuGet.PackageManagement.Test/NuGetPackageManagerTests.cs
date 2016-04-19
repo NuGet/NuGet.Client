@@ -1,6 +1,15 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Moq;
+using NuGet.Frameworks;
+using NuGet.PackageManagement;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.Protocol.Core.Types;
+using NuGet.Resolver;
+using NuGet.Test.Utility;
+using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,16 +18,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Moq;
-using NuGet.Frameworks;
-using NuGet.PackageManagement;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using NuGet.ProjectManagement;
-using NuGet.Protocol.Core.Types;
-using NuGet.Resolver;
-using NuGet.Test.Utility;
-using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
 using Moq;
@@ -70,6 +69,91 @@ namespace NuGet.Test
                 new PackageIdentity("Microsoft.AspNet.Mvc.Razor", new NuGetVersion("6.0.0-beta3")),
                 new PackageIdentity("Microsoft.AspNet.Mvc.Core", new NuGetVersion("6.0.0-beta3"))
             };
+
+        // Install and uninstall a package while calling get installed on another thread
+        [Fact]
+        public async Task TestPacManInstallAndRequestInstalledPackages()
+        {
+            using (var packageSource = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
+                    new List<Configuration.PackageSource>()
+                    {
+                        new Configuration.PackageSource(packageSource.Path)
+                    });
+
+                using (var testSolutionManager = new TestSolutionManager(true))
+                {
+                    var testSettings = new Configuration.NullSettings();
+                    var token = CancellationToken.None;
+                    var resolutionContext = new ResolutionContext();
+                    var testNuGetProjectContext = new TestNuGetProjectContext();
+                    var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                    var nuGetPackageManager = new NuGetPackageManager(
+                        sourceRepositoryProvider,
+                        testSettings,
+                        testSolutionManager,
+                        deleteOnRestartManager);
+                    var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+                    var packagePathResolver = new PackagePathResolver(packagesFolderPath);
+                    var projectA = testSolutionManager.AddNewMSBuildProject();
+
+                    var builder = new Packaging.PackageBuilder()
+                    {
+                        Id = "packageA",
+                        Version = NuGetVersion.Parse("1.0.0"),
+                        Description = "Descriptions",
+                    };
+
+                    builder.Authors.Add("testAuthor");
+                    builder.Files.Add(CreatePackageFile(@"lib" + Path.DirectorySeparatorChar + "net45" + Path.DirectorySeparatorChar + "_._"));
+
+                    using (var stream = File.OpenWrite(Path.Combine(packageSource, "packagea.1.0.0.nupkg")))
+                    {
+                        builder.Save(stream);
+                    }
+
+                    var run = true;
+
+                    var getInstalledTask = Task.Run(async () =>
+                    {
+                        // Get the list of installed packages
+                        while (run)
+                        {
+                            var projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
+                        }
+                    });
+
+                    // Act
+                    // Install and Uninstall 50 times while polling for installed packages
+                    for (int i = 0; i < 50; i++)
+                    {
+                        // Install
+                        await nuGetPackageManager.InstallPackageAsync(projectA, "packageA",
+                            resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+
+                        // Uninstall
+                        await nuGetPackageManager.UninstallPackageAsync(
+                            projectA,
+                            "packageA",
+                            new UninstallationContext(removeDependencies: false, forceRemove: true),
+                            testNuGetProjectContext,
+                            token);
+                    }
+
+                    // Check for exceptions thrown by the get installed task
+                    run = false;
+                    await getInstalledTask;
+
+                    var installed = (await projectA.GetInstalledPackagesAsync(token)).ToList();
+
+                    // Assert
+                    // Verify no exceptions and that the final package was removed
+                    Assert.Equal(0, installed.Count);
+                }
+            }
+        }
 
         [Fact]
         public async Task TestPacManInstallPackage()
@@ -4527,6 +4611,20 @@ namespace NuGet.Test
             {
                 return obj.GetHashCode();
             }
+        }
+
+        private static Packaging.IPackageFile CreatePackageFile(string name)
+        {
+            var file = new Mock<Packaging.IPackageFile>();
+            file.SetupGet(f => f.Path).Returns(name);
+            file.Setup(f => f.GetStream()).Returns(new MemoryStream());
+
+            string effectivePath;
+            var fx = FrameworkNameUtility.ParseFrameworkNameFromFilePath(name, out effectivePath);
+            file.SetupGet(f => f.EffectivePath).Returns(effectivePath);
+            file.SetupGet(f => f.TargetFramework).Returns(fx);
+
+            return file.Object;
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
@@ -525,10 +526,7 @@ namespace NuGet.Packaging
                     @"packages.config.old." + DateTime.Now.ToString("yyyyMMddHHmmss"));
 
                 // Delete configFileCopyPath if it already exists
-                if (File.Exists(configFileCopyPath))
-                {
-                    File.Delete(configFileCopyPath);
-                }
+                FileUtility.Delete(configFileCopyPath);
 
                 // Rename existing packages.config to packages.config.old.{datetime}
                 if (File.Exists(fullPath))
@@ -542,7 +540,7 @@ namespace NuGet.Packaging
                         File.SetAttributes(fullPath, attributes & ~FileAttributes.ReadOnly);
                     }
 
-                    File.Move(fullPath, configFileCopyPath);
+                    FileUtility.Move(fullPath, configFileCopyPath);
                 }
 
                 try
@@ -562,20 +560,17 @@ namespace NuGet.Packaging
                     }
 
                     // Rename the temporary file to packages.config file
-                    File.Move(configFileNewPath, fullPath);
+                    FileUtility.Move(configFileNewPath, fullPath);
                 }
                 catch
                 {
                     // Roll back to original packages.config file
-                    File.Move(configFileCopyPath, fullPath);
+                    FileUtility.Move(configFileCopyPath, fullPath);
                     throw;
                 }
 
                 // Delete the packages.config.old.{datetime} file
-                if (File.Exists(configFileCopyPath))
-                {
-                    File.Delete(configFileCopyPath);
-                }
+                FileUtility.Delete(configFileCopyPath);
             }
             catch (Exception ex)
             {
