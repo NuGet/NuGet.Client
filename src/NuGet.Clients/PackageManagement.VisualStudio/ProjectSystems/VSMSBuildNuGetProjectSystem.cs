@@ -285,7 +285,7 @@ namespace NuGet.PackageManagement.VisualStudio
             container.AddFromFileCopy(fullPath);
         }
 
-        public void AddFrameworkReference(string name)
+        public void AddFrameworkReference(string name, string packageId)
         {
             ThreadHelper.JoinableTaskFactory.Run(async delegate
             {
@@ -300,7 +300,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
                 catch (Exception e)
                 {
-                    throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Strings.FailedToAddGacReference, name), e);
+                    throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Strings.FailedToAddGacReference, packageId, name), e);
                 }
             });
         }
