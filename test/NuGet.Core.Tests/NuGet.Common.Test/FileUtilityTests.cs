@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using NuGet.Common;
-using Xunit;
-using NuGet.Test.Utility;
+﻿using NuGet.Test.Utility;
 using System.IO;
+using Xunit;
 
 namespace NuGet.Common.Test
 {
@@ -83,8 +78,17 @@ namespace NuGet.Common.Test
                 using (var stream = File.OpenWrite(path))
                 {
                     // Act & Assert
-                    Assert.Throws(typeof(IOException), () =>
-                        FileUtility.Delete(path));
+                    if (RuntimeEnvironmentHelper.IsWindows)
+                    {
+                        Assert.Throws(typeof(IOException), () =>
+                            FileUtility.Delete(path));
+                    }
+                    else
+                    {
+                        // Linux and OSX will delete the file without an error
+                        FileUtility.Delete(path);
+                        Assert.False(File.Exists(path));
+                    }
                 }
             }
         }
