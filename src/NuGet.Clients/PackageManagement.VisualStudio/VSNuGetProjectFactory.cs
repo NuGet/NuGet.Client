@@ -73,10 +73,18 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 // Treat projects with project.json as build integrated projects
                 // Search for projectName.project.json first, then project.json
-                var projectJsonPath = string.IsNullOrEmpty(projectNameFromMSBuildPath) ?
-                    Path.Combine(msbuildProjectFile.DirectoryName, ProjectJsonPathUtilities.ProjectConfigFileName)
-                    : ProjectJsonPathUtilities.GetProjectConfigPath(msbuildProjectFile.DirectoryName,
+                // For website project, since projectNameFromMSBuildPath is empty, only search project.json
+                string projectJsonPath = null;
+                if (string.IsNullOrEmpty(projectNameFromMSBuildPath))
+                {
+                    projectJsonPath = Path.Combine(msbuildProjectFile.DirectoryName, 
+                        ProjectJsonPathUtilities.ProjectConfigFileName);
+                }
+                else
+                {
+                    projectJsonPath = ProjectJsonPathUtilities.GetProjectConfigPath(msbuildProjectFile.DirectoryName,
                     projectNameFromMSBuildPath);
+                }
 
                 if (File.Exists(projectJsonPath))
                 {
