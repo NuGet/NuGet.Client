@@ -792,13 +792,6 @@ namespace NuGet.CommandLine
             {
                 AddProjectReferenceDependencies(dependencies);
             }
-
-            // TO FIX: when we persist the target framework into packages.config file,
-            // we need to pull that info into building the PackageDependencySet object
-            builder.DependencyGroups.Clear();
-
-            // REVIEW: IS NuGetFramework.AnyFramework correct?
-            builder.DependencyGroups.Add(new PackageDependencyGroup(NuGetFramework.AnyFramework, dependencies.Values));
         }
 
         private void AddDependencies(Dictionary<String, Tuple<IPackage, NuGet.PackageDependency>> packagesAndDependencies)

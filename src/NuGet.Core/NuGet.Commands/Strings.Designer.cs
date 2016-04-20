@@ -78,6 +78,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Failed to build using &apos;{0} {1}&apos;..
+        /// </summary>
+        public static string Error_BuildFailed {
+            get {
+                return ResourceManager.GetString("Error_BuildFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Cannot find version of msbuild..
         /// </summary>
         public static string Error_CannotFindMsbuild {
