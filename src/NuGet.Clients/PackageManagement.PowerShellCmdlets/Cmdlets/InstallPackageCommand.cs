@@ -362,7 +362,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             get
             {
-                _context = new ResolutionContext(GetDependencyBehavior(), _allowPrerelease, false, VersionConstraints.None);
+                // ResolutionContext contains a cache, this should only be created once per command
+                if (_context == null)
+                {
+                    _context = new ResolutionContext(GetDependencyBehavior(), _allowPrerelease, false, VersionConstraints.None);
+                }
+
                 return _context;
             }
         }
