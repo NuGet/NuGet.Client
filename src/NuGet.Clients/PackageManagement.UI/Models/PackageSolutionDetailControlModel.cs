@@ -345,6 +345,7 @@ namespace NuGet.PackageManagement.UI
 
             CanInstall = SelectedVersion != null && Projects.Any(
                 project => project.IsSelected &&
+                    SelectedVersion != null &&
                     VersionComparer.Default.Compare(SelectedVersion.Version, project.InstalledVersion) != 0);
         }
 
