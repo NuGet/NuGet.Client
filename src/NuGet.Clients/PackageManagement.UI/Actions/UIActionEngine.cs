@@ -126,6 +126,9 @@ namespace NuGet.PackageManagement.UI
         {
             var resolvedActions = new List<ResolvedAction>();
 
+            // Keep a single gather cache across projects
+            var gatherCache = new GatherCache();
+
             foreach (var project in uiService.Projects)
             {
                 var installedPackages = await project.GetInstalledPackagesAsync(token);
@@ -150,7 +153,9 @@ namespace NuGet.PackageManagement.UI
                         uiService.DependencyBehavior,
                         includePrelease: includePrerelease,
                         includeUnlisted: true,
-                        versionConstraints: VersionConstraints.None);
+                        versionConstraints: VersionConstraints.None,
+                        gatherCache: gatherCache);
+
                     var actions = await _packageManager.PreviewUpdatePackagesAsync(
                         packagesToUpdateInProject,
                         project,
