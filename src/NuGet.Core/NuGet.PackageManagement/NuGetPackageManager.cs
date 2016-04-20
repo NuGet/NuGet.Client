@@ -699,7 +699,15 @@ namespace NuGet.PackageManagement
             {
                 // If any targets are prerelease we should gather with prerelease on and filter afterwards
                 var includePrereleaseInGather = resolutionContext.IncludePrerelease || (projectInstalledPackageReferences.Any(p => (p.PackageIdentity.HasVersion && p.PackageIdentity.Version.IsPrerelease)));
-                var contextForGather = new ResolutionContext(resolutionContext.DependencyBehavior, includePrereleaseInGather, resolutionContext.IncludeUnlisted, VersionConstraints.None);
+
+                // Create a modified resolution cache. This should include the same gather cache for multi-project
+                // operations.
+                var contextForGather = new ResolutionContext(
+                    resolutionContext.DependencyBehavior,
+                    includePrereleaseInGather,
+                    resolutionContext.IncludeUnlisted,
+                    VersionConstraints.None,
+                    resolutionContext.GatherCache);
 
                 // Step-1 : Get metadata resources using gatherer
                 var projectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
