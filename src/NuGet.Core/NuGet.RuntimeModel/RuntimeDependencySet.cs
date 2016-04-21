@@ -45,10 +45,10 @@ namespace NuGet.RuntimeModel
 
         public override int GetHashCode()
         {
-            return new HashCodeCombiner()
-                .AddObject(Id)
-                .AddObject(Dependencies)
-                .CombinedHash;
+            var combiner = new HashCodeCombiner();
+            combiner.AddObject(Id);
+            combiner.AddObject(Dependencies);
+            return combiner.CombinedHash;
         }
 
         public RuntimeDependencySet Clone()

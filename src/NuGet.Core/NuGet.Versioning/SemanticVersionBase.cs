@@ -157,8 +157,7 @@ namespace NuGet.Versioning
 
         private static int Compare(SemanticVersion version1, SemanticVersion version2)
         {
-            IVersionComparer comparer = new VersionComparer();
-            return comparer.Compare(version1, version2);
+            return VersionComparer.Default.Compare(version1, version2);
         }
     }
 }

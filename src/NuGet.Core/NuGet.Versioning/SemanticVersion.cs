@@ -12,7 +12,8 @@ namespace NuGet.Versioning
     /// </summary>
     public partial class SemanticVersion
     {
-        internal readonly IEnumerable<string> _releaseLabels;
+        // store as array to avoid enumerator allocations
+        internal readonly string[] _releaseLabels;
         internal readonly string _metadata;
         internal Version _version;
 
@@ -160,10 +161,15 @@ namespace NuGet.Versioning
         {
             get
             {
-                if (ReleaseLabels != null)
+                if (_releaseLabels != null)
                 {
-                    var enumerator = ReleaseLabels.GetEnumerator();
-                    return (enumerator.MoveNext() && !String.IsNullOrEmpty(enumerator.Current));
+                    for (int i = 0; i < _releaseLabels.Length; i++)
+                    {
+                        if (!string.IsNullOrEmpty(_releaseLabels[i]))
+                        {
+                            return true;
+                        }
+                    }
                 }
 
                 return false;

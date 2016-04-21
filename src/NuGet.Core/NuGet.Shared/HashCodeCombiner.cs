@@ -6,48 +6,44 @@ namespace NuGet.Shared
     /// <summary>
     /// Hash code creator, based on the original NuGet hash code combiner/ASP hash code combiner implementations
     /// </summary>
-    internal sealed class HashCodeCombiner
+    internal struct HashCodeCombiner
     {
         // seed from String.GetHashCode()
         private const long Seed = 0x1505L;
 
+        private bool _initialized;
         private long _combinedHash;
-
-        internal HashCodeCombiner()
-        {
-            _combinedHash = Seed;
-        }
 
         internal int CombinedHash
         {
             get { return _combinedHash.GetHashCode(); }
         }
 
-        internal HashCodeCombiner AddInt32(int i)
+        internal void AddInt32(int i)
         {
+            CheckInitialized();
             _combinedHash = ((_combinedHash << 5) + _combinedHash) ^ i;
-            return this;
         }
 
-        internal HashCodeCombiner AddObject(int i)
+        internal void AddObject(int i)
         {
+            CheckInitialized();
             AddInt32(i);
-            return this;
         }
 
-        internal HashCodeCombiner AddObject(bool b)
+        internal void AddObject(bool b)
         {
+            CheckInitialized();
             AddInt32(b.GetHashCode());
-            return this;
         }
 
-        internal HashCodeCombiner AddObject(object o)
+        internal void AddObject(object o)
         {
+            CheckInitialized();
             if (o != null)
             {
                 AddInt32(o.GetHashCode());
             }
-            return this;
         }
 
         /// <summary>
@@ -63,6 +59,15 @@ namespace NuGet.Shared
             }
 
             return combiner.CombinedHash;
+        }
+
+        private void CheckInitialized()
+        {
+            if (!_initialized)
+            {
+                _combinedHash = Seed;
+                _initialized = true;
+            }
         }
     }
 }
