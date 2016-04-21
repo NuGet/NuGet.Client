@@ -129,9 +129,13 @@ namespace NuGet.Commands
                     // If we have the same library in the lock file already, use that.
                     if (previousLibrary == null || previousLibrary.Sha512 != sha512)
                     {
+                        var path = resolver.GetPackageDirectory(packageInfo.Id, packageInfo.Version);
+                        path = PathUtility.GetPathWithForwardSlashes(path);
+
                         lockFileLib = CreateLockFileLibrary(
                             packageInfo,
                             sha512,
+                            path,
                             correctedPackageName: library.Name);
                     }
                     else if (Path.DirectorySeparatorChar != LockFile.DirectorySeparatorChar)
@@ -347,7 +351,7 @@ namespace NuGet.Commands
             }
         }
 
-        private static LockFileLibrary CreateLockFileLibrary(LocalPackageInfo package, string sha512, string correctedPackageName)
+        private static LockFileLibrary CreateLockFileLibrary(LocalPackageInfo package, string sha512, string path, string correctedPackageName)
         {
             var lockFileLib = new LockFileLibrary();
 
@@ -358,6 +362,12 @@ namespace NuGet.Commands
             lockFileLib.Version = package.Version;
             lockFileLib.Type = LibraryType.Package;
             lockFileLib.Sha512 = sha512;
+
+            // This is the relative path, appended to the global packages folder path. All
+            // of the paths in the in the Files property should be appended to this path along
+            // with the global packages folder path to get the absolute path to each file in the
+            // package.
+            lockFileLib.Path = path;
 
             using (var packageReader = new PackageFolderReader(package.ExpandedPath))
             {

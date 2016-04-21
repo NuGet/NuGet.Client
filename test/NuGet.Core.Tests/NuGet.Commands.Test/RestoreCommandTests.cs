@@ -419,6 +419,60 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
+        public async Task RestoreCommand_PathInPackageLibrary()
+        {
+            // Arrange
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
+                var project1 = new DirectoryInfo(Path.Combine(workingDir, "projects", "project1"));
+                packagesDir.Create();
+                packageSource.Create();
+                project1.Create();
+
+                var sources = new List<PackageSource>();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                var project1Json = @"
+                {
+                  ""frameworks"": {
+                    ""netstandard1.0"": {
+                      ""dependencies"": {
+                        ""packageA"": ""1.0.0""
+                      }
+                    }
+                  }
+                }";
+
+                File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
+
+                var specPath1 = Path.Combine(project1.FullName, "project.json");
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
+                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+
+                var packageAContext = new SimpleTestPackageContext("packageA");
+                packageAContext.AddFile("lib/netstandard1.0/a.dll");
+
+                SimpleTestPackageUtility.CreateFullPackage(packageSource.FullName, packageAContext);
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+                var lockFile = result.LockFile;
+
+                // Assert
+                Assert.True(result.Success);
+                var library = lockFile.Libraries.FirstOrDefault(l => l.Name == "packageA");
+                Assert.NotNull(library);
+                Assert.Equal("packageA/1.0.0", library.Path);
+            }
+        }
+
+        [Fact]
         public async Task RestoreCommand_PackageWithSameName()
         {
             // Arrange
