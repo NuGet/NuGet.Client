@@ -584,12 +584,12 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        internal static MicrosoftBuildEvaluationProject AsMicrosoftBuildEvaluationProject(EnvDTEProject envDTEproject)
+        internal static MicrosoftBuildEvaluationProject AsMicrosoftBuildEvaluationProject(string dteProjectFullName)
         {
             // Need NOT be on the UI thread
 
-            return ProjectCollection.GlobalProjectCollection.GetLoadedProjects(envDTEproject.FullName).FirstOrDefault() ??
-                   ProjectCollection.GlobalProjectCollection.LoadProject(envDTEproject.FullName);
+            return ProjectCollection.GlobalProjectCollection.GetLoadedProjects(dteProjectFullName).FirstOrDefault() ??
+                   ProjectCollection.GlobalProjectCollection.LoadProject(dteProjectFullName);
         }
 
         internal static NuGetFramework GetTargetNuGetFramework(EnvDTEProject envDTEProject)
