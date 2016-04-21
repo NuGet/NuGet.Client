@@ -113,6 +113,8 @@ namespace NuGet.Frameworks
         /// For group #2 and #4, the order is the original order in the incoming list. This should later be made
         /// consistent between different input orderings by using the <see cref="NuGetFrameworkSorter"/>.
         /// </summary>
+        /// <remarks>netcore50 is a special case since netcore451 is not packages based, but netcore50 is.
+        /// This sort will treat all versions of netcore as non-packages based.</remarks>
         int CompareFrameworks(NuGetFramework x, NuGetFramework y);
 
         /// <summary>

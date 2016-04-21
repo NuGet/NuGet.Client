@@ -959,13 +959,17 @@ namespace NuGet.Frameworks
 
         public int CompareFrameworks(NuGetFramework x, NuGetFramework y)
         {
-            if (x.IsPackageBased != y.IsPackageBased)
+            // For the purposes of this compare do not treat netcore50 as packages based
+            var xPackagesBased = x.IsPackageBased && !NuGetFrameworkUtility.IsNetCore50AndUp(x);
+            var yPackagesBased = y.IsPackageBased && !NuGetFrameworkUtility.IsNetCore50AndUp(y);
+
+            if (xPackagesBased != yPackagesBased)
             {
                 // non-package based always come before package based
-                return x.IsPackageBased.CompareTo(y.IsPackageBased);
+                return xPackagesBased.CompareTo(yPackagesBased);
             }
 
-            var precedence = x.IsPackageBased ? _packageBasedFrameworkPrecedence : _nonPackageBasedFrameworkPrecedence;
+            var precedence = xPackagesBased ? _packageBasedFrameworkPrecedence : _nonPackageBasedFrameworkPrecedence;
 
             return CompareUsingPrecedence(x, y, precedence);
         }

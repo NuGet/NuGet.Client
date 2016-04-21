@@ -97,6 +97,17 @@ namespace NuGet.Test
         [InlineData("dotnet5.1", true)]
         [InlineData("dotnet", true)]
         [InlineData("netcoreapp1.0", true)]
+        [InlineData("netcore50", true)]
+        [InlineData("netcore51", true)]
+        [InlineData("netcore61", true)]
+        [InlineData("netcore45", false)]
+        [InlineData("netcore4.9.9", false)]
+        [InlineData("win81", false)]
+        [InlineData("win10", false)] // this framework must use netcore
+        [InlineData("aspnetcore1.0", false)] // deprecated
+        [InlineData("aspnet451", false)]
+        [InlineData("uap10.0", true)]
+        [InlineData("uap11.0", true)]
         public void NuGetFramework_IsPackageBased(string framework, bool isPackageBased)
         {
             var fw = NuGetFramework.Parse(framework);
