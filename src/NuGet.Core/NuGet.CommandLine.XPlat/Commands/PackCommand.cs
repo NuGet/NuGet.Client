@@ -126,7 +126,7 @@ namespace NuGet.CommandLine.XPlat
                             int index = property.IndexOf('=');
                             if (index > 0 && index < property.Length)
                             {
-                                packArgs.Properties.Add(property.Substring(0, index - 1), property.Substring(index));
+                                packArgs.Properties.Add(property.Substring(0, index), property.Substring(index + 1));
                             }
                         }
                     }
