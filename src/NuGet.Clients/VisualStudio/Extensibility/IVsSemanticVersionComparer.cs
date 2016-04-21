@@ -6,16 +6,20 @@ using System.Runtime.InteropServices;
 
 namespace NuGet.VisualStudio
 {
+    /// <summary>
+    /// An interface for comparing two opaque version strings by treating them as NuGet semantic
+    /// versions.
+    /// </summary>
     [ComImport]
     [Guid("1AE338E2-9120-4D1A-A779-012FEBEF77FA")]
     public interface IVsSemanticVersionComparer
     {
         /// <summary>
         /// Compares two version strings as if they were NuGet semantic version
-        /// strings. Returns a number less than zero if <see cref="versionA"/>
-        /// is less than <see cref="versionB"/>. Returns zero if the two versions 
-        /// are equivalent. Returns a number greater than zero if <see cref="versionA"/>
-        /// is greater than <see cref="versionB"/>.
+        /// strings. Returns a number less than zero if <paramref name="versionA"/>
+        /// is less than <paramref name="versionB"/>. Returns zero if the two versions 
+        /// are equivalent. Returns a number greater than zero if <paramref name="versionA"/>
+        /// is greater than <paramref name="versionB"/>.
         /// </summary>
         /// <param name="versionA">The first version string.</param>
         /// <param name="versionB">The second version string.</param>

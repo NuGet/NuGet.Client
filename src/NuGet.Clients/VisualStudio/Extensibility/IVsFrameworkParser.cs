@@ -7,6 +7,10 @@ using System.Runtime.Versioning;
 
 namespace NuGet.VisualStudio
 {
+    /// <summary>
+    /// An interface for dealing with the conversion between strings and <see cref="FrameworkName"/>
+    /// instances.
+    /// </summary>
     [ComImport]
     [Guid("E6335CF1-70FE-416A-BA4B-4E92D90934A1")]
     public interface IVsFrameworkParser

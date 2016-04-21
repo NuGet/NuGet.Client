@@ -12,7 +12,8 @@ using NuGet.VisualStudio.Implementation.Resources;
 namespace NuGet.VisualStudio
 {
     [Export(typeof(IVsFrameworkCompatibility))]
-    public class VsFrameworkCompatibility : IVsFrameworkCompatibility
+    [Export(typeof(IVsFrameworkCompatibility2))]
+    public class VsFrameworkCompatibility : IVsFrameworkCompatibility2
     {
         public IEnumerable<FrameworkName> GetNetStandardFrameworks()
         {
@@ -48,9 +49,19 @@ namespace NuGet.VisualStudio
 
         public FrameworkName GetNearest(FrameworkName targetFramework, IEnumerable<FrameworkName> frameworks)
         {
+            return GetNearest(targetFramework, Enumerable.Empty<FrameworkName>(), frameworks);
+        }
+
+        public FrameworkName GetNearest(FrameworkName targetFramework, IEnumerable<FrameworkName> fallbackTargetFrameworks, IEnumerable<FrameworkName> frameworks)
+        {
             if (targetFramework == null)
             {
                 throw new ArgumentNullException(nameof(targetFramework));
+            }
+
+            if (fallbackTargetFrameworks == null)
+            {
+                throw new ArgumentNullException(nameof(fallbackTargetFrameworks));
             }
 
             if (frameworks == null)
@@ -59,9 +70,19 @@ namespace NuGet.VisualStudio
             }
 
             var nuGetTargetFramework = NuGetFramework.ParseFrameworkName(targetFramework.ToString(), DefaultFrameworkNameProvider.Instance);
+
+            var nuGetFallbackTargetFrameworks = fallbackTargetFrameworks
+                .Select(framework => NuGetFramework.ParseFrameworkName(framework.ToString(), DefaultFrameworkNameProvider.Instance))
+                .ToList();
+
+            if (nuGetFallbackTargetFrameworks.Any())
+            {
+                nuGetTargetFramework = new FallbackFramework(nuGetTargetFramework, nuGetFallbackTargetFrameworks);
+            }
+
             var nuGetFrameworks = frameworks
                 .Select(framework => NuGetFramework.ParseFrameworkName(framework.ToString(), DefaultFrameworkNameProvider.Instance));
-            
+
             var reducer = new FrameworkReducer();
             var nearest = reducer.GetNearest(nuGetTargetFramework, nuGetFrameworks);
 

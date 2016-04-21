@@ -33,8 +33,8 @@ namespace NuGet.VisualStudio
         IEnumerable<FrameworkName> GetFrameworksSupportingNetStandard(FrameworkName frameworkName);
 
         /// <summary>
-        /// Selects the framework from <see cref="frameworks"/> that is nearest
-        /// to the <see cref="targetFramework"/>, according to NuGet's framework
+        /// Selects the framework from <paramref name="frameworks"/> that is nearest
+        /// to the <paramref name="targetFramework"/>, according to NuGet's framework
         /// compatibility rules. <c>null</c> is returned of none of the frameworks
         /// are compatible.
         /// </summary>

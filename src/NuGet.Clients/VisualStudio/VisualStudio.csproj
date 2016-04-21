@@ -102,6 +102,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensibility\IVsCredentialProvider.cs" />
+    <Compile Include="Extensibility\IVsFrameworkCompatibility2.cs" />
     <Compile Include="Extensibility\IVsFrameworkParser.cs" />
     <Compile Include="Extensibility\IVsGlobalPackagesInitScriptExecutor.cs" />
     <Compile Include="Extensibility\IVsFrameworkCompatibility.cs" />
