@@ -32,7 +32,7 @@
   "frameworks": {
     "netcoreapp1.0": {
       "dependencies": {
-        "System.Diagnostics.Process": "4.1.0-rc2-24008",
+        "System.Diagnostics.Process": "4.1.0-rc2-24018",
         "Microsoft.NETCore.App": {
           "type": "platform",
           "version": "1.0.0-rc2-3002339"
