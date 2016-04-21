@@ -17,11 +17,17 @@ namespace NuGet.Versioning
         private const string ZeroN = "{0:N}";
         private readonly VersionFormatter _versionFormatter;
 
+        /// <summary>
+        /// Custom version range format provider.
+        /// </summary>
         public VersionRangeFormatter()
         {
             _versionFormatter = VersionFormatter.Instance;
         }
 
+        /// <summary>
+        /// Format a version range string.
+        /// </summary>
         public string Format(string format, object arg, IFormatProvider formatProvider)
         {
             if (arg == null)
@@ -73,6 +79,9 @@ namespace NuGet.Versioning
             return formatted;
         }
 
+        /// <summary>
+        /// Format type.
+        /// </summary>
         public object GetFormat(Type formatType)
         {
             if (formatType == typeof(ICustomFormatter)
