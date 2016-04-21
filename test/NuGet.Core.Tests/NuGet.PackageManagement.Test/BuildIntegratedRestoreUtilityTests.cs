@@ -1007,9 +1007,12 @@ namespace NuGet.Test
                         solutionFolder.FullName,
                         settings);
 
+                var context = GetExternalProjectReferenceContext();
+                var logger = (TestLogger)context.Logger;
+
                 // Act
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                    GetExternalProjectReferenceContext(),
+                    context,
                     sources,
                     effectiveGlobalPackagesFolder,
                     CancellationToken.None);
@@ -1026,7 +1029,7 @@ namespace NuGet.Test
                     "5.0.0",
                     "EntityFramework.5.0.0.nupkg")));
 
-                Assert.True(result.Success);
+                Assert.True(result.Success, logger.ShowErrors());
             }
         }
 
@@ -1060,7 +1063,7 @@ namespace NuGet.Test
     'EntityFramework': '5.0.0'
   },
   'frameworks': {
-                'netcore50': { }
+                'net46': { }
             }
 }";
 
@@ -1081,7 +1084,9 @@ namespace NuGet.Test
 
         private static ExternalProjectReferenceContext GetExternalProjectReferenceContext()
         {
-            return new ExternalProjectReferenceContext(Common.NullLogger.Instance);
+            var logger = new TestLogger();
+
+            return new ExternalProjectReferenceContext(logger);
         }
 
         private class TestBuildIntegratedNuGetProject : BuildIntegratedNuGetProject

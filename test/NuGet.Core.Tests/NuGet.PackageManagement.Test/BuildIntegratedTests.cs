@@ -856,7 +856,7 @@ namespace NuGet.Test
             var versioning107 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
             var json604 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.4"));
             var json606 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.6"));
-            var ef613 = new PackageIdentity("entityframework", NuGetVersion.Parse("6.1.3"));
+            var am330 = new PackageIdentity("automapper", NuGetVersion.Parse("3.3.0"));
 
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
@@ -905,7 +905,7 @@ namespace NuGet.Test
 
                 await nuGetPackageManager.InstallPackageAsync(
                     buildIntegratedProject,
-                    ef613,
+                    am330,
                     new ResolutionContext(),
                     new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories(),
@@ -949,9 +949,9 @@ namespace NuGet.Test
                     {
                         Assert.True(installed.PackageIdentity.Version > json604.Version);
                     }
-                    else if (installed.PackageIdentity.Id.Equals("entityframework", StringComparison.OrdinalIgnoreCase))
+                    else if (installed.PackageIdentity.Id.Equals("automapper", StringComparison.OrdinalIgnoreCase))
                     {
-                        Assert.True(installed.PackageIdentity.Version == ef613.Version);
+                        Assert.True(installed.PackageIdentity.Version == am330.Version);
                     }
                 }
 

@@ -137,5 +137,17 @@ namespace NuGet.Frameworks
 
             return compatible;
         }
+
+        /// <summary>
+        /// True if the framework is netcore50 or higher. This is where the framework
+        /// becomes packages based.
+        /// </summary>
+        public static bool IsNetCore50AndUp(NuGetFramework framework)
+        {
+            return (framework.Version.Major >= 5
+                    && StringComparer.OrdinalIgnoreCase.Equals(
+                        framework.Framework,
+                        FrameworkConstants.FrameworkIdentifiers.NetCore));
+        }
     }
 }

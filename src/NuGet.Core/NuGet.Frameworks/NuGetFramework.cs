@@ -263,22 +263,21 @@ namespace NuGet.Frameworks
 
         /// <summary>
         /// True if the framework is packages based.
-        /// Ex: dotnet, dnxcore
+        /// Ex: dotnet, dnxcore, netcoreapp, netstandard, uap, netcore50
         /// </summary>
         public bool IsPackageBased
         {
             get
             {
-                return FrameworkConstants.FrameworkIdentifiers.DnxCore
-                    .Equals(Framework, StringComparison.OrdinalIgnoreCase)
-                    || FrameworkConstants.FrameworkIdentifiers.NetPlatform
-                    .Equals(Framework, StringComparison.OrdinalIgnoreCase)
-                    || FrameworkConstants.FrameworkIdentifiers.NetStandard
-                    .Equals(Framework, StringComparison.OrdinalIgnoreCase)
-                    || FrameworkConstants.FrameworkIdentifiers.NetStandardApp
-                    .Equals(Framework, StringComparison.OrdinalIgnoreCase)
-                    || FrameworkConstants.FrameworkIdentifiers.NetCoreApp
-                    .Equals(Framework, StringComparison.OrdinalIgnoreCase);
+                // For these frameworks all versions are packages based.
+                if (_packagesBased.Contains(Framework))
+                {
+                    return true;
+                }
+
+                // NetCore 5.0 and up are packages based.
+                // Everything else is not packages based.
+                return NuGetFrameworkUtility.IsNetCore50AndUp(this);
             }
         }
 
@@ -383,5 +382,20 @@ namespace NuGet.Frameworks
 
             return normalized;
         }
+
+        /// <summary>
+        /// Frameworks that are packages based across all versions.
+        /// </summary>
+        private static readonly SortedSet<string> _packagesBased = new SortedSet<string>(
+            new[]
+            {
+                        FrameworkConstants.FrameworkIdentifiers.DnxCore,
+                        FrameworkConstants.FrameworkIdentifiers.NetPlatform,
+                        FrameworkConstants.FrameworkIdentifiers.NetStandard,
+                        FrameworkConstants.FrameworkIdentifiers.NetStandardApp,
+                        FrameworkConstants.FrameworkIdentifiers.NetCoreApp,
+                        FrameworkConstants.FrameworkIdentifiers.UAP,
+            },
+            StringComparer.OrdinalIgnoreCase);
     }
 }

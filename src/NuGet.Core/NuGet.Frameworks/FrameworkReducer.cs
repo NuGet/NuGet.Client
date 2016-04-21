@@ -125,8 +125,9 @@ namespace NuGet.Frameworks
                     }
                 }
 
-                // Packages based framework reduce
+                // Packages based framework reduce, only if the project is not packages based
                 if (reduced.Count() > 1
+                    && !framework.IsPackageBased
                     && reduced.Any(f => f.IsPackageBased)
                     && reduced.Any(f => !f.IsPackageBased))
                 {
