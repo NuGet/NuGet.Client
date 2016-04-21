@@ -36,6 +36,23 @@ namespace NuGet.Test
         }
 
         [Fact]
+        public void FrameworkNameProvider_OrderNetCore50BeforePackagesBasedFrameworks()
+        {
+            // Arrange
+            var provider = DefaultFrameworkNameProvider.Instance;
+
+            // Act
+            var a = provider.CompareFrameworks(FrameworkConstants.CommonFrameworks.NetCore50, FrameworkConstants.CommonFrameworks.WPA81);
+            var b = provider.CompareFrameworks(FrameworkConstants.CommonFrameworks.NetCore50, FrameworkConstants.CommonFrameworks.NetStandard12);
+            var c = provider.CompareFrameworks(FrameworkConstants.CommonFrameworks.NetCore50, FrameworkConstants.CommonFrameworks.Win81);
+
+            // Assert
+            Assert.True(a < 0);
+            Assert.True(b < 0);
+            Assert.True(c < 0);
+        }
+
+        [Fact]
         public void FrameworkNameProvider_DuplicateFrameworksInPrecedence()
         {
             // Arrange
