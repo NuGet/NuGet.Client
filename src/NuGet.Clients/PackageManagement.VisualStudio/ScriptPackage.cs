@@ -73,7 +73,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     }
                 }
 
-                return result;
+                _files = result;
             }
 
             return _files;
