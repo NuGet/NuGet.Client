@@ -85,7 +85,7 @@ namespace NuGet.Versioning
         {
             if (value == null)
             {
-                throw new ArgumentNullException("value");
+                throw new ArgumentNullException(nameof(value));
             }
 
             versionRange = null;
@@ -155,10 +155,24 @@ namespace NuGet.Versioning
                 {
                     return false;
                 }
-                else if (parts.All(String.IsNullOrEmpty))
+                else
                 {
+                    var allEmpty = true;
+
+                    for (int i = 0; i < parts.Length; i++)
+                    {
+                        if (!string.IsNullOrEmpty(parts[i]))
+                        {
+                            allEmpty = false;
+                            break;
+                        }
+                    }
+
                     // If all parts are empty, then neither of upper or lower bounds were specified. Version spec is of the format (,]
-                    return false;
+                    if (allEmpty)
+                    {
+                        return false;
+                    }
                 }
 
                 // If there is only one piece, we use it for both min and max

@@ -97,6 +97,10 @@ namespace NuGet.Versioning.Test
         [InlineData("1.4.7-")]
         [InlineData("1.4.7-*")]
         [InlineData("1.4.7+*")]
+        [InlineData("1.4.7-AA.01^")]
+        [InlineData("1.4.7-AA.0A^")]
+        [InlineData("1.4.7-A^A")]
+        [InlineData("1.4.7+AA.01^")]
         public void ParseThrowsIfStringIsNotAValidSemVer(string versionString)
         {
             ExceptionAssert.ThrowsArgumentException(() => NuGetVersion.Parse(versionString),

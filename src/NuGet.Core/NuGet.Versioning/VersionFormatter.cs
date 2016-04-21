@@ -7,6 +7,9 @@ using System.Text;
 
 namespace NuGet.Versioning
 {
+    /// <summary>
+    /// Custom formatter for NuGet versions.
+    /// </summary>
     public class VersionFormatter : IFormatProvider, ICustomFormatter
     {
         /// <summary>
@@ -14,6 +17,9 @@ namespace NuGet.Versioning
         /// </summary>
         public static readonly VersionFormatter Instance = new VersionFormatter();
 
+        /// <summary>
+        /// Format a version string.
+        /// </summary>
         public string Format(string format, object arg, IFormatProvider formatProvider)
         {
             if (arg == null)
@@ -65,6 +71,9 @@ namespace NuGet.Versioning
             return formatted;
         }
 
+        /// <summary>
+        /// Get version format type.
+        /// </summary>
         public object GetFormat(Type formatType)
         {
             if (formatType == typeof(ICustomFormatter)

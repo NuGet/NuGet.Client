@@ -28,6 +28,7 @@ namespace NuGet.Versioning
         /// Creates a range that is greater than or equal to the minVersion with the given float behavior.
         /// </summary>
         /// <param name="minVersion">Lower bound of the version range.</param>
+        /// <param name="floatRange">Floating behavior.</param>
         public VersionRange(NuGetVersion minVersion, FloatRange floatRange)
             : this(minVersion, true, null, false, null, floatRange)
         {

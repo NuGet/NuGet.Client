@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace NuGet.Versioning
 {
@@ -51,7 +50,7 @@ namespace NuGet.Versioning
         /// <param name="minor">x.Y.z</param>
         /// <param name="patch">x.y.Z</param>
         public NuGetVersion(int major, int minor, int patch)
-            : this(major, minor, patch, Enumerable.Empty<string>(), null)
+            : this(major, minor, patch, EmptyReleaseLabels, null)
         {
         }
 
@@ -101,7 +100,7 @@ namespace NuGet.Versioning
         /// <param name="patch">w.x.Y.z</param>
         /// <param name="revision">w.x.y.Z</param>
         public NuGetVersion(int major, int minor, int patch, int revision)
-            : this(major, minor, patch, revision, Enumerable.Empty<string>(), null)
+            : this(major, minor, patch, revision, EmptyReleaseLabels, null)
         {
         }
 
@@ -194,7 +193,7 @@ namespace NuGet.Versioning
         /// </summary>
         public bool IsSemVer2
         {
-            get { return this.ReleaseLabels.Count() > 1 || this.HasMetadata; }
+            get { return (_releaseLabels != null && _releaseLabels.Length > 1) || HasMetadata; }
         }
     }
 }

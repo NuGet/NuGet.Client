@@ -29,11 +29,17 @@ namespace NuGet.Versioning
             return ToString("F", VersionFormatter.Instance);
         }
 
+        /// <summary>
+        /// Get the normalized string.
+        /// </summary>
         public override string ToString()
         {
             return ToNormalizedString();
         }
 
+        /// <summary>
+        /// Custom string format.
+        /// </summary>
         public virtual string ToString(string format, IFormatProvider formatProvider)
         {
             string formattedString = null;
@@ -47,6 +53,9 @@ namespace NuGet.Versioning
             return formattedString;
         }
 
+        /// <summary>
+        /// Internal string formatter.
+        /// </summary>
         protected bool TryFormatter(string format, IFormatProvider formatProvider, out string formattedString)
         {
             var formatted = false;
@@ -65,26 +74,41 @@ namespace NuGet.Versioning
             return formatted;
         }
 
+        /// <summary>
+        /// Hash code
+        /// </summary>
         public override int GetHashCode()
         {
             return VersionComparer.Default.GetHashCode(this);
         }
 
+        /// <summary>
+        /// Object compare.
+        /// </summary>
         public virtual int CompareTo(object obj)
         {
             return CompareTo(obj as SemanticVersion);
         }
 
+        /// <summary>
+        /// Compare to another SemanticVersion.
+        /// </summary>
         public virtual int CompareTo(SemanticVersion other)
         {
             return CompareTo(other, VersionComparison.Default);
         }
 
+        /// <summary>
+        /// Equals
+        /// </summary>
         public override bool Equals(object obj)
         {
             return Equals(obj as SemanticVersion);
         }
 
+        /// <summary>
+        /// Equals
+        /// </summary>
         public virtual bool Equals(SemanticVersion other)
         {
             return Equals(other, VersionComparison.Default);

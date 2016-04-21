@@ -16,11 +16,20 @@ namespace NuGet.Versioning
         private readonly NuGetVersionFloatBehavior _floatBehavior;
         private readonly string _releasePrefix;
 
+        /// <summary>
+        /// Create a floating range.
+        /// </summary>
+        /// <param name="floatBehavior">Section to float.</param>
         public FloatRange(NuGetVersionFloatBehavior floatBehavior)
             : this(floatBehavior, null, null)
         {
         }
 
+        /// <summary>
+        /// Create a floating range.
+        /// </summary>
+        /// <param name="floatBehavior">Section to float.</param>
+        /// <param name="minVersion">Min version of the range.</param>
         public FloatRange(NuGetVersionFloatBehavior floatBehavior, NuGetVersion minVersion)
             : this(floatBehavior, minVersion, null)
         {
@@ -29,8 +38,8 @@ namespace NuGet.Versioning
         /// <summary>
         /// FloatRange
         /// </summary>
-        /// <param name="floatBehavior">Section to float</param>
-        /// <param name="minVersion">Min version of the range</param>
+        /// <param name="floatBehavior">Section to float.</param>
+        /// <param name="minVersion">Min version of the range.</param>
         /// <param name="releasePrefix">The original release label. Invalid labels are allowed here.</param>
         public FloatRange(NuGetVersionFloatBehavior floatBehavior, NuGetVersion minVersion, string releasePrefix)
         {
@@ -78,7 +87,7 @@ namespace NuGet.Versioning
         {
             if (version == null)
             {
-                throw new ArgumentNullException("version");
+                throw new ArgumentNullException(nameof(version));
             }
 
             if (_floatBehavior == NuGetVersionFloatBehavior.AbsoluteLatest)
@@ -267,12 +276,18 @@ namespace NuGet.Versioning
             return result;
         }
 
+        /// <summary>
+        /// Equals
+        /// </summary>
         public bool Equals(FloatRange other)
         {
             return FloatBehavior == other.FloatBehavior
                    && VersionComparer.Default.Equals(MinVersion, other.MinVersion);
         }
 
+        /// <summary>
+        /// Hash code
+        /// </summary>
         public override int GetHashCode()
         {
             var combiner = new HashCodeCombiner();

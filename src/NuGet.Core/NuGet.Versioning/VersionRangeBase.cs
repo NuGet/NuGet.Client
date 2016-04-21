@@ -139,7 +139,7 @@ namespace NuGet.Versioning
         {
             if (version == null)
             {
-                throw new ArgumentNullException("version");
+                throw new ArgumentNullException(nameof(version));
             }
 
             // Determine if version is in the given range using the comparer.
@@ -214,7 +214,7 @@ namespace NuGet.Versioning
         {
             if (comparer == null)
             {
-                throw new ArgumentNullException("comparer");
+                throw new ArgumentNullException(nameof(comparer));
             }
 
             return comparer.Equals(this, other);

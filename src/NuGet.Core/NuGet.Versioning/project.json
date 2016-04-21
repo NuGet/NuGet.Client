@@ -13,11 +13,7 @@
   ],
   "compilationOptions": {
     "warningsAsErrors": true,
-    "xmlDoc": true,
-    "nowarn": [
-      "CS1591",
-      "CS1573"
-    ]
+    "xmlDoc": true
   },
   "compile": [
     "../NuGet.Shared/*.cs"
