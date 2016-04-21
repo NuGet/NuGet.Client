@@ -97,16 +97,19 @@ namespace NuGet.Options
 
             if (selectedMachineSource != null)
             {
-                // THIS BLOCK corresponds to MachineWidePackageSourcesListBox
-
-                addButton.Enabled = removeButton.Enabled = MoveUpButton.Enabled = MoveDownButton.Enabled = BrowseButton.Enabled = updateButton.Enabled = false;
+                // This block corresponds to MachineWidePackageSourcesListBox
+                addButton.Enabled = false;
+                removeButton.Enabled = false;
+                MoveUpButton.Enabled = false;
+                MoveDownButton.Enabled = false;
+                BrowseButton.Enabled = false;
+                updateButton.Enabled = false;
 
                 NewPackageName.ReadOnly = NewPackageSource.ReadOnly = true;
             }
             else
             {
-                // THIS BLOCK corresponds to PackageSourcesListBox
-
+                // This block corresponds to PackageSourcesListBox
                 MoveUpButton.Enabled = selectedSource != null && PackageSourcesListBox.SelectedIndex > 0;
                 MoveDownButton.Enabled = selectedSource != null && PackageSourcesListBox.SelectedIndex < PackageSourcesListBox.Items.Count - 1;
 
