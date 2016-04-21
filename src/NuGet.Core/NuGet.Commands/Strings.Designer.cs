@@ -177,7 +177,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Please specify a nuspec, project.json, project file to use.
+        ///    Looks up a localized string similar to Please specify a nuspec, project.json, or project file to use.
         /// </summary>
         public static string InputFileNotSpecified {
             get {

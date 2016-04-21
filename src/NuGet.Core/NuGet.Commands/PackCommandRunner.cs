@@ -60,6 +60,7 @@ namespace NuGet.Commands
         private static readonly IReadOnlyList<string> defaultIncludeFlags = LibraryIncludeFlagUtils.NoContent.ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
         private readonly HashSet<string> _excludes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private static string _dotnetLocation = null;
 
         public IEnumerable<IPackageRule> Rules { get; set; }
 
@@ -146,12 +147,17 @@ namespace NuGet.Commands
             }
 
             string outputDirectory = _packArgs.OutputDirectory ?? Path.Combine(_packArgs.CurrentDirectory, "bin");
-            properties += $" -b {outputDirectory}";
+            properties += $" -b \"{outputDirectory}\"";
+
+            if (_dotnetLocation == null)
+            {
+                GetDotNetLocation();
+            }
 
             var processStartInfo = new ProcessStartInfo
             {
                 UseShellExecute = false,
-                FileName = "dotnet.exe",
+                FileName = _dotnetLocation,
                 Arguments = $"build {properties}",
                 WorkingDirectory = _packArgs.BasePath,
                 RedirectStandardOutput = false,
@@ -171,6 +177,62 @@ namespace NuGet.Commands
                 // If the build fails, report the error
                 throw new Exception(String.Format(CultureInfo.CurrentCulture, Strings.Error_BuildFailed, processStartInfo.FileName, processStartInfo.Arguments));
             }
+        }
+
+        private void GetDotNetLocation()
+        {
+            string path = Environment.GetEnvironmentVariable("PATH");
+            foreach (var dir in path.Split(':', ';'))
+            {
+                string fullPathExe = Path.Combine(dir, "dotnet.exe");
+                if (File.Exists(fullPathExe))
+                {
+                    _dotnetLocation = fullPathExe;
+                    return;
+                }
+
+                string fullPath = Path.Combine(dir, "dotnet");
+                if (File.Exists(fullPath))
+                {
+                    _dotnetLocation = fullPath;
+                    return;
+                }
+            }
+
+            string programFiles = Environment.GetEnvironmentVariable("ProgramW6432");
+            if (!string.IsNullOrEmpty(programFiles))
+            {
+                string fullPath = Path.Combine(programFiles, "dotnet", "dotnet.exe");
+                if (File.Exists(fullPath))
+                {
+                    _dotnetLocation = fullPath;
+                    return;
+                }
+            }
+
+            programFiles = Environment.GetEnvironmentVariable("ProgramFiles(x86)");
+            if (!string.IsNullOrEmpty(programFiles))
+            {
+                string fullPath = Path.Combine(programFiles, "dotnet", "dotnet.exe");
+                if (File.Exists(fullPath))
+                {
+                    _dotnetLocation = fullPath;
+                    return;
+                }
+            }
+
+            string localBin = "/usr/local/bin";
+            if (!string.IsNullOrEmpty(localBin))
+            {
+                string fullPath = Path.Combine(localBin, "dotnet");
+                if (File.Exists(fullPath))
+                {
+                    _dotnetLocation = fullPath;
+                    return;
+                }
+            }
+
+            _dotnetLocation = "dotnet";
         }
 
         private void AddOutputFiles(PackageBuilder builder)
@@ -219,7 +281,11 @@ namespace NuGet.Commands
 
             string targetFileName = Path.GetFileNameWithoutExtension(targetPath);
 
-            // By default we add all files in the project's output directory
+            if (!Directory.Exists(projectOutputDirectory))
+            {
+                throw new Exception("No build found in " + projectOutputDirectory + ". Use the -Build option or build the project.");
+            }
+
             foreach (var file in GetFiles(projectOutputDirectory, targetFileName, allowedOutputExtensions))
             {
                 string targetFolder = Path.GetDirectoryName(file).Replace(projectOutputDirectory + Path.DirectorySeparatorChar, "");

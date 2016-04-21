@@ -31,6 +31,7 @@ namespace NuGet.CommandLine
 
         private Logging.ILogger _logger;
         private Configuration.ISettings _settings;
+        private bool _usingJsonFile = false;
 
         // Files we want to always exclude from the resulting package
         private static readonly HashSet<string> _excludeFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
@@ -241,6 +242,10 @@ namespace NuGet.CommandLine
             {
                 // If the package contains a nuspec file then use it for metadata
                 manifest = ProcessNuspec(builder, basePath);
+            }
+            else
+            {
+                _usingJsonFile = true;
             }
 
             // Remove the extra author
@@ -791,6 +796,16 @@ namespace NuGet.CommandLine
             if (IncludeReferencedProjects)
             {
                 AddProjectReferenceDependencies(dependencies);
+            }
+
+            if (!_usingJsonFile)
+            {
+                // TO FIX: when we persist the target framework into packages.config file,
+                // we need to pull that info into building the PackageDependencySet object
+                builder.DependencyGroups.Clear();
+
+                // REVIEW: IS NuGetFramework.AnyFramework correct?
+                builder.DependencyGroups.Add(new PackageDependencyGroup(NuGetFramework.AnyFramework, dependencies.Values));
             }
         }
 
