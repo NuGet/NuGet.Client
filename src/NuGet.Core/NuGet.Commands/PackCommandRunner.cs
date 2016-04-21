@@ -146,8 +146,11 @@ namespace NuGet.Commands
                 }
             }
 
-            string outputDirectory = _packArgs.OutputDirectory ?? Path.Combine(_packArgs.CurrentDirectory, "bin");
-            properties += $" -b \"{outputDirectory}\"";
+            if (!string.IsNullOrEmpty(_packArgs.OutputDirectory))
+            {
+                string outputDirectory = _packArgs.OutputDirectory;
+                properties += $" -b \"{outputDirectory}\"";
+            }
 
             if (_dotnetLocation == null)
             {
