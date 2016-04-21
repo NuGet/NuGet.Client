@@ -62,7 +62,7 @@ namespace NuGet.Packaging
             return Enumerable.Empty<string>();
         }
 
-        internal static IEnumerable<string> GetPackageFiles(string root, string filter)
+        private static IEnumerable<string> GetPackageFiles(string root, string filter)
         {
             filter = filter ?? "*" + PackagingCoreConstants.NupkgExtension;
             Debug.Assert(
@@ -117,7 +117,7 @@ namespace NuGet.Packaging
                 throw new ArgumentNullException("packagePathResolver");
             }
 
-            var packageId = packageIdentity.Id;
+            var packageId = packageIdentity.Id.ToLowerInvariant();
             var version = packageIdentity.Version;
 
             var root = packagePathResolver.Root;

@@ -22,9 +22,8 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
     public class LocalV3FindPackageByIdResource : FindPackageByIdResource
     {
         // Use cache insensitive compare for windows
-        private readonly ConcurrentDictionary<string, List<PackageInfo>> _cache 
-            = new ConcurrentDictionary<string, List<PackageInfo>>(
-                RuntimeEnvironmentHelper.IsWindows ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        private readonly ConcurrentDictionary<string, List<NuGetVersion>> _cache
+            = new ConcurrentDictionary<string, List<NuGetVersion>>();
 
         private readonly string _source;
         private readonly VersionFolderPathResolver _resolver;
@@ -42,17 +41,16 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
 
         public override Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, CancellationToken token)
         {
-            var versions = GetPackageInfos(id).Select(v => v.NuGetVersion);
-            return Task.FromResult(versions);
+            return Task.FromResult(GetVersions(id).AsEnumerable());
         }
 
         public override Task<Stream> GetNupkgStreamAsync(string id, NuGetVersion version, CancellationToken token)
         {
-            var info = GetPackageInfo(id, version);
+            var matchedVersion = GetVersion(id, version);
             Stream result = null;
-            if (info != null)
+            if (matchedVersion != null)
             {
-                var packagePath = Path.Combine(info.Path, $"{id}.{version.ToNormalizedString()}.nupkg");
+                var packagePath = _resolver.GetPackageFilePath(id, matchedVersion);
                 result = File.OpenRead(packagePath);
             }
 
@@ -61,11 +59,11 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
 
         public override Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(string id, NuGetVersion version, CancellationToken token)
         {
-            var info = GetPackageInfo(id, version);
+            var matchedVersion = GetVersion(id, version);
             FindPackageByIdDependencyInfo dependencyInfo = null;
-            if (info != null)
+            if (matchedVersion != null)
             {
-                var nuspecPath = Path.Combine(info.Path, $"{id}.nuspec");
+                var nuspecPath = _resolver.GetManifestFilePath(id, matchedVersion);
                 using (var stream = File.OpenRead(nuspecPath))
                 {
                     NuspecReader nuspecReader;
@@ -94,20 +92,20 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
             return Task.FromResult(dependencyInfo);
         }
 
-        private PackageInfo GetPackageInfo(string id, NuGetVersion version)
+        private NuGetVersion GetVersion(string id, NuGetVersion version)
         {
-            return GetPackageInfos(id).FirstOrDefault(package => package.NuGetVersion == version);
+            return GetVersions(id).FirstOrDefault(v => v == version);
         }
 
-        private List<PackageInfo> GetPackageInfos(string id)
+        private List<NuGetVersion> GetVersions(string id)
         {
-            return _cache.GetOrAdd(id, (keyId) => GetPackageInfosCore(keyId));
+            return _cache.GetOrAdd(id, keyId => GetVersionsCore(keyId));
         }
 
-        private List<PackageInfo> GetPackageInfosCore(string id)
+        private List<NuGetVersion> GetVersionsCore(string id)
         {
-            var packages = new List<PackageInfo>();
-            var idDir = new DirectoryInfo(Path.Combine(_source, id));
+            var versions = new List<NuGetVersion>();
+            var idDir = new DirectoryInfo(_resolver.GetVersionListPath(id));
 
             if (!Directory.Exists(_source))
             {
@@ -144,22 +142,11 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
                         continue;
                     }
 
-                    packages.Add(new PackageInfo
-                    {
-                        Path = versionDir.FullName,
-                        NuGetVersion = version
-                    });
+                    versions.Add(version);
                 }
             }
 
-            return packages;
-        }
-
-        private class PackageInfo
-        {
-            public string Path { get; set; }
-
-            public NuGetVersion NuGetVersion { get; set; }
+            return versions;
         }
     }
 }

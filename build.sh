@@ -40,6 +40,7 @@ then
 fi
 
 # restore packages
+echo "$DOTNET restore src/NuGet.Core test/NuGet.Core.Tests --verbosity minimal"
 $DOTNET restore src/NuGet.Core test/NuGet.Core.Tests --verbosity minimal
 if [ $? -ne 0 ]; then
 	echo "Restore failed!!"
@@ -54,7 +55,7 @@ do
 	if grep -q "netcoreapp1.0" "$testProject"; then
 		pushd $testDir
 
-		echo "$DOTNET $testDir --configuration release --framework netcoreapp1.0"
+		echo "$DOTNET test $testDir --configuration release --framework netcoreapp1.0"
 		$DOTNET test $testDir --configuration release --framework netcoreapp1.0
 
 		if [ $? -ne 0 ]; then

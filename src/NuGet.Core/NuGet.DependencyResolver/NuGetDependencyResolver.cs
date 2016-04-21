@@ -23,7 +23,7 @@ namespace NuGet.DependencyResolver
 
         public NuGetDependencyResolver(string packagesPath)
         {
-            _repository = new NuGetv3LocalRepository(packagesPath, checkPackageIdCase: false);
+            _repository = new NuGetv3LocalRepository(packagesPath);
         }
 
         public bool SupportsType(LibraryDependencyTarget libraryType)

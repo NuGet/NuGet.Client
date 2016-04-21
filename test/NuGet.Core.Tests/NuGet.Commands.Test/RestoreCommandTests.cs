@@ -468,7 +468,7 @@ namespace NuGet.Commands.Test
                 Assert.True(result.Success);
                 var library = lockFile.Libraries.FirstOrDefault(l => l.Name == "packageA");
                 Assert.NotNull(library);
-                Assert.Equal("packageA/1.0.0", library.Path);
+                Assert.Equal("packagea/1.0.0", library.Path);
             }
         }
 
