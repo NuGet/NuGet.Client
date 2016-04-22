@@ -675,7 +675,7 @@ namespace NuGet.CommandLine
                     projectFactory.ProcessNuspec(builder, null);
                 }
 
-                VersionRange versionRange = VersionRange.Parse(builder.Version.ToString());
+                VersionRange versionRange = null;
                 if (dependencies.ContainsKey(builder.Id))
                 {
                     VersionRange nuspecVersion = dependencies[builder.Id].VersionRange;
@@ -683,6 +683,11 @@ namespace NuGet.CommandLine
                     {
                         versionRange = nuspecVersion;
                     }
+                }
+
+                if (versionRange == null)
+                {
+                    versionRange = VersionRange.Parse(builder.Version.ToString());
                 }
 
                 return new PackageDependency(
