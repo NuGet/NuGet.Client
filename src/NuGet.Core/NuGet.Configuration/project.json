@@ -30,7 +30,6 @@
   "frameworks": {
     "net45": {
       "frameworkAssemblies": {
-        "System.Globalization": "",
         "System.Security": "",
         "System.Xml": "",
         "System.Xml.Linq": ""
