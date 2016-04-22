@@ -435,7 +435,13 @@ namespace NuGet.Commands
                         }
                     }
 
-                    packageDependencies.Add(new PackageDependency(dependency.Name, dependency.LibraryRange.VersionRange, includes, excludes));
+                    VersionRange version = dependency.LibraryRange.VersionRange;
+                    if (!version.HasLowerBound && !version.HasUpperBound)
+                    {
+                        version = new VersionRange(builder.Version);
+                    }
+
+                    packageDependencies.Add(new PackageDependency(dependency.Name, version, includes, excludes));
                 }
             }
 

@@ -249,13 +249,23 @@ namespace NuGet.CommandLine.Test
                 string id = Path.GetFileName(workingDirectory);
 
                 Util.CreateFile(
-                    Path.Combine(workingDirectory, "bin/Debug/uap10.0"),
-                    id + ".dll",
+                    Path.Combine(workingDirectory, "ref/uap10.0"),
+                    "a.dll",
                     string.Empty);
 
                 Util.CreateFile(
-                    Path.Combine(workingDirectory, "bin/Debug/native"),
-                    id + ".dll",
+                    Path.Combine(workingDirectory, "native"),
+                    "a.dll",
+                    string.Empty);
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "runtimes/win-x86/lib/uap10.0"),
+                    "a.dll",
+                    string.Empty);
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "lib/uap10.0"),
+                    "a.dll",
                     string.Empty);
 
                 Util.CreateFile(
@@ -292,8 +302,10 @@ namespace NuGet.CommandLine.Test
                     files,
                     new string[]
                     {
-                            @"lib\native\" + id + ".dll",
-                            @"lib\uap10.0\" + id + ".dll",
+                            @"lib\uap10.0\a.dll",
+                            @"native\a.dll",
+                            @"ref\uap10.0\a.dll",
+                            @"runtimes\win-x86\lib\uap10.0\a.dll",
                     });
 
                 Assert.False(r.Item2.Contains("Assembly outside lib folder"));
@@ -309,24 +321,16 @@ namespace NuGet.CommandLine.Test
             {
                 // Arrange
 
+                string id = Path.GetFileName(workingDirectory);
+
                 Util.CreateFile(
-                    Path.Combine(workingDirectory, "ref/uap10.0"),
-                    "a.dll",
+                    Path.Combine(workingDirectory, "bin/Debug/uap10.0"),
+                    id + ".dll",
                     string.Empty);
 
                 Util.CreateFile(
-                    Path.Combine(workingDirectory, "native"),
-                    "a.dll",
-                    string.Empty);
-
-                Util.CreateFile(
-                    Path.Combine(workingDirectory, "runtimes/win-x86/lib/uap10.0"),
-                    "a.dll",
-                    string.Empty);
-
-                Util.CreateFile(
-                    Path.Combine(workingDirectory, "lib/uap10.0"),
-                    "a.dll",
+                    Path.Combine(workingDirectory, "bin/Debug/native"),
+                    id + ".dll",
                     string.Empty);
 
                 Util.CreateFile(
@@ -366,10 +370,8 @@ namespace NuGet.CommandLine.Test
                     files,
                     new string[]
                     {
-                            @"lib\uap10.0\a.dll",
-                            @"native\a.dll",
-                            @"ref\uap10.0\a.dll",
-                            @"runtimes\win-x86\lib\uap10.0\a.dll",
+                            @"lib\native\" + id + ".dll",
+                            @"lib\uap10.0\" + id + ".dll",
                     });
 
                 Assert.False(r.Item2.Contains("Assembly outside lib folder"));
@@ -384,12 +386,10 @@ namespace NuGet.CommandLine.Test
             using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                string id = Path.GetFileName(workingDirectory);
-
                 Util.CreateFile(
-                    Path.Combine(workingDirectory, "bin/Debug/native"),
-                    id + ".dll",
-                    string.Empty);
+                    Path.Combine(workingDirectory, "analyzers/cs/code"),
+                    "a.dll",
+                    "");
 
                 Util.CreateFile(
                     workingDirectory,
@@ -422,11 +422,11 @@ namespace NuGet.CommandLine.Test
                 Array.Sort(files);
 
                 Assert.Equal(
-                    files,
                     new string[]
                     {
-                        @"lib\native\" + id + ".dll",
-                    });
+                        @"analyzers\cs\code\a.dll",
+                    },
+                    files);
 
                 Assert.False(r.Item2.Contains("Assembly outside lib folder"));
             }
@@ -440,10 +440,12 @@ namespace NuGet.CommandLine.Test
             using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
+                string id = Path.GetFileName(workingDirectory);
+
                 Util.CreateFile(
-                    Path.Combine(workingDirectory, "analyzers/cs/code"),
-                    "a.dll",
-                    "");
+                    Path.Combine(workingDirectory, "bin/Debug/native"),
+                    id + ".dll",
+                    string.Empty);
 
                 Util.CreateFile(
                     workingDirectory,
@@ -476,7 +478,7 @@ namespace NuGet.CommandLine.Test
                     files,
                     new string[]
                     {
-                            @"analyzers\cs\code\a.dll",
+                            @"lib\native\" + id + ".dll",
                     });
 
                 Assert.False(r.Item2.Contains("Assembly outside lib folder"));
