@@ -199,7 +199,7 @@ namespace NuGet.Common
         public static string GetDotNetLocation()
         {
             string path = Environment.GetEnvironmentVariable("PATH");
-            bool isWindows = (Path.DirectorySeparatorChar == '\\');
+            bool isWindows = RuntimeEnvironmentHelper.IsWindows;
             char splitChar = isWindows ? ';' : ':';
             string executable = isWindows ? DotNetExe : DotNet;
 
