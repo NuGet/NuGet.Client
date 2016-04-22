@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -75,60 +76,67 @@ namespace NuGet.ProjectManagement
             {
                 throw new ArgumentException(Strings.PackageStreamShouldBeSeekable);
             }
+            var packageFile = PackagePathResolver.GetPackageFileName(packageIdentity);
 
-            // 1. Check if the Package already exists at root, if so, return false
-            if (PackageExists(packageIdentity))
-            {
-                nuGetProjectContext.Log(MessageLevel.Info, Strings.PackageAlreadyExistsInFolder, packageIdentity, Root);
-                return Task.FromResult(false);
-            }
-
-            nuGetProjectContext.Log(MessageLevel.Info, Strings.AddingPackageToFolder, packageIdentity, Path.GetFullPath(Root));
-            // 2. Call PackageExtractor to extract the package into the root directory of this FileSystemNuGetProject
-            downloadResourceResult.PackageStream.Seek(0, SeekOrigin.Begin);
-            var addedPackageFilesList = new List<string>();
-
-            PackageExtractionContext packageExtractionContext = nuGetProjectContext.PackageExtractionContext;
-            if (packageExtractionContext == null)
-            {
-                packageExtractionContext = new PackageExtractionContext(new LoggerAdapter(nuGetProjectContext));
-            }
-
-            if (downloadResourceResult.PackageReader != null)
-            {
-                addedPackageFilesList.AddRange(
-                    PackageExtractor.ExtractPackage(
-                        downloadResourceResult.PackageReader,
-                        downloadResourceResult.PackageStream,
-                        PackagePathResolver,
-                        packageExtractionContext,
-                        token));
-            }
-            else
-            {
-                addedPackageFilesList.AddRange(
-                    PackageExtractor.ExtractPackage(
-                        downloadResourceResult.PackageStream,
-                        PackagePathResolver,
-                        packageExtractionContext,
-                        token));
-            }
-
-            var packageSaveMode = GetPackageSaveMode(nuGetProjectContext);
-            if (packageSaveMode.HasFlag(PackageSaveMode.Nupkg))
-            {
-                var packageFilePath = GetInstalledPackageFilePath(packageIdentity);
-                if (File.Exists(packageFilePath))
+            return ConcurrencyUtilities.ExecuteWithFileLockedAsync(Path.Combine(Root, packageFile),
+                action: cancellationToken =>
                 {
-                    addedPackageFilesList.Add(packageFilePath);
-                }
-            }
+                    // 1. Check if the Package already exists at root, if so, return false
+                    if (PackageExists(packageIdentity))
+                    {
+                        nuGetProjectContext.Log(MessageLevel.Info, Strings.PackageAlreadyExistsInFolder, packageIdentity, Root);
+                        return Task.FromResult(false);
+                    }
 
-            // Pend all the package files including the nupkg file
-            FileSystemUtility.PendAddFiles(addedPackageFilesList, Root, nuGetProjectContext);
+                    nuGetProjectContext.Log(MessageLevel.Info, Strings.AddingPackageToFolder, packageIdentity, Path.GetFullPath(Root));
+                    // 2. Call PackageExtractor to extract the package into the root directory of this FileSystemNuGetProject
+                    downloadResourceResult.PackageStream.Seek(0, SeekOrigin.Begin);
+                    var addedPackageFilesList = new List<string>();
 
-            nuGetProjectContext.Log(MessageLevel.Info, Strings.AddedPackageToFolder, packageIdentity, Path.GetFullPath(Root));
-            return Task.FromResult(true);
+                    PackageExtractionContext packageExtractionContext = nuGetProjectContext.PackageExtractionContext;
+                    if (packageExtractionContext == null)
+                    {
+                        packageExtractionContext = new PackageExtractionContext(new LoggerAdapter(nuGetProjectContext));
+                    }
+
+                    if (downloadResourceResult.PackageReader != null)
+                    {
+                        addedPackageFilesList.AddRange(
+                            PackageExtractor.ExtractPackage(
+                                downloadResourceResult.PackageReader,
+                                downloadResourceResult.PackageStream,
+                                PackagePathResolver,
+                                packageExtractionContext,
+                                token));
+                    }
+                    else
+                    {
+                        addedPackageFilesList.AddRange(
+                            PackageExtractor.ExtractPackage(
+                                downloadResourceResult.PackageStream,
+                                PackagePathResolver,
+                                packageExtractionContext,
+                                token));
+                    }
+
+
+                    var packageSaveMode = GetPackageSaveMode(nuGetProjectContext);
+                    if (packageSaveMode.HasFlag(PackageSaveMode.Nupkg))
+                    {
+                        var packageFilePath = GetInstalledPackageFilePath(packageIdentity);
+                        if (File.Exists(packageFilePath))
+                        {
+                            addedPackageFilesList.Add(packageFilePath);
+                        }
+                    }
+
+                    // Pend all the package files including the nupkg file
+                    FileSystemUtility.PendAddFiles(addedPackageFilesList, Root, nuGetProjectContext);
+
+                    nuGetProjectContext.Log(MessageLevel.Info, Strings.AddedPackageToFolder, packageIdentity, Path.GetFullPath(Root));
+                    return Task.FromResult(true);
+                },
+                token: token);
         }
 
         public override Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
