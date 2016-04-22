@@ -37,7 +37,6 @@
   "frameworks": {
     "net45": {
       "frameworkAssemblies": {
-        "System.Collections.Concurrent": "",
         "System.Runtime.Serialization": "",
         "WindowsBase": ""
       },
