@@ -392,6 +392,9 @@
     <value>One or more projects are incompatible with {0}.</value>
   </data>
   <data name="InputFileNotSpecified" xml:space="preserve">
-    <value>Please specify a nuspec, project.json, project file to use</value>
+    <value>Please specify a nuspec, project.json, or project file to use</value>
+  </data>
+  <data name="Error_BuildFailed" xml:space="preserve">
+    <value>Failed to build using '{0} {1}'.</value>
   </data>
 </root>

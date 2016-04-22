@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -23,7 +24,7 @@ namespace NuGet.Commands
         private PackArgs _packArgs;
         internal static readonly string SymbolsExtension = ".symbols" + NuGetConstants.PackageExtension;
         private CreateProjectFactory _createProjectFactory;
-
+        private const string Configuration = "configuration";
 
         private static readonly HashSet<string> _allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
             NuGetConstants.ManifestExtension,
@@ -96,6 +97,14 @@ namespace NuGet.Commands
         {
             PackageBuilder packageBuilder = CreatePackageBuilderFromProjectJson(path, _packArgs.GetPropertyValue);
 
+            if (_packArgs.Build)
+            {
+                BuildProjectWithDotNet();
+            }
+
+            // Add output files
+            AddOutputFiles(packageBuilder);
+
             if (_packArgs.Symbols)
             {
                 // remove source related files when building the lib package
@@ -122,6 +131,130 @@ namespace NuGet.Commands
             return package;
         }
 
+        private void BuildProjectWithDotNet()
+        {
+            string properties = string.Empty;
+            if (_packArgs.Properties.Any())
+            {
+                foreach (var property in _packArgs.Properties)
+                {
+                    if (property.Key.Equals(Configuration, StringComparison.OrdinalIgnoreCase))
+                    {
+                        properties = $"-c {property.Value}";
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(_packArgs.OutputDirectory))
+            {
+                string outputDirectory = _packArgs.OutputDirectory;
+                properties += $" -b \"{outputDirectory}\"";
+            }
+
+            string dotnetLocation = NuGetEnvironment.GetDotNetLocation();
+
+            var processStartInfo = new ProcessStartInfo
+            {
+                UseShellExecute = false,
+                FileName = dotnetLocation,
+                Arguments = $"build {properties}",
+                WorkingDirectory = _packArgs.BasePath,
+                RedirectStandardOutput = false,
+                RedirectStandardError = false
+            };
+
+            int result;
+            using (var process = Process.Start(processStartInfo))
+            {
+                process.WaitForExit();
+
+                result = process.ExitCode;
+            }
+
+            if (0 != result)
+            {
+                // If the build fails, report the error
+                throw new Exception(String.Format(CultureInfo.CurrentCulture, Strings.Error_BuildFailed, processStartInfo.FileName, processStartInfo.Arguments));
+            }
+        }
+
+        private void AddOutputFiles(PackageBuilder builder)
+        {
+            // Get the target file path
+            string outputDirectory;
+            if (_packArgs.OutputDirectory != null)
+            {
+                outputDirectory = Path.Combine(_packArgs.OutputDirectory, builder.Id, "bin");
+            }
+            else
+            {
+                outputDirectory = _packArgs.OutputDirectory ?? Path.Combine(_packArgs.CurrentDirectory, "bin");
+            }
+
+            // Default to Debug unless the configuration was passed in as a property
+            string configuration = "Debug";
+            foreach (var property in _packArgs.Properties)
+            {
+                if (String.Equals(Configuration, property.Key, StringComparison.OrdinalIgnoreCase))
+                {
+                    configuration = property.Value;
+                }
+            }
+
+            string targetPath = Path.Combine(outputDirectory, configuration, builder.Id + ".dll");
+            NuGetFramework targetFramework = NuGetFramework.AnyFramework;
+
+            // List of extensions to allow in the output path
+            var allowedOutputExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
+                ".dll",
+                ".exe",
+                ".xml",
+                ".winmd",
+                ".runtimeconfig.json",
+
+            };
+
+            if (_packArgs.Symbols)
+            {
+                // Include pdbs for symbol packages
+                allowedOutputExtensions.Add(".pdb");
+            }
+
+            string projectOutputDirectory = Path.GetDirectoryName(targetPath);
+
+            string targetFileName = Path.GetFileNameWithoutExtension(targetPath);
+
+            if (!Directory.Exists(projectOutputDirectory))
+            {
+                throw new Exception("No build found in " + projectOutputDirectory + ". Use the -Build option or build the project.");
+            }
+
+            foreach (var file in GetFiles(projectOutputDirectory, targetFileName, allowedOutputExtensions))
+            {
+                string targetFolder = Path.GetDirectoryName(file).Replace(projectOutputDirectory + Path.DirectorySeparatorChar, "");
+
+                var packageFile = new PhysicalPackageFile
+                {
+                    SourcePath = file,
+                    TargetPath = Path.Combine("lib", targetFolder, Path.GetFileName(file))
+                };
+                AddFileToBuilder(builder, packageFile);
+            }
+        }
+
+        private void AddFileToBuilder(PackageBuilder builder, PhysicalPackageFile packageFile)
+        {
+            if (!builder.Files.Any(p => packageFile.Path.Equals(p.Path, StringComparison.OrdinalIgnoreCase)))
+            {
+                builder.Files.Add(packageFile);
+            }
+        }
+
+        private static IEnumerable<string> GetFiles(string path, string fileNameWithoutExtension, HashSet<string> allowedExtensions)
+        {
+            return allowedExtensions.Select(extension => Directory.GetFiles(path, fileNameWithoutExtension + extension, SearchOption.AllDirectories)).SelectMany(a => a);
+        }
+
         private PackageBuilder CreatePackageBuilderFromProjectJson(string path, Func<string, string> propertyProvider)
         {
             // Set the version property if the flag is set
@@ -135,11 +268,6 @@ namespace NuGet.Commands
             using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read))
             {
                 LoadProjectJsonFile(builder, path, _packArgs.BasePath, Path.GetFileName(Path.GetDirectoryName(path)), stream, propertyProvider);
-            }
-
-            if (!builder.Files.Any())
-            {
-                builder.AddFiles(_packArgs.BasePath, @"**/*", null);
             }
 
             return builder;
@@ -254,7 +382,7 @@ namespace NuGet.Commands
         private static void AddDependencyGroups(IList<LibraryDependency> dependencies, NuGetFramework framework, PackageBuilder builder)
         {
             List<PackageDependency> packageDependencies = new List<PackageDependency>();
-            bool addedFrameworkReference = false;
+
             foreach (var dependency in dependencies)
             {
                 LibraryIncludeFlags effectiveInclude = dependency.IncludeType & ~dependency.SuppressParent;
@@ -282,7 +410,6 @@ namespace NuGet.Commands
                             builder.FrameworkReferences.Insert(index, newReference);
                         }
                     }
-                    addedFrameworkReference = true;
                 }
                 else
                 {
@@ -308,10 +435,7 @@ namespace NuGet.Commands
                 }
             }
 
-            if (addedFrameworkReference || packageDependencies.Any())
-            {
-                builder.DependencyGroups.Add(new PackageDependencyGroup(framework, packageDependencies));
-            }
+            builder.DependencyGroups.Add(new PackageDependencyGroup(framework, packageDependencies));
         }
 
         private PackageArchiveReader BuildFromNuspec(string path)
