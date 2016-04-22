@@ -227,7 +227,7 @@ namespace NuGet.CommandLine
                 IConsole console = Logger as IConsole;
                 if (console != null && console.Verbosity == Verbosity.Detailed)
                 {
-                    Logger.LogVerbose(ex.ToString());
+                    Logger.LogError(ex.ToString());
                 }
                 else
                 {

@@ -132,7 +132,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Failed to build package.  The error message was &apos;{0}&apos;..
+        ///    Looks up a localized string similar to Failed to build package. {0}.
         /// </summary>
         public static string Error_PackFailed {
             get {
