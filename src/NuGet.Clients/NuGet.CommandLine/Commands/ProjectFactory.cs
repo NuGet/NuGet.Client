@@ -31,7 +31,7 @@ namespace NuGet.CommandLine
 
         private Logging.ILogger _logger;
         private Configuration.ISettings _settings;
-        private bool _usingJsonFile = false;
+        private bool _usingJsonFile;
 
         // Files we want to always exclude from the resulting package
         private static readonly HashSet<string> _excludeFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {

@@ -60,7 +60,6 @@ namespace NuGet.Commands
         private static readonly IReadOnlyList<string> defaultIncludeFlags = LibraryIncludeFlagUtils.NoContent.ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
         private readonly HashSet<string> _excludes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        private static string _dotnetLocation = null;
 
         public IEnumerable<IPackageRule> Rules { get; set; }
 
@@ -152,15 +151,12 @@ namespace NuGet.Commands
                 properties += $" -b \"{outputDirectory}\"";
             }
 
-            if (_dotnetLocation == null)
-            {
-                _dotnetLocation = NuGetEnvironment.GetDotNetLocation();
-            }
+            string dotnetLocation = NuGetEnvironment.GetDotNetLocation();
 
             var processStartInfo = new ProcessStartInfo
             {
                 UseShellExecute = false,
-                FileName = _dotnetLocation,
+                FileName = dotnetLocation,
                 Arguments = $"build {properties}",
                 WorkingDirectory = _packArgs.BasePath,
                 RedirectStandardOutput = false,

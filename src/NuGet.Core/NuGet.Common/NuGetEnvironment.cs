@@ -199,48 +199,51 @@ namespace NuGet.Common
         public static string GetDotNetLocation()
         {
             string path = Environment.GetEnvironmentVariable("PATH");
-            foreach (var dir in path.Split(':', ';'))
-            {
-                string fullPathExe = Path.Combine(dir, DotNetExe);
-                if (File.Exists(fullPathExe))
-                {
-                    return fullPathExe;
-                }
+            bool isWindows = (Path.DirectorySeparatorChar == '\\');
+            char splitChar = isWindows ? ';' : ':';
+            string executable = isWindows ? DotNetExe : DotNet;
 
-                string fullPath = Path.Combine(dir, DotNet);
+            foreach (var dir in path.Split(splitChar))
+            {
+                string fullPath = Path.Combine(dir, executable);
                 if (File.Exists(fullPath))
                 {
                     return fullPath;
                 }
             }
 
-            string programFiles = GetFolderPath(SpecialFolder.ProgramFiles);
-            if (!string.IsNullOrEmpty(programFiles))
+            if (isWindows)
             {
-                string fullPath = Path.Combine(programFiles, DotNet, DotNetExe);
-                if (File.Exists(fullPath))
+                string programFiles = GetFolderPath(SpecialFolder.ProgramFiles);
+                if (!string.IsNullOrEmpty(programFiles))
                 {
-                    return fullPath;
+                    string fullPath = Path.Combine(programFiles, DotNet, DotNetExe);
+                    if (File.Exists(fullPath))
+                    {
+                        return fullPath;
+                    }
+                }
+
+                programFiles = GetFolderPath(SpecialFolder.ProgramFilesX86);
+                if (!string.IsNullOrEmpty(programFiles))
+                {
+                    string fullPath = Path.Combine(programFiles, DotNet, DotNetExe);
+                    if (File.Exists(fullPath))
+                    {
+                        return fullPath;
+                    }
                 }
             }
-
-            programFiles = GetFolderPath(SpecialFolder.ProgramFilesX86);
-            if (!string.IsNullOrEmpty(programFiles))
+            else
             {
-                string fullPath = Path.Combine(programFiles, DotNet, DotNetExe);
-                if (File.Exists(fullPath))
+                string localBin = "/usr/local/bin";
+                if (!string.IsNullOrEmpty(localBin))
                 {
-                    return fullPath;
-                }
-            }
-
-            string localBin = "/usr/local/bin";
-            if (!string.IsNullOrEmpty(localBin))
-            {
-                string fullPath = Path.Combine(localBin, DotNet);
-                if (File.Exists(fullPath))
-                {
-                    return fullPath;
+                    string fullPath = Path.Combine(localBin, DotNet);
+                    if (File.Exists(fullPath))
+                    {
+                        return fullPath;
+                    }
                 }
             }
 

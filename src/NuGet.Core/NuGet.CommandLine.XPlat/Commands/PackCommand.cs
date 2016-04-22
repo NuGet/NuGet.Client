@@ -104,6 +104,7 @@ namespace NuGet.CommandLine.XPlat
                     packArgs.Exclude = exclude.Values;
                     packArgs.ExcludeEmptyDirectories = excludeEmpty.HasValue();
                     packArgs.LogLevel = XPlatUtility.GetLogLevel(verbosity);
+
                     if (minClientVersion.HasValue())
                     {
                         Version version;
@@ -119,17 +120,19 @@ namespace NuGet.CommandLine.XPlat
                     packArgs.NoDefaultExcludes = noDefaultExcludes.HasValue();
                     packArgs.NoPackageAnalysis = noPackageAnalysis.HasValue();
                     packArgs.OutputDirectory = outputDirectory.Value();
+
                     if (properties.HasValue())
                     {
                         foreach (var property in properties.Value().Split(';'))
                         {
                             int index = property.IndexOf('=');
-                            if (index > 0 && index < property.Length)
+                            if (index > 0 && index < property.Length - 1)
                             {
                                 packArgs.Properties.Add(property.Substring(0, index), property.Substring(index + 1));
                             }
                         }
                     }
+
                     packArgs.Suffix = suffix.Value();
                     packArgs.Symbols = symbols.HasValue();
                     if (versionOption.HasValue())
