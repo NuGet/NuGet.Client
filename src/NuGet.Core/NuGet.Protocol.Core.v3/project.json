@@ -36,7 +36,6 @@
   "frameworks": {
     "net45": {
       "frameworkAssemblies": {
-        "System.Collections.Concurrent": "",
         "System.IdentityModel": "",
         "System.Net.Http": "",
         "System.Net.Http.WebRequest": "",

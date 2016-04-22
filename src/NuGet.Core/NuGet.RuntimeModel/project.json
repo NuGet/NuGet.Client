@@ -26,9 +26,6 @@
   },
   "frameworks": {
     "net45": {
-      "frameworkAssemblies": {
-        "System.Collections": ""
-      },
       "compilationOptions": {
         "define": [
           "IS_DESKTOP"
