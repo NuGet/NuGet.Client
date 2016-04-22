@@ -97,6 +97,9 @@ namespace NuGet.CommandLine.Test
                     "image.jpg",
                     "");
 
+                Directory.CreateDirectory(
+                    Path.Combine(workingDirectory, "bin/Debug"));
+
                 Util.CreateFile(
                     workingDirectory,
                     Path.GetFileName(workingDirectory) + ".project.json",
@@ -243,25 +246,16 @@ namespace NuGet.CommandLine.Test
             using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
+                string id = Path.GetFileName(workingDirectory);
 
                 Util.CreateFile(
-                    Path.Combine(workingDirectory, "ref/uap10.0"),
-                    "a.dll",
+                    Path.Combine(workingDirectory, "bin/Debug/uap10.0"),
+                    id + ".dll",
                     string.Empty);
 
                 Util.CreateFile(
-                    Path.Combine(workingDirectory, "native"),
-                    "a.dll",
-                    string.Empty);
-
-                Util.CreateFile(
-                    Path.Combine(workingDirectory, "runtimes/win-x86/lib/uap10.0"),
-                    "a.dll",
-                    string.Empty);
-
-                Util.CreateFile(
-                    Path.Combine(workingDirectory, "lib/uap10.0"),
-                    "a.dll",
+                    Path.Combine(workingDirectory, "bin/Debug/native"),
+                    id + ".dll",
                     string.Empty);
 
                 Util.CreateFile(
@@ -298,10 +292,8 @@ namespace NuGet.CommandLine.Test
                     files,
                     new string[]
                     {
-                            @"lib\uap10.0\a.dll",
-                            @"native\a.dll",
-                            @"ref\uap10.0\a.dll",
-                            @"runtimes\win-x86\lib\uap10.0\a.dll",
+                            @"lib\native\" + id + ".dll",
+                            @"lib\uap10.0\" + id + ".dll",
                     });
 
                 Assert.False(r.Item2.Contains("Assembly outside lib folder"));
@@ -347,7 +339,13 @@ namespace NuGet.CommandLine.Test
   ""owners"": [ ""test"" ],
   ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
-  ""copyright"": ""Copyright ©  2013""
+  ""copyright"": ""Copyright ©  2013"",
+  ""frameworks"": {
+    ""native"": {
+    },
+    ""uap10.0"": {
+    }
+  }
 }");
 
                 // Act
@@ -386,10 +384,12 @@ namespace NuGet.CommandLine.Test
             using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
+                string id = Path.GetFileName(workingDirectory);
+
                 Util.CreateFile(
-                    Path.Combine(workingDirectory, "analyzers/cs/code"),
-                    "a.dll",
-                    "");
+                    Path.Combine(workingDirectory, "bin/Debug/native"),
+                    id + ".dll",
+                    string.Empty);
 
                 Util.CreateFile(
                     workingDirectory,
@@ -425,7 +425,7 @@ namespace NuGet.CommandLine.Test
                     files,
                     new string[]
                     {
-                            @"analyzers\cs\code\a.dll",
+                        @"lib\native\" + id + ".dll",
                     });
 
                 Assert.False(r.Item2.Contains("Assembly outside lib folder"));
@@ -2464,6 +2464,9 @@ namespace " + projectName + @"
                     "image.jpg",
                     "");
 
+                Directory.CreateDirectory(
+                    Path.Combine(workingDirectory, "bin/Debug"));
+
                 Util.CreateFile(
                     workingDirectory,
                     Path.GetFileName(workingDirectory) + ".project.json",
@@ -2482,6 +2485,9 @@ namespace " + projectName + @"
         ""System.Xml.Linq"": """"
       }
     }
+  },
+  ""packInclude"": {
+    ""image"": ""contentFiles/any/any/image.jpg""
   }
 }
 ");
@@ -2509,7 +2515,7 @@ namespace " + projectName + @"
                     var actual = node.ToString().Replace("\r\n", "\n");
 
                     Assert.Equal(
-                        @"<dependencies xmlns=""http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd"">
+                        @"<dependencies xmlns=""http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd"">
   <group targetFramework="".NETFramework4.6"" />
 </dependencies>".Replace("\r\n", "\n"), actual);
 
@@ -2517,7 +2523,7 @@ namespace " + projectName + @"
                     actual = node.ToString().Replace("\r\n", "\n");
 
                     Assert.Equal(
-                        @"<frameworkAssemblies xmlns=""http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd"">
+                        @"<frameworkAssemblies xmlns=""http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd"">
   <frameworkAssembly assemblyName=""System.Xml"" targetFramework="".NETFramework4.6"" />
   <frameworkAssembly assemblyName=""System.Xml.Linq"" targetFramework="".NETFramework4.6"" />
 </frameworkAssemblies>".Replace("\r\n", "\n"), actual);

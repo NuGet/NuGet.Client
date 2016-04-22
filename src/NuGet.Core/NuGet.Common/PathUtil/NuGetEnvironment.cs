@@ -8,6 +8,9 @@ namespace NuGet.Common
 {
     public static class NuGetEnvironment
     {
+        private const string DotNet = "dotnet";
+        private const string DotNetExe = "dotnet.exe";
+
         public static string GetFolderPath(NuGetFolderPath folder)
         {
             switch (folder)
@@ -191,6 +194,60 @@ namespace NuGet.Common
             {
                 return Environment.GetEnvironmentVariable("HOME");
             }
+        }
+
+        public static string GetDotNetLocation()
+        {
+            string path = Environment.GetEnvironmentVariable("PATH");
+            bool isWindows = RuntimeEnvironmentHelper.IsWindows;
+            char splitChar = isWindows ? ';' : ':';
+            string executable = isWindows ? DotNetExe : DotNet;
+
+            foreach (var dir in path.Split(splitChar))
+            {
+                string fullPath = Path.Combine(dir, executable);
+                if (File.Exists(fullPath))
+                {
+                    return fullPath;
+                }
+            }
+
+            if (isWindows)
+            {
+                string programFiles = GetFolderPath(SpecialFolder.ProgramFiles);
+                if (!string.IsNullOrEmpty(programFiles))
+                {
+                    string fullPath = Path.Combine(programFiles, DotNet, DotNetExe);
+                    if (File.Exists(fullPath))
+                    {
+                        return fullPath;
+                    }
+                }
+
+                programFiles = GetFolderPath(SpecialFolder.ProgramFilesX86);
+                if (!string.IsNullOrEmpty(programFiles))
+                {
+                    string fullPath = Path.Combine(programFiles, DotNet, DotNetExe);
+                    if (File.Exists(fullPath))
+                    {
+                        return fullPath;
+                    }
+                }
+            }
+            else
+            {
+                string localBin = "/usr/local/bin";
+                if (!string.IsNullOrEmpty(localBin))
+                {
+                    string fullPath = Path.Combine(localBin, DotNet);
+                    if (File.Exists(fullPath))
+                    {
+                        return fullPath;
+                    }
+                }
+            }
+
+            return DotNet;
         }
 
 

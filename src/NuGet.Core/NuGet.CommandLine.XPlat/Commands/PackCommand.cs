@@ -26,6 +26,11 @@ namespace NuGet.CommandLine.XPlat
                     Strings.BasePath_Description,
                     CommandOptionType.SingleValue);
 
+                var build = pack.Option(
+                    "--build",
+                    Strings.Build_Description,
+                    CommandOptionType.NoValue);
+
                 var exclude = pack.Option(
                     "--exclude",
                     Strings.Exclude_Description,
@@ -53,6 +58,11 @@ namespace NuGet.CommandLine.XPlat
 
                 var outputDirectory = pack.Option(
                     "-o|--output-directory <outputDirectory>",
+                    Strings.OutputDirectory_Description,
+                    CommandOptionType.SingleValue);
+
+                var properties = pack.Option(
+                    "-p|--properties <properties>",
                     Strings.OutputDirectory_Description,
                     CommandOptionType.SingleValue);
 
@@ -95,9 +105,11 @@ namespace NuGet.CommandLine.XPlat
                     packArgs.BasePath = !basePath.HasValue() ? Path.GetDirectoryName(Path.GetFullPath(packArgs.Path)) : basePath.Value();
                     packArgs.BasePath = packArgs.BasePath.TrimEnd(Path.DirectorySeparatorChar);
 
+                    packArgs.Build = build.HasValue();
                     packArgs.Exclude = exclude.Values;
                     packArgs.ExcludeEmptyDirectories = excludeEmpty.HasValue();
                     packArgs.LogLevel = XPlatUtility.GetLogLevel(verbosity);
+
                     if (minClientVersion.HasValue())
                     {
                         Version version;
@@ -113,6 +125,19 @@ namespace NuGet.CommandLine.XPlat
                     packArgs.NoDefaultExcludes = noDefaultExcludes.HasValue();
                     packArgs.NoPackageAnalysis = noPackageAnalysis.HasValue();
                     packArgs.OutputDirectory = outputDirectory.Value();
+
+                    if (properties.HasValue())
+                    {
+                        foreach (var property in properties.Value().Split(';'))
+                        {
+                            int index = property.IndexOf('=');
+                            if (index > 0 && index < property.Length - 1)
+                            {
+                                packArgs.Properties.Add(property.Substring(0, index), property.Substring(index + 1));
+                            }
+                        }
+                    }
+
                     packArgs.Suffix = suffix.Value();
                     packArgs.Symbols = symbols.HasValue();
                     if (versionOption.HasValue())
