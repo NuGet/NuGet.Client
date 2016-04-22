@@ -245,6 +245,11 @@ namespace NuGet.Commands
             {
                 foreach (var framework in spec.TargetFrameworks)
                 {
+                    if (framework.FrameworkName.IsUnsupported)
+                    {
+                        throw new Exception(String.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidTargetFramework, framework.FrameworkName));
+                    }
+
                     AddDependencyGroups(framework.Dependencies, framework.FrameworkName, builder);
                 }
             }
@@ -381,6 +386,11 @@ namespace NuGet.Commands
             // Create a builder for the main package as well as the sources/symbols package
             PackageBuilder mainPackageBuilder = factory.CreateBuilder(_packArgs.BasePath);
 
+            if (mainPackageBuilder == null)
+            {
+                throw new Exception(String.Format(CultureInfo.CurrentCulture, Strings.Error_PackFailed, path));
+            }
+
             // Build the main package
             PackageArchiveReader package = BuildPackage(mainPackageBuilder);
 
@@ -430,6 +440,8 @@ namespace NuGet.Commands
 
             outputPath = outputPath ?? GetOutputPath(builder, false, builder.Version);
 
+            CheckForUnsupportedFrameworks(builder);
+
             ExcludeFiles(builder.Files);
 
             // Track if the package file was already present on disk
@@ -458,6 +470,20 @@ namespace NuGet.Commands
             WriteLine(String.Format(CultureInfo.CurrentCulture, Strings.Log_PackageCommandSuccess, outputPath));
 
             return new PackageArchiveReader(outputPath);
+        }
+
+        private void CheckForUnsupportedFrameworks(PackageBuilder builder)
+        {
+            foreach (var reference in builder.FrameworkReferences)
+            {
+                foreach (var framework in reference.SupportedFrameworks)
+                {
+                    if (framework.IsUnsupported)
+                    {
+                        throw new Exception(String.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidTargetFramework, reference.AssemblyName));
+                    }
+                }
+            }
         }
 
         private void PrintVerbose(string outputPath, PackageBuilder builder)

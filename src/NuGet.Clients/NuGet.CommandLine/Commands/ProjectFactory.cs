@@ -218,18 +218,23 @@ namespace NuGet.CommandLine
             }
             catch (Exception ex)
             {
-                Logger.LogWarning(
+                Logger.LogError(
                     string.Format(
                         CultureInfo.CurrentCulture,
                         LocalizedResourceManager.GetString("UnableToExtractAssemblyMetadata"),
                         Path.GetFileName(TargetPath)));
+
                 IConsole console = Logger as IConsole;
                 if (console != null && console.Verbosity == Verbosity.Detailed)
                 {
-                    Logger.LogWarning(ex.ToString());
+                    Logger.LogError(ex.ToString());
+                }
+                else
+                {
+                    Logger.LogError(ex.Message);
                 }
 
-                ExtractMetadataFromProject(builder);
+                return null;
             }
 
             var projectAuthor = InitializeProperties(builder);

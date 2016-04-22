@@ -60,6 +60,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Unsupported targetFramework value &apos;{0}&apos;..
+        /// </summary>
+        internal static string Error_InvalidTargetFramework {
+            get {
+                return ResourceManager.GetString("Error_InvalidTargetFramework", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to There are duplicate packages: {0}.
         /// </summary>
         internal static string ErrorDuplicatePackages {

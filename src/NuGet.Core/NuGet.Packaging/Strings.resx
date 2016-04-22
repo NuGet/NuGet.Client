@@ -177,4 +177,7 @@
   <data name="FailedFileTime" xml:space="preserve">
     <value>Failed to update file time for {0}: {1}</value>
   </data>
+  <data name="Error_InvalidTargetFramework" xml:space="preserve">
+    <value>Unsupported targetFramework value '{0}'.</value>
+  </data>
 </root>

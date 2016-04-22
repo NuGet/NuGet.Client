@@ -96,6 +96,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Failed to build package because of an unsupported targetFramework value on &apos;{0}&apos;..
+        /// </summary>
+        public static string Error_InvalidTargetFramework {
+            get {
+                return ResourceManager.GetString("Error_InvalidTargetFramework", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Source parameter was not specified..
         /// </summary>
         public static string Error_MissingSourceParameter {
@@ -119,6 +128,15 @@ namespace NuGet.Commands {
         public static string Error_PackageCommandNoFilesForSymbolsPackage {
             get {
                 return ResourceManager.GetString("Error_PackageCommandNoFilesForSymbolsPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Failed to build package. {0}.
+        /// </summary>
+        public static string Error_PackFailed {
+            get {
+                return ResourceManager.GetString("Error_PackFailed", resourceCulture);
             }
         }
         

@@ -2320,6 +2320,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid AssemblyInformationalVersion {0} on assembly {1}..
+        /// </summary>
+        public static string Error_AssemblyInformationalVersion {
+            get {
+                return ResourceManager.GetString("Error_AssemblyInformationalVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot find the specified version of msbuild: &apos;{0}&apos;.
         /// </summary>
         public static string Error_CannotFindMsbuild {
