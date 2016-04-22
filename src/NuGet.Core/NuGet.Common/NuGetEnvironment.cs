@@ -8,6 +8,9 @@ namespace NuGet.Common
 {
     public static class NuGetEnvironment
     {
+        private const string DotNet = "dotnet";
+        private const string DotNetExe = "dotnet.exe";
+
         public static string GetFolderPath(NuGetFolderPath folder)
         {
             switch (folder)
@@ -191,6 +194,57 @@ namespace NuGet.Common
             {
                 return Environment.GetEnvironmentVariable("HOME");
             }
+        }
+
+        public static string GetDotNetLocation()
+        {
+            string path = Environment.GetEnvironmentVariable("PATH");
+            foreach (var dir in path.Split(':', ';'))
+            {
+                string fullPathExe = Path.Combine(dir, DotNetExe);
+                if (File.Exists(fullPathExe))
+                {
+                    return fullPathExe;
+                }
+
+                string fullPath = Path.Combine(dir, DotNet);
+                if (File.Exists(fullPath))
+                {
+                    return fullPath;
+                }
+            }
+
+            string programFiles = GetFolderPath(SpecialFolder.ProgramFiles);
+            if (!string.IsNullOrEmpty(programFiles))
+            {
+                string fullPath = Path.Combine(programFiles, DotNet, DotNetExe);
+                if (File.Exists(fullPath))
+                {
+                    return fullPath;
+                }
+            }
+
+            programFiles = GetFolderPath(SpecialFolder.ProgramFilesX86);
+            if (!string.IsNullOrEmpty(programFiles))
+            {
+                string fullPath = Path.Combine(programFiles, DotNet, DotNetExe);
+                if (File.Exists(fullPath))
+                {
+                    return fullPath;
+                }
+            }
+
+            string localBin = "/usr/local/bin";
+            if (!string.IsNullOrEmpty(localBin))
+            {
+                string fullPath = Path.Combine(localBin, DotNet);
+                if (File.Exists(fullPath))
+                {
+                    return fullPath;
+                }
+            }
+
+            return DotNet;
         }
 
 

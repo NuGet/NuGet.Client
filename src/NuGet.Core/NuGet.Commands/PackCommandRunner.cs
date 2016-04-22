@@ -154,7 +154,7 @@ namespace NuGet.Commands
 
             if (_dotnetLocation == null)
             {
-                GetDotNetLocation();
+                _dotnetLocation = NuGetEnvironment.GetDotNetLocation();
             }
 
             var processStartInfo = new ProcessStartInfo
@@ -180,62 +180,6 @@ namespace NuGet.Commands
                 // If the build fails, report the error
                 throw new Exception(String.Format(CultureInfo.CurrentCulture, Strings.Error_BuildFailed, processStartInfo.FileName, processStartInfo.Arguments));
             }
-        }
-
-        private void GetDotNetLocation()
-        {
-            string path = Environment.GetEnvironmentVariable("PATH");
-            foreach (var dir in path.Split(':', ';'))
-            {
-                string fullPathExe = Path.Combine(dir, "dotnet.exe");
-                if (File.Exists(fullPathExe))
-                {
-                    _dotnetLocation = fullPathExe;
-                    return;
-                }
-
-                string fullPath = Path.Combine(dir, "dotnet");
-                if (File.Exists(fullPath))
-                {
-                    _dotnetLocation = fullPath;
-                    return;
-                }
-            }
-
-            string programFiles = Environment.GetEnvironmentVariable("ProgramW6432");
-            if (!string.IsNullOrEmpty(programFiles))
-            {
-                string fullPath = Path.Combine(programFiles, "dotnet", "dotnet.exe");
-                if (File.Exists(fullPath))
-                {
-                    _dotnetLocation = fullPath;
-                    return;
-                }
-            }
-
-            programFiles = Environment.GetEnvironmentVariable("ProgramFiles(x86)");
-            if (!string.IsNullOrEmpty(programFiles))
-            {
-                string fullPath = Path.Combine(programFiles, "dotnet", "dotnet.exe");
-                if (File.Exists(fullPath))
-                {
-                    _dotnetLocation = fullPath;
-                    return;
-                }
-            }
-
-            string localBin = "/usr/local/bin";
-            if (!string.IsNullOrEmpty(localBin))
-            {
-                string fullPath = Path.Combine(localBin, "dotnet");
-                if (File.Exists(fullPath))
-                {
-                    _dotnetLocation = fullPath;
-                    return;
-                }
-            }
-
-            _dotnetLocation = "dotnet";
         }
 
         private void AddOutputFiles(PackageBuilder builder)
