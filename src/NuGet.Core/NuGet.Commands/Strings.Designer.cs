@@ -96,7 +96,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Unsupported targetFramework value on &apos;{0}&apos;.
+        ///    Looks up a localized string similar to Failed to build package because of an unsupported targetFramework value on &apos;{0}&apos;..
         /// </summary>
         public static string Error_InvalidTargetFramework {
             get {
@@ -132,7 +132,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Error packaging &apos;{0}&apos;..
+        ///    Looks up a localized string similar to Failed to build package.  The error message was &apos;{0}&apos;..
         /// </summary>
         public static string Error_PackFailed {
             get {

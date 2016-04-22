@@ -395,9 +395,9 @@
     <value>Please specify a nuspec, project.json, project file to use</value>
   </data>
   <data name="Error_PackFailed" xml:space="preserve">
-    <value>Error packaging '{0}'.</value>
+    <value>Failed to build package.  The error message was '{0}'.</value>
   </data>
   <data name="Error_InvalidTargetFramework" xml:space="preserve">
-    <value>Unsupported targetFramework value on '{0}'</value>
+    <value>Failed to build package because of an unsupported targetFramework value on '{0}'.</value>
   </data>
 </root>

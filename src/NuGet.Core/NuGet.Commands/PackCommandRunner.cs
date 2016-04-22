@@ -226,6 +226,11 @@ namespace NuGet.Commands
             {
                 foreach (var framework in spec.TargetFrameworks)
                 {
+                    if (framework.FrameworkName.IsUnsupported)
+                    {
+                        throw new Exception(String.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidTargetFramework, framework.FrameworkName));
+                    }
+
                     AddDependencyGroups(framework.Dependencies, framework.FrameworkName, builder);
                 }
             }

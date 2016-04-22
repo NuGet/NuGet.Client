@@ -256,7 +256,7 @@ namespace NuGet.Packaging
 
                         if (targetFramework.IsUnsupported)
                         {
-                            throw new Exception(String.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidTargetFramework, targetFrameworkName));
+                            throw new InvalidDataException(String.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidTargetFramework, targetFrameworkName));
                         }
                     }
 

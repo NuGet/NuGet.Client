@@ -5,11 +5,11 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using NuGet.Runtime;
 
 namespace NuGet.CommandLine
 {
     using NuGet.Packaging;
+    using NuGet.Runtime;
     using NuGet.Versioning;
 
     public static class AssemblyMetadataExtractor
@@ -94,7 +94,7 @@ namespace NuGet.CommandLine
                         }
                         else
                         {
-                            throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, NuGetResources.Error_AssemblyInformationalVersion, assemblyInformationalVersion));
+                            throw new InvalidDataException(String.Format(CultureInfo.CurrentCulture, NuGetResources.Error_AssemblyInformationalVersion, assemblyInformationalVersion, path));
                         }
                     }
 
