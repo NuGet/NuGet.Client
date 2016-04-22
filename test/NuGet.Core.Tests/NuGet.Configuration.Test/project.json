@@ -21,8 +21,8 @@
       "dependencies": {
         "moq.netcore": "4.4.0-beta8",
         "dotnet-test-xunit": "1.0.0-dev-140469-38",
-        "System.Threading.Tasks.Parallel": "4.0.1-rc2-24018",
-        "System.Diagnostics.TraceSource": "4.0.0-rc2-24018",
+        "System.Threading.Tasks.Parallel": "4.0.1-rc2-24022",
+        "System.Diagnostics.TraceSource": "4.0.0-rc2-24022",
         "Microsoft.NETCore.App": {
           "type": "platform",
           "version": "1.0.0-rc2-3002339"
