@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -28,8 +29,8 @@ namespace NuGet.ProjectModel
             = new Dictionary<string, ExternalProjectReference>(StringComparer.OrdinalIgnoreCase);
 
         // RootPath -> Resolver
-        private readonly Dictionary<string, IPackageSpecResolver> _resolverCache
-            = new Dictionary<string, IPackageSpecResolver>(StringComparer.Ordinal);
+        private readonly ConcurrentDictionary<string, IPackageSpecResolver> _resolverCache
+            = new ConcurrentDictionary<string, IPackageSpecResolver>(StringComparer.Ordinal);
 
         private readonly ILogger _logger;
 
@@ -56,7 +57,8 @@ namespace NuGet.ProjectModel
             _defaultResolver = projectResolver;
             _logger = logger;
 
-            _resolverCache.Add(projectResolver.RootPath, projectResolver);
+            // The constructor is only executed by a single thread, so TryAdd is fine.
+            _resolverCache.TryAdd(projectResolver.RootPath, projectResolver);
 
             foreach (var project in externalProjects)
             {
@@ -323,19 +325,19 @@ namespace NuGet.ProjectModel
 
             if (!string.IsNullOrEmpty(rootPath))
             {
-                IPackageSpecResolver cachedResolver;
-                if (_resolverCache.TryGetValue(rootPath, out cachedResolver))
-                {
-                    specResolver = cachedResolver;
-                }
-                else
-                {
-                    specResolver = new PackageSpecResolver(rootPath);
-                    _resolverCache.Add(rootPath, specResolver);
-                }
+                specResolver = _resolverCache.GetOrAdd(
+                    rootPath,
+                    _createPackageSpecResolver);
             }
 
             return specResolver;
+        }
+
+        private static readonly Func<string, PackageSpecResolver> _createPackageSpecResolver = CreatePackageSpecResolver;
+
+        private static PackageSpecResolver CreatePackageSpecResolver(string rootPath)
+        {
+            return new PackageSpecResolver(rootPath);
         }
 
         /// <summary>
