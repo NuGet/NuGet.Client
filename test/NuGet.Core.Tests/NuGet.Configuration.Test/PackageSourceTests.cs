@@ -5,18 +5,17 @@ using Xunit;
 
 namespace NuGet.Configuration
 {
-    public class PackageSourceTest
+    public class PackageSourceTests
     {
         [Fact]
         public void Clone_CopiesAllPropertyValuesFromSource()
         {
             // Arrange
+            var credentials = new PackageSourceCredential("SourceName", "username", "password", isPasswordClearText: false);
             var source = new PackageSource("Source", "SourceName", isEnabled: false)
                 {
-                    IsPasswordClearText = true,
-                    PasswordText = "password",
-                    UserName = "username",
-                    ProtocolVersion = 43,
+                    Credentials = credentials,
+                    ProtocolVersion = 43
                 };
 
             // Act
@@ -27,8 +26,7 @@ namespace NuGet.Configuration
             Assert.Equal(source.Name, result.Name);
             Assert.Equal(source.IsEnabled, result.IsEnabled);
             Assert.Equal(source.ProtocolVersion, result.ProtocolVersion);
-            Assert.Equal(source.UserName, result.UserName);
-            Assert.Equal(source.Password, source.Password);
+            Assert.Same(source.Credentials, result.Credentials);
         }
     }
 }
