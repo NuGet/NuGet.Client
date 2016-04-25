@@ -48,34 +48,7 @@ namespace NuGet.Configuration
 
         public bool IsEnabled { get; set; }
 
-        public string UserName { get; set; }
-
-        public string Password
-        {
-            get
-            {
-                if (PasswordText != null && !IsPasswordClearText)
-                {
-                    try
-                    {
-                        return EncryptionUtility.DecryptString(PasswordText);
-                    }
-                    catch (NotSupportedException e)
-                    {
-                        throw new NuGetConfigurationException(
-                            string.Format(CultureInfo.CurrentCulture, Resources.UnsupportedDecryptPassword, Source), e);
-                    }
-                }
-                else
-                {
-                    return PasswordText;
-                }
-            }
-        }
-
-        public string PasswordText { get; set; }
-
-        public bool IsPasswordClearText { get; set; }
+        public PackageSourceCredential Credentials { get; set; }
 
         public string Description { get; set; }
 
@@ -205,14 +178,12 @@ namespace NuGet.Configuration
         public PackageSource Clone()
         {
             return new PackageSource(Source, Name, IsEnabled, IsOfficial, IsPersistable)
-                {
-                    Description = Description,
-                    UserName = UserName,
-                    PasswordText = PasswordText,
-                    IsPasswordClearText = IsPasswordClearText,
-                    IsMachineWide = IsMachineWide,
-                    ProtocolVersion = ProtocolVersion
-                };
+            {
+                Description = Description,
+                Credentials = Credentials,
+                IsMachineWide = IsMachineWide,
+                ProtocolVersion = ProtocolVersion
+            };
         }
     }
 }

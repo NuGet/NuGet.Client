@@ -432,10 +432,10 @@ namespace NuGet.Protocol
             var credentials = CredentialStore.Instance.GetCredentials(_baseUri);
 
             if (credentials == null
-                && !String.IsNullOrEmpty(_packageSource.UserName)
-                && !String.IsNullOrEmpty(_packageSource.Password))
+                && _packageSource.Credentials != null
+                && _packageSource.Credentials.IsValid())
             {
-                credentials = new NetworkCredential(_packageSource.UserName, _packageSource.Password);
+                credentials = new NetworkCredential(_packageSource.Credentials.Username, _packageSource.Credentials.Password);
             }
 
             if (credentials != null)

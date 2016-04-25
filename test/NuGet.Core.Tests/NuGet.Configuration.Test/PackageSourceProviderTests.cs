@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Moq;
@@ -89,7 +88,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public async Task LoadPackageSourcesWithCredentials()
+        public async Task LoadPackageSources_LoadsCredentials()
         {
             // Arrange
             //Create nuget.config that has active package source defined
@@ -153,16 +152,14 @@ namespace NuGet.Configuration.Test
                     await stream.WriteAsync(bytes, 0, configContent.Length);
                 }
 
-                Settings settings = new Settings(nugetConfigFileFolder, "nuget.Config");
-                PackageSourceProvider psp = new PackageSourceProvider(settings);
+                var settings = new Settings(nugetConfigFileFolder, "nuget.Config");
+                var psp = new PackageSourceProvider(settings);
 
                 var sources = psp.LoadPackageSources().ToList();
 
                 Assert.Equal(6, sources.Count);
-                Assert.NotNull(sources[1].Password);
-                Assert.True(String.Equals(sources[1].Password, "removed", StringComparison.OrdinalIgnoreCase));
-                Assert.NotNull(sources[5].Password);
-                Assert.True(String.Equals(sources[5].Password, "removed", StringComparison.OrdinalIgnoreCase));
+                AssertCredentials(sources[1].Credentials, "CompanyFeedUnstable", "myusername", "removed");
+                AssertCredentials(sources[5].Credentials, "CompanyFeed", "myusername", "removed");
             }
         }
 
@@ -922,22 +919,26 @@ namespace NuGet.Configuration.Test
                     new SettingValue("Source4", "//Source4", false)
                 };
 
-            settings.Setup(s => s.GetSettingValues("packageSources", true))
+            settings
+                .Setup(s => s.GetSettingValues("packageSources", true))
                 .Returns(sourcesSettings);
 
-            settings.Setup(s => s.GetNestedValues("packageSourceCredentials", "Source3"))
+            settings
+                .Setup(s => s.GetNestedValues("packageSourceCredentials", "Source3"))
                 .Returns(new[]
                     {
                         new KeyValuePair<string, string>("Username", "source3-user"),
                         new KeyValuePair<string, string>("ClearTextPassword", "source3-password"),
                     });
-            settings.Setup(s => s.GetSettingValues("disabledPackageSources", false))
+            settings
+                .Setup(s => s.GetSettingValues("disabledPackageSources", false))
                 .Returns(new[]
                     {
                         new SettingValue("Source4", "true", isMachineWide: false)
                     });
 
-            var provider = CreatePackageSourceProvider(settings.Object,
+            var provider = CreatePackageSourceProvider(
+                settings.Object,
                 migratePackageSources: null);
 
             // Act
@@ -949,8 +950,7 @@ namespace NuGet.Configuration.Test
                     {
                         Assert.Equal("Source1", source.Name);
                         Assert.Equal("https://some-source.org", source.Source);
-                        Assert.Null(source.UserName);
-                        Assert.Null(source.Password);
+                        Assert.Null(source.Credentials);
                         Assert.Equal(2, source.ProtocolVersion);
                         Assert.True(source.IsEnabled);
                     },
@@ -958,8 +958,7 @@ namespace NuGet.Configuration.Test
                     {
                         Assert.Equal("Source2", source.Name);
                         Assert.Equal("https://source-with-newer-protocol", source.Source);
-                        Assert.Null(source.UserName);
-                        Assert.Null(source.Password);
+                        Assert.Null(source.Credentials);
                         Assert.Equal(3, source.ProtocolVersion);
                         Assert.True(source.IsEnabled);
                     },
@@ -967,8 +966,7 @@ namespace NuGet.Configuration.Test
                     {
                         Assert.Equal("Source3", source.Name);
                         Assert.Equal("Source3", source.Source);
-                        Assert.Equal("source3-user", source.UserName);
-                        Assert.Equal("source3-password", source.Password);
+                        AssertCredentials(source.Credentials, "Source3", "source3-user", "source3-password");
                         Assert.Equal(3, source.ProtocolVersion);
                         Assert.True(source.IsEnabled);
                     },
@@ -976,8 +974,7 @@ namespace NuGet.Configuration.Test
                     {
                         Assert.Equal("Source4", source.Name);
                         Assert.Equal("//Source4", source.Source);
-                        Assert.Null(source.UserName);
-                        Assert.Null(source.Password);
+                        Assert.Null(source.Credentials);
                         Assert.Equal(2, source.ProtocolVersion);
                         Assert.False(source.IsEnabled);
                     });
@@ -1050,8 +1047,7 @@ namespace NuGet.Configuration.Test
                     {
                         Assert.Equal("Source1", source.Name);
                         Assert.Equal("https://some-source.org", source.Source);
-                        Assert.Null(source.UserName);
-                        Assert.Null(source.Password);
+                        Assert.Null(source.Credentials);
                         Assert.Equal(2, source.ProtocolVersion);
                         Assert.True(source.IsEnabled);
                     },
@@ -1059,8 +1055,7 @@ namespace NuGet.Configuration.Test
                     {
                         Assert.Equal("Source2", source.Name);
                         Assert.Equal("https://api.source-with-newer-protocol/v3/", source.Source);
-                        Assert.Null(source.UserName);
-                        Assert.Null(source.Password);
+                        Assert.Null(source.Credentials);
                         Assert.Equal(3, source.ProtocolVersion);
                         Assert.True(source.IsEnabled);
                     });
@@ -1186,19 +1181,18 @@ namespace NuGet.Configuration.Test
             // Assert
             Assert.Equal(3, values.Count);
             AssertPackageSource(values[1], "two", "twosource", true);
-            Assert.Null(values[1].UserName);
-            Assert.Null(values[1].Password);
+            Assert.Null(values[1].Credentials);
         }
 
-#if !IS_CORECLR
         [Fact]
-        public void LoadPackageSourcesReadsCredentialPairsFromSettings()
+        public void LoadPackageSources_ReadsCredentialPairsFromSettings()
         {
             // Arrange
-            string encryptedPassword = EncryptionUtility.EncryptString("topsecret");
+            var encryptedPassword = Guid.NewGuid().ToString();
 
             var settings = new Mock<ISettings>();
-            settings.Setup(s => s.GetSettingValues("packageSources", true))
+            settings
+                .Setup(s => s.GetSettingValues("packageSources", true))
                 .Returns(new[]
                     {
                         new SettingValue("one", "onesource", false),
@@ -1206,8 +1200,13 @@ namespace NuGet.Configuration.Test
                         new SettingValue("three", "threesource", false)
                     });
 
-            settings.Setup(s => s.GetNestedValues("packageSourceCredentials", "two"))
-                .Returns(new[] { new KeyValuePair<string, string>("Username", "user1"), new KeyValuePair<string, string>("Password", encryptedPassword) });
+            settings
+                .Setup(s => s.GetNestedValues("packageSourceCredentials", "two"))
+                .Returns(new[]
+                    {
+                        new KeyValuePair<string, string>("Username", "user1"),
+                        new KeyValuePair<string, string>("Password", encryptedPassword)
+                    });
 
             var provider = CreatePackageSourceProvider(settings.Object);
 
@@ -1217,20 +1216,18 @@ namespace NuGet.Configuration.Test
             // Assert
             Assert.Equal(3, values.Count);
             AssertPackageSource(values[1], "two", "twosource", true);
-            Assert.Equal("user1", values[1].UserName);
-            Assert.Equal("topsecret", values[1].Password);
-            Assert.False(values[1].IsPasswordClearText);
+            AssertCredentials(values[1].Credentials, "two", "user1", encryptedPassword, isPasswordClearText: false);
         }
-#endif
 
         [Fact]
-        public void LoadPackageSourcesReadsClearTextCredentialPairsFromSettings()
+        public void LoadPackageSources_ReadsClearTextCredentialPairsFromSettings()
         {
             // Arrange
             const string clearTextPassword = "topsecret";
 
             var settings = new Mock<ISettings>();
-            settings.Setup(s => s.GetSettingValues("packageSources", true))
+            settings
+                .Setup(s => s.GetSettingValues("packageSources", true))
                 .Returns(new[]
                     {
                         new SettingValue("one", "onesource", false),
@@ -1238,8 +1235,13 @@ namespace NuGet.Configuration.Test
                         new SettingValue("three", "threesource", false)
                     });
 
-            settings.Setup(s => s.GetNestedValues("packageSourceCredentials", "two"))
-                .Returns(new[] { new KeyValuePair<string, string>("Username", "user1"), new KeyValuePair<string, string>("ClearTextPassword", clearTextPassword) });
+            settings
+                .Setup(s => s.GetNestedValues("packageSourceCredentials", "two"))
+                .Returns(new[]
+                    {
+                        new KeyValuePair<string, string>("Username", "user1"),
+                        new KeyValuePair<string, string>("ClearTextPassword", clearTextPassword)
+                    });
 
             var provider = CreatePackageSourceProvider(settings.Object);
 
@@ -1249,25 +1251,29 @@ namespace NuGet.Configuration.Test
             // Assert
             Assert.Equal(3, values.Count);
             AssertPackageSource(values[1], "two", "twosource", true);
-            Assert.Equal("user1", values[1].UserName);
-            Assert.True(values[1].IsPasswordClearText);
-            Assert.Equal("topsecret", values[1].Password);
+            AssertCredentials(values[1].Credentials, "two", "user1", clearTextPassword);
         }
 
         [Fact]
-        public void LoadPackageSourcesWhenEnvironmentCredentialsAreMalformedFallsbackToSettingsCredentials()
+        public void LoadPackageSources_WhenEnvironmentCredentialsAreMalformed_FallsbackToSettingsCredentials()
         {
             // Arrange
             var settings = new Mock<ISettings>();
-            settings.Setup(s => s.GetSettingValues("packageSources", true))
+            settings
+                .Setup(s => s.GetSettingValues("packageSources", true))
                 .Returns(new[]
                     {
                         new SettingValue("one", "onesource", false),
                         new SettingValue("two", "twosource", false),
                         new SettingValue("three", "threesource", false)
                     });
-            settings.Setup(s => s.GetNestedValues("packageSourceCredentials", "two"))
-                .Returns(new[] { new KeyValuePair<string, string>("Username", "settinguser"), new KeyValuePair<string, string>("ClearTextPassword", "settingpassword") });
+            settings
+                .Setup(s => s.GetNestedValues("packageSourceCredentials", "two"))
+                .Returns(new[]
+                    {
+                        new KeyValuePair<string, string>("Username", "settinguser"),
+                        new KeyValuePair<string, string>("ClearTextPassword", "settingpassword")
+                    });
 
             var provider = CreatePackageSourceProvider(settings.Object);
 
@@ -1277,8 +1283,7 @@ namespace NuGet.Configuration.Test
             // Assert
             Assert.Equal(3, values.Count);
             AssertPackageSource(values[1], "two", "twosource", true);
-            Assert.Equal("settinguser", values[1].UserName);
-            Assert.Equal("settingpassword", values[1].Password);
+            AssertCredentials(values[1].Credentials, "two", "settinguser", "settingpassword");
         }
 
         // Test that when there are duplicate sources, i.e. sources with the same name,
@@ -1436,32 +1441,32 @@ namespace NuGet.Configuration.Test
             settings.Verify();
         }
 
-#if !IS_CORECLR
         [Fact]
-        public void SavePackageSourcesSavesCredentials()
+        public void SavePackageSources_SavesEncryptedCredentials()
         {
             // Arrange
-            var entropyBytes = Encoding.UTF8.GetBytes("NuGet");
+            var encryptedPassword = Guid.NewGuid().ToString();
+            var credentials = new PackageSourceCredential("twoname", "User", encryptedPassword, isPasswordClearText: false);
             var sources = new[]
                 {
                     new PackageSource("one"),
-                    new PackageSource("twosource", "twoname") { UserName = "User", PasswordText = "password" },
+                    new PackageSource("http://twosource", "twoname") { Credentials = credentials },
                     new PackageSource("three")
                 };
             var settings = new Mock<ISettings>();
-            settings.Setup(s => s.DeleteSection("packageSourceCredentials")).Returns(true).Verifiable();
+            settings
+                .Setup(s => s.DeleteSection("packageSourceCredentials"))
+                .Returns(true)
+                .Verifiable();
 
-            settings.Setup(s => s.SetNestedValues("packageSourceCredentials", It.IsAny<string>(), It.IsAny<IList<KeyValuePair<string, string>>>()))
+            settings
+                .Setup(s => s.SetNestedValues("packageSourceCredentials", "twoname", It.IsAny<IList<KeyValuePair<string, string>>>()))
                 .Callback((string section, string key, IList<KeyValuePair<string, string>> values) =>
                     {
                         Assert.Equal("twoname", key);
                         Assert.Equal(2, values.Count);
-                        AssertKVP(new KeyValuePair<string, string>("Username", "User"), values[0]);
-                        Assert.Equal("Password", values[1].Key);
-                        var decryptedPassword = Encoding.UTF8.GetString(
-                            ProtectedData.Unprotect(Convert.FromBase64String(values[1].Value), entropyBytes, DataProtectionScope.CurrentUser));
-                        Assert.Equal("Password", values[1].Key);
-                        Assert.Equal("password", decryptedPassword);
+                        AssertKeyValuePair("Username", "User", values[0]);
+                        AssertKeyValuePair("Password", encryptedPassword, values[1]);
                     })
                 .Verifiable();
 
@@ -1473,28 +1478,32 @@ namespace NuGet.Configuration.Test
             // Assert
             settings.Verify();
         }
-#endif
 
         [Fact]
-        public void SavePackageSourcesSavesClearTextCredentials()
+        public void SavePackageSources_SavesClearTextCredentials()
         {
             // Arrange
+            var credentials = new PackageSourceCredential("twoname", "User", "password", isPasswordClearText: true);
             var sources = new[]
                 {
                     new PackageSource("one"),
-                    new PackageSource("twosource", "twoname") { UserName = "User", PasswordText = "password", IsPasswordClearText = true },
+                    new PackageSource("http://twosource", "twoname") { Credentials = credentials },
                     new PackageSource("three")
                 };
             var settings = new Mock<ISettings>();
-            settings.Setup(s => s.DeleteSection("packageSourceCredentials")).Returns(true).Verifiable();
+            settings
+                .Setup(s => s.DeleteSection("packageSourceCredentials"))
+                .Returns(true)
+                .Verifiable();
 
-            settings.Setup(s => s.SetNestedValues("packageSourceCredentials", It.IsAny<string>(), It.IsAny<IList<KeyValuePair<string, string>>>()))
+            settings
+                .Setup(s => s.SetNestedValues("packageSourceCredentials", "twoname", It.IsAny<IList<KeyValuePair<string, string>>>()))
                 .Callback((string section, string key, IList<KeyValuePair<string, string>> values) =>
                     {
                         Assert.Equal("twoname", key);
                         Assert.Equal(2, values.Count);
-                        AssertKVP(new KeyValuePair<string, string>("Username", "User"), values[0]);
-                        AssertKVP(new KeyValuePair<string, string>("ClearTextPassword", "password"), values[1]);
+                        AssertKeyValuePair("Username", "User", values[0]);
+                        AssertKeyValuePair("ClearTextPassword", "password", values[1]);
                     })
                 .Verifiable();
 
@@ -2366,15 +2375,13 @@ namespace NuGet.Configuration.Test
             }
         }
 
-#if IS_CORECLR
         [Fact]
-        public void LoadPackageSource_NotDecryptPassword() 
+        public void LoadPackageSources_DoesNotDecryptPassword()
         {
             using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                var configContents =
-                     @"<?xml version=""1.0"" encoding=""utf-8""?>
+                var configContents = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
       <clear />
@@ -2383,11 +2390,11 @@ namespace NuGet.Configuration.Test
 <packageSourceCredentials>
     <test>
       <add key='Username' value='myusername' />
-      <add key='Password' value='removed' />
+      <add key='Password' value='random-encrypted-password' />
     </test>
   </packageSourceCredentials>
-</configuration>
-";
+</configuration>";
+
                 File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.Config"), configContents);
                 var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
                                   configFileName: null,
@@ -2403,19 +2410,17 @@ namespace NuGet.Configuration.Test
                 Assert.Equal(1, sources.Count);
                 Assert.Equal("test", sources[0].Name);
                 Assert.Equal("https://nuget/test", sources[0].Source);
-                Assert.Equal("removed", sources[0].PasswordText);
-                Assert.Throws<NuGetConfigurationException>(()=> sources[0].Password);
+                AssertCredentials(sources[0].Credentials, "test", "myusername", "random-encrypted-password", isPasswordClearText: false);
             }
         }
 
         [Fact]
-        public void LoadPackageSource_NotLoadClearedSource()
+        public void LoadPackageSources_DoesNotLoadClearedSource()
         {
             using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                var configContents =
-                     @"<?xml version=""1.0"" encoding=""utf-8""?>
+                var configContents = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
       <add key=""test"" value=""https://nuget/test"" />
@@ -2428,8 +2433,7 @@ namespace NuGet.Configuration.Test
   </packageSourceCredentials>
 </configuration>
 ";
-                var configContents1 =
-                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+                var configContents1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
       <clear />
@@ -2437,13 +2441,17 @@ namespace NuGet.Configuration.Test
     </packageSources>
 </configuration>
 ";
-                ConfigurationFileTestUtility.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, "TestingGlobalPath"), configContents);
+                ConfigurationFileTestUtility.CreateConfigurationFile(
+                    "nuget.config",
+                    Path.Combine(mockBaseDirectory, "TestingGlobalPath"),
+                    configContents);
                 File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.Config"), configContents1);
-                var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
-                                  configFileName: null,
-                                  machineWideSettings: null,
-                                  loadAppDataSettings: true,
-                                  useTestingGlobalPath: true);
+                var settings = Settings.LoadDefaultSettings(
+                    mockBaseDirectory.Path,
+                    configFileName: null,
+                    machineWideSettings: null,
+                    loadAppDataSettings: true,
+                    useTestingGlobalPath: true);
                 var packageSourceProvider = new PackageSourceProvider(settings);
 
                 // Act
@@ -2453,37 +2461,9 @@ namespace NuGet.Configuration.Test
                 Assert.Equal(1, sources.Count);
                 Assert.Equal("test2", sources[0].Name);
                 Assert.Equal("https://nuget/test2", sources[0].Source);
-                Assert.Null(sources[0].PasswordText);
-                Assert.Null(sources[0].Password);
+                Assert.Null(sources[0].Credentials);
             }
         }
-
-        [Fact]
-        public void SavePackageSource_EncryptPasswordGetException()
-        {
-            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                // Arrange
-                var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
-                                  configFileName: null,
-                                  machineWideSettings: null,
-                                  loadAppDataSettings: true,
-                                  useTestingGlobalPath: true);
-                var packageSourceProvider = new PackageSourceProvider(settings);
-
-                var newSource = new PackageSource("https://test", "test")
-                {
-                    PasswordText = "password",
-                    UserName = "username"
-                };
-                var sources = packageSourceProvider.LoadPackageSources().ToList();
-                sources.Add(newSource);
-
-                // Act & Assert
-                Assert.Throws<NuGetConfigurationException>(() => packageSourceProvider.SavePackageSources(sources));
-            }
-        }
-#endif
 
         private string CreateNuGetConfigContent(string enabledReplacement = "", string disabledReplacement = "", string activeSourceReplacement = "")
         {
@@ -2547,10 +2527,20 @@ namespace NuGet.Configuration.Test
             Assert.True(ps.IsOfficial == isOfficial);
         }
 
-        private static void AssertKVP(KeyValuePair<string, string> expected, KeyValuePair<string, string> actual)
+        private static void AssertKeyValuePair(string expectedKey, string expectedValue, KeyValuePair<string, string> actual)
         {
-            Assert.Equal(expected.Key, actual.Key);
-            Assert.Equal(expected.Value, actual.Value);
+            Assert.NotNull(actual);
+            Assert.Equal(expectedKey, actual.Key);
+            Assert.Equal(expectedValue, actual.Value);
+        }
+
+        private void AssertCredentials(PackageSourceCredential actual, string source, string userName, string passwordText, bool isPasswordClearText = true)
+        {
+            Assert.NotNull(actual);
+            Assert.Equal(source, actual.Source);
+            Assert.Equal(userName, actual.Username);
+            Assert.Equal(passwordText, actual.PasswordText);
+            Assert.Equal(isPasswordClearText, actual.IsPasswordClearText);
         }
     }
 }
