@@ -51,5 +51,10 @@ namespace NuGet.Commands.Test
         {
             throw new NotImplementedException();
         }
+
+        public string DefaultPushSource
+        {
+            get { throw new NotImplementedException(); }
+        }
     }
 }

@@ -166,6 +166,11 @@ namespace StandaloneUI
         {
             throw new NotImplementedException();
         }
+
+        public string DefaultPushSource
+        {
+            get { throw new NotImplementedException(); }
+        }
     }
 
     internal class StandAloneUICommonOperations : ICommonOperations
