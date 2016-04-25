@@ -35,7 +35,7 @@ namespace NuGet.CommandLine
             // First argument should be the package
             var packagePath = Arguments[0];
 
-            var source = ResolveSource(packagePath, ConfigurationDefaults.Instance.DefaultPushSource);
+            var source = ResolveSource(packagePath, SourceProvider.DefaultPushSource);
             if (string.IsNullOrEmpty(source))
             {
                 throw new CommandLineException(
@@ -73,6 +73,11 @@ namespace NuGet.CommandLine
         private string ResolveSource(string packagePath, string configurationDefaultPushSource = null)
         {
             var source = Source;
+
+            if (string.IsNullOrEmpty(source))
+            {
+                source = configurationDefaultPushSource;
+            }
 
             if (!String.IsNullOrEmpty(source))
             {
