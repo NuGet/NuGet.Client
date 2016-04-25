@@ -1,5 +1,5 @@
 {
-  "version": "3.4.3-*",
+  "version": "3.4.4-*",
   "description": "NuGet's dependency resolver within the NuGet.Packaging package",
   "authors": [
     "NuGet"
@@ -11,11 +11,11 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.Packaging": "3.4.3-*",
-    "NuGet.Protocol.Core.Types": "3.4.3-*",
+    "NuGet.Packaging": "3.4.4-*",
+    "NuGet.Protocol.Core.Types": "3.4.4-*",
     "NuGet.Shared": {
       "type": "build",
-      "version": "3.4.3-*"
+      "version": "3.4.4-*"
     }
   },
   "frameworks": {

@@ -7,7 +7,7 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.Protocol.Core.v3": "3.4.3-*"
+    "NuGet.Protocol.Core.v3": "3.4.4-*"
   },
   "frameworks": {
     "dnx451": {

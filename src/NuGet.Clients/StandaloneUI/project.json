@@ -2,10 +2,10 @@
   "dependencies": {
     "Microsoft.Web.Xdt": "2.1.1",
     "Newtonsoft.Json": "6.0.4",
-    "NuGet.Protocol.VisualStudio": "3.4.3-*",
-    "NuGet.ProjectManagement": "3.4.3-*",
-    "NuGet.PackageManagement": "3.4.3-*",
-    "Test.Utility": "3.4.3-*"
+    "NuGet.Protocol.VisualStudio": "3.4.4-*",
+    "NuGet.ProjectManagement": "3.4.4-*",
+    "NuGet.PackageManagement": "3.4.4-*",
+    "Test.Utility": "3.4.4-*"
   },
   "frameworks": {
     "net451": {}

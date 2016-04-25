@@ -1,10 +1,10 @@
 {
-  "version": "3.4.3-*",
+  "version": "3.4.4-*",
   "dependencies": {
-    "NuGet.ProjectManagement": "3.4.3-*",
+    "NuGet.ProjectManagement": "3.4.4-*",
     "xunit": "2.1.0",
     "xunit.runner.dnx": "2.1.0-rc1-build204",
-    "Test.Utility": "3.4.3-*"
+    "Test.Utility": "3.4.4-*"
   },
   "commands": {
     "test": "xunit.runner.dnx"
