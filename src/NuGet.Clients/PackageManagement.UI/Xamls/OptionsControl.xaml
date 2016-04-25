@@ -43,7 +43,7 @@
         Content="{x:Static nuget:Resources.Checkbox_ShowPreviewWindow}" />
 
       <!-- install options -->
-      <Grid
+      <Grid Visibility="{Binding Options.ShowClassicOptions, Converter={StaticResource BooleanToVisibilityConverter}}"
           Grid.Row="2"
           Margin="16,16,0,0">
         <Grid.RowDefinitions>
@@ -108,7 +108,7 @@
       </Grid>
 
       <!-- uninstall options -->
-      <Grid
+      <Grid Visibility="{Binding Options.ShowClassicOptions, Converter={StaticResource BooleanToVisibilityConverter}}"
           Grid.Row="3"
           Margin="16,16,0,0">
         <Grid.RowDefinitions>

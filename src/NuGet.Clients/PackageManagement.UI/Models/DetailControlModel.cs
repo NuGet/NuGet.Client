@@ -42,7 +42,7 @@ namespace NuGet.PackageManagement.UI
             _options = new Options();
 
             // Show dependency behavior and file conflict options if any of the projects are non-build integrated
-            _options.ShowClassicOptions = nugetProjects.Any(project => !(project is BuildIntegratedNuGetProject));
+            _options.ShowClassicOptions = nugetProjects.Any(project => !(project is INuGetIntegratedProject));
         }
 
         /// <summary>
