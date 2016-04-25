@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Xml;
 
 namespace NuGet.CommandLine.Rules
 {
@@ -11,7 +12,16 @@ namespace NuGet.CommandLine.Rules
 
         public IEnumerable<PackageIssue> Validate(IPackage package)
         {
-            foreach (var file in package.GetFiles())
+            IEnumerable<IPackageFile> files = new List<IPackageFile>();
+            try
+            {
+                files = package.GetFiles();
+            }
+            catch (XmlException)
+            {
+            }
+
+            foreach (var file in files)
             {
                 foreach (string prefix in Prefixes)
                 {

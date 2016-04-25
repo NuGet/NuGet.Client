@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
+using System.Xml;
 
 namespace NuGet.CommandLine.Rules
 {
@@ -12,7 +13,16 @@ namespace NuGet.CommandLine.Rules
         public IEnumerable<PackageIssue> Validate(IPackage package)
         {
             var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var file in package.GetFiles())
+            IEnumerable<IPackageFile> files = new List<IPackageFile>();
+            try
+            {
+                files = package.GetFiles();
+            }
+            catch (XmlException)
+            {
+            }
+
+            foreach (var file in files)
             {
                 string path = file.Path;
                 string[] parts = path.Split(Path.DirectorySeparatorChar);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Xml;
 
 namespace NuGet.CommandLine.Rules
 {
@@ -9,7 +10,16 @@ namespace NuGet.CommandLine.Rules
     {
         public IEnumerable<PackageIssue> Validate(IPackage package)
         {
-            foreach (var file in package.GetToolFiles())
+            IEnumerable<IPackageFile> files = new List<IPackageFile>();
+            try
+            {
+                files = package.GetToolFiles();
+            }
+            catch (XmlException)
+            {
+            }
+
+            foreach (var file in files)
             {
                 string name = Path.GetFileName(file.Path);
                 if (file.TargetFramework != null && name.Equals("init.ps1", StringComparison.OrdinalIgnoreCase))
