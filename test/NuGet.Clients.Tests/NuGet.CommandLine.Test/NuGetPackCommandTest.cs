@@ -193,7 +193,7 @@ namespace NuGet.CommandLine.Test
       <frameworkAssembly assemblyName=""System.Core"" />
       <frameworkAssembly assemblyName=""System.Xml"" />
       <frameworkAssembly assemblyName=""System.Xml.Linq"" />
-      <frameworkAssembly assemblyName=""System.Net.Http"" />
+      <frameworkAssembly assemblyName=""System.Net.Http"" targetFramework="""" />
       <frameworkAssembly assemblyName=""System.Net.Http.Formatting"" targetFramework=""net45"" />
       <frameworkAssembly assemblyName=""System.ComponentModel.DataAnnotations"" targetFramework=""net35"" />
     </frameworkAssemblies>
