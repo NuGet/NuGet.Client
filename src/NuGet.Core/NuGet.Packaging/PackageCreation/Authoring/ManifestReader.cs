@@ -215,6 +215,8 @@ namespace NuGet.Packaging
                     let assemblyNameAttribute = element.Attribute("assemblyName")
                     where assemblyNameAttribute != null && !String.IsNullOrEmpty(assemblyNameAttribute.Value)
                     select new FrameworkAssemblyReference(assemblyNameAttribute.Value?.Trim(),
+                        string.IsNullOrEmpty(element.GetOptionalAttributeValue("targetFramework")) ?
+                        new[] { NuGetFramework.AnyFramework } :
                         new[] { NuGetFramework.Parse(element.GetOptionalAttributeValue("targetFramework")?.Trim()) })
                     ).ToList();
         }
