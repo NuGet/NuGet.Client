@@ -4505,7 +4505,6 @@ namespace NuGet.Test
             var packageDependency = packageInfo.Dependencies.Single();
             Assert.Equal("b", packageDependency.Id);
             Assert.Equal(bVersionRange.ToString(), packageDependency.VersionRange.ToString());
-            Assert.True(packageDependency.VersionRange.IncludePrerelease);
         }
 
         private class TestDownloadResourceProvider : ResourceProvider

@@ -303,6 +303,19 @@ namespace NuGet.Versioning
             return result;
         }
 
+        /// <summary>
+        /// Infer if the range should allow prerelease versions based on if the lower or upper bounds 
+        /// contain prerelease labels.
+        /// </summary>
+        protected bool HasPrereleaseBounds
+        {
+            get
+            {
+                return IsPrerelease(_minVersion) == true
+                    || IsPrerelease(_maxVersion) == true;
+            }
+        }
+
         private static bool? IsPrerelease(SemanticVersion version)
         {
             bool? b = null;
