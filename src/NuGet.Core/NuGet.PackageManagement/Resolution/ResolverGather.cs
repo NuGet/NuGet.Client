@@ -193,25 +193,29 @@ namespace NuGet.PackageManagement
 
             var allPrimarySources = String.Join(",", allPrimarySourcesList);
 
-            // Throw if a primary target was not found
-            // The primary package may be missing if there are network issues and the sources were unreachable
-            foreach (var targetId in allPrimaryTargets)
+            // When it's update all packages scenario, then ignore throwing error for missing primary targets in specified sources.
+            if (!_context.IsUpdateAll)
             {
-                if (!combinedResults.Any(package => string.Equals(package.Id, targetId, StringComparison.OrdinalIgnoreCase)))
+                // Throw if a primary target was not found
+                // The primary package may be missing if there are network issues and the sources were unreachable
+                foreach (var targetId in allPrimaryTargets)
                 {
-                    string packageIdentity = targetId;
-
-                    foreach (var pid in _context.PrimaryTargets)
+                    if (!combinedResults.Any(package => string.Equals(package.Id, targetId, StringComparison.OrdinalIgnoreCase)))
                     {
-                        if (string.Equals(targetId, pid.Id, StringComparison.OrdinalIgnoreCase))
-                        {
-                            packageIdentity = String.Concat(targetId, ",", pid.Version);
-                            break;
-                        }
-                    }
+                        string packageIdentity = targetId;
 
-                    string message = String.Format(Strings.PackageNotFoundInPrimarySources, packageIdentity, allPrimarySources);
-                    throw new InvalidOperationException(message);
+                        foreach (var pid in _context.PrimaryTargets)
+                        {
+                            if (string.Equals(targetId, pid.Id, StringComparison.OrdinalIgnoreCase))
+                            {
+                                packageIdentity = String.Concat(targetId, ",", pid.Version);
+                                break;
+                            }
+                        }
+
+                        string message = String.Format(Strings.PackageNotFoundInPrimarySources, packageIdentity, allPrimarySources);
+                        throw new InvalidOperationException(message);
+                    }
                 }
             }
 
