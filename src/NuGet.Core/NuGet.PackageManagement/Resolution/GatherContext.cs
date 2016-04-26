@@ -70,6 +70,11 @@ namespace NuGet.PackageManagement
         public INuGetProjectContext ProjectContext { get; set; }
 
         /// <summary>
+        /// If true, missing primary targets will be ignored.
+        /// </summary>
+        public bool IsUpdateAll { get; set; }
+
+        /// <summary>
         /// Logging adapter
         /// </summary>
         public Common.ILogger Log
