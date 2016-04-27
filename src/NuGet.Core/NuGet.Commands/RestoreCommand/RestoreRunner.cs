@@ -196,16 +196,31 @@ namespace NuGet.Commands
 
             if (File.Exists(input) || Directory.Exists(input))
             {
-                throw new InvalidOperationException(
-                    string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.Error_InvalidCommandLineInput,
-                        input));
+                // Not a file or directory we know about. Try to be helpful without response.
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, GetInvalidInputErrorMessage(input), input));
             }
-            else
+
+            throw new FileNotFoundException(input);
+        }
+
+        public static string GetInvalidInputErrorMessage(string input)
+        {
+            Debug.Assert(File.Exists(input) || Directory.Exists(input));
+            if (File.Exists(input))
             {
-                throw new FileNotFoundException(input);
+                var fileExtension = Path.GetExtension(input);
+                if (".json".Equals(fileExtension, StringComparison.OrdinalIgnoreCase))
+                {
+                    return Strings.Error_InvalidCommandLineInputJson;
+                }
+
+                if (".config".Equals(fileExtension, StringComparison.OrdinalIgnoreCase))
+                {
+                    return Strings.Error_InvalidCommandLineInputConfig;
+                }
             }
+
+            return Strings.Error_InvalidCommandLineInput;
         }
     }
 }

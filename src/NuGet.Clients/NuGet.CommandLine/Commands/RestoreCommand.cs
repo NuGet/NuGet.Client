@@ -482,6 +482,11 @@ namespace NuGet.CommandLine
             {
                 ProcessSolutionFile(projectFilePath, packageRestoreInputs);
             }
+            else
+            {
+                // Not a file we know about. Try to be helpful without response.
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, RestoreRunner.GetInvalidInputErrorMessage(projectFileName), projectFileName));
+            }
         }
 
         /// <summary>

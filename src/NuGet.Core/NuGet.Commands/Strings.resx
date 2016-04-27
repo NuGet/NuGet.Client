@@ -256,6 +256,12 @@
   <data name="Error_InvalidCommandLineInput" xml:space="preserve">
     <value>Invalid input '{0}'. The file type was not recognized.</value>
   </data>
+  <data name="Error_InvalidCommandLineInputJson" xml:space="preserve">
+    <value>Invalid input '{0}'. Valid file names are 'project.json' or '*.project.json'.</value>
+  </data>
+  <data name="Error_InvalidCommandLineInputConfig" xml:space="preserve">
+    <value>Invalid input '{0}'. Valid file names are 'packages.config' or 'packages.*.config'.</value>
+  </data>
   <data name="Log_RestoringToolPackages" xml:space="preserve">
     <value>Restoring packages for tool '{0}' in {1}...</value>
     <comment>String format parameters:

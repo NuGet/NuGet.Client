@@ -105,6 +105,24 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Invalid input &apos;{0}&apos;. Valid file names are &apos;packages.config&apos; or &apos;packages.*.config&apos;..
+        /// </summary>
+        public static string Error_InvalidCommandLineInputConfig {
+            get {
+                return ResourceManager.GetString("Error_InvalidCommandLineInputConfig", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Invalid input &apos;{0}&apos;. Valid file names are &apos;project.json&apos; or &apos;*.project.json&apos;..
+        /// </summary>
+        public static string Error_InvalidCommandLineInputJson {
+            get {
+                return ResourceManager.GetString("Error_InvalidCommandLineInputJson", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Failed to build package because of an unsupported targetFramework value on &apos;{0}&apos;..
         /// </summary>
         public static string Error_InvalidTargetFramework {
