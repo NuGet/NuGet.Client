@@ -364,10 +364,6 @@ namespace NuGet.Commands
             {
                 builder.Tags.AddRange(spec.Tags);
             }
-            if (spec.Dependencies.Any())
-            {
-                AddDependencyGroups(spec.Dependencies, NuGetFramework.AnyFramework, builder);
-            }
 
             if (spec.TargetFrameworks.Any())
             {
@@ -378,12 +374,19 @@ namespace NuGet.Commands
                         throw new Exception(String.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidTargetFramework, framework.FrameworkName));
                     }
 
-                    AddDependencyGroups(framework.Dependencies, framework.FrameworkName, builder);
+                    AddDependencyGroups(framework.Dependencies.Concat(spec.Dependencies), framework.FrameworkName, builder);
+                }
+            }
+            else
+            {
+                if (spec.Dependencies.Any())
+                {
+                    AddDependencyGroups(spec.Dependencies, NuGetFramework.AnyFramework, builder);
                 }
             }
         }
 
-        private static void AddDependencyGroups(IList<LibraryDependency> dependencies, NuGetFramework framework, PackageBuilder builder)
+        private static void AddDependencyGroups(IEnumerable<LibraryDependency> dependencies, NuGetFramework framework, PackageBuilder builder)
         {
             List<PackageDependency> packageDependencies = new List<PackageDependency>();
 
@@ -794,7 +797,23 @@ namespace NuGet.Commands
 
         public static string GetInputFile(PackArgs packArgs)
         {
-            IEnumerable<string> files = packArgs.Arguments != null && packArgs.Arguments.Any() ? packArgs.Arguments : Directory.GetFiles(packArgs.CurrentDirectory);
+            bool usingDirectory = false;
+            if (packArgs.Arguments != null && packArgs.Arguments.Count() == 1)
+            {
+                string first = packArgs.Arguments.First();
+                if (Directory.Exists(first))
+                {
+                    if (string.IsNullOrEmpty(packArgs.OutputDirectory))
+                    {
+                        packArgs.OutputDirectory = packArgs.CurrentDirectory;
+                    }
+
+                    packArgs.CurrentDirectory = Path.GetFullPath(first);
+                    Directory.SetCurrentDirectory(packArgs.CurrentDirectory);
+                    usingDirectory = true;
+                }
+            }
+            IEnumerable<string> files = !usingDirectory && packArgs.Arguments != null && packArgs.Arguments.Any() ? packArgs.Arguments : Directory.GetFiles(packArgs.CurrentDirectory);
 
             return GetInputFile(packArgs, files);
         }
@@ -804,30 +823,57 @@ namespace NuGet.Commands
             var candidates = files.Where(file => _allowedExtensions.Contains(Path.GetExtension(file))).ToList();
             string result;
 
-            candidates.RemoveAll(ext => ext.EndsWith(".json") && 
-                                    !ext.Equals(ProjectJsonPathUtilities.ProjectConfigFileName, StringComparison.OrdinalIgnoreCase) &&
-                                    !ext.EndsWith(ProjectJsonPathUtilities.ProjectConfigFileEnding, StringComparison.OrdinalIgnoreCase));
+            candidates.RemoveAll(ext => ext.EndsWith(".lock.json") ||
+                                    (ext.EndsWith(".json") && 
+                                    !Path.GetFileName(ext).Equals(ProjectJsonPathUtilities.ProjectConfigFileName, StringComparison.OrdinalIgnoreCase) &&
+                                    !ext.EndsWith(ProjectJsonPathUtilities.ProjectConfigFileEnding, StringComparison.OrdinalIgnoreCase)));
 
-            switch (candidates.Count)
+            if (!candidates.Any())
             {
-                case 1:
+                throw new ArgumentException(Strings.InputFileNotSpecified);
+            }
+            if (candidates.Count == 1)
+            {
+                result = candidates[0];
+            }
+            else
+            {
+                // Remove all nuspec files
+                candidates.RemoveAll(file => Path.GetExtension(file).Equals(NuGetConstants.ManifestExtension, StringComparison.OrdinalIgnoreCase));
+                if (candidates.Count == 1)
+                {
                     result = candidates[0];
-                    break;
-
-                case 2:
-                    // Remove all nuspec files
-                    candidates.RemoveAll(file => Path.GetExtension(file).Equals(NuGetConstants.ManifestExtension, StringComparison.OrdinalIgnoreCase));
+                }
+                else
+                {
+                    // Remove all json files
+                    candidates.RemoveAll(file => Path.GetExtension(file).Equals(".json", StringComparison.OrdinalIgnoreCase));
                     if (candidates.Count == 1)
                     {
                         result = candidates[0];
-                        break;
                     }
-                    goto default;
-                default:
-                    throw new ArgumentException(Strings.InputFileNotSpecified);
+                    else
+                    {
+                        throw new ArgumentException(Strings.InputFileNotSpecified);
+                    }
+                }
             }
 
-            return Path.GetFullPath(Path.Combine(packArgs.CurrentDirectory, result));
+            string fullPath = Path.GetFullPath(Path.Combine(packArgs.CurrentDirectory, result));
+            string directory = Path.GetDirectoryName(fullPath);
+
+            if (!directory.Equals(packArgs.CurrentDirectory, StringComparison.OrdinalIgnoreCase))
+            {
+                if (string.IsNullOrEmpty(packArgs.OutputDirectory))
+                {
+                    packArgs.OutputDirectory = packArgs.CurrentDirectory;
+                }
+
+                packArgs.CurrentDirectory = directory;
+                Directory.SetCurrentDirectory(packArgs.CurrentDirectory);
+            }
+
+            return fullPath;
         }
 
         private void WriteLine(string message, object arg = null)

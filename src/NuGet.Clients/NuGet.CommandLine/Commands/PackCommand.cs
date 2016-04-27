@@ -84,6 +84,7 @@ namespace NuGet.CommandLine
             PackArgs packArgs = new PackArgs();
             packArgs.Logger = Console;
             packArgs.Arguments = Arguments;
+            packArgs.OutputDirectory = OutputDirectory;
 
             // The directory that contains msbuild
             packArgs.MsBuildDirectory = new Lazy<string>(() => MsBuildUtility.GetMsbuildDirectory(MSBuildVersion, Console));
@@ -131,7 +132,6 @@ namespace NuGet.CommandLine
             packArgs.MinClientVersion = _minClientVersionValue;
             packArgs.NoDefaultExcludes = NoDefaultExcludes;
             packArgs.NoPackageAnalysis = NoPackageAnalysis;
-            packArgs.OutputDirectory = OutputDirectory;
             packArgs.Path = path;
             if (Properties.Any())
             {
