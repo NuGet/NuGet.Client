@@ -80,7 +80,18 @@ namespace NuGet.PackageManagement.UI
         private object _itemsLock = new object();
 
         public ObservableCollection<object> Items { get; } = new ObservableCollection<object>();
-        public IEnumerable<PackageItemListViewModel> PackageItems => Items.OfType<PackageItemListViewModel>();
+
+        public IEnumerable<PackageItemListViewModel> PackageItems
+        {
+            get
+            {
+                lock (_itemsLock)
+                {
+                    return Items.OfType<PackageItemListViewModel>();
+                }
+            }
+        }
+
         public PackageItemListViewModel SelectedPackageItem => _list.SelectedItem as PackageItemListViewModel;
 
         // Load items using the specified loader
@@ -261,10 +272,14 @@ namespace NuGet.PackageManagement.UI
 
                     _loadingStatusIndicator.Status = state.LoadingStatus;
 
-                    if (!Items.Contains(_loadingStatusIndicator))
+                    lock (_itemsLock)
                     {
-                        Items.Add(_loadingStatusIndicator);
+                        if (!Items.Contains(_loadingStatusIndicator))
+                        {
+                            Items.Add(_loadingStatusIndicator);
+                        }
                     }
+                    
                 }
             });
         }
@@ -299,7 +314,10 @@ namespace NuGet.PackageManagement.UI
         private void UpdatePackageList(List<PackageItemListViewModel> packages, bool refresh)
         {
             // remove the loading status indicator if it's in the list
-            Items.Remove(_loadingStatusIndicator);
+            lock (_itemsLock)
+            {
+                Items.Remove(_loadingStatusIndicator);
+            }
 
             if (refresh)
             {
@@ -309,13 +327,16 @@ namespace NuGet.PackageManagement.UI
             _selectedCount += packages.Count(p => p.Selected);
 
             // add newly loaded items
-            packages.ForEach(p =>
+            lock (_itemsLock)
             {
-                p.PropertyChanged += Package_PropertyChanged;
-                Items.Add(p);
-            });
+                packages.ForEach(p =>
+                {
+                    p.PropertyChanged += Package_PropertyChanged;
+                    Items.Add(p);
+                });
 
-            Items.Add(_loadingStatusIndicator);
+                Items.Add(_loadingStatusIndicator);
+            }
         }
 
         private void ClearPackageList()
@@ -323,7 +344,11 @@ namespace NuGet.PackageManagement.UI
             PackageItems
                 .ToList()
                 .ForEach(i => i.PropertyChanged -= Package_PropertyChanged);
-            Items.Clear();
+
+            lock (_itemsLock)
+            {
+                Items.Clear();
+            }
 
             _loadingStatusBar.ItemsLoaded = 0;
         }
@@ -366,19 +391,22 @@ namespace NuGet.PackageManagement.UI
             }
 
             int packageCount;
-            if (Items.Count == 0)
+            lock (_itemsLock)
             {
-                packageCount = 0;
-            }
-            else
-            {
-                if (Items[Items.Count - 1] == _loadingStatusIndicator)
+                if (Items.Count == 0)
                 {
-                    packageCount = Items.Count - 1;
+                    packageCount = 0;
                 }
                 else
                 {
-                    packageCount = Items.Count;
+                    if (Items[Items.Count - 1] == _loadingStatusIndicator)
+                    {
+                        packageCount = Items.Count - 1;
+                    }
+                    else
+                    {
+                        packageCount = Items.Count;
+                    }
                 }
             }
 
@@ -458,9 +486,12 @@ namespace NuGet.PackageManagement.UI
             {
                 var first = _scrollViewer.VerticalOffset;
                 var last = _scrollViewer.ViewportHeight + first;
-                if (_scrollViewer.ViewportHeight > 0 && last >= Items.Count)
+                lock (_itemsLock)
                 {
-                    LoadItems(selectedPackageItem: null);
+                    if (_scrollViewer.ViewportHeight > 0 && last >= Items.Count)
+                    {
+                        LoadItems(selectedPackageItem: null);
+                    }
                 }
             }
         }
