@@ -727,7 +727,21 @@ namespace NuGet.PackageManagement
                 }
 
                 // Unless the packageIdentity was explicitly asked for we should remove any potential downgrades
-                var allowDowngrades = packageIdentities.Count > 0;
+                var allowDowngrades = false;
+                if (packageIdentities.Count == 1)
+                {
+                    // Get installed package version
+                    var packageTargetsForResolver = new HashSet<PackageIdentity>(oldListOfInstalledPackages, PackageIdentity.Comparer);
+                    var installedPackageWithSameId = packageTargetsForResolver.Where(p => p.Id.Equals(packageIdentities[0].Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                    if (installedPackageWithSameId != null)
+                    {
+                        if (installedPackageWithSameId.Version > packageIdentities[0].Version)
+                        {
+                            // Looks like the installed package is of higher version than one being installed. So, we take it that downgrade is allowed
+                            allowDowngrades = true;
+                        }
+                    }
+                }
 
                 var gatherContext = new GatherContext()
                 {
@@ -2411,6 +2425,6 @@ namespace NuGet.PackageManagement
                     string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedPackageFeature,
                     packageIdentity.Id + " " + packageIdentity.Version.ToNormalizedString()));
             }
-        }
+        }        
     }
 }

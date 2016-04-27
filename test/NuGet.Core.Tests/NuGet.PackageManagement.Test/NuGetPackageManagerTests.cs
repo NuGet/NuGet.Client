@@ -2623,6 +2623,76 @@ namespace NuGet.Test
             }
         }
 
+        [Fact]
+        public async Task TestPacManPreviewUpdateMultiWithDowngradeConflict()
+        {
+            // Arrange
+
+            // Set up Package Source
+            var packages = new List<SourcePackageDependencyInfo>
+            {
+                new SourcePackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("a", new NuGetVersion(2, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("a", new NuGetVersion(3, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("b", new NuGetVersion(1, 0, 0), new[] { new Packaging.Core.PackageDependency("a", new VersionRange(new NuGetVersion(1, 0, 0), true, new NuGetVersion(1, 0, 0), true)) }, true, null),
+                new SourcePackageDependencyInfo("b", new NuGetVersion(2, 0, 0), new[] { new Packaging.Core.PackageDependency("a", new VersionRange(new NuGetVersion(2, 0, 0), true, new NuGetVersion(3, 0, 0), true)) }, true, null),
+                new SourcePackageDependencyInfo("b", new NuGetVersion(3, 0, 0), new[] { new Packaging.Core.PackageDependency("a", new VersionRange(new NuGetVersion(2, 0, 0), true, new NuGetVersion(3, 0, 0), false)) }, true, null),
+                new SourcePackageDependencyInfo("c", new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("c", new NuGetVersion(2, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("c", new NuGetVersion(3, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+            };
+
+            var sourceRepositoryProvider = CreateSource(packages);
+
+            // Set up NuGetProject
+            var fwk45 = NuGetFramework.Parse("net45");
+
+            var installedPackages = new List<NuGet.Packaging.PackageReference>
+            {
+                new NuGet.Packaging.PackageReference(new PackageIdentity("a", new NuGetVersion(2, 0, 0)), fwk45, true),
+                new NuGet.Packaging.PackageReference(new PackageIdentity("b", new NuGetVersion(3, 0, 0)), fwk45, true),
+                new NuGet.Packaging.PackageReference(new PackageIdentity("c", new NuGetVersion(2, 0, 0)), fwk45, true),
+            };
+
+            var nuGetProject = new TestNuGetProject(installedPackages);
+
+            // Create Package Manager
+            using (var solutionManager = new TestSolutionManager(true))
+            {
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    new Configuration.NullSettings(),
+                    solutionManager,
+                    new TestDeleteOnRestartManager());
+
+                // Main Act
+
+                var targets = new List<PackageIdentity>
+                {
+                    new PackageIdentity("a", new NuGetVersion(3, 0, 0)),
+                    new PackageIdentity("c", new NuGetVersion(3, 0, 0)),
+                };
+
+                try
+                {
+                    await nuGetPackageManager.PreviewUpdatePackagesAsync(
+                        targets,
+                        nuGetProject,
+                        new ResolutionContext(),
+                        new TestNuGetProjectContext(),
+                        sourceRepositoryProvider.GetRepositories(),
+                        sourceRepositoryProvider.GetRepositories(),
+                        CancellationToken.None);
+
+                    Assert.True(false);
+                }
+                catch (Exception e)
+                {
+                    Assert.IsType(typeof(InvalidOperationException), e);
+                }
+            }
+        }
+
         // [Fact] -- This test performs update but verifies for a specific version
         //           This is not going to work as newer versions are uploaded
         public async Task TestPacManPreviewUpdatePackages()
