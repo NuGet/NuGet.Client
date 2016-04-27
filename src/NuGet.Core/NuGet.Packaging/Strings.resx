@@ -174,4 +174,7 @@
   <data name="ErrorUnableToDeleteFile" xml:space="preserve">
     <value>Unable to delete temporary file '{0}'. Error: '{1}'.</value>
   </data>
+  <data name="Error_InvalidTargetFramework" xml:space="preserve">
+    <value>Unsupported targetFramework value '{0}'.</value>
+  </data>
 </root>

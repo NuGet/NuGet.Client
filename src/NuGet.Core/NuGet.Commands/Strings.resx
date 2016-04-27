@@ -376,11 +376,11 @@
   </data>
   <data name="Log_FrameworkDisplay" xml:space="preserve">
     <value>{0} ({1})</value>
-    <comment>0 - framwork short name, 1 - System.FrameworkName</comment>
+    <comment>0 - framework short name, 1 - System.FrameworkName</comment>
   </data>
   <data name="Log_FrameworkRIDDisplay" xml:space="preserve">
     <value>{0} ({1}) / {2}</value>
-    <comment>0 - framwork short name, 1 - System.FrameworkName, 2 - Runtime ID</comment>
+    <comment>0 - framework short name, 1 - System.FrameworkName, 2 - Runtime ID</comment>
   </data>
   <data name="Log_PackageNotCompatibleWithFx_NoSupports" xml:space="preserve">
     <value>Package {0} {1} does not support any target frameworks.</value>
@@ -393,5 +393,11 @@
   </data>
   <data name="InputFileNotSpecified" xml:space="preserve">
     <value>Please specify a nuspec, project.json, project file to use</value>
+  </data>
+  <data name="Error_PackFailed" xml:space="preserve">
+    <value>Failed to build package. {0}</value>
+  </data>
+  <data name="Error_InvalidTargetFramework" xml:space="preserve">
+    <value>Failed to build package because of an unsupported targetFramework value on '{0}'.</value>
   </data>
 </root>

@@ -526,13 +526,6 @@ namespace NuGet.ProjectModel
         {
             var frameworkName = GetFramework(targetFramework.Key);
 
-            // If it's not unsupported then keep it
-            if (frameworkName == NuGetFramework.UnsupportedFramework)
-            {
-                // REVIEW: Should we skip unsupported target frameworks
-                return false;
-            }
-
             var properties = targetFramework.Value.Value<JObject>();
 
             var importFrameworks = GetImports(properties, packageSpec);
