@@ -252,7 +252,7 @@ namespace NuGet.CommandLine
             ApplyAction(p => p.AddOutputFiles(builder));
 
             // if there is a .nuspec file, only add content files if the <files /> element is not empty.
-            if (manifest == null || manifest.Files == null || manifest.Files.Count > 0)
+            if (manifest == null || manifest.Files == null || manifest.Files.Count > 0 || IncludeReferencedProjects)
             {
                 // Add content files
                 ApplyAction(p => p.AddFiles(builder, ContentItemType, ContentFolder));
