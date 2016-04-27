@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Xml;
 
 namespace NuGet.CommandLine.Rules
 {
@@ -13,16 +12,7 @@ namespace NuGet.CommandLine.Rules
 
         public IEnumerable<PackageIssue> Validate(IPackage package)
         {
-            IEnumerable<IPackageFile> files = new List<IPackageFile>();
-            try
-            {
-                files = package.GetFiles();
-            }
-            catch (XmlException)
-            {
-            }
-
-            foreach (var file in files)
+            foreach (IPackageFile file in package.GetFiles())
             {
                 string path = file.Path;
 

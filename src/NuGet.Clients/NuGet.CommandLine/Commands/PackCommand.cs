@@ -4,6 +4,7 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Xml;
 using NuGet.Common;
 using NuGet.Versioning;
 
@@ -441,16 +442,25 @@ namespace NuGet.CommandLine
                 packageRules = packageRules.Concat(new[] { new StrictSemanticVersionValidationRule() });
             }
 
-            IList<PackageIssue> issues = package.Validate(packageRules).OrderBy(p => p.Title, StringComparer.CurrentCulture).ToList();
-
-            if (issues.Count > 0)
+            try
             {
-                Console.WriteLine();
-                Console.WriteWarning(LocalizedResourceManager.GetString("PackageCommandPackageIssueSummary"), issues.Count, package.Id);
-                foreach (var issue in issues)
+                package.GetFiles();
+
+                IList<PackageIssue> issues = package.Validate(packageRules).OrderBy(p => p.Title, StringComparer.CurrentCulture).ToList();
+
+                if (issues.Count > 0)
                 {
-                    PrintPackageIssue(issue);
+                    Console.WriteLine();
+                    Console.WriteWarning(LocalizedResourceManager.GetString("PackageCommandPackageIssueSummary"), issues.Count, package.Id);
+                    foreach (var issue in issues)
+                    {
+                        PrintPackageIssue(issue);
+                    }
                 }
+            }
+            catch (XmlException)
+            {
+                Console.WriteWarning(NuGetResources.Warning_XmlValidation);
             }
         }
 
