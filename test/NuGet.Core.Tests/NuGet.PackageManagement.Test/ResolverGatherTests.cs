@@ -711,6 +711,50 @@ namespace NuGet.Test
         }
 
         [Fact]
+        public async Task ResolverGather_UpdateAllWithMissingPrimaryPackage()
+        {
+            // Arrange
+            var targetA = CreatePackage("a", "2.0.0");
+            var targetB = CreatePackage("b", "2.0.0");
+            IEnumerable<PackageIdentity> targets = new[] { targetA, targetB };
+
+            var framework = NuGetFramework.Parse("net451");
+
+            var repoA = new List<SourcePackageDependencyInfo>
+                {
+                    CreateDependencyInfo("a", "1.0.0"),
+                    CreateDependencyInfo("a", "2.0.0")
+                };
+
+            var primaryRepo = new List<SourceRepository>();
+            primaryRepo.Add(CreateRepo("a", repoA));
+
+            var repos = new List<SourceRepository>();
+            repos.Add(CreateRepo("a", repoA));
+
+            var installedPackages = new List<PackageIdentity>
+                {
+                    CreatePackage("a", "1.0.0"),
+                    CreatePackage("b", "1.0.0")
+                };
+
+            var context = new GatherContext();
+            context.PrimaryTargets = targets.ToList();
+            context.InstalledPackages = installedPackages;
+            context.TargetFramework = framework;
+            context.PrimarySources = primaryRepo;
+            context.AllSources = repos;
+            context.IsUpdateAll = true;
+            context.PackagesFolderSource = CreateRepo("installed", new List<SourcePackageDependencyInfo>());
+
+            // Act
+            var results = await ResolverGather.GatherAsync(context, CancellationToken.None);
+
+            // Assert
+            Assert.Equal(1, results.Count);
+        }
+
+        [Fact]
         public async Task ResolverGather_MissingPackageGatheredFromSource()
         {
             // Arrange
