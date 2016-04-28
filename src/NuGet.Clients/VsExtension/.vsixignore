@@ -9,6 +9,7 @@ Microsoft.VisualStudio.Services.Client.dll
 Microsoft.VisualStudio.Services.Common.dll
 Microsoft.VisualStudio.Services.WebApi.dll
 Microsoft.WindowsAzure.Configuration.dll
+mscorlib.dll
 Newtonsoft.Json.dll
 System.ComponentModel.Composition.dll
 System.dll
