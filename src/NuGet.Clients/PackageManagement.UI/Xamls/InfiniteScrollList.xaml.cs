@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,7 +49,6 @@ namespace NuGet.PackageManagement.UI
         {
             InitializeComponent();
 
-            BindingOperations.EnableCollectionSynchronization(Items, _itemsLock);
             DataContext = Items;
             CheckBoxesEnabled = false;
         }
@@ -77,10 +77,25 @@ namespace NuGet.PackageManagement.UI
 
         public bool IsSolution { get; set; }
 
-        private object _itemsLock = new object();
+        private ObservableCollection<object> _items = new ObservableCollection<object>(); 
 
-        public ObservableCollection<object> Items { get; } = new ObservableCollection<object>();
-        public IEnumerable<PackageItemListViewModel> PackageItems => Items.OfType<PackageItemListViewModel>();
+        public ObservableCollection<object> Items
+        {
+            get
+            {
+                Debug.Assert(Mvs.ThreadHelper.CheckAccess());
+                return _items;
+            }
+        }
+
+        public IEnumerable<PackageItemListViewModel> PackageItems
+        {
+            get
+            {
+                Debug.Assert(Mvs.ThreadHelper.CheckAccess());
+                return Items.OfType<PackageItemListViewModel>().ToList();
+            }
+        }
         public PackageItemListViewModel SelectedPackageItem => _list.SelectedItem as PackageItemListViewModel;
 
         // Load items using the specified loader
@@ -185,18 +200,18 @@ namespace NuGet.PackageManagement.UI
 
             token.ThrowIfCancellationRequested();
 
-            // multiple loads may occur at the same time
-            if (currentLoader == _loader)
-            {
-                UpdatePackageList(loadedItems.ToList(), refresh: false);
-            }
-
-            token.ThrowIfCancellationRequested();
-
             await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
                 _loadingStatusBar.ItemsLoaded = currentLoader.State.ItemsCount;
+                
+                // multiple loads may occur at the same time
+                if (currentLoader == _loader)
+                {
+                    UpdatePackageList(loadedItems.ToList(), refresh: false);
+                }
+                
             });
 
             token.ThrowIfCancellationRequested();
