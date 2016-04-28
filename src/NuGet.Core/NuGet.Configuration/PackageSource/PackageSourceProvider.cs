@@ -7,7 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-#if !DNXCORE50
+#if !IS_CORECLR
 using NuGet.Common;
 #endif
 

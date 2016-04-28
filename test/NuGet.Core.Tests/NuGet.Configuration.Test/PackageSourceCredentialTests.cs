@@ -34,7 +34,7 @@ namespace NuGet.Configuration
             Assert.Equal("password", credentials.Password);
         }
 
-#if !DNXCORE50
+#if !IS_CORECLR
         [Fact]
         public void FromUserInput_WithStorePasswordEncrypted_EncryptsPassword()
         {
