@@ -197,11 +197,10 @@ namespace NuGet.PackageManagement.UI
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                _loadingStatusBar.ItemsLoaded = currentLoader.State.ItemsCount;
-                
-                // multiple loads may occur at the same time
+               // multiple loads may occur at the same time
                 if (currentLoader == _loader)
                 {
+                    _loadingStatusBar.ItemsLoaded = currentLoader.State.ItemsCount;
                     UpdatePackageList(loadedItems, refresh: false);
                 }
                 
