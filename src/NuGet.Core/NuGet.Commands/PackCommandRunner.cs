@@ -6,12 +6,12 @@ using System.Linq;
 using NuGet.Commands.Rules;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
-using NuGet.Versioning;
-using NuGet.ProjectModel;
-using NuGet.Frameworks;
 using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
+using NuGet.Versioning;
 
 namespace NuGet.Commands
 {
