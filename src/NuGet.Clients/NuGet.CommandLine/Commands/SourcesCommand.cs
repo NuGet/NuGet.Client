@@ -155,8 +155,14 @@ namespace NuGet.CommandLine
                 throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandUniqueSource"));
             }
 
-            var credentials = Configuration.PackageSourceCredential.FromUserInput(Source, UserName, Password, StorePasswordInClearText);
             var newPackageSource = new Configuration.PackageSource(Source, Name) { Credentials = credentials };
+
+            if (!string.IsNullOrEmpty(UserName))
+            {
+                var credentials = Configuration.PackageSourceCredential.FromUserInput(Name, UserName, Password, StorePasswordInClearText);
+                newPackageSource.Credentials = credentials;
+            }
+
             sourceList.Add(newPackageSource);
             SourceProvider.SavePackageSources(sourceList);
             Console.WriteLine(LocalizedResourceManager.GetString("SourcesCommandSourceAddedSuccessfully"), Name);
