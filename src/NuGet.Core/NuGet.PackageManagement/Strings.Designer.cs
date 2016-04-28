@@ -159,6 +159,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Found package &apos;{0} {1}&apos; in &apos;{2}&apos;..
+        /// </summary>
+        public static string FoundPackageInPackagesFolder {
+            get {
+                return ResourceManager.GetString("FoundPackageInPackagesFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Installed package &apos;{0}&apos; to project.
         /// </summary>
         internal static string InstalledPackage {
@@ -425,6 +434,15 @@ namespace NuGet.PackageManagement {
         internal static string RestoringPackage {
             get {
                 return ResourceManager.GetString("RestoringPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Retrieving package &apos;{0} {1}&apos; from &apos;{2}&apos;..
+        /// </summary>
+        public static string RetrievingPackageStart {
+            get {
+                return ResourceManager.GetString("RetrievingPackageStart", resourceCulture);
             }
         }
         

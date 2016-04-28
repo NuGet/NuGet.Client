@@ -1,12 +1,15 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Xml.Linq;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
@@ -186,6 +189,72 @@ namespace NuGet.Test.Utility
                         toCreate.Push(dep);
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Create packages with PackageBuilder, this includes OPC support.
+        /// </summary>
+        public static void CreateOPCPackage(SimpleTestPackageContext package, string repositoryPath)
+        {
+            CreateOPCPackages(new List<SimpleTestPackageContext>() { package }, repositoryPath);
+        }
+
+        /// <summary>
+        /// Create packages with PackageBuilder, this includes OPC support.
+        /// </summary>
+        public static void CreateOPCPackages(List<SimpleTestPackageContext> packages, string repositoryPath)
+        {
+            foreach (var package in packages)
+            {
+                var builder = new Packaging.PackageBuilder()
+                {
+                    Id = package.Id,
+                    Version = NuGetVersion.Parse(package.Version),
+                    Description = "Description.",
+                };
+
+                builder.Authors.Add("testAuthor");
+
+                foreach (var file in package.Files)
+                {
+                    builder.Files.Add(CreatePackageFile(file.Key));
+                }
+
+                using (var stream = File.OpenWrite(Path.Combine(repositoryPath, $"{package.Identity.Id}.{package.Identity.Version.ToString()}.nupkg")))
+                {
+                    builder.Save(stream);
+                }
+            }
+        }
+
+        private static IPackageFile CreatePackageFile(string name)
+        {
+            InMemoryFile file = new InMemoryFile();
+            file.Path = name;
+            file.Stream = new MemoryStream();
+
+            string effectivePath;
+            var fx = FrameworkNameUtility.ParseFrameworkNameFromFilePath(name, out effectivePath);
+            file.EffectivePath = effectivePath;
+            file.TargetFramework = fx;
+
+            return file;
+        }
+
+        private class InMemoryFile : IPackageFile
+        {
+            public string EffectivePath { get; set; }
+
+            public string Path { get; set; }
+
+            public FrameworkName TargetFramework { get; set; }
+
+            public MemoryStream Stream { get; set; }
+
+            public Stream GetStream()
+            {
+                return Stream;
             }
         }
     }

@@ -282,4 +282,10 @@
   <data name="PackageNotFoundOnSource" xml:space="preserve">
     <value>Package '{0}' is not found on source '{1}'.</value>
   </data>
+  <data name="RetrievingPackageStart" xml:space="preserve">
+    <value>Retrieving package '{0} {1}' from '{2}'.</value>
+  </data>
+  <data name="FoundPackageInPackagesFolder" xml:space="preserve">
+    <value>Found package '{0} {1}' in '{2}'.</value>
+  </data>
 </root>
