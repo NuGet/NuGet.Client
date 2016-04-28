@@ -1619,10 +1619,41 @@ namespace NuGet.PackageManagement
                     await ideExecutionContext.SaveExpandedNodeStates(SolutionManager);
                 }
 
+                var logger = new ProjectContextLogger(nuGetProjectContext);
+                Dictionary<PackageIdentity, PackagePreFetcherResult> downloadTasks = null;
+                CancellationTokenSource downloadTokenSource = null;
+
                 try
                 {
+                    // PreProcess projects
                     await nuGetProject.PreProcessAsync(nuGetProjectContext, token);
-                    foreach (var nuGetProjectAction in nuGetProjectActions)
+
+                    var actionsList = nuGetProjectActions.ToList();
+
+                    var hasInstalls = actionsList.Any(action =>
+                        action.NuGetProjectActionType == NuGetProjectActionType.Install);
+
+                    if (hasInstalls)
+                    {
+                        // Make this independently cancelable.
+                        downloadTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
+
+                        // Download all packages up front in parallel
+                        downloadTasks = await PackagePreFetcher.GetPackagesAsync(
+                            actionsList,
+                            PackagesFolderNuGetProject,
+                            Settings,
+                            logger,
+                            downloadTokenSource.Token);
+
+                        // Log download information
+                        PackagePreFetcher.LogFetchMessages(
+                            downloadTasks.Values,
+                            PackagesFolderNuGetProject.Root,
+                            logger);
+                    }
+
+                    foreach (var nuGetProjectAction in actionsList)
                     {
                         executedNuGetProjectActions.Push(nuGetProjectAction);
                         if (nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Uninstall)
@@ -1634,17 +1665,21 @@ namespace NuGet.PackageManagement
                         }
                         else
                         {
-                            using (var downloadPackageResult = await
-                                    PackageDownloader.GetDownloadResourceResultAsync(nuGetProjectAction.SourceRepository,
-                                    nuGetProjectAction.PackageIdentity,
-                                    Settings,
-                                    new ProjectContextLogger(nuGetProjectContext),
-                                    token))
+                            // Retrieve the downloaded package
+                            // This will wait on the package if it is still downloading
+                            var preFetchResult = downloadTasks[nuGetProjectAction.PackageIdentity];
+                            using (var downloadPackageResult = await preFetchResult.GetResultAsync())
                             {
                                 // use the version exactly as specified in the nuspec file
                                 var packageIdentity = downloadPackageResult.PackageReader.GetIdentity();
 
-                                await ExecuteInstallAsync(nuGetProject, packageIdentity, downloadPackageResult, packageWithDirectoriesToBeDeleted, nuGetProjectContext, token);
+                                await ExecuteInstallAsync(
+                                    nuGetProject,
+                                    packageIdentity,
+                                    downloadPackageResult,
+                                    packageWithDirectoriesToBeDeleted,
+                                    nuGetProjectContext,
+                                    token);
                             }
                         }
 
@@ -1670,13 +1705,32 @@ namespace NuGet.PackageManagement
                                 nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
                         }
                     }
+
+                    // Post process
                     await nuGetProject.PostProcessAsync(nuGetProjectContext, token);
 
+                    // Open readme file
                     await OpenReadmeFile(nuGetProject, nuGetProjectContext, token);
                 }
                 catch (Exception ex)
                 {
                     exceptionInfo = ExceptionDispatchInfo.Capture(ex);
+                }
+                finally
+                {
+                    if (downloadTasks != null)
+                    {
+                        // Wait for all downloads to cancel and dispose
+                        downloadTokenSource.Cancel();
+
+                        foreach (var result in downloadTasks.Values)
+                        {
+                            await result.EnsureResultAsync();
+                            result.Dispose();
+                        }
+
+                        downloadTokenSource.Dispose();
+                    }
                 }
 
                 if (exceptionInfo != null)

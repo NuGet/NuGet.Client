@@ -61,7 +61,7 @@ namespace NuGet.PackageManagement
             return new NuGetProjectAction(packageIdentity, NuGetProjectActionType.Install, sourceRepository);
         }
 
-        internal static NuGetProjectAction CreateUninstallProjectAction(PackageIdentity packageIdentity)
+        public static NuGetProjectAction CreateUninstallProjectAction(PackageIdentity packageIdentity)
         {
             return new NuGetProjectAction(packageIdentity, NuGetProjectActionType.Uninstall);
         }
