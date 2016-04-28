@@ -1111,12 +1111,21 @@ namespace NuGet.PackageManagement
             {
                 throw new ArgumentNullException("packageIdentity.Version");
             }
-
-            // The following special case for ProjectK is not correct, if they used nuget.exe
-            // and multiple repositories in the -Source switch
+            
             if (nuGetProject is INuGetIntegratedProject)
             {
-                var action = NuGetProjectAction.CreateInstallProjectAction(packageIdentity, primarySources.First());
+                SourceRepository sourceRepository;
+                if (primarySources.Count() > 1)
+                {
+                    var logger = new ProjectContextLogger(nuGetProjectContext);
+                    sourceRepository = await GetSourceRepository(packageIdentity, primarySources, logger);
+                }
+                else
+                {
+                    sourceRepository = primarySources.First();
+                }
+
+                var action = NuGetProjectAction.CreateInstallProjectAction(packageIdentity, sourceRepository);
                 var actions = new[] { action };
 
                 var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;

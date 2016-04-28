@@ -333,7 +333,7 @@ namespace NuGet.Frameworks
                             FrameworkConstants.CommonFrameworks.NetCoreApp10,
                             FrameworkConstants.CommonFrameworks.NetStandard16),
 
-                        // NetCoreApp projects support NetStandard
+                        // net463 projects support NetStandard
                         CreateStandardMapping(
                             FrameworkConstants.CommonFrameworks.Net463,
                             FrameworkConstants.CommonFrameworks.NetStandard16)
