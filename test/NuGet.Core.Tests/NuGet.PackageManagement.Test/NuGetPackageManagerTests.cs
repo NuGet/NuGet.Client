@@ -99,20 +99,9 @@ namespace NuGet.Test
                     var packagePathResolver = new PackagePathResolver(packagesFolderPath);
                     var projectA = testSolutionManager.AddNewMSBuildProject();
 
-                    var builder = new Packaging.PackageBuilder()
-                    {
-                        Id = "packageA",
-                        Version = NuGetVersion.Parse("1.0.0"),
-                        Description = "Descriptions",
-                    };
-
-                    builder.Authors.Add("testAuthor");
-                    builder.Files.Add(CreatePackageFile(@"lib" + Path.DirectorySeparatorChar + "net45" + Path.DirectorySeparatorChar + "_._"));
-
-                    using (var stream = File.OpenWrite(Path.Combine(packageSource, "packagea.1.0.0.nupkg")))
-                    {
-                        builder.Save(stream);
-                    }
+                    var packageContext = new SimpleTestPackageContext("packageA");
+                    packageContext.AddFile("lib/net45/a.dll");
+                    SimpleTestPackageUtility.CreateOPCPackage(packageContext, packageSource);
 
                     var run = true;
 
@@ -4681,20 +4670,6 @@ namespace NuGet.Test
             {
                 return obj.GetHashCode();
             }
-        }
-
-        private static Packaging.IPackageFile CreatePackageFile(string name)
-        {
-            var file = new Mock<Packaging.IPackageFile>();
-            file.SetupGet(f => f.Path).Returns(name);
-            file.Setup(f => f.GetStream()).Returns(new MemoryStream());
-
-            string effectivePath;
-            var fx = FrameworkNameUtility.ParseFrameworkNameFromFilePath(name, out effectivePath);
-            file.SetupGet(f => f.EffectivePath).Returns(effectivePath);
-            file.SetupGet(f => f.TargetFramework).Returns(fx);
-
-            return file.Object;
         }
     }
 }

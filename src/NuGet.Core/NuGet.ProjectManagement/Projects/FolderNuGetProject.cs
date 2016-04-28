@@ -168,14 +168,48 @@ namespace NuGet.ProjectManagement
             return Task.FromResult(copiedSatelliteFiles.Any());
         }
 
+        /// <summary>
+        /// Get the path to the package nupkg.
+        /// </summary>
         public string GetInstalledPackageFilePath(PackageIdentity packageIdentity)
         {
-            return PackagePathResolver.GetInstalledPackageFilePath(packageIdentity) ?? string.Empty;
+            // Check the expected location before searching all directories
+            var packageDirectory = PackagePathResolver.GetInstallPath(packageIdentity);
+            var packageName = PackagePathResolver.GetPackageFileName(packageIdentity);
+
+            var installPath = Path.GetFullPath(Path.Combine(packageDirectory, packageName));
+
+            if (File.Exists(installPath))
+            {
+                return installPath;
+            }
+
+            // Fallback to the v2 directory search
+            installPath = PackagePathResolver.GetInstalledPackageFilePath(packageIdentity);
+
+            if (!string.IsNullOrEmpty(installPath))
+            {
+                return installPath;
+            }
+
+            // Default to empty
+            return string.Empty;
         }
 
+        /// <summary>
+        /// Get the root directory of an installed package.
+        /// </summary>
         public string GetInstalledPath(PackageIdentity packageIdentity)
         {
-            return PackagePathResolver.GetInstalledPath(packageIdentity) ?? string.Empty;
+            var installFilePath = GetInstalledPackageFilePath(packageIdentity);
+
+            if (!string.IsNullOrEmpty(installFilePath))
+            {
+                return Path.GetDirectoryName(installFilePath);
+            }
+
+            // Default to empty
+            return string.Empty;
         }
 
         public Task<bool> DeletePackage(PackageIdentity packageIdentity,
