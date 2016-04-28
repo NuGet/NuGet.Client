@@ -35,7 +35,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(ReleaseLabel)' == ''">
-    <ReleaseLabel>local</ReleaseLabel>
+    <ReleaseLabel>zlocal</ReleaseLabel>
   </PropertyGroup>
 
   <PropertyGroup>

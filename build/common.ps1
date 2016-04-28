@@ -1,8 +1,8 @@
 ### Constants ###
 $ValidConfigurations = 'debug', 'release'
 $DefaultConfiguration = 'debug'
-$ValidReleaseLabels = 'Release','rtm', 'rc', 'beta', 'local'
-$DefaultReleaseLabel = 'local'
+$ValidReleaseLabels = 'Release','rtm', 'rc', 'beta', 'zlocal'
+$DefaultReleaseLabel = 'zlocal'
 
 $NuGetClientRoot = Split-Path -Path $PSScriptRoot -Parent
 
