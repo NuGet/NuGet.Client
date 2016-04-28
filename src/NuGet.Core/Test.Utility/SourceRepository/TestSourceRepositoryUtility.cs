@@ -109,6 +109,11 @@ namespace Test.Utility
         {
             throw new NotImplementedException();
         }
+
+        public string DefaultPushSource
+        {
+            get { throw new NotImplementedException(); }
+        }
     }
 
     public static class TestPackageSourceSettings
