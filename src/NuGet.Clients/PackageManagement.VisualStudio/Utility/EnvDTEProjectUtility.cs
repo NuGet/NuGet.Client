@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using System.Security;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
@@ -118,29 +119,26 @@ namespace NuGet.PackageManagement.VisualStudio
             Debug.Assert(envDTEProject != null);
             if (IsUnloaded(envDTEProject))
             {
-                // To get the directory of an unloaded project, we use the UniqueName property,
-                // which is the path of the project file relative to the solution directory.
+                // Find the project file path from the UniqueName which contains the file path 
+                // relative to the solution directory for unloaded projects.
                 var solutionDirectory = Path.GetDirectoryName(envDTEProject.DTE.Solution.FullName);
                 return Path.Combine(solutionDirectory, envDTEProject.UniqueName);
             }
 
             // FullPath
-            string fullPath = GetPropertyValue<string>(envDTEProject, "FullPath");
+            var fullPath = GetPotentialFullPathOrNull(GetPropertyValue<string>(envDTEProject, "FullPath"));
 
-            if (!String.IsNullOrEmpty(fullPath))
+            if (fullPath != null)
             {
-                // Some Project System implementations (JS metro app) return the project 
-                // file as FullPath. We only need the parent directory
-                if (File.Exists(fullPath))
-                {
-                    return fullPath;
-                }
+                return fullPath;
             }
 
             // FullName
-            if (!String.IsNullOrEmpty(envDTEProject.FullName))
+            var fullName = GetPotentialFullPathOrNull(envDTEProject.FullName);
+
+            if (fullName != null)
             {
-                return Path.GetFullPath(envDTEProject.FullName);
+                return fullName;
             }
 
             Debug.Fail("Unable to find the project path");
@@ -1016,7 +1014,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var localProjectAssemblies = GetLocalProjectAssemblies(envDTEProject);
             CollectionsUtility.AddRange(assemblies, localProjectAssemblies);
-            
+
             var referencedProjects = GetReferencedProjects(envDTEProject);
             foreach (var project in referencedProjects)
             {
@@ -1056,7 +1054,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                     // Get the referenced project from the reference if any
                     // In C++ projects if reference3.Resolved is false reference3.SourceProject will throw.
-                    if (reference3 != null 
+                    if (reference3 != null
                         && reference3.Resolved
                         && reference.SourceProject == null
                         && reference.CopyLocal
@@ -1204,6 +1202,47 @@ namespace NuGet.PackageManagement.VisualStudio
             return token == "*" ? @"(.*)" : @"(" + token + ")";
         }
 
+        /// <summary>
+        /// A DTE specific helper method that validates a path to ensure that it 
+        /// could be for a file as opposed to a URL or other invalid path, and
+        /// not for a directory. This is used to help determine if a value returned
+        /// from DTE is a directory or file, since the file may still be in 
+        /// memory and not yet written to disk File.Exists will not work.
+        /// </summary>
+        private static string GetPotentialFullPathOrNull(string path)
+        {
+            string fullPath = null;
+
+            try
+            {
+                if (!string.IsNullOrEmpty(path))
+                {
+                    // Attempt to get the full path
+                    fullPath = Path.GetFullPath(path);
+
+                    // Some project systems may return a directory for the file path. 
+                    // Directories usually exist even when the in-memory files have not yet 
+                    // been written, so we can try to detect obvious non-files here.
+                    // WebSites and Win JS projects can return a directory instead of the project file path.
+                    if (Directory.Exists(fullPath))
+                    {
+                        // Ignore directories
+                        fullPath = null;
+                    }
+                }
+            }
+            catch (Exception ex) when (ex is ArgumentException
+                || ex is NotSupportedException
+                || ex is PathTooLongException
+                || ex is SecurityException)
+            {
+                // Ignore invalid paths
+                // This can occur if the path was a URL
+            }
+
+            return fullPath;
+        }
+
         #endregion // Get "Project" Information
 
         #region Check Project Types
@@ -1280,9 +1319,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var hier = VsHierarchyUtility.ToVsHierarchy(envDTEProject);
 
-            foreach(var unsupportedProjectCapability in UnsupportedProjectCapabilities)
+            foreach (var unsupportedProjectCapability in UnsupportedProjectCapabilities)
             {
-                if(hier.IsCapabilityMatch(unsupportedProjectCapability))
+                if (hier.IsCapabilityMatch(unsupportedProjectCapability))
                 {
                     return true;
                 }
