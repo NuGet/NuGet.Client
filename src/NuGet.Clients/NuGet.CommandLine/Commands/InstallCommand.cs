@@ -219,9 +219,11 @@ namespace NuGet.CommandLine
 
             var primaryRepositories = packageSources.Select(sourceRepositoryProvider.CreateRepository);
 
+            var allowPrerelease = Prerelease || (version != null && version.IsPrerelease);
+
             var resolutionContext = new ResolutionContext(
                 DependencyBehavior.Lowest,
-                includePrelease: Prerelease,
+                includePrelease: allowPrerelease,
                 includeUnlisted: true,
                 versionConstraints: VersionConstraints.None);
 
