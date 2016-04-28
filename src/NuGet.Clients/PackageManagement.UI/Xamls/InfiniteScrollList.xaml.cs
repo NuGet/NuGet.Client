@@ -314,11 +314,11 @@ namespace NuGet.PackageManagement.UI
             }
 
             // add newly loaded items
-            foreach (PackageItemListViewModel pItem in packages)
+            foreach (var package in packages)
             {
-                pItem.PropertyChanged += Package_PropertyChanged;
-                Items.Add(pItem);
-                _selectedCount = pItem.Selected ? _selectedCount + 1 : _selectedCount;
+                package.PropertyChanged += Package_PropertyChanged;
+                Items.Add(package);
+                _selectedCount = package.Selected ? _selectedCount + 1 : _selectedCount;
             }
 
             Items.Add(_loadingStatusIndicator);
@@ -326,9 +326,9 @@ namespace NuGet.PackageManagement.UI
 
         private void ClearPackageList()
         {
-            foreach (PackageItemListViewModel pItem in PackageItems)
+            foreach (var package in PackageItems)
             {
-                pItem.PropertyChanged -= Package_PropertyChanged;
+                package.PropertyChanged -= Package_PropertyChanged;
             }
 
             Items.Clear();
@@ -339,9 +339,9 @@ namespace NuGet.PackageManagement.UI
         {
             // in this case, we only need to update PackageStatus of
             // existing items in the package list
-            foreach (PackageItemListViewModel pItem in PackageItems)
+            foreach (var package in PackageItems)
             {
-                pItem.UpdatePackageStatus(installedPackages);
+                package.UpdatePackageStatus(installedPackages);
             }
         }
 
