@@ -94,7 +94,7 @@ namespace NuGet.Configuration
         /// <param name="source">Source ID needed for reporting errors if any</param>
         /// <param name="username">User name</param>
         /// <param name="password">Password text in clear</param>
-        /// <param name="shouldEncrypt">Hints if the password should be encrypted when stored on disk.</param>
+        /// <param name="storePasswordInClearText">Hints if the password should be stored in clear text on disk.</param>
         /// <returns>New instance of <see cref="PackageSourceCredential"/></returns>
         public static PackageSourceCredential FromUserInput(string source, string username, string password, bool storePasswordInClearText)
         {
