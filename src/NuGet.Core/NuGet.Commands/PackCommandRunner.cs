@@ -136,6 +136,11 @@ namespace NuGet.Commands
                 LoadProjectJsonFile(builder, path, _packArgs.BasePath, Path.GetFileName(Path.GetDirectoryName(path)), stream, propertyProvider);
             }
 
+            if (!builder.Files.Any())
+            {
+                builder.AddFiles(_packArgs.BasePath, @"**/*", null);
+            }
+
             return builder;
         }
 
@@ -171,10 +176,22 @@ namespace NuGet.Commands
             {
                 builder.Id = id;
             }
-            builder.Version = spec.Version;
-            builder.Title = spec.Title;
-            builder.Description = spec.Description;
-            builder.Copyright = spec.Copyright;
+            if (!spec.IsDefaultVersion)
+            {
+                builder.Version = spec.Version;
+            }
+            if (spec.Title != null)
+            {
+                builder.Title = spec.Title;
+            }
+            if (spec.Description != null)
+            {
+                builder.Description = spec.Description;
+            }
+            if (spec.Copyright != null)
+            {
+                builder.Copyright = spec.Copyright;
+            }
             if (spec.Authors.Any())
             {
                 builder.Authors.AddRange(spec.Authors);
@@ -197,20 +214,22 @@ namespace NuGet.Commands
                 builder.IconUrl = tempUri;
             }
             builder.RequireLicenseAcceptance = spec.RequireLicenseAcceptance;
-            builder.Summary = spec.Summary;
-            builder.ReleaseNotes = spec.ReleaseNotes;
-            builder.Language = spec.Language;
+            if (spec.Summary != null)
+            {
+                builder.Summary = spec.Summary;
+            }
+            if (spec.ReleaseNotes != null)
+            {
+                builder.ReleaseNotes = spec.ReleaseNotes;
+            }
+            if (spec.Language != null)
+            {
+                builder.Language = spec.Language;
+            }
 
             foreach (var include in spec.PackInclude)
             {
                 builder.AddFiles(basePath, include.Value, include.Key);
-            }
-
-            // If there's no base path then ignore the files node
-            // Also, id is null only when we want to skip the AddFiles
-            if (basePath != null && id != null && !builder.Files.Any())
-            {
-                builder.AddFiles(basePath, @"**\*", null);
             }
 
             if (spec.Tags.Any())
@@ -234,6 +253,7 @@ namespace NuGet.Commands
         private static void AddDependencyGroups(IList<LibraryDependency> dependencies, NuGetFramework framework, PackageBuilder builder)
         {
             List<PackageDependency> packageDependencies = new List<PackageDependency>();
+            bool addedFrameworkReference = false;
             foreach (var dependency in dependencies)
             {
                 LibraryIncludeFlags effectiveInclude = dependency.IncludeType & ~dependency.SuppressParent;
@@ -243,26 +263,51 @@ namespace NuGet.Commands
                     continue;
                 }
 
-                List<string> includes = new List<string>();
-                if (effectiveInclude == LibraryIncludeFlags.All)
+                if (dependency.LibraryRange.TypeConstraint == LibraryDependencyTarget.Reference)
                 {
-                    includes.Add(LibraryIncludeFlags.All.ToString());
+                    var reference = builder.FrameworkReferences.FirstOrDefault(r => r.AssemblyName == dependency.Name);
+                    if (reference == null)
+                    {
+                        builder.FrameworkReferences.Add(new FrameworkAssemblyReference(dependency.Name, new NuGetFramework [] { framework }));
+                    }
+                    else
+                    {
+                        if (!reference.SupportedFrameworks.Contains(framework))
+                        {
+                            // Add another framework reference by replacing the existing reference
+                            var newReference = new FrameworkAssemblyReference(reference.AssemblyName, reference.SupportedFrameworks.Concat(new NuGetFramework[] { framework }));
+                            int index = builder.FrameworkReferences.IndexOf(reference);
+                            builder.FrameworkReferences.Remove(reference);
+                            builder.FrameworkReferences.Insert(index, newReference);
+                        }
+                    }
+                    addedFrameworkReference = true;
                 }
-                else if ((effectiveInclude & LibraryIncludeFlags.ContentFiles) == LibraryIncludeFlags.ContentFiles)
+                else
                 {
-                    includes.Add(LibraryIncludeFlags.ContentFiles.ToString());
-                }
+                    List<string> includes = new List<string>();
+                    List<string> excludes = new List<string>();
+                    if (effectiveInclude == LibraryIncludeFlags.All)
+                    {
+                        includes.Add(LibraryIncludeFlags.All.ToString());
+                    }
+                    else if ((effectiveInclude & LibraryIncludeFlags.ContentFiles) == LibraryIncludeFlags.ContentFiles)
+                    {
+                        includes.AddRange(effectiveInclude.ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries));
+                    }
+                    else
+                    {
+                        if ((LibraryIncludeFlagUtils.NoContent & ~effectiveInclude) != LibraryIncludeFlags.None)
+                        {
+                            excludes.AddRange((LibraryIncludeFlagUtils.NoContent & ~effectiveInclude).ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries));
+                        }
+                    }
 
-                List<string> excludes = new List<string>();
-                if ((LibraryIncludeFlagUtils.NoContent & ~effectiveInclude) != LibraryIncludeFlags.None)
-                {
-                    excludes.AddRange((LibraryIncludeFlagUtils.NoContent & ~effectiveInclude).ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries));
+                    packageDependencies.Add(new PackageDependency(dependency.Name, dependency.LibraryRange.VersionRange, includes, excludes));
                 }
-
-                packageDependencies.Add(new PackageDependency(dependency.Name, dependency.LibraryRange.VersionRange, includes, excludes));
             }
 
-            if (packageDependencies.Any())
+            if (addedFrameworkReference || packageDependencies.Any())
             {
                 builder.DependencyGroups.Add(new PackageDependencyGroup(framework, packageDependencies));
             }

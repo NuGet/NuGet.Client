@@ -120,7 +120,7 @@ namespace NuGet.ProjectModel.Test
             var dependency = spec.Dependencies.Single();
 
             // Assert
-            var expected = ~LibraryDependencyTarget.Reference;
+            var expected = LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference;
             Assert.Equal(expected, dependency.LibraryRange.TypeConstraint);
         }
 
