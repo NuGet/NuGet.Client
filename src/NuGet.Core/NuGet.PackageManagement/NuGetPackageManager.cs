@@ -1706,6 +1706,9 @@ namespace NuGet.PackageManagement
                     }
                 }
 
+                // Save project
+                SolutionManager?.SaveProject(nuGetProject);
+
                 // Clear direct install
                 SetDirectInstall(null, nuGetProjectContext);
 

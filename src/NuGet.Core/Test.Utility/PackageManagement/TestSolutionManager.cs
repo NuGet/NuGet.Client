@@ -179,6 +179,11 @@ namespace Test.Utility
             }
         }
 
+        public void SaveProject(NuGetProject nuGetProject)
+        {
+            //do nothing.
+        }
+
         public void Dispose()
         {
             var testDirectory = _testDirectory;
