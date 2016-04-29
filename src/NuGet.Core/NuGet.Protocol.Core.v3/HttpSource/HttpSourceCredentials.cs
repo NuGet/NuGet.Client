@@ -12,7 +12,7 @@ namespace NuGet.Protocol
     /// This class intentionally inherits from CredentialCache to support authentication on redirects.
     /// According to System.Net implementation any other ICredentials implementation is dropped for security reasons.
     /// </summary>
-    public class CredentialHelper : CredentialCache, ICredentials
+    public class HttpSourceCredentials : CredentialCache, ICredentials
     {
         /// <summary>
         /// Credentials can be changed by other threads, for this reason volatile
@@ -32,9 +32,12 @@ namespace NuGet.Protocol
 
             set
             {
+                Version = Guid.NewGuid();
                 _credentials = value;
             }
         }
+
+        public Guid Version { get; private set; } = Guid.NewGuid();
 
         /// <summary>
         /// Used by the HttpClientHandler to retrieve the current credentials.

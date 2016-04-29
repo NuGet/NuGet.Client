@@ -55,7 +55,7 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "Option_ForceEnglishOutput")]
         public bool ForceEnglishOutput { get; set; }
 
-        // Used to check if credential has been requested for a uri. 
+        // Used to check if credential has been requested for a uri.
         private readonly HashSet<Uri> _credentialRequested;
 
         public string CurrentDirectory
@@ -162,20 +162,12 @@ namespace NuGet.CommandLine
 
             HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(credentialService);
 
-            HttpHandlerResourceV3.CredentialSerivce = credentialService;
-            
-            HttpHandlerResourceV3.PromptForCredentialsAsync =
-                async (uri, type, message, cancellationToken) => await credentialService.GetCredentialsAsync(
-                    uri,
-                    proxy: null,
-                    type: type,
-                    message: message,
-                    cancellationToken: cancellationToken);
+            HttpHandlerResourceV3.CredentialService = credentialService;
 
             HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>
             {
+                // v2 stack credentials update
                 NuGet.CredentialStore.Instance.Add(uri, credentials);
-                NuGet.Configuration.CredentialStore.Instance.Add(uri, credentials);
             };
         }
 

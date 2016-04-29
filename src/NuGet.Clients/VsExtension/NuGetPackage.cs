@@ -361,28 +361,12 @@ namespace NuGetVSExtension
 
             HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(credentialService);
 
-            HttpHandlerResourceV3.CredentialSerivce = credentialService;
-
-            HttpHandlerResourceV3.PromptForCredentialsAsync =
-                async (uri, type, message, cancellationToken) =>
-                {
-                    // Get the proxy for this URI so we can pass it to the credentialService methods
-                    // this lets them use the proxy if they have to hit the network.
-                    var proxyCache = ProxyCache.Instance;
-                    var proxy = proxyCache?.GetProxy(uri);
-
-                    return await credentialService.GetCredentialsAsync(
-                        uri,
-                        proxy,
-                        type,
-                        message,
-                        cancellationToken);
-                };
+            HttpHandlerResourceV3.CredentialService = credentialService;
 
             HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>
             {
+                // v2 stack credentials update
                 NuGet.CredentialStore.Instance.Add(uri, credentials);
-                NuGet.Configuration.CredentialStore.Instance.Add(uri, credentials);
             };
         }
 

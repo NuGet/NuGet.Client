@@ -30,82 +30,6 @@ namespace NuGet.Protocol.Tests
         private const string FakeSource = "https://fake.server/users.json";
 
         [Fact]
-        public async Task HttpSource_PromptsForCredentialsOn401()
-        {
-            // Arrange
-            using (await UsingSemaphore.WaitAsync(HttpHandlerResourceV3Lock))
-            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var tc = new TestContext(td);
-
-                tc.SetResponseSequence(new[]
-                {
-                    new HttpResponseMessage(HttpStatusCode.Unauthorized),
-                    new HttpResponseMessage(HttpStatusCode.OK),
-                });
-
-                var prompted = false;
-                HttpHandlerResourceV3.PromptForCredentialsAsync = (uri, type, message, token) =>
-                {
-                    prompted = true;
-                    return Task.FromResult(tc.Credentials);
-                };
-
-                // Act
-                var statusCode = await tc.HttpSource.ProcessResponseAsync(
-                    () => new HttpRequestMessage(),
-                    response =>
-                    {
-                        return Task.FromResult(response.StatusCode);
-                    },
-                    tc.Logger,
-                    CancellationToken.None);
-
-                // Assert
-                Assert.True(prompted, "The user should have been prompted for credentials.");
-                Assert.Equal(HttpStatusCode.OK, statusCode);
-            }
-        }
-
-        [Fact]
-        public async Task HttpSource_PromptsForCredentialsOn403()
-        {
-            // Arrange
-            using (await UsingSemaphore.WaitAsync(HttpHandlerResourceV3Lock))
-            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var tc = new TestContext(td);
-
-                tc.SetResponseSequence(new[]
-                {
-                    new HttpResponseMessage(HttpStatusCode.Forbidden),
-                    new HttpResponseMessage(HttpStatusCode.OK),
-                });
-
-                var prompted = false;
-                HttpHandlerResourceV3.PromptForCredentialsAsync = (uri, type, message, token) =>
-                {
-                    prompted = true;
-                    return Task.FromResult(tc.Credentials);
-                };
-
-                // Act
-                var statusCode = await tc.HttpSource.ProcessResponseAsync(
-                    () => new HttpRequestMessage(),
-                    response =>
-                    {
-                        return Task.FromResult(response.StatusCode);
-                    },
-                    tc.Logger,
-                    CancellationToken.None);
-
-                // Assert
-                Assert.True(prompted, "The user should have been prompted for credentials.");
-                Assert.Equal(HttpStatusCode.OK, statusCode);
-            }
-        }
-
-        [Fact]
         public async Task HttpSource_GetNoContent()
         {
             // Arrange
@@ -234,9 +158,9 @@ namespace NuGet.Protocol.Tests
                     HttpCacheDirectory = td,
                     DownloadTimeout = TimeSpan.FromMilliseconds(expectedMilliseconds)
                 };
-            
+
                 // Act & Assert
-                var actual = await Assert.ThrowsAsync<IOException>(() => 
+                var actual = await Assert.ThrowsAsync<IOException>(() =>
                     server.ExecuteAsync(uri => httpSource.GetJObjectAsync(
                         new Uri(uri),
                         false,
@@ -248,7 +172,7 @@ namespace NuGet.Protocol.Tests
                     actual.Message);
             }
         }
-        
+
         [Fact]
         public async Task HttpSource_ValidatesValidNetworkContent()
         {

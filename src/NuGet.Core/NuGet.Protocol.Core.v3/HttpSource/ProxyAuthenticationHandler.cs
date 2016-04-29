@@ -15,7 +15,7 @@ namespace NuGet.Protocol
     /// A message handler responsible for retrying request for authenticated proxies
     /// with missing credentials.
     /// </summary>
-    public class ProxyCredentialHandler : DelegatingHandler
+    public class ProxyAuthenticationHandler : DelegatingHandler
     {
         public static readonly int MaxAuthRetries = 3;
         private const string BasicAuthenticationType = "Basic";
@@ -29,7 +29,7 @@ namespace NuGet.Protocol
 
         private int _authRetries;
 
-        public ProxyCredentialHandler(
+        public ProxyAuthenticationHandler(
             HttpClientHandler clientHandler,
             ICredentialService credentialService,
             IProxyCredentialCache credentialCache)
@@ -42,11 +42,7 @@ namespace NuGet.Protocol
 
             _clientHandler = clientHandler;
 
-            if (credentialService == null)
-            {
-                throw new ArgumentNullException(nameof(credentialService));
-            }
-
+            // credential service is optional
             _credentialService = credentialService;
 
             if (credentialCache == null)
@@ -79,12 +75,18 @@ namespace NuGet.Protocol
                         return response;
                     }
 
+                    if (_credentialService == null)
+                    {
+                        return response;
+                    }
+
                     if (!await AcquireCredentialsAsync(request.RequestUri, cacheVersion, cancellationToken))
                     {
                         return response;
                     }
                 }
-                catch (HttpRequestException ex) when (ProxyAuthenticationRequired(ex) && _clientHandler.Proxy != null)
+                catch (HttpRequestException ex) 
+                when (ProxyAuthenticationRequired(ex) && _clientHandler.Proxy != null && _credentialService != null)
                 {
                     if (!await AcquireCredentialsAsync(request.RequestUri, cacheVersion, cancellationToken))
                     {

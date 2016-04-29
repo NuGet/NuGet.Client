@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -19,7 +17,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol;
+using Strings = NuGet.Protocol.Strings;
 
 namespace NuGet.Protocol
 {
@@ -30,33 +28,26 @@ namespace NuGet.Protocol
         private const int BufferSize = 8192;
         private readonly Func<Task<HttpHandlerResource>> _messageHandlerFactory;
         private readonly Uri _baseUri;
-        private volatile HttpClient _httpClient;
-        private Dictionary<string, AmbientAuthenticationState> _authStates = new Dictionary<string, AmbientAuthenticationState>();
-        private HttpHandlerResource _httpHandler;
-        private CredentialHelper _credentials;
+        private HttpClient _httpClient;
         private string _httpCacheDirectory;
-        private Guid _lastAuthId = Guid.NewGuid();
         private readonly PackageSource _packageSource;
 
         // Only one thread may re-create the http client at a time.
         private readonly SemaphoreSlim _httpClientLock = new SemaphoreSlim(1, 1);
 
-        // Only one source may prompt at a time
-        private readonly static SemaphoreSlim _credentialPromptLock = new SemaphoreSlim(1, 1);
-
         /// <summary>The timeout to apply to <see cref="DownloadTimeoutStream"/> instances.</summary>
         /// <summary>This API is intended only for testing purposes and should not be used in product code.</summary>
         public TimeSpan DownloadTimeout { get; set; } = DefaultDownloadTimeout;
-        
+
         /// <summary>The retry handler to use for all HTTP requests.</summary>
         /// <summary>This API is intended only for testing purposes and should not be used in product code.</summary>
         public IHttpRetryHandler RetryHandler { get; set; } = new HttpRetryHandler();
 
-        public HttpSource(PackageSource source, Func<Task<HttpHandlerResource>> messageHandlerFactory)
+        public HttpSource(PackageSource packageSource, Func<Task<HttpHandlerResource>> messageHandlerFactory)
         {
-            if (source == null)
+            if (packageSource == null)
             {
-                throw new ArgumentNullException(nameof(source));
+                throw new ArgumentNullException(nameof(packageSource));
             }
 
             if (messageHandlerFactory == null)
@@ -64,8 +55,8 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(messageHandlerFactory));
             }
 
-            _packageSource = source;
-            _baseUri = source.SourceUri;
+            _packageSource = packageSource;
+            _baseUri = packageSource.SourceUri;
             _messageHandlerFactory = messageHandlerFactory;
         }
 
@@ -152,7 +143,7 @@ namespace NuGet.Protocol
                     };
 
                     // Read the response headers before reading the entire stream to avoid timeouts from large packages.
-                    Func<Task<HttpResponseMessage>> httpRequest = () => SendWithCredentialSupportAsync(
+                    Func<Task<HttpResponseMessage>> httpRequest = () => SendWithRetrySupportAsync(
                             requestFactory,
                             DefaultRequestTimeout,
                             log,
@@ -223,7 +214,7 @@ namespace NuGet.Protocol
             ILogger log,
             CancellationToken token)
         {
-            Func<Task<HttpResponseMessage>> request = () => SendWithCredentialSupportAsync(
+            Func<Task<HttpResponseMessage>> request = () => SendWithRetrySupportAsync(
                     requestFactory,
                     requestTimeout,
                     log,
@@ -263,7 +254,7 @@ namespace NuGet.Protocol
             ILogger log,
             CancellationToken token)
         {
-            Func<Task<HttpResponseMessage>> request = () => SendWithCredentialSupportAsync(
+            Func<Task<HttpResponseMessage>> request = () => SendWithRetrySupportAsync(
                 () => new HttpRequestMessage(HttpMethod.Get, uri),
                 DefaultRequestTimeout,
                 log,
@@ -313,15 +304,28 @@ namespace NuGet.Protocol
             }
         }
 
-        private async Task<HttpResponseMessage> SendWithCredentialSupportAsync(
+        private async Task<HttpResponseMessage> SendWithRetrySupportAsync(
             Func<HttpRequestMessage> requestFactory,
             TimeSpan requestTimeout,
             ILogger log,
             CancellationToken cancellationToken)
         {
-            HttpResponseMessage response = null;
-            ICredentials promptCredentials = null;
+            await EnsureHttpClientAsync();
 
+            // Build the retriable request.
+            var request = new HttpRetryHandlerRequest(_httpClient, requestFactory)
+            {
+                RequestTimeout = requestTimeout
+            };
+
+            // Read the response headers before reading the entire stream to avoid timeouts from large packages.
+            var response = await RetryHandler.SendAsync(request, log, cancellationToken);
+
+            return response;
+        }
+
+        private async Task EnsureHttpClientAsync()
+        {
             // Create the http client on the first call
             if (_httpClient == null)
             {
@@ -331,7 +335,7 @@ namespace NuGet.Protocol
                     // Double check
                     if (_httpClient == null)
                     {
-                        await UpdateHttpClientAsync();
+                        _httpClient = await CreateHttpClientAsync();
                     }
                 }
                 finally
@@ -339,218 +343,20 @@ namespace NuGet.Protocol
                     _httpClientLock.Release();
                 }
             }
+        }
 
-            // Update the request for STS
-            Func<HttpRequestMessage> requestWithStsFactory = () =>
+        private async Task<HttpClient> CreateHttpClientAsync()
+        {
+            var httpHandler = await _messageHandlerFactory();
+            var httpClient = new HttpClient(httpHandler.MessageHandler)
             {
-                var requestMessage = requestFactory();
-                STSAuthHelper.PrepareSTSRequest(_baseUri, CredentialStore.Instance, requestMessage);
-                return requestMessage;
+                Timeout = Timeout.InfiniteTimeSpan
             };
 
-            // Build the retriable request.
-            var request = new HttpRetryHandlerRequest(_httpClient, requestWithStsFactory)
-            {
-                RequestTimeout = requestTimeout
-            };
+            // Set user agent
+            UserAgent.SetUserAgent(httpClient);
 
-            // Authorizing may take multiple attempts
-            while (true)
-            {
-                // Clean up any previous responses
-                if (response != null)
-                {
-                    response.Dispose();
-                }
-
-                // store the auth state before sending the request
-                var beforeLockId = _lastAuthId;
-
-                // Read the response headers before reading the entire stream to avoid timeouts from large packages.
-                response = await RetryHandler.SendAsync(request, log, cancellationToken);
-
-                if (response.StatusCode == HttpStatusCode.Unauthorized ||
-                    response.StatusCode == HttpStatusCode.Forbidden)
-                {
-                    try
-                    {
-                        // Only one request may prompt and attempt to auth at a time
-                        await _httpClientLock.WaitAsync();
-
-                        // Auth may have happened on another thread, if so just continue
-                        if (beforeLockId != _lastAuthId)
-                        {
-                            continue;
-                        }
-
-                        var authState = GetAuthenticationState();
-
-                        authState.Increment();
-
-                        if (authState.IsBlocked)
-                        {
-                            return response;
-                        }
-
-                        // Windows auth
-                        if (response.StatusCode == HttpStatusCode.Unauthorized &&
-                            STSAuthHelper.TryRetrieveSTSToken(_baseUri, CredentialStore.Instance, response))
-                        {
-                            // Auth token found, create a new message handler and retry.
-                            await UpdateHttpClientAsync();
-                            continue;
-                        }
-
-                        // Prompt the user
-                        CredentialRequestType type;
-                        string message;
-                        if (response.StatusCode == HttpStatusCode.Unauthorized)
-                        {
-                            type = CredentialRequestType.Unauthorized;
-                            message = string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.Http_CredentialsForUnauthorized,
-                                _packageSource.Source);
-                        }
-                        else
-                        {
-                            type = CredentialRequestType.Forbidden;
-                            message = string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.Http_CredentialsForForbidden,
-                                _packageSource.Source);
-                        }
-
-                        promptCredentials = await PromptForCredentialsAsync(
-                            type,
-                            message,
-                            cancellationToken);
-
-                        if (promptCredentials != null)
-                        {
-                            // The user entered credentials, create a new message handler that includes
-                            // these and retry.
-                            await UpdateHttpClientAsync(promptCredentials);
-                            continue;
-                        }
-
-                        // null means cancelled by user
-                        // block subsequent attempts to annoy user with prompts
-                        authState.IsBlocked = true;
-                        return response;
-                    }
-                    finally
-                    {
-                        _httpClientLock.Release();
-                    }
-                }
-
-                if (promptCredentials != null && HttpHandlerResourceV3.CredentialsSuccessfullyUsed != null)
-                {
-                    HttpHandlerResourceV3.CredentialsSuccessfullyUsed(_baseUri, promptCredentials);
-                }
-
-                return response;
-            }
-        }
-
-        private AmbientAuthenticationState GetAuthenticationState()
-        {
-            var correlationId = ActivityCorrelationContext.Current.CorrelationId;
-
-            AmbientAuthenticationState authState;
-            if (!_authStates.TryGetValue(correlationId, out authState))
-            {
-                authState = new AmbientAuthenticationState
-                {
-                    IsBlocked = false,
-                    AuthenticationRetriesCount = 0
-                };
-                _authStates[correlationId] = authState;
-            }
-
-            return authState;
-        }
-
-        private async Task<ICredentials> PromptForCredentialsAsync(
-            CredentialRequestType type,
-            string message,
-            CancellationToken token)
-        {
-            ICredentials promptCredentials = null;
-
-            if (HttpHandlerResourceV3.PromptForCredentialsAsync != null)
-            {
-                try
-                {
-                    // Only one prompt may display at a time.
-                    await _credentialPromptLock.WaitAsync();
-
-                    promptCredentials =
-                        await HttpHandlerResourceV3.PromptForCredentialsAsync(_baseUri, type, message, token);
-                }
-                catch (TaskCanceledException)
-                {
-                    throw; // pass-thru
-                }
-                catch (OperationCanceledException)
-                {
-                    // A valid response for VS dialog when user hits cancel button
-                    promptCredentials = null;
-                }
-                finally
-                {
-                    _credentialPromptLock.Release();
-                }
-            }
-
-            return promptCredentials;
-        }
-
-        private async Task UpdateHttpClientAsync()
-        {
-            // Get package source credentials
-            var credentials = CredentialStore.Instance.GetCredentials(_baseUri);
-
-            if (credentials == null
-                && _packageSource.Credentials != null
-                && _packageSource.Credentials.IsValid())
-            {
-                credentials = new NetworkCredential(_packageSource.Credentials.Username, _packageSource.Credentials.Password);
-            }
-
-            if (credentials != null)
-            {
-                CredentialStore.Instance.Add(_baseUri, credentials);
-            }
-
-            await UpdateHttpClientAsync(credentials);
-        }
-
-        private async Task UpdateHttpClientAsync(ICredentials credentials)
-        {
-            if (_httpHandler == null)
-            {
-                _httpHandler = await _messageHandlerFactory();
-                _httpClient = new HttpClient(_httpHandler.MessageHandler);
-                _httpClient.Timeout = Timeout.InfiniteTimeSpan;
-
-                // Create a new wrapper for ICredentials that can be modified
-                _credentials = new CredentialHelper();
-                _httpHandler.ClientHandler.Credentials = _credentials;
-
-                // Always take the credentials from the helper.
-                _httpHandler.ClientHandler.UseDefaultCredentials = false;
-
-                // Set user agent
-                UserAgent.SetUserAgent(_httpClient);
-            }
-
-            // Modify the credentials on the current handler
-            _credentials.Credentials = credentials;
-
-            // Mark that auth has been updated
-            _lastAuthId = Guid.NewGuid();
+            return httpClient;
         }
 
         private HttpCacheResult InitializeHttpCacheResult(string cacheKey, HttpSourceCacheContext context)

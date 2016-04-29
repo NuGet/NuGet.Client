@@ -6,7 +6,6 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -84,7 +83,6 @@ namespace NuGet.Protocol.FuncTest
         }
 
         [Theory]
-        [InlineData(TestServers.NuGetServer)]
         [InlineData(TestServers.ProGet)]
         [InlineData(TestServers.Klondike)]
         [InlineData(TestServers.Artifactory)]
@@ -106,7 +104,6 @@ namespace NuGet.Protocol.FuncTest
         }
 
         [Theory]
-        [InlineData(TestServers.NuGetServer)]
         [InlineData(TestServers.ProGet)]
         [InlineData(TestServers.Klondike)]
         [InlineData(TestServers.Artifactory)]
@@ -135,7 +132,6 @@ namespace NuGet.Protocol.FuncTest
 
         // ProGet does not support seach portable framework, it will return empty packages
         [Theory]
-        [InlineData(TestServers.NuGetServer)]
         [InlineData(TestServers.Klondike)]
         [InlineData(TestServers.Artifactory)]
         [InlineData(TestServers.MyGet)]
@@ -163,7 +159,6 @@ namespace NuGet.Protocol.FuncTest
         }
 
         [Theory]
-        [InlineData(TestServers.NuGetServer)]
         [InlineData(TestServers.ProGet)]
         [InlineData(TestServers.Klondike)]
         [InlineData(TestServers.Artifactory)]
@@ -192,7 +187,6 @@ namespace NuGet.Protocol.FuncTest
         }
 
         [Theory]
-        [InlineData(TestServers.NuGetServer)]
         [InlineData(TestServers.ProGet)]
         [InlineData(TestServers.Klondike)]
         [InlineData(TestServers.Artifactory)]
