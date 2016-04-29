@@ -29,7 +29,7 @@ namespace NuGet.Protocol
         private const int BufferSize = 8192;
         private readonly Func<Task<HttpHandlerResource>> _messageHandlerFactory;
         private readonly Uri _baseUri;
-        private HttpClient _httpClient;
+        private volatile HttpClient _httpClient;
         private Dictionary<string, AmbientAuthenticationState> _authStates = new Dictionary<string, AmbientAuthenticationState>();
         private HttpHandlerResource _httpHandler;
         private CredentialHelper _credentials;
