@@ -17,7 +17,7 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
 {
     internal static class Utils
     {
-        public static VersionRange CreateVersionRange(string stringToParse, bool includePrerelease)
+        public static VersionRange CreateVersionRange(string stringToParse)
         {
             var range = VersionRange.Parse(string.IsNullOrEmpty(stringToParse) ? "[0.0.0-alpha,)" : stringToParse);
             return new VersionRange(range.MinVersion, range.IsMinInclusive, range.MaxVersion, range.IsMaxInclusive);
