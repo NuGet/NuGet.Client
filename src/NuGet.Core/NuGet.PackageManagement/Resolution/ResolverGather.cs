@@ -226,6 +226,16 @@ namespace NuGet.PackageManagement
                     }
                 }
             }
+
+            foreach(var targetId in allPrimaryTargets)
+            {
+                var package = combinedResults.FirstOrDefault(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, targetId));
+                if(package != null)
+                {
+                    _context.Log.LogVerbose(string.Format("package '{0}' found from feed '{1}'", package.Id, package.Source.PackageSource.Source));
+                }
+            }
+
             // calculate total time taken to gather all packages as well as with each source
             stopWatch.Stop();
             _context.Log.LogMinimal(
