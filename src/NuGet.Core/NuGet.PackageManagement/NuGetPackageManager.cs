@@ -265,12 +265,12 @@ namespace NuGet.PackageManagement
         /// and <paramref name="nuGetProjectContext" /> are used in the process.
         /// </summary>
         public async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(
-            NuGetProject nuGetProject, 
+            NuGetProject nuGetProject,
             string packageId,
-            ResolutionContext resolutionContext, 
+            ResolutionContext resolutionContext,
             INuGetProjectContext nuGetProjectContext,
-            IEnumerable<SourceRepository> primarySources, 
-            IEnumerable<SourceRepository> secondarySources, 
+            IEnumerable<SourceRepository> primarySources,
+            IEnumerable<SourceRepository> secondarySources,
             CancellationToken token)
         {
             if (nuGetProject == null)
@@ -799,7 +799,7 @@ namespace NuGet.PackageManagement
                 }
 
                 // Remove packages that do not meet the constraints specified in the UpdateConstrainst
-                prunedAvailablePackages = PrunePackageTree.PruneByUpdateConstraints(prunedAvailablePackages, projectInstalledPackageReferences, resolutionContext.VersionConstraints);                
+                prunedAvailablePackages = PrunePackageTree.PruneByUpdateConstraints(prunedAvailablePackages, projectInstalledPackageReferences, resolutionContext.VersionConstraints);
 
                 // Remove all but the highest packages that are of the same Id as a specified packageId
                 if (packageId != null)
@@ -1112,7 +1112,7 @@ namespace NuGet.PackageManagement
             {
                 throw new ArgumentNullException("packageIdentity.Version");
             }
-            
+
             if (nuGetProject is INuGetIntegratedProject)
             {
                 SourceRepository sourceRepository;
@@ -2341,10 +2341,6 @@ namespace NuGet.PackageManagement
             // resolution context for the gather to use during the next step.
             // Using the metadata resource will result in multiple calls to the same url during an install.
             var packages = await dependencyInfoResource.ResolvePackages(packageId, framework, log, token);
-            packages = packages.Select(package =>
-            {
-                return package;
-            });
 
             Debug.Assert(resolutionContext.GatherCache != null);
 
@@ -2438,6 +2434,6 @@ namespace NuGet.PackageManagement
                     string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedPackageFeature,
                     packageIdentity.Id + " " + packageIdentity.Version.ToNormalizedString()));
             }
-        }        
+        }
     }
 }

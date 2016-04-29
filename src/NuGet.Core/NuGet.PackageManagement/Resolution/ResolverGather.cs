@@ -231,7 +231,7 @@ namespace NuGet.PackageManagement
             _context.Log.LogMinimal(
                 string.Format(Strings.GatherTotalTime, DatetimeUtility.ToReadableTimeFormat(stopWatch.Elapsed)));
             _context.Log.LogDebug("Summary of time taken to gather dependencies per source :");
-            foreach(var key in _timeTaken.Keys)
+            foreach (var key in _timeTaken.Keys)
             {
                 _context.Log.LogDebug(
                     string.Format("{0}\t-\t{1}", key, DatetimeUtility.ToReadableTimeFormat(_timeTaken[key])));
@@ -436,7 +436,7 @@ namespace NuGet.PackageManagement
                             if (request.Package.HasVersion)
                             {
                                 _cache.AddPackageFromSingleVersionLookup(
-                                    packageSource, 
+                                    packageSource,
                                     request.Package,
                                     _context.TargetFramework,
                                     packages.FirstOrDefault());
@@ -469,7 +469,7 @@ namespace NuGet.PackageManagement
 
                 // it maintain each source total time taken so far
                 stopWatch.Stop();
-                _timeTaken.AddOrUpdate(request.Source.Source.PackageSource.Name, stopWatch.Elapsed, (k,v) => stopWatch.Elapsed + v);
+                _timeTaken.AddOrUpdate(request.Source.Source.PackageSource.Name, stopWatch.Elapsed, (k, v) => stopWatch.Elapsed + v);
             }
 
             return new GatherResult(request, packages);
@@ -497,10 +497,6 @@ namespace NuGet.PackageManagement
                 {
                     // find all versions of a package
                     var packages = await resource.ResolvePackages(packageId, targetFramework, _context.Log, token);
-                    packages = packages.Select(package =>
-                    {
-                        return package;
-                    });
 
                     results.AddRange(packages);
                 }
