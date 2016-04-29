@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,7 +49,6 @@ namespace NuGet.PackageManagement.UI
         {
             InitializeComponent();
 
-            BindingOperations.EnableCollectionSynchronization(Items, _itemsLock);
             DataContext = Items;
             CheckBoxesEnabled = false;
         }
@@ -77,10 +77,19 @@ namespace NuGet.PackageManagement.UI
 
         public bool IsSolution { get; set; }
 
-        private object _itemsLock = new object();
+        private ObservableCollection<object> _items = new ObservableCollection<object>(); 
 
-        public ObservableCollection<object> Items { get; } = new ObservableCollection<object>();
-        public IEnumerable<PackageItemListViewModel> PackageItems => Items.OfType<PackageItemListViewModel>();
+        public ObservableCollection<object> Items
+        {
+            get
+            {
+                Debug.Assert(Mvs.ThreadHelper.CheckAccess());
+                return _items;
+            }
+        }
+
+        public IEnumerable<PackageItemListViewModel> PackageItems => Items.OfType<PackageItemListViewModel>().ToArray();
+
         public PackageItemListViewModel SelectedPackageItem => _list.SelectedItem as PackageItemListViewModel;
 
         // Load items using the specified loader
@@ -182,21 +191,19 @@ namespace NuGet.PackageManagement.UI
             token.ThrowIfCancellationRequested();
 
             var loadedItems = await LoadNextPageAsync(currentLoader, token);
-
-            token.ThrowIfCancellationRequested();
-
-            // multiple loads may occur at the same time
-            if (currentLoader == _loader)
-            {
-                UpdatePackageList(loadedItems.ToList(), refresh: false);
-            }
-
             token.ThrowIfCancellationRequested();
 
             await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                _loadingStatusBar.ItemsLoaded = currentLoader.State.ItemsCount;
+
+               // multiple loads may occur at the same time
+                if (currentLoader == _loader)
+                {
+                    _loadingStatusBar.ItemsLoaded = currentLoader.State.ItemsCount;
+                    UpdatePackageList(loadedItems, refresh: false);
+                }
+                
             });
 
             token.ThrowIfCancellationRequested();
@@ -296,7 +303,7 @@ namespace NuGet.PackageManagement.UI
             return statusBarVisibility;
         }
 
-        private void UpdatePackageList(List<PackageItemListViewModel> packages, bool refresh)
+        private void UpdatePackageList(IEnumerable<PackageItemListViewModel> packages, bool refresh)
         {
             // remove the loading status indicator if it's in the list
             Items.Remove(_loadingStatusIndicator);
@@ -306,25 +313,25 @@ namespace NuGet.PackageManagement.UI
                 ClearPackageList();
             }
 
-            _selectedCount += packages.Count(p => p.Selected);
-
             // add newly loaded items
-            packages.ForEach(p =>
+            foreach (var package in packages)
             {
-                p.PropertyChanged += Package_PropertyChanged;
-                Items.Add(p);
-            });
+                package.PropertyChanged += Package_PropertyChanged;
+                Items.Add(package);
+                _selectedCount = package.Selected ? _selectedCount + 1 : _selectedCount;
+            }
 
             Items.Add(_loadingStatusIndicator);
         }
 
         private void ClearPackageList()
         {
-            PackageItems
-                .ToList()
-                .ForEach(i => i.PropertyChanged -= Package_PropertyChanged);
-            Items.Clear();
+            foreach (var package in PackageItems)
+            {
+                package.PropertyChanged -= Package_PropertyChanged;
+            }
 
+            Items.Clear();
             _loadingStatusBar.ItemsLoaded = 0;
         }
 
@@ -332,9 +339,10 @@ namespace NuGet.PackageManagement.UI
         {
             // in this case, we only need to update PackageStatus of
             // existing items in the package list
-            PackageItems
-                .ToList()
-                .ForEach(i => i.UpdatePackageStatus(installedPackages));
+            foreach (var package in PackageItems)
+            {
+                package.UpdatePackageStatus(installedPackages);
+            }
         }
 
         private void Package_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -512,7 +520,7 @@ namespace NuGet.PackageManagement.UI
         private void _loadingStatusBar_ShowMoreResultsClick(object sender, RoutedEventArgs e)
         {
             var packageItems = _loader?.GetCurrent() ?? Enumerable.Empty<PackageItemListViewModel>();
-            UpdatePackageList(packageItems.ToList(), refresh: true);
+            UpdatePackageList(packageItems, refresh: true);
             _loadingStatusBar.ItemsLoaded = _loader?.State.ItemsCount ?? 0;
 
             var desiredVisibility = EvaluateStatusBarVisibility(_loader, _loader.State);
