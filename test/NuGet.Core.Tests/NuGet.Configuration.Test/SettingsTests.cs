@@ -54,7 +54,7 @@ namespace NuGet.Configuration.Test
                 var userSetting = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 #endif
                 // Assert 
-                Assert.Equal(commonApplicationData, machineWidePathTuple.Item2);
+                Assert.Equal(Path.Combine(commonApplicationData,"nuget"), machineWidePathTuple.Item2);
                 Assert.Equal("NuGet.Config", machineWidePathTuple.Item1);
                 Assert.Equal(Path.Combine(userSetting,"NuGet"), globalConfigTuple.Item2);
                 Assert.Equal("NuGet.Config", globalConfigTuple.Item1);
@@ -75,7 +75,7 @@ namespace NuGet.Configuration.Test
                 var userSetting = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 #endif
                 // Assert 
-                Assert.Equal(commonApplicationData, machineWidePathTuple.Item2);
+                Assert.Equal(Path.Combine(commonApplicationData, "nuget"), machineWidePathTuple.Item2);
                 Assert.Equal("NuGet.Config", machineWidePathTuple.Item1);
                 Assert.Equal(Path.Combine(userSetting, "NuGet"), globalConfigTuple.Item2);
                 Assert.Equal("NuGet.Config", globalConfigTuple.Item1);
@@ -96,7 +96,7 @@ namespace NuGet.Configuration.Test
                 var userSetting = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 #endif
                 // Assert 
-                Assert.Equal(commonApplicationData, machineWidePathTuple.Item2);
+                Assert.Equal(Path.Combine(commonApplicationData, "nuget"), machineWidePathTuple.Item2);
                 Assert.Equal("NuGet.Config", machineWidePathTuple.Item1);
                 Assert.Equal(Path.Combine(userSetting, "NuGet"), globalConfigTuple.Item2);
                 Assert.Equal("NuGet.Config", globalConfigTuple.Item1);

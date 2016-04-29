@@ -2371,7 +2371,7 @@ namespace NuGet.Configuration.Test
 
                 // Assert
                 Assert.Equal(@"\\myshare\packages", defaultPushSourceWithDefault);
-                Assert.Null(defaultPushSourceWithoutDefault);
+                Assert.True(string.IsNullOrEmpty(defaultPushSourceWithoutDefault));
             }
         }
 

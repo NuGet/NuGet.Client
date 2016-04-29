@@ -126,12 +126,42 @@ namespace NuGet.Configuration
                 .Select(source => source.PackageSource)
                 .ToList();
 
+            if (_configurationDefaultSources != null && _configurationDefaultSources.Any())
+            {
+                SetDefaultPackageSources(loadedPackageSources);
+            }
+
             if (_migratePackageSources != null)
             {
                 MigrateSources(loadedPackageSources);
             }
 
             return loadedPackageSources;
+        }
+
+        private void SetDefaultPackageSources(List<PackageSource> loadedPackageSources)
+        {
+            var defaultPackageSourcesToBeAdded = new List<PackageSource>();
+
+            foreach (var packageSource in _configurationDefaultSources)
+            {
+                bool sourceMatching = loadedPackageSources.Any(p => p.Source.Equals(packageSource.Source, StringComparison.CurrentCultureIgnoreCase));
+                bool feedNameMatching = loadedPackageSources.Any(p => p.Name.Equals(packageSource.Name, StringComparison.CurrentCultureIgnoreCase));
+
+                if (!sourceMatching && !feedNameMatching)
+                {
+                    defaultPackageSourcesToBeAdded.Add(packageSource);
+                }
+            }
+
+            var defaultSourcesInsertIndex = loadedPackageSources.FindIndex(source => source.IsMachineWide);
+
+            if (defaultSourcesInsertIndex == -1)
+            {
+                defaultSourcesInsertIndex = loadedPackageSources.Count;
+            }
+
+            loadedPackageSources.InsertRange(defaultSourcesInsertIndex, defaultPackageSourcesToBeAdded);
         }
 
         private PackageSource ReadPackageSource(SettingValue setting, bool isEnabled)
@@ -439,7 +469,14 @@ namespace NuGet.Configuration
         {
             get
             {
-                return Settings.GetValue(ConfigurationConstants.Config, ConfigurationConstants.DefaultPushSource);
+                var source = Settings.GetValue(ConfigurationConstants.Config, ConfigurationConstants.DefaultPushSource);
+
+                if (string.IsNullOrEmpty(source))
+                {
+                    source = ConfigurationDefaults.Instance.DefaultPushSource;
+                }
+
+                return source;
             }
         }
 
