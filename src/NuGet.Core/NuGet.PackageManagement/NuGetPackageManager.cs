@@ -2333,7 +2333,6 @@ namespace NuGet.PackageManagement
             var packages = await dependencyInfoResource.ResolvePackages(packageId, framework, log, token);
             packages = packages.Select(package =>
             {
-                package.SetIncludePrereleaseForDependencies();
                 return package;
             });
 

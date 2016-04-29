@@ -9,6 +9,37 @@ namespace NuGet.Versioning.Test
 {
     public class VersionRangeTests
     {
+        [Theory]
+        [InlineData("1.0.0", "1.0.1-beta", false)]
+        [InlineData("1.0.0", "1.0.1", true)]
+        [InlineData("1.0.0-*", "1.0.0-beta", true)]
+        [InlineData("1.0.0-beta.*", "1.0.0-beta.1", true)]
+        [InlineData("1.0.0-beta-*", "1.0.0-beta-01", true)]
+        [InlineData("1.0.0-beta-*", "2.0.0-beta", true)]
+        [InlineData("1.0.*", "1.0.0-beta", false)]
+        [InlineData("1.*", "1.0.0-beta", false)]
+        [InlineData("*", "1.0.0-beta", false)]
+        [InlineData("[1.0.0, 2.0.0]", "1.5.0-beta", false)]
+        [InlineData("[1.0.0, 2.0.0-beta]", "1.5.0-beta", true)]
+        [InlineData("[1.0.0-beta, 2.0.0]", "1.5.0-beta", true)]
+        [InlineData("[1.0.0-beta, 2.0.0]", "3.5.0-beta", false)]
+        [InlineData("[1.0.0-beta, 2.0.0]", "0.5.0-beta", false)]
+        [InlineData("[1.0.0-beta, 2.0.0)", "2.0.0", false)]
+        [InlineData("[1.0.0-beta, 2.0.0)", "2.0.0-beta", true)]
+        [InlineData("[1.0.*, 2.0.0-beta]", "2.0.0-beta", true)]
+        public void VersionRange_IsBetter_Prerelease(string rangeString, string versionString, bool expected)
+        {
+            // Arrange 
+            var range = VersionRange.Parse(rangeString);
+            var considering = NuGetVersion.Parse(versionString);
+
+            // Act
+            var result = range.IsBetter(current: null, considering: considering);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
         [Fact]
         public void VersionRange_MetadataIsIgnored_Satisfy()
         {
@@ -114,45 +145,15 @@ namespace NuGet.Versioning.Test
         [InlineData("(1.0.0, 2.0.0-alpha)")]
         [InlineData("1.0.0-beta-*")]
         [InlineData("[1.0.0-beta-*, ]")]
-        public void VersionRange_SetIncludePrerelease_True(string s)
+        public void VersionRange_IncludePrerelease(string s)
         {
             // Arrange
             var range = VersionRange.Parse(s);
 
-            // Act
-            var updated = VersionRange.SetIncludePrerelease(range, true);
-
-            // Assert
-            Assert.Equal(range.IsFloating, updated.IsFloating);
-            Assert.Equal(range.Float, updated.Float);
-            Assert.True(updated.IncludePrerelease);
-            Assert.Equal(range.ToNormalizedString(), updated.ToNormalizedString());
-        }
-
-        [Theory]
-        [InlineData("[1.0.0]")]
-        [InlineData("[1.0.0, 2.0.0]")]
-        [InlineData("[1.0.0, 2.0.0]")]
-        [InlineData("1.0.0")]
-        [InlineData("1.0.0-beta")]
-        [InlineData("(1.0.0-beta, 2.0.0-alpha)")]
-        [InlineData("(1.0.0-beta, 2.0.0)")]
-        [InlineData("(1.0.0, 2.0.0-alpha)")]
-        [InlineData("1.0.0-beta-*")]
-        [InlineData("[1.0.0-beta-*, ]")]
-        public void VersionRange_SetIncludePrerelease_False(string s)
-        {
-            // Arrange
-            var range = VersionRange.Parse(s);
-
-            // Act
-            var updated = VersionRange.SetIncludePrerelease(range, false);
-
-            // Assert
-            Assert.Equal(range.IsFloating, updated.IsFloating);
-            Assert.Equal(range.Float, updated.Float);
-            Assert.False(updated.IncludePrerelease);
-            Assert.Equal(range.ToNormalizedString(), updated.ToNormalizedString());
+            // Act && Assert
+            Assert.Equal(range.IsFloating, range.IsFloating);
+            Assert.Equal(range.Float, range.Float);
+            Assert.Equal(range.ToNormalizedString(), range.ToNormalizedString());
         }
 
         [Fact]
@@ -170,30 +171,10 @@ namespace NuGet.Versioning.Test
         public void VersionRange_Exact()
         {
             // Act 
-            var versionInfo = new VersionRange(new NuGetVersion(4, 3, 0), true, new NuGetVersion(4, 3, 0), true, false);
+            var versionInfo = new VersionRange(new NuGetVersion(4, 3, 0), true, new NuGetVersion(4, 3, 0), true);
 
             // Assert
             Assert.True(versionInfo.Satisfies(NuGetVersion.Parse("4.3.0")));
-        }
-
-        [Fact]
-        public void ParseVersionRangePrerelease()
-        {
-            // Act 
-            var versionInfo = VersionRange.Parse("(1.2-Alpha, 1.3-Beta)");
-
-            // Assert
-            Assert.True(versionInfo.IncludePrerelease);
-        }
-
-        [Fact]
-        public void ParseVersionRangeNoPrerelease()
-        {
-            // Act 
-            var versionInfo = new VersionRange(minVersion: new NuGetVersion("1.2-Alpha"), includePrerelease: false);
-
-            // Assert
-            Assert.False(versionInfo.IncludePrerelease);
         }
 
         [Theory]

@@ -17,10 +17,10 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
 {
     internal static class Utils
     {
-        public static VersionRange CreateVersionRange(string stringToParse, bool includePrerelease)
+        public static VersionRange CreateVersionRange(string stringToParse)
         {
             var range = VersionRange.Parse(string.IsNullOrEmpty(stringToParse) ? "[0.0.0-alpha,)" : stringToParse);
-            return new VersionRange(range.MinVersion, range.IsMinInclusive, range.MaxVersion, range.IsMaxInclusive, includePrerelease);
+            return new VersionRange(range.MinVersion, range.IsMinInclusive, range.MaxVersion, range.IsMaxInclusive);
         }
 
         public async static Task<IEnumerable<JObject>> LoadRanges(
@@ -38,8 +38,6 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
                 return Enumerable.Empty<JObject>();
             }
 
-            var preFilterRange = VersionRange.SetIncludePrerelease(range, includePrerelease: true);
-
             IList<Task<JObject>> rangeTasks = new List<Task<JObject>>();
 
             foreach (JObject item in index["items"])
@@ -47,7 +45,7 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
                 var lower = NuGetVersion.Parse(item["lower"].ToString());
                 var upper = NuGetVersion.Parse(item["upper"].ToString());
 
-                if (IsItemRangeRequired(preFilterRange, lower, upper))
+                if (IsItemRangeRequired(range, lower, upper))
                 {
                     JToken items;
                     if (!item.TryGetValue("items", out items))
@@ -75,7 +73,7 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
         private static bool IsItemRangeRequired(VersionRange dependencyRange, NuGetVersion catalogItemLower, NuGetVersion catalogItemUpper)
         {
             var catalogItemVersionRange = new VersionRange(minVersion: catalogItemLower, includeMinVersion: true,
-                maxVersion: catalogItemUpper, includeMaxVersion: true, includePrerelease: true);
+                maxVersion: catalogItemUpper, includeMaxVersion: true);
 
             if (dependencyRange.HasLowerAndUpperBounds) // Mainly to cover the '!dependencyRange.IsMaxInclusive && !dependencyRange.IsMinInclusive' case
             {

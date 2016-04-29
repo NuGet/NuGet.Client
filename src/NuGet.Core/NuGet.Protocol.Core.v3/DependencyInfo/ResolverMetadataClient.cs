@@ -50,7 +50,7 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
 
                     if (range.Satisfies(version))
                     {
-                        results.Add(ProcessPackageVersion(packageObj, version, range.IncludePrerelease));
+                        results.Add(ProcessPackageVersion(packageObj, version));
                     }
                 }
             }
@@ -63,9 +63,8 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
         /// </summary>
         /// <param name="packageObj"></param>
         /// <param name="version"></param>
-        /// <param name="includePrerelease"></param>
         /// <returns>Returns the RemoteSourceDependencyInfo object corresponding to this package version</returns>
-        private static RemoteSourceDependencyInfo ProcessPackageVersion(JObject packageObj, NuGetVersion version, bool includePrerelease)
+        private static RemoteSourceDependencyInfo ProcessPackageVersion(JObject packageObj, NuGetVersion version)
         {
             var catalogEntry = (JObject)packageObj["catalogEntry"];
 
@@ -94,7 +93,7 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
                         foreach (JObject dependencyObj in dependenciesObj)
                         {
                             var dependencyId = dependencyObj.Value<string>("id");
-                            var dependencyRange = Utils.CreateVersionRange(dependencyObj.Value<string>("range"), includePrerelease);
+                            var dependencyRange = Utils.CreateVersionRange(dependencyObj.Value<string>("range"));
 
                             groupDependencies.Add(new PackageDependency(dependencyId, dependencyRange));
                         }
@@ -128,7 +127,7 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
             var result = new HashSet<RegistrationInfo>();
             var registrationInfo = new RegistrationInfo();
 
-            registrationInfo.IncludePrerelease = range.IncludePrerelease;
+            registrationInfo.IncludePrerelease = true;
             foreach (var item in dependencies)
             {
                 var packageInfo = new PackageInfo
