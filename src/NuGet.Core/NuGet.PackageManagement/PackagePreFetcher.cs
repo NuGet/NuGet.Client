@@ -66,12 +66,10 @@ namespace NuGet.PackageManagement
             foreach (var action in actions)
             {
                 // Ignore uninstalls here
+                // Avoid duplicate downloads
                 if (action.NuGetProjectActionType == NuGetProjectActionType.Install
-                    && !seen.Contains(action.PackageIdentity))
+                    && seen.Add(action.PackageIdentity))
                 {
-                    // Avoid duplicate downloads
-                    seen.Add(action.PackageIdentity);
-
                     string installPath = null;
 
                     // Packages that are also being uninstalled cannot come from the
@@ -88,6 +86,8 @@ namespace NuGet.PackageManagement
                         }
                     }
 
+                    // installPath will contain the full path of the already installed nupkg if it
+                    // exists. If the path is empty it will need to be downloaded.
                     if (!string.IsNullOrEmpty(installPath))
                     {
                         // Create a download result using the already installed package
