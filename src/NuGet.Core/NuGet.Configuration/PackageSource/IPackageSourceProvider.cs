@@ -19,5 +19,7 @@ namespace NuGet.Configuration
         string ActivePackageSourceName { get; }
 
         void SaveActivePackageSource(PackageSource source);
+
+        string DefaultPushSource { get; }
     }
 }
