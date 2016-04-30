@@ -186,3 +186,8 @@ launchSettings.json
 # include the test packages
 !test/EndToEnd/Packages/**/*
 !test/EndToEnd/ProjectTemplates/**/*.pfx
+
+# client project.json files are copied in at build time
+src/NuGet.Clients/**/project.json
+test/NuGet.Clients.Tests/**/project.json
+test/TestExtensions/**/project.json

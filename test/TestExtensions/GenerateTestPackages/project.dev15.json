@@ -1,0 +1,12 @@
+﻿{
+  "dependencies": {
+    "NuGet.Core": "2.8.5"
+  },
+  "frameworks": {
+    "net46": {}
+  },
+  "runtimes": {
+    "win-anycpu": {},
+    "win": {}
+  }
+}

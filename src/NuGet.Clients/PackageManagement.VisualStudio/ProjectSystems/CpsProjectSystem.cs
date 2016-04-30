@@ -7,12 +7,7 @@ using System.Threading.Tasks;
 using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
 using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
-#if VS14
 using NuGetVS = NuGet.VisualStudio14;
-
-#else
-using NuGetVS = NuGet.VisualStudio12;
-#endif
 
 namespace NuGet.PackageManagement.VisualStudio
 {

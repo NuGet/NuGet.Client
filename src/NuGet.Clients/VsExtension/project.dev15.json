@@ -1,0 +1,35 @@
+{
+  "dependencies": {
+    "Lucene.Net": "3.0.3",
+    "Microsoft.IdentityModel.Clients.ActiveDirectory": "2.16.204221202",
+	"Microsoft.VisualStudio.CoreUtility": "15.0.25123-*",
+    "Microsoft.VisualStudio.OLE.Interop": "7.10.6070",
+    "Microsoft.VisualStudio.Services.Client": "14.83.2",
+    "Microsoft.VisualStudio.Services.InteractiveClient": "14.83.2",
+    "Microsoft.VisualStudio.Shell.15.0": "15.0.25123-*",
+    "Microsoft.VisualStudio.Shell.Immutable.10.0": "10.0.30319",
+    "Microsoft.VisualStudio.Shell.Immutable.11.0": "11.0.50727",
+    "Microsoft.VisualStudio.Shell.Immutable.12.0": "12.0.21003",
+    "Microsoft.VisualStudio.Shell.Immutable.14.0": "14.0.23107",
+    "Microsoft.VisualStudio.Shell.Interop": "7.10.6071",
+    "Microsoft.VisualStudio.Shell.Interop.10.0": "10.0.30319",
+    "Microsoft.VisualStudio.Shell.Interop.11.0": "11.0.61030",
+    "Microsoft.VisualStudio.Shell.Interop.12.0": "12.0.30110",
+    "Microsoft.VisualStudio.Shell.Interop.8.0": "8.0.50727",
+    "Microsoft.VisualStudio.Shell.Interop.9.0": "9.0.30729",
+    "Microsoft.VisualStudio.Shell.Interop.14.0.DesignTime": "14.2.25123",
+    "Microsoft.VisualStudio.Threading": "15.0.20-*",
+    "Microsoft.VSSDK.BuildTools": "15.0.25201-*",
+    "Microsoft.WindowsAzure.ConfigurationManager": "1.7.0",
+    "NuGet.Commands": "3.5.0-*",
+    "NuGet.Indexing": "3.5.0-*",
+    "System.IdentityModel.Tokens.Jwt": "4.0.0"
+  },
+  "frameworks": {
+    "net46": {}
+  },
+  "runtimes": {
+    "win-anycpu": {},
+    "win": {}
+  }
+}

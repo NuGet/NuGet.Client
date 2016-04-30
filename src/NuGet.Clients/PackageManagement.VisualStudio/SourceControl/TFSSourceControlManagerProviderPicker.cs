@@ -26,13 +26,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (_cachedTFSSourceControlManagerProvider == null)
             {
                 string assemblyName;
-#if VS12
-                assemblyName = "NuGet.TeamFoundationServer12";
-#endif
-
-#if VS14
                 assemblyName = "NuGet.TeamFoundationServer14";
-#endif
                 try
                 {
                     Assembly assembly = RuntimeHelpers.LoadAssemblySmart(assemblyName);

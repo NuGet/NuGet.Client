@@ -529,6 +529,7 @@ Function Invoke-ILMerge {
         Error-Log "Missing build artifacts listed in include list: $($notFound -join ', ')"
     }
 
+	# Note that the Dev14 path will become conditional on which target we're building against (TODO)
     Trace-Log 'Creating the ilmerged nuget.exe'
     $opts = , 'NuGet.exe'
     $opts += $buildArtifacts
