@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using NuGet.Common;
 
 namespace NuGet.Configuration
@@ -161,6 +163,39 @@ namespace NuGet.Configuration
             }
             
             return NuGetEnvironment.GetFolderPath(NuGetFolderPath.HttpCacheDirectory);
+        }
+
+        /// <summary>
+        /// The DefaultPushSource can be:
+        /// - An absolute URL
+        /// - An absolute file path
+        /// - A relative file path
+        /// - The name of a registered source from a config file
+        /// </summary>
+        public static string GetDefaultPushSource(ISettings settings)
+        {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
+            string source = settings.GetValue(ConfigurationConstants.Config, ConfigurationConstants.DefaultPushSource, isPath: false);
+
+            Uri sourceUri = UriUtility.TryCreateSourceUri(source, UriKind.RelativeOrAbsolute);
+            if (sourceUri != null && !sourceUri.IsAbsoluteUri)
+            {
+                // For non-absolute sources, it could be the name of a config source, or a relative file path.
+                IPackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
+                IEnumerable<PackageSource> allSources = sourceProvider.LoadPackageSources();
+
+                if (!allSources.Any(s => s.IsEnabled && s.Name.Equals(source, StringComparison.OrdinalIgnoreCase)))
+                {
+                    // It wasn't the name of a source, so treat it like a relative file path
+                    source = settings.GetValue(ConfigurationConstants.Config, ConfigurationConstants.DefaultPushSource, isPath: true);
+                }
+            }
+
+            return source;
         }
     }
 }

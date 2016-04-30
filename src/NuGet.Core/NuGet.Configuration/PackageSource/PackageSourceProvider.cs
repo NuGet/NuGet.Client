@@ -469,7 +469,7 @@ namespace NuGet.Configuration
         {
             get
             {
-                var source = Settings.GetValue(ConfigurationConstants.Config, ConfigurationConstants.DefaultPushSource);
+                string source = SettingsUtility.GetDefaultPushSource(Settings);
 
                 if (string.IsNullOrEmpty(source))
                 {

@@ -121,7 +121,7 @@ namespace NuGet.Configuration
                 // Act & Assert
                 ConfigurationDefaults ConfigurationDefaults = GetConfigurationDefaults(configurationDefaultsContent, mockBaseDirectory);
 
-                Assert.Equal(ConfigurationDefaults.DefaultPushSource, "http://contoso.com/packages/");
+                Assert.Equal("http://contoso.com/packages/", ConfigurationDefaults.DefaultPushSource);
             }
         }
 
@@ -213,7 +213,7 @@ namespace NuGet.Configuration
                 List<PackageSource> packageSources = packageSourceProvider.LoadPackageSources().ToList();
 
                 // Assert
-                Assert.Equal(ConfigurationDefaults.DefaultPushSource, "http://contoso.com/packages/");
+                Assert.Equal("http://contoso.com/packages/", ConfigurationDefaults.DefaultPushSource);
                 Assert.Equal(2, packageSources.Count());
                 Assert.Equal("v2", packageSources[0].Name);
                 Assert.Equal("Contoso Package Source", packageSources[1].Name);

@@ -86,8 +86,9 @@ namespace NuGet.Configuration
                     && !_defaultPackageSourceInitialized)
                 {
                     _defaultPackageSourceInitialized = true;
-                    _defaultPushSource = _settingsManager.GetValue(ConfigurationConstants.Config, ConfigurationConstants.DefaultPushSource);
+                    _defaultPushSource = SettingsUtility.GetDefaultPushSource(_settingsManager);
                 }
+
                 return _defaultPushSource;
             }
         }
