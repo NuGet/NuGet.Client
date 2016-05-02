@@ -1,7 +1,7 @@
 ﻿{
   "version": "3.5.0-*",
   "dependencies": {
-    "dotnet-test-xunit": "1.0.0-rc2-*",
+    "dotnet-test-xunit": "1.0.0-rc2-173384-19",
     "NuGet.CommandLine.XPlat": {
       "target": "project"
     },

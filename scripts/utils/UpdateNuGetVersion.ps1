@@ -37,7 +37,8 @@ $miscFiles = @(
     "src\NuGet.Clients\VsExtension\source.extension.dev15.vsixmanifest",
     "src\NuGet.Clients\VsExtension\NuGetPackage.cs",
     "build\common.props",
-    ".teamcity.properties"
+    ".teamcity.properties",
+    "appveyor.yml"
 )
 
 $miscFiles | %{ Join-Path $NuGetRoot $_ } | ReplaceNuGetVersion
