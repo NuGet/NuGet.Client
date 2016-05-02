@@ -798,7 +798,7 @@ namespace NuGet.Commands
         public static string GetInputFile(PackArgs packArgs)
         {
             bool usingDirectory = false;
-            if (packArgs.Arguments != null && packArgs.Arguments.Count() == 1)
+            if (packArgs.Arguments?.Count() == 1)
             {
                 string first = packArgs.Arguments.First();
                 if (Directory.Exists(first))
@@ -823,8 +823,8 @@ namespace NuGet.Commands
             var candidates = files.Where(file => _allowedExtensions.Contains(Path.GetExtension(file))).ToList();
             string result;
 
-            candidates.RemoveAll(ext => ext.EndsWith(".lock.json") ||
-                                    (ext.EndsWith(".json") && 
+            candidates.RemoveAll(ext => ext.EndsWith(".lock.json", StringComparison.OrdinalIgnoreCase) ||
+                                    (ext.EndsWith(".json", StringComparison.OrdinalIgnoreCase) && 
                                     !Path.GetFileName(ext).Equals(ProjectJsonPathUtilities.ProjectConfigFileName, StringComparison.OrdinalIgnoreCase) &&
                                     !ext.EndsWith(ProjectJsonPathUtilities.ProjectConfigFileEnding, StringComparison.OrdinalIgnoreCase)));
 
