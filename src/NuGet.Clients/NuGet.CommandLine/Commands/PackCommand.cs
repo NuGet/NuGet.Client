@@ -84,17 +84,21 @@ namespace NuGet.CommandLine
             PackArgs packArgs = new PackArgs();
             packArgs.Logger = Console;
             packArgs.Arguments = Arguments;
+            packArgs.OutputDirectory = OutputDirectory;
 
             // The directory that contains msbuild
             packArgs.MsBuildDirectory = new Lazy<string>(() => MsBuildUtility.GetMsbuildDirectory(MSBuildVersion, Console));
 
             // Get the input file
-            string path = PackCommandRunner.GetInputFile(packArgs);
+            packArgs.Path = PackCommandRunner.GetInputFile(packArgs);
 
-            Console.WriteLine(LocalizedResourceManager.GetString("PackageCommandAttemptingToBuildPackage"), Path.GetFileName(path));
+            // Set the current directory if the files being packed are in a different directory
+            PackCommandRunner.SetupCurrentDirectory(packArgs);
+
+            Console.WriteLine(LocalizedResourceManager.GetString("PackageCommandAttemptingToBuildPackage"), Path.GetFileName(packArgs.Path));
 
             // If the BasePath is not specified, use the directory of the input file (nuspec / proj) file
-            BasePath = String.IsNullOrEmpty(BasePath) ? Path.GetDirectoryName(Path.GetFullPath(path)) : BasePath;
+            BasePath = String.IsNullOrEmpty(BasePath) ? Path.GetDirectoryName(Path.GetFullPath(packArgs.Path)) : BasePath;
             BasePath = BasePath.TrimEnd(Path.DirectorySeparatorChar);
 
             if (!String.IsNullOrEmpty(MinClientVersion))
@@ -131,8 +135,6 @@ namespace NuGet.CommandLine
             packArgs.MinClientVersion = _minClientVersionValue;
             packArgs.NoDefaultExcludes = NoDefaultExcludes;
             packArgs.NoPackageAnalysis = NoPackageAnalysis;
-            packArgs.OutputDirectory = OutputDirectory;
-            packArgs.Path = path;
             if (Properties.Any())
             {
                 packArgs.Properties.AddRange(Properties);
