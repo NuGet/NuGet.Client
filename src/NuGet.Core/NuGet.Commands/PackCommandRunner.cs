@@ -795,31 +795,37 @@ namespace NuGet.Commands
             return Path.Combine(outputDirectory, outputFile);
         }
 
+        public static void SetupCurrentDirectory(PackArgs packArgs)
+        {
+            string directory = Path.GetDirectoryName(packArgs.Path);
+
+            if (!directory.Equals(packArgs.CurrentDirectory, StringComparison.OrdinalIgnoreCase))
+            {
+                if (string.IsNullOrEmpty(packArgs.OutputDirectory))
+                {
+                    packArgs.OutputDirectory = packArgs.CurrentDirectory;
+                }
+
+                packArgs.CurrentDirectory = directory;
+                Directory.SetCurrentDirectory(packArgs.CurrentDirectory);
+            }
+        }
+
         public static string GetInputFile(PackArgs packArgs)
         {
-            bool usingDirectory = false;
-            if (packArgs.Arguments?.Count() == 1)
-            {
-                string first = packArgs.Arguments.First();
-                if (Directory.Exists(first))
-                {
-                    if (string.IsNullOrEmpty(packArgs.OutputDirectory))
-                    {
-                        packArgs.OutputDirectory = packArgs.CurrentDirectory;
-                    }
-
-                    packArgs.CurrentDirectory = Path.GetFullPath(first);
-                    Directory.SetCurrentDirectory(packArgs.CurrentDirectory);
-                    usingDirectory = true;
-                }
-            }
-            IEnumerable<string> files = !usingDirectory && packArgs.Arguments != null && packArgs.Arguments.Any() ? packArgs.Arguments : Directory.GetFiles(packArgs.CurrentDirectory);
+            IEnumerable<string> files = packArgs.Arguments != null && packArgs.Arguments.Any() ? packArgs.Arguments : Directory.GetFiles(packArgs.CurrentDirectory);
 
             return GetInputFile(packArgs, files);
         }
 
         internal static string GetInputFile(PackArgs packArgs, IEnumerable<string> files)
         {
+            if (files.Count() == 1 && Directory.Exists(files.First()))
+            {
+                string first = files.First();
+                files = Directory.GetFiles(first);
+            }
+
             var candidates = files.Where(file => _allowedExtensions.Contains(Path.GetExtension(file))).ToList();
             string result;
 
@@ -859,21 +865,7 @@ namespace NuGet.Commands
                 }
             }
 
-            string fullPath = Path.GetFullPath(Path.Combine(packArgs.CurrentDirectory, result));
-            string directory = Path.GetDirectoryName(fullPath);
-
-            if (!directory.Equals(packArgs.CurrentDirectory, StringComparison.OrdinalIgnoreCase))
-            {
-                if (string.IsNullOrEmpty(packArgs.OutputDirectory))
-                {
-                    packArgs.OutputDirectory = packArgs.CurrentDirectory;
-                }
-
-                packArgs.CurrentDirectory = directory;
-                Directory.SetCurrentDirectory(packArgs.CurrentDirectory);
-            }
-
-            return fullPath;
+            return Path.Combine(packArgs.CurrentDirectory, result);
         }
 
         private void WriteLine(string message, object arg = null)
