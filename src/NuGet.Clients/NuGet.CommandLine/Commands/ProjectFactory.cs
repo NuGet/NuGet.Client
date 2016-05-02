@@ -686,6 +686,10 @@ namespace NuGet.CommandLine
                 projectFactory.ProjectProperties = ProjectProperties;
                 projectFactory.BuildProject();
                 var builder = new PackageBuilder();
+
+                // If building an xproj, then TargetPath points to the folder where the framework folders will be
+                // instead of to a single dll. Skip trying to ExtractMetadata from the dll and instead
+                // use only metadata from the project and json file.
                 if (!Directory.Exists(projectFactory.TargetPath))
                 {
                     try
