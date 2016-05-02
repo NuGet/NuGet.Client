@@ -438,12 +438,14 @@ Function Test-XProject {
                     $opts += '-v'
                 }
                 $opts += 'test', '--configuration', $Configuration, '--framework', 'netcoreapp1.0'
+                if ($VerbosePreference) {
+                    $opts += '-verbose'
+                }
 
                 Trace-Log "$DotNetExe $opts"
-
                 & $DotNetExe $opts
 
-                if (-not $?) {
+                if ($LASTEXITCODE -ne 0) {
                     Error-Log "Tests failed @""$_"" on CoreCLR. Code: $LASTEXITCODE"
                 }
             }
@@ -458,11 +460,10 @@ Function Test-XProject {
                 $opts += 'build', '--configuration', $Configuration, '--runtime', 'win7-x64'
 
                 Trace-Log "$DotNetExe $opts"
-
                 & $DotNetExe $opts
 
-                if (-not $?) {
-                    Error-Log "Build failed for $directoryName. Code: $LASTEXITCODE"
+                if ($LASTEXITCODE -ne 0) {
+                    Error-Log "Build failed @""$_"" on CLR. Code: $LASTEXITCODE"
                 }
                 else {
                     $htmlOutput = Join-Path $_ "bin\$Configuration\net46\win7-x64\xunit.results.html"
@@ -651,18 +652,18 @@ Function Invoke-ILMerge {
     }
 
     $opts2 += "/out:$Artifacts\NuGet.exe"
-    
+
     if ($VerbosePreference) {
         $opts2 += '/log'
     }
-    
+
     Trace-Log "$ILMerge $opts2"
     & $ILMerge $opts2 2>&1
-    
+
     if (-not $?) {
         Error-Log "ILMerge has failed. Code: $LASTEXITCODE"
     }
-        
+
     Remove-Item $buildArtifactsFolder\$nugetIntermediateExe
     Remove-Item $buildArtifactsFolder\$nugetIntermediatePdb
-    }
+}
