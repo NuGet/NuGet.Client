@@ -1,0 +1,15 @@
+version: 1.0.{build}
+pull_requests:
+  do_not_increment_build_number: true
+skip_tags: true
+clone_depth: 1
+install:
+- cmd: git submodule update --init --recursive
+build_script:
+- ps: .\build.ps1 -Configuration Release -Fast -ErrorAction Stop -Verbose
+test_script:
+- ps: >-
+    . .\build\common.ps1
+
+    Test-CoreProjects -Fast -Verbose
+deploy: off
