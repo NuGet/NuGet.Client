@@ -1297,6 +1297,7 @@ namespace NuGet.CommandLine
         {
             private readonly IPackageRepository _repository;
             private readonly List<IPackage> _packages;
+            private readonly List<NuGet.PackageDependency> _requiredProjectDependencies = new List<NuGet.PackageDependency>();
 
             public Walker(List<IPackage> packages, FrameworkName targetFramework) :
                 base(targetFramework)
@@ -1317,12 +1318,24 @@ namespace NuGet.CommandLine
 
             protected override IPackage ResolveDependency(NuGet.PackageDependency dependency)
             {
-                return _repository.ResolveDependency(dependency, allowPrereleaseVersions: false, preferListedPackages: false);
+                IPackage resolvedDependency = _repository.ResolveDependency(dependency, allowPrereleaseVersions: false, preferListedPackages: true);
+
+                if (resolvedDependency.Version > dependency.VersionSpec.MinVersion)
+                {
+                    // Don't remove this dependency
+                    _requiredProjectDependencies.Add(dependency);
+                }
+
+                return resolvedDependency;
             }
 
             protected override bool OnAfterResolveDependency(IPackage package, IPackage dependency)
             {
-                _packages.Remove(dependency);
+                if (!_requiredProjectDependencies.Any(d => d.Id == dependency.Id))
+                {
+                    _packages.Remove(dependency);
+                }
+
                 return base.OnAfterResolveDependency(package, dependency);
             }
 
