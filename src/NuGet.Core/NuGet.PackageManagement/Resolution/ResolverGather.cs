@@ -469,7 +469,7 @@ namespace NuGet.PackageManagement
 
                 // it maintain each source total time taken so far
                 stopWatch.Stop();
-                _timeTaken.AddOrUpdate(request.Source.Source.PackageSource.Name, stopWatch.Elapsed, (k, v) => stopWatch.Elapsed + v);
+                _timeTaken.AddOrUpdate(request.Source.Source.PackageSource.Source, stopWatch.Elapsed, (k,v) => stopWatch.Elapsed + v);
             }
 
             return new GatherResult(request, packages);

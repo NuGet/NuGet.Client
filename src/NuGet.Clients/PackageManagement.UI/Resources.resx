@@ -548,4 +548,7 @@ Packages installed into Website projects will not be restored during build. Cons
   <data name="Text_PackagesFound" xml:space="preserve">
     <value>Packages found</value>
   </data>
+  <data name="Operation_TotalTime" xml:space="preserve">
+    <value>Time Elapsed: {0}</value>
+  </data>
 </root>

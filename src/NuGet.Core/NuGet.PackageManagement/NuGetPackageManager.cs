@@ -799,7 +799,7 @@ namespace NuGet.PackageManagement
                 }
 
                 // Remove packages that do not meet the constraints specified in the UpdateConstrainst
-                prunedAvailablePackages = PrunePackageTree.PruneByUpdateConstraints(prunedAvailablePackages, projectInstalledPackageReferences, resolutionContext.VersionConstraints);
+                prunedAvailablePackages = PrunePackageTree.PruneByUpdateConstraints(prunedAvailablePackages, projectInstalledPackageReferences, resolutionContext.VersionConstraints);                
 
                 // Remove all but the highest packages that are of the same Id as a specified packageId
                 if (packageId != null)
@@ -1177,6 +1177,7 @@ namespace NuGet.PackageManagement
                     // Step-1 : Get metadata resources using gatherer
                     var projectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
                     var targetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
+                    nuGetProjectContext.Log(NuGet.ProjectManagement.MessageLevel.Info, Environment.NewLine);
                     nuGetProjectContext.Log(ProjectManagement.MessageLevel.Info, Strings.AttemptingToGatherDependencyInfo, packageIdentity, projectName, targetFramework);
 
                     var primaryPackages = new List<PackageIdentity> { packageIdentity };
@@ -1517,6 +1518,7 @@ namespace NuGet.PackageManagement
             var packageIdentity = packageReference.PackageIdentity;
             var projectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
             var packageReferenceTargetFramework = packageReference.TargetFramework;
+            nuGetProjectContext.Log(NuGet.ProjectManagement.MessageLevel.Info, Environment.NewLine);
             nuGetProjectContext.Log(ProjectManagement.MessageLevel.Info, Strings.AttemptingToGatherDependencyInfo, packageIdentity, projectName, packageReferenceTargetFramework);
 
             // TODO: IncludePrerelease is a big question mark

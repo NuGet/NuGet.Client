@@ -198,6 +198,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to display friendly message to the console.")]
         protected override sealed void ProcessRecord()
         {
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+
             try
             {
                 ProcessRecordCore();
@@ -213,6 +216,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 UnsubscribeEvents();
             }
+
+            stopWatch.Stop();
+            LogCore(ProjectManagement.MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_TotalTime, stopWatch.Elapsed));
         }
 
         /// <summary>
