@@ -6,14 +6,14 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
+using NuGet.Frameworks;
+using NuGet.Packaging;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
 {
-    using NuGet.Frameworks;
-    using NuGet.Packaging;
-    using Versioning;
     public class NuGetPackCommandTest
     {
         [Fact]
