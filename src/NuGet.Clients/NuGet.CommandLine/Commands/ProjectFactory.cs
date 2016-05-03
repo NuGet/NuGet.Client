@@ -1297,7 +1297,6 @@ namespace NuGet.CommandLine
         {
             private readonly IPackageRepository _repository;
             private readonly List<IPackage> _packages;
-            private readonly List<NuGet.PackageDependency> _requiredProjectDependencies = new List<NuGet.PackageDependency>();
 
             public Walker(List<IPackage> packages, FrameworkName targetFramework) :
                 base(targetFramework)
@@ -1318,25 +1317,36 @@ namespace NuGet.CommandLine
 
             protected override IPackage ResolveDependency(NuGet.PackageDependency dependency)
             {
-                IPackage resolvedDependency = _repository.ResolveDependency(dependency, allowPrereleaseVersions: false, preferListedPackages: true);
-
-                if (resolvedDependency.Version > dependency.VersionSpec.MinVersion)
-                {
-                    // Don't remove this dependency
-                    _requiredProjectDependencies.Add(dependency);
-                }
-
-                return resolvedDependency;
+                return _repository.ResolveDependency(dependency, allowPrereleaseVersions: false, preferListedPackages: true);
             }
 
             protected override bool OnAfterResolveDependency(IPackage package, IPackage dependency)
             {
-                if (!_requiredProjectDependencies.Any(d => d.Id == dependency.Id))
+                if (!FindDependency(dependency.Id, dependency.Version))
                 {
                     _packages.Remove(dependency);
                 }
 
                 return base.OnAfterResolveDependency(package, dependency);
+            }
+
+            private bool FindDependency(string id, SemanticVersion version)
+            {
+                foreach (var package in _packages)
+                {
+                    foreach (var set in package.DependencySets)
+                    {
+                        foreach (var dependency in set.Dependencies)
+                        {
+                            if (dependency.Id == id && dependency.VersionSpec.MinVersion < version)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+
+                return false;
             }
 
             public IEnumerable<IPackage> GetMinimalSet()

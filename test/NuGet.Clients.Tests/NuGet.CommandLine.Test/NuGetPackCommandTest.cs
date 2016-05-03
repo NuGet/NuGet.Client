@@ -2004,7 +2004,7 @@ namespace Proj1
                 var r = CommandRunner.Run(
                     nugetexe,
                     proj1Directory,
-                    "pack proj1.csproj -build -IncludeReferencedProjects --debug",
+                    "pack proj1.csproj -build -IncludeReferencedProjects",
                     waitForExit: true);
                 Assert.Equal(0, r.Item1);
  
@@ -2118,7 +2118,7 @@ namespace Proj1
                 var r = CommandRunner.Run(
                     nugetexe,
                     proj1Directory,
-                    "pack proj1.csproj -build -IncludeReferencedProjects --debug",
+                    "pack proj1.csproj -build -IncludeReferencedProjects",
                     waitForExit: true);
                 Assert.Equal(0, r.Item1);
  
