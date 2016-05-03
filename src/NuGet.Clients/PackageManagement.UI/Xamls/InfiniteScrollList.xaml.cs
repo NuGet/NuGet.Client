@@ -77,7 +77,7 @@ namespace NuGet.PackageManagement.UI
 
         public bool IsSolution { get; set; }
 
-        private ObservableCollection<object> _items = new ObservableCollection<object>(); 
+        private readonly ObservableCollection<object> _items = new ObservableCollection<object>(); 
 
         public ObservableCollection<object> Items
         {
@@ -197,7 +197,8 @@ namespace NuGet.PackageManagement.UI
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-               // multiple loads may occur at the same time
+               // multiple loads may occur at the same time as a result of multiple instances,
+               // makes sure we update using the relevant one.
                 if (currentLoader == _loader)
                 {
                     _loadingStatusBar.ItemsLoaded = currentLoader.State.ItemsCount;
