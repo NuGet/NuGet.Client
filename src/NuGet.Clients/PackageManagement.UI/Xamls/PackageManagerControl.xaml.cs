@@ -688,8 +688,13 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                var installedPackages = GetInstalledPackages(Model.Context.Projects);
-                _packageList.UpdatePackageStatus(installedPackages);
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    var installedPackages = await PackageCollection.FromProjectsAsync(Model.Context.Projects,
+                        CancellationToken.None);
+                    _packageList.UpdatePackageStatus(installedPackages.ToArray());
+                });
             }
 
             RefreshAvailableUpdatesCount();
