@@ -412,6 +412,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Time Elapsed: {0}.
+        /// </summary>
+        internal static string Cmdlet_TotalTime {
+            get {
+                return ResourceManager.GetString("Cmdlet_TotalTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to find package &apos;{0}&apos;..
         /// </summary>
         internal static string Cmdlet_UnknownPackage {
