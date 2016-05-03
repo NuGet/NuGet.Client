@@ -249,7 +249,7 @@ namespace NuGet.Commands.Rules {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to A placeholder file &apos;{0}&apos; is in the package and should be removed..
+        ///    Looks up a localized string similar to An empty folder placeholder file &apos;{0}&apos; is in a non-empty folder and should be removed..
         /// </summary>
         public static string PlaceholderFileInPackageDescription {
             get {
@@ -258,7 +258,7 @@ namespace NuGet.Commands.Rules {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Remove the &apos;_._&apos; file from the project..
+        ///    Looks up a localized string similar to Remove the file from the project..
         /// </summary>
         public static string PlaceholderFileInPackageSolution {
             get {
@@ -267,7 +267,7 @@ namespace NuGet.Commands.Rules {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Placeholder file in package..
+        ///    Looks up a localized string similar to Placeholder file in non-empty folder..
         /// </summary>
         public static string PlaceholderFileInPackageTitle {
             get {

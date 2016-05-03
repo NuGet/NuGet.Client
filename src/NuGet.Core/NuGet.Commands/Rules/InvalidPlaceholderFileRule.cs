@@ -2,22 +2,26 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 
 namespace NuGet.Commands.Rules
 {
     internal class InvalidPlaceholderFileRule : IPackageRule
     {
-        private const string PlaceholderFile = "_._";
-
         public IEnumerable<PackageIssue> Validate(PackageBuilder builder)
         {
             foreach (IPackageFile file in builder.Files)
             {
                 string path = file.Path;
-                if (Path.GetFileName(path).Equals(PlaceholderFile, StringComparison.Ordinal))
+                if (Path.GetFileName(path).Equals(PackagingCoreConstants.EmptyFolder, StringComparison.Ordinal))
                 {
-                    yield return CreatePackageIssueForPlaceholderFile(path);
+                    string directory = PathUtility.EnsureTrailingSlash(Path.GetDirectoryName(path));
+                    if (builder.Files.Count(f => PathUtility.EnsureTrailingSlash(Path.GetDirectoryName(f.Path)).StartsWith(directory, StringComparison.OrdinalIgnoreCase)) > 1)
+                    {
+                        yield return CreatePackageIssueForPlaceholderFile(path);
+                    }
                 }
             }
         }
