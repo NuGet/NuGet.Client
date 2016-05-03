@@ -168,6 +168,25 @@ namespace NuGet.Configuration
         }
 
         /// <summary>
+        /// Loads Specific NuGet.Config file. The method only loads specific config file 
+        /// which is file <paramref name="configFileName"/>from <paramref name="root"/>.
+        /// </summary>
+        public static ISettings LoadSpecificSettings(string root, string configFileName)
+        {
+            if (string.IsNullOrEmpty(configFileName))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(configFileName));
+            }
+
+            return LoadDefaultSettings(
+                root,
+                configFileName,
+                machineWideSettings: null,
+                loadAppDataSettings: true,
+                useTestingGlobalPath: false);
+        }
+
+        /// <summary>
         /// For internal use only
         /// </summary>
         public static ISettings LoadDefaultSettings(

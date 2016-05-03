@@ -17,7 +17,7 @@ namespace NuGet.Commands
 {
     public class RestoreArgs
     {
-        public string ConfigFileName { get; set; }
+        public string ConfigFile { get; set; }
 
         public IMachineWideSettings MachineWideSettings { get; set; }
 
@@ -57,12 +57,27 @@ namespace NuGet.Commands
 
         public ISettings GetSettings(string projectDirectory)
         {
-            return _settingsCache.GetOrAdd(projectDirectory, (dir) =>
+            if (string.IsNullOrEmpty(ConfigFile))
             {
-                return Settings.LoadDefaultSettings(dir,
-                    ConfigFileName,
-                    MachineWideSettings);
-            });
+                return _settingsCache.GetOrAdd(projectDirectory, (dir) =>
+                {
+                    return Settings.LoadDefaultSettings(dir,
+                        configFileName : null,
+                        machineWideSettings: MachineWideSettings);
+                });
+            }
+            else
+            {
+                var configFileFullPath = Path.GetFullPath(ConfigFile);
+                var directory = Path.GetDirectoryName(configFileFullPath);
+                var configFileName = Path.GetFileName(configFileFullPath);
+
+                return _settingsCache.GetOrAdd(directory, (dir) =>
+                {
+                    return Settings.LoadSpecificSettings(dir,
+                        configFileName: configFileName);
+                });
+            }
         }
 
         public string GetEffectiveGlobalPackagesFolder(string rootDirectory, ISettings settings)
