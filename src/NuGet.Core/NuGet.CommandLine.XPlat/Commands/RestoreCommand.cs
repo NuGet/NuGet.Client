@@ -102,7 +102,7 @@ namespace NuGet.CommandLine.XPlat
                         {
                             CacheContext = cacheContext,
                             LockFileVersion = LockFileFormat.Version,
-                            ConfigFileName = configFile.HasValue() ? configFile.Value() : null,
+                            ConfigFile = configFile.HasValue() ? configFile.Value() : null,
                             DisableParallel = disableParallel.HasValue(),
                             GlobalPackagesFolder = packagesDirectory.HasValue() ? packagesDirectory.Value() : null,
                             Inputs = new List<string>(argRoot.Values),

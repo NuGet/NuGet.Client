@@ -96,7 +96,7 @@ namespace NuGet.CommandLine
                     cacheContext.NoCache = NoCache;
                     restoreContext.CacheContext = cacheContext;
                     restoreContext.DisableParallel = DisableParallelProcessing;
-                    restoreContext.ConfigFileName = ConfigFile;
+                    restoreContext.ConfigFile = ConfigFile;
                     restoreContext.MachineWideSettings = MachineWideSettings;
                     restoreContext.Sources = Source.ToList();
                     restoreContext.Log = Console;

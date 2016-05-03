@@ -84,6 +84,82 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
+        public async Task RestoreRunner_BasicRestoreWithConfigFile()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+
+            var project1Json = @"
+            {
+              ""version"": ""1.0.0"",
+              ""description"": """",
+              ""authors"": [ ""author"" ],
+              ""tags"": [ """" ],
+              ""projectUrl"": """",
+              ""licenseUrl"": """",
+              ""frameworks"": {
+                ""net45"": {
+                }
+              }
+            }";
+
+            var configFile = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""nuget.org"" value=""{0}"" />
+    </packageSources>
+</configuration>
+";
+
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
+                var project1 = new DirectoryInfo(Path.Combine(workingDir, "projects", "project1"));
+                packagesDir.Create();
+                packageSource.Create();
+                project1.Create();
+
+                File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
+                File.WriteAllText(Path.Combine(workingDir, "NuGet.Config"), String.Format(configFile, packageSource.FullName));
+
+                var specPath1 = Path.Combine(project1.FullName, "project.json");
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+
+                var configPath = Path.Combine(workingDir, "NuGet.Config");
+
+                var logger = new TestLogger();
+                var lockPath = Path.Combine(project1.FullName, "project.lock.json");
+
+                var providerCache = new RestoreCommandProvidersCache();
+
+                var restoreContext = new RestoreArgs()
+                {
+                    CacheContext = new SourceCacheContext(),
+                    DisableParallel = true,
+                    GlobalPackagesFolder = packagesDir.FullName,
+                    ConfigFile = configPath,
+                    Inputs = new List<string>() { specPath1 },
+                    Log = logger,
+                    CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(new List<PackageSource>())),
+                    RequestProviders = new List<IRestoreRequestProvider>()
+                    {
+                        new ProjectJsonRestoreRequestProvider(providerCache)
+                    }
+                };
+
+                // Act
+                var summaries = await RestoreRunner.Run(restoreContext);
+                var summary = summaries.Single();
+
+                // Assert
+                Assert.True(summary.Success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
+                Assert.Equal(1, summary.FeedsUsed.Count);
+                Assert.True(File.Exists(lockPath), lockPath);
+            }
+        }
+
+        [Fact]
         public async Task RestoreRunner_RestoreWithExternalFile()
         {
             // Arrange
