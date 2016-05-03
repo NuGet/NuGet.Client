@@ -74,9 +74,8 @@ namespace NuGet.Commands
 
                 return _settingsCache.GetOrAdd(directory, (dir) =>
                 {
-                    return Settings.LoadDefaultSettings(dir,
-                        configFileName: configFileName,
-                        machineWideSettings: MachineWideSettings);
+                    return Settings.LoadSpecificSettings(dir,
+                        configFileName: configFileName);
                 });
             }
         }

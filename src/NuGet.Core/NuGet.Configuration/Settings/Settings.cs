@@ -167,6 +167,16 @@ namespace NuGet.Configuration
                 useTestingGlobalPath: false);
         }
 
+        public static ISettings LoadSpecificSettings(string root, string configFileName)
+        {
+            return LoadDefaultSettings(
+                root,
+                configFileName,
+                machineWideSettings: null,
+                loadAppDataSettings: true,
+                useTestingGlobalPath: false);
+        }
+
         /// <summary>
         /// For internal use only
         /// </summary>
