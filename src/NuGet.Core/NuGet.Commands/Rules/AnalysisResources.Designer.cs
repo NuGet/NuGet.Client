@@ -249,6 +249,33 @@ namespace NuGet.Commands.Rules {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to A placeholder file &apos;{0}&apos; is in the package and should be removed..
+        /// </summary>
+        public static string PlaceholderFileInPackageDescription {
+            get {
+                return ResourceManager.GetString("PlaceholderFileInPackageDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Remove the &apos;_._&apos; file from the project..
+        /// </summary>
+        public static string PlaceholderFileInPackageSolution {
+            get {
+                return ResourceManager.GetString("PlaceholderFileInPackageSolution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Placeholder file in package..
+        /// </summary>
+        public static string PlaceholderFileInPackageTitle {
+            get {
+                return ResourceManager.GetString("PlaceholderFileInPackageTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to The script file &apos;{0}&apos; is outside the &apos;tools&apos; folder and hence will not be executed during installation of this package..
         /// </summary>
         public static string ScriptOutsideToolsDescription {
