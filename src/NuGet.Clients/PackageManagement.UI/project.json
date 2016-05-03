@@ -13,11 +13,11 @@
     "Microsoft.VisualStudio.Shell.Interop.8.0": "8.0.50727",
     "Microsoft.VisualStudio.Shell.Interop.9.0": "9.0.30729",
     "Microsoft.VisualStudio.Threading": "14.0.50702",
-    "NuGet.Indexing": "3.5.0-*",
-    "NuGet.PackageManagement": "3.5.0-*",
-    "NuGet.ProjectManagement": "3.5.0-*",
-    "NuGet.Protocol.Core.Types": "3.5.0-*",
-    "NuGet.Resolver": "3.5.0-*"
+    "NuGet.Indexing": "3.5.0-beta-*",
+    "NuGet.PackageManagement": "3.5.0-beta-*",
+    "NuGet.ProjectManagement": "3.5.0-beta-*",
+    "NuGet.Protocol.Core.Types": "3.5.0-beta-*",
+    "NuGet.Resolver": "3.5.0-beta-*"
   },
   "frameworks": {
     "net45": {}
