@@ -180,6 +180,15 @@
   <data name="MissingSummaryTitle" xml:space="preserve">
     <value>Consider providing Summary text.</value>
   </data>
+  <data name="PlaceholderFileInPackageDescription" xml:space="preserve">
+    <value>An empty folder placeholder file '{0}' is in a non-empty folder and should be removed.</value>
+  </data>
+  <data name="PlaceholderFileInPackageSolution" xml:space="preserve">
+    <value>Remove the file from the project.</value>
+  </data>
+  <data name="PlaceholderFileInPackageTitle" xml:space="preserve">
+    <value>Placeholder file in non-empty folder.</value>
+  </data>
   <data name="ScriptOutsideToolsDescription" xml:space="preserve">
     <value>The script file '{0}' is outside the 'tools' folder and hence will not be executed during installation of this package.</value>
   </data>
