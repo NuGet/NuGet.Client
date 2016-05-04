@@ -7,7 +7,7 @@ namespace NuGet.Common
 {
     public static class ProjectHelper
     {
-        private static readonly HashSet<string> _supportedProjectExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {  
+        private static readonly HashSet<string> _supportedProjectExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
             ".csproj",
             ".vbproj",
             ".fsproj",
@@ -15,7 +15,8 @@ namespace NuGet.Common
             ".vcxproj",
             ".jsproj",
             ".wixproj",
-            ".xproj"
+            ".xproj",
+            ".nuproj",
         };
 
         public static HashSet<string> SupportedProjectExtensions

@@ -1754,6 +1754,81 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public void RestoreProjectJson_GenerateTargetsFileFromNuProj()
+        {
+            // Arrange
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var nugetexe = Util.GetNuGetExePath();
+
+                Directory.CreateDirectory(repositoryPath);
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                var packageA = Util.CreateTestPackageBuilder("packageA", "1.1.0-beta-01");
+                var packageB = Util.CreateTestPackageBuilder("packageB", "2.2.0-beta-02");
+
+                var targetContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"12.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"></Project>";
+
+                var targetA = Util.CreatePackageFile("build/uap/packageA.targets", targetContent);
+                var libA = Util.CreatePackageFile("lib/uap/a.dll", "a");
+
+                packageA.Files.Add(targetA);
+                packageA.Files.Add(libA);
+
+                var targetB = Util.CreatePackageFile("build/uap/packageB.targets", targetContent);
+                var libB = Util.CreatePackageFile("lib/uap/b.dll", "b");
+
+                packageB.Files.Add(targetB);
+                packageB.Files.Add(libB);
+
+                Util.CreateTestPackage(packageA, repositoryPath);
+                Util.CreateTestPackage(packageB, repositoryPath);
+
+                Util.CreateFile(workingPath, "project.json",
+                                                @"{
+                                                    'dependencies': {
+                                                    'packageA': '1.1.0-beta-*',
+                                                    'packageB': '2.2.0-beta-*'
+                                                    },
+                                                    'frameworks': {
+                                                                'uap10.0': { }
+                                                            }
+                                                }");
+
+                Util.CreateFile(workingPath, "test.nuproj", Util.GetCSProjXML("test"));
+
+                var nuProjPath = Path.Combine(workingPath, "test.nuproj");
+
+                string[] args = new string[] {
+                    "restore",
+                    "-Source",
+                    repositoryPath,
+                    "-solutionDir",
+                    workingPath,
+                    nuProjPath
+                };
+
+                var targetFilePath = Path.Combine(workingPath, "test.nuget.targets");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(File.Exists(targetFilePath));
+
+                var targetsFile = File.OpenText(targetFilePath).ReadToEnd();
+                Assert.True(targetsFile.IndexOf(@"build\uap\packageA.targets") > -1);
+                Assert.True(targetsFile.IndexOf(@"build\uap\packageB.targets") > -1);
+            }
+        }
+
+        [Fact]
         public void RestoreProjectJson_GenerateTargetsFileWithFolder()
         {
             // Arrange
