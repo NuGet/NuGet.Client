@@ -30,7 +30,8 @@ namespace NuGet.CommandLine
             ".csproj",
             ".vbproj",
             ".fsproj",
-            ".xproj"
+            ".xproj",
+            ".nuproj"
         };
 
         public static bool IsMsBuildBasedProject(string projectFullPath)
