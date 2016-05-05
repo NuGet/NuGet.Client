@@ -487,6 +487,51 @@ namespace NuGet.Test
         }
 
         [Fact]
+        public async Task TestPacManPreviewInstallMvcPackageWithPrereleaseFlagFalse()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            using (var testSolutionManager = new TestSolutionManager(true))
+            {
+                var testSettings = new Configuration.NullSettings();
+                var token = CancellationToken.None;
+                var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    testSettings,
+                    testSolutionManager,
+                    deleteOnRestartManager);
+                var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+
+                var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
+                var packageIdentity = LatestAspNetPackages[0]; // Microsoft.AspNet.Mvc.6.0.0-beta3
+
+                // Pre-Assert
+                // Check that the packages.config file does not exist
+                Assert.False(File.Exists(packagesConfigPath));
+                // Check that there are no packages returned by PackagesConfigProject
+                var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+                Assert.Equal(0, packagesInPackagesConfig.Count);
+                Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
+
+                var resolutionContext = new ResolutionContext(DependencyBehavior.Lowest, includePrelease: false, includeUnlisted: true, versionConstraints: VersionConstraints.None);
+
+                // Act
+                var packageActions = (await nuGetPackageManager.PreviewInstallPackageAsync(msBuildNuGetProject, packageIdentity,
+                    resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token)).ToList();
+
+                // Assert
+                Assert.Equal(1, packageActions.Count);
+                Assert.True(LatestAspNetPackages[0].Equals(packageActions[0].PackageIdentity));
+                Assert.Equal(NuGetProjectActionType.Install, packageActions[0].NuGetProjectActionType);
+                Assert.Equal(sourceRepositoryProvider.GetRepositories().Single().PackageSource.Source,
+                    packageActions[0].SourceRepository.PackageSource.Source);
+            }
+        }
+
+        [Fact]
         public async Task TestPacManUninstallPackage()
         {
             // Arrange
