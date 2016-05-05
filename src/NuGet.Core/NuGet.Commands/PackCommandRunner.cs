@@ -13,7 +13,6 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
-using System.Diagnostics;
 
 namespace NuGet.Commands
 {

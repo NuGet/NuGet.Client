@@ -775,6 +775,7 @@ namespace NuGetVSExtension
             var packagesConfigDependencies = new PackagesConfigDependencies(project, SolutionManager, Settings, outputConsole);
             Dictionary<string, NuGet.Packaging.Core.PackageDependency> minimalDependencies = packagesConfigDependencies.MinimalDependencies;
 
+            /*
             // Uninstall packages from packages.config
             ISolutionManager solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
             NuGetProject nuGetProject = solutionManager.GetNuGetProject(EnvDTEProjectUtility.GetCustomUniqueName(project));
@@ -866,6 +867,7 @@ namespace NuGetVSExtension
                 var action = UserAction.CreateInstallAction(dependency.Id, dependency.VersionRange.MinVersion);
                 await uiContext.UIActionEngine.PerformActionAsync(uiController, action, null, CancellationToken.None);
             }
+            */
         }
 
         private void ShowManageLibraryPackageDialog(object sender, EventArgs e)
