@@ -169,6 +169,11 @@ namespace NuGet.Configuration
 
         public static ISettings LoadSpecificSettings(string root, string configFileName)
         {
+            if (string.IsNullOrEmpty(configFileName))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(configFileName));
+            }
+
             return LoadDefaultSettings(
                 root,
                 configFileName,
