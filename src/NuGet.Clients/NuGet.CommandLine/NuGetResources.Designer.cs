@@ -6802,6 +6802,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} Version: {1}.
+        /// </summary>
+        public static string OutputNuGetVersion {
+            get {
+                return ResourceManager.GetString("OutputNuGetVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Added file &apos;{0}&apos;..
         /// </summary>
         public static string PackageCommandAddedFile {

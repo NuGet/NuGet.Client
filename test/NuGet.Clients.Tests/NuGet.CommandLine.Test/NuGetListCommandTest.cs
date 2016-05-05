@@ -100,11 +100,11 @@ namespace NuGet.CommandLine.Test
                 var output = r.Item2;
                 string[] lines = output.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 
-                Assert.Equal(4, lines.Length);
-                Assert.Equal("testPackage1", lines[0]);
-                Assert.Equal(" 1.1.0", lines[1]);
-                Assert.Equal(" desc of testPackage1 1.1.0", lines[2]);
-                Assert.Equal(" License url: http://kaka", lines[3]);
+                Assert.Equal(5, lines.Length);
+                Assert.Equal("testPackage1", lines[1]);
+                Assert.Equal(" 1.1.0", lines[2]);
+                Assert.Equal(" desc of testPackage1 1.1.0", lines[3]);
+                Assert.Equal(" License url: http://kaka", lines[4]);
             }
         }
 

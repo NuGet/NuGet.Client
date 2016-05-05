@@ -17,7 +17,6 @@ namespace NuGet.CommandLine
         private readonly string _commandExe;
         private readonly ICommandManager _commandManager;
         private readonly string _helpUrl;
-        private readonly string _productName;
 
         private string CommandName
         {
@@ -49,7 +48,6 @@ namespace NuGet.CommandLine
         {
             _commandManager = commandManager;
             _commandExe = commandExe;
-            _productName = productName;
             _helpUrl = helpUrl;
         }
 
@@ -75,7 +73,6 @@ namespace NuGet.CommandLine
 
         public void ViewHelp()
         {
-            Console.WriteLine("{0} Version: {1}", _productName, this.GetType().Assembly.GetName().Version);
             Console.WriteLine("usage: {0} <command> [args] [options] ", _commandExe);
             Console.WriteLine("Type '{0} help <command>' for help on a specific command.", _commandExe);
             Console.WriteLine();
@@ -102,6 +99,9 @@ namespace NuGet.CommandLine
                     _helpUrl));
             }
         }
+
+        // Help command always outputs NuGet version
+        protected override bool ShouldOutputNuGetVersion { get { return true; } }
 
         private void PrintCommand(int maxWidth, CommandAttribute commandAttribute)
         {

@@ -6086,4 +6086,7 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
     <value>The remote server indicated that the previous request was forbidden. Please provide credentials for: {0}</value>
     <comment>{0} will be replaced with the URL that needs credentials.</comment>
   </data>
+  <data name="OutputNuGetVersion" xml:space="preserve">
+    <value>{0} Version: {1}</value>
+  </data>
 </root>
