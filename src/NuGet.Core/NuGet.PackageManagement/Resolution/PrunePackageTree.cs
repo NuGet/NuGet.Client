@@ -63,30 +63,36 @@ namespace NuGet.PackageManagement
         {
             var prereleasePackageToInstall = new HashSet<PackageIdentity>(packagesToInstall.Where(p => p.HasVersion && p.Version.IsPrerelease), PackageIdentityComparer.Default);
 
-            var maxDepth = packages.Select(p => p.Id).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+            var visitedNodes = new HashSet<SourcePackageDependencyInfo>();
+            var packagesDict = packages.ToLookup(p => p.Id).ToDictionary(p => p.Key, p => p.ToArray());
 
             foreach (var packageToInstall in packages.Where(p => prereleasePackageToInstall.Contains(p)))
             {
-                int depth = 0;
-                WalkDependencies(packages, packageToInstall, allowed, depth, maxDepth);
+                WalkDependencies(packagesDict, packageToInstall, allowed, visitedNodes);
             }
         }
 
-        private static void WalkDependencies(IEnumerable<SourcePackageDependencyInfo> packages, SourcePackageDependencyInfo packageToInstall, HashSet<string> allowed, int depth, int maxDepth)
+        private static void WalkDependencies(IDictionary<string, SourcePackageDependencyInfo[]> packagesDict, SourcePackageDependencyInfo packageToInstall, HashSet<string> allowed, HashSet<SourcePackageDependencyInfo> visitedNodes)
         {
-            if (depth > maxDepth)
-            {
-                return;
-            }
+            var queue = new Queue<SourcePackageDependencyInfo>();
+            queue.Enqueue(packageToInstall);
 
-            if (packageToInstall.Dependencies != null)
+            while (queue.Count > 0)
             {
-                foreach (var dependency in packageToInstall.Dependencies)
+                var package = queue.Dequeue();
+                foreach (var dependency in package.Dependencies)
                 {
                     allowed.Add(dependency.Id);
-                    foreach (SourcePackageDependencyInfo dependentPackage in packages.Where(p => p.Id.Equals(dependency.Id, StringComparison.OrdinalIgnoreCase)))
+                    SourcePackageDependencyInfo[] packages;
+                    if (packagesDict.TryGetValue(dependency.Id, out packages))
                     {
-                        WalkDependencies(packages, dependentPackage, allowed, depth + 1, maxDepth);
+                        foreach (var dependentPackage in packages)
+                        {
+                            if (visitedNodes.Add(dependentPackage))
+                            {
+                                queue.Enqueue(dependentPackage);
+                            }
+                        }
                     }
                 }
             }
