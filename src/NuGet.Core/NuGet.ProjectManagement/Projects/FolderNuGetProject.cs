@@ -76,9 +76,9 @@ namespace NuGet.ProjectManagement
             {
                 throw new ArgumentException(Strings.PackageStreamShouldBeSeekable);
             }
-            var packageFile = PackagePathResolver.GetPackageFileName(packageIdentity);
+            var packageFile = PackagePathResolver.GetInstallPath(packageIdentity);
 
-            return ConcurrencyUtilities.ExecuteWithFileLockedAsync(Path.Combine(Root, packageFile),
+            return ConcurrencyUtilities.ExecuteWithFileLockedAsync(packageFile,
                 action: cancellationToken =>
                 {
                     // 1. Check if the Package already exists at root, if so, return false
@@ -107,7 +107,7 @@ namespace NuGet.ProjectManagement
                                 downloadResourceResult.PackageStream,
                                 PackagePathResolver,
                                 packageExtractionContext,
-                                token));
+                                cancellationToken));
                     }
                     else
                     {
@@ -116,7 +116,7 @@ namespace NuGet.ProjectManagement
                                 downloadResourceResult.PackageStream,
                                 PackagePathResolver,
                                 packageExtractionContext,
-                                token));
+                                cancellationToken));
                     }
 
 
