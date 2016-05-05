@@ -60,6 +60,15 @@ namespace NuGet.Packaging.Core {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Nuspec file contains a package type with an invalid package version &apos;{0}&apos;..
+        /// </summary>
+        public static string InvalidPackageTypeVersion {
+            get {
+                return ResourceManager.GetString("InvalidPackageTypeVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Nuspec file does not contain the &apos;{0}&apos; node..
         /// </summary>
         public static string MissingMetadataNode {
@@ -78,11 +87,29 @@ namespace NuGet.Packaging.Core {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Nuspec file contains a package type that is missing the name attribute..
+        /// </summary>
+        public static string MissingPackageTypeName {
+            get {
+                return ResourceManager.GetString("MissingPackageTypeName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Package contains multiple nuspec files..
         /// </summary>
         public static string MultipleNuspecFiles {
             get {
                 return ResourceManager.GetString("MultipleNuspecFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Nuspec file contains multiple package types. Zero or one package type nodes are allowed..
+        /// </summary>
+        public static string MultiplePackageTypes {
+            get {
+                return ResourceManager.GetString("MultiplePackageTypes", resourceCulture);
             }
         }
         

@@ -56,7 +56,7 @@ namespace NuGet.PackageManagement
                 ISourceRepositoryProvider sourceRepositoryProvider,
                 Configuration.ISettings settings,
                 string packagesFolderPath)
-     : this(sourceRepositoryProvider, settings, packagesFolderPath, excludeVersion: false)
+            : this(sourceRepositoryProvider, settings, packagesFolderPath, excludeVersion: false)
         {
         }
 
@@ -2462,11 +2462,11 @@ namespace NuGet.PackageManagement
         private static void EnsurePackageCompatibility(DownloadResourceResult downloadResourceResult, PackageIdentity packageIdentity)
         {
             NuGetVersion packageMinClientVersion;
-            PackageType packageType;
+            IReadOnlyList<PackageType> packageTypes;
             if (downloadResourceResult.PackageReader != null)
             {
                 packageMinClientVersion = downloadResourceResult.PackageReader.GetMinClientVersion();
-                packageType = downloadResourceResult.PackageReader.GetPackageType();
+                packageTypes = downloadResourceResult.PackageReader.GetPackageTypes();
             }
             else
             {
@@ -2474,7 +2474,7 @@ namespace NuGet.PackageManagement
                 {
                     var nuspecReader = new NuspecReader(packageReader.GetNuspec());
                     packageMinClientVersion = nuspecReader.GetMinClientVersion();
-                    packageType = nuspecReader.GetPackageType();
+                    packageTypes = nuspecReader.GetPackageTypes();
                 }
             }
 
@@ -2487,7 +2487,24 @@ namespace NuGet.PackageManagement
                         packageMinClientVersion.ToNormalizedString(), ProjectManagement.Constants.NuGetSemanticVersion.ToNormalizedString()));
             }
 
-            if (packageType != PackageType.Default)
+            // Validate the package type. There must be zero package types or exactly one package
+            // type that is one of the recognized package types.
+            var validPackageType = true;
+
+            if (packageTypes.Count > 1)
+            {
+                validPackageType = false;
+            }
+            else if (packageTypes.Count == 1)
+            {
+                var packageType = packageTypes[0];
+                if (packageType != PackageType.Legacy)
+                {
+                    validPackageType = false;
+                } 
+            }
+
+            if (!validPackageType)
             {
                 throw new NuGetVersionNotSatisfiedException(
                     string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedPackageFeature,

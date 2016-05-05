@@ -80,7 +80,10 @@ namespace NuGet.Packaging
             return NuspecReader.GetMinClientVersion();
         }
 
-        public virtual PackageType GetPackageType() => NuspecReader.GetPackageType();
+        public virtual IReadOnlyList<PackageType> GetPackageTypes()
+        {
+            return NuspecReader.GetPackageTypes();
+        }
 
         public virtual Stream GetNuspec()
         {

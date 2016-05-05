@@ -28,10 +28,9 @@ namespace NuGet.Packaging.Core
         NuGetVersion GetMinClientVersion();
 
         /// <summary>
-        /// Gets the <see cref="PackageType"/> of the package.
+        /// Gets zero or more package types from the .nuspec.
         /// </summary>
-        /// <returns>The <see cref="PackageType"/>.</returns>
-        PackageType GetPackageType();
+        IReadOnlyList<PackageType> GetPackageTypes();
 
         /// <summary>
         /// Returns a file stream from the package.

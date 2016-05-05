@@ -17,7 +17,6 @@ namespace NuGet.Packaging.Core
     /// </summary>
     public abstract class NuspecCoreReaderBase : INuspecCoreReader
     {
-        private static readonly Version _emptyVersion = new Version(0, 0);
         private readonly XDocument _xml;
         private XElement _metadataNode;
 
@@ -27,6 +26,7 @@ namespace NuGet.Packaging.Core
         protected const string MinClientVersion = "minClientVersion";
         protected const string DevelopmentDependency = "developmentDependency";
         protected const string PackageType = "packageType";
+        protected const string PackageTypeName = "name";
         protected const string PackageTypeVersion = "version";
 
         /// <summary>
@@ -103,17 +103,51 @@ namespace NuGet.Packaging.Core
             return node == null ? null : NuGetVersion.Parse(node.Value);
         }
 
-        public PackageType GetPackageType()
+        /// <summary>
+        /// Gets zero or more package types from the .nuspec.
+        /// </summary>
+        public IReadOnlyList<PackageType> GetPackageTypes()
         {
-            var node = MetadataNode.Element(XName.Get(PackageType, MetadataNode.GetDefaultNamespace().NamespaceName));
-            if (node != null)
+            var nodes = MetadataNode.Elements(XName.Get(
+                PackageType,
+                MetadataNode.GetDefaultNamespace().NamespaceName));
+
+            var packageTypes = new List<PackageType>();
+            foreach (var node in nodes)
             {
+                // Get the required package type name.
+                var nameAttribute = node.Attribute(XName.Get(PackageTypeName));
+
+                if (nameAttribute == null || string.IsNullOrWhiteSpace(nameAttribute.Value))
+                {
+                    throw new PackagingException(Strings.MissingPackageTypeName);
+                }
+
+                var name = nameAttribute.Value.Trim();
+
+                // Get the optional package type version.
                 var versionAttribute = node.Attribute(XName.Get(PackageTypeVersion));
-                var packageTypeVersion = versionAttribute == null ? _emptyVersion : System.Version.Parse(versionAttribute.Value);
-                return new PackageType(node.Value, packageTypeVersion);
+                Version version;
+
+                if (versionAttribute != null)
+                {
+                    if (!System.Version.TryParse(versionAttribute.Value, out version))
+                    {
+                        throw new PackagingException(string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.InvalidPackageTypeVersion,
+                            versionAttribute.Value));
+                    }
+                }
+                else
+                {
+                    version = Core.PackageType.EmptyVersion;
+                }
+
+                packageTypes.Add(new PackageType(name, version));
             }
 
-            return Core.PackageType.Default;
+            return packageTypes;
         }
 
         /// <summary>
