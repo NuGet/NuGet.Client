@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Linq;
 using NuGet.LibraryModel;
+using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.ProjectModel.Test
 {
-    public class PackageSpecReaderTests
+    public class JsonPackageSpecReaderTests
     {
         [Fact]
         public void PackageSpecReader_PackageMissingVersion()
@@ -422,6 +423,140 @@ namespace NuGet.ProjectModel.Test
 
             var expected = LibraryIncludeFlags.Analyzers;
             Assert.Equal(expected, dep.IncludeType);
+        }
+
+        [Theory]
+        [InlineData("{}")]
+        [InlineData(@"{
+                        ""packOptions"": {}
+                      }")]
+        [InlineData(@"{
+                        ""packOptions"": {
+                          ""foo"": [1, 2]
+                        }
+                      }")]
+        [InlineData(@"{
+                        ""packOptions"": {
+                          ""packageType"": null
+                        }
+                      }")]
+        [InlineData(@"{
+                        ""packOptions"": {
+                          ""packageType"": []
+                        }
+                      }")]
+        public void PackageSpecReader_PackOptions_Default(string json)
+        {
+            // Arrange & Act
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+
+            // Assert
+            Assert.NotNull(actual.PackOptions);
+            Assert.NotNull(actual.PackOptions.PackageType);
+            Assert.Empty(actual.PackOptions.PackageType);
+        }
+
+        [Theory]
+        [InlineData(@"{
+                        ""packOptions"": {
+                          ""packageType"": ""foo""
+                        }
+                      }", new[] { "foo" })]
+        [InlineData(@"{
+                        ""packOptions"": {
+                          ""packageType"": ""foo, bar""
+                        }
+                      }", new[] { "foo, bar" })]
+        [InlineData(@"{
+                        ""packOptions"": {
+                          ""packageType"": [ ""foo"" ]
+                        }
+                      }", new[] { "foo" })]
+        [InlineData(@"{
+                        ""packOptions"": {
+                          ""packageType"": [ ""foo, bar"" ]
+                        }
+                      }", new[] { "foo, bar" })]
+        [InlineData(@"{
+                        ""packOptions"": {
+                          ""packageType"": [ ""foo"", ""bar"" ]
+                        }
+                      }", new[] { "foo", "bar" })]
+        public void PackageSpecReader_PackOptions_ValidPackageType(string json, string[] expectedNames)
+        {
+            // Arrange
+            var expected = expectedNames
+                .Select(n => new PackageType(n, PackageType.EmptyVersion))
+                .ToArray();
+
+            // Act
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+
+            // Assert
+            Assert.NotNull(actual.PackOptions);
+            Assert.NotNull(actual.PackOptions.PackageType);
+            Assert.Equal(expected, actual.PackOptions.PackageType.ToArray());
+        }
+
+        [Theory]
+        [InlineData(@"{
+                        ""packOptions"": {
+                          ""packageType"": 1
+                        }
+                      }")]
+        [InlineData(@"{
+                        ""packOptions"": {
+                          ""packageType"": false
+                        }
+                      }")]
+        [InlineData(@"{
+                        ""packOptions"": {
+                          ""packageType"": 1.0
+                        }
+                      }")]
+        [InlineData(@"{
+                        ""packOptions"": {
+                          ""packageType"": {}
+                        }
+                      }")]
+        [InlineData(@"{
+                        ""packOptions"": {
+                          ""packageType"": {
+                            ""name"": ""foo""
+                          }
+                        }
+                      }")]
+        [InlineData(@"{
+                        ""packOptions"": {
+                          ""packageType"": [
+                            { ""name"": ""foo"" },
+                            { ""name"": ""bar"" }
+                          ]
+                        }
+                      }")]
+        [InlineData(@"{
+                        ""packOptions"": {
+                          ""packageType"": [
+                            ""foo"",
+                            null
+                          ]
+                        }
+                      }")]
+        [InlineData(@"{
+                        ""packOptions"": {
+                          ""packageType"": [
+                            ""foo"",
+                            true
+                          ]
+                        }
+                      }")]
+        public void PackageSpecReader_PackOptions_InvalidPackageType(string json)
+        {
+            // Arrange & Act & Assert
+            var actual = Assert.Throws<FileFormatException>(
+                () => JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json"));
+
+            Assert.Contains("The pack options package type must be a string or array of strings in 'project.json'.", actual.Message);
         }
     }
 }

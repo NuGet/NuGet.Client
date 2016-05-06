@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NuGet.ProjectModel;
 using Xunit;
 
 namespace NuGet.ProjectModel.Test
 {
-    public class PackageSpecWriterTests
+    public class JsonPackageSpecWriterTests
     {
         [Fact]
         public void PackageSpecWrite_ReadWriteDependencies()
@@ -61,16 +56,53 @@ namespace NuGet.ProjectModel.Test
     ""net46"": {}
   }
 }";
+            // Act & Assert
+            VerifyJsonPackageSpecRoundTrip(json);
+        }
 
-            // Act
+        [Fact]
+        public void PackageSpecWrite_ReadWriteSinglePackageType()
+        {
+            // Arrange
+            var json = @"{
+  ""requireLicenseAcceptance"": ""False"",
+  ""packOptions"": {
+    ""packageType"": ""DotNetTool""
+  }
+}";
+
+            // Act & Assert
+            VerifyJsonPackageSpecRoundTrip(json);
+        }
+
+        [Fact]
+        public void PackageSpecWrite_ReadWriteMultiplePackageType()
+        {
+            // Arrange
+            var json = @"{
+  ""requireLicenseAcceptance"": ""False"",
+  ""packOptions"": {
+    ""packageType"": [
+      ""DotNetTool"",
+      ""Dependency""
+    ]
+  }
+}";
+
+            // Act & Assert
+            VerifyJsonPackageSpecRoundTrip(json);
+        }
+
+        private static void VerifyJsonPackageSpecRoundTrip(string json)
+        {
+            // Arrange & Act
             var spec = JsonPackageSpecReader.GetPackageSpec(json, "testName", @"C:\fake\path");
 
             JObject jsonObject = new JObject();
             JsonPackageSpecWriter.WritePackageSpec(spec, jsonObject);
 
             string text;
-            byte[] buffer = new byte[json.Length];
-            using (var memoryStream = new MemoryStream(buffer, true))
+            using (var memoryStream = new MemoryStream())
             {
                 using (var textWriter = new StreamWriter(memoryStream))
                 {
@@ -82,9 +114,9 @@ namespace NuGet.ProjectModel.Test
                         jsonWriter.Flush();
                     }
                 }
-            }
 
-            text = System.Text.Encoding.UTF8.GetString(buffer);
+                text = Encoding.UTF8.GetString(memoryStream.ToArray());
+            }
 
             // Assert
             Assert.Equal(json, text);

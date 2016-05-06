@@ -86,6 +86,8 @@ namespace NuGet.ProjectModel
 
         public IDictionary<string, string> PackInclude { get; private set; }
 
+        public PackOptions PackOptions { get; set; }
+
         public IList<TargetFrameworkInformation> TargetFrameworks { get; private set; }
 
         public RuntimeGraph RuntimeGraph { get; set; }

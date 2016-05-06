@@ -33,10 +33,12 @@ namespace NuGet.ProjectModel
         public static void WritePackageSpec(PackageSpec packageSpec, JObject json)
         {
             SetValue(json, "title", packageSpec.Title);
+
             if (!packageSpec.IsDefaultVersion)
             {
                 SetValue(json, "version", packageSpec.Version?.ToNormalizedString());
             }
+
             SetValue(json, "description", packageSpec.Description);
             SetArrayValue(json, "authors", packageSpec.Authors);
             SetArrayValue(json, "owners", packageSpec.Owners);
@@ -51,6 +53,7 @@ namespace NuGet.ProjectModel
             SetValue(json, "requireLicenseAcceptance", packageSpec.RequireLicenseAcceptance.ToString());
             SetArrayValue(json, "contentFiles", packageSpec.ContentFiles);
             SetDictionaryValue(json, "packInclude", packageSpec.PackInclude);
+            SetPackOptions(json, packageSpec.PackOptions);
             SetDictionaryValues(json, "scripts", packageSpec.Scripts);
 
             if (packageSpec.Dependencies.Any())
@@ -93,6 +96,33 @@ namespace NuGet.ProjectModel
             }
 
             JsonRuntimeFormat.WriteRuntimeGraph(json, packageSpec.RuntimeGraph);
+        }
+
+        private static void SetPackOptions(JObject json, PackOptions packOptions)
+        {
+            if (packOptions == null)
+            {
+                return;
+            }
+
+            var rawPackOptions = new JObject();
+            if (packOptions.PackageType != null)
+            {
+                if (packOptions.PackageType.Count == 1)
+                {
+                    SetValue(rawPackOptions, JsonPackageSpecReader.PackageType, packOptions.PackageType[0].Name);
+                }
+                else if (packOptions.PackageType.Count > 1)
+                {
+                    var packageTypeNames = packOptions.PackageType.Select(p => p.Name);
+                    SetArrayValue(rawPackOptions, JsonPackageSpecReader.PackageType, packageTypeNames);
+                }
+            }
+
+            if (rawPackOptions.Count > 0)
+            {
+                SetValue(json, JsonPackageSpecReader.PackOptions, rawPackOptions);
+            }
         }
 
         private static void SetDependencies(JObject json, IList<LibraryDependency> libraryDependencies)

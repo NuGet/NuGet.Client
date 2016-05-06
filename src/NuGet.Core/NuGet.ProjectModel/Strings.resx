@@ -120,6 +120,10 @@
   <data name="InvalidDependencyTarget" xml:space="preserve">
     <value>Invalid dependency target value '{0}'.</value>
   </data>
+  <data name="InvalidPackageType" xml:space="preserve">
+    <value>The pack options package type must be a string or array of strings in '{0}'.</value>
+    <comment>{0} is the project.json file name.</comment>
+  </data>
   <data name="Log_ErrorReadingLockFile" xml:space="preserve">
     <value>Error loading lock file '{0}' : {1}</value>
   </data>

@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging.Core;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
 
@@ -18,6 +19,9 @@ namespace NuGet.ProjectModel
 {
     public class JsonPackageSpecReader
     {
+        public static readonly string PackOptions = "packOptions";
+        public static readonly string PackageType = "packageType";
+
         /// <summary>
         /// Load and parse a project.json file
         /// </summary>
@@ -158,6 +162,8 @@ namespace NuGet.ProjectModel
 
             packageSpec.Tools = ReadTools(packageSpec, rawPackageSpec).ToList();
 
+            packageSpec.PackOptions = GetPackOptions(packageSpec, rawPackageSpec);
+
             // Read the runtime graph
             packageSpec.RuntimeGraph = JsonRuntimeFormat.ReadRuntimeGraph(rawPackageSpec);
 
@@ -179,6 +185,47 @@ namespace NuGet.ProjectModel
             }
 
             return new NuGetVersion(version);
+        }
+
+        private static PackOptions GetPackOptions(PackageSpec packageSpec, JObject rawPackageSpec)
+        {
+            var rawPackOptions = rawPackageSpec.Value<JToken>(PackOptions) as JObject;
+            if (rawPackOptions == null)
+            {
+                return new PackOptions
+                {
+                    PackageType = new PackageType[0]
+                };
+            }
+
+            var rawPackageType = rawPackOptions[PackageType];
+            if (rawPackageType != null &&
+                rawPackageType.Type != JTokenType.String &&
+                (rawPackageType.Type != JTokenType.Array || // The array must be all strings.
+                 rawPackageType.Type == JTokenType.Array && rawPackageType.Any(t => t.Type != JTokenType.String)) &&
+                rawPackageType.Type != JTokenType.Null)
+            {
+                throw FileFormatException.Create(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.InvalidPackageType,
+                        PackageSpec.PackageSpecFileName),
+                    rawPackageType,
+                    packageSpec.FilePath);
+            }
+
+            IEnumerable<string> packageTypeNames;
+            if (!TryGetStringEnumerableFromJArray(rawPackageType, out packageTypeNames))
+            {
+                packageTypeNames = Enumerable.Empty<string>();
+            }
+
+            return new PackOptions
+            {
+                PackageType = packageTypeNames
+                    .Select(name => new PackageType(name, Packaging.Core.PackageType.EmptyVersion))
+                    .ToList()
+            };
         }
 
         private static void PopulateDependencies(

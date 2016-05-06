@@ -22,7 +22,7 @@ namespace NuGet.ProjectModel {
     // with the /str option, or rebuild your VS project.
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Strings {
+    public class Strings {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -35,7 +35,7 @@ namespace NuGet.ProjectModel {
         ///    Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.ProjectModel.Strings", typeof(Strings).GetTypeInfo().Assembly);
@@ -50,7 +50,7 @@ namespace NuGet.ProjectModel {
         ///    resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -62,16 +62,25 @@ namespace NuGet.ProjectModel {
         /// <summary>
         ///    Looks up a localized string similar to Invalid dependency target value &apos;{0}&apos;..
         /// </summary>
-        internal static string InvalidDependencyTarget {
+        public static string InvalidDependencyTarget {
             get {
                 return ResourceManager.GetString("InvalidDependencyTarget", resourceCulture);
             }
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to The pack options package type must be a string or array of strings in &apos;{0}&apos;..
+        /// </summary>
+        public static string InvalidPackageType {
+            get {
+                return ResourceManager.GetString("InvalidPackageType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Error loading lock file &apos;{0}&apos; : {1}.
         /// </summary>
-        internal static string Log_ErrorReadingLockFile {
+        public static string Log_ErrorReadingLockFile {
             get {
                 return ResourceManager.GetString("Log_ErrorReadingLockFile", resourceCulture);
             }
@@ -80,7 +89,7 @@ namespace NuGet.ProjectModel {
         /// <summary>
         ///    Looks up a localized string similar to Error reading &apos;{0}&apos; : {1}.
         /// </summary>
-        internal static string Log_ErrorReadingProjectJson {
+        public static string Log_ErrorReadingProjectJson {
             get {
                 return ResourceManager.GetString("Log_ErrorReadingProjectJson", resourceCulture);
             }
@@ -89,7 +98,7 @@ namespace NuGet.ProjectModel {
         /// <summary>
         ///    Looks up a localized string similar to Error reading &apos;{0}&apos; at line {1} column {2} : {3}.
         /// </summary>
-        internal static string Log_ErrorReadingProjectJsonWithLocation {
+        public static string Log_ErrorReadingProjectJsonWithLocation {
             get {
                 return ResourceManager.GetString("Log_ErrorReadingProjectJsonWithLocation", resourceCulture);
             }
@@ -98,7 +107,7 @@ namespace NuGet.ProjectModel {
         /// <summary>
         ///    Looks up a localized string similar to Imports contains an invalid framework: &apos;{0}&apos; in &apos;{1}&apos;..
         /// </summary>
-        internal static string Log_InvalidImportFramework {
+        public static string Log_InvalidImportFramework {
             get {
                 return ResourceManager.GetString("Log_InvalidImportFramework", resourceCulture);
             }
@@ -107,7 +116,7 @@ namespace NuGet.ProjectModel {
         /// <summary>
         ///    Looks up a localized string similar to Unable to resolve tool &apos;&apos;..
         /// </summary>
-        internal static string MissingToolName {
+        public static string MissingToolName {
             get {
                 return ResourceManager.GetString("MissingToolName", resourceCulture);
             }
@@ -116,7 +125,7 @@ namespace NuGet.ProjectModel {
         /// <summary>
         ///    Looks up a localized string similar to Package dependencies must specify a version range..
         /// </summary>
-        internal static string MissingVersionOnDependency {
+        public static string MissingVersionOnDependency {
             get {
                 return ResourceManager.GetString("MissingVersionOnDependency", resourceCulture);
             }
@@ -125,7 +134,7 @@ namespace NuGet.ProjectModel {
         /// <summary>
         ///    Looks up a localized string similar to Tools must specify a version range..
         /// </summary>
-        internal static string MissingVersionOnTool {
+        public static string MissingVersionOnTool {
             get {
                 return ResourceManager.GetString("MissingVersionOnTool", resourceCulture);
             }
