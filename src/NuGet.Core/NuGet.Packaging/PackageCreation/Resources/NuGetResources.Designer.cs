@@ -249,15 +249,6 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to The special version part cannot exceed 20 characters..
-        /// </summary>
-        public static string SemVerSpecialVersionTooLong {
-            get {
-                return ResourceManager.GetString("SemVerSpecialVersionTooLong", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///    Looks up a localized string similar to Unknown schema version &apos;{0}&apos;..
         /// </summary>
         public static string UnknownSchemaVersion {
