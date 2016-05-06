@@ -842,10 +842,10 @@ namespace NuGet.CommandLine
             // Reduce the set of packages we want to include as dependencies to the minimal set.
             // Normally, packages.config has the full closure included, we only add top level
             // packages, i.e. packages with in-degree 0
-            foreach (var package in GetMinimumSet(packages))
+            foreach (var package in packages)
             {
                 // Don't add duplicate dependencies
-                if (dependencies.ContainsKey(package.Id))
+                if (dependencies.ContainsKey(package.Id) || !FindDependency(package, packagesAndDependencies.Values))
                 {
                     continue;
                 }
@@ -902,6 +902,36 @@ namespace NuGet.CommandLine
             }
         }
 
+        private bool FindDependency(IPackage projectPackage, IEnumerable<Tuple<IPackage, NuGet.PackageDependency>> packagesAndDependencies)
+        {
+            // returns true if the dependency should be added to the package
+            // This happens if the dependency is not a dependency of a dependecy
+            // Or if the project dependency version is > the dependency's dependency version
+            bool found = false;
+            foreach (var package in packagesAndDependencies)
+            {
+                foreach (var set in package.Item1.DependencySets)
+                {
+                    foreach (var dependency in set.Dependencies)
+                    {
+                        if (dependency.Id.Equals(projectPackage.Id, StringComparison.OrdinalIgnoreCase))
+                        {
+                            found = true;
+
+                            if (dependency.VersionSpec.MinVersion < projectPackage.Version ||
+                                (!dependency.VersionSpec.IsMinInclusive &&
+                                dependency.VersionSpec.MinVersion == projectPackage.Version))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return !found;
+        }
+
         private void AddDependencies(Dictionary<String, Tuple<IPackage, NuGet.PackageDependency>> packagesAndDependencies)
         {
             PackageReferenceFile file = PackageReferenceFile.CreateFromProject(_project.FullPath);
@@ -947,11 +977,6 @@ namespace NuGet.CommandLine
             }
 
             return packageReference.VersionConstraint ?? defaultVersionConstraint;
-        }
-
-        private IEnumerable<IPackage> GetMinimumSet(List<IPackage> packages)
-        {
-            return new Walker(packages, TargetFramework).GetMinimalSet();
         }
 
         private static void ProcessTransformFiles(PackageBuilder builder, IEnumerable<NuGet.IPackageFile> transformFiles)
@@ -1291,72 +1316,6 @@ namespace NuGet.CommandLine
 
             // Otherwise the file is probably a shortcut so just take the file name
             return Path.GetFileName(fullPath);
-        }
-
-        private class Walker : PackageWalker
-        {
-            private readonly IPackageRepository _repository;
-            private readonly List<IPackage> _packages;
-
-            public Walker(List<IPackage> packages, FrameworkName targetFramework) :
-                base(targetFramework)
-            {
-                _packages = packages;
-                _repository = new ReadOnlyPackageRepository(packages.ToList());
-            }
-
-            protected override bool SkipDependencyResolveError
-            {
-                get
-                {
-                    // For the pack command, when don't need to throw if a dependency is missing
-                    // from a nuspec file.
-                    return true;
-                }
-            }
-
-            protected override IPackage ResolveDependency(NuGet.PackageDependency dependency)
-            {
-                return _repository.ResolveDependency(dependency, allowPrereleaseVersions: false, preferListedPackages: true);
-            }
-
-            protected override bool OnAfterResolveDependency(IPackage package, IPackage dependency)
-            {
-                if (!FindDependency(dependency.Id, dependency.Version))
-                {
-                    _packages.Remove(dependency);
-                }
-
-                return base.OnAfterResolveDependency(package, dependency);
-            }
-
-            private bool FindDependency(string id, SemanticVersion version)
-            {
-                foreach (var package in _packages)
-                {
-                    foreach (var set in package.DependencySets)
-                    {
-                        foreach (var dependency in set.Dependencies)
-                        {
-                            if (dependency.Id == id && dependency.VersionSpec.MinVersion < version)
-                            {
-                                return true;
-                            }
-                        }
-                    }
-                }
-
-                return false;
-            }
-
-            public IEnumerable<IPackage> GetMinimalSet()
-            {
-                foreach (var package in _repository.GetPackages())
-                {
-                    Walk(package);
-                }
-                return _packages;
-            }
         }
 
         private class ReverseTransformFormFile : IPackageFile
