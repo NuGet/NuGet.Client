@@ -2459,31 +2459,25 @@ namespace NuGet.PackageManagement
 
         private static void EnsurePackageCompatibility(DownloadResourceResult downloadResourceResult, PackageIdentity packageIdentity)
         {
-            NuGetVersion packageMinClientVersion;
             PackageType packageType;
+            NuspecReader nuspecReader;
+
             if (downloadResourceResult.PackageReader != null)
             {
-                packageMinClientVersion = downloadResourceResult.PackageReader.GetMinClientVersion();
+                nuspecReader = new NuspecReader(downloadResourceResult.PackageReader.GetNuspec());
                 packageType = downloadResourceResult.PackageReader.GetPackageType();
             }
             else
             {
                 using (var packageReader = new PackageArchiveReader(downloadResourceResult.PackageStream, leaveStreamOpen: true))
                 {
-                    var nuspecReader = new NuspecReader(packageReader.GetNuspec());
-                    packageMinClientVersion = nuspecReader.GetMinClientVersion();
+                    nuspecReader = new NuspecReader(packageReader.GetNuspec());
                     packageType = nuspecReader.GetPackageType();
                 }
             }
 
             // validate that the current version of NuGet satisfies the minVersion attribute specified in the .nuspec
-            if (ProjectManagement.Constants.NuGetSemanticVersion < packageMinClientVersion)
-            {
-                throw new NuGetVersionNotSatisfiedException(
-                    string.Format(CultureInfo.CurrentCulture, Strings.PackageMinVersionNotSatisfied,
-                        packageIdentity.Id + " " + packageIdentity.Version.ToNormalizedString(),
-                        packageMinClientVersion.ToNormalizedString(), ProjectManagement.Constants.NuGetSemanticVersion.ToNormalizedString()));
-            }
+            MinClientVersionUtility.VerifyMinClientVersion(nuspecReader);
 
             if (packageType != PackageType.Default)
             {

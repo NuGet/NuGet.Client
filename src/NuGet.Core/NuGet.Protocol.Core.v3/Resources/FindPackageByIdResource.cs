@@ -35,8 +35,17 @@ namespace NuGet.Protocol.Core.Types
 
         public abstract Task<Stream> GetNupkgStreamAsync(string id, NuGetVersion version, CancellationToken token);
 
+        /// <summary>
+        /// Read dependency info from a nuspec.
+        /// </summary>
+        /// <remarks>This also verifies minClientVersion.</remarks>
         protected static FindPackageByIdDependencyInfo GetDependencyInfo(NuspecReader reader)
         {
+            // Since this is the first place a package is read after selecting it as the best version
+            // check the minClientVersion here to verify we are okay to read this package.
+            MinClientVersionUtility.VerifyMinClientVersion(reader);
+
+            // Create dependency info
             return new FindPackageByIdDependencyInfo(
                 reader.GetDependencyGroups(),
                 reader.GetFrameworkReferenceGroups());

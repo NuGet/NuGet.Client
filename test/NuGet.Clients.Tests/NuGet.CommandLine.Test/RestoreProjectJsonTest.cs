@@ -13,6 +13,60 @@ namespace NuGet.CommandLine.Test
     public class RestoreProjectJsonTest
     {
         [Fact]
+        public void RestoreProjectJson_MinClientVersionFail()
+        {
+            // Arrange
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var nugetexe = Util.GetNuGetExePath();
+
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+
+                SimpleTestPackageContext packageContext = new SimpleTestPackageContext()
+                {
+                    Id = "packageA",
+                    Version = "1.0.0",
+                    MinClientVersion = "9.9.9"
+                };
+
+                SimpleTestPackageUtility.CreatePackages(repositoryPath, packageContext);
+
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+                Util.CreateFile(workingPath, "project.json",
+                                                @"{
+                                                    'dependencies': {
+                                                    'packageA': '1.0.0'
+                                                    },
+                                                    'frameworks': {
+                                                            'uap10.0': { }
+                                                        }
+                                                 }");
+
+                string[] args = new string[] {
+                    "restore",
+                    "-Source",
+                    repositoryPath,
+                    "-solutionDir",
+                    workingPath,
+                    "project.json"
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.Contains("'packageA 1.0.0' package requires NuGet client version '9.9.9' or above", r.Item3);
+            }
+        }
+
+        [Fact]
         public void RestoreProjectJson_RestoreFolder()
         {
             // Arrange
