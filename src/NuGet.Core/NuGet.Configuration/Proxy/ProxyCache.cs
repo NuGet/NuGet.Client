@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Net;
+using NuGet.Common;
 
 namespace NuGet.Configuration
 {

@@ -122,7 +122,7 @@ namespace NuGet.CommandLine
 
                     // When we're detailed, get the whole exception including the stack
                     // This is useful for debugging errors.
-                    if (console.Verbosity == Verbosity.Detailed)
+                    if (console.Verbosity == Verbosity.Detailed || ExceptionLogger.Instance.ShowStack)
                     {
                         getErrorMessage = e => e.ToString();
                     }

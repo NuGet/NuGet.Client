@@ -88,7 +88,14 @@ namespace NuGet.CommandLine.XPlat
             catch (Exception e)
             {
                 // Log the error
-                Log.LogError(ExceptionUtilities.DisplayMessage(e));
+                if (ExceptionLogger.Instance.ShowStack)
+                {
+                    Log.LogError(e.ToString());
+                }
+                else
+                {
+                    Log.LogError(ExceptionUtilities.DisplayMessage(e));
+                }
 
                 // Log the stack trace as verbose output.
                 Log.LogVerbose(e.ToString());

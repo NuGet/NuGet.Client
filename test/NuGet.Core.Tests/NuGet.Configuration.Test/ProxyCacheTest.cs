@@ -3,7 +3,7 @@
 
 using System.Net;
 using Moq;
-using NuGet.Configuration;
+using NuGet.Common;
 using Xunit;
 
 namespace NuGet.Configuration.Test

@@ -4,7 +4,7 @@
 using System;
 using System.Security;
 
-namespace NuGet.Configuration
+namespace NuGet.Common
 {
     public class EnvironmentVariableWrapper : IEnvironmentVariableReader
     {
