@@ -8,6 +8,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
@@ -21,6 +22,215 @@ namespace NuGet.Commands.FuncTest
 {
     public class RestoreCommandTests
     {
+        [Fact]
+        public async Task RestoreCommand_VerifyMinClientVersionV2Source()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+
+            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
+
+                // This package has a minclientversion of 9999
+                AddDependency(spec, "TestPackage.MinClientVersion", "1.0.0");
+
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
+                Exception ex = null;
+
+                // Act
+                var command = new RestoreCommand(request);
+
+                try
+                {
+                    await command.ExecuteAsync();
+                }
+                catch (Exception thrownEx)
+                {
+                    ex = thrownEx;
+                }
+
+                // Assert
+                Assert.Contains("'TestPackage.MinClientVersion 1.0.0' package requires NuGet client version '9.9999.0' or above", ex.Message);
+                Assert.False(File.Exists(request.LockFilePath));
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_VerifyMinClientVersionV3Source()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://api.nuget.org/v3/index.json"));
+
+            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
+
+                // This package has a minclientversion of 9999
+                AddDependency(spec, "TestPackage.MinClientVersion", "1.0.0");
+
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
+
+                Exception ex = null;
+
+                // Act
+                var command = new RestoreCommand(request);
+
+                try
+                {
+                    await command.ExecuteAsync();
+                }
+                catch (Exception thrownEx)
+                {
+                    ex = thrownEx;
+                }
+
+                // Assert
+                Assert.Contains("'TestPackage.MinClientVersion 1.0.0' package requires NuGet client version '9.9999.0' or above", ex.Message);
+                Assert.False(File.Exists(request.LockFilePath));
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_VerifyMinClientVersionLocalFolder()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+
+            using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                sources.Add(new PackageSource(sourceDir));
+                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
+
+                // This package has a minclientversion of 9.9999.0
+                AddDependency(spec, "packageA", "1.0.0");
+
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
+
+                var packageContext = new SimpleTestPackageContext()
+                {
+                    Id = "packageA",
+                    Version = "1.0.0",
+                    MinClientVersion = "9.9.9"
+                };
+
+                SimpleTestPackageUtility.CreatePackages(sourceDir, packageContext);
+
+                Exception ex = null;
+
+                // Act
+                var command = new RestoreCommand(request);
+
+                try
+                {
+                    await command.ExecuteAsync();
+                }
+                catch (Exception thrownEx)
+                {
+                    ex = thrownEx;
+                }
+
+                // Assert
+                Assert.Contains("'packageA 1.0.0' package requires NuGet client version '9.9.9' or above", ex.Message);
+                Assert.False(File.Exists(request.LockFilePath));
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_VerifyMinClientVersionAlreadyInstalled()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+
+            using (var emptyDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                sources.Add(new PackageSource(emptyDir));
+                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
+
+                // This package has a minclientversion of 9.9999.0
+                AddDependency(spec, "packageA", "1.0.0");
+
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
+
+                var packageContext = new SimpleTestPackageContext()
+                {
+                    Id = "packageA",
+                    Version = "1.0.0",
+                    MinClientVersion = "9.9.9"
+                };
+
+                var packagePath = Path.Combine(workingDir, "packageA.1.0.0.nupkg");
+
+                SimpleTestPackageUtility.CreatePackages(workingDir, packageContext);
+
+                // install the package
+                using (var fileStream = File.OpenRead(packagePath))
+                {
+                    await PackageExtractor.InstallFromSourceAsync((stream) =>
+                        fileStream.CopyToAsync(stream, 4096, CancellationToken.None),
+                        new VersionFolderPathContext(new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0")),
+                        packagesDir,
+                        logger,
+                        false,
+                        PackageSaveMode.Defaultv3,
+                        false,
+                        XmlDocFileSaveMode.None),
+                        CancellationToken.None);
+                }
+
+                Exception ex = null;
+
+                // Act
+                var command = new RestoreCommand(request);
+
+                try
+                {
+                    await command.ExecuteAsync();
+                }
+                catch (Exception thrownEx)
+                {
+                    ex = thrownEx;
+                }
+
+                // Assert
+                Assert.Contains("'packageA 1.0.0' package requires NuGet client version '9.9.9' or above", ex.Message);
+                Assert.False(File.Exists(request.LockFilePath));
+            }
+        }
+
         [Fact]
         public async Task RestoreCommand_FrameworkImportRulesAreApplied()
         {
@@ -736,7 +946,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact] 
+        [Fact]
         public async Task RestoreCommand_InstallPackageWithManyDependencies()
         {
             // Arrange
@@ -763,7 +973,7 @@ namespace NuGet.Commands.FuncTest
             {
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
-                var project1 = new DirectoryInfo(Path.Combine(workingDir,  "projects", "project1"));
+                var project1 = new DirectoryInfo(Path.Combine(workingDir, "projects", "project1"));
                 sources.Add(new PackageSource(packageSource.FullName));
                 packagesDir.Create();
                 packageSource.Create();
@@ -781,11 +991,11 @@ namespace NuGet.Commands.FuncTest
                 var packages = new List<SimpleTestPackageContext>();
                 var dependencies = new List<SimpleTestPackageContext>();
 
-                for (int i= 0;i < 500;i++ )
+                for (int i = 0; i < 500; i++)
                 {
                     var package = new SimpleTestPackageContext()
                     {
-                      Id = $"package{i}"
+                        Id = $"package{i}"
                     };
                     packages.Add(package);
                     dependencies.Add(package);
@@ -798,7 +1008,7 @@ namespace NuGet.Commands.FuncTest
                 };
                 packages.Add(packageA);
                 SimpleTestPackageUtility.CreatePackages(packages, packageSource.FullName);
-                 
+
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
@@ -1073,7 +1283,7 @@ namespace NuGet.Commands.FuncTest
                     new PackageIdentity("NuGet.Core", new NuGetVersion(2, 8, 3)),
                     FrameworkConstants.CommonFrameworks.NetCore50,
                     null,
-                    new [] { NuGetFramework.Parse("net40-client") });
+                    new[] { NuGetFramework.Parse("net40-client") });
                 Assert.Contains(expectedIssue, result.CompatibilityCheckResults.SelectMany(c => c.Issues).ToArray());
                 Assert.False(result.CompatibilityCheckResults.Any(c => c.Success));
                 Assert.Contains(expectedIssue.Format(), logger.Messages);
@@ -1582,8 +1792,8 @@ namespace NuGet.Commands.FuncTest
                 var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
                 var provider = RestoreCommandProviders.Create(packagesDir, sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, logger);
-                var request = new RestoreRequest(spec, provider, logger);              
-                
+                var request = new RestoreRequest(spec, provider, logger);
+
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
@@ -1627,7 +1837,7 @@ namespace NuGet.Commands.FuncTest
                 var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
                 var provider = RestoreCommandProviders.Create(packagesDir, sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, logger);
-                var request = new RestoreRequest(spec, provider, logger); 
+                var request = new RestoreRequest(spec, provider, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
