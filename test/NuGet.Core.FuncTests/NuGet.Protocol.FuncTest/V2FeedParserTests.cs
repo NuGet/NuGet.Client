@@ -7,6 +7,7 @@ using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
 
@@ -19,11 +20,11 @@ namespace NuGet.Protocol.FuncTest
         {
             // Arrange
             var randomName = Guid.NewGuid().ToString();
-            var repo = Repository.Factory.GetCoreV3("https://www.nuget.org/api/v2/");
+            var repo = Repository.Factory.GetCoreV3(TestServers.NuGetV2);
 
             var httpSource = HttpSource.Create(repo);
 
-            V2FeedParser parser = new V2FeedParser(httpSource, "https://www.nuget.org/api/v2/");
+            V2FeedParser parser = new V2FeedParser(httpSource, TestServers.NuGetV2);
 
             // Act 
             Exception ex = await Assert.ThrowsAsync<FatalProtocolException>(async () => await parser.DownloadFromUrl(new PackageIdentity("not-found", new NuGetVersion("6.2.0")),
@@ -41,15 +42,15 @@ namespace NuGet.Protocol.FuncTest
         public async Task V2FeedParser_DownloadFromUrlInvalidId()
         {
             // Arrange
-            var repo = Repository.Factory.GetCoreV3("https://www.nuget.org/api/v2/");
+            var repo = Repository.Factory.GetCoreV3(TestServers.NuGetV2);
 
             var httpSource = HttpSource.Create(repo);
 
-            V2FeedParser parser = new V2FeedParser(httpSource, "https://www.nuget.org/api/v2/");
+            V2FeedParser parser = new V2FeedParser(httpSource, TestServers.NuGetV2);
 
             // Act 
             var actual = await parser.DownloadFromUrl(new PackageIdentity("not-found", new NuGetVersion("6.2.0")),
-                new Uri("https://www.nuget.org/api/v2/package/not-found/6.2.0"),
+                new Uri($@"{TestServers.NuGetV2}/package/not-found/6.2.0"),
                 Configuration.NullSettings.Instance,
                 NullLogger.Instance,
                 CancellationToken.None);
@@ -63,11 +64,11 @@ namespace NuGet.Protocol.FuncTest
         public async Task V2FeedParser_DownloadFromIdentity()
         {
             // Arrange
-            var repo = Repository.Factory.GetCoreV3("https://www.nuget.org/api/v2/");
+            var repo = Repository.Factory.GetCoreV3(TestServers.NuGetV2);
 
             var httpSource = HttpSource.Create(repo);
 
-            V2FeedParser parser = new V2FeedParser(httpSource, "https://www.nuget.org/api/v2/");
+            V2FeedParser parser = new V2FeedParser(httpSource, TestServers.NuGetV2);
 
             // Act & Assert
             using (var downloadResult = await parser.DownloadFromIdentity(new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("6.2.0")),
@@ -83,11 +84,11 @@ namespace NuGet.Protocol.FuncTest
         }
 
         [Theory]
-        [InlineData(@"http://nexusservertest:8081/nexus/service/local/nuget/NuGet/")]
-        [InlineData(@"http://progetserver:8081/nuget/nuget")]
-        [InlineData(@"http://klondikeserver:8081/api/odata/")]
-        [InlineData(@"http://artifactory:8081/artifactory/api/nuget/nuget")]
-        [InlineData(@"https://www.myget.org/F/myget-server-test/api/v2")]
+        [InlineData(TestServers.NuGetServer)]
+        [InlineData(TestServers.ProGet)]
+        [InlineData(TestServers.Klondike)]
+        [InlineData(TestServers.Artifactory)]
+        [InlineData(TestServers.MyGet)]
         public async Task V2FeedParser_NormalizedVersion(string packageSource)
         {
             // Arrange
@@ -105,11 +106,11 @@ namespace NuGet.Protocol.FuncTest
         }
 
         [Theory]
-        [InlineData(@"http://nexusservertest:8081/nexus/service/local/nuget/NuGet/")]
-        [InlineData(@"http://progetserver:8081/nuget/nuget")]
-        [InlineData(@"http://klondikeserver:8081/api/odata/")]
-        [InlineData(@"http://artifactory:8081/artifactory/api/nuget/nuget")]
-        [InlineData(@"https://www.myget.org/F/myget-server-test/api/v2")]
+        [InlineData(TestServers.NuGetServer)]
+        [InlineData(TestServers.ProGet)]
+        [InlineData(TestServers.Klondike)]
+        [InlineData(TestServers.Artifactory)]
+        [InlineData(TestServers.MyGet)]
         public async Task V2FeedParser_DownloadFromIdentityFromDifferentServer(string packageSource)
         {
             // Arrange
@@ -134,10 +135,10 @@ namespace NuGet.Protocol.FuncTest
 
         // ProGet does not support seach portable framework, it will return empty packages
         [Theory]
-        [InlineData(@"http://nexusservertest:8081/nexus/service/local/nuget/NuGet/")]
-        [InlineData(@"http://klondikeserver:8081/api/odata/")]
-        [InlineData(@"http://artifactory:8081/artifactory/api/nuget/nuget")]
-        [InlineData(@"https://www.myget.org/F/myget-server-test/api/v2")]
+        [InlineData(TestServers.NuGetServer)]
+        [InlineData(TestServers.Klondike)]
+        [InlineData(TestServers.Artifactory)]
+        [InlineData(TestServers.MyGet)]
         public async Task V2FeedParser_SearchWithPortableFramework(string packageSource)
         {
             // Arrange
@@ -162,11 +163,11 @@ namespace NuGet.Protocol.FuncTest
         }
 
         [Theory]
-        [InlineData(@"http://nexusservertest:8081/nexus/service/local/nuget/NuGet/")]
-        [InlineData(@"http://progetserver:8081/nuget/nuget")]
-        [InlineData(@"http://klondikeserver:8081/api/odata/")]
-        [InlineData(@"http://artifactory:8081/artifactory/api/nuget/nuget")]
-        [InlineData(@"https://www.myget.org/F/myget-server-test/api/v2")]
+        [InlineData(TestServers.NuGetServer)]
+        [InlineData(TestServers.ProGet)]
+        [InlineData(TestServers.Klondike)]
+        [InlineData(TestServers.Artifactory)]
+        [InlineData(TestServers.MyGet)]
         public async Task V2FeedParser_Search(string packageSource)
         {
             // Arrange
@@ -191,11 +192,11 @@ namespace NuGet.Protocol.FuncTest
         }
 
         [Theory]
-        [InlineData(@"http://nexusservertest:8081/nexus/service/local/nuget/NuGet/")]
-        [InlineData(@"http://progetserver:8081/nuget/nuget")]
-        [InlineData(@"http://klondikeserver:8081/api/odata/")]
-        [InlineData(@"http://artifactory:8081/artifactory/api/nuget/nuget")]
-        [InlineData(@"https://www.myget.org/F/myget-server-test/api/v2")]
+        [InlineData(TestServers.NuGetServer)]
+        [InlineData(TestServers.ProGet)]
+        [InlineData(TestServers.Klondike)]
+        [InlineData(TestServers.Artifactory)]
+        [InlineData(TestServers.MyGet)]
         public async Task V2FeedParser_SearchWithPrerelease(string packageSource)
         {
             // Arrange
@@ -220,8 +221,8 @@ namespace NuGet.Protocol.FuncTest
         }
 
         [Theory]
-        [InlineData(@"http://nugetserverendpoint.azurewebsites.net/nuget", "NuGetServer")]
-        [InlineData(@"https://vstsnugettest.pkgs.visualstudio.com/DefaultCollection/_packaging/VstsTestFeed/nuget/v2", "Vsts")]
+        [InlineData(TestServers.NuGetServer, "NuGetServer")]
+        [InlineData(TestServers.Vsts, "Vsts")]
         public async Task V2FeedParser_CredentialNormalizedVersion(string packageSource, string feedName)
         {
             // Arrange
@@ -243,8 +244,8 @@ namespace NuGet.Protocol.FuncTest
         }
 
         [Theory]
-        [InlineData(@"http://nugetserverendpoint.azurewebsites.net/nuget", "NuGetServer")]
-        [InlineData(@"https://vstsnugettest.pkgs.visualstudio.com/DefaultCollection/_packaging/VstsTestFeed/nuget/v2", "Vsts")]
+        [InlineData(TestServers.NuGetServer, "NuGetServer")]
+        [InlineData(TestServers.Vsts, "Vsts")]
         public async Task V2FeedParser_DownloadFromIdentityFromDifferentCredentialServer(string packageSource, string feedName)
         {
             // Arrange
@@ -272,8 +273,8 @@ namespace NuGet.Protocol.FuncTest
         }
 
         [Theory]
-        [InlineData(@"http://nugetserverendpoint.azurewebsites.net/nuget", "NuGetServer")]
-        [InlineData(@"https://vstsnugettest.pkgs.visualstudio.com/DefaultCollection/_packaging/VstsTestFeed/nuget/v2", "Vsts")]
+        [InlineData(TestServers.NuGetServer, "NuGetServer")]
+        [InlineData(TestServers.Vsts, "Vsts")]
         public async Task V2FeedParser_SearchWithPortableFrameworkFromCredentialServer(string packageSource, string feedName)
         {
             // Arrange
@@ -302,8 +303,8 @@ namespace NuGet.Protocol.FuncTest
         }
 
         [Theory]
-        [InlineData(@"http://nugetserverendpoint.azurewebsites.net/nuget", "NuGetServer")]
-        [InlineData(@"https://vstsnugettest.pkgs.visualstudio.com/DefaultCollection/_packaging/VstsTestFeed/nuget/v2", "Vsts")]
+        [InlineData(TestServers.NuGetServer, "NuGetServer")]
+        [InlineData(TestServers.Vsts, "Vsts")]
         public async Task V2FeedParser_SearchFromCredentialServer(string packageSource, string feedName)
         {
             // Arrange
@@ -332,8 +333,8 @@ namespace NuGet.Protocol.FuncTest
         }
 
         [Theory]
-        [InlineData(@"http://nugetserverendpoint.azurewebsites.net/nuget", "NuGetServer")]
-        [InlineData(@"https://vstsnugettest.pkgs.visualstudio.com/DefaultCollection/_packaging/VstsTestFeed/nuget/v2", "Vsts")]
+        [InlineData(TestServers.NuGetServer, "NuGetServer")]
+        [InlineData(TestServers.Vsts, "Vsts")]
         public async Task V2FeedParser_SearchWithPrereleaseCredentialServer(string packageSource, string feedName)
         {
             // Arrange
