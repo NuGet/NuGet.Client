@@ -424,6 +424,9 @@ nuget spec -a MyAssembly.dll</value>
   <data name="UpdateCommandSourceDescription" xml:space="preserve">
     <value>A list of package sources to search for updates.</value>
   </data>
+  <data name="UpdateCommandVersionDescription" xml:space="preserve">
+    <value>Updates the package in -Id to the version indicated.  Requires -Id to contain exactly one package id.</value>
+  </data>
   <data name="UpdateCommandUsageExamples" xml:space="preserve">
     <value>nuget update
     

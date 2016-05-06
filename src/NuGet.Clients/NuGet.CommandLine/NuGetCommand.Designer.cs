@@ -14404,5 +14404,14 @@ namespace NuGet.CommandLine {
                 return ResourceManager.GetString("UpdateCommandVerboseDescription_trk", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Updates the package in -Id to the version indicated.  Requires -Id to contain exactly one package id..
+        /// </summary>
+        internal static string UpdateCommandVersionDescription {
+            get {
+                return ResourceManager.GetString("UpdateCommandVersionDescription", resourceCulture);
+            }
+        }
     }
 }

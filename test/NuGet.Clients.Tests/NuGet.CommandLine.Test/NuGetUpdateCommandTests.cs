@@ -493,6 +493,188 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public async Task UpdateCommand_Success_Version_Upgrade()
+        {
+            using (var packagesSourceDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var solutionDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var projectDirectory = Path.Combine(solutionDirectory, "proj1");
+                var packagesDirectory = Path.Combine(solutionDirectory, "packages");
+
+                var a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+                var a2 = new PackageIdentity("A", new NuGetVersion("2.0.0"));
+                var a3 = new PackageIdentity("A", new NuGetVersion("3.0.0"));
+
+                var a1Package = Util.CreateTestPackage(
+                    a1.Id,
+                    a1.Version.ToString(),
+                    packagesSourceDirectory,
+                    new List<NuGetFramework>() { NuGetFramework.Parse("net45") },
+                    new List<PackageDependencyGroup>() { });
+                
+                var a2Package = Util.CreateTestPackage(
+                    a2.Id,
+                    a2.Version.ToString(),
+                    packagesSourceDirectory,
+                    new List<NuGetFramework>() { NuGetFramework.Parse("net45") },
+                    new List<PackageDependencyGroup>() { });
+
+                var a3Package = Util.CreateTestPackage(
+                    a3.Id,
+                    a3.Version.ToString(),
+                    packagesSourceDirectory,
+                    new List<NuGetFramework>() { NuGetFramework.Parse("net45") },
+                    new List<PackageDependencyGroup>() { });
+
+                var packagesFolder = PathUtility.GetRelativePath(projectDirectory, packagesDirectory);
+
+                Directory.CreateDirectory(projectDirectory);
+                // create project 1
+                Util.CreateFile(
+                    projectDirectory,
+                    "proj1.csproj",
+                    Util.CreateProjFileContent());
+
+                Util.CreateFile(solutionDirectory, "a.sln",
+                    Util.CreateSolutionFileContent());
+
+                var projectFile = Path.Combine(projectDirectory, "proj1.csproj");
+                var solutionFile = Path.Combine(solutionDirectory, "a.sln");
+
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var msbuildDirectory = MsBuildUtility.GetMsbuildDirectory("14.0", null);
+                var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
+                var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
+                using (var stream = File.OpenRead(a1Package))
+                {
+                    var downloadResult = new DownloadResourceResult(stream);
+                    await msBuildProject.InstallPackageAsync(
+                        a1,
+                        downloadResult,
+                        testNuGetProjectContext,
+                        CancellationToken.None);
+                }
+
+                var args = new[]
+                {
+                    "update",
+                    solutionFile,
+                    "-Source",
+                    packagesSourceDirectory,
+                    "-Version",
+                    "2.0.0",
+                    "-Id",
+                    "A"
+                };
+
+                var r = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
+
+                var content = File.ReadAllText(projectFile);
+                Assert.False(content.Contains(@"<HintPath>..\packages\A.1.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.True(content.Contains(@"<HintPath>..\packages\A.2.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.False(content.Contains(@"<HintPath>..\packages\A.3.0.0\lib\net45\file.dll</HintPath>"));
+            }
+        }
+
+        [Fact]
+        public async Task UpdateCommand_Success_Version_Downgrade()
+        {
+            using (var packagesSourceDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var solutionDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var projectDirectory = Path.Combine(solutionDirectory, "proj1");
+                var packagesDirectory = Path.Combine(solutionDirectory, "packages");
+
+                var a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+                var a2 = new PackageIdentity("A", new NuGetVersion("2.0.0"));
+                var a3 = new PackageIdentity("A", new NuGetVersion("3.0.0"));
+
+                var a1Package = Util.CreateTestPackage(
+                    a1.Id,
+                    a1.Version.ToString(),
+                    packagesSourceDirectory,
+                    new List<NuGetFramework>() { NuGetFramework.Parse("net45") },
+                    new List<PackageDependencyGroup>() { });
+
+                var a2Package = Util.CreateTestPackage(
+                    a2.Id,
+                    a2.Version.ToString(),
+                    packagesSourceDirectory,
+                    new List<NuGetFramework>() { NuGetFramework.Parse("net45") },
+                    new List<PackageDependencyGroup>() { });
+
+                var a3Package = Util.CreateTestPackage(
+                    a3.Id,
+                    a3.Version.ToString(),
+                    packagesSourceDirectory,
+                    new List<NuGetFramework>() { NuGetFramework.Parse("net45") },
+                    new List<PackageDependencyGroup>() { });
+
+                var packagesFolder = PathUtility.GetRelativePath(projectDirectory, packagesDirectory);
+
+                Directory.CreateDirectory(projectDirectory);
+                // create project 1
+                Util.CreateFile(
+                    projectDirectory,
+                    "proj1.csproj",
+                    Util.CreateProjFileContent());
+
+                Util.CreateFile(solutionDirectory, "a.sln",
+                    Util.CreateSolutionFileContent());
+
+                var projectFile = Path.Combine(projectDirectory, "proj1.csproj");
+                var solutionFile = Path.Combine(solutionDirectory, "a.sln");
+
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var msbuildDirectory = MsBuildUtility.GetMsbuildDirectory("14.0", null);
+                var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
+                var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
+                using (var stream = File.OpenRead(a2Package))
+                {
+                    var downloadResult = new DownloadResourceResult(stream);
+                    await msBuildProject.InstallPackageAsync(
+                        a2,
+                        downloadResult,
+                        testNuGetProjectContext,
+                        CancellationToken.None);
+                }
+
+                var args = new[]
+                {
+                    "update",
+                    solutionFile,
+                    "-Source",
+                    packagesSourceDirectory,
+                    "-Version",
+                    "1.0.0",
+                    "-Id",
+                    "A"
+                };
+
+                var r = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
+
+                var content = File.ReadAllText(projectFile);
+                Assert.True(content.Contains(@"<HintPath>..\packages\A.1.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.False(content.Contains(@"<HintPath>..\packages\A.2.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.False(content.Contains(@"<HintPath>..\packages\A.3.0.0\lib\net45\file.dll</HintPath>"));
+            }
+        }
+
+        [Fact]
         public async Task UpdateCommand_Success_ProjectFile_References()
         {
             using (var packagesSourceDirectory = TestFileSystemUtility.CreateRandomTestFolder())
