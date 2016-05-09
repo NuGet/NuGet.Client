@@ -299,4 +299,7 @@
   <data name="ForceEnglishOutput_Description" xml:space="preserve">
     <value>Forces the application to run using an invariant, English-based culture.</value>
   </data>
+  <data name="OutputNuGetVersion" xml:space="preserve">
+    <value>{0} Version: {1}</value>
+  </data>
 </root>

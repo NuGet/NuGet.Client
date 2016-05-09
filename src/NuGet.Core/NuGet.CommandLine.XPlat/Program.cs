@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
@@ -46,6 +46,9 @@ namespace NuGet.CommandLine.XPlat
 
             var verbosity = app.Option(XPlatUtility.VerbosityOption, Strings.Switch_Verbosity, CommandOptionType.SingleValue);
 
+            // Options aren't parsed until we call app.Execute(), so look directly for the verbosity option ourselves
+            ParseVerbosity(args, verbosity);
+
             // Set up logging.
             // For tests this will already be set.
             if (Log == null)
@@ -74,6 +77,8 @@ namespace NuGet.CommandLine.XPlat
                 return 0;
             });
 
+            Log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.OutputNuGetVersion, app.FullName, app.LongVersionGetter()));
+
             int exitCode = 0;
 
             try
@@ -98,6 +103,45 @@ namespace NuGet.CommandLine.XPlat
             }
 
             return exitCode;
+        }
+
+        private static void ParseVerbosity(string[] args, CommandOption verbosity)
+        {
+            for (var index = 0; index < args.Length; index++)
+            {
+                var arg = args[index];
+                string[] option;
+                if (arg.StartsWith("--"))
+                {
+                    option = arg.Substring(2).Split(new[] { ':', '=' }, 2);
+                    if (!string.Equals(option[0], verbosity.LongName, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+                }
+                else if (arg.StartsWith("-"))
+                {
+                    option = arg.Substring(1).Split(new[] { ':', '=' }, 2);
+                    if (!string.Equals(option[0], verbosity.ShortName, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+                }
+                else
+                {
+                    continue;
+                }
+
+                if (option.Length == 2)
+                {
+                    verbosity.TryParse(option[1]);
+                }
+                else if (index < args.Length - 1)
+                {
+                    verbosity.TryParse(args[index + 1]);
+                }
+                break;
+            }
         }
     }
 }

@@ -21,11 +21,11 @@ namespace NuGet.CommandLine.XPlat.Test
 
             // Assert
             Assert.Equal(1, exitCode);
-            Assert.Equal(2, log.Messages.Count);
+            Assert.Equal(3, log.Messages.Count);
             Assert.Equal(1, log.Errors);
             Assert.Equal(0, log.Warnings);
-            Assert.Contains("--unknown", log.Messages.ToArray()[0]);  // error
-            Assert.Contains("Program.cs", log.Messages.ToArray()[1]); // verbose stack trace
+            Assert.Contains("--unknown", log.Messages.ToArray()[1]);  // error
+            Assert.Contains("Program.cs", log.Messages.ToArray()[2]); // verbose stack trace
         }
 
         [Fact]
@@ -108,11 +108,11 @@ namespace NuGet.CommandLine.XPlat.Test
 
             // Assert
             Assert.Equal(1, exitCode);
-            Assert.Equal(2, log.Messages.Count);
+            Assert.Equal(3, log.Messages.Count);
             Assert.Equal(1, log.Errors);
             Assert.Equal(0, log.Warnings);
-            Assert.Contains("--unknown", log.Messages.ToArray()[0]);  // error
-            Assert.Contains("Program.cs", log.Messages.ToArray()[1]); // verbose stack trace
+            Assert.Contains("--unknown", log.Messages.ToArray()[1]);  // error
+            Assert.Contains("Program.cs", log.Messages.ToArray()[2]); // verbose stack trace
         }
     }
 }
