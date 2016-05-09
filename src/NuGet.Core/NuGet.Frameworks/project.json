@@ -19,12 +19,15 @@
   "compile": [
     "../NuGet.Shared/*.cs"
   ],
-  "dependencies": {
-    "NuGet.Versioning": {
-      "target": "project"
-    }
-  },
   "frameworks": {
+    "net40-client": {
+      "compilationOptions": {
+        "define": [
+          "IS_DESKTOP",
+          "IS_NET40_CLIENT"
+        ]
+      }
+    },
     "net45": {
       "compilationOptions": {
         "define": [

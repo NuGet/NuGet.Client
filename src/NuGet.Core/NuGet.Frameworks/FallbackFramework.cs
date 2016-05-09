@@ -3,6 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.Shared;
 
+#if IS_NET40_CLIENT
+using FallbackList = System.Collections.Generic.IList<NuGet.Frameworks.NuGetFramework>;
+#else
+using FallbackList = System.Collections.Generic.IReadOnlyList<NuGet.Frameworks.NuGetFramework>;
+#endif
+
 namespace NuGet.Frameworks
 {
     public class FallbackFramework : NuGetFramework, IEquatable<FallbackFramework>
@@ -10,10 +16,10 @@ namespace NuGet.Frameworks
         /// <summary>
         /// List framework to fall back to.
         /// </summary>
-        public IReadOnlyList<NuGetFramework> Fallback { get; }
+        public FallbackList Fallback { get; }
         private int? _hashCode;
 
-        public FallbackFramework(NuGetFramework framework, IReadOnlyList<NuGetFramework> fallbackFrameworks)
+        public FallbackFramework(NuGetFramework framework, FallbackList fallbackFrameworks)
             : base(framework)
         {
             if (framework == null)
