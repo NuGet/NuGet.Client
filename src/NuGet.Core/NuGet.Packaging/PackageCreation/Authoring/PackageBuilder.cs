@@ -446,7 +446,7 @@ namespace NuGet.Packaging
             // If there's no base path then ignore the files node
             if (basePath != null)
             {
-                if (manifest.Files.Count == 0)
+                if (!manifest.HasFilesNode)
                 {
                     AddFiles(basePath, @"**\*", null);
                 }
