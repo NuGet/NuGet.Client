@@ -210,7 +210,7 @@ namespace NuGet.ProjectManagement
             {
                 MakeWritable(fullPath);
                 var sourceControlManager = SourceControlUtility.GetSourceControlManager(nuGetProjectContext);
-                if (sourceControlManager != null)
+                if (sourceControlManager != null && sourceControlManager.IsPackagesFolderBoundToSourceControl())
                 {
                     sourceControlManager.PendDeleteFiles(new List<string> { fullPath }, string.Empty, nuGetProjectContext);
                 }
@@ -253,7 +253,7 @@ namespace NuGet.ProjectManagement
             }
 
             var sourceControlManager = SourceControlUtility.GetSourceControlManager(nuGetProjectContext);
-            if (sourceControlManager != null)
+            if (sourceControlManager != null && sourceControlManager.IsPackagesFolderBoundToSourceControl())
             {
                 sourceControlManager.PendDeleteFiles(filesToDelete, packagesDir, nuGetProjectContext);
                 foreach (var fileToDelete in filesToDelete)
