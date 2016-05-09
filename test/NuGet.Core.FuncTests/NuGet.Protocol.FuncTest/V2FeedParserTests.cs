@@ -227,9 +227,8 @@ namespace NuGet.Protocol.FuncTest
             // Arrange
             var credential = Utility.ReadCredential(feedName);
             var source = new PackageSource(packageSource);
-            source.UserName = credential.Item1;
-            source.PasswordText = credential.Item2;
-            source.IsPasswordClearText = true;
+            var sourceCredential = new PackageSourceCredential(packageSource, credential.Item1, credential.Item2, true);
+            source.Credentials = sourceCredential;
             var repo = Repository.Factory.GetCoreV2(source);
             var httpSource = HttpSource.Create(repo);
 
@@ -251,9 +250,8 @@ namespace NuGet.Protocol.FuncTest
             // Arrange
             var credential = Utility.ReadCredential(feedName);
             var source = new PackageSource(packageSource);
-            source.UserName = credential.Item1;
-            source.PasswordText = credential.Item2;
-            source.IsPasswordClearText = true;
+            var sourceCredential = new PackageSourceCredential(packageSource, credential.Item1, credential.Item2, true);
+            source.Credentials = sourceCredential;
             var repo = Repository.Factory.GetCoreV2(source);
 
             var httpSource = HttpSource.Create(repo);
@@ -281,9 +279,8 @@ namespace NuGet.Protocol.FuncTest
             // Arrange
             var credential = Utility.ReadCredential(feedName);
             var source = new PackageSource(packageSource);
-            source.UserName = credential.Item1;
-            source.PasswordText = credential.Item2;
-            source.IsPasswordClearText = true;
+            var sourceCredential = new PackageSourceCredential(packageSource, credential.Item1, credential.Item2, true);
+            source.Credentials = sourceCredential;
             var repo = Repository.Factory.GetCoreV2(source);
 
             var httpSource = HttpSource.Create(repo);
@@ -312,9 +309,8 @@ namespace NuGet.Protocol.FuncTest
             // Arrange
             var credential = Utility.ReadCredential(feedName);
             var source = new PackageSource(packageSource);
-            source.UserName = credential.Item1;
-            source.PasswordText = credential.Item2;
-            source.IsPasswordClearText = true;
+            var sourceCredential = new PackageSourceCredential(packageSource, credential.Item1, credential.Item2, true);
+            source.Credentials = sourceCredential;
             var repo = Repository.Factory.GetCoreV2(source);
 
             var httpSource = HttpSource.Create(repo);
@@ -343,9 +339,8 @@ namespace NuGet.Protocol.FuncTest
             // Arrange
             var credential = Utility.ReadCredential(feedName);
             var source = new PackageSource(packageSource);
-            source.UserName = credential.Item1;
-            source.PasswordText = credential.Item2;
-            source.IsPasswordClearText = true;
+            var sourceCredential = new PackageSourceCredential(packageSource, credential.Item1, credential.Item2, true);
+            source.Credentials = sourceCredential;
             var repo = Repository.Factory.GetCoreV2(source);
 
             var httpSource = HttpSource.Create(repo);
