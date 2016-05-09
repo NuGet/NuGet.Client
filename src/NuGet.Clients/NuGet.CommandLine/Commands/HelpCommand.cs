@@ -16,7 +16,6 @@ namespace NuGet.CommandLine
     {
         private readonly string _commandExe;
         private readonly ICommandManager _commandManager;
-        private readonly string _helpUrl;
 
         private string CommandName
         {
@@ -38,17 +37,9 @@ namespace NuGet.CommandLine
 
         [ImportingConstructor]
         public HelpCommand(ICommandManager commandManager)
-            : this(commandManager, Assembly.GetExecutingAssembly().GetName().Name, Assembly.GetExecutingAssembly().GetName().Name, CommandLineConstants.NuGetDocsCommandLineReference)
-        {
-        }
-
-        [SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "3#",
-            Justification = "We don't use the Url for anything besides printing, so it's ok to represent it as a string.")]
-        public HelpCommand(ICommandManager commandManager, string commandExe, string productName, string helpUrl)
         {
             _commandManager = commandManager;
-            _commandExe = commandExe;
-            _helpUrl = helpUrl;
+            _commandExe = Assembly.GetExecutingAssembly().GetName().Name;
         }
 
         public override void ExecuteCommand()
@@ -92,12 +83,9 @@ namespace NuGet.CommandLine
                 Console.WriteLine();
             }
 
-            if (_helpUrl != null)
-            {
-                Console.WriteLine(string.Format(CultureInfo.InvariantCulture,
-                    LocalizedResourceManager.GetString("HelpCommandForMoreInfo"),
-                    _helpUrl));
-            }
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                LocalizedResourceManager.GetString("HelpCommandForMoreInfo"),
+                CommandLineConstants.NuGetDocsCommandLineReference));
         }
 
         // Help command always outputs NuGet version
@@ -163,13 +151,10 @@ namespace NuGet.CommandLine
 
                 }
 
-                if (_helpUrl != null)
-                {
-                    Console.WriteLine();
-                    Console.WriteLine(string.Format(CultureInfo.InvariantCulture,
-                        LocalizedResourceManager.GetString("HelpCommandForMoreInfo"),
-                        _helpUrl));
-                }
+                Console.WriteLine();
+                Console.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                    LocalizedResourceManager.GetString("HelpCommandForMoreInfo"),
+                    CommandLineConstants.NuGetDocsCommandLineReference));
 
                 Console.WriteLine();
             }
