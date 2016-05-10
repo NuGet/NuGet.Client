@@ -1,0 +1,27 @@
+﻿{
+  "dependencies": {
+    "Microsoft.VisualStudio.Shell.14.0": "14.0.23107",
+    "Microsoft.VisualStudio.Shell.Immutable.10.0": "10.0.30319",
+    "Microsoft.VisualStudio.Shell.Immutable.11.0": "11.0.50727",
+    "Microsoft.VisualStudio.Shell.Immutable.12.0": "12.0.21003",
+    "Microsoft.VisualStudio.Shell.Immutable.14.0": "14.0.23107",
+    "Microsoft.VisualStudio.Shell.Interop": "7.10.6071",
+    "Microsoft.VisualStudio.Shell.Interop.10.0": "10.0.30319",
+    "Microsoft.VisualStudio.Shell.Interop.11.0": "11.0.61030",
+    "Microsoft.VisualStudio.Shell.Interop.12.0": "12.0.30110",
+    "Microsoft.VisualStudio.Shell.Interop.8.0": "8.0.50727",
+    "Microsoft.VisualStudio.Shell.Interop.9.0": "9.0.30729",
+    "Microsoft.VisualStudio.Threading": "14.0.50702",
+    "Microsoft.VisualStudio.OLE.Interop": "7.10.6070",
+    "Microsoft.VisualStudio.TextManager.Interop": "7.10.6070",
+    "Microsoft.VisualStudio.TextManager.Interop.10.0": "10.0.30319",
+    "Microsoft.VSSDK.BuildTools": "14.0.23107"
+  },
+  "frameworks": {
+    "net45": {}
+  },
+  "runtimes": {
+    "win-anycpu": {},
+    "win": {}
+  }
+}

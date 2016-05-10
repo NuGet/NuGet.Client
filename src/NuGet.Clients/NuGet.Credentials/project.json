@@ -1,0 +1,12 @@
+﻿{
+  "dependencies": {
+    "NuGet.PackageManagement": "3.5.0-*"
+  },
+  "frameworks": {
+    "net45": {}
+  },
+  "runtimes": {
+    "win-anycpu": {},
+    "win": {}
+  }
+}
