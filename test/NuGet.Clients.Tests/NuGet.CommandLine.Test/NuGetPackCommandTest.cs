@@ -25,6 +25,10 @@ namespace NuGet.CommandLine.Test
                     Path.Combine(workingDirectory, "contentFiles/any/any"),
                     "image.jpg",
                     "");
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles/any/any"),
+                    "image2.jpg",
+                    "");
 
                 Util.CreateFile(
                     workingDirectory,
@@ -48,6 +52,10 @@ namespace NuGet.CommandLine.Test
         </group>
     </dependencies>
   </metadata>
+  <files>
+    <file src=""contentFiles/any/any/image.jpg"" target=""\Content\image.jpg"" />
+    <file src=""/contentFiles/any/any/image2.jpg"" target=""Content\other\image2.jpg"" />
+  </files>
 </package>");
 
                 // Act
@@ -80,6 +88,10 @@ namespace NuGet.CommandLine.Test
     <dependency id=""packageE"" version=""1.0.0"" exclude=""z"" />
   </group>
 </dependencies>".Replace("\r\n", "\n"), actual);
+
+                    var files = package.GetFiles().Select(f => f.Path).ToArray();
+                    Assert.Contains(@"Content\image.jpg", files);
+                    Assert.Contains(@"Content\other\image2.jpg", files);
                 }
             }
         }
