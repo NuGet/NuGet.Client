@@ -4,6 +4,9 @@ using EnvDTE;
 
 namespace NuGet.VisualStudio
 {
+    /// <summary>
+    /// Contains method to install latest version of a single package into a project within the current solution.
+    /// </summary>
     [ComImport]
     [Guid("4F3B122B-A53B-432C-8D85-0FAFB8BE4FF4")]
     public interface IVsPackageInstaller2 : IVsPackageInstaller
@@ -29,7 +32,7 @@ namespace NuGet.VisualStudio
         /// during installation.
         /// </param>
         /// <exception cref="InvalidOperationException">
-        /// Thrown when <see cref="includePrerelease"/> is <c>false</c> and no stable version
+        /// Thrown when <see paramref="includePrerelease"/> is <c>false</c> and no stable version
         /// of the package exists.
         /// </exception>
         void InstallLatestPackage(
