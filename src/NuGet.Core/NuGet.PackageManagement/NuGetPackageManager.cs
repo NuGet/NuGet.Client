@@ -949,8 +949,18 @@ namespace NuGet.PackageManagement
                     // we are targeting a particular package - there is no need therefore to alter other aspects of the project
                     // specifically an unrelated package may have been force removed in which case we should be happy to leave things that way
 
+                    // It will get the list of packages which are being uninstalled to get a new version
+                    newPackagesToUninstall = oldListOfInstalledPackages.Where(oldPackage =>
+                        newListOfInstalledPackages.Any(newPackage =>
+                        StringComparer.OrdinalIgnoreCase.Equals(oldPackage.Id, newPackage.Id) && !oldPackage.Version.Equals(newPackage.Version)));
+
+                    // this will be the new set of target ids which includes current target ids as well as packages which are being updated
+                    //It fixes the issue where we were only getting dependencies for target ids ignoring other packages which are also being updated. #2724
+                    var newTargetIds = new HashSet<string>(newPackagesToUninstall.Select(p => p.Id), StringComparer.OrdinalIgnoreCase);
+                    newTargetIds.AddRange(targetIds);
+
                     // first, we will allow all the dependencies of the package(s) beging targeted
-                    var allowed = GetDependencies(targetIds, newListOfInstalledPackages, availablePackageDependencyInfoWithSourceSet);
+                    var allowed = GetDependencies(newTargetIds, newListOfInstalledPackages, availablePackageDependencyInfoWithSourceSet);
 
                     // second, any package that is currently in the solution will also be allowed to change
                     // (note this logically doesn't include packages that have been force uninstalled from the project
@@ -961,10 +971,13 @@ namespace NuGet.PackageManagement
                     }
 
                     newListOfInstalledPackages = newListOfInstalledPackages.Where(p => allowed.Contains(p.Id));
+                    newPackagesToInstall = newListOfInstalledPackages.Where(p => !oldListOfInstalledPackages.Contains(p));
                 }
-
-                newPackagesToUninstall = oldListOfInstalledPackages.Where(p => !newListOfInstalledPackages.Contains(p));
-                newPackagesToInstall = newListOfInstalledPackages.Where(p => !oldListOfInstalledPackages.Contains(p));
+                else
+                {
+                    newPackagesToUninstall = oldListOfInstalledPackages.Where(p => !newListOfInstalledPackages.Contains(p));
+                    newPackagesToInstall = newListOfInstalledPackages.Where(p => !oldListOfInstalledPackages.Contains(p));
+                }
             }
 
             foreach (var newPackageToUninstall in newPackagesToUninstall.Reverse())
@@ -1281,14 +1294,13 @@ namespace NuGet.PackageManagement
                     // created hashset of packageIds we are OK with touching
                     // the scenario here is that the user might have done an uninstall-package -Force on a particular package
 
-                    // firstly, packageIds that are a dependency of the target
-                    var allowed = GetDependencies(new[] { packageIdentity.Id }, newListOfInstalledPackages, prunedAvailablePackages);
+                    // this will be the new set of target ids which includes current target ids as well as packages which are being updated
+                    //It fixes the issue where we were only getting dependencies for target ids ignoring other packages which are also being updated. #2724
+                    var newTargetIds = new HashSet<string>(newPackagesToUninstall.Select(p => p.Id), StringComparer.OrdinalIgnoreCase);
+                    newTargetIds.Add(packageIdentity.Id);
 
-                    // secondly, include packages we might be upgrading - at this point that would be the packages we are uninstalling
-                    foreach (var package in newPackagesToUninstall)
-                    {
-                        allowed.Add(package.Id);
-                    }
+                    // get all dependencies of new target ids so that we can have all the required install actions.
+                    var allowed = GetDependencies(newTargetIds, newListOfInstalledPackages, prunedAvailablePackages);
 
                     foreach (var newPackageToInstall in newPackagesToInstall)
                     {
