@@ -21,8 +21,8 @@ namespace NuGet.Protocol.Core.v3
         private readonly List<SourceRepository> _repositories = new List<SourceRepository>();
 
         // There should only be one instance of the source repository for each package source.
-        private readonly ConcurrentDictionary<PackageSource, SourceRepository> _cachedSources
-            = new ConcurrentDictionary<PackageSource, SourceRepository>();
+        private readonly ConcurrentDictionary<string, SourceRepository> _cachedSources
+            = new ConcurrentDictionary<string, SourceRepository>(StringComparer.OrdinalIgnoreCase);
 
         public CachingSourceProvider(IPackageSourceProvider packageSourceProvider)
         {
@@ -57,7 +57,7 @@ namespace NuGet.Protocol.Core.v3
         /// </summary>
         public SourceRepository CreateRepository(PackageSource source)
         {
-            return _cachedSources.GetOrAdd(source, new SourceRepository(source, _resourceProviders));
+            return _cachedSources.GetOrAdd(source.Source, new SourceRepository(source, _resourceProviders));
         }
 
         public IPackageSourceProvider PackageSourceProvider
