@@ -36,12 +36,19 @@ namespace NuGet.Packaging
             if (files != null)
             {
                 Files = files;
+                HasFilesNode = true;
+            }
+            else
+            {
+                HasFilesNode = false;
             }
         }
 
         public ManifestMetadata Metadata { get; }
 
         public ICollection<ManifestFile> Files { get; } = new List<ManifestFile>();
+
+        public bool HasFilesNode { get; }
 
         /// <summary>
         /// Saves the current manifest to the specified stream.
