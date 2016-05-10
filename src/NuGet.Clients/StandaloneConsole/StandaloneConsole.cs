@@ -57,7 +57,11 @@ namespace StandaloneConsole
         public bool ShowDisclaimerHeader => true;
 
         public event EventHandler StartCompleted;
-        public event EventHandler StartWaitingKey;
+        public event EventHandler StartWaitingKey
+        {
+            add { }
+            remove { }
+        }
 
         public void AcceptKeyInput()
         {
