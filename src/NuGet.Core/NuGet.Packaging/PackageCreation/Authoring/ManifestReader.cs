@@ -299,12 +299,18 @@ namespace NuGet.Packaging
                     continue;
                 }
 
-                string target = file.GetOptionalAttributeValue("target").SafeTrim();
+                var slashes = new[] { '\\', '/' };
+                string target = file.GetOptionalAttributeValue("target").SafeTrim()?.TrimStart(slashes);
                 string exclude = file.GetOptionalAttributeValue("exclude").SafeTrim();
 
                 // Multiple sources can be specified by using semi-colon separated values. 
-                files.AddRange(from source in srcElement.Value.Trim(';').Split(';')
-                               select new ManifestFile { Source = source.SafeTrim(), Target = target.SafeTrim(), Exclude = exclude.SafeTrim() });
+                files.AddRange(srcElement.Value.Trim(';').Split(';').Select(s => 
+                    new ManifestFile
+                    {
+                        Source = s.SafeTrim().TrimStart(slashes),
+                        Target = target,
+                        Exclude = exclude
+                    }));
             }
             return files;
         }
