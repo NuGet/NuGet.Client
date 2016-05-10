@@ -10,6 +10,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using System.Xml.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.PackageCreation.Resources;
@@ -709,13 +710,24 @@ namespace NuGet.Packaging
         {
             ZipArchiveEntry relsEntry = package.CreateEntry("_rels/.rels", CompressionLevel.Optimal);
 
+            XNamespace relationships = "http://schemas.openxmlformats.org/package/2006/relationships";
+
+            XDocument document = new XDocument(
+                new XElement(relationships + "Relationships",
+                    new XElement(relationships + "Relationship",
+                        new XAttribute("Type", "http://schemas.microsoft.com/packaging/2010/07/manifest"),
+                        new XAttribute("Target", $"/{path}"),
+                        new XAttribute("Id", GenerateRelationshipId())),
+                    new XElement(relationships + "Relationship",
+                        new XAttribute("Type", "http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties"),
+                        new XAttribute("Target", $"/{psmdcpPath}"),
+                        new XAttribute("Id", GenerateRelationshipId()))
+                    )
+                );
+
             using (var writer = new StreamWriter(relsEntry.Open()))
             {
-                writer.Write(String.Format(@"<?xml version=""1.0"" encoding=""utf-8""?>
-<Relationships xmlns=""http://schemas.openxmlformats.org/package/2006/relationships"">
-    <Relationship Type=""http://schemas.microsoft.com/packaging/2010/07/manifest"" Target=""/{0}"" Id=""{1}"" />
-    <Relationship Type=""http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties"" Target=""/{2}"" Id=""{3}"" />
-</Relationships>", path, GenerateRelationshipId(), psmdcpPath, GenerateRelationshipId()));
+                document.Save(writer);
                 writer.Flush();
             }
         }
@@ -725,17 +737,30 @@ namespace NuGet.Packaging
             // OPC backwards compatibility
             ZipArchiveEntry relsEntry = package.CreateEntry("[Content_Types].xml", CompressionLevel.Optimal);
 
+            XNamespace content = "http://schemas.openxmlformats.org/package/2006/content-types";
+            XElement element = new XElement(content + "Types",
+                new XElement(content + "Default",
+                    new XAttribute("Extension", "rels"),
+                    new XAttribute("ContentType", "application/vnd.openxmlformats-package.relationships+xml")),
+                new XElement(content + "Default",
+                    new XAttribute("Extension", "psmdcp"),
+                    new XAttribute("ContentType", "application/vnd.openxmlformats-package.core-properties+xml"))
+                    );
+            foreach (var extension in extensions)
+            {
+                element.Add(
+                    new XElement(content + "Default",
+                        new XAttribute("Extension", extension),
+                        new XAttribute("ContentType", "application/octet")
+                        )
+                    );
+            }
+
+            XDocument document = new XDocument(element);
+
             using (var writer = new StreamWriter(relsEntry.Open()))
             {
-                writer.Write(@"<?xml version=""1.0"" encoding=""utf-8""?>
-<Types xmlns=""http://schemas.openxmlformats.org/package/2006/content-types"">
-    <Default Extension=""rels"" ContentType=""application/vnd.openxmlformats-package.relationships+xml"" />
-    <Default Extension=""psmdcp"" ContentType=""application/vnd.openxmlformats-package.core-properties+xml"" />");
-                foreach (var extension in extensions)
-                {
-                    writer.Write(@"<Default Extension=""" + extension + @""" ContentType=""application/octet"" />");
-                }
-                writer.Write("</Types>");
+                document.Save(writer);
                 writer.Flush();
             }
         }
@@ -745,27 +770,34 @@ namespace NuGet.Packaging
         {
             ZipArchiveEntry packageEntry = package.CreateEntry(psmdcpPath, CompressionLevel.Optimal);
 
+            var dcText = "http://purl.org/dc/elements/1.1/";
+            XNamespace dc = dcText;
+            var dctermsText = "http://purl.org/dc/terms/";
+            XNamespace dcterms = dctermsText;
+            var xsiText = "http://www.w3.org/2001/XMLSchema-instance";
+            XNamespace xsi = xsiText;
+            XNamespace core ="http://schemas.openxmlformats.org/package/2006/metadata/core-properties";
+
+            XDocument document = new XDocument(
+                new XElement(core + "coreProperties",
+                    new XAttribute(XNamespace.Xmlns + "dc", dcText),
+                    new XAttribute(XNamespace.Xmlns + "dcterms", dctermsText),
+                    new XAttribute(XNamespace.Xmlns + "xsi", xsiText),
+                    new XElement(dc + "creator", String.Join(", ", Authors)),
+                    new XElement(dc + "description", Description),
+                    new XElement(dc + "identifier", Id),
+                    new XElement(core + "version", Version.ToString()),
+                    //new XElement(core + "language", Language),
+                    new XElement(core + "keywords", ((IPackageMetadata)this).Tags),
+                    //new XElement(dc + "title", Title),
+                    new XElement(core + "lastModifiedBy", CreatorInfo())
+                    )
+                );
+
+
             using (var writer = new StreamWriter(packageEntry.Open()))
             {
-                writer.Write(@"<?xml version=""1.0"" encoding=""utf-8""?>");
-                writer.Write(@"<coreProperties xmlns:dc=""http://purl.org/dc/elements/1.1/"" xmlns:dcterms=""http://purl.org/dc/terms/"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns=""http://schemas.openxmlformats.org/package/2006/metadata/core-properties"">");
-                writer.Write($"<dc:creator>{String.Join(", ", Authors)}</dc:creator>");
-                writer.Write($"<dc:description>{Description}</dc:description>");
-                writer.Write($"<dc:identifier>{Id}</dc:identifier>");
-                writer.Write($"<version>{Version.ToString()}</version>");
-
-                // REVIEW: This doesn't appear to be written by System.IO.Packaging.Package.PackageProperties
-                //writer.Write($"<language>{Language}</language>");
-
-                writer.Write($"<keywords>{((IPackageMetadata)this).Tags}</keywords>");
-
-                // REVIEW: This doesn't appear to be written by System.IO.Packaging.Package.PackageProperties
-                //writer.Write($"<dc:title>{Title}</dc:title>");
-
-                writer.Write($"<lastModifiedBy>{CreatorInfo()}</lastModifiedBy>");
-
-                writer.Write("</coreProperties>");
-
+                document.Save(writer);
                 writer.Flush();
             }
         }
