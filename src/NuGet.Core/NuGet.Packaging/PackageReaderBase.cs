@@ -108,9 +108,9 @@ namespace NuGet.Packaging
         }
 
         /// <summary>
-        /// Internal low level nuspec reader
+        /// Nuspec reader
         /// </summary>
-        private NuspecReader NuspecReader
+        public virtual NuspecReader NuspecReader
         {
             get
             {

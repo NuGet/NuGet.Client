@@ -799,7 +799,7 @@ namespace NuGet.PackageManagement
                 }
 
                 // Remove packages that do not meet the constraints specified in the UpdateConstrainst
-                prunedAvailablePackages = PrunePackageTree.PruneByUpdateConstraints(prunedAvailablePackages, projectInstalledPackageReferences, resolutionContext.VersionConstraints);                
+                prunedAvailablePackages = PrunePackageTree.PruneByUpdateConstraints(prunedAvailablePackages, projectInstalledPackageReferences, resolutionContext.VersionConstraints);
 
                 // Remove all but the highest packages that are of the same Id as a specified packageId
                 if (packageId != null)
@@ -2473,34 +2473,26 @@ namespace NuGet.PackageManagement
 
         private static void EnsurePackageCompatibility(DownloadResourceResult downloadResourceResult, PackageIdentity packageIdentity)
         {
-            NuGetVersion packageMinClientVersion;
-            IReadOnlyList<PackageType> packageTypes;
+            NuspecReader nuspecReader;
+
             if (downloadResourceResult.PackageReader != null)
             {
-                packageMinClientVersion = downloadResourceResult.PackageReader.GetMinClientVersion();
-                packageTypes = downloadResourceResult.PackageReader.GetPackageTypes();
+                nuspecReader = downloadResourceResult.PackageReader.NuspecReader;
             }
             else
             {
                 using (var packageReader = new PackageArchiveReader(downloadResourceResult.PackageStream, leaveStreamOpen: true))
                 {
-                    var nuspecReader = new NuspecReader(packageReader.GetNuspec());
-                    packageMinClientVersion = nuspecReader.GetMinClientVersion();
-                    packageTypes = nuspecReader.GetPackageTypes();
+                    nuspecReader = packageReader.NuspecReader;
                 }
             }
 
             // validate that the current version of NuGet satisfies the minVersion attribute specified in the .nuspec
-            if (ProjectManagement.Constants.NuGetSemanticVersion < packageMinClientVersion)
-            {
-                throw new NuGetVersionNotSatisfiedException(
-                    string.Format(CultureInfo.CurrentCulture, Strings.PackageMinVersionNotSatisfied,
-                        packageIdentity.Id + " " + packageIdentity.Version.ToNormalizedString(),
-                        packageMinClientVersion.ToNormalizedString(), ProjectManagement.Constants.NuGetSemanticVersion.ToNormalizedString()));
-            }
+            MinClientVersionUtility.VerifyMinClientVersion(nuspecReader);
 
             // Validate the package type. There must be zero package types or exactly one package
             // type that is one of the recognized package types.
+            var packageTypes = nuspecReader.GetPackageTypes();
             var validPackageType = true;
 
             if (packageTypes.Count > 1)
@@ -2513,12 +2505,12 @@ namespace NuGet.PackageManagement
                 if (packageType != PackageType.Legacy)
                 {
                     validPackageType = false;
-                } 
+                }
             }
 
             if (!validPackageType)
             {
-                throw new NuGetVersionNotSatisfiedException(
+                throw new MinClientVersionException(
                     string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedPackageFeature,
                     packageIdentity.Id + " " + packageIdentity.Version.ToNormalizedString()));
             }

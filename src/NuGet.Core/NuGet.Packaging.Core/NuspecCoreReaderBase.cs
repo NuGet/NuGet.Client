@@ -79,7 +79,7 @@ namespace NuGet.Packaging.Core
         /// <summary>
         /// Id of the package
         /// </summary>
-        public string GetId()
+        public virtual string GetId()
         {
             var node = MetadataNode.Elements(XName.Get(Id, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
             return node == null ? null : node.Value;
@@ -88,7 +88,7 @@ namespace NuGet.Packaging.Core
         /// <summary>
         /// Version of the package
         /// </summary>
-        public NuGetVersion GetVersion()
+        public virtual NuGetVersion GetVersion()
         {
             var node = MetadataNode.Elements(XName.Get(Version, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
             return node == null ? null : NuGetVersion.Parse(node.Value);
@@ -97,7 +97,7 @@ namespace NuGet.Packaging.Core
         /// <summary>
         /// The minimum client version this package supports.
         /// </summary>
-        public NuGetVersion GetMinClientVersion()
+        public virtual NuGetVersion GetMinClientVersion()
         {
             var node = MetadataNode.Attribute(XName.Get(MinClientVersion));
             return node == null ? null : NuGetVersion.Parse(node.Value);
@@ -106,7 +106,7 @@ namespace NuGet.Packaging.Core
         /// <summary>
         /// Gets zero or more package types from the .nuspec.
         /// </summary>
-        public IReadOnlyList<PackageType> GetPackageTypes()
+        public virtual IReadOnlyList<PackageType> GetPackageTypes()
         {
             var nodes = MetadataNode.Elements(XName.Get(
                 PackageType,
@@ -153,7 +153,7 @@ namespace NuGet.Packaging.Core
         /// <summary>
         /// The developmentDependency attribute
         /// </summary>
-        public bool GetDevelopmentDependency()
+        public virtual bool GetDevelopmentDependency()
         {
             var node = MetadataNode.Elements(XName.Get(DevelopmentDependency, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
             return node == null ? false : bool.Parse(node.Value);
@@ -162,7 +162,7 @@ namespace NuGet.Packaging.Core
         /// <summary>
         /// Nuspec Metadata
         /// </summary>
-        public IEnumerable<KeyValuePair<string, string>> GetMetadata()
+        public virtual IEnumerable<KeyValuePair<string, string>> GetMetadata()
         {
             // Remove the PackageType element prior to returning the resulting metadata.
             var filteredMetadataElements = MetadataNode.Elements().Where(
@@ -205,7 +205,7 @@ namespace NuGet.Packaging.Core
             get { return _xml; }
         }
 
-        public PackageIdentity GetIdentity()
+        public virtual PackageIdentity GetIdentity()
         {
             return new PackageIdentity(GetId(), GetVersion());
         }

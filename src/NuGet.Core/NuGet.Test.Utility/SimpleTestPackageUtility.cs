@@ -113,6 +113,13 @@ namespace NuGet.Test.Utility
 
                 var xml = XDocument.Parse(nuspecXml);
 
+                // Add the min client version if it exists
+                if (!string.IsNullOrEmpty(packageContext.MinClientVersion))
+                {
+                    xml.Root.Element(XName.Get("metadata"))
+                        .Add(new XAttribute(XName.Get("minClientVersion"), packageContext.MinClientVersion));
+                }
+
                 var dependencies = packageContext.Dependencies.Select(e =>
                     new PackageDependency(
                         e.Id,

@@ -1,7 +1,6 @@
 using System;
 using System.Globalization;
-using System.Reflection;
-using NuGet.Versioning;
+using NuGet.Packaging;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -25,7 +24,9 @@ namespace NuGet.Protocol.Core.Types
         public UserAgentStringBuilder(string clientName)
         {
             _clientName = clientName;
-            NuGetClientVersion = GetNuGetVersion();
+
+            // Read the client version from the assembly metadata and normalize it.
+            NuGetClientVersion = MinClientVersionUtility.GetNuGetClientVersion().ToNormalizedString();
         }
 
         public string NuGetClientVersion { get; }
@@ -84,41 +85,6 @@ namespace NuGet.Protocol.Core.Types
                     osDescription, /* OS version */
                     _vsInfo);  /* VS SKU + version */
             }
-        }
-
-        private static string GetNuGetVersion()
-        {
-            var nugetVersion = string.Empty;
-
-#if !IS_CORECLR
-            var attr = typeof(Repository).Assembly.GetName().Version;
-
-            NuGetVersion version;
-            NuGetVersion.TryParse(attr.ToString(), out version);
-
-            if (version != null)
-            {
-                nugetVersion = version.ToString();
-            }
-#else
-            var assembly = typeof(Repository).GetTypeInfo().Assembly;
-            var informationalVersionAttr = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
-            if (informationalVersionAttr != null)
-            {
-                nugetVersion = informationalVersionAttr.InformationalVersion;
-            }
-            else
-            {
-                var versionAttr = assembly.GetCustomAttribute<AssemblyVersionAttribute>();
-                if (versionAttr != null)
-                {
-                    nugetVersion = versionAttr.Version.ToString();
-                }
-            }
-
-#endif
-
-            return nugetVersion;
         }
 
         private string GetOSVersion()

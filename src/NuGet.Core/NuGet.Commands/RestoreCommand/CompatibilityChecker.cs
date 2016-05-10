@@ -329,7 +329,7 @@ namespace NuGet.Commands
                 // Collect the file list if necessary
                 if (files == null)
                 {
-                    using (var packageReader = new PackageArchiveReader(package.ZipPath))
+                    using (var packageReader = new PackageFolderReader(package.ExpandedPath))
                     {
                         if (Path.DirectorySeparatorChar != '/')
                         {

@@ -13,13 +13,4 @@ namespace NuGet.PackageManagement
         {
         }
     }
-
-    [Serializable]
-    public class NuGetVersionNotSatisfiedException : Exception
-    {
-        public NuGetVersionNotSatisfiedException(string message)
-            : base(message)
-        {
-        }
-    }
 }

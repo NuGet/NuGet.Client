@@ -23,6 +23,7 @@ namespace NuGet.Test.Utility
 
         public string Id { get; set; } = "packageA";
         public string Version { get; set; } = "1.0.0";
+        public string MinClientVersion { get; set; }
         public List<SimpleTestPackageContext> Dependencies { get; set; } = new List<SimpleTestPackageContext>();
         public string Include { get; set; } = string.Empty;
         public string Exclude { get; set; } = string.Empty;

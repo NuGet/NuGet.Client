@@ -14,9 +14,19 @@ namespace NuGet.CommandLine.XPlat
     public class Program
     {
         private const string DebugOption = "--debug";
-        public static CommandOutputLogger Log { get; set; }
 
         public static int Main(string[] args)
+        {
+            // Start with a default logger, this will be updated according to the passed in verbosity
+            var log = new CommandOutputLogger(LogLevel.Information);
+
+            return MainInternal(args, log);
+        }
+
+        /// <summary>
+        /// Internal Main. This is used for testing.
+        /// </summary>
+        public static int MainInternal(string[] args, CommandOutputLogger log)
         {
 #if DEBUG
             if (args.Contains(DebugOption))
@@ -49,13 +59,8 @@ namespace NuGet.CommandLine.XPlat
             // Options aren't parsed until we call app.Execute(), so look directly for the verbosity option ourselves
             ParseVerbosity(args, verbosity);
 
-            // Set up logging.
-            // For tests this will already be set.
-            if (Log == null)
-            {
-                var logLevel = XPlatUtility.GetLogLevel(verbosity);
-                Log = new CommandOutputLogger(logLevel);
-            }
+            var logLevel = XPlatUtility.GetLogLevel(verbosity);
+            log.SetLogLevel(logLevel);
 
             XPlatUtility.SetConnectionLimit();
 
@@ -65,10 +70,10 @@ namespace NuGet.CommandLine.XPlat
             NetworkProtocolUtility.ConfigureSupportedSslProtocols();
 
             // Register commands
-            DeleteCommand.Register(app, () => Log);
-            PackCommand.Register(app, () => Log);
-            PushCommand.Register(app, () => Log);
-            RestoreCommand.Register(app, () => Log);
+            DeleteCommand.Register(app, () => log);
+            PackCommand.Register(app, () => log);
+            PushCommand.Register(app, () => log);
+            RestoreCommand.Register(app, () => log);
 
             app.OnExecute(() =>
             {
@@ -77,7 +82,7 @@ namespace NuGet.CommandLine.XPlat
                 return 0;
             });
 
-            Log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.OutputNuGetVersion, app.FullName, app.LongVersionGetter()));
+            log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.OutputNuGetVersion, app.FullName, app.LongVersionGetter()));
 
             int exitCode = 0;
 
@@ -90,15 +95,15 @@ namespace NuGet.CommandLine.XPlat
                 // Log the error
                 if (ExceptionLogger.Instance.ShowStack)
                 {
-                    Log.LogError(e.ToString());
+                    log.LogError(e.ToString());
                 }
                 else
                 {
-                    Log.LogError(ExceptionUtilities.DisplayMessage(e));
+                    log.LogError(ExceptionUtilities.DisplayMessage(e));
                 }
 
                 // Log the stack trace as verbose output.
-                Log.LogVerbose(e.ToString());
+                log.LogVerbose(e.ToString());
 
                 exitCode = 1;
             }

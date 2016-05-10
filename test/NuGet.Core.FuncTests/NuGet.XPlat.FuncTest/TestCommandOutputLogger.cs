@@ -1,8 +1,10 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
+using NuGet.CommandLine.XPlat;
 using NuGet.Common;
 using NuGet.Test.Utility;
 
-namespace NuGet.CommandLine.XPlat
+namespace NuGet.XPlat.FuncTest
 {
     public class TestCommandOutputLogger : CommandOutputLogger
     {
@@ -49,6 +51,14 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
+        public ConcurrentQueue<string> ErrorMessages
+        {
+            get
+            {
+                return Logger.ErrorMessages;
+            }
+        }
+
         public int Errors
         {
             get
@@ -63,6 +73,16 @@ namespace NuGet.CommandLine.XPlat
             {
                 return Logger.Warnings;
             }
+        }
+
+        public string ShowMessages()
+        {
+            return string.Join(Environment.NewLine, Messages);
+        }
+
+        public string ShowErrors()
+        {
+            return string.Join(Environment.NewLine, ErrorMessages);
         }
     }
 }
