@@ -2644,6 +2644,83 @@ namespace " + projectName + @"
             }
         }
 
+        [Fact]
+        public void PackCommand_PackageFromNuspecWithXmlEncoding()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>packageA</id>
+    <version>1.0.0</version>
+    <title>packageA&lt;T&gt;</title>
+    <authors>test &lt;test@microsoft.com&gt;</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Description &lt;with&gt; &lt;&lt;bad
+stuff \n &lt;&lt;
+</description>
+    <copyright>Copyright © &lt;T&gt; 2013</copyright>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName=""System"" />
+    </frameworkAssemblies>
+  </metadata>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec",
+                    waitForExit: true);
+                Assert.Equal(0, r.Item1);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
+                var package = new OptimizedZipPackage(path);
+                using (var zip = new ZipArchive(File.OpenRead(path)))
+                {
+                    var manifestReader
+                        = new StreamReader(zip.Entries.Single(file => file.FullName == "packageA.nuspec").Open());
+                    var nuspecXml = XDocument.Parse(manifestReader.ReadToEnd());
+
+                    // First test the nuspec to make sure the XML is encoded correctly
+                    // Getting the value decodes the value so they will be unencoded here
+                    // If it weren't encoded properly, this would fail to parse or have different text
+                    var title = nuspecXml.Descendants().Single(e => e.Name.LocalName == "title");
+                    Assert.Equal("packageA<T>", title.Value);
+
+                    var authors = nuspecXml.Descendants().Single(e => e.Name.LocalName == "authors");
+                    Assert.Equal("test <test@microsoft.com>", authors.Value);
+
+                    var description = nuspecXml.Descendants().Single(e => e.Name.LocalName == "description");
+
+                    var expectedDescription = @"Description <with> <<bad
+stuff \n <<".Replace("\r\n", "\n");
+                    var actualDescription = description.Value.Replace("\r\n", "\n");
+                    Assert.Equal(expectedDescription, actualDescription);
+
+                    var copyright = nuspecXml.Descendants().Single(e => e.Name.LocalName == "copyright");
+                    Assert.Equal("Copyright © <T> 2013", copyright.Value);
+
+                    // Now test the description in the psmdcp file
+                    var packageReader
+                        = new StreamReader(zip.Entries.Single(file => file.FullName.EndsWith(".psmdcp")).Open());
+                    var packageXml = XDocument.Parse(packageReader.ReadToEnd());
+
+                    description = packageXml.Descendants().Single(e => e.Name.LocalName == "description");
+                    actualDescription = description.Value.Replace("\r\n", "\n");
+                    Assert.Equal(expectedDescription, actualDescription);
+                }
+            }
+        }
+
         private class PackageDepencyComparer : IEqualityComparer<PackageDependency>
         {
             public bool Equals(PackageDependency x, PackageDependency y)
