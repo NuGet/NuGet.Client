@@ -120,7 +120,7 @@ namespace NuGet.Commands
             if (packageSources.Count < 1)
             {
                 // Add enabled sources
-                foreach (PackageSource source in packageSourceProvider.Value.LoadPackageSources())
+                foreach (var source in packageSourceProvider.Value.LoadPackageSources())
                 {
                     if (source.IsEnabled)
                     {

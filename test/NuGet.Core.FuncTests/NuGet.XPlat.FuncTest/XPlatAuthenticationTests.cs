@@ -42,7 +42,7 @@ namespace NuGet.XPlat.FuncTest
                 var exitCode = Program.MainInternal(args, log);
 
                 // Assert
-                //Assert.Equal(0, log.Errors);
+                Assert.Equal(0, log.Errors);
                 Assert.Contains("OK http://nugetserverendpoint.azurewebsites.net/nuget/FindPackagesById()?id='fody'", log.ShowMessages());
 
                 var lockFilePath = Path.Combine(projectDir, "project.lock.json");
