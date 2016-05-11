@@ -16,6 +16,9 @@ namespace NuGet.Common
     /// Single activity engages multiple method calls at different layers.
     /// Sometimes it's necessary to identify separate calls belonging to the same activity if shared state is needed.
     /// </summary>
+#if !IS_CORECLR
+    [Serializable]
+#endif
     public class ActivityCorrelationContext : IDisposable
     {
 #if IS_CORECLR
