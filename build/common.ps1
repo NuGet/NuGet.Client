@@ -1,8 +1,6 @@
 ### Constants ###
-$ValidConfigurations = 'debug', 'release'
 $DefaultConfiguration = 'debug'
-$ValidReleaseLabels = 'Release','rtm', 'rc', 'beta', 'local'
-$DefaultReleaseLabel = 'local'
+$DefaultReleaseLabel = 'zlocal'
 
 $NuGetClientRoot = Split-Path -Path $PSScriptRoot -Parent
 
@@ -252,7 +250,9 @@ Function Restore-SolutionPackages{
         $opts += '-MSBuildVersion', $MSBuildVersion
     }
 
-    $opts += '-verbosity', 'quiet'
+    if (-not $VerbosePreference) {
+        $opts += '-verbosity', 'quiet'
+    }
 
     Trace-Log "Restoring packages @""$NuGetClientRoot"""
     Trace-Log "$NuGetExe $opts"
@@ -367,7 +367,7 @@ Function Test-XProject {
 
             pushd $_
 
-            
+
                 # Check if dnxcore50 exists in the project.json file
                 $xtestProjectJson = Join-Path $_ "project.json"
                 if (Get-Content $($xtestProjectJson) | Select-String "netcoreapp1.0") {
@@ -377,7 +377,7 @@ Function Test-XProject {
                     Trace-Log "$DotNetExe restore"
                     & $DotNetExe restore
 
-                    # Build 
+                    # Build
                     Trace-Log "$DotNetExe build --configuration $Configuration --framework netcoreapp1.0"
                     & $DotNetExe build --configuration $Configuration --framework netcoreapp1.0
 
@@ -400,7 +400,7 @@ Function Test-XProject {
                     Trace-Log "$DotNetExe restore --infer-runtimes"
                     & $DotNetExe restore --infer-runtimes
 
-                    # Build 
+                    # Build
                     Trace-Log "$DotNetExe build --configuration $Configuration --runtime win7-x64 --framework net46"
                     & $DotNetExe build --configuration $Configuration --runtime win7-x64 --framework net46
 
