@@ -568,7 +568,7 @@ function Test-InstallPackageWithNonExistentFrameworkReferences {
     $p = New-ClassLibrary
 
     # Arrange
-    Assert-Throws { $p | Install-Package PackageWithNonExistentGacReferences -Source $context.RepositoryRoot } "Failed to add reference to 'System.Awesome'. Please make sure that it is in the Global Assembly Cache."
+    Assert-Throws { $p | Install-Package PackageWithNonExistentGacReferences -Source $context.RepositoryRoot } "Failed to add reference. The package 'PackageWithNonExistentGacReferences' tried to add a framework reference to 'System.Awesome' which was not found in the GAC. This is possibly a bug in the package. Please contact the package owners for assistance."
 }
 
 function Test-InstallPackageWorksWithProjectsHavingSameNames {
