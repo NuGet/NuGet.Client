@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NuGet.Common;
 
 namespace NuGet.XPlat.FuncTest
 {
@@ -52,6 +53,18 @@ namespace NuGet.XPlat.FuncTest
                 var serializer = new JsonSerializer();
                 serializer.Serialize(writer, json);
             }
+        }
+
+        /// <summary>
+        /// Copies test sources configuration to a test folder
+        /// </summary>
+        public static string CopyFuncTestConfig(string destinationFolder)
+        {
+            var sourceConfigFolder = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+            var sourceConfigFile = Path.Combine(sourceConfigFolder, "NuGet.Core.FuncTests.Config");
+            var destConfigFile = Path.Combine(destinationFolder, "NuGet.Config");
+            File.Copy(sourceConfigFile, destConfigFile);
+            return destConfigFile;
         }
     }
 }
