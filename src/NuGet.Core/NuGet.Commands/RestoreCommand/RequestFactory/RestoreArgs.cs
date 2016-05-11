@@ -111,6 +111,7 @@ namespace NuGet.Commands
         {
             // Take the passed in sources
             var packageSources = new HashSet<string>(Sources, StringComparer.Ordinal);
+            var sourceObjects = new Dictionary<string, PackageSource>(StringComparer.Ordinal);
 
             var packageSourceProvider = new Lazy<PackageSourceProvider>(() 
                 => new PackageSourceProvider(settings));
@@ -119,12 +120,18 @@ namespace NuGet.Commands
             if (packageSources.Count < 1)
             {
                 // Add enabled sources
-                var enabledSources = packageSourceProvider.Value
-                        .LoadPackageSources()
-                        .Where(source => source.IsEnabled)
-                        .Select(source => source.Source)
-                        .Distinct(StringComparer.Ordinal)
-                        .ToList();
+                foreach (PackageSource source in packageSourceProvider.Value.LoadPackageSources())
+                {
+                    if (source.IsEnabled)
+                    {
+                        sourceObjects[source.Source] = source;
+                    }
+                }
+
+                var enabledSources = sourceObjects.Values
+                    .Select(source => source.Source)
+                    .Distinct(StringComparer.Ordinal)
+                    .ToList();
 
                 packageSources.UnionWith(enabledSources);
             }
@@ -138,8 +145,16 @@ namespace NuGet.Commands
                 CachingSourceProvider = new CachingSourceProvider(packageSourceProvider.Value);
             }
 
-            return packageSources.Select(source => CachingSourceProvider.CreateRepository(source))
-                .ToList();
+            return packageSources.Select(sourceUri =>
+            {
+                PackageSource source;
+                if (!sourceObjects.TryGetValue(sourceUri, out source))
+                {
+                    source = new PackageSource(sourceUri);
+                }
+
+                return CachingSourceProvider.CreateRepository(source);
+            }).ToList();
         }
 
         public void ApplyStandardProperties(RestoreRequest request)
