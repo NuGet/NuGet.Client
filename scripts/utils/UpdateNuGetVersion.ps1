@@ -1,38 +1,41 @@
-param (
-    [Parameter(Mandatory=$true)]
-    [string]$nuGetRoot,
-    [Parameter(Mandatory=$true)]
-    [string]$oldVersion,
-    [Parameter(Mandatory=$true)]
-    [string]$newVersion)
+[CmdletBinding()]
+Param (
+    [Parameter(Mandatory=$true, Position=0)]
+    [string]$OldVersion,
+    [Parameter(Mandatory=$true, Position=1)]
+    [string]$NewVersion,
+    [Parameter(Mandatory=$false, Position=2)]
+    [string]$NuGetRoot = (Join-Path $PSScriptRoot '..\..\'))
 
 function ReplaceNuGetVersion
 {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory=$true)]
-        [string]$file
+    Param(
+        [Parameter(ValueFromPipeline=$True, Mandatory=$True, Position=0)]
+        [string[]]$Files
     )
+    Process {
+        $Files`
+            | ?{ (Get-Content $_ | Out-String) -match $OldVersion }`
+            | %{
+                Write-Output "Processing $_"
 
-    if ((gc $file | Out-String) -match $oldVersion)
-    {
-        Write-Host "On $file, replacing version from $oldVersion to $newVersion"
-        $c = Get-Content $file
-        $d = $c | %{
-            $_.Replace($oldVersion, $newVersion)
-        }
+                $updated = (Get-Content $_) | %{
+                    $_.Replace($OldVersion, $NewVersion)
+                }
 
-        Set-Content $file $d | Out-Null
+                Set-Content $_ $updated | Out-Null
+            }
     }
 }
 
-ls -r project.json | ?{ ReplaceNuGetVersion($_.FullName) }
+Write-Output "Updating NuGet version [$OldVersion => $NewVersion]"
 
-$vsixManifestFile = Join-Path $nuGetRoot "src\NuGet.Clients\VsExtension\source.extension.vsixmanifest"
-ReplaceNuGetVersion($vsixManifestFile)
+ls -r project.json | %{ $_.FullName } | ReplaceNuGetVersion
 
-$nugetPackageCSFile = Join-Path $nuGetRoot "src\NuGet.Clients\VsExtension\NuGetPackage.cs"
-ReplaceNuGetVersion($nugetPackageCSFile)
+$miscFiles = @(
+    "src\NuGet.Clients\VsExtension\source.extension.vsixmanifest",
+    "src\NuGet.Clients\VsExtension\NuGetPackage.cs",
+    "build\common.props"
+)
 
-$commonProps = Join-Path $nuGetRoot "build\common.props"
-ReplaceNuGetVersion($commonProps)
+$miscFiles | %{ Join-Path $NuGetRoot $_ } | ReplaceNuGetVersion

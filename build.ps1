@@ -2,7 +2,7 @@
 param (
     [ValidateSet("debug", "release")]
     [string]$Configuration = 'debug',
-    [ValidateSet("Release","rtm", "rc", "beta", "zlocal")]
+    [ValidateSet("Release","rtm", "rc", "beta", "final", "zlocal")]
     [string]$ReleaseLabel = 'zlocal',
     [int]$BuildNumber,
     [switch]$SkipRestore,
