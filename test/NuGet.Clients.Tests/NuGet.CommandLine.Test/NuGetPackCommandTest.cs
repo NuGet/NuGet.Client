@@ -251,6 +251,105 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public void PackCommand_PackageFromNuspecWithEmptyFilesTag()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles"),
+                    "image.jpg",
+                    "");
+
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>packageA</id>
+    <version>1.0.0</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright © 2013</copyright>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName=""System"" />
+    </frameworkAssemblies>
+  </metadata>
+  <files />
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec",
+                    waitForExit: true);
+                Assert.Equal(0, r.Item1);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
+                var package = new OptimizedZipPackage(path);
+
+                var files = package.GetFiles();
+                Assert.Equal(0, files.Count());
+            }
+        }
+
+        [Fact]
+        public void PackCommand_PackageFromNuspecWithoutEmptyFilesTag()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles"),
+                    "image.jpg",
+                    "");
+
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>packageA</id>
+    <version>1.0.0</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright © 2013</copyright>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName=""System"" />
+    </frameworkAssemblies>
+  </metadata>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec",
+                    waitForExit: true);
+                Assert.Equal(0, r.Item1);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
+                var package = new OptimizedZipPackage(path);
+
+                var files = package.GetFiles();
+                Assert.Equal(1, files.Count());
+            }
+        }
+
+        [Fact]
         public void PackCommand_PackRuntimesRefNativeNoWarnings()
         {
             var nugetexe = Util.GetNuGetExePath();
