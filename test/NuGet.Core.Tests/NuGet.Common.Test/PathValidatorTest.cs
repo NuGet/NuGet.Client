@@ -25,7 +25,6 @@ namespace NuGet.Common
 
         [Theory]
         [InlineData(@"C:\path\*\","windows")]
-        [InlineData(@"/?/path","unix-base")]
         [InlineData(@"\\share\packages","windows")]
         [InlineData(@"packages\test","windows")]
         [InlineData(@"https://test","windows")]
@@ -100,10 +99,10 @@ namespace NuGet.Common
 
         [Theory]
         [InlineData(@"package\path\*","windows")]
-        [InlineData(@"package/%/path/*","unix-base")]
         [InlineData(@"\\package\path","windows")]
         [InlineData(@"https://test","windows")]
         [InlineData(@"https://test", "unix-base")]
+        [InlineData(@"/test/path","unix-base")]
         public void PathValidatorTest_InvalidRelativePath(string path, string os)
         {
             if ((os == "windows" && RuntimeEnvironmentHelper.IsWindows) || (os == "unix-base" && !RuntimeEnvironmentHelper.IsWindows))
