@@ -70,15 +70,25 @@ namespace NuGet.CommandLine
 
             var restoreInputs = DetermineRestoreInputs();
 
+            var hasPackagesConfigFiles = restoreInputs.PackagesConfigFiles.Count > 0;
+            var hasProjectJsonFiles = restoreInputs.RestoreV3Context.Inputs.Any();
+            if (!hasPackagesConfigFiles && !hasProjectJsonFiles)
+            {
+                var message = string.Format(
+                    CultureInfo.CurrentCulture,
+                    LocalizedResourceManager.GetString("RestoreCommandNoPackagesConfigOrProjectJson"));
+                throw new CommandLineException(message);
+            }
+
             // packages.config
-            if (restoreInputs.PackagesConfigFiles.Count > 0)
+            if (hasPackagesConfigFiles)
             {
                 var v2RestoreResult = await PerformNuGetV2RestoreAsync(restoreInputs);
                 restoreSummaries.Add(v2RestoreResult);
             }
 
             // project.json
-            if (restoreInputs.RestoreV3Context.Inputs.Any())
+            if (hasProjectJsonFiles)
             {
                 // Read the settings outside of parallel loops.
                 ReadSettings(restoreInputs);

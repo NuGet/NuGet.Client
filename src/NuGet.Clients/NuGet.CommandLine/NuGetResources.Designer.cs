@@ -9853,6 +9853,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to restore. The project does not contain a project.json or packages.config file..
+        /// </summary>
+        public static string RestoreCommandNoPackagesConfigOrProjectJson {
+            get {
+                return ResourceManager.GetString("RestoreCommandNoPackagesConfigOrProjectJson", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Option -SolutionDirectory is not valid when restoring packages for a solution..
         /// </summary>
         public static string RestoreCommandOptionSolutionDirectoryIsInvalid {
