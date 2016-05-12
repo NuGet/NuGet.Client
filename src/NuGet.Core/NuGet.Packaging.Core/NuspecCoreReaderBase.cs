@@ -25,9 +25,6 @@ namespace NuGet.Packaging.Core
         protected const string Version = "version";
         protected const string MinClientVersion = "minClientVersion";
         protected const string DevelopmentDependency = "developmentDependency";
-        protected const string PackageType = "packageType";
-        protected const string PackageTypeName = "name";
-        protected const string PackageTypeVersion = "version";
 
         /// <summary>
         /// Read a nuspec from a path.
@@ -108,46 +105,7 @@ namespace NuGet.Packaging.Core
         /// </summary>
         public virtual IReadOnlyList<PackageType> GetPackageTypes()
         {
-            var nodes = MetadataNode.Elements(XName.Get(
-                PackageType,
-                MetadataNode.GetDefaultNamespace().NamespaceName));
-
-            var packageTypes = new List<PackageType>();
-            foreach (var node in nodes)
-            {
-                // Get the required package type name.
-                var nameAttribute = node.Attribute(XName.Get(PackageTypeName));
-
-                if (nameAttribute == null || string.IsNullOrWhiteSpace(nameAttribute.Value))
-                {
-                    throw new PackagingException(Strings.MissingPackageTypeName);
-                }
-
-                var name = nameAttribute.Value.Trim();
-
-                // Get the optional package type version.
-                var versionAttribute = node.Attribute(XName.Get(PackageTypeVersion));
-                Version version;
-
-                if (versionAttribute != null)
-                {
-                    if (!System.Version.TryParse(versionAttribute.Value, out version))
-                    {
-                        throw new PackagingException(string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.InvalidPackageTypeVersion,
-                            versionAttribute.Value));
-                    }
-                }
-                else
-                {
-                    version = Core.PackageType.EmptyVersion;
-                }
-
-                packageTypes.Add(new PackageType(name, version));
-            }
-
-            return packageTypes;
+            return NuspecUtility.GetPackageTypes(MetadataNode, useMetadataNamespace: true);
         }
 
         /// <summary>
@@ -164,15 +122,10 @@ namespace NuGet.Packaging.Core
         /// </summary>
         public virtual IEnumerable<KeyValuePair<string, string>> GetMetadata()
         {
-            // Remove the PackageType element prior to returning the resulting metadata.
-            var filteredMetadataElements = MetadataNode.Elements().Where(
-                element => !element.HasElements &&
-                !String.IsNullOrEmpty(element.Value) &&
-                !element.Name.LocalName.Equals(PackageType, StringComparison.OrdinalIgnoreCase));
-
-
-            return filteredMetadataElements
-                .Select(element => new KeyValuePair<string, string>(element.Name.LocalName, element.Value));
+            return MetadataNode
+                .Elements()
+                .Where(e => !e.HasElements && !string.IsNullOrEmpty(e.Value))
+                .Select(e => new KeyValuePair<string, string>(e.Name.LocalName, e.Value));
         }
 
         protected XElement MetadataNode

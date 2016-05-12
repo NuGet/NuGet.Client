@@ -164,8 +164,22 @@ namespace NuGet.Packaging
             {
                 if (e.Severity == XmlSeverityType.Error)
                 {
+                    var message = e.Message;
+
+                    // To make sure this error message is actionable, try to add the element name
+                    // where the error is occurring.
+                    var senderElement = sender as XElement;
+                    if (senderElement != null)
+                    {
+                        message = string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.InvalidNuspecElement,
+                            message,
+                            senderElement.Name.LocalName);
+                    }
+
                     // Throw an exception if there is a validation error
-                    throw new InvalidOperationException(e.Message);
+                    throw new InvalidOperationException(message);
                 }
             });
 #endif

@@ -50,6 +50,7 @@ namespace NuGet.Packaging
             DependencyGroups = copy.DependencyGroups;
             FrameworkReferences = copy.FrameworkReferences;
             PackageAssemblyReferences = copy.PackageAssemblyReferences;
+            PackageTypes = copy.PackageTypes;
             MinClientVersionString = copy.MinClientVersion?.ToString();
             ContentFiles = copy.ContentFiles;
             DevelopmentDependency = copy.DevelopmentDependency;
@@ -219,7 +220,9 @@ namespace NuGet.Packaging
             return groupedReferenceSets;
         }
 
-        public ICollection<ManifestContentFiles> ContentFiles { get; set; } = new List<ManifestContentFiles>();
+        public IEnumerable<ManifestContentFiles> ContentFiles { get; set; } = new List<ManifestContentFiles>();
+        
+        public IEnumerable<PackageType> PackageTypes { get; set; } = new List<PackageType>();
 
         private static IEnumerable<PackageDependencyGroup> MergeDependencyGroups(IEnumerable<PackageDependencyGroup> actualDependencyGroups)
         {

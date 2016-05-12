@@ -186,4 +186,9 @@
   <data name="UnableToParseClientVersion" xml:space="preserve">
     <value>Unable to parse the current NuGet client version.</value>
   </data>
+  <data name="InvalidNuspecElement" xml:space="preserve">
+    <value>{0} This validation error occurred in a '{1}' element.</value>
+    <comment>{0} is the validation error message.
+{1} is the local name of the XML element that causes the validation error.</comment>
+  </data>
 </root>

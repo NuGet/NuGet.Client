@@ -214,6 +214,32 @@ namespace NuGet.Test.Utility
             return file;
         }
 
+        public static TempFile GetPackageWithPackageTypes()
+        {
+            var file = new TempFile();
+
+            using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
+            {
+                zip.AddEntry("lib/net40/test40.dll", ZeroContent);
+
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                            <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
+                              <metadata>
+                                <id>packageA</id>
+                                <version>2.0.3</version>
+                                <authors>Author1, author2</authors>
+                                <description>Sample description</description>
+                                <packageTypes>
+                                  <packageType name=""foo"" />
+                                  <packageType name=""bar"" version=""2.0.0"" />
+                                </packageTypes>
+                              </metadata>
+                            </package>", Encoding.UTF8);
+            }
+
+            return file;
+        }
+
         public static TempFile GetLegacyTestPackageMinClient(string minClientVersion)
         {
             var file = new TempFile();

@@ -12,6 +12,27 @@ namespace NuGet.Packaging.Core.Test
     public class NuspecCoreReaderTests
     {
         [Fact]
+        public void Id_ReturnsNullWithWrongCase()
+        {
+            // Arrange
+            var contents =
+@"<?xml version=""1.0""?>
+<package>
+  <metadata>
+    <ID>foo</ID>
+  </metadata>
+</package>";
+
+            var reader = new TestNuspecCoreReader(contents);
+
+            // Act
+            var id = reader.GetId();
+
+            // Assert
+            Assert.Null(id);
+        }
+
+        [Fact]
         public void GetPackageType_ReturnsEmptyPackageTypeListIfNotSpecifiedInManfiest()
         {
             // Arrange
@@ -38,17 +59,19 @@ namespace NuGet.Packaging.Core.Test
    <somestuff>some-value</somestuff>
    <ver>123</ver>
   </metadata>
-</package>")]
+</package>")] // Elements with no children should be extracted.
         [InlineData(@"<?xml version=""1.0""?>
 <package xmlns=""a-random-xsd"">
   <metadata>
-   <packageType name=""Managed"" version=""2.0"" />
+   <packageTypes>
+     <packageType name=""Managed"" version=""2.0"" />
+   </packageTypes>
    <id>Test</id>
    <somestuff>some-value</somestuff>
    <ver>123</ver>
   </metadata>
-</package>")]
-        public void GetMetadata_SkipsPackageTypeElement(string contents)
+</package>")] // Elements with children should be skipped.
+        public void GetMetadata(string contents)
         {
             // Arrange
             var reader = new TestNuspecCoreReader(contents);
@@ -80,21 +103,27 @@ namespace NuGet.Packaging.Core.Test
 @"<?xml version=""1.0""?>
 <package>
   <metadata>
-   <packageType name=""Managed"" version=""2.0"" />
+    <packageTypes>
+      <packageType name=""Managed"" version=""2.0"" />
+    </packageTypes>
   </metadata>
 </package>", "Managed", "2.0")]
         [InlineData(
 @"<?xml version=""1.0""?>
 <package>
   <metadata>
-   <packageType name=""SomeFormat"" version=""3.5"" />
+    <packageTypes>
+      <packageType name=""SomeFormat"" version=""3.5"" />
+    </packageTypes>
   </metadata>
 </package>", "SomeFormat", "3.5")]
         [InlineData(
 @"<?xml version=""1.0""?>
 <package>
   <metadata>
-   <packageType name=""RandomFormat123"" />
+    <packageTypes>
+      <packageType name=""RandomFormat123"" />
+    </packageTypes>
   </metadata>
 </package>", "RandomFormat123", "0.0")]
         public void GetPackageType_ReadsPackageTypeFromManifest(string contents, string expectedType, string expectedVersion)
@@ -120,7 +149,9 @@ namespace NuGet.Packaging.Core.Test
 @"<?xml version=""1.0""?>
 <package>
   <metadata>
-   <packageType name=""SomeFormat"" version=""3.5-alpha"" />
+    <packageTypes>
+      <packageType name=""SomeFormat"" version=""3.5-alpha"" />
+    </packageTypes>
   </metadata>
 </package>";
             var reader = new TestNuspecCoreReader(contents);
@@ -140,7 +171,9 @@ namespace NuGet.Packaging.Core.Test
 @"<?xml version=""1.0""?>
 <package>
   <metadata>
-   <packageType version=""1.0"">SomeFormat</packageType>
+    <packageTypes>
+      <packageType version=""1.0"">SomeFormat</packageType>
+    </packageTypes>
   </metadata>
 </package>";
             var reader = new TestNuspecCoreReader(contents);
@@ -160,8 +193,10 @@ namespace NuGet.Packaging.Core.Test
 @"<?xml version=""1.0""?>
 <package>
   <metadata>
-   <packageType name=""Foo"" version=""1.0"" />
-   <packageType name=""Bar"" version=""2.0"" />
+    <packageTypes>
+      <packageType name=""Foo"" version=""1.0"" />
+      <packageType name=""Bar"" version=""2.0"" />
+    </packageTypes>
   </metadata>
 </package>";
             var reader = new TestNuspecCoreReader(contents);

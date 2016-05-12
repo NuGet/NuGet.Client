@@ -16,6 +16,7 @@ namespace NuGet.Packaging
         public const int TargetFrameworkSupportForDependencyContentsAndToolsVersion = 4;
         public const int TargetFrameworkSupportForReferencesVersion = 5;
         public const int XdtTransformationVersion = 6;
+        public const int PackageTypeVersion = 7;
 
         public static int GetManifestVersion(ManifestMetadata metadata)
         {
@@ -45,6 +46,11 @@ namespace NuGet.Packaging
             if (metadata.Version != null && metadata.Version.IsPrerelease)
             {
                 return SemverVersion;
+            }
+
+            if (metadata.PackageTypes != null && metadata.PackageTypes.Any())
+            {
+                return PackageTypeVersion;
             }
 
             return DefaultVersion;

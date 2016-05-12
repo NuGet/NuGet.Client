@@ -150,6 +150,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to {0} This validation error occurred in a &apos;{1}&apos; element..
+        /// </summary>
+        public static string InvalidNuspecElement {
+            get {
+                return ResourceManager.GetString("InvalidNuspecElement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to The nuspec contains an invalid entry &apos;{0}&apos; in package &apos;{1}&apos; ..
         /// </summary>
         public static string InvalidNuspecEntry {

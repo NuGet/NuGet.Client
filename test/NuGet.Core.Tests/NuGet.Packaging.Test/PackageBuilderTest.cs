@@ -505,6 +505,54 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
+        public void CreatePackageWithPackageTypes()
+        {
+            // Arrange
+            PackageBuilder builder = new PackageBuilder()
+            {
+                Id = "A",
+                Version = NuGetVersion.Parse("1.0"),
+                Description = "Description",
+                Authors = { "testAuthor" },
+                PackageTypes = new[]
+                {
+                    new PackageType("foo", new Version(0, 0)),
+                    new PackageType("bar", new Version(2, 0, 0)),
+                },
+                Files =
+                {
+                    CreatePackageFile("content" + Path.DirectorySeparatorChar + "winrt53" + Path.DirectorySeparatorChar + "one.txt")
+                }
+            };
+
+            using (var ms = new MemoryStream())
+            {
+                builder.Save(ms);
+
+                ms.Seek(0, SeekOrigin.Begin);
+
+                var manifestStream = GetManifestStream(ms);
+
+                // Assert
+                Assert.Equal(@"<?xml version=""1.0"" encoding=""utf-8""?>
+<package xmlns=""http://schemas.microsoft.com/packaging/2016/04/nuspec.xsd"">
+  <metadata>
+    <id>A</id>
+    <version>1.0.0</version>
+    <authors>testAuthor</authors>
+    <owners>testAuthor</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Description</description>
+    <packageTypes>
+      <packageType name=""foo"" />
+      <packageType name=""bar"" version=""2.0.0"" />
+    </packageTypes>
+  </metadata>
+</package>", manifestStream.ReadToEnd());
+            }
+        }
+
+        [Fact]
         public void CreatePackageDoesNotUseV4SchemaNamespaceIfContentHasUnsupportedTargetFramework()
         {
             // Arrange
@@ -1262,7 +1310,45 @@ Description is required.");
 
             // Act & Assert
 #if !IS_CORECLR
-            ExceptionAssert.Throws<InvalidOperationException>(() => new PackageBuilder(spec.AsStream(), null), "The element 'metadata' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd' has incomplete content. List of possible elements expected: 'id' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd'.");
+            ExceptionAssert.Throws<InvalidOperationException>(
+                () => new PackageBuilder(spec.AsStream(), null),
+                "The element 'metadata' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd' has incomplete content. " +
+                "List of possible elements expected: 'id' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd'. " +
+                "This validation error occurred in a 'metadata' element.");
+#else
+            ExceptionAssert.Throws<InvalidDataException>(() => new PackageBuilder(spec.AsStream(), null), "The required element 'id' is missing from the manifest.");
+#endif
+        }
+
+        [Fact]
+        public void WrongCaseIdThrows()
+        {
+            // Arrange
+            string spec = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<package><metadata>
+    <ID>aaa</ID>
+    <version>2.5</version>
+    <authors>Velio Ivanov</authors>
+    <language>en-us</language>
+    <description>This is the Description (With, Comma-Separated, Words, in Parentheses).</description>
+  </metadata></package>";
+
+            // Switch to invariant culture to ensure the error message is in english.
+#if !IS_CORECLR
+            // REVIEW: Unsupported on CoreCLR
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+#endif
+
+            // Act & Assert
+#if !IS_CORECLR
+            var exception = Assert.Throws<InvalidOperationException>(() => new PackageBuilder(spec.AsStream(), null));
+            Assert.StartsWith(
+                "The element 'metadata' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd' has invalid child element 'ID' " +
+                "in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd'.",
+                exception.Message);
+            Assert.EndsWith(
+                "This validation error occurred in a 'ID' element.",
+                exception.Message);
 #else
             ExceptionAssert.Throws<InvalidDataException>(() => new PackageBuilder(spec.AsStream(), null), "The required element 'id' is missing from the manifest.");
 #endif
@@ -1330,7 +1416,11 @@ Description is required.");
 
             // Act & Assert
 #if !IS_CORECLR
-            ExceptionAssert.Throws<InvalidOperationException>(() => new PackageBuilder(spec.AsStream(), null), "The element 'metadata' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd' has incomplete content. List of possible elements expected: 'version' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd'.");
+            ExceptionAssert.Throws<InvalidOperationException>(
+                () => new PackageBuilder(spec.AsStream(), null),
+                "The element 'metadata' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd' has incomplete content. " +
+                "List of possible elements expected: 'version' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd'. " +
+                "This validation error occurred in a 'metadata' element.");
 #else
             ExceptionAssert.Throws<InvalidDataException>(() => new PackageBuilder(spec.AsStream(), null), "The required element 'version' is missing from the manifest.");
 #endif
@@ -1356,7 +1446,11 @@ Description is required.");
 
             // Act & Assert
 #if !IS_CORECLR
-            ExceptionAssert.Throws<InvalidOperationException>(() => new PackageBuilder(spec.AsStream(), null), "The element 'metadata' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd' has incomplete content. List of possible elements expected: 'authors' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd'.");
+            ExceptionAssert.Throws<InvalidOperationException>(
+                () => new PackageBuilder(spec.AsStream(), null),
+                "The element 'metadata' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd' has incomplete content. " + 
+                "List of possible elements expected: 'authors' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd'. " +
+                "This validation error occurred in a 'metadata' element.");
 #else
             ExceptionAssert.Throws<InvalidDataException>(() => new PackageBuilder(spec.AsStream(), null), "The required element 'authors' is missing from the manifest.");
 #endif
@@ -1382,7 +1476,11 @@ Description is required.");
 
             // Act & Assert
 #if !IS_CORECLR
-            ExceptionAssert.Throws<InvalidOperationException>(() => new PackageBuilder(spec.AsStream(), null), "The element 'metadata' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd' has incomplete content. List of possible elements expected: 'description' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd'.");
+            ExceptionAssert.Throws<InvalidOperationException>(
+                () => new PackageBuilder(spec.AsStream(), null),
+                "The element 'metadata' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd' has incomplete content. " +
+                "List of possible elements expected: 'description' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd'. " +
+                "This validation error occurred in a 'metadata' element.");
 #else
             ExceptionAssert.Throws<InvalidDataException>(() => new PackageBuilder(spec.AsStream(), null), "The required element 'description' is missing from the manifest.");
 #endif
@@ -1412,7 +1510,10 @@ Description is required.");
     </dependencies>
   </metadata></package>";
 
-            ExceptionAssert.Throws<InvalidOperationException>(() => new PackageBuilder(spec.AsStream(), null), "The required attribute 'id' is missing.");
+            ExceptionAssert.Throws<InvalidOperationException>(
+                () => new PackageBuilder(spec.AsStream(), null),
+                "The required attribute 'id' is missing. " +
+                "This validation error occurred in a 'dependency' element.");
 #else
             // Not thrown in CoreCLR
 #endif
@@ -1469,7 +1570,10 @@ Description is required.");
   </files>
 </package>";
 
-            ExceptionAssert.Throws<InvalidOperationException>(() => new PackageBuilder(spec.AsStream(), null), "The required attribute 'src' is missing.");
+            ExceptionAssert.Throws<InvalidOperationException>(
+                () => new PackageBuilder(spec.AsStream(), null),
+                "The required attribute 'src' is missing. " +
+                "This validation error occurred in a 'file' element.");
 #else
             // REVIEW: Not thrown in CoreCLR
 #endif
@@ -1639,6 +1743,10 @@ Description is required.");
     <licenseUrl>http://somesite/somelicense.txt</licenseUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <copyright>2010</copyright>
+    <packageTypes>
+        <packageType name=""foo"" />
+        <packageType name=""bar"" version=""2.0.0"" />
+    </packageTypes>
     <dependencies>
         <dependency id=""A"" version=""[1.0]"" />
         <dependency id=""B"" version=""[1.0, 2.5)"" />
@@ -1662,8 +1770,14 @@ Description is required.");
             Assert.Equal(new Uri("http://somesite/somelicense.txt"), builder.LicenseUrl);
             Assert.True(builder.RequireLicenseAcceptance);
 
+            Assert.Equal(2, builder.PackageTypes.Count);
+            Assert.Equal("foo", builder.PackageTypes.ElementAt(0).Name);
+            Assert.Equal(new Version(0, 0), builder.PackageTypes.ElementAt(0).Version);
+            Assert.Equal("bar", builder.PackageTypes.ElementAt(1).Name);
+            Assert.Equal(new Version(2, 0, 0), builder.PackageTypes.ElementAt(1).Version);
+
             Assert.Equal(1, builder.DependencyGroups.Count);
-            var dependencyGroup = builder.DependencyGroups[0];
+            var dependencyGroup = builder.DependencyGroups.ElementAt(0);
 
             IDictionary<string, VersionRange> dependencies = dependencyGroup.Packages.ToDictionary(p => p.Id, p => p.VersionRange);
             // <dependency id="A" version="[1.0]" />
@@ -1702,7 +1816,7 @@ Description is required.");
 
             // Assert
             Assert.Equal(1, builder.DependencyGroups.Count);
-            var dependencyGroup = builder.DependencyGroups[0];
+            var dependencyGroup = builder.DependencyGroups.ElementAt(0);
 
             Assert.Equal(NuGetFramework.Parse("Silverlight, Version=4.0"), dependencyGroup.TargetFramework);
             var dependencies = dependencyGroup.Packages.ToList();
@@ -1741,9 +1855,9 @@ Description is required.");
 
             // Assert
             Assert.Equal(3, builder.DependencyGroups.Count);
-            var dependencyGroup1 = builder.DependencyGroups[0];
-            var dependencyGroup2 = builder.DependencyGroups[1];
-            var dependencyGroup3 = builder.DependencyGroups[2];
+            var dependencyGroup1 = builder.DependencyGroups.ElementAt(0);
+            var dependencyGroup2 = builder.DependencyGroups.ElementAt(1);
+            var dependencyGroup3 = builder.DependencyGroups.ElementAt(2);
 
             Assert.Equal(NuGetFramework.Parse("Silverlight, Version=4.0"), dependencyGroup1.TargetFramework);
             var dependencies1 = dependencyGroup1.Packages.ToList();
@@ -2261,7 +2375,11 @@ Enabling license acceptance requires a license url.");
 
             // Act
 #if !IS_CORECLR
-            ExceptionAssert.Throws<InvalidOperationException>(() => new PackageBuilder(spec.AsStream(), null), "The element 'package' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd' has incomplete content. List of possible elements expected: 'metadata' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd'.");
+            ExceptionAssert.Throws<InvalidOperationException>(
+                () => new PackageBuilder(spec.AsStream(), null),
+                "The element 'package' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd' has incomplete content. " +
+                "List of possible elements expected: 'metadata' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd'. " +
+                "This validation error occurred in a 'package' element.");
 #else
             ExceptionAssert.Throws<InvalidDataException>(() => new PackageBuilder(spec.AsStream(), null), "The required element 'metadata' is missing from the manifest.");
 #endif

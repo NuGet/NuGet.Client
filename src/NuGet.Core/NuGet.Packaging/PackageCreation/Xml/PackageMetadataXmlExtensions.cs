@@ -51,6 +51,11 @@ namespace NuGet.Packaging.Xml
             AddElementIfNotNull(elem, ns, "copyright", metadata.Copyright);
             AddElementIfNotNull(elem, ns, "language", metadata.Language);
             AddElementIfNotNull(elem, ns, "tags", metadata.Tags);
+            
+            if (metadata.PackageTypes != null && metadata.PackageTypes.Any())
+            {
+                elem.Add(GetXElementFromManifestPackageTypes(ns, metadata.PackageTypes));
+            }
 
             elem.Add(GetXElementFromGroupableItemSets(
                 ns,
@@ -147,7 +152,7 @@ namespace NuGet.Packaging.Xml
 
         private static XElement GetXElementFromPackageDependency(XNamespace ns, PackageDependency dependency)
         {
-            List<XAttribute> attributes = new List<XAttribute>();
+            var attributes = new List<XAttribute>();
 
             attributes.Add(new XAttribute("id", dependency.Id));
 
@@ -199,7 +204,7 @@ namespace NuGet.Packaging.Xml
 
         private static XElement GetXElementFromManifestContentFile(XNamespace ns, ManifestContentFiles file)
         {
-            List<XAttribute> attributes = new List<XAttribute>();
+            var attributes = new List<XAttribute>();
 
             attributes.Add(GetXAttributeFromNameAndValue("include", file.Include));
             attributes.Add(GetXAttributeFromNameAndValue("exclude", file.Exclude));
@@ -210,6 +215,34 @@ namespace NuGet.Packaging.Xml
             attributes = attributes.Where(xAtt => xAtt != null).ToList();
 
             return new XElement(ns + Files, attributes);
+        }
+
+        private static XElement GetXElementFromManifestPackageTypes(XNamespace ns, IEnumerable<PackageType> packageTypes)
+        {
+            var packageTypesElement = new XElement(ns + NuspecUtility.PackageTypes);
+
+            foreach (var packageType in packageTypes)
+            {
+                var packageTypeElement = GetXElementFromManifestPackageType(ns, packageType);
+                packageTypesElement.Add(packageTypeElement);
+            }
+
+            return packageTypesElement;
+        }
+
+        private static XElement GetXElementFromManifestPackageType(XNamespace ns, PackageType packageType)
+        {
+            var attributes = new List<XAttribute>();
+
+            attributes.Add(GetXAttributeFromNameAndValue(NuspecUtility.PackageTypeName, packageType.Name));
+            if (packageType.Version != PackageType.EmptyVersion)
+            {
+                attributes.Add(GetXAttributeFromNameAndValue(NuspecUtility.PackageTypeVersion, packageType.Version));
+            }
+
+            attributes = attributes.Where(xAtt => xAtt != null).ToList();
+
+            return new XElement(ns + NuspecUtility.PackageType, attributes);
         }
 
         private static XAttribute GetXAttributeFromNameAndValue(string name, object value)

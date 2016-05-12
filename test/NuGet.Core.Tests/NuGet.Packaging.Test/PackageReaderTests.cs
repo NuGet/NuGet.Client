@@ -456,7 +456,6 @@ namespace NuGet.Packaging.Test
         public void PackageReader_SupportedFrameworks()
         {
             using (var packageFile = TestPackages.GetLegacyTestPackage())
-
             {
                 var zip = TestPackages.GetZip(packageFile);
 
@@ -468,6 +467,29 @@ namespace NuGet.Packaging.Test
                     Assert.Equal(".NETFramework,Version=v4.0", frameworks[1]);
                     Assert.Equal(".NETFramework,Version=v4.5", frameworks[2]);
                     Assert.Equal(3, frameworks.Length);
+                }
+            }
+        }
+
+        [Fact]
+        public void PackageReader_PackageTypes()
+        {
+            // Arrange
+            using (var packageFile = TestPackages.GetPackageWithPackageTypes())
+            {
+                var zip = TestPackages.GetZip(packageFile);
+
+                using (PackageArchiveReader reader = new PackageArchiveReader(zip))
+                {
+                    // Act
+                    var actual = reader.GetPackageTypes();
+
+                    // Assert
+                    Assert.Equal(2, actual.Count);
+                    Assert.Equal("foo", actual[0].Name);
+                    Assert.Equal(new Version(0, 0), actual[0].Version);
+                    Assert.Equal("bar", actual[1].Name);
+                    Assert.Equal(new Version(2, 0, 0), actual[1].Version);
                 }
             }
         }

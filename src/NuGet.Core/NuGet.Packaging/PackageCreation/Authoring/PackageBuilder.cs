@@ -63,6 +63,7 @@ namespace NuGet.Packaging
             FrameworkReferences = new Collection<FrameworkAssemblyReference>();
             ContentFiles = new Collection<ManifestContentFiles>();
             PackageAssemblyReferences = new Collection<PackageReferenceSet>();
+            PackageTypes = new Collection<PackageType>();
             Authors = new HashSet<string>();
             Owners = new HashSet<string>();
             Tags = new HashSet<string>();
@@ -170,7 +171,7 @@ namespace NuGet.Packaging
             private set;
         }
 
-        public Collection<IPackageFile> Files
+        public ICollection<IPackageFile> Files
         {
             get;
             private set;
@@ -192,6 +193,12 @@ namespace NuGet.Packaging
         }
 
         public ICollection<PackageReferenceSet> PackageAssemblyReferences
+        {
+            get;
+            set;
+        }
+
+        public ICollection<PackageType> PackageTypes
         {
             get;
             set;
@@ -242,6 +249,22 @@ namespace NuGet.Packaging
             get
             {
                 return FrameworkReferences;
+            }
+        }
+
+        IEnumerable<ManifestContentFiles> IPackageMetadata.ContentFiles
+        {
+            get
+            {
+                return ContentFiles;
+            }
+        }
+
+        IEnumerable<PackageType> IPackageMetadata.PackageTypes
+        {
+            get
+            {
+                return PackageTypes;
             }
         }
 
@@ -312,8 +335,8 @@ namespace NuGet.Packaging
         }
 
         private static int DetermineMinimumSchemaVersion(
-            Collection<IPackageFile> Files,
-            Collection<PackageDependencyGroup> package)
+            ICollection<IPackageFile> Files,
+            ICollection<PackageDependencyGroup> package)
         {
             if (HasContentFilesV2(Files) || HasIncludeExclude(package))
             {
@@ -477,7 +500,7 @@ namespace NuGet.Packaging
             Language = metadata.Language;
             Copyright = metadata.Copyright;
             MinClientVersion = metadata.MinClientVersion;
-            ContentFiles = new List<ManifestContentFiles>(manifestMetadata.ContentFiles);
+            ContentFiles = new Collection<ManifestContentFiles>(manifestMetadata.ContentFiles.ToList());
 
             if (metadata.Tags != null)
             {
@@ -490,6 +513,11 @@ namespace NuGet.Packaging
             if (manifestMetadata.PackageAssemblyReferences != null)
             {
                 PackageAssemblyReferences.AddRange(manifestMetadata.PackageAssemblyReferences);
+            }
+
+            if (manifestMetadata.PackageTypes != null)
+            {
+                PackageTypes = new Collection<PackageType>(metadata.PackageTypes.ToList());
             }
         }
 

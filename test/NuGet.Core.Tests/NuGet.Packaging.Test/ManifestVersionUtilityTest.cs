@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 
 using NuGet.Frameworks;
+using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Xunit;
 
@@ -8,6 +9,29 @@ namespace NuGet.Packaging.Test
 {
     public class ManifestVersionUtilityTest
     {
+        [Fact]
+        public void GetManifestVersionReturns7IfPackageTypesAreSet()
+        {
+            // Arrange
+            var metadata = new ManifestMetadata
+            {
+                Id = "Foo",
+                Version = NuGetVersion.Parse("1.0"),
+                Authors = new[] { "A, B" },
+                Description = "Description",
+                PackageTypes = new[]
+                {
+                    new PackageType("Bar", new System.Version(2, 0))
+                }
+            };
+
+            // Act
+            var version = ManifestVersionUtility.GetManifestVersion(metadata);
+
+            // Assert
+            Assert.Equal(7, version);
+        }
+
         [Fact]
         public void GetManifestVersionReturns1IfNoNewPropertiesAreSet()
         {
