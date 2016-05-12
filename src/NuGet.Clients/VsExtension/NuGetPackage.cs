@@ -42,6 +42,8 @@ using PackageDependency = NuGet.PackageDependency;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.ProjectModel;
+using NuGet.Versioning;
+using ILogger = NuGet.Common.ILogger;
 
 namespace NuGetVSExtension
 {
@@ -743,7 +745,7 @@ namespace NuGetVSExtension
 
         private async void ExecuteConvertPackagesConfigCommand(object sender, EventArgs e)
         {
-            var outputConsole = this._outputConsoleLogger.OutputConsole;
+            var outputConsole = _outputConsoleLogger.OutputConsole;
 
             // Get the project's unique name, which we'll use later to get a new reference after reloading
             Project project = EnvDTEProjectUtility.GetActiveProject(VsMonitorSelection);
@@ -771,11 +773,153 @@ namespace NuGetVSExtension
                 return;
             }
 
+            // 1. Remove all dependencies from packages.config and add them to to project.json
+            var packagesConfigDependencies = new PackagesConfigDependencies(project, SolutionManager, Settings, outputConsole);
+            var allDependencies = packagesConfigDependencies.AllDependencies;
+
+            // Uninstall packages from packages.config
+            var solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
+            var nuGetProject = solutionManager.GetNuGetProject(EnvDTEProjectUtility.GetCustomUniqueName(project));
+
+            // If we failed to generate a cache entry in the solution manager something went wrong.
+            if (nuGetProject == null)
+            {
+                throw new InvalidOperationException(string.Format(Resources.ProjectHasAnInvalidNuGetConfiguration, project.Name));
+            }
+
+            var installedPackageIdentities = (await nuGetProject.GetInstalledPackagesAsync(CancellationToken.None)).Select(packageRef => packageRef.PackageIdentity);
+            foreach (var packageIdentity in installedPackageIdentities)
+            {
+                outputConsole.WriteLine("Uninstalling package " + packageIdentity.Id + ".");
+                await nuGetProject.UninstallPackageAsync(packageIdentity, new EmptyNuGetProjectContext(), CancellationToken.None);
+            }
+
+            // Generate stub project.json
+            JObject json = new JObject();
+
+            // Frameworks
+            var targetNuGetFramework = EnvDTEProjectUtility.GetTargetNuGetFramework(project);
+            json["frameworks"] = new JObject { [targetNuGetFramework.GetShortFolderName()] = new JObject() };
+
+            var runtimeStub = EnvDTEProjectUtility.GetPropertyValue<string>(project, "TargetPlatformIdentifier") == "UAP" ? "win10" : "win";
+
+            // Runtimes
+            var runtimes = new JObject();
+            var configurationManager = project.ConfigurationManager;
+            var supportedPlatforms = configurationManager.SupportedPlatforms as object[];
+            if (supportedPlatforms != null && supportedPlatforms.Length > 0)
+            {
+                foreach (var supportedPlatformString in supportedPlatforms.Cast<string>())
+                {
+                    if (string.IsNullOrEmpty(supportedPlatformString) || supportedPlatformString == "Any CPU")
+                    {
+                        runtimes[runtimeStub] = new JObject();
+                    }
+                    else
+                    {
+                        runtimes[runtimeStub + "-" + supportedPlatformString.ToLowerInvariant()] = new JObject();
+                    }
+                }
+            }
+            else
+            {
+                runtimes[runtimeStub] = new JObject();
+            }
+            json["runtimes"] = runtimes;
+
+            // Write it out
+            var projectPath = Path.GetDirectoryName(EnvDTEProjectUtility.GetFullProjectPath(project));
+            Debug.Assert(projectPath != null, "projectPath != null");
+            var projectJsonFileName = Path.Combine(projectPath, PackageSpec.PackageSpecFileName);
+            using (var textWriter = new StreamWriter(projectJsonFileName, false, Encoding.UTF8))
+            using (var jsonWriter = new JsonTextWriter(textWriter))
+            {
+                jsonWriter.Formatting = Formatting.Indented;
+                json.WriteTo(jsonWriter);
+            }
+
+            // Add project.json to the project
+            project.ProjectItems.AddFromFileCopy(projectJsonFileName);
+
+            // Save and reload the project
+            EnvDTEProjectUtility.Save(project);
+            EnvDTEProjectUtility.TryUnloadReload(project);
+
+            // We've unloaded and reloaded the project file, so we need to get a new project reference and create a new NuGetProject.
+            solution.GetProjectOfUniqueName(projectUniqueName, out projectHierarchy);
+            project = VsHierarchyUtility.GetProjectFromHierarchy(projectHierarchy);
+            nuGetProject = solutionManager.GetNuGetProject(EnvDTEProjectUtility.GetCustomUniqueName(project));
+
+            // Add all dependencies
+            // Install minimal set of packages
+            var uiContextFactory = ServiceLocator.GetInstance<INuGetUIContextFactory>();
+            INuGetUIContext uiContext = uiContextFactory.Create(this, new[] { nuGetProject });
+
+            var uiFactory = ServiceLocator.GetInstance<INuGetUIFactory>();
+            var uiController = uiFactory.Create(uiContext, _uiProjectContext);
+            var nuGetUI = uiController as NuGetUI;
+            if (nuGetUI != null)
+            {
+                nuGetUI.Projects = new[] { nuGetProject };
+                nuGetUI.DisplayPreviewWindow = false;
+                nuGetUI.DisplayLicenseAcceptanceWindow = false;
+            }
+
+            foreach (var dependency in allDependencies.Values)
+            {
+                UserAction action = UserAction.CreateInstallAction(dependency.Id, dependency.VersionRange.MinVersion);
+                await uiContext.UIActionEngine.PerformActionAsync(uiController, action, null, CancellationToken.None);
+            }
+
+            // 2. Walk project.lock.json to determine which dependencies are primary
+            var lockFilePath = Path.Combine(projectPath, LockFileFormat.LockFileName);
+            if (!File.Exists(lockFilePath))
+            {
+                outputConsole.WriteLine("Lock file was not created. Aborting.");
+                return;
+            }
+
+            // ErrorLogger
+            var lockFile = LockFileUtilities.GetLockFile(lockFilePath, new ErrorLogger(outputConsole));
+            if (lockFile.Targets.Count == 0)
+            {
+                // Nothing else to do;
+                return;
+            }
+
+            // Because of how we created project.json, the dependencies of all targets are the same, so just grab the first
+            var lockFileTarget = lockFile.Targets[0];
+
+            var topLevelPackages = new Dictionary<string, NuGetVersion>();
+            foreach (var lockFileTargetLibrary in lockFileTarget.Libraries)
+            {
+                topLevelPackages[lockFileTargetLibrary.Name] = lockFileTargetLibrary.Version;
+            }
+
+            foreach (var dependency in lockFileTarget.Libraries.SelectMany(targetLibrary => targetLibrary.Dependencies))
+            {
+                NuGetVersion topLevelVersion;
+                if (topLevelPackages.TryGetValue(dependency.Id, out topLevelVersion))
+                {
+                    if (topLevelVersion.Equals(dependency.VersionRange.MinVersion))
+                    {
+                        outputConsole.WriteLine("Removing " + dependency.Id + " because top level version " + topLevelVersion + " equals dependency min version " + dependency.VersionRange.MinVersion);
+                        topLevelPackages.Remove(dependency.Id);
+                    }
+                    else
+                    {
+                        outputConsole.WriteLine("NOT removing " + dependency.Id + " because top level version " + topLevelVersion + " does not equal dependency min version " + dependency.VersionRange.MinVersion);
+                    }
+                }
+            }
+
+            outputConsole.WriteLine("Remaining top level packages: " + topLevelPackages.Count);
+
+            /*
             // Determine minimal dependencies which will be used when creating project.json
             var packagesConfigDependencies = new PackagesConfigDependencies(project, SolutionManager, Settings, outputConsole);
             Dictionary<string, NuGet.Packaging.Core.PackageDependency> minimalDependencies = packagesConfigDependencies.MinimalDependencies;
 
-            /*
             // Uninstall packages from packages.config
             ISolutionManager solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
             NuGetProject nuGetProject = solutionManager.GetNuGetProject(EnvDTEProjectUtility.GetCustomUniqueName(project));
@@ -1395,5 +1539,56 @@ namespace NuGetVSExtension
             return VSConstants.S_OK;
         }
         #endregion // IVsPersistSolutionOpts implementation
+
+        private class ErrorLogger: ILogger
+        {
+            private readonly IConsole _outputConsole;
+
+            public ErrorLogger(IConsole outputConsole)
+            {
+                this._outputConsole = outputConsole;
+            }
+
+            public void LogDebug(string data)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void LogVerbose(string data)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void LogInformation(string data)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void LogMinimal(string data)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void LogWarning(string data)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void LogError(string data)
+            {
+                _outputConsole.WriteLine(data);
+            }
+
+            public void LogInformationSummary(string data)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void LogErrorSummary(string data)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
     }
 }

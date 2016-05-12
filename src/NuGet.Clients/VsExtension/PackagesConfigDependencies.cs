@@ -8,7 +8,6 @@ using System.Linq;
 using System.Runtime.Versioning;
 using NuGet;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.Versioning;
 using NuGetConsole;
 using EnvDTE;
@@ -22,12 +21,12 @@ namespace NuGetVSExtension
 {
     internal class PackagesConfigDependencies
     {
-        private ISolutionManager _solutionManager;
-        private ISettings _settings;
-        private IConsole _logger;
-        private PackageReferenceFile _file;
-        private Project _project;
-        private FrameworkName _targetFramework = null;
+        private readonly ISolutionManager _solutionManager;
+        private readonly ISettings _settings;
+        private readonly IConsole _logger;
+        private readonly PackageReferenceFile _file;
+        private readonly Project _project;
+        private FrameworkName _targetFramework;
         private string _projectFullPath;
 
         public NuGet.Configuration.IMachineWideSettings MachineWideSettings { get; set; }
@@ -64,15 +63,33 @@ namespace NuGetVSExtension
             }
         }
 
-        private bool FindPackagesAndDependencies(Dictionary<string, Tuple<NuGet.IPackage, NuGet.PackageDependency>> packagesAndDependencies)
+        private Dictionary<string, PackageDependency> _allDependencies = null;
+        public Dictionary<string, PackageDependency> AllDependencies
+        {
+            get
+            {
+                if (_allDependencies == null)
+                {
+                    _allDependencies = new Dictionary<string, PackageDependency>();
+                    foreach (var packageAndDependency in AllPackagesAndDependencies)
+                    {
+                        var dependency = packageAndDependency.Value.Item2;
+                        _allDependencies[dependency.Id] = new PackageDependency(dependency.Id, VersionRange.Parse(dependency.VersionSpec.ToString()));
+                    }
+                }
+                return _allDependencies;
+            }
+        }
+
+        private void FindPackagesAndDependencies(IDictionary<string, Tuple<IPackage, NuGet.PackageDependency>> packagesAndDependencies)
         {
             IDictionary<PackageName, PackageReference> packageReferences = _file.GetPackageReferences().ToDictionary(r => new PackageName(r.Id, r.Version));
 
-			PackageRepository = GetPackagesRepository();
+            PackageRepository = GetPackagesRepository();
             if (PackageRepository == null)
             {
                 _logger.WriteLine("Aborting: Unable to find solution's packages folder.");
-                return false;
+                return;
             }
 
             foreach (var reference in packageReferences.Values)
@@ -82,7 +99,7 @@ namespace NuGetVSExtension
                 {
                     // We do not want to continue if we can't find a package
                     _logger.WriteLine("Aborting: Unable find package " + reference.Id + ", Version " + reference.Version);
-                    return false;
+                    return;
                 }
 
                 /*var contentFiles = package.GetContentFiles();
@@ -100,8 +117,6 @@ namespace NuGetVSExtension
                     packagesAndDependencies.Add(package.Id, new Tuple<IPackage, NuGet.PackageDependency>(package, dependency));
                 }
             }
-
-            return true;
         }
 
         public string ProjectFullPath
