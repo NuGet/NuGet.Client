@@ -33,6 +33,9 @@ namespace NuGet.CommandLine.XPlat
             {
                 args = args.Where(arg => !StringComparer.OrdinalIgnoreCase.Equals(arg, DebugOption)).ToArray();
 
+                Console.WriteLine("Waiting for debugger to attach.");
+                Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
+
                 while (!Debugger.IsAttached)
                 {
                     System.Threading.Thread.Sleep(100);
@@ -57,10 +60,9 @@ namespace NuGet.CommandLine.XPlat
             var verbosity = app.Option(XPlatUtility.VerbosityOption, Strings.Switch_Verbosity, CommandOptionType.SingleValue);
 
             // Options aren't parsed until we call app.Execute(), so look directly for the verbosity option ourselves
-            ParseVerbosity(args, verbosity);
-
-            var logLevel = XPlatUtility.GetLogLevel(verbosity);
-            log.SetLogLevel(logLevel);
+            LogLevel logLevel;
+            TryParseVerbosity(args, verbosity, out logLevel);
+            log.LogLevel = logLevel;
 
             XPlatUtility.SetConnectionLimit();
 
@@ -117,8 +119,15 @@ namespace NuGet.CommandLine.XPlat
             return exitCode;
         }
 
-        private static void ParseVerbosity(string[] args, CommandOption verbosity)
+        /// <summary>
+        /// Attempts to parse the desired log verbosity from the arguments. Returns true if the
+        /// arguments contains a valid verbosity option. If no valid verbosity option was
+        /// specified, the log level is set to a default log level and false is returned.
+        /// </summary>
+        private static bool TryParseVerbosity(string[] args, CommandOption verbosity, out LogLevel logLevel)
         {
+            bool found = false;
+
             for (var index = 0; index < args.Length; index++)
             {
                 var arg = args[index];
@@ -146,14 +155,23 @@ namespace NuGet.CommandLine.XPlat
 
                 if (option.Length == 2)
                 {
-                    verbosity.TryParse(option[1]);
+                    found = verbosity.TryParse(option[1]);
                 }
                 else if (index < args.Length - 1)
                 {
-                    verbosity.TryParse(args[index + 1]);
+                    found = verbosity.TryParse(args[index + 1]);
                 }
+
                 break;
             }
+
+            logLevel = XPlatUtility.GetLogLevel(verbosity);
+
+            // Reset the parsed value since the application execution expects the option to not be
+            // populated yet, as this is a single-valued option.
+            verbosity.Values.Clear();
+
+            return found;
         }
     }
 }

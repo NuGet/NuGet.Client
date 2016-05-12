@@ -8,15 +8,23 @@ namespace NuGet.XPlat.FuncTest
 {
     public class TestCommandOutputLogger : CommandOutputLogger
     {
+        private readonly bool _observeLogLevel;
+
         public TestLogger Logger { get; set; } = new TestLogger();
 
-        public TestCommandOutputLogger()
+        public TestCommandOutputLogger(bool observeLogLevel = false)
             : base(LogLevel.Debug)
         {
+            _observeLogLevel = observeLogLevel;
         }
 
         protected override void LogInternal(LogLevel logLevel, string message)
         {
+            if (_observeLogLevel && logLevel < LogLevel)
+            {
+                return;
+            }
+
             switch (logLevel)
             {
                 case LogLevel.Debug:
@@ -56,6 +64,14 @@ namespace NuGet.XPlat.FuncTest
             get
             {
                 return Logger.ErrorMessages;
+            }
+        }
+
+        public ConcurrentQueue<string> VerboseMessages
+        {
+            get
+            {
+                return Logger.VerboseMessages;
             }
         }
 

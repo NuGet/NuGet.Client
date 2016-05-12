@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Text;
-using Microsoft.Dnx.Runtime.Common.CommandLine;
 using NuGet.Common;
 
 namespace NuGet.CommandLine.XPlat
@@ -22,9 +21,10 @@ namespace NuGet.CommandLine.XPlat
             _logLevel = logLevel;
         }
 
-        public void SetLogLevel(LogLevel logLevel)
+        public LogLevel LogLevel
         {
-            _logLevel = logLevel;
+            get { return _logLevel; }
+            set { _logLevel = value; }
         }
 
         public void LogDebug(string data)

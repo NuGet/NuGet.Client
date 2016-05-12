@@ -81,8 +81,10 @@ namespace NuGet.CommandLine.XPlat
                 restore.OnExecute(async () =>
                 {
                     var log = getLogger();
-                    var logLevel = XPlatUtility.GetLogLevel(verbosity);
-                    log.SetLogLevel(logLevel);
+                    if (verbosity.HasValue())
+                    {
+                        log.LogLevel = XPlatUtility.GetLogLevel(verbosity);
+                    }
 
                     using (var cacheContext = new SourceCacheContext())
                     {
