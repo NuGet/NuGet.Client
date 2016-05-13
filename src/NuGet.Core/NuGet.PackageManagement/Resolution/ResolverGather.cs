@@ -216,7 +216,7 @@ namespace NuGet.PackageManagement
                         {
                             if (string.Equals(targetId, pid.Id, StringComparison.OrdinalIgnoreCase))
                             {
-                                packageIdentity = String.Concat(targetId, ",", pid.Version);
+                                packageIdentity = string.Format(CultureInfo.CurrentCulture, "{0} {1}", targetId, pid.Version);
                                 break;
                             }
                         }
