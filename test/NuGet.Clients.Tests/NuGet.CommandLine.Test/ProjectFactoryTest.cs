@@ -74,13 +74,12 @@ namespace NuGet.CommandLine
         {
             var us = Assembly.GetExecutingAssembly();
             var sourcePath = us.Location;
-            var targetFile = new NuGet.PhysicalPackageFile { SourcePath = sourcePath };
             var fullPath = sourcePath + "readOnly";
             File.Copy(sourcePath, fullPath);
             File.SetAttributes(fullPath, FileAttributes.ReadOnly);
             try
             {
-                var actual = ProjectFactory.ContentEquals(targetFile, fullPath);
+                var actual = ProjectFactory.ContentEquals(sourcePath, fullPath);
 
                 Assert.Equal(true, actual);
             }
