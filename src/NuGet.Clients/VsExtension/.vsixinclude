@@ -7,12 +7,12 @@ NuGet.Credentials.dll
 NuGet.Options.dll
 NuGet.PackageManagement.PowerShellCmdlets.dll
 NuGet.PackageManagement.VisualStudio.dll
-NuGet.TeamFoundationServer14.dll
+NuGet.TeamFoundationServer.dll
 NuGet.Tools.dll
 NuGet.VisualStudio.dll
+NuGet.VisualStudio.Facade.dll
 NuGet.VisualStudio.Interop.dll
 NuGet.VisualStudio.Implementation.dll
-NuGet.VisualStudio14.dll
 
 # MS delay signed assemblies
 NuGet.Client.dll

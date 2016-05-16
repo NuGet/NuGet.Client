@@ -8,7 +8,7 @@
     "Test.Utility": "3.5.0-*"
   },
   "frameworks": {
-    "net451": {}
+    "net46": {}
   },
   "runtimes": {
     "win-anycpu": {},

@@ -1,9 +1,10 @@
 ﻿{
   "dependencies": {
+    "Microsoft.VisualStudio.Shell.Interop": "7.10.6071",
     "NuGet.Resolver": "3.5.0-*"
   },
   "frameworks": {
-    "net45": {}
+    "net46": {}
   },
   "runtimes": {
     "win-anycpu": {},
