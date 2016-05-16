@@ -135,7 +135,7 @@ namespace NuGet.CommandLine
                 throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandSourceRequired"));
             }
             // Make sure that the Source given is a valid one.
-            if (!Common.PathValidator.IsValidSource(Source))
+            if (!PathValidator.IsValidSource(Source))
             {
                 throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandInvalidSource"));
             }

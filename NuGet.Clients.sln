@@ -9,7 +9,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VsExtension", "src\NuGet.Cl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisualStudio.Interop", "src\NuGet.Clients\VisualStudio.Interop\VisualStudio.Interop.csproj", "{7DB43FE1-75E1-49F9-B2C8-06A552BA2144}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisualStudio14", "src\NuGet.Clients\VisualStudio14\VisualStudio14.csproj", "{EEA49A74-6EFC-410E-9745-BAD367AC151D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisualStudio.Facade", "src\NuGet.Clients\VisualStudio.Facade\VisualStudio.Facade.csproj", "{EEA49A74-6EFC-410E-9745-BAD367AC151D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisualStudio14.Packages", "src\NuGet.Clients\VisualStudio14.Packages\VisualStudio14.Packages.csproj", "{A3AB10FD-0E3E-426B-B3D9-B5BF34E5D190}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisualStudio15.Packages", "src\NuGet.Clients\VisualStudio15.Packages\VisualStudio15.Packages.csproj", "{868ACCBA-B981-440D-9C98-2A235E1E861A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Console", "src\NuGet.Clients\VsConsole\Console\Console.csproj", "{50E33DA2-AF14-486D-81B8-BD8409744A38}"
 EndProject
@@ -57,7 +61,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{83AEE32C
 		test\EndToEnd\tests\update.ps1 = test\EndToEnd\tests\update.ps1
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TeamFoundationServer14", "src\NuGet.Clients\TeamFoundationServer14\TeamFoundationServer14.csproj", "{E961D080-F10B-4F11-BEA0-056509C086CC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TeamFoundationServer", "src\NuGet.Clients\TeamFoundationServer\TeamFoundationServer.csproj", "{E961D080-F10B-4F11-BEA0-056509C086CC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageManagement.PowerShellCmdlets", "src\NuGet.Clients\PackageManagement.PowerShellCmdlets\PackageManagement.PowerShellCmdlets.csproj", "{26DC17AC-A390-4515-A2C0-07A0950036C5}"
 EndProject
@@ -149,6 +153,26 @@ Global
 		{EEA49A74-6EFC-410E-9745-BAD367AC151D}.Mono Release|Any CPU.Build.0 = Debug|Any CPU
 		{EEA49A74-6EFC-410E-9745-BAD367AC151D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EEA49A74-6EFC-410E-9745-BAD367AC151D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3AB10FD-0E3E-426B-B3D9-B5BF34E5D190}.Coverage|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3AB10FD-0E3E-426B-B3D9-B5BF34E5D190}.Coverage|Any CPU.Build.0 = Debug|Any CPU
+		{A3AB10FD-0E3E-426B-B3D9-B5BF34E5D190}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3AB10FD-0E3E-426B-B3D9-B5BF34E5D190}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3AB10FD-0E3E-426B-B3D9-B5BF34E5D190}.Mono Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3AB10FD-0E3E-426B-B3D9-B5BF34E5D190}.Mono Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3AB10FD-0E3E-426B-B3D9-B5BF34E5D190}.Mono Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3AB10FD-0E3E-426B-B3D9-B5BF34E5D190}.Mono Release|Any CPU.Build.0 = Debug|Any CPU
+		{A3AB10FD-0E3E-426B-B3D9-B5BF34E5D190}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3AB10FD-0E3E-426B-B3D9-B5BF34E5D190}.Release|Any CPU.Build.0 = Release|Any CPU
+		{868ACCBA-B981-440D-9C98-2A235E1E861A}.Coverage|Any CPU.ActiveCfg = Debug|Any CPU
+		{868ACCBA-B981-440D-9C98-2A235E1E861A}.Coverage|Any CPU.Build.0 = Debug|Any CPU
+		{868ACCBA-B981-440D-9C98-2A235E1E861A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{868ACCBA-B981-440D-9C98-2A235E1E861A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{868ACCBA-B981-440D-9C98-2A235E1E861A}.Mono Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{868ACCBA-B981-440D-9C98-2A235E1E861A}.Mono Debug|Any CPU.Build.0 = Debug|Any CPU
+		{868ACCBA-B981-440D-9C98-2A235E1E861A}.Mono Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{868ACCBA-B981-440D-9C98-2A235E1E861A}.Mono Release|Any CPU.Build.0 = Debug|Any CPU
+		{868ACCBA-B981-440D-9C98-2A235E1E861A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{868ACCBA-B981-440D-9C98-2A235E1E861A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{50E33DA2-AF14-486D-81B8-BD8409744A38}.Coverage|Any CPU.ActiveCfg = Debug|Any CPU
 		{50E33DA2-AF14-486D-81B8-BD8409744A38}.Coverage|Any CPU.Build.0 = Debug|Any CPU
 		{50E33DA2-AF14-486D-81B8-BD8409744A38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU

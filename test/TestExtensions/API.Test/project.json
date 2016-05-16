@@ -1,12 +1,11 @@
 {
-  "dependencies": {
-  },
+  "dependencies": {},
   "frameworks": {
-    "net452": { }
+    "net46": { }
   },
   "runtimes": {
     "win-anycpu": {},
-    "win": { },
-    "win-x86": { }
+    "win": {},
+    "win-x86": {}
   }
 }

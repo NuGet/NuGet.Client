@@ -1,10 +1,9 @@
 ﻿{
   "dependencies": {
-    "Microsoft.VisualStudio.Shell.14.0": "14.0.23107",
     "Microsoft.VisualStudio.OLE.Interop": "7.10.6070"
   },
   "frameworks": {
-    "net45": {}
+    "net46": {}
   },
   "runtimes": {
     "win-anycpu": {},
