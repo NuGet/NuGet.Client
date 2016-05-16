@@ -14,7 +14,8 @@
       "CS1591",
       "CS1574",
       "CS1573"
-    ]
+    ],
+    "languageVersion": "csharp5"
   },
   "compile": [
     "../NuGet.Shared/*.cs"

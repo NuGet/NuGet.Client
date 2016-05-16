@@ -6,7 +6,12 @@ using System.Globalization;
 
 namespace NuGet.Frameworks
 {
-    public class OneWayCompatibilityMappingEntry : IEquatable<OneWayCompatibilityMappingEntry>
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    class OneWayCompatibilityMappingEntry : IEquatable<OneWayCompatibilityMappingEntry>
     {
         private readonly FrameworkRange _targetFramework;
         private readonly FrameworkRange _supportedFramework;

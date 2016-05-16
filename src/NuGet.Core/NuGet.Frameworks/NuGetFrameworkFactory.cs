@@ -9,7 +9,12 @@ using System.Linq;
 
 namespace NuGet.Frameworks
 {
-    public partial class NuGetFramework
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    partial class NuGetFramework
     {
         /// <summary>
         /// An unknown or invalid framework
@@ -41,12 +46,12 @@ namespace NuGet.Frameworks
         {
             if (folderName == null)
             {
-                throw new ArgumentNullException(nameof(folderName));
+                throw new ArgumentNullException("folderName");
             }
 
             if (mappings == null)
             {
-                throw new ArgumentNullException(nameof(mappings));
+                throw new ArgumentNullException("mappings");
             }
 
             Debug.Assert(folderName.IndexOf(";") < 0, "invalid folder name, this appears to contain multiple frameworks");
@@ -72,12 +77,12 @@ namespace NuGet.Frameworks
         {
             if (frameworkName == null)
             {
-                throw new ArgumentNullException(nameof(frameworkName));
+                throw new ArgumentNullException("frameworkName");
             }
 
             if (mappings == null)
             {
-                throw new ArgumentNullException(nameof(mappings));
+                throw new ArgumentNullException("mappings");
             }
 
             var parts = frameworkName.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray();
@@ -152,12 +157,12 @@ namespace NuGet.Frameworks
         {
             if (folderName == null)
             {
-                throw new ArgumentNullException(nameof(folderName));
+                throw new ArgumentNullException("folderName");
             }
 
             if (mappings == null)
             {
-                throw new ArgumentNullException(nameof(mappings));
+                throw new ArgumentNullException("mappings");
             }
 
             if (folderName.IndexOf('%') > -1)

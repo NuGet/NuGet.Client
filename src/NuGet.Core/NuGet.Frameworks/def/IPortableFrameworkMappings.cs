@@ -5,7 +5,12 @@ using System.Collections.Generic;
 
 namespace NuGet.Frameworks
 {
-    public interface IPortableFrameworkMappings
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    interface IPortableFrameworkMappings
     {
         /// <summary>
         /// Ex: 5 -> net4, win8

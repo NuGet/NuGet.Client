@@ -11,12 +11,22 @@ using FallbackList = System.Collections.Generic.IReadOnlyList<NuGet.Frameworks.N
 
 namespace NuGet.Frameworks
 {
-    public class FallbackFramework : NuGetFramework, IEquatable<FallbackFramework>
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    class FallbackFramework : NuGetFramework, IEquatable<FallbackFramework>
     {
         /// <summary>
         /// List framework to fall back to.
         /// </summary>
-        public FallbackList Fallback { get; }
+        public FallbackList Fallback
+        {
+            get { return _fallback; }
+        }
+
+        private readonly FallbackList _fallback;
         private int? _hashCode;
 
         public FallbackFramework(NuGetFramework framework, FallbackList fallbackFrameworks)
@@ -24,20 +34,20 @@ namespace NuGet.Frameworks
         {
             if (framework == null)
             {
-                throw new ArgumentNullException(nameof(framework));
+                throw new ArgumentNullException("framework");
             }
 
             if (fallbackFrameworks == null)
             {
-                throw new ArgumentNullException(nameof(fallbackFrameworks));
+                throw new ArgumentNullException("fallbackFrameworks");
             }
 
             if (fallbackFrameworks.Count == 0)
             {
-                throw new ArgumentException("Empty fallbackFrameworks is invalid", nameof(fallbackFrameworks));
+                throw new ArgumentException("Empty fallbackFrameworks is invalid", "fallbackFrameworks");
             }
 
-            Fallback = fallbackFrameworks;
+            _fallback = fallbackFrameworks;
         }
 
         public override bool Equals(object obj)

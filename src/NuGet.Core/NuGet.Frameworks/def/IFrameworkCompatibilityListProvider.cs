@@ -5,7 +5,12 @@ using System.Collections.Generic;
 
 namespace NuGet.Frameworks
 {
-    public interface IFrameworkCompatibilityListProvider
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    interface IFrameworkCompatibilityListProvider
     {
         /// <summary>
         /// Get a list of frameworks supporting the provided framework. This list

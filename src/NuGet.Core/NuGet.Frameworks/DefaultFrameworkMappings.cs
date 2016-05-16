@@ -7,7 +7,12 @@ using System.Linq;
 
 namespace NuGet.Frameworks
 {
-    public sealed class DefaultFrameworkMappings : IFrameworkMappings
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    sealed class DefaultFrameworkMappings : IFrameworkMappings
     {
         private static KeyValuePair<string, string>[] _identifierSynonyms;
 

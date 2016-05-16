@@ -9,7 +9,12 @@ namespace NuGet.Frameworks
     /// <summary>
     /// FrameworkExpander finds all equivalent and compatible frameworks for a NuGetFramework
     /// </summary>
-    public class FrameworkExpander
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    class FrameworkExpander
     {
         private readonly IFrameworkNameProvider _mappings;
 

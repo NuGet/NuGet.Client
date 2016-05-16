@@ -8,7 +8,12 @@ using System.Linq;
 
 namespace NuGet.Frameworks
 {
-    public class FrameworkNameProvider : IFrameworkNameProvider
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    class FrameworkNameProvider : IFrameworkNameProvider
     {
         /// <summary>
         /// Contains identifier -> identifier
@@ -237,7 +242,7 @@ namespace NuGet.Frameworks
         {
             if (supportedFrameworks == null)
             {
-                throw new ArgumentNullException(nameof(supportedFrameworks));
+                throw new ArgumentNullException("supportedFrameworks");
             }
 
             profileNumber = -1;
@@ -435,7 +440,7 @@ namespace NuGet.Frameworks
         {
             if (shortPortableProfiles == null)
             {
-                throw new ArgumentNullException(nameof(shortPortableProfiles));
+                throw new ArgumentNullException("shortPortableProfiles");
             }
 
             var shortNames = shortPortableProfiles.Split(new char[] { '+' }, StringSplitOptions.RemoveEmptyEntries);
@@ -548,7 +553,7 @@ namespace NuGet.Frameworks
         {
             if (range == null)
             {
-                throw new ArgumentNullException(nameof(range));
+                throw new ArgumentNullException("range");
             }
 
             var relevant = new HashSet<NuGetFramework>();

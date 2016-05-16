@@ -1,18 +1,39 @@
 ﻿using System;
+using System.Globalization;
 
 namespace NuGet.Frameworks
 {
-    public class FrameworkRuntimePair : IEquatable<FrameworkRuntimePair>, IComparable<FrameworkRuntimePair>
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    class FrameworkRuntimePair : IEquatable<FrameworkRuntimePair>, IComparable<FrameworkRuntimePair>
     {
-        public NuGetFramework Framework { get; }
-        public string RuntimeIdentifier { get; }
-        public string Name { get; }
+        public NuGetFramework Framework
+        {
+            get { return _framework; }
+        }
+
+        public string RuntimeIdentifier
+        {
+            get { return _runtimeIdentifier; }
+        }
+
+        public string Name
+        {
+            get { return _name; }
+        }
+
+        private readonly NuGetFramework _framework;
+        private readonly string _runtimeIdentifier;
+        private readonly string _name;
 
         public FrameworkRuntimePair(NuGetFramework framework, string runtimeIdentifier)
         {
-            Framework = framework;
-            RuntimeIdentifier = runtimeIdentifier ?? string.Empty;
-            Name = GetName(framework, runtimeIdentifier);
+            _framework = framework;
+            _runtimeIdentifier = runtimeIdentifier ?? string.Empty;
+            _name = GetName(framework, runtimeIdentifier);
         }
 
         public bool Equals(FrameworkRuntimePair other)
@@ -34,7 +55,11 @@ namespace NuGet.Frameworks
 
         public override string ToString()
         {
-            return $"{Framework.GetShortFolderName()}~{RuntimeIdentifier}";
+            return string.Format(
+                CultureInfo.CurrentCulture,
+                "{0}~{1}",
+                Framework.GetShortFolderName(),
+                RuntimeIdentifier);
         }
 
         public int CompareTo(FrameworkRuntimePair other)
@@ -55,7 +80,11 @@ namespace NuGet.Frameworks
             }
             else
             {
-                return $"{framework} ({runtimeIdentifier})";
+                return string.Format(
+                    CultureInfo.CurrentCulture,
+                    "{0} ({1})",
+                    framework,
+                    runtimeIdentifier);
             }
         }
     }

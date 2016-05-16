@@ -9,7 +9,12 @@ using HashCombiner = NuGet.Frameworks.HashCodeCombiner;
 
 namespace NuGet.Frameworks
 {
-    public class CompatibilityProvider : IFrameworkCompatibilityProvider
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    class CompatibilityProvider : IFrameworkCompatibilityProvider
     {
         private readonly IFrameworkNameProvider _mappings;
         private readonly FrameworkExpander _expander;
@@ -33,12 +38,12 @@ namespace NuGet.Frameworks
         {
             if (target == null)
             {
-                throw new ArgumentNullException(nameof(target));
+                throw new ArgumentNullException("target");
             }
 
             if (candidate == null)
             {
-                throw new ArgumentNullException(nameof(candidate));
+                throw new ArgumentNullException("candidate");
             }
 
             // check the cache for a solution

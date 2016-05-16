@@ -11,7 +11,12 @@ namespace NuGet.Frameworks
     /// mirrored so that the IFrameworkMappings implementation only needs to provide the minimum amount of
     /// mappings.
     /// </summary>
-    public interface IFrameworkMappings
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    interface IFrameworkMappings
     {
         /// <summary>
         /// Synonym &#8210;&gt; Identifier

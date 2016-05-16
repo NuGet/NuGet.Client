@@ -22,8 +22,8 @@ namespace NuGet.Shared
         /// <param name="sequenceComparer">An optional comparer for sequences</param>
         internal static bool OrderedEquals<TSource, TKey>(this IEnumerable<TSource> self, IEnumerable<TSource> other, Func<TSource, TKey> keySelector, IComparer<TKey> orderComparer = null, IEqualityComparer<TSource> sequenceComparer = null)
         {
-            Debug.Assert(orderComparer != null || typeof(TKey) != typeof(string), "Argument " + nameof(orderComparer) + " must be provided if " + nameof(TKey) + " is a string.");
-            Debug.Assert(sequenceComparer != null || typeof(TSource) != typeof(string), "Argument " + nameof(sequenceComparer) + " must be provided if " + nameof(TSource) + " is a string.");
+            Debug.Assert(orderComparer != null || typeof(TKey) != typeof(string), "Argument " + "orderComparer" + " must be provided if " + "TKey" + " is a string.");
+            Debug.Assert(sequenceComparer != null || typeof(TSource) != typeof(string), "Argument " + "sequenceComparer" + " must be provided if " + "TSource" + " is a string.");
 
             if (ReferenceEquals(self, other))
             {

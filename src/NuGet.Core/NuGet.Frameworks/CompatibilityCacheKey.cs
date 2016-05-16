@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 namespace NuGet.Frameworks
 {
@@ -7,25 +8,34 @@ namespace NuGet.Frameworks
     /// </summary>
     internal class CompatibilityCacheKey : IEquatable<CompatibilityCacheKey>
     {
-        public NuGetFramework Target { get; }
-        public NuGetFramework Candidate { get; }
+        public NuGetFramework Target
+        {
+            get { return _target; }
+        }
 
+        public NuGetFramework Candidate
+        {
+            get { return _candidate; }
+        }
+
+        private readonly NuGetFramework _target;
+        private readonly NuGetFramework _candidate;
         private readonly int _hashCode;
 
         public CompatibilityCacheKey(NuGetFramework target, NuGetFramework candidate)
         {
             if (target == null)
             {
-                throw new ArgumentNullException(nameof(target));
+                throw new ArgumentNullException("target");
             }
 
             if (candidate == null)
             {
-                throw new ArgumentNullException(nameof(candidate));
+                throw new ArgumentNullException("candidate");
             }
 
-            Target = target;
-            Candidate = candidate;
+            _target = target;
+            _candidate = candidate;
 
             // This is designed to be cached, just get the hash up front
             var combiner = new HashCodeCombiner();
@@ -62,7 +72,11 @@ namespace NuGet.Frameworks
 
         public override string ToString()
         {
-            return $"{Target.DotNetFrameworkName} -> {Candidate.DotNetFrameworkName}";
+            return string.Format(
+                CultureInfo.CurrentCulture,
+                "{0} -> {1}",
+                Target.DotNetFrameworkName,
+                Candidate.DotNetFrameworkName);
         }
     }
 }

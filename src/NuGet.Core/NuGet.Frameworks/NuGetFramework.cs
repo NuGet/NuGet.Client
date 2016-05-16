@@ -12,7 +12,12 @@ namespace NuGet.Frameworks
     /// <summary>
     /// A portable implementation of the .NET FrameworkName type with added support for NuGet folder names.
     /// </summary>
-    public partial class NuGetFramework : IEquatable<NuGetFramework>
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    partial class NuGetFramework : IEquatable<NuGetFramework>
     {
         private readonly string _frameworkIdentifier;
         private readonly Version _frameworkVersion;
@@ -39,12 +44,12 @@ namespace NuGet.Frameworks
         {
             if (frameworkIdentifier == null)
             {
-                throw new ArgumentNullException(nameof(frameworkIdentifier));
+                throw new ArgumentNullException("frameworkIdentifier");
             }
 
             if (frameworkVersion == null)
             {
-                throw new ArgumentNullException(nameof(frameworkVersion));
+                throw new ArgumentNullException("frameworkVersion");
             }
 
             _frameworkIdentifier = frameworkIdentifier;

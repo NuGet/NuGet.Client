@@ -3,6 +3,9 @@
   "copyright": "Copyright .NET Foundation. All rights reserved.",
   "projectUrl": "https://github.com/NuGet/NuGet.Client",
   "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
+  "compilationOptions": {
+    "languageVersion": "csharp5"
+  },
   "shared": "*.cs",
   "frameworks": {
     "net45": {
