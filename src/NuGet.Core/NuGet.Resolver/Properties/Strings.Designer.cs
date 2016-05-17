@@ -57,6 +57,15 @@ namespace NuGet.Resolver
         {
             return GetString("FatalError");
         }
+		
+		/// <summary>
+        ///    Looks up a localized string similar to One or more unresolved package dependency constraints detected in the existing packages.config file. All dependency constraints must be resolved to add or update packages. If these packages are being updated this message may be ignored, if not the following error(s) may be blocking the current package operation: {0}.
+        /// </summary>
+        internal static string InvalidPackageConfig {
+            get {
+                return GetString("InvalidPackageConfig");
+            }
+        }
 
         /// <summary>
         /// Unable to find package '{0}'. Existing packages must be restored before performing an install or update.

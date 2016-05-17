@@ -31,6 +31,9 @@ namespace NuGet.Resolver
             // remove empty and absent packages, absent packages cannot have error messages
             solution = solution.Where(package => package != null && !package.Absent);
 
+            // maintain visited packages set to avoid processing same package again
+            var visitedPackages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
             var allPackageIds = new HashSet<string>(solution.Select(package => package.Id), StringComparer.OrdinalIgnoreCase);
             var newPackageIdSet = new HashSet<string>(newPackageIds, StringComparer.OrdinalIgnoreCase);
             var installedPackageIds = new HashSet<string>(packagesConfig.Select(package => package.PackageIdentity.Id), StringComparer.OrdinalIgnoreCase);
@@ -56,11 +59,11 @@ namespace NuGet.Resolver
                 }
             }
 
-            // 2. find cases where the target package is missing dependencies
+            // 2. find cases where the target package or it's dependencies don't satisfy version constraint with available packages
             foreach (var targetPackage in solution.Where(package => newPackageIdSet.Contains(package.Id))
                 .OrderBy(package => package.Id, StringComparer.OrdinalIgnoreCase))
             {
-                var brokenDependency = GetBrokenDependencies(targetPackage, solution)
+                var brokenDependency = GetBrokenDependenciesWithInstalledPackages(targetPackage, solution, availablePackages, visitedPackages)
                     .OrderBy(package => package.Id, StringComparer.OrdinalIgnoreCase)
                     .FirstOrDefault();
 
@@ -111,9 +114,11 @@ namespace NuGet.Resolver
             IEnumerable<PackageSource> packageSources)
         {
             var message = new StringBuilder();
+            var problemPackage = solution.Where(package => StringComparer.OrdinalIgnoreCase.Equals(package.Id, problemPackageId)).FirstOrDefault();
 
             // List the package that has an issue, and all packages dependant on the package.
-            var dependantPackages = solution.Where(package => package.FindDependencyRange(problemPackageId) != null)
+            var dependantPackages = solution.Where(package => package.FindDependencyRange(problemPackageId) != null && 
+                !IsDependencySatisfied(package.Dependencies.FirstOrDefault(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, problemPackageId)), problemPackage))
                 .Select(package => FormatDependencyConstraint(package, problemPackageId))
                 .OrderBy(s => s, StringComparer.OrdinalIgnoreCase);
 
@@ -188,6 +193,50 @@ namespace NuGet.Resolver
             return $"'{package.Id} {package.Version.ToNormalizedString()} {Strings.DependencyConstraint}: {dependencyString}'";
         }
 
+        /// <summary>
+        /// This will try and get broken dependencies for target or it's dependencies WRT installed packages as well as all available packages to install
+        /// </summary>
+        /// <param name="package">target package</param>
+        /// <param name="solution">last best known solution</param>
+        /// <param name="availablePackages">all available packages from all sources</param>
+        /// <returns>list of broken dependencies</returns>
+        private static IEnumerable<PackageDependency> GetBrokenDependenciesWithInstalledPackages(ResolverPackage package, IEnumerable<ResolverPackage> solution, IEnumerable<PackageDependencyInfo> availablePackages, HashSet<string> visitedPackages)
+        {
+            if(visitedPackages.Contains(package.Id))
+            {
+                yield break;
+            }
+
+            // BFS traversal of graph
+            var queue = new Queue<ResolverPackage>();
+            queue.Enqueue(package);
+
+            while (queue.Count > 0)
+            {
+                var node = queue.Dequeue();
+                foreach (var dependency in node.Dependencies)
+                {
+                    var target = solution.FirstOrDefault(targetPackage => StringComparer.OrdinalIgnoreCase.Equals(targetPackage.Id, dependency.Id));
+
+                    // true, if solution doesn't contain this dependency or
+                    // if neither solution package satisfy this dependency version nor available packages had any package which could satisfy this dependency.
+                    // This is required because our solution might not have selected the right version of this dependent package.
+                    if (target == null || (!IsDependencySatisfied(dependency, target) &&
+                        !availablePackages.Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, dependency.Id)).Any(p => IsDependencySatisfied(dependency, p))))
+                    {
+                        yield return dependency;
+                    }
+
+                    if (target != null && visitedPackages.Add(dependency.Id))
+                    {
+                        queue.Enqueue(target);
+                    }
+                }
+            }
+
+            yield break;
+        }
+
         private static IEnumerable<PackageDependency> GetBrokenDependencies(ResolverPackage package, IEnumerable<ResolverPackage> packages)
         {
             foreach (var dependency in package.Dependencies)
@@ -207,6 +256,11 @@ namespace NuGet.Resolver
         {
             return package != null && !package.Absent
                 && (dependency.VersionRange == null || dependency.VersionRange.Satisfies(package.Version));
+        }
+
+        public static bool IsDependencySatisfied(PackageDependency dependency, PackageIdentity package)
+        {
+            return package != null && (dependency.VersionRange == null || dependency.VersionRange.Satisfies(package.Version));
         }
 
         private static IEnumerable<ResolverPackage> GetPackagesWithBrokenDependenciesOnId(string targetId, IEnumerable<ResolverPackage> packages)
