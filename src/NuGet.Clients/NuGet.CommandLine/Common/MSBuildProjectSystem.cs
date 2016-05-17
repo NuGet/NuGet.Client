@@ -126,13 +126,15 @@ namespace NuGet.Common
         {
             string fullPath = NuGet.PathUtility.GetAbsolutePath(_projectDirectory, referencePath);
             string relativePath = NuGet.PathUtility.GetRelativePath(Project.FullPath, fullPath);
-            // REVIEW: Do we need to use the fully qualified the assembly name for strong named assemblies?
-            string include = Path.GetFileNameWithoutExtension(fullPath);
+
+            // using full qualified assembly name for strong named assemblies
+            var assemblyName = AssemblyName.GetAssemblyName(fullPath);
 
             Project.AddItem(
                 "Reference",
-                include,
-                new[] { new KeyValuePair<string, string>("HintPath", relativePath) });
+                assemblyName.FullName,
+                new[] { new KeyValuePair<string, string>("HintPath", relativePath),
+                        new KeyValuePair<string, string>("Private", "True")});
         }
 
         public void BeginProcessing()
