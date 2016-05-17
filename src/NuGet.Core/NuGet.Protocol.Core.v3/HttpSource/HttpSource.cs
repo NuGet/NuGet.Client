@@ -26,6 +26,7 @@ namespace NuGet.Protocol
     public class HttpSource : IDisposable
     {
         public static readonly TimeSpan DefaultDownloadTimeout = TimeSpan.FromSeconds(60);
+        public static readonly TimeSpan DefaultRequestTimeout = TimeSpan.FromSeconds(100);
         private const int BufferSize = 8192;
         private readonly Func<Task<HttpHandlerResource>> _messageHandlerFactory;
         private readonly Uri _baseUri;
@@ -46,7 +47,7 @@ namespace NuGet.Protocol
         /// <summary>The timeout to apply to <see cref="DownloadTimeoutStream"/> instances.</summary>
         /// <summary>This API is intended only for testing purposes and should not be used in product code.</summary>
         public TimeSpan DownloadTimeout { get; set; } = DefaultDownloadTimeout;
-
+        
         /// <summary>The retry handler to use for all HTTP requests.</summary>
         /// <summary>This API is intended only for testing purposes and should not be used in product code.</summary>
         public IHttpRetryHandler RetryHandler { get; set; } = new HttpRetryHandler();
@@ -153,6 +154,7 @@ namespace NuGet.Protocol
                     // Read the response headers before reading the entire stream to avoid timeouts from large packages.
                     Func<Task<HttpResponseMessage>> httpRequest = () => SendWithCredentialSupportAsync(
                             requestFactory,
+                            DefaultRequestTimeout,
                             log,
                             token);
 
@@ -206,8 +208,24 @@ namespace NuGet.Protocol
             ILogger log,
             CancellationToken token)
         {
+            return await ProcessResponseAsync<T>(
+                requestFactory,
+                DefaultRequestTimeout,
+                processAsync,
+                log,
+                token);
+        }
+
+        public async Task<T> ProcessResponseAsync<T>(
+            Func<HttpRequestMessage> requestFactory,
+            TimeSpan requestTimeout,
+            Func<HttpResponseMessage, Task<T>> processAsync,
+            ILogger log,
+            CancellationToken token)
+        {
             Func<Task<HttpResponseMessage>> request = () => SendWithCredentialSupportAsync(
                     requestFactory,
+                    requestTimeout,
                     log,
                     token);
 
@@ -247,6 +265,7 @@ namespace NuGet.Protocol
         {
             Func<Task<HttpResponseMessage>> request = () => SendWithCredentialSupportAsync(
                 () => new HttpRequestMessage(HttpMethod.Get, uri),
+                DefaultRequestTimeout,
                 log,
                 token);
 
@@ -296,6 +315,7 @@ namespace NuGet.Protocol
 
         private async Task<HttpResponseMessage> SendWithCredentialSupportAsync(
             Func<HttpRequestMessage> requestFactory,
+            TimeSpan requestTimeout,
             ILogger log,
             CancellationToken cancellationToken)
         {
@@ -323,9 +343,15 @@ namespace NuGet.Protocol
             // Update the request for STS
             Func<HttpRequestMessage> requestWithStsFactory = () =>
             {
-                var request = requestFactory();
-                STSAuthHelper.PrepareSTSRequest(_baseUri, CredentialStore.Instance, request);
-                return request;
+                var requestMessage = requestFactory();
+                STSAuthHelper.PrepareSTSRequest(_baseUri, CredentialStore.Instance, requestMessage);
+                return requestMessage;
+            };
+
+            // Build the retriable request.
+            var request = new HttpRetryHandlerRequest(_httpClient, requestWithStsFactory)
+            {
+                RequestTimeout = requestTimeout
             };
 
             // Authorizing may take multiple attempts
@@ -341,12 +367,7 @@ namespace NuGet.Protocol
                 var beforeLockId = _lastAuthId;
 
                 // Read the response headers before reading the entire stream to avoid timeouts from large packages.
-                response = await RetryHandler.SendAsync(
-                    _httpClient,
-                    requestWithStsFactory,
-                    HttpCompletionOption.ResponseHeadersRead,
-                    log,
-                    cancellationToken);
+                response = await RetryHandler.SendAsync(request, log, cancellationToken);
 
                 if (response.StatusCode == HttpStatusCode.Unauthorized ||
                     response.StatusCode == HttpStatusCode.Forbidden)

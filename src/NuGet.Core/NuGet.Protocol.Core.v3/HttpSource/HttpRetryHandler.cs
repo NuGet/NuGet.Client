@@ -12,31 +12,12 @@ using NuGet.Protocol.Core.v3;
 
 namespace NuGet.Protocol
 {
+    /// <summary>
+    /// The <see cref="HttpRetryHandler"/> is for retrying and HTTP request if it times out, has any exception,
+    /// or returns a status code of 500 or greater.
+    /// </summary>
     public class HttpRetryHandler : IHttpRetryHandler
     {
-        /// <summary>
-        /// The <see cref="HttpRetryHandler"/> is for retrying and HTTP request if it times out, has any exception,
-        /// or returns a status code of 500 or greater.
-        /// </summary>
-        public HttpRetryHandler()
-        {
-            MaxTries = 3;
-            RequestTimeout = TimeSpan.FromSeconds(100);
-            RetryDelay = TimeSpan.FromMilliseconds(200);
-        }
-
-        /// <summary>The maximum number of times to try the request. This value includes the initial attempt.</summary>
-        /// <remarks>This API is intended only for testing purposes and should not be used in product code.</remarks>
-        public int MaxTries { get; set; }
-
-        /// <summary>How long to wait on the request to come back with a response.</summary>
-        /// <summary>This API is intended only for testing purposes and should not be used in product code.</summary>
-        public TimeSpan RequestTimeout { get; set; }
-
-        /// <summary>How long to wait before trying again after a failed request.</summary>
-        /// <summary>This API is intended only for testing purposes and should not be used in product code.</summary>
-        public TimeSpan RetryDelay { get; set; }
-
         /// <summary>
         /// Make an HTTP request while retrying after failed attempts or timeouts.
         /// </summary>
@@ -46,9 +27,7 @@ namespace NuGet.Protocol
         /// of a stream that can only be consumed once.
         /// </remarks>
         public async Task<HttpResponseMessage> SendAsync(
-            HttpClient client,
-            Func<HttpRequestMessage> requestFactory,
-            HttpCompletionOption completionOption,
+            HttpRetryHandlerRequest request,
             ILogger log,
             CancellationToken cancellationToken)
         {
@@ -56,20 +35,20 @@ namespace NuGet.Protocol
             HttpResponseMessage response = null;
             var success = false;
 
-            while (tries < MaxTries && !success)
+            while (tries < request.MaxTries && !success)
             {
                 if (tries > 0)
                 {
-                    await Task.Delay(RetryDelay, cancellationToken);
+                    await Task.Delay(request.RetryDelay, cancellationToken);
                 }
 
                 tries++;
                 success = true;
 
-                using (var request = requestFactory())
+                using (var requestMessage = request.RequestFactory())
                 {
                     var stopwatch = Stopwatch.StartNew();
-                    string requestUri = request.RequestUri.ToString();
+                    string requestUri = requestMessage.RequestUri.ToString();
                     
                     try
                     {
@@ -91,19 +70,19 @@ namespace NuGet.Protocol
                         var timeoutMessage = string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.Http_Timeout,
-                            request.Method,
+                            requestMessage.Method,
                             requestUri,
-                            (int)RequestTimeout.TotalMilliseconds);
+                            (int)request.RequestTimeout.TotalMilliseconds);
 
                         log.LogInformation("  " + string.Format(
                             CultureInfo.InvariantCulture,
                             Strings.Http_RequestLog,
-                            request.Method,
+                            requestMessage.Method,
                             requestUri));
 
                         response = await TimeoutUtility.StartWithTimeout(
-                            timeoutToken => client.SendAsync(request, completionOption, timeoutToken),
-                            RequestTimeout,
+                            timeoutToken => request.HttpClient.SendAsync(requestMessage, request.CompletionOption, timeoutToken),
+                            request.RequestTimeout,
                             timeoutMessage,
                             cancellationToken);
 
@@ -123,7 +102,7 @@ namespace NuGet.Protocol
                     {
                         success = false;
 
-                        if (tries >= MaxTries)
+                        if (tries >= request.MaxTries)
                         {
                             throw;
                         }
@@ -131,9 +110,9 @@ namespace NuGet.Protocol
                         log.LogInformation(string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.Log_RetryingHttp,
-                            request.Method,
+                            requestMessage.Method,
                             requestUri,
-                            request)
+                            requestMessage)
                             + Environment.NewLine
                             + ExceptionUtilities.DisplayMessage(e));
                     }

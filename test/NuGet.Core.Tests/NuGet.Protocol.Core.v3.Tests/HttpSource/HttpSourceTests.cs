@@ -150,7 +150,71 @@ namespace NuGet.Protocol.Core.v3.Tests
                 Assert.Equal(expected, actual);
             }
         }
-        
+
+        [Fact]
+        public async Task HttpSource_HasDefaultResponseTimeout()
+        {
+            // Arrange
+            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var tc = new TestContext(td);
+                HttpRetryHandlerRequest actualRequest = null;
+                tc.SetResponseFactory(request =>
+                {
+                    actualRequest = request;
+                    var response = new HttpResponseMessage(HttpStatusCode.OK);
+                    return Task.FromResult(response);
+                });
+
+                // Act
+                await tc.HttpSource.ProcessResponseAsync(
+                    () => new HttpRequestMessage(HttpMethod.Get, tc.Url),
+                    response =>
+                    {
+                        return Task.FromResult(0);
+                    },
+                    tc.Logger,
+                    CancellationToken.None);
+
+                // Assert
+                Assert.NotNull(actualRequest);
+                Assert.Equal(TimeSpan.FromSeconds(100), actualRequest.RequestTimeout);
+            }
+        }
+
+        [Fact]
+        public async Task HttpSource_AllowsCustomResponseTimeout()
+        {
+            // Arrange
+            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var tc = new TestContext(td);
+                HttpRetryHandlerRequest actualRequest = null;
+                tc.SetResponseFactory(request =>
+                {
+                    actualRequest = request;
+                    var response = new HttpResponseMessage(HttpStatusCode.OK);
+                    return Task.FromResult(response);
+                });
+                var timeout = TimeSpan.FromMinutes(5);
+
+                // Act
+                await tc.HttpSource.ProcessResponseAsync(
+                    () => new HttpRequestMessage(HttpMethod.Get, tc.Url),
+                    timeout,
+                    response =>
+                    {
+                        return Task.FromResult(0);
+                    },
+                    tc.Logger,
+                    CancellationToken.None);
+
+                // Assert
+                Assert.NotNull(actualRequest);
+                Assert.Equal(timeout, actualRequest.RequestTimeout);
+            }
+        }
+
         [Fact]
         public async Task HttpSource_TimesOutDownload()
         {
@@ -377,12 +441,21 @@ namespace NuGet.Protocol.Core.v3.Tests
                 int index = 0;
                 RetryHandlerMock
                     .Setup(x => x.SendAsync(
-                        It.IsAny<HttpClient>(),
-                        It.IsAny<Func<HttpRequestMessage>>(),
-                        It.IsAny<HttpCompletionOption>(),
+                        It.IsAny<HttpRetryHandlerRequest>(),
                         It.IsAny<ILogger>(),
                         It.IsAny<CancellationToken>()))
                     .Returns(() => Task.FromResult(responses[index++ % responses.Length]));
+            }
+
+            public void SetResponseFactory(Func<HttpRetryHandlerRequest, Task<HttpResponseMessage>> responseFactory)
+            {
+                HttpSource.RetryHandler = RetryHandlerMock.Object;
+                RetryHandlerMock
+                    .Setup(x => x.SendAsync(
+                        It.IsAny<HttpRetryHandlerRequest>(),
+                        It.IsAny<ILogger>(),
+                        It.IsAny<CancellationToken>()))
+                    .Returns<HttpRetryHandlerRequest, ILogger, CancellationToken>((r, _, __) => responseFactory(r));
             }
 
             public Action<Stream> GetStreamValidator(bool validCache, bool validNetwork)

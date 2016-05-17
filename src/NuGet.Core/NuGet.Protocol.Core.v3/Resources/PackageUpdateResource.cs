@@ -54,19 +54,17 @@ namespace NuGet.Protocol.Core.Types
 
             using (var tokenSource = new CancellationTokenSource())
             {
-                if (timeoutInSecond > 0)
-                {
-                    tokenSource.CancelAfter(TimeSpan.FromSeconds(timeoutInSecond));
-                }
+                var requestTimeout = TimeSpan.FromSeconds(timeoutInSecond);
+                tokenSource.CancelAfter(requestTimeout);
 
                 var apiKey = getApiKey(_source);
 
-                await PushPackage(packagePath, _source, apiKey, log, tokenSource.Token);
+                await PushPackage(packagePath, _source, apiKey, requestTimeout, log, tokenSource.Token);
 
                 if (!string.IsNullOrEmpty(symbolsSource) && !IsFileSource())
                 {
                     string symbolsApiKey = getApiKey(symbolsSource);
-                    await PushSymbols(packagePath, symbolsSource, symbolsApiKey, log, tokenSource.Token);
+                    await PushSymbols(packagePath, symbolsSource, symbolsApiKey, requestTimeout, log, tokenSource.Token);
                 }
             }
         }
@@ -109,6 +107,7 @@ namespace NuGet.Protocol.Core.Types
         private async Task PushSymbols(string packagePath,
             string source,
             string apiKey,
+            TimeSpan requestTimeout,
             ILogger log,
             CancellationToken token)
         {
@@ -127,7 +126,7 @@ namespace NuGet.Protocol.Core.Types
                         Strings.DefaultSymbolServer));
                 }
 
-                await PushPackage(symbolPackagePath, source, apiKey, log, token);
+                await PushPackage(symbolPackagePath, source, apiKey, requestTimeout, log, token);
             }
         }
 
@@ -144,6 +143,7 @@ namespace NuGet.Protocol.Core.Types
         private async Task PushPackage(string packagePath,
             string source,
             string apiKey,
+            TimeSpan requestTimeout,
             ILogger log,
             CancellationToken token)
         {
@@ -160,13 +160,14 @@ namespace NuGet.Protocol.Core.Types
 
             foreach (string packageToPush in packagesToPush)
             {
-                await PushPackageCore(source, apiKey, packageToPush, log, token);
+                await PushPackageCore(source, apiKey, packageToPush, requestTimeout, log, token);
             }
         }
 
         private async Task PushPackageCore(string source,
             string apiKey,
             string packageToPush,
+            TimeSpan requestTimeout,
             ILogger log,
             CancellationToken token)
         {
@@ -185,7 +186,7 @@ namespace NuGet.Protocol.Core.Types
             else
             {
                 var length = new FileInfo(packageToPush).Length;
-                await PushPackageToServer(source, apiKey, packageToPush, length, log, token);
+                await PushPackageToServer(source, apiKey, packageToPush, length, requestTimeout, log, token);
             }
 
             log.LogInformation(Strings.PushCommandPackagePushed);
@@ -257,11 +258,13 @@ namespace NuGet.Protocol.Core.Types
             string apiKey,
             string pathToPackage,
             long packageSize,
+            TimeSpan requestTimeout,
             ILogger logger,
             CancellationToken token)
         {
             await _httpSource.ProcessResponseAsync(
                 () => CreateRequest(source, pathToPackage, apiKey),
+                requestTimeout,
                 response =>
                 {
                     response.EnsureSuccessStatusCode();

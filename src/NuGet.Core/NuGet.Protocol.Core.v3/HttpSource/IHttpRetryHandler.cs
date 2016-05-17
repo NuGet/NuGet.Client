@@ -9,9 +9,7 @@ namespace NuGet.Protocol
     public interface IHttpRetryHandler
     {
         Task<HttpResponseMessage> SendAsync(
-            HttpClient client,
-            Func<HttpRequestMessage> requestFactory,
-            HttpCompletionOption completionOption,
+            HttpRetryHandlerRequest request,
             ILogger log,
             CancellationToken cancellationToken);
     }
