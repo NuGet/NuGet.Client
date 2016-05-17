@@ -17,7 +17,7 @@ curl -o cli/install.sh https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/sc
 
 # Run install.sh
 chmod +x cli/install.sh
-cli/install.sh -i cli -c beta -v 1.0.0-rc2-002345
+cli/install.sh -i cli -c beta -v 1.0.0-preview1-002702
 
 # Display current version
 DOTNET="$(pwd)/cli/dotnet"
