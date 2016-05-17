@@ -917,7 +917,7 @@ namespace NuGet.Packaging.Test
             // Arrange
             using (TestDirectory root = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                DateTime time = DateTime.Parse("2084-09-26T01:23:00Z",
+                DateTime time = DateTime.Parse("2014-09-26T01:23:00Z",
                     System.Globalization.CultureInfo.InvariantCulture,
                     System.Globalization.DateTimeStyles.AdjustToUniversal);
 
@@ -950,6 +950,44 @@ namespace NuGet.Packaging.Test
                     // Assert
                     Assert.True(File.Exists(outputDll));
                     Assert.Equal(time, outputTime);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task PackageExtractor_IgnoresFutureZipEntryTime()
+        {
+            // Arrange
+            using (TestDirectory root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                DateTime testStartTime = DateTime.UtcNow;
+                DateTime time = DateTime.Parse("2084-09-26T01:23:00Z",
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.AdjustToUniversal);
+
+                FileInfo packageFileInfo = await TestPackages.GeneratePackageAsync(root, "A", "2.0.3", time.ToLocalTime(), "lib/net45/A.dll");
+
+                using (FileStream packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
+                    {
+                        PackageSaveMode = PackageSaveMode.Nuspec | PackageSaveMode.Files
+                    };
+
+                    // Act
+                    PackageExtractor.ExtractPackage(
+                        packageStream,
+                        new PackagePathResolver(root),
+                        packageExtractionContext,
+                        CancellationToken.None);
+
+                    string outputDll = Path.Combine(root, "A.2.0.3", "lib", "net45", "A.dll");
+                    DateTime outputTime = File.GetLastWriteTimeUtc(outputDll);
+                    DateTime testEndTime = DateTime.UtcNow;
+
+                    // Assert
+                    Assert.True(File.Exists(outputDll));
+                    Assert.InRange(outputTime, testStartTime, testEndTime);
                 }
             }
         }

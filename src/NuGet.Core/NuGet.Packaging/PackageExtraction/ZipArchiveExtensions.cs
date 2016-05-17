@@ -64,7 +64,10 @@ namespace NuGet.Packaging
         public static void UpdateFileTimeFromEntry(this ZipArchiveEntry entry, string fileFullPath, ILogger logger)
         {
             var attr = File.GetAttributes(fileFullPath);
-            if (!attr.HasFlag(FileAttributes.Directory) && entry.LastWriteTime.DateTime != DateTime.MinValue)
+
+            if (!attr.HasFlag(FileAttributes.Directory) &&
+                entry.LastWriteTime.DateTime != DateTime.MinValue && // Ignore invalid times
+                entry.LastWriteTime.UtcDateTime <= DateTime.UtcNow) // Ignore future times
             {
                 try
                 {
