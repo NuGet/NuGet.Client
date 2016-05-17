@@ -18,8 +18,10 @@ namespace NuGet.Common
     /// </summary>
 #if !IS_CORECLR
     [Serializable]
-#endif
+    public class ActivityCorrelationContext : MarshalByRefObject, IDisposable
+#else
     public class ActivityCorrelationContext : IDisposable
+#endif
     {
 #if IS_CORECLR
         private static readonly AsyncLocal<ActivityCorrelationContext> _instance = new AsyncLocal<ActivityCorrelationContext>();
