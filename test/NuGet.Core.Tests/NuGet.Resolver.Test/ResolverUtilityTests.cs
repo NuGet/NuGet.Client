@@ -314,6 +314,62 @@ namespace NuGet.Resolver.Test
             Assert.Equal("Unable to find a version of 'b' that is compatible with 'a 1.0.0 constraint: b (= 1.0.0)'. 'b' has an additional constraint (= 2.0.0) defined in packages.config.", message);
         }
 
+        public void ResolverUtility_GetDiagnosticMessageForIncompatibleDependencyWithAllowedVersion()
+        {
+            // Install a 1.0.0 - which requires d 1.0.0 but d 2.0.0 is already installed.
+
+            // Arrange
+            var solution = new List<ResolverPackage>();
+            solution.Add(CreatePackage("a", "1.0.0-1111", "b", "[1.0.0]"));
+            solution.Add(CreatePackage("b", "1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("c", VersionRange.Parse("[1.0.0]")),
+                new NuGet.Packaging.Core.PackageDependency("d", VersionRange.Parse("[1.0.0-1234]")),
+                new NuGet.Packaging.Core.PackageDependency("e", VersionRange.Parse("[1.0.0]"))));
+            solution.Add(CreatePackage("c", "2.0.0"));
+            solution.Add(CreatePackage("d", "2.0.0"));
+            solution.Add(CreatePackage("e", "1.0.0"));
+            solution.Add(CreatePackage("f", "1.0.0", "d", "[2.0.0]"));
+
+            var installed = new List<PackageReference>();
+            installed.Add(CreateInstalledPackage("d", "2.0.0"));
+
+            var available = solution.ToList();
+            available.Add(CreatePackage("c", "1.0.0"));
+
+            // Act
+            var message = ResolverUtility.GetDiagnosticMessage(solution, available, installed, new string[] { "a" }, Enumerable.Empty<PackageSource>());
+
+            // Assert
+            Assert.Equal("Unable to resolve dependencies. 'd 2.0.0' is not compatible with 'a 1.0.0 constraint: d (= 1.0.0)'.", message);
+        }
+
+        public void ResolverUtility_GetDiagnosticMessageForMissingTargetDependency()
+        {
+            // Install b 1.1.0 - which requires d 1.0.0 which is missing from any source.
+
+            // Arrange
+            var solution = new List<ResolverPackage>();
+            solution.Add(CreatePackage("b", "1.1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("c", VersionRange.Parse("[2.0.0]")),
+                new NuGet.Packaging.Core.PackageDependency("d", VersionRange.Parse("[1.0.0.0]")),
+                new NuGet.Packaging.Core.PackageDependency("e", VersionRange.Parse("[1.0.0]"))));
+            solution.Add(CreatePackage("c", "3.0.0"));
+            solution.Add(CreatePackage("e", "1.0.0"));
+
+            var installed = new List<PackageReference>();
+            installed.Add(CreateInstalledPackage("c", "1.0.0"));
+
+            var available = solution.ToList();
+            available.Add(CreatePackage("c", "1.0.0"));
+            available.Add(CreatePackage("c", "2.0.0"));
+
+            // Act
+            var message = ResolverUtility.GetDiagnosticMessage(solution, available, installed, new string[] { "b" }, Enumerable.Empty<PackageSource>());
+
+            // Assert
+            Assert.Equal("Unable to find a version of 'd' that is compatible with 'b 1.1.0 constraint: d (= 1.0.0)'.", message);
+        }
+
         [Fact]
         public void ResolverUtility_GetDiagnosticMessageForIncompatibleTargetInstalledNoAllowedVersion()
         {
