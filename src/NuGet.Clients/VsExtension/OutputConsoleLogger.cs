@@ -23,6 +23,18 @@ namespace NuGetVSExtension
 
         private const string LogEntrySource = "NuGet Package Manager";
 
+        private int _verbosityLevel;
+
+        private readonly DTE _dte;
+
+        private const string DTEProjectPage = "ProjectsAndSolution";
+
+        private const string DTEEnvironmentCategory = "Environment";
+
+        private const string MSBuildVerbosityKey = "MSBuildLoggerVerbosity";
+
+        private const int DefaultVerbosityLevel = 2;
+
         public IConsole OutputConsole { get; private set; }
 
         public ErrorListProvider ErrorListProvider { get; private set; }
@@ -32,10 +44,11 @@ namespace NuGetVSExtension
             ErrorListProvider = new ErrorListProvider(serviceProvider);
             var outputConsoleProvider = ServiceLocator.GetInstance<IOutputConsoleProvider>();
 
-            var dte = ServiceLocator.GetInstance<DTE>();
-            _buildEvents = dte.Events.BuildEvents;
+            _dte = ServiceLocator.GetInstance<DTE>();
+
+            _buildEvents = _dte.Events.BuildEvents;
             _buildEvents.OnBuildBegin += (obj, ev) => { ErrorListProvider.Tasks.Clear(); };
-            _solutionEvents = dte.Events.SolutionEvents;
+            _solutionEvents = _dte.Events.SolutionEvents;
             _solutionEvents.AfterClosing += () => { ErrorListProvider.Tasks.Clear(); };
 
             OutputConsole = outputConsoleProvider.CreateOutputConsole(requirePowerShellHost: false);
@@ -56,7 +69,8 @@ namespace NuGetVSExtension
         {
             if (level == MessageLevel.Info
                 || level == MessageLevel.Error
-                || level == MessageLevel.Warning)
+                || level == MessageLevel.Warning
+                || _verbosityLevel > DefaultVerbosityLevel)
             {
                 var s = string.Format(CultureInfo.CurrentCulture, message, args);
                 OutputConsole.WriteLine(s);
@@ -74,9 +88,22 @@ namespace NuGetVSExtension
             }
         }
 
+        private int GetMSBuildVerbosityLevel()
+        {
+            var properties = _dte.get_Properties(DTEEnvironmentCategory, DTEProjectPage);
+            var value = properties.Item(MSBuildVerbosityKey).Value;
+            if (value is int)
+            {
+                return (int)value;
+            }
+
+            return DefaultVerbosityLevel;
+        }
+
         public void Start()
         {
             ActivateOutputWindow();
+            _verbosityLevel = GetMSBuildVerbosityLevel();
             ErrorListProvider.Tasks.Clear();
             OutputConsole.Clear();
         }
