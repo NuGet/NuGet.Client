@@ -13,7 +13,7 @@
         "portable-net45+win8"
       ],
       "dependencies": {
-        "dotnet-test-xunit": "1.0.0-dev-140469-38",
+        "dotnet-test-xunit": "1.0.0-rc2-173361-36",
         "Microsoft.NETCore.App": {
           "type": "platform",
           "version": "1.0.0-rc2-3002339"

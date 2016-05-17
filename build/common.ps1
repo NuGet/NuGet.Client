@@ -152,7 +152,7 @@ Function Install-DotnetCLI {
 
     wget https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/install.ps1 -OutFile cli/install.ps1
 
-    & cli/install.ps1 -Channel beta -i $CLIRoot -Version 1.0.0-rc2-002345
+    & cli/install.ps1 -Channel beta -i $CLIRoot -Version 1.0.0-preview1-002702
 
     if (-not (Test-Path $DotNetExe)) {
         Error-Log "Unable to find dotnet.exe. The CLI install may have failed."
@@ -265,7 +265,7 @@ Function Restore-SolutionPackages{
 # Restore nuget.core.sln projects
 Function Restore-XProjects {
 
-    $opts = 'restore', "src\NuGet.Core", "test\NuGet.Core.Tests", "test\NuGet.Core.FuncTests", "--verbosity", "minimal", "--infer-runtimes"
+    $opts = 'restore', "src\NuGet.Core", "test\NuGet.Core.Tests", "test\NuGet.Core.FuncTests", "--verbosity", "minimal"
 
     Trace-Log "Restoring packages for xprojs"
     Verbose-Log "$dotnetExe $opts"
@@ -366,60 +366,41 @@ Function Test-XProject {
             $directoryName = Split-Path $_ -Leaf
 
             pushd $_
+            
+            # Check if dnxcore50 exists in the project.json file
+            $xtestProjectJson = Join-Path $_ "project.json"
+            if (Get-Content $($xtestProjectJson) | Select-String "netcoreapp1.0") {
+                # Run tests for Core CLR
 
+                Trace-Log "$DotNetExe test --configuration $Configuration --framework netcoreapp1.0"
+                & $DotNetExe test --configuration $Configuration --framework netcoreapp1.0
+                if (-not $?) {
+                    Error-Log "Tests failed @""$_"" on CoreCLR. Code: $LASTEXITCODE"
+                }                    
+            }
 
-                # Check if dnxcore50 exists in the project.json file
-                $xtestProjectJson = Join-Path $_ "project.json"
-                if (Get-Content $($xtestProjectJson) | Select-String "netcoreapp1.0") {
-                    # Run tests for Core CLR
+            # Run tests for CLR
+            if (Get-Content $($xtestProjectJson) | Select-String "net46") {
 
-                    # Restore without runtimes
-                    Trace-Log "$DotNetExe restore"
-                    & $DotNetExe restore
+                # Build
+                Trace-Log "$DotNetExe build --configuration $Configuration --runtime win7-x64"
+                & $DotNetExe build --configuration $Configuration --runtime win7-x64
 
-                    # Build
-                    Trace-Log "$DotNetExe build --configuration $Configuration --framework netcoreapp1.0"
-                    & $DotNetExe build --configuration $Configuration --framework netcoreapp1.0
-
-                    if (-not $?) {
-                        Error-Log "Build failed for CoreCLR $directoryName. Code: $LASTEXITCODE"
-                    }
-                    else
-                    {
-                        Trace-Log "$DotNetExe test --configuration $Configuration --framework netcoreapp1.0 --no-build"
-                        & $DotNetExe test --configuration $Configuration --framework netcoreapp1.0 --no-build
-                        if (-not $?) {
-                            Error-Log "Tests failed @""$_"" on CoreCLR. Code: $LASTEXITCODE"
-                        }
-                    }
+                if (-not $?) {
+                   Error-Log "Build failed for $directoryName. Code: $LASTEXITCODE"
                 }
+                else {
+                    $htmlOutput = Join-Path $_ "bin\$Configuration\net46\win7-x64\xunit.results.html"
+                    $desktopTestAssembly = Join-Path $_ "bin\$Configuration\net46\win7-x64\$directoryName.dll"
 
-                # Run tests for CLR
-                if (Get-Content $($xtestProjectJson) | Select-String "net46") {
-                    # Restore with runtimes
-                    Trace-Log "$DotNetExe restore --infer-runtimes"
-                    & $DotNetExe restore --infer-runtimes
+                    Trace-Log "$XunitConsole $desktopTestAssembly -html $htmlOutput"
 
-                    # Build
-                    Trace-Log "$DotNetExe build --configuration $Configuration --runtime win7-x64 --framework net46"
-                    & $DotNetExe build --configuration $Configuration --runtime win7-x64 --framework net46
-
+                    & $XunitConsole $desktopTestAssembly -html $htmlOutput
                     if (-not $?) {
-                        Error-Log "Build failed for net46 $directoryName. Code: $LASTEXITCODE"
-                    }
-                    else
-                    {
-                        $htmlOutput = Join-Path $_ "bin\$Configuration\net46\win7-x64\xunit.results.html"
-                        $desktopTestAssembly = Join-Path $_ "bin\$Configuration\net46\win7-x64\$directoryName.dll"
-
-                        Trace-Log "$XunitConsole $desktopTestAssembly -html $htmlOutput"
-
-                        & $XunitConsole $desktopTestAssembly -html $htmlOutput
-                        if (-not $?) {
-                           Error-Log "Tests failed @""$_"" on CLR. Code: $LASTEXITCODE"
-                        }
-                    }
-                }
+                        Error-Log "Tests failed @""$_"" on CLR. Code: $LASTEXITCODE"
+                    }     
+                }           
+            }
 
             popd
         }
