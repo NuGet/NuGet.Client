@@ -16,7 +16,7 @@
     ]
   },
   "compile": [
-    "../NuGet.Shared/*.cs",
+    "../../../Shared/*.cs",
     "../../../submodules/FileSystem/src/Microsoft.Extensions.FileSystemGlobbing/**/*.cs",
     "../../../submodules/FileSystem/src/Microsoft.AspNet.FileProviders.Abstractions/**/*.cs",
     "../../../submodules/FileSystem/src/Microsoft.AspNet.FileProviders.Sources/**/*.cs",

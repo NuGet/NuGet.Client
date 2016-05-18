@@ -12,7 +12,7 @@
     ]
   },
   "compile": [
-    "../NuGet.Shared/*.cs"
+    "../../../Shared/*.cs"
   ],
   "dependencies": {
     "NuGet.Packaging": {

@@ -16,7 +16,7 @@
     "xmlDoc": true
   },
   "compile": [
-    "../NuGet.Shared/*.cs"
+    "../../../Shared/*.cs"
   ],
   "frameworks": {
     "net45": {

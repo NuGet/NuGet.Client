@@ -13,7 +13,7 @@
     ]
   },
   "compile": [
-    "../NuGet.Shared/*.cs"
+    "../../../Shared/*.cs"
   ],
   "dependencies": {
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0-rc2-20456",

@@ -18,7 +18,7 @@
     "languageVersion": "csharp5"
   },
   "compile": [
-    "../NuGet.Shared/*.cs"
+    "../../../Shared/*.cs"
   ],
   "frameworks": {
     "net40-client": {

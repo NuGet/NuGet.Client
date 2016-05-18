@@ -14,7 +14,7 @@
     ]
   },
   "compile": [
-    "../NuGet.Shared/*.cs"
+    "../../../Shared/*.cs"
   ],
   "dependencies": {
     "Newtonsoft.Json": "6.0.4",

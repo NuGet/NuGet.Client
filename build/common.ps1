@@ -340,10 +340,6 @@ Function Build-CoreProjects {
         Restore-XProjects $XProjectsLocation -Fast:$Fast
     }
 
-    # NuGet.Shared is a source package and fails when built as part of other projects.
-    $sharedPath = Join-Path $XProjectsLocation "NuGet.Shared"
-    Invoke-DotnetPack $sharedPath -config $Configuration -label $ReleaseLabel -build $BuildNumber -out $Artifacts
-
     $xprojects = Find-XProjects $XProjectsLocation
     $xprojects | Invoke-DotnetPack -config $Configuration -label $ReleaseLabel -build $BuildNumber -out $Artifacts
 

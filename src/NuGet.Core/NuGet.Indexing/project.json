@@ -23,7 +23,7 @@
     "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/CamelCaseFilter.cs",
     "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/TagsAnalyzer.cs",
     "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/SemanticVersionFilter.cs",
-    "../NuGet.Shared/*.cs"
+    "../../../Shared/*.cs"
   ],
   "dependencies": {
     "Lucene.Net": "3.0.3",

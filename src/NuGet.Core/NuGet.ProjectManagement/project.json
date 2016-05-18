@@ -14,7 +14,7 @@
     ]
   },
   "compile": [
-    "../NuGet.Shared/*.cs"
+    "../../../Shared/*.cs"
   ],
   "dependencies": {
     "Microsoft.Web.Xdt": "2.1.1",
