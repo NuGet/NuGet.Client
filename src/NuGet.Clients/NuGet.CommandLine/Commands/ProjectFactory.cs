@@ -915,7 +915,7 @@ namespace NuGet.CommandLine
                         {
                             found = true;
 
-                            if (dependency.VersionRange.MinVersion != projectPackage.Version ||
+                            if (dependency.VersionRange.MinVersion < projectPackage.Version ||
                                 (!dependency.VersionRange.IsMinInclusive &&
                                 dependency.VersionRange.MinVersion == projectPackage.Version))
                             {
