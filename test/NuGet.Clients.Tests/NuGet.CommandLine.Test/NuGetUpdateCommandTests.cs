@@ -335,6 +335,102 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public async Task UpdateCommand_Fails_References_MultipleProjectsInSameDirectory()
+        {
+            // Arrange
+            using (var packagesSourceDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var solutionDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var projectDirectory = Path.Combine(solutionDirectory, "proj");
+                var packagesDirectory = Path.Combine(solutionDirectory, "packages");
+
+                var a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+                var a2 = new PackageIdentity("A", new NuGetVersion("2.0.0"));
+
+                var a1Package = Util.CreateTestPackage(
+                    a1.Id,
+                    a1.Version.ToString(),
+                    packagesSourceDirectory,
+                    new List<NuGetFramework>() { NuGetFramework.Parse("net45") },
+                    new List<PackageDependencyGroup>() { });
+
+                var a2Package = Util.CreateTestPackage(
+                    a2.Id,
+                    a2.Version.ToString(),
+                    packagesSourceDirectory,
+                    new List<NuGetFramework>() { NuGetFramework.Parse("net45") },
+                    new List<PackageDependencyGroup>() { });
+
+                Directory.CreateDirectory(projectDirectory);
+
+                Util.CreateFile(
+                    projectDirectory,
+                    "proj1.csproj",
+                    Util.CreateProjFileContent());
+
+                Util.CreateFile(solutionDirectory, "a.sln",
+                    Util.CreateSolutionFileContent());
+
+                var projectFile1 = Path.Combine(projectDirectory, "proj1.csproj");
+                var packagesConfigFile = Path.Combine(projectDirectory, "packages.config");
+                var solutionFile = Path.Combine(solutionDirectory, "a.sln");
+
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var msbuildDirectory = MsBuildUtility.GetMsbuildDirectory("14.0", null);
+                var projectSystem1 = new MSBuildProjectSystem(msbuildDirectory, projectFile1, testNuGetProjectContext);
+                var msBuildProject1 = new MSBuildNuGetProject(projectSystem1, packagesDirectory, projectDirectory);
+
+                using (var stream = File.OpenRead(a1Package))
+                {
+                    var downloadResult = new DownloadResourceResult(stream);
+                    await msBuildProject1.InstallPackageAsync(
+                        a1,
+                        downloadResult,
+                        testNuGetProjectContext,
+                        CancellationToken.None);
+                }
+
+                projectSystem1.Save();
+
+                var projectFile2 = Path.Combine(projectDirectory, "proj2.csproj");
+                File.Copy(projectFile1, projectFile2);
+
+                var args = new[]
+                {
+                    "update",
+                    solutionFile,
+                    "-Source",
+                    packagesSourceDirectory,
+                    "-Id",
+                    "A"
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
+
+                Assert.Contains("Scanning for projects...", r.Item2);
+                Assert.Contains($"WARNING: Found multiple project files for '{packagesConfigFile}'.", r.Item2);
+                Assert.Contains("No projects found with packages.config.", r.Item2);
+
+                var content1 = File.ReadAllText(projectFile1);
+                Assert.True(content1.Contains(@"<HintPath>..\packages\a.1.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.False(content1.Contains(@"<HintPath>..\packages\a.2.0.0\lib\net45\file.dll</HintPath>"));
+
+                var content2 = File.ReadAllText(projectFile2);
+                Assert.True(content2.Contains(@"<HintPath>..\packages\a.1.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.False(content2.Contains(@"<HintPath>..\packages\a.2.0.0\lib\net45\file.dll</HintPath>"));
+            }
+        }
+
+        [Fact]
         public async Task UpdateCommand_Success_NOPrerelease()
         {
             using (var packagesSourceDirectory = TestFileSystemUtility.CreateRandomTestFolder())

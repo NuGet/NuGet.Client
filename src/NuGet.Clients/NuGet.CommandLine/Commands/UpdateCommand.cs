@@ -151,13 +151,13 @@ namespace NuGet.CommandLine
                 }
                 catch (Exception e)
                 {
-                    if (Console.Verbosity == NuGet.Verbosity.Detailed)
+                    if (Console.Verbosity == Verbosity.Detailed || ExceptionLogger.Instance.ShowStack)
                     {
                         Console.WriteWarning(e.ToString());
                     }
                     else
                     {
-                        Console.WriteWarning(e.Message);
+                        Console.WriteWarning(ExceptionUtilities.DisplayMessage(e));
                     }
                 }
             }
@@ -169,9 +169,16 @@ namespace NuGet.CommandLine
             {
                 return GetMSBuildProject(path, projectContext);
             }
-            catch (CommandLineException)
+            catch (CommandLineException e)
             {
-
+                if (Console.Verbosity == Verbosity.Detailed || ExceptionLogger.Instance.ShowStack)
+                {
+                    Console.WriteWarning(e.ToString());
+                }
+                else
+                {
+                    Console.WriteWarning(ExceptionUtilities.DisplayMessage(e));
+                }
             }
 
             return null;
