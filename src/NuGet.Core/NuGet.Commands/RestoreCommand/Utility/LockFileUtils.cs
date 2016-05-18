@@ -21,7 +21,6 @@ namespace NuGet.Commands
             LocalPackageInfo package,
             RestoreTargetGraph targetGraph,
             VersionFolderPathResolver defaultPackagePathResolver,
-            string correctedPackageName,
             LibraryIncludeFlags dependencyType)
         {
             return CreateLockFileTargetLibrary(
@@ -29,7 +28,6 @@ namespace NuGet.Commands
                 package,
                 targetGraph,
                 defaultPackagePathResolver,
-                correctedPackageName,
                 dependencyType: dependencyType,
                 targetFrameworkOverride: null,
                 dependencies: null);
@@ -40,7 +38,6 @@ namespace NuGet.Commands
             LocalPackageInfo package,
             RestoreTargetGraph targetGraph,
             VersionFolderPathResolver defaultPackagePathResolver,
-            string correctedPackageName,
             LibraryIncludeFlags dependencyType,
             NuGetFramework targetFrameworkOverride,
             IEnumerable<LibraryDependency> dependencies)
@@ -49,11 +46,8 @@ namespace NuGet.Commands
 
             var framework = targetFrameworkOverride ?? targetGraph.Framework;
             var runtimeIdentifier = targetGraph.RuntimeIdentifier;
-
-            // package.Id is read from nuspec and it might be in wrong casing.
-            // correctedPackageName should be the package name used by dependency graph and
-            // it has the correct casing that runtime needs during dependency resolution.
-            lockFileLib.Name = correctedPackageName ?? package.Id;
+            
+            lockFileLib.Name = package.Id;
             lockFileLib.Version = package.Version;
             lockFileLib.Type = LibraryType.Package;
 
@@ -212,8 +206,6 @@ namespace NuGet.Commands
 
                 // Runtime
                 runtimeTargetItems.AddRange(GetRuntimeTargetLockFileItems(
-                    targetGraph,
-                    lockFileLib,
                     contentItems,
                     framework,
                     dependencyType,
@@ -223,8 +215,6 @@ namespace NuGet.Commands
 
                 // Resource
                 runtimeTargetItems.AddRange(GetRuntimeTargetLockFileItems(
-                    targetGraph,
-                    lockFileLib,
                     contentItems,
                     framework,
                     dependencyType,
@@ -234,8 +224,6 @@ namespace NuGet.Commands
 
                 // Native
                 runtimeTargetItems.AddRange(GetRuntimeTargetLockFileItems(
-                    targetGraph,
-                    lockFileLib,
                     contentItems,
                     framework,
                     dependencyType,
@@ -443,7 +431,6 @@ namespace NuGet.Commands
         /// Items that do not contain the primaryKey will be filtered out.
         /// </summary>
         private static List<ContentItemGroup> GetContentGroupsForFramework(
-            LockFileTargetLibrary lockFileLib,
             NuGetFramework framework,
             List<ContentItemGroup> contentGroups,
             string primaryKey)
@@ -502,8 +489,6 @@ namespace NuGet.Commands
         }
 
         private static List<LockFileRuntimeTarget> GetRuntimeTargetLockFileItems(
-            RestoreTargetGraph targetGraph,
-            LockFileTargetLibrary lockFileLib,
             ContentItemCollection contentItems,
             NuGetFramework framework,
             LibraryIncludeFlags dependencyType,
@@ -514,7 +499,6 @@ namespace NuGet.Commands
             var groups = contentItems.FindItemGroups(patternSet).ToList();
 
             var groupsForFramework = GetContentGroupsForFramework(
-                lockFileLib,
                 framework,
                 groups,
                 ManagedCodeConventions.PropertyNames.RuntimeIdentifier);

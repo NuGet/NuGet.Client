@@ -98,10 +98,16 @@ namespace NuGet.DependencyResolver
 
             if (packageVersion != null)
             {
+                // Use the original package identity for the library identity
+                var packageIdentity = await _findPackagesByIdResource.GetOriginalIdentityAsync(
+                    libraryRange.Name,
+                    packageVersion,
+                    cancellationToken);
+
                 return new LibraryIdentity
                 {
-                    Name = libraryRange.Name,
-                    Version = packageVersion,
+                    Name = packageIdentity.Id,
+                    Version = packageIdentity.Version,
                     Type = LibraryType.Package
                 };
             }

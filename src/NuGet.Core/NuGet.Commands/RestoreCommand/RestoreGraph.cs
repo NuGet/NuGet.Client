@@ -143,12 +143,6 @@ namespace NuGet.Commands
                             return;
                         }
 
-                        if (!string.Equals(node.Item.Data.Match.Library.Name, node.Key.Name, StringComparison.Ordinal))
-                        {
-                            // Fix casing of the library name to be installed
-                            node.Item.Data.Match.Library.Name = node.Key.Name;
-                        }
-
                         // Don't add rejected nodes since we only want to write reduced nodes
                         // to the lock file
                         flattened.Add(node.Item);

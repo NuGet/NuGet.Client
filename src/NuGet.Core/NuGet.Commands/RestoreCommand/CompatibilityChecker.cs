@@ -353,7 +353,6 @@ namespace NuGet.Commands
                         package: package,
                         targetGraph: graph,
                         defaultPackagePathResolver: new VersionFolderPathResolver(_localRepository.RepositoryRoot),
-                        correctedPackageName: libraryId.Name,
                         dependencyType: LibraryIncludeFlags.All);
                 }
 

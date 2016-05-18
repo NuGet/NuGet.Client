@@ -22,7 +22,7 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource.com/v3/index.json", JsonData.Index);
+            responses.Add("http://testsource.com/v3/index.json", JsonData.IndexWithoutFlatContainer);
             responses.Add("https://api.nuget.org/v3/registration0/deepequal/index.json", JsonData.DeepEqualRegistationIndex);
 
             var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
@@ -45,7 +45,7 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource.com/v3/index.json", JsonData.Index);
+            responses.Add("http://testsource.com/v3/index.json", JsonData.IndexWithoutFlatContainer);
             responses.Add("https://api.nuget.org/v3/registration0/deepequal/index.json", JsonData.DeepEqualRegistationIndex);
 
             var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
@@ -66,7 +66,7 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource.com/v3/index.json", JsonData.Index);
+            responses.Add("http://testsource.com/v3/index.json", JsonData.IndexWithoutFlatContainer);
             responses.Add("https://api.nuget.org/v3/registration0/deepequal/index.json", JsonData.DeepEqualRegistationIndex);
 
             var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
@@ -86,7 +86,7 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource.com/v3/index.json", JsonData.Index);
+            responses.Add("http://testsource.com/v3/index.json", JsonData.IndexWithoutFlatContainer);
             responses.Add("https://api.nuget.org/v3/registration0/microsoft.owin/index.json", JsonData.MicrosoftOwinRegistration);
             responses.Add("https://api.nuget.org/v3/registration0/owin/index.json", null);
             // Owin is not added
@@ -107,7 +107,7 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource.com/v3/index.json", JsonData.Index);
+            responses.Add("http://testsource.com/v3/index.json", JsonData.IndexWithoutFlatContainer);
             responses.Add("https://api.nuget.org/v3/registration0/microsoft.owin/index.json", JsonData.MicrosoftOwinRegistration);
             responses.Add("https://api.nuget.org/v3/registration0/owin/index.json", "");
             // Owin is not added
@@ -127,7 +127,7 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource.com/v3/index.json", JsonData.Index);
+            responses.Add("http://testsource.com/v3/index.json", JsonData.IndexWithoutFlatContainer);
             responses.Add("https://api.nuget.org/v3/registration0/microsoft.owin/index.json", JsonData.MicrosoftOwinRegistration);
             responses.Add("https://api.nuget.org/v3/registration0/owin/index.json", "");
             // Owin is not added
@@ -149,7 +149,7 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource.com/v3/index.json", JsonData.Index);
+            responses.Add("http://testsource.com/v3/index.json", JsonData.IndexWithoutFlatContainer);
             responses.Add("https://api.nuget.org/v3/registration0/unlistedpackagea/index.json", JsonData.UnlistedPackageARegistration);
             responses.Add("https://api.nuget.org/v3/registration0/unlistedpackageb/index.json", JsonData.UnlistedPackageBRegistration);
 
@@ -173,7 +173,7 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource.com/v3/index.json", JsonData.Index);
+            responses.Add("http://testsource.com/v3/index.json", JsonData.IndexWithoutFlatContainer);
             responses.Add("https://api.nuget.org/v3/registration0/unlistedpackagea/index.json", JsonData.UnlistedPackageARegistration);
             responses.Add("https://api.nuget.org/v3/registration0/unlistedpackageb/index.json", JsonData.UnlistedPackageBRegistration);
             responses.Add("https://api.nuget.org/v3/registration0/unlistedpackagec/index.json", JsonData.UnlistedPackageCRegistration);

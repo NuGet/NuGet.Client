@@ -10,7 +10,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -24,6 +23,8 @@ namespace NuGet.Protocol
         // Use cache insensitive compare for windows
         private readonly ConcurrentDictionary<string, List<NuGetVersion>> _cache
             = new ConcurrentDictionary<string, List<NuGetVersion>>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<PackageIdentity, PackageIdentity> _packageIdentityCache
+            = new ConcurrentDictionary<PackageIdentity, PackageIdentity>();
 
         private readonly string _source;
         private readonly VersionFolderPathResolver _resolver;
@@ -57,39 +58,74 @@ namespace NuGet.Protocol
             return Task.FromResult(result);
         }
 
+        public override Task<PackageIdentity> GetOriginalIdentityAsync(string id, NuGetVersion version, CancellationToken token)
+        {
+            var matchedVersion = GetVersion(id, version);
+            PackageIdentity outputIdentity = null;
+            if (matchedVersion != null)
+            {
+                outputIdentity = _packageIdentityCache.GetOrAdd(
+                   new PackageIdentity(id, matchedVersion),
+                   inputIdentity =>
+                   {
+                       return ProcessNuspecReader(
+                           inputIdentity.Id,
+                           inputIdentity.Version,
+                           nuspecReader => nuspecReader.GetIdentity());
+                   });
+            }
+
+            return Task.FromResult(outputIdentity);
+        }
+
         public override Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(string id, NuGetVersion version, CancellationToken token)
         {
             var matchedVersion = GetVersion(id, version);
             FindPackageByIdDependencyInfo dependencyInfo = null;
             if (matchedVersion != null)
             {
-                var nuspecPath = _resolver.GetManifestFilePath(id, matchedVersion);
-                using (var stream = File.OpenRead(nuspecPath))
-                {
-                    NuspecReader nuspecReader;
-                    try
+                dependencyInfo = ProcessNuspecReader(
+                    id,
+                    matchedVersion,
+                    nuspecReader =>
                     {
-                        nuspecReader = new NuspecReader(stream);
-                    }
-                    catch (XmlException ex)
-                    {
-                        var message = string.Format(CultureInfo.CurrentCulture, Strings.Protocol_PackageMetadataError, id + "." + version, _source);
-                        var inner = new PackagingException(message, ex);
+                        // Populate the package identity cache while we have the .nuspec open.
+                        var identity = nuspecReader.GetIdentity();
+                        _packageIdentityCache.TryAdd(identity, identity);
 
-                        throw new FatalProtocolException(message, inner);
-                    }
-                    catch (PackagingException ex)
-                    {
-                        var message = string.Format(CultureInfo.CurrentCulture, Strings.Protocol_PackageMetadataError, id + "." + version, _source);
-
-                        throw new FatalProtocolException(message, ex);
-                    }
-
-                    dependencyInfo = GetDependencyInfo(nuspecReader);
-                }
+                        return GetDependencyInfo(nuspecReader);
+                    });
             }
 
             return Task.FromResult(dependencyInfo);
+        }
+
+        private T ProcessNuspecReader<T>(string id, NuGetVersion version, Func<NuspecReader, T> process)
+        {
+            var nuspecPath = _resolver.GetManifestFilePath(id, version);
+            using (var stream = File.OpenRead(nuspecPath))
+            {
+                NuspecReader nuspecReader;
+                try
+                {
+                    nuspecReader = new NuspecReader(stream);
+                }
+                catch (XmlException ex)
+                {
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Protocol_PackageMetadataError, id + "." + version, _source);
+                    var inner = new PackagingException(message, ex);
+
+                    throw new FatalProtocolException(message, inner);
+                }
+                catch (PackagingException ex)
+                {
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Protocol_PackageMetadataError, id + "." + version, _source);
+
+                    throw new FatalProtocolException(message, ex);
+                }
+
+                return process(nuspecReader);
+            }
         }
 
         private NuGetVersion GetVersion(string id, NuGetVersion version)

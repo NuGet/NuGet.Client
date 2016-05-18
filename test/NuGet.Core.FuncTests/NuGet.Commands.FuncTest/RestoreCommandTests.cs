@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -22,6 +23,143 @@ namespace NuGet.Commands.FuncTest
 {
     public class RestoreCommandTests
     {
+        [Theory]
+        [InlineData("https://www.nuget.org/api/v2/", new Type[0])]
+        [InlineData("https://api.nuget.org/v3/index.json", new[] { typeof(RemoteV3FindPackageByIdResourceProvider) })]
+        [InlineData("https://api.nuget.org/v3/index.json", new[] { typeof(HttpFileSystemBasedFindPackageByIdResourceProvider) })]
+        public async Task RestoreCommand_LockFileHasOriginalPackageIdCase(string source, Type[] excludedProviders)
+        {
+            // Arrange
+            var providers = Repository
+                .Provider
+                .GetCoreV3()
+                .Where(x => !excludedProviders.Contains(x.Value.GetType()));
+            var sourceRepository = Repository.CreateSource(providers, source);
+            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfigWithNet46.ToString(), "TestProject", specPath);
+                
+                AddDependency(spec, "ENTITYFRAMEWORK", "6.1.3-BETA1");
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, new[] { sourceRepository }, packagesDir, logger);                
+                var command = new RestoreCommand(request);
+                // Act
+                var result = await command.ExecuteAsync();
+
+                // Assert
+                Assert.True(result.Success, "The restore should have succeeded.");
+
+                var library = result.LockFile.Libraries
+                    .FirstOrDefault(x => StringComparer.OrdinalIgnoreCase.Equals(x.Name, "EntityFramework"));
+                Assert.Equal("EntityFramework", library.Name);
+                Assert.Equal("6.1.3-beta1", library.Version.ToNormalizedString());
+
+                var targetLibrary = result.LockFile.Targets.First().Libraries
+                    .FirstOrDefault(x => StringComparer.OrdinalIgnoreCase.Equals(x.Name, "EntityFramework"));
+                Assert.Equal("EntityFramework", targetLibrary.Name);
+                Assert.Equal("6.1.3-beta1", targetLibrary.Version.ToNormalizedString());
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_LockFileHasOriginalVersionCase()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+
+            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                Directory.CreateDirectory(Path.Combine(projectDir, "TestProject"));
+                var projectSpecPath = Path.Combine(projectDir, "TestProject", "project.json");
+                var projectSpec = JsonPackageSpecReader.GetPackageSpec(BasicConfigWithNet46.ToString(), "TestProject", projectSpecPath);
+                projectSpec.Dependencies = new List<LibraryDependency>
+                {
+                    new LibraryDependency()
+                    {
+                        LibraryRange = new LibraryRange(
+                            "ReferencedProject",
+                            VersionRange.Parse("2.0.0-beta1"),
+                            LibraryDependencyTarget.Project)
+                    }
+                };
+
+                Directory.CreateDirectory(Path.Combine(projectDir, "ReferencedProject"));
+                var referenceSpecPath = Path.Combine(projectDir, "ReferencedProject", "project.json");
+                var referenceSpec = JsonPackageSpecReader.GetPackageSpec(BasicConfigWithNet46.ToString(), "ReferencedProject", referenceSpecPath);
+                referenceSpec.Version = new NuGetVersion("2.0.0-BETA1");
+                JsonPackageSpecWriter.WritePackageSpec(referenceSpec, referenceSpecPath);
+
+                var logger = new TestLogger();
+                var request = new RestoreRequest(projectSpec, sources, packagesDir, logger);
+                var command = new RestoreCommand(request);
+
+                // Act
+                var result = await command.ExecuteAsync();
+
+                // Assert
+                Assert.True(result.Success, "The restore should have succeeded.");
+
+                var library = result.LockFile.Libraries
+                    .FirstOrDefault(x => StringComparer.OrdinalIgnoreCase.Equals(x.Name, "ReferencedProject"));
+                Assert.Equal("2.0.0-BETA1", library.Version.ToNormalizedString());
+
+                var targetLibrary = result.LockFile.Targets.First().Libraries
+                    .FirstOrDefault(x => StringComparer.OrdinalIgnoreCase.Equals(x.Name, "ReferencedProject"));
+                Assert.Equal("2.0.0-BETA1", targetLibrary.Version.ToNormalizedString());
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_CannotFindProjectReferenceWithDifferentNameCase()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+
+            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                Directory.CreateDirectory(Path.Combine(projectDir, "TestProject"));
+                var projectSpecPath = Path.Combine(projectDir, "TestProject", "project.json");
+                var projectSpec = JsonPackageSpecReader.GetPackageSpec(BasicConfigWithNet46.ToString(), "TestProject", projectSpecPath);
+                projectSpec.Dependencies = new List<LibraryDependency>
+                {
+                    new LibraryDependency()
+                    {
+                        LibraryRange = new LibraryRange(
+                            "REFERENCEDPROJECT",
+                            VersionRange.Parse("*"),
+                            LibraryDependencyTarget.Project)
+                    }
+                };
+
+                Directory.CreateDirectory(Path.Combine(projectDir, "ReferencedProject"));
+                var referenceSpecPath = Path.Combine(projectDir, "ReferencedProject", "project.json");
+                var referenceSpec = JsonPackageSpecReader.GetPackageSpec(BasicConfigWithNet46.ToString(), "ReferencedProject", referenceSpecPath);
+                JsonPackageSpecWriter.WritePackageSpec(referenceSpec, referenceSpecPath);
+
+                var logger = new TestLogger();
+                var request = new RestoreRequest(projectSpec, sources, packagesDir, logger);
+                var command = new RestoreCommand(request);
+
+                // Act
+                var result = await command.ExecuteAsync();
+
+                // Assert
+                Assert.False(result.Success, "The restore should not have succeeded.");
+                var libraryRange = result
+                    .RestoreGraphs
+                    .First()
+                    .Unresolved
+                    .FirstOrDefault(g => g.Name == "REFERENCEDPROJECT");
+                Assert.NotNull(libraryRange);
+            }
+        }
+
         /// <summary>
         /// This test fixes https://github.com/NuGet/Home/issues/2901.
         /// </summary>

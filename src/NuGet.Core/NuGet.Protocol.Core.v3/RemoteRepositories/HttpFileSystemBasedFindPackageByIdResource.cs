@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
@@ -34,6 +35,8 @@ namespace NuGet.Protocol
         private readonly HttpSource _httpSource;
         private readonly ConcurrentDictionary<string, Task<SortedDictionary<NuGetVersion, PackageInfo>>> _packageInfoCache =
             new ConcurrentDictionary<string, Task<SortedDictionary<NuGetVersion, PackageInfo>>>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<PackageIdentity, Task<PackageIdentity>> _packageIdentityCache
+            = new ConcurrentDictionary<PackageIdentity, Task<PackageIdentity>>();
         private readonly Dictionary<string, Task<NupkgEntry>> _nupkgCache = new Dictionary<string, Task<NupkgEntry>>();
         private readonly IReadOnlyList<Uri> _baseUris;
 
@@ -74,6 +77,29 @@ namespace NuGet.Protocol
             return packageInfos.Keys;
         }
 
+        public override async Task<PackageIdentity> GetOriginalIdentityAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
+        {
+            var packageInfos = await EnsurePackagesAsync(id, cancellationToken);
+
+            PackageInfo packageInfo;
+            if (!packageInfos.TryGetValue(version, out packageInfo))
+            {
+                return null;
+            }
+
+            return await _packageIdentityCache.GetOrAdd(
+                new PackageIdentity(id, version),
+                async identity =>
+                {
+                    var reader = await PackageUtilities.OpenNuspecFromNupkgAsync(
+                        packageInfo.Id,
+                        OpenNupkgStreamAsync(packageInfo, cancellationToken),
+                        Logger);
+
+                    return reader.GetIdentity();
+                });
+        }
+
         public override async Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
         {
             var packageInfos = await EnsurePackagesAsync(id, cancellationToken);
@@ -82,10 +108,14 @@ namespace NuGet.Protocol
             if (packageInfos.TryGetValue(version, out packageInfo))
             {
                 var reader = await PackageUtilities.OpenNuspecFromNupkgAsync(
-                packageInfo.Id,
-                OpenNupkgStreamAsync(packageInfo, cancellationToken),
-                Logger);
+                    packageInfo.Id,
+                    OpenNupkgStreamAsync(packageInfo, cancellationToken),
+                    Logger);
 
+                // Populate the package identity cache while we have the .nuspec open.
+                var identity = reader.GetIdentity();
+                _packageIdentityCache.TryAdd(identity, Task.FromResult(identity));
+                
                 return GetDependencyInfo(reader);
             }
 
@@ -199,9 +229,6 @@ namespace NuGet.Protocol
             var normalizedVersionString = parsedVersion.ToNormalizedString();
             return new PackageInfo
             {
-                // If 'Id' element exist, use its value as accurate package Id
-                // Otherwise, use the value of 'title' if it exist
-                // Use the given Id as final fallback if all elements above don't exist
                 Id = id,
                 Version = parsedVersion,
                 ContentUri = baseUri + id.ToLowerInvariant() + "/" + normalizedVersionString + "/" + id.ToLowerInvariant() + "." + normalizedVersionString + ".nupkg",
