@@ -6,7 +6,10 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
+using NuGet.Frameworks;
+using NuGet.Packaging;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -2020,6 +2023,248 @@ namespace Proj1
                 Assert.Equal("1.1.0", dependency.VersionSpec.ToString());
             }
         }
+
+        // Test that NuGet packages of the project are added as dependencies 
+        // even if there is already an indirect depenency, provided that the 
+        // project requires a higher version number than the indirect dependency.
+        [Theory]
+        [InlineData("packages.config")]
+        public void PackCommand_PackagesAddedAsDependenciesIfProjectRequiresHigerVersionNumber(string packagesConfigFileName)
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+ 
+            try
+            {
+                Directory.CreateDirectory(workingDirectory);
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+                var packagesFolder = Path.Combine(proj1Directory, "packages");
+                Directory.CreateDirectory(proj1Directory);
+                Directory.CreateDirectory(packagesFolder);
+ 
+                // create project 1
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build' 
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include='proj1_file1.cs' />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include='proj1_file2.txt' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1_file1.cs",
+@"using System;
+ 
+namespace Proj1
+{
+    public class Class1
+    {
+        public int A { get; set; }
+    }
+}");
+                Util.CreateFile(
+                    proj1Directory,
+                    packagesConfigFileName,
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<packages>
+  <package id=""testPackage1"" version=""1.1.0"" targetFramework=""net45"" />
+  <package id=""testPackage2"" version=""1.2.0"" targetFramework=""net45"" />
+  <package id=""testPackage3"" version=""1.3.0"" targetFramework=""net45"" />
+  <package id=""testPackage4"" version=""1.4.0"" targetFramework=""net45"" />
+  <package id=""testPackage5"" version=""1.5.0"" targetFramework=""net45"" />
+</packages>");
+                var packageDependencies =
+                    new List<PackageDependencyGroup>()
+                    {
+                        new PackageDependencyGroup(
+                            new NuGetFramework("net45"),
+                            new List<Packaging.Core.PackageDependency>()
+                            {
+                                new Packaging.Core.PackageDependency(
+                                      "testPackage2",
+                                      new VersionRange(new NuGetVersion("1.0.0"), includeMinVersion: true)),
+                                new Packaging.Core.PackageDependency(
+                                      "testPackage3",
+                                      new VersionRange(new NuGetVersion("1.3.0"), includeMinVersion: true)),
+                                new Packaging.Core.PackageDependency(
+                                      "testPackage4"),
+                                new Packaging.Core.PackageDependency(
+                                      "testPackage5",
+                                      new VersionRange(new NuGetVersion("1.5.0"), includeMinVersion: false))
+                            })
+                    };
+                Util.CreateTestPackage("testPackage1", "1.1.0", packagesFolder, new List<NuGetFramework>() { new NuGetFramework("net45") }, packageDependencies );
+                Util.CreateTestPackage("testPackage2", "1.2.0", packagesFolder);
+                Util.CreateTestPackage("testPackage3", "1.3.0", packagesFolder);
+                Util.CreateTestPackage("testPackage4", "1.4.0", packagesFolder);
+                Util.CreateTestPackage("testPackage5", "1.5.0", packagesFolder);
+
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1_file2.txt",
+                    "file2");
+ 
+                Util.CreateFile(
+                    proj1Directory,
+                    "test.sln",
+                    "# test solution");
+ 
+                // Act                 
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj1Directory,
+                    "pack proj1.csproj -build -IncludeReferencedProjects",
+                    waitForExit: true);
+                Assert.Equal(0, r.Item1);
+ 
+                // Assert
+                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
+                Assert.Equal(1, package.DependencySets.Count());
+                var dependencySet = package.DependencySets.First();
+ 
+                // Verify that testPackage2 is added as dependency in addition to testPackage1. 
+                // testPackage3 and testPackage4 are not added because they are already referenced by testPackage1 with the correct version range.
+                Assert.Equal(4, dependencySet.Dependencies.Count);
+                var dependency1 = dependencySet.Dependencies.Single(d => d.Id == "testPackage1");
+                Assert.Equal("1.1.0", dependency1.VersionSpec.ToString());
+                var dependency2 = dependencySet.Dependencies.Single(d => d.Id == "testPackage2");
+                Assert.Equal("1.2.0", dependency2.VersionSpec.ToString());
+                var dependency4 = dependencySet.Dependencies.Single(d => d.Id == "testPackage4");
+                Assert.Equal("1.4.0", dependency4.VersionSpec.ToString());
+                var dependency5 = dependencySet.Dependencies.Single(d => d.Id == "testPackage5");
+                Assert.Equal("1.5.0", dependency5.VersionSpec.ToString());
+            }
+            finally
+            {
+                Directory.Delete(workingDirectory, true);
+            }
+        }
+ 
+        // Test that NuGet packages of the project are added as dependencies 
+        // even if there is already an indirect depenency, provided that the 
+        // project requires a higher version number than the indirect dependency.
+        [Theory]
+        [InlineData("packages.config")]
+        public void PackCommand_PackagesAddedAsDependenciesIfProjectRequiresHigerVersionNumber_AndIndirectDependencyIsAlreadyListed(string packagesConfigFileName)
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+ 
+            try
+            {
+                Directory.CreateDirectory(workingDirectory);
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+                var packagesFolder = Path.Combine(proj1Directory, "packages");
+                Directory.CreateDirectory(proj1Directory);
+                Directory.CreateDirectory(packagesFolder);
+ 
+                // create project 1
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build' 
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include='proj1_file1.cs' />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include='proj1_file2.txt' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1_file1.cs",
+@"using System;
+ 
+namespace Proj1
+{
+    public class Class1
+    {
+        public int A { get; set; }
+    }
+}");
+                Util.CreateFile(
+                    proj1Directory,
+                    packagesConfigFileName,
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<packages>
+  <package id=""testPackage1"" version=""1.1.0"" targetFramework=""net45"" />
+  <package id=""testPackage2"" version=""1.2.0"" targetFramework=""net45"" />
+  <package id=""testPackage3"" version=""1.3.0"" targetFramework=""net45"" />
+</packages>");
+                Util.CreateTestPackage("testPackage1", "1.1.0", packagesFolder);
+                Util.CreateTestPackage("testPackage2", "1.2.0", packagesFolder);
+                var packageDependencies =
+                    new List<PackageDependencyGroup>()
+                    {
+                        new PackageDependencyGroup(
+                            new NuGetFramework("net45"),
+                            new List<Packaging.Core.PackageDependency>()
+                            {
+                                new Packaging.Core.PackageDependency(
+                                      "testPackage1",
+                                      new VersionRange(new NuGetVersion("1.0.0"), includeMinVersion: true)),
+                                new Packaging.Core.PackageDependency(
+                                      "testPackage2",
+                                      new VersionRange(new NuGetVersion("1.2.0"), includeMinVersion: true))
+                            })
+                    };
+                Util.CreateTestPackage("testPackage3", "1.3.0", packagesFolder, new List<NuGetFramework>() { new NuGetFramework("net45") }, packageDependencies);
+
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1_file2.txt",
+                    "file2");
+ 
+                Util.CreateFile(
+                    proj1Directory,
+                    "test.sln",
+                    "# test solution");
+ 
+                // Act                 
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj1Directory,
+                    "pack proj1.csproj -build -IncludeReferencedProjects",
+                    waitForExit: true);
+                Assert.Equal(0, r.Item1);
+ 
+                // Assert
+                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
+                Assert.Equal(1, package.DependencySets.Count());
+                var dependencySet = package.DependencySets.First();
+ 
+                // Verify that testPackage1 is added as dependency in addition to testPackage3. 
+                // testPackage2 is not added because it is already referenced by testPackage3 with the correct version range.
+                Assert.Equal(2, dependencySet.Dependencies.Count);                
+                var dependency1 = dependencySet.Dependencies.Single(d => d.Id == "testPackage1");
+                Assert.Equal("1.1.0", dependency1.VersionSpec.ToString());
+                var dependency2 = dependencySet.Dependencies.Single(d => d.Id == "testPackage3");
+                Assert.Equal("1.3.0", dependency2.VersionSpec.ToString());
+            }
+            finally
+            {
+                Directory.Delete(workingDirectory, true);
+            }
+        }
+ 
 
         // Test that nuget displays warnings when dependency version is not specified
         // in nuspec.
