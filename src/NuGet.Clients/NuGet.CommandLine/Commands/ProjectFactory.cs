@@ -198,9 +198,12 @@ namespace NuGet.CommandLine
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to continue regardless of any error we encounter extracting metadata.")]
-        public PackageBuilder CreateBuilder(string basePath)
+        public PackageBuilder CreateBuilder(string basePath, NuGetVersion version, string suffix, bool buildIfNeeded)
         {
-            BuildProject();
+            if (buildIfNeeded)
+            {
+                BuildProject();
+            }
 
             if (!string.IsNullOrEmpty(TargetPath))
             {
@@ -250,7 +253,7 @@ namespace NuGet.CommandLine
             Manifest manifest = null;
 
             // If there is a project.json file, load that and skip any nuspec that may exist
-            if (!PackCommandRunner.ProcessProjectJsonFile(builder, basePath, builder.Id, GetPropertyValue))
+            if (!PackCommandRunner.ProcessProjectJsonFile(builder, basePath, builder.Id, version, suffix, GetPropertyValue))
             {
                 // If the package contains a nuspec file then use it for metadata
                 manifest = ProcessNuspec(builder, basePath);
@@ -668,7 +671,7 @@ namespace NuGet.CommandLine
 
         private bool ProcessJsonFile(PackageBuilder builder, string basePath, string id)
         {
-            return PackCommandRunner.ProcessProjectJsonFile(builder, basePath, id, GetPropertyValue);
+            return PackCommandRunner.ProcessProjectJsonFile(builder, basePath, id, null, null, GetPropertyValue);
         }
 
         // Creates a package dependency from the given project, which has a corresponding
