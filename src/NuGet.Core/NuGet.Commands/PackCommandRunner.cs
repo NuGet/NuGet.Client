@@ -264,15 +264,21 @@ namespace NuGet.Commands
 
             PackageBuilder builder = new PackageBuilder();
 
+            NuGetVersion version = null;
+            if (_packArgs.Version != null)
+            {
+                version = new NuGetVersion(_packArgs.Version);
+            }
+
             using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read))
             {
-                LoadProjectJsonFile(builder, path, _packArgs.BasePath, Path.GetFileName(Path.GetDirectoryName(path)), stream, propertyProvider);
+                LoadProjectJsonFile(builder, path, _packArgs.BasePath, Path.GetFileName(Path.GetDirectoryName(path)), stream, version, _packArgs.Suffix, propertyProvider);
             }
 
             return builder;
         }
 
-        public static bool ProcessProjectJsonFile(PackageBuilder builder, string basePath, string id, Func<string, string> propertyProvider)
+        public static bool ProcessProjectJsonFile(PackageBuilder builder, string basePath, string id, NuGetVersion version, string suffix, Func<string, string> propertyProvider)
         {
             if (basePath == null)
             {
@@ -284,7 +290,7 @@ namespace NuGet.Commands
             {
                 using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read))
                 {
-                    LoadProjectJsonFile(builder, path, basePath, id, stream, propertyProvider);
+                    LoadProjectJsonFile(builder, path, basePath, id, stream, version, suffix, propertyProvider);
                 }
                 return true;
             }
@@ -292,7 +298,7 @@ namespace NuGet.Commands
             return false;
         }
 
-        private static void LoadProjectJsonFile(PackageBuilder builder, string path, string basePath, string id, Stream stream, Func<string, string> propertyProvider)
+        private static void LoadProjectJsonFile(PackageBuilder builder, string path, string basePath, string id, Stream stream, NuGetVersion version, string suffix, Func<string, string> propertyProvider)
         {
             PackageSpec spec = JsonPackageSpecReader.GetPackageSpec(stream, id, path);
 
@@ -304,9 +310,18 @@ namespace NuGet.Commands
             {
                 builder.Id = id;
             }
-            if (!spec.IsDefaultVersion)
+            if (version != null)
+            {
+                builder.Version = version;
+            }
+            else if (!spec.IsDefaultVersion)
             {
                 builder.Version = spec.Version;
+
+                if (suffix != null)
+                {
+                    builder.Version = new NuGetVersion(builder.Version.Major, builder.Version.Minor, builder.Version.Patch, builder.Version.Revision, suffix, null);
+                }
             }
             if (spec.Title != null)
             {
@@ -516,8 +531,14 @@ namespace NuGet.Commands
                 factory.GetProjectProperties()[property.Key] = property.Value;
             }
 
+            NuGetVersion version = null;
+            if (_packArgs.Version != null)
+            {
+                version = new NuGetVersion(_packArgs.Version);
+            }
+
             // Create a builder for the main package as well as the sources/symbols package
-            PackageBuilder mainPackageBuilder = factory.CreateBuilder(_packArgs.BasePath);
+            PackageBuilder mainPackageBuilder = factory.CreateBuilder(_packArgs.BasePath, version, _packArgs.Suffix, buildIfNeeded: true);
 
             if (mainPackageBuilder == null)
             {
@@ -541,8 +562,14 @@ namespace NuGet.Commands
             WriteLine(String.Empty);
             WriteLine(Strings.Log_PackageCommandAttemptingToBuildSymbolsPackage, Path.GetFileName(path));
 
+            NuGetVersion argsVersion = null;
+            if (_packArgs.Version != null)
+            {
+                argsVersion = new NuGetVersion(_packArgs.Version);
+            }
+
             factory.SetIncludeSymbols(true);
-            PackageBuilder symbolsBuilder = factory.CreateBuilder(_packArgs.BasePath);
+            PackageBuilder symbolsBuilder = factory.CreateBuilder(_packArgs.BasePath, argsVersion, _packArgs.Suffix, buildIfNeeded: false);
             symbolsBuilder.Version = mainPackageBuilder.Version;
 
             // Get the file name for the sources package and build it
