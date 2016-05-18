@@ -126,13 +126,22 @@ namespace NuGet.Common
         {
             string fullPath = NuGet.PathUtility.GetAbsolutePath(_projectDirectory, referencePath);
             string relativePath = NuGet.PathUtility.GetRelativePath(Project.FullPath, fullPath);
+            string assemblyFileName = Path.GetFileNameWithoutExtension(fullPath);
 
-            // using full qualified assembly name for strong named assemblies
-            var assemblyName = AssemblyName.GetAssemblyName(fullPath);
+            try
+            {
+                // using full qualified assembly name for strong named assemblies
+                var assemblyName = AssemblyName.GetAssemblyName(fullPath);
+                assemblyFileName = assemblyName.FullName;
+            }
+            catch(Exception)
+            {
+                //ignore exception if we weren't able to get assembly strong name, we'll still use assembly file name to add reference
+            }
 
             Project.AddItem(
                 "Reference",
-                assemblyName.FullName,
+                assemblyFileName,
                 new[] { new KeyValuePair<string, string>("HintPath", relativePath),
                         new KeyValuePair<string, string>("Private", "True")});
         }
