@@ -1970,6 +1970,8 @@ namespace Proj1
   <package id=""testPackage1"" version=""1.1.0"" targetFramework=""net45"" />
   <package id=""testPackage2"" version=""1.2.0"" targetFramework=""net45"" />
   <package id=""testPackage3"" version=""1.3.0"" targetFramework=""net45"" />
+  <package id=""testPackage4"" version=""1.4.0"" targetFramework=""net45"" />
+  <package id=""testPackage5"" version=""1.5.0"" targetFramework=""net45"" />
 </packages>");
                 var packageDependencies =
                     new List<PackageDependencyGroup>()
@@ -1983,13 +1985,20 @@ namespace Proj1
                                       new VersionRange(new NuGetVersion("1.0.0"), includeMinVersion: true)),
                                 new Packaging.Core.PackageDependency(
                                       "testPackage3",
-                                      new VersionRange(new NuGetVersion("1.3.0"), includeMinVersion: true))
+                                      new VersionRange(new NuGetVersion("1.3.0"), includeMinVersion: true)),
+                                new Packaging.Core.PackageDependency(
+                                      "testPackage4"),
+                                new Packaging.Core.PackageDependency(
+                                      "testPackage5",
+                                      new VersionRange(new NuGetVersion("1.5.0"), includeMinVersion: false))
                             })
                     };
                 Util.CreateTestPackage("testPackage1", "1.1.0", packagesFolder, new List<NuGetFramework>() { new NuGetFramework("net45") }, packageDependencies );
                 Util.CreateTestPackage("testPackage2", "1.2.0", packagesFolder);
                 Util.CreateTestPackage("testPackage3", "1.3.0", packagesFolder);
- 
+                Util.CreateTestPackage("testPackage4", "1.4.0", packagesFolder);
+                Util.CreateTestPackage("testPackage5", "1.5.0", packagesFolder);
+
                 Util.CreateFile(
                     proj1Directory,
                     "proj1_file2.txt",
@@ -2014,12 +2023,16 @@ namespace Proj1
                 var dependencySet = package.DependencySets.First();
  
                 // Verify that testPackage2 is added as dependency in addition to testPackage1. 
-                // testPackage3 is not added because it is already referenced by testPackage1 with the correct version range.
-                Assert.Equal(2, dependencySet.Dependencies.Count);
+                // testPackage3 and testPackage4 are not added because they are already referenced by testPackage1 with the correct version range.
+                Assert.Equal(4, dependencySet.Dependencies.Count);
                 var dependency1 = dependencySet.Dependencies.Single(d => d.Id == "testPackage1");
                 Assert.Equal("1.1.0", dependency1.VersionSpec.ToString());
                 var dependency2 = dependencySet.Dependencies.Single(d => d.Id == "testPackage2");
                 Assert.Equal("1.2.0", dependency2.VersionSpec.ToString());
+                var dependency4 = dependencySet.Dependencies.Single(d => d.Id == "testPackage4");
+                Assert.Equal("1.4.0", dependency4.VersionSpec.ToString());
+                var dependency5 = dependencySet.Dependencies.Single(d => d.Id == "testPackage5");
+                Assert.Equal("1.5.0", dependency5.VersionSpec.ToString());
             }
             finally
             {
@@ -2032,7 +2045,7 @@ namespace Proj1
         // project requires a higher version number than the indirect dependency.
         [Theory]
         [InlineData("packages.config")]
-        public void PackCommand_PackagesAddedAsDependenciesIfProjectRequiresHigerVersionNumber_AndIndirectDepencyIsAlreadyVisted(string packagesConfigFileName)
+        public void PackCommand_PackagesAddedAsDependenciesIfProjectRequiresHigerVersionNumber_AndIndirectDependencyIsAlreadyListed(string packagesConfigFileName)
         {
             var nugetexe = Util.GetNuGetExePath();
             var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());

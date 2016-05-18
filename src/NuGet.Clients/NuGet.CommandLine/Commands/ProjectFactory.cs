@@ -848,7 +848,7 @@ namespace NuGet.CommandLine
                 }
 
                 var dependency = packagesAndDependencies[package.GetIdentity().Id].Item2;
-                dependencies[dependency.Id] = new PackageDependency(dependency.Id, VersionRange.Parse(dependency.VersionRange.ToString()));
+                dependencies[dependency.Id] = dependency;
             }
 
             if (IncludeReferencedProjects)
@@ -903,7 +903,7 @@ namespace NuGet.CommandLine
         {
             // returns true if the dependency should be added to the package
             // This happens if the dependency is not a dependency of a dependecy
-            // Or if the project dependency version is > the dependency's dependency version
+            // Or if the project dependency version is != the dependency's dependency version
             bool found = false;
             foreach (var reader in packagesAndDependencies)
             {
@@ -915,7 +915,7 @@ namespace NuGet.CommandLine
                         {
                             found = true;
 
-                            if (dependency.VersionRange.MinVersion < projectPackage.Version ||
+                            if (dependency.VersionRange.MinVersion != projectPackage.Version ||
                                 (!dependency.VersionRange.IsMinInclusive &&
                                 dependency.VersionRange.MinVersion == projectPackage.Version))
                             {
@@ -955,9 +955,7 @@ namespace NuGet.CommandLine
             }
             Logger.LogMinimal(LocalizedResourceManager.GetString("UsingPackagesConfigForDependencies"));
 
-            var referencesTask = packagesProject.GetInstalledPackagesAsync(new CancellationToken());
-            referencesTask.Wait();
-            var references = referencesTask.Result;
+            var references = packagesProject.GetInstalledPackagesAsync(CancellationToken.None).Result;
 
             // Collect all packages
             IDictionary<PackageIdentity, PackageReference> packageReferences =
