@@ -820,7 +820,8 @@ namespace NuGet.Packaging.Test
 
                     // Assert
                     Assert.True(File.Exists(outputDll));
-                    Assert.InRange(outputTime, testStartTime, testEndTime);
+                    // Allow some slop with the time to deal with file system accuracy limits
+                    Assert.InRange(outputTime, testStartTime.AddMinutes(-1), testEndTime.AddMinutes(1));
                 }
             }
         }
