@@ -1706,7 +1706,7 @@ namespace NuGet.Test
 
                 Assert.NotNull(exception);
                 Assert.True(exception is InvalidOperationException);
-                Assert.Contains("Package 'DoesNotExist,1.0.0' is not found", exception.Message);
+                Assert.Contains("Package 'DoesNotExist 1.0.0' is not found", exception.Message);
             }
         }
 

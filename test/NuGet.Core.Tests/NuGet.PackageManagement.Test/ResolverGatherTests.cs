@@ -272,7 +272,7 @@ namespace NuGet.Test
 
             // Assert
             // If this fails there will be a null ref or argument exception
-            Assert.Contains("Package 'a,2.0.0' is not found", result.Message);
+            Assert.Contains("Package 'a 2.0.0' is not found", result.Message);
         }
 
         [Fact]
