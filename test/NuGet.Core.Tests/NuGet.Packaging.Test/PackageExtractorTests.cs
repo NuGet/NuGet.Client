@@ -965,7 +965,13 @@ namespace NuGet.Packaging.Test
                     System.Globalization.CultureInfo.InvariantCulture,
                     System.Globalization.DateTimeStyles.AdjustToUniversal);
 
-                FileInfo packageFileInfo = await TestPackages.GeneratePackageAsync(root, "A", "2.0.3", time.ToLocalTime(), "lib/net45/A.dll");
+                var resolver = new PackagePathResolver(root);
+                var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                        root,
+                        identity.Id,
+                        identity.Version.ToString(),
+                        time.ToLocalTime(), "lib/net45/A.dll");
 
                 using (FileStream packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
@@ -977,17 +983,19 @@ namespace NuGet.Packaging.Test
                     // Act
                     PackageExtractor.ExtractPackage(
                         packageStream,
-                        new PackagePathResolver(root),
+                        resolver,
                         packageExtractionContext,
                         CancellationToken.None);
 
-                    string outputDll = Path.Combine(root, "A.2.0.3", "lib", "net45", "A.dll");
+                    var installPath = resolver.GetInstallPath(identity);
+                    string outputDll = Path.Combine(installPath, "lib", "net45", "A.dll");
                     DateTime outputTime = File.GetLastWriteTimeUtc(outputDll);
                     DateTime testEndTime = DateTime.UtcNow;
 
                     // Assert
                     Assert.True(File.Exists(outputDll));
-                    Assert.InRange(outputTime, testStartTime, testEndTime);
+                    // Allow some slop with the time to deal with file system accuracy limits
+                    Assert.InRange(outputTime, testStartTime.AddMinutes(-1), testEndTime.AddMinutes(1));
                 }
             }
         }
