@@ -185,7 +185,7 @@ namespace NuGet.TeamFoundationServer
             HashSet<string> filesToPendDelete = new HashSet<string>();
             foreach (var fullPath in fullPaths)
             {
-                if (File.Exists(fullPath))
+                if (File.Exists(fullPath) && IsSourceControlBound(fullPath))
                 {
                     filesToPendDelete.Add(fullPath);
                 }
@@ -204,6 +204,25 @@ namespace NuGet.TeamFoundationServer
                 }
 
                 foreach (var pendingChange in pendingChanges)
+                {
+                    if (pendingChange.IsAdd)
+                    {
+                        // If a file was marked for add, it does not have to marked for delete
+                        // Since, all the pending changes on the file are undone, no action needed here
+                        filesToPendDelete.Remove(pendingChange.LocalItem);
+                    }
+                }
+            }
+            else
+            {
+                var filePendingChanges = PrivateWorkspace.GetPendingChanges(filesToPendDelete.ToArray());
+
+                if (filePendingChanges.Any())
+                {
+                    PrivateWorkspace.Undo(filePendingChanges);
+                }
+
+                foreach (var pendingChange in filePendingChanges)
                 {
                     if (pendingChange.IsAdd)
                     {
