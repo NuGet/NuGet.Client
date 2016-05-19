@@ -1,0 +1,12 @@
+﻿{
+  "dependencies": {
+    "Microsoft.VisualStudio.Shell.Interop": "7.10.6071"
+  },
+  "frameworks": {
+    "net46": { }
+  },
+  "runtimes": {
+    "win-anycpu": { },
+    "win": { }
+  }
+}

@@ -1,9 +1,12 @@
 ﻿{
   "dependencies": {
+    "Microsoft.VisualStudio.OLE.Interop": "7.10.6070",
+    "Microsoft.VisualStudio.Shell.Interop": "7.10.6071",
+    "Microsoft.VisualStudio.Shell.Interop.8.0": "8.0.50727",
     "NuGet.Resolver": "3.5.0-*"
   },
   "frameworks": {
-    "net45": {}
+    "net46": {}
   },
   "runtimes": {
     "win-anycpu": {},

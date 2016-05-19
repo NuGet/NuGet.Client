@@ -306,8 +306,8 @@ namespace NuGet.CommandLine.Test
         [InlineData(null, 30, 3 * 60 * 1000)]
         [InlineData("0", 1, 2 * 60 * 1000)]
         [InlineData("-1", 1, 2 * 60 * 1000)]
-        [InlineData("1", 1, 1000)]
-        [InlineData("1", 2, 1000)]
+        [InlineData("10", 1, 10000)]
+        [InlineData("10", 2, 10000)]
         public void RestoreProjectJson_P2PTimeouts(string timeout, int projectCount, int expectedTimeOut)
         {
             // Arrange
