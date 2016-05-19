@@ -802,7 +802,7 @@ namespace NuGet.Packaging.Test
 
                 using (FileStream packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
-                    var packageExtractionContext = new PackageExtractionContext(NullLogger.Instance)
+                    var packageExtractionContext = new PackageExtractionContext()
                     {
                         PackageSaveMode = PackageSaveMode.Nuspec | PackageSaveMode.Files
                     };
