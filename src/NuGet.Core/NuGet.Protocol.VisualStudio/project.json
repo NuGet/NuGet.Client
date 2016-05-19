@@ -1,5 +1,5 @@
 {
-  "version": "3.4.4-*",
+  "version": "3.4.5-*",
   "authors": [
     "NuGet"
   ],
@@ -14,12 +14,12 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.Configuration": "3.4.4-*",
-    "NuGet.Protocol.Core.v2": "3.4.4-*",
-    "NuGet.Protocol.Core.v3": "3.4.4-*",
+    "NuGet.Configuration": "3.4.5-*",
+    "NuGet.Protocol.Core.v2": "3.4.5-*",
+    "NuGet.Protocol.Core.v3": "3.4.5-*",
     "NuGet.Shared": {
       "type": "build",
-      "version": "3.4.4-*"
+      "version": "3.4.5-*"
     }
   },
   "frameworks": {

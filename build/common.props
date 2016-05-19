@@ -31,7 +31,7 @@
 		  Semantic Version. See http://semver.org for full details.
 		  Update for every public release.
 		-->
-		<SemanticVersion>3.4.4</SemanticVersion>
+		<SemanticVersion>3.4.5</SemanticVersion>
 		<PreReleaseVersion>0</PreReleaseVersion>
 	</PropertyGroup>
 

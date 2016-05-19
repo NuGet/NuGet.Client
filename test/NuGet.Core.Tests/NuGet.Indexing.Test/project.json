@@ -1,9 +1,9 @@
 {
-  "version": "3.4.4-*",
+  "version": "3.4.5-*",
   "dependencies": {
     "Moq": "4.2.1507.118",
-    "NuGet.Indexing": "3.4.4-*",
-    "NuGet.Protocol.VisualStudio": "3.4.4-*",
+    "NuGet.Indexing": "3.4.5-*",
+    "NuGet.Protocol.VisualStudio": "3.4.5-*",
     "xunit": "2.1.0",
     "xunit.runner.dnx": "2.1.0-rc1-build204"
   },

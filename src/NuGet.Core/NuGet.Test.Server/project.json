@@ -1,5 +1,5 @@
 {
-  "version": "3.4.4-*",
+  "version": "3.4.5-*",
   "copyright": "Copyright .NET Foundation. All rights reserved.",
   "projectUrl": "https://github.com/NuGet/NuGet.Client",
   "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
@@ -7,7 +7,7 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.Common": "3.4.4-*"
+    "NuGet.Common": "3.4.5-*"
   },
   "frameworks": {
     "dnx451": {},

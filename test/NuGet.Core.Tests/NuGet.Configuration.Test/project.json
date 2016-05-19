@@ -1,10 +1,10 @@
 {
     "dependencies": {
-        "NuGet.Configuration": "3.4.4-*",
+        "NuGet.Configuration": "3.4.5-*",
         "xunit": "2.1.0",
         "xunit.runner.dnx": "2.1.0-rc1-build204",
-        "NuGet.Test.Utility": "3.4.4-*",
-        "NuGet.Common": "3.4.4-*"
+        "NuGet.Test.Utility": "3.4.5-*",
+        "NuGet.Common": "3.4.5-*"
     },
     "commands": {
         "test": "xunit.runner.dnx"

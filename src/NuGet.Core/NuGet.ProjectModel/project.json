@@ -1,14 +1,14 @@
 {
-  "version": "3.4.4-*",
+  "version": "3.4.5-*",
   "copyright": "Copyright .NET Foundation. All rights reserved.",
   "projectUrl": "https://github.com/NuGet/NuGet.Client",
   "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
   "dependencies": {
     "Newtonsoft.Json": "6.0.4",
-    "NuGet.DependencyResolver.Core": "3.4.4-*",
+    "NuGet.DependencyResolver.Core": "3.4.5-*",
     "NuGet.Shared": {
       "type": "build",
-      "version": "3.4.4-*"
+      "version": "3.4.5-*"
     }
   },
   "compilationOptions": {

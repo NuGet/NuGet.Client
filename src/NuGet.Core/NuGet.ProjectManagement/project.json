@@ -1,5 +1,5 @@
 {
-  "version": "3.4.4-*",
+  "version": "3.4.5-*",
   "copyright": "Copyright .NET Foundation. All rights reserved.",
   "projectUrl": "https://github.com/NuGet/NuGet.Client",
   "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
@@ -9,9 +9,9 @@
   },
   "dependencies": {
     "Microsoft.Web.Xdt": "2.1.1",
-    "NuGet.ProjectModel": "3.4.4-*",
+    "NuGet.ProjectModel": "3.4.5-*",
     "NuGet.Shared": {
-      "version": "3.4.4-*",
+      "version": "3.4.5-*",
       "type": "build"
     }
   },

@@ -35,7 +35,8 @@ ls -r project.json | %{ $_.FullName } | ReplaceNuGetVersion
 $miscFiles = @(
     "src\NuGet.Clients\VsExtension\source.extension.vsixmanifest",
     "src\NuGet.Clients\VsExtension\NuGetPackage.cs",
-    "build\common.props"
+    "build\common.props",
+    ".teamcity.properties"
 )
 
 $miscFiles | %{ Join-Path $NuGetRoot $_ } | ReplaceNuGetVersion

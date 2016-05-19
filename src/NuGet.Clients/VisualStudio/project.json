@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "NuGet.Protocol.VisualStudio": "3.4.4-*"
+    "NuGet.Protocol.VisualStudio": "3.4.5-*"
   },
   "frameworks": {
     "net45": {}

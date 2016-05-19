@@ -1,7 +1,7 @@
 {
   "version": "1.0.0-*",
   "dependencies": {
-    "NuGet.DependencyResolver": "3.4.4-*",
+    "NuGet.DependencyResolver": "3.4.5-*",
     "xunit": "2.1.0",
     "xunit.runner.dnx": "2.1.0-rc1-build204"
   },

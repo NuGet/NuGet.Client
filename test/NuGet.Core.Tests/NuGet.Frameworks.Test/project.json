@@ -1,8 +1,8 @@
 {
-  "version": "3.4.4-*",
+  "version": "3.4.5-*",
   "dependencies": {
-    "NuGet.Frameworks": "3.4.4-*",
-    "NuGet.Packaging": "3.4.4-*",
+    "NuGet.Frameworks": "3.4.5-*",
+    "NuGet.Packaging": "3.4.5-*",
     "xunit": "2.1.0",
     "xunit.runner.dnx": "2.1.0-rc1-build204"
   },
