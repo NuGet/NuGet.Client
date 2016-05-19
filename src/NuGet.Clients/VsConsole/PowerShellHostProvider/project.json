@@ -3,7 +3,7 @@
     "NuGet.PackageManagement": "3.5.0-*"
   },
   "frameworks": {
-    "net46": {}
+    "net45": {}
   },
   "runtimes": {
     "win-anycpu": {},

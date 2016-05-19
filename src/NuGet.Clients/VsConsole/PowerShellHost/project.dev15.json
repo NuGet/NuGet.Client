@@ -1,0 +1,15 @@
+﻿{
+  "dependencies": {
+    "Microsoft.VisualStudio.Shell.15.0": "15.0.25123-*",
+    "Microsoft.VisualStudio.Shell.Interop": "7.10.6071",
+    "Microsoft.VisualStudio.Threading": "15.0.20-*",
+    "NuGet.Resolver": "3.5.0-*"
+  },
+  "frameworks": {
+    "net46": {}
+  },
+  "runtimes": {
+    "win-anycpu": {},
+    "win": {}
+  }
+}
