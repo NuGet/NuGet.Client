@@ -1,0 +1,14 @@
+﻿{
+  "dependencies": {
+    "Microsoft.VisualStudio.Shell.14.0": "14.0.23107",
+    "Microsoft.VisualStudio.Shell.Interop": "7.10.6071",
+    "Microsoft.VisualStudio.Threading": "14.0.50702"
+  },
+  "frameworks": {
+    "net45": {}
+  },
+  "runtimes": {
+    "win-anycpu": {},
+    "win": {}
+  }
+}

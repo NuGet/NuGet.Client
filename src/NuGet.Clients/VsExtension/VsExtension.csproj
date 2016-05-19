@@ -23,14 +23,15 @@
     <CopyOutputSymbolsToOutputDirectory>true</CopyOutputSymbolsToOutputDirectory>
     <DeployExtension Condition=" '$(BuildingInsideVisualStudio)' != 'true' ">false</DeployExtension>
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(VisualStudioVersion)' == '14.0'">
     <DefineConstants>$(DefineConstants);VS14</DefineConstants>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <AssemblyName>NuGet.Tools</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(VisualStudioVersion)' == '15.0'">
     <DefineConstants>$(DefineConstants);VS15</DefineConstants>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <AssemblyName>NuGet.Tools.Dev15</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Coverage' Or '$(Configuration)' == 'Mono Debug'">
@@ -187,9 +188,9 @@
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
       <Private>False</Private>
     </ProjectReference>
-    <ProjectReference Include="..\TeamFoundationServer\TeamFoundationServer.csproj">
+    <ProjectReference Include="..\TeamFoundationServer14\TeamFoundationServer14.csproj">
       <Project>{e961d080-f10b-4f11-bea0-056509c086cc}</Project>
-      <Name>TeamFoundationServer</Name>
+      <Name>TeamFoundationServer14</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
       <Private>False</Private>
@@ -201,9 +202,9 @@
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
       <Private>False</Private>
     </ProjectReference>
-    <ProjectReference Include="..\VisualStudio.Facade\VisualStudio.Facade.csproj">
+    <ProjectReference Include="..\VisualStudio14\VisualStudio14.csproj">
       <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
-      <Name>VisualStudio.Facade</Name>
+      <Name>VisualStudio14</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
       <Private>False</Private>
@@ -252,6 +253,9 @@
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="Microsoft.CSharp">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.CoreUtility, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.ComponentModelHost">
@@ -314,6 +318,12 @@
   <Import Project="$(EnlistmentRoot)\build\common.targets" />
   <Import Project="$(EnlistmentRoot)\build\sign.targets" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
+  <PropertyGroup Condition="'$(VisualStudioVersion)' == '14.0'">
+    <PreBuildEvent>copy /y "$(MSBuildProjectDirectory)\project.dev14.json" "$(MSBuildProjectDirectory)\project.json"</PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(VisualStudioVersion)' == '15.0'">
+    <PreBuildEvent>copy /y "$(MSBuildProjectDirectory)\project.dev15.json" "$(MSBuildProjectDirectory)\project.json"</PreBuildEvent>
+  </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>"$(MSBuildProjectDirectory)\EnsureDirectoryAndCopy.bat" "$(TargetVsixContainer)" "$(ArtifactRoot)"</PostBuildEvent>
   </PropertyGroup>
