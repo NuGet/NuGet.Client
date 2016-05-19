@@ -13,7 +13,7 @@ using NuGet.Test.Server;
 using NuGet.Test.Utility;
 using Xunit;
 
-namespace NuGet.Protocol.Core.v3.Tests
+namespace NuGet.Protocol.Tests
 {
     public class HttpRetryHandlerTests
     {

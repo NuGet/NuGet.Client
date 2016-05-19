@@ -4,7 +4,7 @@
 using System;
 using Newtonsoft.Json;
 
-namespace NuGet.Protocol.Core.v3
+namespace NuGet.Protocol
 {
     public class SafeBoolConverter : JsonConverter
     {

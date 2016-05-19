@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 using NuGet.Configuration;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3;
 
 namespace NuGet.Commands
 {

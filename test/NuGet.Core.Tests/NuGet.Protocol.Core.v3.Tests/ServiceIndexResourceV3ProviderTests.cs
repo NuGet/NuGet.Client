@@ -15,7 +15,7 @@ using Xunit;
 using Newtonsoft.Json.Linq;
 using System.Linq;
 
-namespace NuGet.Protocol.Core.v3.Tests
+namespace NuGet.Protocol.Tests
 {
     public class ServiceIndexResourceV3ProviderTests
     {

@@ -86,6 +86,13 @@
     <Compile Include="IVsPackageManagerProvider.cs" />
     <Compile Include="IRegistryKey.cs" />
     <Compile Include="IVsTemplateWizard.cs" />
+    <Compile Include="LegacyTypes\IFileSystem.cs" />
+    <Compile Include="LegacyTypes\IPackage.cs" />
+    <Compile Include="LegacyTypes\IPackageAssemblyReference.cs" />
+    <Compile Include="LegacyTypes\IPackageFile.cs" />
+    <Compile Include="LegacyTypes\IPackageRepository.cs" />
+    <Compile Include="LegacyTypes\PackageSaveModes.cs" />
+    <Compile Include="LegacyTypes\SemanticVersion.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

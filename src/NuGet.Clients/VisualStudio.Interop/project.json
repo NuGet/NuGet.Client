@@ -1,6 +1,7 @@
 ﻿{
   "dependencies": {
     "Microsoft.VisualStudio.OLE.Interop": "7.10.6070"
+    "NuGet.Protocol.Core.v2": "3.5.0-*"
   },
   "frameworks": {
     "net46": {}

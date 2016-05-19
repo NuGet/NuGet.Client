@@ -9,7 +9,7 @@ using System.Xml;
 using Newtonsoft.Json;
 using NuGet.Packaging;
 
-namespace NuGet.Protocol.Core.v3
+namespace NuGet.Protocol
 {
     public static class HttpStreamValidation
     {

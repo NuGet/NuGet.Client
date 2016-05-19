@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
 
-namespace NuGet.Protocol.Core.v3.RemoteRepositories
+namespace NuGet.Protocol
 {
     public class HttpFileSystemBasedFindPackageByIdResourceProvider : ResourceProvider
     {

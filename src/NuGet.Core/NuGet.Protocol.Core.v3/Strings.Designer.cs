@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace NuGet.Protocol.Core.v3 {
+namespace NuGet.Protocol {
     using System;
     using System.Reflection;
     
@@ -447,6 +447,15 @@ namespace NuGet.Protocol.Core.v3 {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to &apos;{0}&apos; is not a valid nupkg file. Error: &apos;{1}&apos;..
+        /// </summary>
+        public static string NupkgPath_InvalidEx {
+            get {
+                return ResourceManager.GetString("NupkgPath_InvalidEx", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to One or more URIs must be specified..
         /// </summary>
         public static string OneOrMoreUrisMustBeSpecified {
@@ -600,6 +609,15 @@ namespace NuGet.Protocol.Core.v3 {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to The path &apos;{0}&apos; for the selected source could not be resolved..
+        /// </summary>
+        public static string Protocol_Search_LocalSourceNotFound {
+            get {
+                return ResourceManager.GetString("Protocol_Search_LocalSourceNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to The source version is not supported: &apos;{0}&apos;..
         /// </summary>
         public static string Protocol_UnsupportedVersion {
@@ -650,6 +668,15 @@ namespace NuGet.Protocol.Core.v3 {
         public static string UnableToFindFile {
             get {
                 return ResourceManager.GetString("UnableToFindFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Unable to parse a valid version from a v3 folder: &apos;{0}&apos;..
+        /// </summary>
+        public static string UnableToParseFolderV3Version {
+            get {
+                return ResourceManager.GetString("UnableToParseFolderV3Version", resourceCulture);
             }
         }
         

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 
-namespace NuGet.Protocol.Core.v3.Tests
+namespace NuGet.Protocol.Tests
 {
     internal class TestProxy : IWebProxy
     {

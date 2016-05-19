@@ -24,9 +24,6 @@
     "NuGet.Configuration": {
       "target": "project"
     },
-    "NuGet.Protocol.Core.v2": {
-      "target": "project"
-    },
     "NuGet.Protocol.Core.v3": {
       "target": "project"
     }

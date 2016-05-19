@@ -7,7 +7,7 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using NuGet.Protocol.Core.Types;
 
-namespace NuGet.Protocol.Core.v3
+namespace NuGet.Protocol
 {
     /// <summary>
     /// Stores/caches a service index json file.

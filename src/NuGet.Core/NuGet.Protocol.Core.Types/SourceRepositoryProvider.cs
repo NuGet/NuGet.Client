@@ -52,7 +52,15 @@ namespace NuGet.Protocol.Core.Types
         /// </summary>
         public SourceRepository CreateRepository(PackageSource source)
         {
-            return new SourceRepository(source, _resourceProviders);
+            return CreateRepository(source, FeedType.Undefined);
+        }
+
+        /// <summary>
+        /// Create a repository for one time use.
+        /// </summary>
+        public SourceRepository CreateRepository(PackageSource source, FeedType type)
+        {
+            return new SourceRepository(source, _resourceProviders, type);
         }
 
         public IPackageSourceProvider PackageSourceProvider

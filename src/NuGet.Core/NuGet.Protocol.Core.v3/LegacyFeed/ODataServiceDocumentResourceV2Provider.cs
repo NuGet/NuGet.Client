@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 
-namespace NuGet.Protocol.Core.v3
+namespace NuGet.Protocol
 {
     public class ODataServiceDocumentResourceV2Provider : ResourceProvider
     {

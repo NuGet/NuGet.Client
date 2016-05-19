@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3;
+using NuGet.Protocol;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol

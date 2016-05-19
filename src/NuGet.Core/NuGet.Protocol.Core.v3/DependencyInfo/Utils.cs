@@ -13,7 +13,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Versioning;
 
-namespace NuGet.Protocol.Core.v3.DependencyInfo
+namespace NuGet.Protocol
 {
     internal static class Utils
     {

@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3;
+using NuGet.Protocol;
 
 namespace NuGet.Protocol
 {
@@ -21,7 +21,7 @@ namespace NuGet.Protocol
         {
             PackageSearchResourceV2Feed resource = null;
 
-            if (FeedTypeUtility.GetFeedType(source.PackageSource) == FeedType.HttpV2)
+            if (await source.GetFeedType(token) == FeedType.HttpV2)
             {
                 var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
 

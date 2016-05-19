@@ -4,8 +4,7 @@
 using System;
 using System.Collections.Generic;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v2;
-using NuGet.Protocol.Core.v3;
+using NuGet.Protocol;
 
 namespace NuGet.Protocol.VisualStudio
 {
@@ -26,15 +25,6 @@ namespace NuGet.Protocol.VisualStudio
         /// </summary>
         public static IEnumerable<Lazy<INuGetResourceProvider>> GetVisualStudio(this Repository.ProviderFactory factory)
         {
-            yield return new Lazy<INuGetResourceProvider>(() => new AutoCompleteResourceLocalProvider());
-            yield return new Lazy<INuGetResourceProvider>(() => new PackageMetadataResourceLocalProvider());
-            yield return new Lazy<INuGetResourceProvider>(() => new PackageSearchResourceLocalProvider());
-
-            foreach (var provider in Repository.Provider.GetCoreV2())
-            {
-                yield return provider;
-            }
-
             foreach (var provider in Repository.Provider.GetCoreV3())
             {
                 yield return provider;

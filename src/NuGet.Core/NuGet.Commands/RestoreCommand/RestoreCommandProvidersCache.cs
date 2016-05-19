@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.DependencyResolver;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3;
 using NuGet.Repositories;
 
 namespace NuGet.Commands
@@ -38,9 +38,10 @@ namespace NuGet.Commands
 
             var local = _localProvider.GetOrAdd(globalPackagesPath, (path) =>
             {
-                var pathSource = Repository.Factory.GetCoreV3(path);
+                // Create a v3 file system source
+                var pathSource = Repository.Factory.GetCoreV3(path, FeedType.FileSystemV3);
 
-                // Do not throw or warn for gloabal cache 
+                // Do not throw or warn for global cache 
                 return new SourceRepositoryDependencyProvider(pathSource, log, cacheContext, ignoreFailedSources: true, ignoreWarning: true);
             });
 

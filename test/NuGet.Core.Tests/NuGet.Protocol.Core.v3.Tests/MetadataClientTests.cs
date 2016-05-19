@@ -13,7 +13,7 @@ using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
 
-namespace NuGet.Protocol.Core.v3.Tests
+namespace NuGet.Protocol.Tests
 {
     public class MetadataClientTests
     {

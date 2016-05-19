@@ -1,6 +1,6 @@
-﻿using Newtonsoft.Json;
-using NuGet.Protocol.Core.v3;
-using System.IO;
+﻿using System.IO;
+using Newtonsoft.Json;
+using NuGet.Protocol;
 
 namespace NuGet.Indexing.Test
 {

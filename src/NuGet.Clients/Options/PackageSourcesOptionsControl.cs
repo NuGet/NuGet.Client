@@ -343,7 +343,7 @@ namespace NuGet.Options
                 return TryUpdateSourceResults.InvalidSource;
             }
 
-            if (!(PathValidator.IsValidLocalPath(source) || PathValidator.IsValidUncPath(source) || PathValidator.IsValidUrl(source)))
+            if (!(Common.PathValidator.IsValidLocalPath(source) || Common.PathValidator.IsValidUncPath(source) || Common.PathValidator.IsValidUrl(source)))
             {
                 MessageHelper.ShowWarningMessage(Resources.ShowWarning_InvalidSource, Resources.ShowWarning_Title);
                 SelectAndFocus(NewPackageSource);

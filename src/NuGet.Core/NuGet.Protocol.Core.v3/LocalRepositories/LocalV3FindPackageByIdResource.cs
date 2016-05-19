@@ -17,13 +17,13 @@ using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
-namespace NuGet.Protocol.Core.v3.LocalRepositories
+namespace NuGet.Protocol
 {
     public class LocalV3FindPackageByIdResource : FindPackageByIdResource
     {
         // Use cache insensitive compare for windows
         private readonly ConcurrentDictionary<string, List<NuGetVersion>> _cache
-            = new ConcurrentDictionary<string, List<NuGetVersion>>();
+            = new ConcurrentDictionary<string, List<NuGetVersion>>(StringComparer.OrdinalIgnoreCase);
 
         private readonly string _source;
         private readonly VersionFolderPathResolver _resolver;

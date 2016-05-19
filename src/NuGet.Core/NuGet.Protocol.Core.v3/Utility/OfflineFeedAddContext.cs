@@ -3,7 +3,7 @@
 
 using System;
 using System.Globalization;
-using NuGet.Protocol.Core.v3;
+using NuGet.Protocol;
 
 namespace NuGet.Protocol.Core.Types
 {

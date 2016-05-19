@@ -16,7 +16,7 @@ using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
-namespace NuGet.Protocol.Core.v3.RemoteRepositories
+namespace NuGet.Protocol
 {
     /// <summary>
     /// A <see cref="FindPackageByIdResource" /> for a Http-based file system where files are laid out in the

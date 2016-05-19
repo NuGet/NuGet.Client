@@ -9,7 +9,7 @@ using NuGet.Protocol.Core.Types;
 using System.Threading;
 using NuGet.Configuration;
 
-namespace NuGet.Protocol.Core.v3
+namespace NuGet.Protocol
 {
     /// <summary>
     /// Resource wrapper for an HttpClient

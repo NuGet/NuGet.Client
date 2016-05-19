@@ -5,13 +5,16 @@ using System;
 using System.Collections.Generic;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3.LocalRepositories;
-using NuGet.Protocol.Core.v3.RemoteRepositories;
 
-namespace NuGet.Protocol.Core.v3
+namespace NuGet.Protocol
 {
     public static class FactoryExtensionsV2
     {
+        public static SourceRepository GetCoreV3(this Repository.RepositoryFactory factory, string source, FeedType type)
+        {
+            return Repository.CreateSource(Repository.Provider.GetCoreV3(), source, type);
+        }
+
         public static SourceRepository GetCoreV3(this Repository.RepositoryFactory factory, string source)
         {
             return Repository.CreateSource(Repository.Provider.GetCoreV3(), source);
@@ -24,6 +27,7 @@ namespace NuGet.Protocol.Core.v3
 
         public static IEnumerable<Lazy<INuGetResourceProvider>> GetCoreV3(this Repository.ProviderFactory factory)
         {
+            yield return new Lazy<INuGetResourceProvider>(() => new FeedTypeResourceProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new DependencyInfoResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new DownloadResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new MetadataResourceV3Provider());
@@ -51,6 +55,18 @@ namespace NuGet.Protocol.Core.v3
             yield return new Lazy<INuGetResourceProvider>(() => new PackageMetadataResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new AutoCompleteResourceV2FeedProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new AutoCompleteResourceV3Provider());
+
+            // Local repository providers
+            yield return new Lazy<INuGetResourceProvider>(() => new FindLocalPackagesResourceUnzippedProvider());
+            yield return new Lazy<INuGetResourceProvider>(() => new FindLocalPackagesResourceV2Provider());
+            yield return new Lazy<INuGetResourceProvider>(() => new FindLocalPackagesResourceV3Provider());
+            yield return new Lazy<INuGetResourceProvider>(() => new LocalAutoCompleteResourceProvider());
+            yield return new Lazy<INuGetResourceProvider>(() => new LocalDependencyInfoResourceProvider());
+            yield return new Lazy<INuGetResourceProvider>(() => new LocalDownloadResourceProvider());
+            yield return new Lazy<INuGetResourceProvider>(() => new LocalMetadataResourceProvider());
+            yield return new Lazy<INuGetResourceProvider>(() => new LocalPackageMetadataResourceProvider());
+            yield return new Lazy<INuGetResourceProvider>(() => new LocalPackageSearchResourceProvider());
+
             yield break;
         }
     }

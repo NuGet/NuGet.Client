@@ -24,9 +24,6 @@
     "NuGet.Commands": {
       "target": "project"
     },
-    "NuGet.Protocol.Core.v2": {
-      "target": "project"
-    },
     "NuGet.Resolver": {
       "target": "project"
     }

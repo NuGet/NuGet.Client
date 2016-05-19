@@ -2,7 +2,7 @@
 using Xunit;
 using NuGet.Protocol.Core.Types;
 
-namespace NuGet.Protocol.Core.v3.Tests
+namespace NuGet.Protocol.Tests
 {
 //Negative tests here won't run well on *nix because bad test data used will trigger new exceptions
 //TODO: we can revisit to catch them if there is value.

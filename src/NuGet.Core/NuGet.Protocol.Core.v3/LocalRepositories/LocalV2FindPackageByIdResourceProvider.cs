@@ -4,22 +4,17 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 
-namespace NuGet.Protocol.Core.v3.LocalRepositories
+namespace NuGet.Protocol
 {
     /// <summary>
     /// A v2-style package repository that has nupkgs at the root.
     /// </summary>
     public class LocalV2FindPackageByIdResourceProvider : ResourceProvider
     {
-        private readonly ConcurrentDictionary<string, List<CachedPackageInfo>> _packageInfoCache =
-            new ConcurrentDictionary<string, List<CachedPackageInfo>>(StringComparer.Ordinal);
-
         public LocalV2FindPackageByIdResourceProvider()
             : base(typeof(FindPackageByIdResource),
                   nameof(LocalV2FindPackageByIdResourceProvider),
@@ -27,23 +22,17 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
         {
         }
 
-        public override Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
+        public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
             INuGetResource resource = null;
 
-            Uri uri = source.PackageSource.TrySourceAsUri;
-            if (uri == null || uri.IsFile)
+            var feedType = await source.GetFeedType(token);
+            if (feedType == FeedType.FileSystemV2)
             {
-                if (!LocalV2FindPackageByIdResource.GetNupkgFiles(source.PackageSource.Source, id: string.Empty).Any())
-                {
-                    return Task.FromResult(Tuple.Create(false, resource));
-                }
-                
-                resource = new LocalV2FindPackageByIdResource(source.PackageSource, _packageInfoCache);
-                return Task.FromResult(Tuple.Create(true, resource));
+                resource = new LocalV2FindPackageByIdResource(source.PackageSource);
             }
 
-            return Task.FromResult(Tuple.Create(false, resource));
+            return Tuple.Create(resource != null, resource);
         }
     }
 }

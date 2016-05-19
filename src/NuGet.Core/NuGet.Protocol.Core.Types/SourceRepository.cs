@@ -20,6 +20,11 @@ namespace NuGet.Protocol.Core.Types
         private readonly PackageSource _source;
 
         /// <summary>
+        /// Pre-determined feed type.
+        /// </summary>
+        public FeedType FeedTypeOverride { get; }
+
+        /// <summary>
         /// Source Repository
         /// </summary>
         /// <param name="source">source url</param>
@@ -35,20 +40,35 @@ namespace NuGet.Protocol.Core.Types
         /// <param name="source">source url</param>
         /// <param name="providers">Resource providers</param>
         public SourceRepository(PackageSource source, IEnumerable<Lazy<INuGetResourceProvider>> providers)
+            : this(source, providers, FeedType.Undefined)
+        {
+        }
+
+        /// <summary>
+        /// Source Repository
+        /// </summary>
+        /// <param name="source">source url</param>
+        /// <param name="providers">Resource providers</param>
+        /// <param name="feedTypeOverride">Restrict the source to this feed type.</param>
+        public SourceRepository(
+            PackageSource source,
+            IEnumerable<Lazy<INuGetResourceProvider>> providers,
+            FeedType feedTypeOverride)
             : this()
         {
             if (source == null)
             {
-                throw new ArgumentNullException("source");
+                throw new ArgumentNullException(nameof(source));
             }
 
             if (providers == null)
             {
-                throw new ArgumentNullException("providers");
+                throw new ArgumentNullException(nameof(providers));
             }
 
             _source = source;
             _providerCache = Init(providers);
+            FeedTypeOverride = feedTypeOverride;
         }
 
         /// <summary>
@@ -69,6 +89,22 @@ namespace NuGet.Protocol.Core.Types
         public virtual PackageSource PackageSource
         {
             get { return _source; }
+        }
+
+        /// <summary>
+        /// Find the FeedType of the source. If overridden FeedTypeOverride is returned.
+        /// </summary>
+        public virtual async Task<FeedType> GetFeedType(CancellationToken token)
+        {
+            if (FeedTypeOverride == FeedType.Undefined)
+            {
+                var resource = await GetResourceAsync<FeedTypeResource>(token);
+                return resource.FeedType;
+            }
+            else
+            {
+                return FeedTypeOverride;
+            }
         }
 
         /// <summary>

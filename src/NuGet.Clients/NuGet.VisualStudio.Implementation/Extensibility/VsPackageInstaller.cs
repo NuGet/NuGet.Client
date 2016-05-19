@@ -410,7 +410,7 @@ namespace NuGet.VisualStudio
         }
 
         /// <summary>
-        /// Core install method. All installs from the VS API and template wizard end up here.
+        /// Internal install method. All installs from the VS API and template wizard end up here.
         /// </summary>
         internal async Task InstallInternalAsync(
             Project project,
@@ -426,46 +426,57 @@ namespace NuGet.VisualStudio
             // So, go off the UI thread explicitly to improve responsiveness
             await TaskScheduler.Default;
 
+            var gatherCache = new GatherCache();
+            var sources = repoProvider.GetRepositories().ToList();
+
             // store expanded node state
             IDictionary<string, ISet<VsHierarchyItem>> expandedNodes = await VsHierarchyUtility.GetAllExpandedNodesAsync(_solutionManager);
 
             try
             {
                 DependencyBehavior depBehavior = ignoreDependencies ? DependencyBehavior.Ignore : DependencyBehavior.Lowest;
-                
+
                 ResolutionContext resolution = new ResolutionContext(
                     depBehavior,
                     includePrerelease,
-                    includeUnlisted: false, 
+                    includeUnlisted: false,
                     versionConstraints: VersionConstraints.None);
 
-                NuGetPackageManager packageManager =
-                    new NuGetPackageManager(
-                        repoProvider,
-                        _settings,
-                        _solutionManager,
-                        _deleteOnRestartManager);
+                var packageManager = CreatePackageManager(repoProvider);
 
                 // find the project
-                NuGetProject nuGetProject = await PackageManagementHelpers.GetProjectAsync(_solutionManager, project, projectContext);
+                var nuGetProject = await PackageManagementHelpers.GetProjectAsync(_solutionManager, project, projectContext);
 
                 // install the package
                 foreach (PackageIdentity package in packages)
                 {
+                    // Check if the package is already installed
                     if (package.Version == null)
                     {
-                        if (!_packageServices.IsPackageInstalled(project, package.Id))
+                        if (_packageServices.IsPackageInstalled(project, package.Id))
                         {
-                            await packageManager.InstallPackageAsync(nuGetProject, package.Id, resolution, projectContext, repoProvider.GetRepositories(), Enumerable.Empty<SourceRepository>(), token);
+                            continue;
                         }
                     }
                     else
                     {
-                        if (!_packageServices.IsPackageInstalledEx(project, package.Id, package.Version.ToString()))
+                        if (_packageServices.IsPackageInstalledEx(project, package.Id, package.Version.ToString()))
                         {
-                            await packageManager.InstallPackageAsync(nuGetProject, package, resolution, projectContext, repoProvider.GetRepositories(), Enumerable.Empty<SourceRepository>(), token);
+                            continue;
                         }
                     }
+
+                    // Perform the install
+                    await InstallInternalCoreAsync(
+                        packageManager,
+                        gatherCache,
+                        nuGetProject,
+                        package,
+                        sources,
+                        projectContext,
+                        includePrerelease,
+                        ignoreDependencies,
+                        token);
                 }
             }
             finally
@@ -473,6 +484,55 @@ namespace NuGet.VisualStudio
                 // collapse nodes
                 await VsHierarchyUtility.CollapseAllNodesAsync(_solutionManager, expandedNodes);
             }
+        }
+
+        /// <summary>
+        /// Core install method. All installs from the VS API and template wizard end up here.
+        /// This does not check for already installed packages
+        /// </summary>
+        internal async Task InstallInternalCoreAsync(
+            NuGetPackageManager packageManager,
+            GatherCache gatherCache,
+            NuGetProject nuGetProject,
+            PackageIdentity package,
+            IEnumerable<SourceRepository> sources,
+            VSAPIProjectContext projectContext,
+            bool includePrerelease,
+            bool ignoreDependencies,
+            CancellationToken token)
+        {
+            await TaskScheduler.Default;
+
+            DependencyBehavior depBehavior = ignoreDependencies ? DependencyBehavior.Ignore : DependencyBehavior.Lowest;
+
+            ResolutionContext resolution = new ResolutionContext(
+                depBehavior,
+                includePrerelease,
+                includeUnlisted: false,
+                versionConstraints: VersionConstraints.None,
+                gatherCache: gatherCache);
+
+            // install the package
+            if (package.Version == null)
+            {
+                await packageManager.InstallPackageAsync(nuGetProject, package.Id, resolution, projectContext, sources, Enumerable.Empty<SourceRepository>(), token);
+            }
+            else
+            {
+                await packageManager.InstallPackageAsync(nuGetProject, package, resolution, projectContext, sources, Enumerable.Empty<SourceRepository>(), token);
+            }
+        }
+
+        /// <summary>
+        /// Create a new NuGetPackageManager with the IVsPackageInstaller settings.
+        /// </summary>
+        internal NuGetPackageManager CreatePackageManager(ISourceRepositoryProvider repoProvider)
+        {
+            return new NuGetPackageManager(
+                repoProvider,
+                _settings,
+                _solutionManager,
+                _deleteOnRestartManager);
         }
     }
 }

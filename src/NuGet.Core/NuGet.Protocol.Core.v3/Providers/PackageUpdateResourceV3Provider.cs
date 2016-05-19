@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
 using System.Globalization;
 
-namespace NuGet.Protocol.Core.v3
+namespace NuGet.Protocol
 {
     public class PackageUpdateResourceV3Provider : ResourceProvider
     {
