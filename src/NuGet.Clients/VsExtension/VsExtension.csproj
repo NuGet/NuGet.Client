@@ -25,14 +25,20 @@
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(VisualStudioVersion)' == '14.0'">
-    <DefineConstants>$(DefineConstants);VS14</DefineConstants>
-    <AssemblyName>NuGet.Tools</AssemblyName>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(VisualStudioVersion)' == '15.0'">
-    <DefineConstants>$(DefineConstants);VS15</DefineConstants>
-    <AssemblyName>NuGet.Tools.Dev15</AssemblyName>
-  </PropertyGroup>
+  <Choose>
+    <When Condition="'$(VisualStudioVersion)' == '14.0'">
+      <PropertyGroup>
+        <DefineConstants>$(DefineConstants);VS14</DefineConstants>
+        <AssemblyName>NuGet.Tools</AssemblyName>
+      </PropertyGroup>
+    </When>
+    <When Condition="'$(VisualStudioVersion)' == '15.0'">
+      <PropertyGroup>
+        <DefineConstants>$(DefineConstants);VS15</DefineConstants>
+        <AssemblyName>NuGet.Tools.Dev15</AssemblyName>
+      </PropertyGroup>
+    </When>
+  </Choose>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Coverage' Or '$(Configuration)' == 'Mono Debug'">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
@@ -140,9 +146,6 @@
     <None Include="project.json" />
     <None Include="Resources\nugetAbout.ico" />
     <None Include="Resources\Toolbar.png" />
-    <None Include="source.extension.vsixmanifest">
-      <SubType>Designer</SubType>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NuGet.Credentials\NuGet.Credentials.csproj">
@@ -314,13 +317,31 @@
   <Import Project="$(EnlistmentRoot)\build\common.targets" />
   <Import Project="$(EnlistmentRoot)\build\sign.targets" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Target Name="FindSourceVsixManifest">
+    <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
+      <SourceVsixManifest Include="source.extension.dev14.vsixmanifest" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
+      <SourceVsixManifest Include="source.extension.dev15.vsixmanifest" />
+    </ItemGroup>
+  </Target>  
+  <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
+    <VsixIncludeFile Include=".vsixinclude.dev14" />
+    <VsixIgnoreFile Include=".vsixignore.dev14" />
+    <None Include="source.extension.dev14.vsixmanifest">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
+    <VsixIncludeFile Include=".vsixinclude.dev15" />
+    <VsixIgnoreFile Include=".vsixignore.dev15" />
+    <None Include="source.extension.dev15.vsixmanifest">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
   <PropertyGroup>
     <PostBuildEvent>"$(MSBuildProjectDirectory)\EnsureDirectoryAndCopy.bat" "$(TargetVsixContainer)" "$(ArtifactRoot)"</PostBuildEvent>
   </PropertyGroup>
-  <ItemGroup>
-    <VsixIncludeFile Include=".vsixinclude" />
-    <VsixIgnoreFile Include=".vsixignore" />
-  </ItemGroup>
   <Target Name="ReadVsixIncludeListFromFile">
     <ReadLinesFromFile File="@(VsixIncludeFile)">
       <Output TaskParameter="Lines" ItemName="IncludeVsixFilesList" />
@@ -353,9 +374,9 @@
     </ItemGroup>
     <Message Text="Suppressed file '%(SuppressPackaging.SourceFile)'" Condition=" '@(SuppressPackaging)' != '' " />
     <Message Text="Included file '%(VSIXSourceItem.Identity)'" Condition=" '@(VSIXSourceItem)' != '' " />
-    <Error Text="Missing @(MissingRequiredAssemblies->Count()) required file(s) '@(MissingRequiredAssemblies)'" Condition=" '@(MissingRequiredAssemblies)' != '' " File=".vsixinclude" />
-    <Error Text="Found @(NotListedDependencies->Count()) not listed file(s) '@(NotListedDependencies)'" Condition=" '@(NotListedDependencies)' != '' " File=".vsixinclude" />
-    <Warning Text="Missing @(MissingIgnoredAssemblies->Count()) ignored file(s) '@(MissingIgnoredAssemblies)'" Condition=" '@(MissingIgnoredAssemblies)' != '' " File=".vsixignore" />
+    <Error Text="Missing @(MissingRequiredAssemblies->Count()) required file(s) '@(MissingRequiredAssemblies)'" Condition=" '@(MissingRequiredAssemblies)' != '' " File="@(VsixIncludeFile)" />
+    <Error Text="Found @(NotListedDependencies->Count()) not listed file(s) '@(NotListedDependencies)'" Condition=" '@(NotListedDependencies)' != '' " File="@(VsixIncludeFile)" />
+    <Warning Text="Missing @(MissingIgnoredAssemblies->Count()) ignored file(s) '@(MissingIgnoredAssemblies)'" Condition=" '@(MissingIgnoredAssemblies)' != '' " File="@(VsixIgnoreFile)" />
     <Message Text="Included @(VSIXSourceItem->Count()) file(s). Filtered @(SuppressPackaging->Count()) file(s)." Importance="high" />
   </Target>
 </Project>

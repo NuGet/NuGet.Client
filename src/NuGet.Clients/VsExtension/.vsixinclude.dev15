@@ -1,0 +1,49 @@
+# NuGet delay signed assemblies
+NuGetConsole.Host.PowerShell.dll
+NuGetConsole.Host.PowerShellProvider.dll
+NuGet.Console.dll
+NuGet.Console.Types.dll
+NuGet.Credentials.dll
+NuGet.Options.dll
+NuGet.PackageManagement.PowerShellCmdlets.dll
+NuGet.PackageManagement.VisualStudio.dll
+NuGet.TeamFoundationServer.dll
+NuGet.Tools.Dev15.dll
+NuGet.VisualStudio.dll
+NuGet.VisualStudio.Facade.dll
+NuGet.VisualStudio.Interop.dll
+NuGet.VisualStudio.Implementation.dll
+
+# MS delay signed assemblies
+NuGet.Client.dll
+NuGet.Commands.dll
+NuGet.Common.dll
+NuGet.Configuration.dll
+NuGet.ContentModel.dll
+NuGet.DependencyResolver.Core.dll
+NuGet.DependencyResolver.dll
+NuGet.Frameworks.dll
+NuGet.Indexing.dll
+NuGet.LibraryModel.dll
+NuGet.Logging.dll
+NuGet.PackageManagement.dll
+NuGet.PackageManagement.UI.dll
+NuGet.Packaging.Core.dll
+NuGet.Packaging.Core.Types.dll
+NuGet.Packaging.dll
+NuGet.ProjectManagement.dll
+NuGet.ProjectModel.dll
+NuGet.Protocol.Core.Types.dll
+NuGet.Protocol.Core.v3.dll
+NuGet.Protocol.VisualStudio.dll
+NuGet.Repositories.dll
+NuGet.Resolver.dll
+NuGet.RuntimeModel.dll
+NuGet.Versioning.dll
+
+# NuGet dlls to keep
+NuGet.Core.dll
+
+# 3rd party dlls to keep
+Lucene.Net.dll
+Microsoft.Web.XmlTransform.dll

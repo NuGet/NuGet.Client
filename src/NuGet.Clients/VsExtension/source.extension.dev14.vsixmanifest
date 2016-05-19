@@ -8,12 +8,12 @@
     <PreviewImage>Resources/nuget_256.png</PreviewImage>
   </Metadata>
   <Installation InstalledByMsi="false" AllUsers="true">
-    <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="[14.0,15.0)" />
-    <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[14.0,15.0)" />
-    <InstallationTarget Id="Microsoft.VisualStudio.VWDExpress" Version="[14.0,15.0)" />
-    <InstallationTarget Id="Microsoft.VisualStudio.VPDExpress" Version="[14.0,15.0)" />
-    <InstallationTarget Id="Microsoft.VisualStudio.VSWinExpress" Version="[14.0,15.0)" />
-    <InstallationTarget Id="Microsoft.VisualStudio.VSWinDesktopExpress" Version="[14.0,15.0)" />
+    <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="14.0" />
+    <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="14.0" />
+    <InstallationTarget Id="Microsoft.VisualStudio.VWDExpress" Version="14.0" />
+    <InstallationTarget Id="Microsoft.VisualStudio.VPDExpress" Version="14.0" />
+    <InstallationTarget Id="Microsoft.VisualStudio.VSWinExpress" Version="14.0" />
+    <InstallationTarget Id="Microsoft.VisualStudio.VSWinDesktopExpress" Version="14.0" />
   </Installation>
   <Assets>
     <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
