@@ -31,7 +31,7 @@ namespace NuGetVSExtension
 
         private const string DTEEnvironmentCategory = "Environment";
 
-        private const string MSBuildVerbosityKey = "MSBuildLoggerVerbosity";
+        private const string MSBuildVerbosityKey = "MSBuildOutputVerbosity";
 
         private const int DefaultVerbosityLevel = 2;
 
