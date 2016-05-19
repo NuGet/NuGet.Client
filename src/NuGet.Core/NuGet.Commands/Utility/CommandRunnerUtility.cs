@@ -43,7 +43,22 @@ namespace NuGet.Commands
 
         public static async Task<PackageUpdateResource> GetPackageUpdateResource(IPackageSourceProvider sourceProvider, string source)
         {
-            var packageSource = new PackageSource(source);
+            // Use a loaded PackageSource if possible since it contains credential info
+            PackageSource packageSource = null;
+            foreach (var loadedPackageSource in sourceProvider.LoadPackageSources())
+            {
+                if (loadedPackageSource.IsEnabled && source == loadedPackageSource.Source)
+                {
+                    packageSource = loadedPackageSource;
+                    break;
+                }
+            }
+
+            if (packageSource == null)
+            {
+                packageSource = new PackageSource(source);
+            }
+
             var sourceRepositoryProvider = new CachingSourceProvider(sourceProvider);
             var sourceRepository = sourceRepositoryProvider.CreateRepository(packageSource);
 

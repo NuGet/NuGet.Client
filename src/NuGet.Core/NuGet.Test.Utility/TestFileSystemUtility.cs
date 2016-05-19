@@ -58,5 +58,26 @@ namespace NuGet.Test.Utility
                 throw new InvalidOperationException("Trying to delete the root test folder in a test");
             }
         }
+
+        private class ResetDirectory : IDisposable
+        {
+            public string OldPath { get; set; }
+
+            void IDisposable.Dispose()
+            {
+                Directory.SetCurrentDirectory(OldPath);
+            }
+        }
+
+        public static IDisposable SetCurrentDirectory(string path)
+        {
+            string oldPath = Directory.GetCurrentDirectory();
+            Directory.SetCurrentDirectory(path);
+
+            return new ResetDirectory()
+            {
+                OldPath = oldPath
+            };
+        }
     }
 }
