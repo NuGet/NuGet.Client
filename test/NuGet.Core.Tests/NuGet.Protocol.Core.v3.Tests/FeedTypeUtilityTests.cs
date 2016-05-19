@@ -126,7 +126,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             {
                 // Arrange
                 CreateFile(Path.Combine(root, "a", "1.0.0", "a.1.0.0.nupkg.sha512"));
-                CreateFile(Path.Combine(root, "a", "1.0.0", "a.1.0.0.nuspec"));
+                CreateFile(Path.Combine(root, "a", "1.0.0", "a.nuspec"));
                 CreateFile(Path.Combine(root, "a", "1.0.0", "a.1.0.0.nupkg"));
 
                 // Act
