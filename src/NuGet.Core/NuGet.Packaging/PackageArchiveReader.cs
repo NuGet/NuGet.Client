@@ -171,7 +171,9 @@ namespace NuGet.Packaging
                     if (copiedFile != null)
                     {
                         var attr = File.GetAttributes(copiedFile);
-                        if (!attr.HasFlag(FileAttributes.Directory) && entry.LastWriteTime.DateTime != DateTime.MinValue)
+                        if (!attr.HasFlag(FileAttributes.Directory) &&
+                            entry.LastWriteTime.DateTime != DateTime.MinValue && // Ignore invalid times
+                            entry.LastWriteTime.UtcDateTime <= DateTime.UtcNow) // Ignore future times
                         {
                             try
                             {
