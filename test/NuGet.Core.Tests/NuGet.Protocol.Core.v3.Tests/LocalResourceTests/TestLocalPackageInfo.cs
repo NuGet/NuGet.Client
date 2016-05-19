@@ -11,6 +11,7 @@ namespace NuGet.Protocol.Core.v3.Tests
     public class TestLocalPackageInfo : LocalPackageInfo
     {
         public TestLocalPackageInfo(string id, string version)
+            : base()
         {
             IdentityValue = new PackageIdentity(id, NuGetVersion.Parse(version));
         }
@@ -36,12 +37,9 @@ namespace NuGet.Protocol.Core.v3.Tests
             }
         }
 
-        public override PackageReaderBase GetReader
+        public override PackageReaderBase GetReader()
         {
-            get
-            {
-                return PackageValue;
-            }
+            return PackageValue;
         }
 
         public override NuspecReader Nuspec

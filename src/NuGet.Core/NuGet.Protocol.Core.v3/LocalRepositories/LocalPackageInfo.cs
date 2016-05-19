@@ -56,6 +56,11 @@ namespace NuGet.Protocol
             _getPackageReader = getPackageReader;
         }
 
+        protected LocalPackageInfo()
+        {
+
+        }
+
         /// <summary>
         /// Package id and version.
         /// </summary>
