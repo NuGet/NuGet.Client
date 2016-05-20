@@ -3,7 +3,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
 
-namespace NuGet.Protocol.Core.v3
+namespace NuGet.Protocol
 {
     public class MetadataFieldConverter : JsonConverter
     {

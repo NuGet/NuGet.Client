@@ -340,6 +340,94 @@ namespace NuGet.Packaging
             yield break;
         }
 
+        /// <summary>
+        /// Package title.
+        /// </summary>
+        public string GetTitle()
+        {
+            return GetMetadataValue("title");
+        }
+
+        /// <summary>
+        /// Package authors.
+        /// </summary>
+        public string GetAuthors()
+        {
+            return GetMetadataValue("authors");
+        }
+
+        /// <summary>
+        /// Package tags.
+        /// </summary>
+        public string GetTags()
+        {
+            return GetMetadataValue("tags");
+        }
+
+        /// <summary>
+        /// Package owners.
+        /// </summary>
+        public string GetOwners()
+        {
+            return GetMetadataValue("owners");
+        }
+
+        /// <summary>
+        /// Package description.
+        /// </summary>
+        public string GetDescription()
+        {
+            return GetMetadataValue("description");
+        }
+
+        /// <summary>
+        /// Package release notes.
+        /// </summary>
+        public string GetReleaseNotes()
+        {
+            return GetMetadataValue("releaseNotes");
+        }
+
+        /// <summary>
+        /// Package summary.
+        /// </summary>
+        public string GetSummary()
+        {
+            return GetMetadataValue("summary");
+        }
+
+        /// <summary>
+        /// Package project url.
+        /// </summary>
+        public string GetProjectUrl()
+        {
+            return GetMetadataValue("projectUrl");
+        }
+
+        /// <summary>
+        /// Package icon url.
+        /// </summary>
+        public string GetIconUrl()
+        {
+            return GetMetadataValue("iconUrl");
+        }
+
+        /// <summary>
+        /// Copyright information.
+        /// </summary>
+        public string GetCopyright()
+        {
+            return GetMetadataValue("copyright");
+        }
+
+        /// <summary>
+        /// Require license acceptance when installing the package.
+        /// </summary>
+        public bool GetRequireLicenseAcceptance()
+        {
+            return StringComparer.OrdinalIgnoreCase.Equals(Boolean.TrueString, GetMetadataValue("requireLicenseAcceptance"));
+        }
+
         private static bool? AttributeAsNullableBool(XElement element, string attributeName)
         {
             bool? result = null;

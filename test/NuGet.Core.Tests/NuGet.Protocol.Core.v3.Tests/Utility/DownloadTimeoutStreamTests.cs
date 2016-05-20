@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Xunit;
 using System.Diagnostics;
 
-namespace NuGet.Protocol.Core.v3.Tests
+namespace NuGet.Protocol.Tests
 {
     public class DownloadTimeoutStreamTests
     {

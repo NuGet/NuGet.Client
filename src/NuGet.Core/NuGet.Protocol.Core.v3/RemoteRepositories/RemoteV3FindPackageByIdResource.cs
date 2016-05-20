@@ -12,7 +12,7 @@ using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
-namespace NuGet.Protocol.Core.v3.RemoteRepositories
+namespace NuGet.Protocol
 {
     public class RemoteV3FindPackageByIdResource : FindPackageByIdResource
     {

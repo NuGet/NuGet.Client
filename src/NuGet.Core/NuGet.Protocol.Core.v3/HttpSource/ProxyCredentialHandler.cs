@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 
-namespace NuGet.Protocol.Core.v3
+namespace NuGet.Protocol
 {
     /// <summary>
     /// A message handler responsible for retrying request for authenticated proxies

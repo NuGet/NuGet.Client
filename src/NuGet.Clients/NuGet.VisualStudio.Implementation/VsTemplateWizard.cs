@@ -15,6 +15,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.TemplateWizard;
 using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement;
+using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Implementation.Resources;

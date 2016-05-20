@@ -18,7 +18,7 @@ using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
-namespace NuGet.Protocol.Core.v3.DependencyInfo
+namespace NuGet.Protocol
 {
     internal static class ResolverMetadataClient
     {

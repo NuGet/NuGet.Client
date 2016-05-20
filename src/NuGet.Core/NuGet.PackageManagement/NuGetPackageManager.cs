@@ -15,14 +15,15 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Commands;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v2;
 using NuGet.Resolver;
 using NuGet.Versioning;
 
@@ -139,7 +140,7 @@ namespace NuGet.PackageManagement
             if (globalPackagesFolder != null)
             {
                 var globalPackagesSource = new Configuration.PackageSource(globalPackagesFolder);
-                GlobalPackagesFolderSourceRepository = SourceRepositoryProvider.CreateRepository(globalPackagesSource);
+                GlobalPackagesFolderSourceRepository = SourceRepositoryProvider.CreateRepository(globalPackagesSource, FeedType.FileSystemV3);
             }
         }
 
@@ -148,9 +149,9 @@ namespace NuGet.PackageManagement
             PackagesFolderNuGetProject = new FolderNuGetProject(packagesFolderPath, excludeVersion);
             // Capturing it locally is important since it allows for the instance to cache packages for the lifetime
             // of the closure \ NuGetPackageManager.
-            var sharedPackageRepository = new SharedPackageRepository(packagesFolderPath);
-            var packageSource = new V2PackageSource(packagesFolderPath, () => sharedPackageRepository);
-            PackagesFolderSourceRepository = SourceRepositoryProvider.CreateRepository(packageSource);
+            PackagesFolderSourceRepository = SourceRepositoryProvider.CreateRepository(
+                new PackageSource(packagesFolderPath),
+                FeedType.FileSystemV2);
         }
 
         /// <summary>

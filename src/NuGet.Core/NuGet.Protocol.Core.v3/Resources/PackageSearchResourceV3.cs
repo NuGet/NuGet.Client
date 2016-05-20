@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3;
+using NuGet.Protocol;
 
 namespace NuGet.Protocol
 {

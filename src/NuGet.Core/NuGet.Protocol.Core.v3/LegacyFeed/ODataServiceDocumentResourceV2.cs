@@ -4,7 +4,7 @@
 using System;
 using NuGet.Protocol.Core.Types;
 
-namespace NuGet.Protocol.Core.v3
+namespace NuGet.Protocol
 {
     public class ODataServiceDocumentResourceV2 : INuGetResource
     {

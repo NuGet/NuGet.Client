@@ -139,7 +139,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private bool IsUnknownPath(string path)
         {
-            return PackageHelper.IsPackageFile(path)
+            return PackageHelper.IsPackageFile(path, PackageSaveMode.Defaultv2)
                    && !path.StartsWith("lib", StringComparison.OrdinalIgnoreCase)
                    && !path.StartsWith("tools", StringComparison.OrdinalIgnoreCase)
                    && !path.StartsWith("content", StringComparison.OrdinalIgnoreCase)

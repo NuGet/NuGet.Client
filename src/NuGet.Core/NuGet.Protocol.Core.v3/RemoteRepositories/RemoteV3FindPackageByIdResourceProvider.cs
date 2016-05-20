@@ -6,13 +6,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
 
-namespace NuGet.Protocol.Core.v3.RemoteRepositories
+namespace NuGet.Protocol
 {
-    public class RemoteV3FindPackagePackageByIdResourceProvider : ResourceProvider
+    public class RemoteV3FindPackageByIdResourceProvider : ResourceProvider
     {
-        public RemoteV3FindPackagePackageByIdResourceProvider()
+        public RemoteV3FindPackageByIdResourceProvider()
             : base(typeof(FindPackageByIdResource),
-                nameof(RemoteV3FindPackagePackageByIdResourceProvider),
+                nameof(RemoteV3FindPackageByIdResourceProvider),
                 before: nameof(RemoteV2FindPackageByIdResourceProvider))
         {
         }

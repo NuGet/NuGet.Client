@@ -4,7 +4,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
-namespace NuGet.Protocol.Core.v3
+namespace NuGet.Protocol
 {
     public class VersionInfoConverter : JsonConverter
     {

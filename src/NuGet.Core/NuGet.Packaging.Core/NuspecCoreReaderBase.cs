@@ -19,6 +19,7 @@ namespace NuGet.Packaging.Core
     {
         private readonly XDocument _xml;
         private XElement _metadataNode;
+        private Dictionary<string, string> _metadataValues;
 
         protected const string Metadata = "metadata";
         protected const string Id = "id";
@@ -126,6 +127,43 @@ namespace NuGet.Packaging.Core
                 .Elements()
                 .Where(e => !e.HasElements && !string.IsNullOrEmpty(e.Value))
                 .Select(e => new KeyValuePair<string, string>(e.Name.LocalName, e.Value));
+        }
+
+        /// <summary>
+        /// Returns a nuspec metadata value or string.Empty.
+        /// </summary>
+        public virtual string GetMetadataValue(string name)
+        {
+            string metadataValue;
+            MetadataValues.TryGetValue(name, out metadataValue);
+            return metadataValue ?? string.Empty;
+        }
+
+        /// <summary>
+        /// Indexed metadata values of the XML elements in the nuspec.
+        /// If duplicate keys exist only the first is used.
+        /// </summary>
+        protected Dictionary<string, string> MetadataValues
+        {
+            get
+            {
+                if (_metadataValues == null)
+                {
+                    var metadataValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+                    foreach (var pair in GetMetadata())
+                    {
+                        if (!metadataValues.ContainsKey(pair.Key))
+                        {
+                            metadataValues.Add(pair.Key, pair.Value);
+                        }
+                    }
+
+                    _metadataValues = metadataValues;
+                }
+
+                return _metadataValues;
+            }
         }
 
         protected XElement MetadataNode

@@ -3,7 +3,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Protocol.Core.Types;
 using System;
 
-namespace NuGet.Protocol.Core.v3
+namespace NuGet.Protocol
 {
     public class OnDemandParsedVersionsConverter : JsonConverter
     {

@@ -12,15 +12,14 @@ using System.Threading.Tasks;
 using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3.Tests.Utility;
+using NuGet.Protocol.Tests.Utility;
 using NuGet.Test.Server;
 using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
 
-namespace NuGet.Protocol.Core.v3.Tests
+namespace NuGet.Protocol.Tests
 {
     public class HttpSourceTests
     {

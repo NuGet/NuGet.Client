@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Threading;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Frameworks;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
@@ -218,8 +219,9 @@ namespace NuGet.PackageManagement.UI
         {
             if (ex is NuGetResolverConstraintException ||
                 ex is PackageAlreadyInstalledException ||
-                ex is NuGetVersionNotSatisfiedException ||
+                ex is MinClientVersionException ||
                 ex is FrameworkException ||
+                ex is NuGetProtocolException ||
                 ex is PackagingException ||
                 ex is InvalidOperationException)
             {

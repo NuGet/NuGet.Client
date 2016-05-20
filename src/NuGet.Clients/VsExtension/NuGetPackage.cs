@@ -24,6 +24,7 @@ using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGetConsole;
 using NuGetConsole.Implementation;
@@ -360,9 +361,9 @@ namespace NuGetVSExtension
 
             HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(credentialService);
 
-            NuGet.Protocol.Core.v3.HttpHandlerResourceV3.CredentialSerivce = credentialService;
+            HttpHandlerResourceV3.CredentialSerivce = credentialService;
 
-            NuGet.Protocol.Core.v3.HttpHandlerResourceV3.PromptForCredentialsAsync =
+            HttpHandlerResourceV3.PromptForCredentialsAsync =
                 async (uri, type, message, cancellationToken) =>
                 {
                     // Get the proxy for this URI so we can pass it to the credentialService methods
@@ -378,7 +379,7 @@ namespace NuGetVSExtension
                         cancellationToken);
                 };
 
-            NuGet.Protocol.Core.v3.HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>
+            HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>
             {
                 NuGet.CredentialStore.Instance.Add(uri, credentials);
                 NuGet.Configuration.CredentialStore.Instance.Add(uri, credentials);

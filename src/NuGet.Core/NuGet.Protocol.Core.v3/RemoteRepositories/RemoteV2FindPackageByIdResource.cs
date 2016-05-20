@@ -16,7 +16,7 @@ using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
-namespace NuGet.Protocol.Core.v3.RemoteRepositories
+namespace NuGet.Protocol
 {
     public class RemoteV2FindPackageByIdResource : FindPackageByIdResource
     {

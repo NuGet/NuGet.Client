@@ -21,7 +21,7 @@ namespace NuGet.PackageManagement.UI
         public PackageCollection(PackageIdentity[] packages)
         {
             _packages = packages;
-            _uniqueIds.AddRange(_packages.Select(p => p.Id));
+            _uniqueIds.UnionWith(_packages.Select(p => p.Id));
         }
 
         public IEnumerator<PackageIdentity> GetEnumerator()

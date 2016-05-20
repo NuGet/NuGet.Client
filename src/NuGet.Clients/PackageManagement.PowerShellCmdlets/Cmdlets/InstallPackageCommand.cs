@@ -19,6 +19,7 @@ using NuGet.ProjectManagement;
 using NuGet.Versioning;
 using Task = System.Threading.Tasks.Task;
 using NuGet.PackageManagement.UI;
+using NuGet.Configuration;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -118,11 +119,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             if (!string.IsNullOrEmpty(Id))
             {
-                if (Id.EndsWith(Constants.PackageReferenceFile, StringComparison.OrdinalIgnoreCase))
+                if (Id.EndsWith(NuGetConstants.PackageReferenceFile, StringComparison.OrdinalIgnoreCase))
                 {
                     _readFromPackagesConfig = true;
                 }
-                else if (Id.EndsWith(Constants.PackageExtension, StringComparison.OrdinalIgnoreCase))
+                else if (Id.EndsWith(PackagingCoreConstants.NupkgExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     _readFromDirectPackagePath = true;
                     if (UriHelper.IsHttpSource(Id))
@@ -255,7 +256,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     if (identity != null)
                     {
                         Directory.CreateDirectory(Source);
-                        string downloadPath = Path.Combine(Source, identity + Constants.PackageExtension);
+                        string downloadPath = Path.Combine(Source, identity + PackagingCoreConstants.NupkgExtension);
 
                         using (var client = new System.Net.Http.HttpClient())
                         {
@@ -305,7 +306,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             if (!string.IsNullOrEmpty(path))
             {
                 string lastPart = path.Split(new[] { divider }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
-                lastPart = lastPart.Replace(Constants.PackageExtension, "");
+                lastPart = lastPart.Replace(PackagingCoreConstants.NupkgExtension, "");
                 string[] parts = lastPart.Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);
                 StringBuilder builderForId = new StringBuilder();
                 StringBuilder builderForVersion = new StringBuilder();

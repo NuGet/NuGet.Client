@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.DependencyResolver;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3;
 using NuGet.Repositories;
 
 namespace NuGet.Commands
@@ -72,7 +73,7 @@ namespace NuGet.Commands
             ILogger log)
         {
             var globalPackages = new NuGetv3LocalRepository(globalFolderPath);
-            var globalPackagesSource = Repository.Factory.GetCoreV3(globalFolderPath);
+            var globalPackagesSource = Repository.Factory.GetCoreV3(globalFolderPath, FeedType.FileSystemV3);
 
             var localProviders = new List<IRemoteDependencyProvider>()
             {

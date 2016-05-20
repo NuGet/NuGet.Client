@@ -8,7 +8,7 @@ using Moq;
 using NuGet.Configuration;
 using Xunit;
 
-namespace NuGet.Protocol.Core.v3.Tests
+namespace NuGet.Protocol.Tests
 {
     public class ProxyCredentialHandlerTests
     {

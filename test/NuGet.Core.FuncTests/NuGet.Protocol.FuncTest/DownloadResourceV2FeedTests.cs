@@ -8,7 +8,7 @@ using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Xunit;
-using NuGet.Protocol.Core.v3;
+using NuGet.Protocol;
 using NuGet.Test.Utility;
 
 namespace NuGet.Protocol.FuncTest

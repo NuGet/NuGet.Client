@@ -11,8 +11,6 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3;
-using Strings = NuGet.Protocol.Core.v3.Strings;
 
 namespace NuGet.Protocol
 {

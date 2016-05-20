@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NuGet.Protocol.Core.v3.Tests.Utility
+namespace NuGet.Protocol.Tests.Utility
 {
     public class UsingSemaphore : IDisposable
     {

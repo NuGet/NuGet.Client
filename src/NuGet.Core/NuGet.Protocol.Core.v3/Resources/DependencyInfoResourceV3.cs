@@ -5,16 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3.DependencyInfo;
 using NuGet.Versioning;
 
-namespace NuGet.Protocol.Core.v3
+namespace NuGet.Protocol
 {
     /// <summary>
     /// Retrieves all packages and dependencies from a V3 source.

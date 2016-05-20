@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using Microsoft.Win32;
+using NuGet.Common;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v2;
 using NuGet.VisualStudio.Implementation.Resources;
 
 namespace NuGet.VisualStudio
@@ -18,6 +20,10 @@ namespace NuGet.VisualStudio
         private List<SourceRepository> _repositories;
         private readonly Action<string> _errorHandler;
         private readonly ISourceRepositoryProvider _provider;
+
+        // Cache sources for the life of this provider
+        private readonly ConcurrentDictionary<Configuration.PackageSource, SourceRepository> _sourceCache
+             = new ConcurrentDictionary<Configuration.PackageSource, SourceRepository>();
 
         public PreinstalledRepositoryProvider(Action<string> errorHandler, ISourceRepositoryProvider provider)
         {
@@ -30,17 +36,11 @@ namespace NuGet.VisualStudio
         {
             string path = GetRegistryRepositoryPath(keyName, null, _errorHandler);
 
-            Configuration.PackageSource source;
-            if (isPreUnzipped)
-            {
-                source = new V2PackageSource(path, () => new UnzippedPackageRepository(path));
-            }
-            else
-            {
-                source = new Configuration.PackageSource(path);
-            }
+            // Override the feed type as unzipped if specified, otherwise allow the source to determine what it is.
+            var feedType = isPreUnzipped ? FeedType.FileSystemUnzipped : FeedType.Undefined;
 
-            _repositories.Add(_provider.CreateRepository(source));
+            var source = CreateRepository(new Configuration.PackageSource(path), feedType);
+            _repositories.Add(source);
         }
 
         public void AddFromExtension(ISourceRepositoryProvider provider, string extensionId)
@@ -48,14 +48,7 @@ namespace NuGet.VisualStudio
             string path = GetExtensionRepositoryPath(extensionId, null, _errorHandler);
 
             var source = new Configuration.PackageSource(path);
-
-            _repositories.Add(provider.CreateRepository(source));
-        }
-
-        public void AddFromRepository(IPackageRepository repo)
-        {
-            var source = new V2PackageSource(repo.Source, () => repo);
-            _repositories.Add(_provider.CreateRepository(source));
+            _repositories.Add(CreateRepository(source));
         }
 
         public void AddFromSource(SourceRepository repo)
@@ -65,7 +58,12 @@ namespace NuGet.VisualStudio
 
         public SourceRepository CreateRepository(Configuration.PackageSource source)
         {
-            return _provider.CreateRepository(source);
+            return CreateRepository(source, FeedType.Undefined);
+        }
+
+        public SourceRepository CreateRepository(Configuration.PackageSource source, FeedType type)
+        {
+            return _sourceCache.GetOrAdd(source, (packageSource) => _provider.CreateRepository(packageSource, type));
         }
 
         public IEnumerable<SourceRepository> GetRepositories()

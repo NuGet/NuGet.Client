@@ -8,7 +8,7 @@ using System.Linq;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 
-namespace NuGet.Protocol.Core.v3
+namespace NuGet.Protocol
 {
     /// <summary>
     /// A caching source repository provider intended to be used as a singleton.
@@ -57,7 +57,12 @@ namespace NuGet.Protocol.Core.v3
         /// </summary>
         public SourceRepository CreateRepository(PackageSource source)
         {
-            return _cachedSources.GetOrAdd(source.Source, new SourceRepository(source, _resourceProviders));
+            return CreateRepository(source, FeedType.Undefined);
+        }
+
+        public SourceRepository CreateRepository(PackageSource source, FeedType type)
+        {
+            return _cachedSources.GetOrAdd(source.Source, new SourceRepository(source, _resourceProviders, type));
         }
 
         public IPackageSourceProvider PackageSourceProvider

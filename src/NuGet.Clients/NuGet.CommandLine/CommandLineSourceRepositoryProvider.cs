@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine
@@ -25,7 +26,7 @@ namespace NuGet.CommandLine
 
             _resourceProviders = new List<Lazy<INuGetResourceProvider>>();
             _resourceProviders.AddRange(Protocol.Core.v2.FactoryExtensionsV2.GetCoreV2(Repository.Provider));
-            _resourceProviders.AddRange(Protocol.Core.v3.FactoryExtensionsV2.GetCoreV3(Repository.Provider));
+            _resourceProviders.AddRange(Protocol.FactoryExtensionsV2.GetCoreV3(Repository.Provider));
 
             // Create repositories
             _repositories = _packageSourceProvider.LoadPackageSources()
@@ -47,7 +48,12 @@ namespace NuGet.CommandLine
         /// </summary>
         public SourceRepository CreateRepository(Configuration.PackageSource source)
         {
-            return _cachedSources.GetOrAdd(source, new SourceRepository(source, _resourceProviders));
+            return CreateRepository(source, FeedType.Undefined);
+        }
+
+        public SourceRepository CreateRepository(Configuration.PackageSource source, FeedType type)
+        {
+            return _cachedSources.GetOrAdd(source, new SourceRepository(source, _resourceProviders, type));
         }
 
         public Configuration.IPackageSourceProvider PackageSourceProvider

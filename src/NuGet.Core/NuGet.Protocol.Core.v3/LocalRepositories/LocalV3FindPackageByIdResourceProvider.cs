@@ -2,14 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 
-namespace NuGet.Protocol.Core.v3.LocalRepositories
+namespace NuGet.Protocol
 {
     /// <summary>
     /// A v3-style package repository that has expanded packages.
@@ -21,25 +18,20 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
         {
         }
 
-        public override Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
+        public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
             INuGetResource resource = null;
 
-            Uri uri = source.PackageSource.TrySourceAsUri;
-            if (uri == null || uri.IsFile)
-            {
-                if (Directory.Exists(source.PackageSource.Source)
-                    &&
-                    Directory.EnumerateFiles(source.PackageSource.Source, "*.nupkg").Any())
-                {
-                    return Task.FromResult(Tuple.Create(false, resource));
-                }
+            var feedType = await source.GetFeedType(token);
 
+            // Default to v3 if the type is unknown
+            if (feedType == FeedType.FileSystemV3
+                || feedType == FeedType.FileSystemUnknown)
+            {
                 resource = new LocalV3FindPackageByIdResource(source.PackageSource);
-                return Task.FromResult(Tuple.Create(true, resource));
             }
 
-            return Task.FromResult(Tuple.Create(false, resource));
+            return Tuple.Create(resource != null, resource);
         }
     }
 }

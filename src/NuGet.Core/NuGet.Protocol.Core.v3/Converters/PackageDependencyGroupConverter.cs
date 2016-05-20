@@ -6,7 +6,7 @@ using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Versioning;
 
-namespace NuGet.Protocol.Core.v3
+namespace NuGet.Protocol
 {
     public class PackageDependencyGroupConverter : JsonConverter
     {

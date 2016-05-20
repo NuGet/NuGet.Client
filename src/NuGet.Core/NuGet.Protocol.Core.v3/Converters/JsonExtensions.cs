@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 
-namespace NuGet.Protocol.Core.v3
+namespace NuGet.Protocol
 {
     public static class JsonExtensions
     {

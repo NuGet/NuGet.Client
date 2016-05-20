@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.ProjectModel;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
-using NuGet.Protocol.Core.v3;
 using Xunit;
-using System.Text;
 
 namespace NuGet.Commands.Test
 {

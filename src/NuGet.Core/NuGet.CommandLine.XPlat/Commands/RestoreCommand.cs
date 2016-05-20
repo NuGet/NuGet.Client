@@ -4,11 +4,10 @@ using System.Linq;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
 using Microsoft.Extensions.PlatformAbstractions;
 using NuGet.Commands;
-using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.ProjectModel;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3;
 
 namespace NuGet.CommandLine.XPlat
 {

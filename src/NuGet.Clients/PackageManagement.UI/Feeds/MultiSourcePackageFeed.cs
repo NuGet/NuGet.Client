@@ -151,9 +151,13 @@ namespace NuGet.PackageManagement.UI
 
             if (notCompleted.Any())
             {
-                aggregated.SourceSearchStatus
-                    .AddRange(notCompleted
-                        .ToDictionary(kv => kv.Key, kv => GetLoadingStatus(kv.Value.Status)));
+                var items = notCompleted
+                        .ToDictionary(kv => kv.Key, kv => GetLoadingStatus(kv.Value.Status));
+
+                foreach (var item in items)
+                {
+                    aggregated.SourceSearchStatus.Add(item);
+                }
             }
 
             return aggregated;

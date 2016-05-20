@@ -13,7 +13,7 @@ using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
-namespace NuGet.Protocol.Core.v3
+namespace NuGet.Protocol
 {
     /// <summary>
     /// Retrieves and caches service index.json files

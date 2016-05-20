@@ -17,6 +17,17 @@ namespace NuGet.Test.Utility
             Id = packageId;
         }
 
+        public SimpleTestPackageContext(string packageId, string version)
+        {
+            Id = packageId;
+            Version = version;
+        }
+
+        public SimpleTestPackageContext(PackageIdentity identity)
+            : this (identity.Id, identity.Version.ToString())
+        {
+        }
+
         public SimpleTestPackageContext()
         {
         }

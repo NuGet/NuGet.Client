@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NuGet.Protocol.Core.v3.Tests
+namespace NuGet.Protocol.Tests
 {
     internal class LambdaMessageHandler : HttpMessageHandler
     {
