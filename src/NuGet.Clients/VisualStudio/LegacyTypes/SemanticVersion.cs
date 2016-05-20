@@ -2,11 +2,17 @@
 
 namespace NuGet
 {
+    /// <summary>
+    /// Legacy
+    /// </summary>
     [Serializable]
     public sealed class SemanticVersion : IComparable, IComparable<SemanticVersion>, IEquatable<SemanticVersion>
     {
         private readonly string _versionString;
 
+        /// <summary>
+        /// Legacy
+        /// </summary>
         public SemanticVersion(string version)
         {
             _versionString = version;
@@ -30,6 +36,9 @@ namespace NuGet
             private set;
         }
 
+        /// <summary>
+        /// Legacy
+        /// </summary>
         public string[] GetOriginalVersionComponents()
         {
             throw new NotSupportedException();
@@ -68,11 +77,17 @@ namespace NuGet
             throw new NotSupportedException();
         }
 
+        /// <summary>
+        /// Legacy
+        /// </summary>
         public int CompareTo(object obj)
         {
             throw new NotSupportedException();
         }
 
+        /// <summary>
+        /// Legacy
+        /// </summary>
         public int CompareTo(SemanticVersion other)
         {
             throw new NotSupportedException();
@@ -90,11 +105,17 @@ namespace NuGet
             return _versionString;
         }
 
+        /// <summary>
+        /// Legacy
+        /// </summary>
         public override string ToString()
         {
             return _versionString;
         }
 
+        /// <summary>
+        /// Legacy
+        /// </summary>
         public bool Equals(SemanticVersion other)
         {
             throw new NotSupportedException();

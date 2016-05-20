@@ -171,7 +171,7 @@ namespace NuGet.VisualStudio
             var repositorySource = new Configuration.PackageSource(repositoryPath);
             var failedPackageErrors = new List<string>();
 
-            SourceRepository repository = configuration.IsPreunzipped
+            var repository = configuration.IsPreunzipped
                 ? _sourceProvider.CreateRepository(repositorySource, FeedType.FileSystemUnzipped)
                 : _sourceProvider.CreateRepository(repositorySource);
 
