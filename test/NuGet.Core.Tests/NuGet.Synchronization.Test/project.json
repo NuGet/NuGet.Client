@@ -1,8 +1,10 @@
 ﻿{
   "version": "3.5.0-*",
-  "compile": [
-    "../../../Shared/*.cs"
-  ],
+  "buildOptions": {
+    "compile": [
+      "../../../Shared/*.cs"
+    ]
+  },
   "dependencies": {
     "NuGet.Test.Utility": {
       "target": "project"
@@ -26,7 +28,7 @@
           "version": "1.0.0-rc2-3002339"
         }
       },
-      "compilationOptions": {
+      "buildOptions": {
         "define": [
           "IS_CORECLR"
         ]
@@ -40,7 +42,7 @@
         "System.Runtime": "",
         "System.Threading.Tasks": ""
       },
-      "compilationOptions": {
+      "buildOptions": {
         "define": [
           "IS_DESKTOP"
         ]
