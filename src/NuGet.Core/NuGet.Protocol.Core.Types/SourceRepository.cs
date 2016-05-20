@@ -40,7 +40,7 @@ namespace NuGet.Protocol.Core.Types
         /// <param name="source">source url</param>
         /// <param name="providers">Resource providers</param>
         public SourceRepository(PackageSource source, IEnumerable<Lazy<INuGetResourceProvider>> providers)
-            : this(source, providers, FeedType.Undefined)
+            : this(source, providers, GetFeedType(source))
         {
         }
 
@@ -211,6 +211,15 @@ namespace NuGet.Protocol.Core.Types
             }
 
             return ordered.ToArray();
+        }
+
+        /// <summary>
+        /// Get the feed type from the package source.
+        /// </summary>
+        private static FeedType GetFeedType(PackageSource source)
+        {
+            var feedTypeSource = source as FeedTypePackageSource;
+            return feedTypeSource?.FeedType ?? FeedType.Undefined;
         }
     }
 }

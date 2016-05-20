@@ -15,7 +15,7 @@ namespace NuGet.Protocol
         public HttpFileSystemBasedFindPackageByIdResourceProvider()
             : base(typeof(FindPackageByIdResource),
                 nameof(HttpFileSystemBasedFindPackageByIdResourceProvider),
-                before: nameof(RemoteV3FindPackagePackageByIdResourceProvider))
+                before: nameof(RemoteV3FindPackageByIdResourceProvider))
         {
         }
 

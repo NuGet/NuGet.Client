@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using NuGet.Configuration;
 using NuGet.Packaging.Core;
+using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -13,6 +13,135 @@ namespace NuGet.Protocol.Core.v3.Tests
 {
     public class LocalFolderUtilityTests
     {
+        [Fact]
+        public void LocalFolderUtility_GetPackagesV3MaxPathTest()
+        {
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var testLogger = new TestLogger();
+                var longString = string.Empty;
+
+                for (int i=0; i < 1000; i++)
+                {
+                    longString += "abcdef";
+                }
+
+                var path = root + Path.DirectorySeparatorChar + longString;
+                Exception actual = null;
+
+                // Act
+                try
+                {
+                    var packages = LocalFolderUtility.GetPackagesV3(path, testLogger).ToList();
+                }
+                catch (Exception ex)
+                {
+                    actual = ex;
+                }
+
+                // Assert
+                Assert.True(actual is FatalProtocolException);
+            }
+        }
+
+        [Fact]
+        public void LocalFolderUtility_GetPackagesV2MaxPathTest()
+        {
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var testLogger = new TestLogger();
+                var longString = string.Empty;
+
+                for (int i = 0; i < 1000; i++)
+                {
+                    longString += "abcdef";
+                }
+
+                var path = root + Path.DirectorySeparatorChar + longString;
+
+                Exception actual = null;
+
+                // Act
+                try
+                {
+                    var packages = LocalFolderUtility.GetPackagesV2(path, testLogger).ToList();
+                }
+                catch (Exception ex)
+                {
+                    actual = ex;
+                }
+
+                // Assert
+                Assert.True(actual is FatalProtocolException);
+            }
+        }
+
+        [Fact]
+        public void LocalFolderUtility_GetPackageV3MaxPathTest()
+        {
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var testLogger = new TestLogger();
+                var longString = string.Empty;
+
+                for (int i = 0; i < 1000; i++)
+                {
+                    longString += "abcdef";
+                }
+
+                var path = root + Path.DirectorySeparatorChar + longString;
+                Exception actual = null;
+
+                // Act
+                try
+                {
+                    var package = LocalFolderUtility.GetPackageV3(path, "a", NuGetVersion.Parse("1.0.0"), testLogger);
+                }
+                catch (Exception ex)
+                {
+                    actual = ex;
+                }
+
+                // Assert
+                Assert.True(actual is FatalProtocolException);
+            }
+        }
+
+        [Fact]
+        public void LocalFolderUtility_GetPackageV2MaxPathTest()
+        {
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var testLogger = new TestLogger();
+                var longString = string.Empty;
+
+                for (int i = 0; i < 1000; i++)
+                {
+                    longString += "abcdef";
+                }
+
+                var path = root + Path.DirectorySeparatorChar + longString;
+                Exception actual = null;
+
+                // Act
+                try
+                {
+                    var package = LocalFolderUtility.GetPackageV2(path, "a", NuGetVersion.Parse("1.0.0"), testLogger);
+                }
+                catch (Exception ex)
+                {
+                    actual = ex;
+                }
+
+                // Assert
+                Assert.True(actual is FatalProtocolException);
+            }
+        }
+
         [Fact]
         public void LocalFolderUtility_GetPackagesV2ValidPackage()
         {
@@ -426,21 +555,45 @@ namespace NuGet.Protocol.Core.v3.Tests
             }
         }
 
+        public static IEnumerable<object[]> GetValidVersions()
+        {
+            foreach (var s in ValidVersions())
+            {
+                yield return new object[] { s };
+            }
+        }
+
+        private static IEnumerable<string> ValidVersions()
+        {
+            yield return "0.0.0";
+            yield return "1.0.0";
+            yield return "0.0.1";
+            yield return "1.0.0-BETA";
+            yield return "1.0.0";
+            yield return "1.0";
+            yield return "1.0.0.0";
+            yield return "1.0.1";
+            yield return "1.0.01";
+            yield return "00000001.000000000.0000000001";
+            yield return "00000001.000000000.0000000001-beta";
+            yield return "1.0.01-alpha";
+            yield return "1.0.1-alpha.1.2.3";
+            yield return "1.0.1-alpha.1.2.3+metadata";
+            yield return "1.0.1-alpha.1.2.3+a.b.c.d";
+            yield return "1.0.1+metadata";
+            yield return "1.0.1+security.fix.ce38429";
+            yield return "1.0.1-alpha.10.a";
+            yield return "1.0.1--";
+            yield return "1.0.1-a.really.long.version.release.label";
+            yield return "1238234.198231.2924324.2343432";
+            yield return "1238234.198231.2924324.2343432+final";
+            yield return "00.00.00.00-alpha";
+            yield return "0.0-alpha.1";
+            yield return "9.9.9-9";
+        }
+
         [Theory]
-        [InlineData("0.0.0")]
-        [InlineData("0.0.1")]
-        [InlineData("1.0.0-BETA")]
-        [InlineData("1.0.0")]
-        [InlineData("1.0")]
-        [InlineData("1.0.0.0")]
-        [InlineData("1.0.1")]
-        [InlineData("1.0.01")]
-        [InlineData("00000001.000000000.0000000001")]
-        [InlineData("1.0.01-alpha")]
-        [InlineData("1.0.1-alpha.1.2.3")]
-        [InlineData("1.0.1-alpha.1.2.3+metadata")]
-        [InlineData("1.0.1-alpha.1.2.3+a.b.c.d")]
-        [InlineData("1.0.1-alpha.10.a")]
+        [MemberData("GetValidVersions")]
         public void LocalFolderUtility_VerifyPackageCanBeFoundV2_NonNormalizedOnDisk(string versionString)
         {
             using (var root = TestFileSystemUtility.CreateRandomTestFolder())
@@ -468,20 +621,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         }
 
         [Theory]
-        [InlineData("0.0.0")]
-        [InlineData("0.0.1")]
-        [InlineData("1.0.0-BETA")]
-        [InlineData("1.0.0")]
-        [InlineData("1.0")]
-        [InlineData("1.0.0.0")]
-        [InlineData("1.0.1")]
-        [InlineData("1.0.01")]
-        [InlineData("00000001.000000000.0000000001")]
-        [InlineData("1.0.01-alpha")]
-        [InlineData("1.0.1-alpha.1.2.3")]
-        [InlineData("1.0.1-alpha.1.2.3+metadata")]
-        [InlineData("1.0.1-alpha.1.2.3+a.b.c.d")]
-        [InlineData("1.0.1-alpha.10.a")]
+        [MemberData("GetValidVersions")]
         public void LocalFolderUtility_VerifyPackageCanBeFoundV2_NormalizedOnDisk(string versionString)
         {
             using (var root = TestFileSystemUtility.CreateRandomTestFolder())
@@ -510,20 +650,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         }
 
         [Theory]
-        [InlineData("0.0.0")]
-        [InlineData("0.0.1")]
-        [InlineData("1.0.0-BETA")]
-        [InlineData("1.0.0")]
-        [InlineData("1.0")]
-        [InlineData("1.0.0.0")]
-        [InlineData("1.0.1")]
-        [InlineData("1.0.01")]
-        [InlineData("00000001.000000000.0000000001")]
-        [InlineData("1.0.01-alpha")]
-        [InlineData("1.0.1-alpha.1.2.3")]
-        [InlineData("1.0.1-alpha.1.2.3+metadata")]
-        [InlineData("1.0.1-alpha.1.2.3+a.b.c.d")]
-        [InlineData("1.0.1-alpha.10.a")]
+        [MemberData("GetValidVersions")]
         public async Task LocalFolderUtility_VerifyPackageCanBeFoundV3_NonNormalizedOnDisk(string versionString)
         {
             using (var root = TestFileSystemUtility.CreateRandomTestFolder())
@@ -551,20 +678,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         }
 
         [Theory]
-        [InlineData("0.0.0")]
-        [InlineData("0.0.1")]
-        [InlineData("1.0.0-BETA")]
-        [InlineData("1.0.0")]
-        [InlineData("1.0")]
-        [InlineData("1.0.0.0")]
-        [InlineData("1.0.1")]
-        [InlineData("1.0.01")]
-        [InlineData("00000001.000000000.0000000001")]
-        [InlineData("1.0.01-alpha")]
-        [InlineData("1.0.1-alpha.1.2.3")]
-        [InlineData("1.0.1-alpha.1.2.3+metadata")]
-        [InlineData("1.0.1-alpha.1.2.3+a.b.c.d")]
-        [InlineData("1.0.1-alpha.10.a")]
+        [MemberData("GetValidVersions")]
         public async Task LocalFolderUtility_VerifyPackageCanBeFoundV3_NormalizedOnDisk(string versionString)
         {
             using (var root = TestFileSystemUtility.CreateRandomTestFolder())
@@ -612,7 +726,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             var file = new FileInfo(Path.Combine(Directory.GetCurrentDirectory(), fileName));
 
             // Act
-            var identity = LocalFolderUtility.GetIdentityFromFile(file, id);
+            var identity = LocalFolderUtility.GetIdentityFromNupkgPath(file, id);
 
             // Assert
             Assert.Equal(id, identity.Id);
@@ -642,7 +756,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             var file = new FileInfo(Path.Combine(Directory.GetCurrentDirectory(), fileName));
 
             // Act
-            var identity = LocalFolderUtility.GetIdentityFromFile(file, id);
+            var identity = LocalFolderUtility.GetIdentityFromNupkgPath(file, id);
 
             // Assert
             Assert.Null(identity);

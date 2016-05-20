@@ -39,7 +39,7 @@ namespace NuGet.Protocol
             yield return new Lazy<INuGetResourceProvider>(() => new HttpHandlerResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new HttpSourceResourceProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new HttpFileSystemBasedFindPackageByIdResourceProvider());
-            yield return new Lazy<INuGetResourceProvider>(() => new RemoteV3FindPackagePackageByIdResourceProvider());
+            yield return new Lazy<INuGetResourceProvider>(() => new RemoteV3FindPackageByIdResourceProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new RemoteV2FindPackageByIdResourceProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new LocalV3FindPackageByIdResourceProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new LocalV2FindPackageByIdResourceProvider());

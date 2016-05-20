@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Security;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
@@ -36,7 +37,9 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(log));
             }
 
-            return GetPackageFromNupkg(new FileInfo(path.LocalPath));
+            var file = GetAndVerifyFileInfo(path);
+
+            return GetPackageFromNupkg(file);
         }
 
         /// <summary>
@@ -146,6 +149,9 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(log));
             }
 
+            // Verify the root path is a valid path.
+            GetAndVerifyRootDirectory(root);
+
             // Search directories starting with the top directory for any package matching the identity
             // If multiple packages are found in the same directory that match (ex: 1.0, 1.0.0.0)
             // then favor the exact non-normalized match. If no exact match is found take the first
@@ -203,7 +209,7 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(file));
             }
 
-            return identity.Equals(GetIdentityFromFile(file, identity.Id));
+            return identity.Equals(GetIdentityFromNupkgPath(file, identity.Id));
         }
 
         /// <summary>
@@ -222,14 +228,14 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(file));
             }
 
-            return GetIdentityFromFile(file, id) != null;
+            return GetIdentityFromNupkgPath(file, id) != null;
         }
 
         /// <summary>
         /// An imperfect attempt at finding the identity of a package from the file name.
         /// This can fail if the package name ends with something such as .1
         /// </summary>
-        public static PackageIdentity GetIdentityFromFile(FileInfo file, string id)
+        public static PackageIdentity GetIdentityFromNupkgPath(FileInfo file, string id)
         {
             if (id == null)
             {
@@ -241,12 +247,42 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(file));
             }
 
-            PackageIdentity result = null;
+            var version = GetVersionFromFileName(file.Name, id, PackagingCoreConstants.NupkgExtension);
+
+            if (version != null)
+            {
+                return new PackageIdentity(id, version);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// An imperfect attempt at finding the version of a package from the file name.
+        /// This can fail if the package name ends with something such as .1
+        /// </summary>
+        public static NuGetVersion GetVersionFromFileName(string fileName, string id, string extension)
+        {
+            if (id == null)
+            {
+                throw new ArgumentNullException(nameof(id));
+            }
+
+            if (fileName == null)
+            {
+                throw new ArgumentNullException(nameof(fileName));
+            }
+
+            if (extension == null)
+            {
+                throw new ArgumentNullException(nameof(extension));
+            }
+
+            NuGetVersion result = null;
             var prefix = $"{id}.";
-            var fileName = file.Name;
 
             if (fileName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
-                && file.Name.EndsWith(PackagingCoreConstants.NupkgExtension, StringComparison.OrdinalIgnoreCase))
+                && fileName.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
             {
                 fileName = Path.GetFileNameWithoutExtension(fileName);
 
@@ -258,7 +294,7 @@ namespace NuGet.Protocol
                     NuGetVersion version;
                     if (NuGetVersion.TryParse(versionString, out version))
                     {
-                        result = new PackageIdentity(id, version);
+                        result = version;
                     }
                 }
             }
@@ -314,9 +350,10 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(log));
             }
 
-            var pathResolver = new VersionFolderPathResolver(root);
+            // Verify the root path is a valid path.
+            GetAndVerifyRootDirectory(root);
 
-            var packageRoot = pathResolver.GetInstallPath(identity.Id, identity.Version);
+            var pathResolver = new VersionFolderPathResolver(root);
 
             // Verify the neccessary files exist
             var nupkgPath = pathResolver.GetPackageFilePath(identity.Id, identity.Version);
@@ -370,19 +407,7 @@ namespace NuGet.Protocol
             }
 
             // Check for package files one level deep.
-            DirectoryInfo rootDirectoryInfo = null;
-
-            try
-            {
-                // Verify that the directory is a valid path
-                rootDirectoryInfo = new DirectoryInfo(root);
-            }
-            catch (ArgumentException ex)
-            {
-                var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToRetrievePackage, root);
-
-                throw new FatalProtocolException(message, ex);
-            }
+            DirectoryInfo rootDirectoryInfo = GetAndVerifyRootDirectory(root);
 
             // Return all directory file list chunks in a flat list
             foreach (var directoryList in GetNupkgsFromFlatFolderChunked(rootDirectoryInfo.FullName, log))
@@ -394,6 +419,51 @@ namespace NuGet.Protocol
             }
 
             yield break;
+        }
+
+        /// <summary>
+        /// Verify that a path could be a valid directory. Throw a FatalProtocolException otherwise.
+        /// </summary>
+        private static DirectoryInfo GetAndVerifyRootDirectory(string root)
+        {
+            // Check for package files one level deep.
+            DirectoryInfo rootDirectoryInfo = null;
+
+            try
+            {
+                // Verify that the directory is a valid path
+                rootDirectoryInfo = new DirectoryInfo(root);
+            }
+            catch (Exception ex) when (ex is ArgumentException || ex is IOException || ex is SecurityException)
+            {
+                var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToRetrievePackage, root);
+
+                throw new FatalProtocolException(message, ex);
+            }
+
+            return rootDirectoryInfo;
+        }
+
+        /// <summary>
+        /// Verify that a path could be a valid file. Throw a FatalProtocolException otherwise.
+        /// </summary>
+        private static FileInfo GetAndVerifyFileInfo(Uri fileUri)
+        {
+            FileInfo fileInfo = null;
+
+            try
+            {
+                // Verify that the file is a valid path
+                fileInfo = new FileInfo(fileUri.LocalPath);
+            }
+            catch (Exception ex) when (ex is ArgumentException || ex is IOException || ex is SecurityException)
+            {
+                var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToRetrievePackage, fileUri.AbsoluteUri);
+
+                throw new FatalProtocolException(message, ex);
+            }
+
+            return fileInfo;
         }
 
         /// <summary>
@@ -474,14 +544,6 @@ namespace NuGet.Protocol
         }
 
         /// <summary>
-        /// Find all nupkgs in the top level of a directory.
-        /// </summary>
-        private static FileInfo[] GetNupkgsFromDirectory(string root, ILogger log)
-        {
-            return GetFilesSafe(root, NupkgFilter, log);
-        }
-
-        /// <summary>
         /// Discover all nupkgs from a v3 folder.
         /// </summary>
         /// <param name="root">Folder root.</param>
@@ -495,6 +557,15 @@ namespace NuGet.Protocol
             if (log == null)
             {
                 throw new ArgumentNullException(nameof(log));
+            }
+
+            // Validate teh root path
+            DirectoryInfo rootDirectoryInfo = GetAndVerifyRootDirectory(root);
+
+            if (!rootDirectoryInfo.Exists)
+            {
+                // Directory is missing
+                yield break;
             }
 
             // Match all nupkgs in the folder
@@ -532,20 +603,9 @@ namespace NuGet.Protocol
             }
 
             // Check for package files one level deep.
-            DirectoryInfo rootDirectoryInfo = null;
+            DirectoryInfo rootDirectoryInfo = GetAndVerifyRootDirectory(root);
 
-            try
-            {
-                rootDirectoryInfo = new DirectoryInfo(root);
-            }
-            catch (ArgumentException ex)
-            {
-                var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToRetrievePackage, root);
-
-                throw new FatalProtocolException(message, ex);
-            }
-
-            if (!Directory.Exists(rootDirectoryInfo.FullName))
+            if (!rootDirectoryInfo.Exists)
             {
                 // Directory is missing
                 yield break;
@@ -680,6 +740,14 @@ namespace NuGet.Protocol
 
                 throw new FatalProtocolException(message, ex);
             }
+        }
+
+        /// <summary>
+        /// Find all nupkgs in the top level of a directory.
+        /// </summary>
+        private static FileInfo[] GetNupkgsFromDirectory(string root, ILogger log)
+        {
+            return GetFilesSafe(root, NupkgFilter, log);
         }
     }
 }

@@ -31,8 +31,8 @@ namespace NuGet.Protocol
 
                 if (feedType == FeedType.FileSystemUnknown)
                 {
-                    // Treat missing directories as V2, but do not cache the type
-                    curResource = new FeedTypeResource(FeedType.FileSystemV2);
+                    // Do not cache unknown folder types
+                    curResource = new FeedTypeResource(FeedType.FileSystemUnknown);
                 }
                 else
                 {
