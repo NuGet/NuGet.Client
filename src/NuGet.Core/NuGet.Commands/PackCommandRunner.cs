@@ -103,7 +103,7 @@ namespace NuGet.Commands
             }
 
             // Add output files
-            AddOutputFiles(packageBuilder);
+            AddOutputFiles(packageBuilder, includeSymbols: false);
 
             if (_packArgs.Symbols)
             {
@@ -147,7 +147,7 @@ namespace NuGet.Commands
 
             if (!string.IsNullOrEmpty(_packArgs.OutputDirectory))
             {
-                string outputDirectory = _packArgs.OutputDirectory;
+                string outputDirectory = Path.GetFullPath(Path.Combine(_packArgs.OutputDirectory, ".."));
                 properties += $" -b \"{outputDirectory}\"";
             }
 
@@ -178,17 +178,17 @@ namespace NuGet.Commands
             }
         }
 
-        private void AddOutputFiles(PackageBuilder builder)
+        private void AddOutputFiles(PackageBuilder builder, bool includeSymbols)
         {
             // Get the target file path
             string outputDirectory;
             if (_packArgs.OutputDirectory != null)
             {
-                outputDirectory = Path.Combine(_packArgs.OutputDirectory, builder.Id, "bin");
+                outputDirectory = Path.Combine(_packArgs.OutputDirectory, "bin");
             }
             else
             {
-                outputDirectory = _packArgs.OutputDirectory ?? Path.Combine(_packArgs.CurrentDirectory, "bin");
+                outputDirectory = Path.Combine(_packArgs.CurrentDirectory, "bin");
             }
 
             // Default to Debug unless the configuration was passed in as a property
@@ -214,7 +214,7 @@ namespace NuGet.Commands
 
             };
 
-            if (_packArgs.Symbols)
+            if (includeSymbols)
             {
                 // Include pdbs for symbol packages
                 allowedOutputExtensions.Add(".pdb");
@@ -731,7 +731,19 @@ namespace NuGet.Commands
 
         private void BuildSymbolsPackage(string path)
         {
-            PackageBuilder symbolsBuilder = CreatePackageBuilderFromNuspec(path);
+            PackageBuilder symbolsBuilder;
+            if (ProjectJsonPathUtilities.IsProjectConfig(path))
+            {
+                symbolsBuilder = CreatePackageBuilderFromProjectJson(path, _packArgs.GetPropertyValue);
+
+                // Add output files
+                AddOutputFiles(symbolsBuilder, includeSymbols: true);
+            }
+            else
+            {
+                symbolsBuilder = CreatePackageBuilderFromNuspec(path);
+            }
+
             // remove unnecessary files when building the symbols package
             ExcludeFilesForSymbolPackage(symbolsBuilder.Files);
 
