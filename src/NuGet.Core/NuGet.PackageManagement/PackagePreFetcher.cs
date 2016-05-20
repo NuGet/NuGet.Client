@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement
             IEnumerable<NuGetProjectAction> actions,
             FolderNuGetProject packagesFolder,
             Configuration.ISettings settings,
-            Common.ILogger logger,
+            Logging.ILogger logger,
             CancellationToken token)
         {
             if (token == null)
@@ -152,7 +152,7 @@ namespace NuGet.PackageManagement
         public static void LogFetchMessages(
             IEnumerable<PackagePreFetcherResult> fetchResults,
             string packagesFolderRoot,
-            Common.ILogger logger)
+            Logging.ILogger logger)
         {
             if (fetchResults == null)
             {
