@@ -130,6 +130,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{DE23D0
 		Shared\TypeInfo.cs = Shared\TypeInfo.cs
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UpdateAssemblyInfo", "UpdateAssemblyInfo", "{C5A8448A-2255-4B5C-9367-515CC010F4F1}"
+	ProjectSection(SolutionItems) = preProject
+		Shared\UpdateAssemblyInfo\project.json = Shared\UpdateAssemblyInfo\project.json
+		Shared\UpdateAssemblyInfo\UpdateAssemblyInfo.cs = Shared\UpdateAssemblyInfo\UpdateAssemblyInfo.cs
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -406,5 +412,6 @@ Global
 		{1A94F70B-1AB6-4638-931A-4AB0EBEF7EC1} = {BB63CACA-866F-454F-BA4C-78B788D032BB}
 		{626E0086-1375-4ABE-A0F8-412786D315FA} = {7323F93B-D141-4001-BB9E-7AF14031143E}
 		{2034C981-C938-4F0F-8F3B-528B83CB8F7D} = {BB63CACA-866F-454F-BA4C-78B788D032BB}
+		{C5A8448A-2255-4B5C-9367-515CC010F4F1} = {DE23D071-162F-47A3-BC68-42E4A354835C}
 	EndGlobalSection
 EndGlobal

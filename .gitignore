@@ -26,6 +26,9 @@ mergelog.txt
 
 # Build results
 
+# Generated source files
+*.generated.cs
+
 # Roslyn cache directories
 **/*.ide/
 
