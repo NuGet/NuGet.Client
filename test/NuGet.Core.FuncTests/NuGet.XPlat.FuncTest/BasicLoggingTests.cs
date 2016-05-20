@@ -177,6 +177,7 @@ namespace NuGet.XPlat.FuncTest
             Assert.Equal(0, exitCode);
         }
 
+        [Fact]
         public void BasicLogging_RestoreConfigFile_ExitCode()
         {
             // Arrange

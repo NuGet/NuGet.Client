@@ -17,14 +17,14 @@ namespace NuGet.XPlat.FuncTest
         [InlineData(TestServers.Klondike, false)]
         [InlineData(TestServers.MyGet, false)]
         [InlineData(TestServers.Nexus, false)]
-        //[InlineData(TestServers.NuGetServer, false)]
+        [InlineData(TestServers.NuGetServer, false)]
         [InlineData(TestServers.ProGet, false)]
         // Try with config file in a different directory
         [InlineData(TestServers.Artifactory, true)]
         [InlineData(TestServers.Klondike, true)]
         [InlineData(TestServers.MyGet, true)]
         [InlineData(TestServers.Nexus, true)]
-        //[InlineData(TestServers.NuGetServer, true)]
+        [InlineData(TestServers.NuGetServer, true)]
         [InlineData(TestServers.ProGet, true)]
         public void RestoreFromServerSucceeds(string sourceUri, bool configInDifferentDirectory)
         {

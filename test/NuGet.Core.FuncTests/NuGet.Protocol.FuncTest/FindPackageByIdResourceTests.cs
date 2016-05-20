@@ -12,7 +12,7 @@ namespace NuGet.Protocol.FuncTest
     public class FindPackageByIdResourceTests
     {
         [Theory]
-        //[InlineData(TestServers.NuGetServer)]
+        [InlineData(TestServers.NuGetServer)]
         [InlineData(TestServers.ProGet)]
         [InlineData(TestServers.Klondike)]
         [InlineData(TestServers.Artifactory)]
@@ -35,7 +35,7 @@ namespace NuGet.Protocol.FuncTest
         }
 
         [Theory]
-        //[InlineData(TestServers.NuGetServer)]
+        [InlineData(TestServers.NuGetServer)]
         [InlineData(TestServers.ProGet)]
         [InlineData(TestServers.Klondike)]
         [InlineData(TestServers.Artifactory)]
@@ -58,7 +58,7 @@ namespace NuGet.Protocol.FuncTest
         }
 
         [Theory]
-        //[InlineData(TestServers.NuGetServer)]
+        [InlineData(TestServers.NuGetServer)]
         [InlineData(TestServers.ProGet)]
         [InlineData(TestServers.Klondike)]
         [InlineData(TestServers.Artifactory)]
@@ -81,7 +81,7 @@ namespace NuGet.Protocol.FuncTest
         }
 
         [Theory]
-        //[InlineData(TestServers.NuGetServer, "NuGetServer")]
+        [InlineData(TestServers.NuGetServer, "NuGetServer")]
         [InlineData(TestServers.Vsts,"Vsts")]
         public async Task FindPackageByIdResource_Credential(string packageSource, string feedName)
         {
@@ -105,7 +105,7 @@ namespace NuGet.Protocol.FuncTest
         }
 
         [Theory]
-        //[InlineData(TestServers.NuGetServer, "NuGetServer")]
+        [InlineData(TestServers.NuGetServer, "NuGetServer")]
         [InlineData(TestServers.Vsts, "Vsts")]
         public async Task FindPackageByIdResource_CredentialNoDependencyVersion(string packageSource, string feedName)
         {
@@ -129,7 +129,7 @@ namespace NuGet.Protocol.FuncTest
         }
 
         [Theory]
-        //[InlineData(TestServers.NuGetServer, "NuGetServer")]
+        [InlineData(TestServers.NuGetServer, "NuGetServer")]
         [InlineData(TestServers.Vsts, "Vsts")]
         public async Task FindPackageByIdResource_CredentialNormalizedVersion(string packageSource, string feedName)
         {

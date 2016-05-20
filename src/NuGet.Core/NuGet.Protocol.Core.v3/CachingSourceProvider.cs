@@ -22,7 +22,7 @@ namespace NuGet.Protocol
 
         // There should only be one instance of the source repository for each package source.
         private readonly ConcurrentDictionary<string, SourceRepository> _cachedSources
-            = new ConcurrentDictionary<string, SourceRepository>(StringComparer.OrdinalIgnoreCase);
+            = new ConcurrentDictionary<string, SourceRepository>(StringComparer.Ordinal);
 
         public CachingSourceProvider(IPackageSourceProvider packageSourceProvider)
         {

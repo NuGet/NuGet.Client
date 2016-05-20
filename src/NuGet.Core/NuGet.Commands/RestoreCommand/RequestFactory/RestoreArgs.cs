@@ -108,52 +108,33 @@ namespace NuGet.Commands
 
         private List<SourceRepository> GetEffectiveSourcesCore(ISettings settings)
         {
-            // Take the passed in sources
-            var packageSources = new HashSet<string>(Sources, StringComparer.Ordinal);
             var sourceObjects = new Dictionary<string, PackageSource>(StringComparer.Ordinal);
+            var packageSourceProvider = new PackageSourceProvider(settings);
+            var packageSourcesFromProvider = packageSourceProvider.LoadPackageSources();
+            var useNugetConfigSources = (Sources.Count == 0);
 
-            var packageSourceProvider = new Lazy<PackageSourceProvider>(() 
-                => new PackageSourceProvider(settings));
-
-            // If no sources were passed in use the NuGet.Config sources
-            if (packageSources.Count < 1)
+            // Always use passed-in sources and fallback sources
+            foreach (var sourceUri in Enumerable.Concat(Sources, FallbackSources))
             {
-                // Add enabled sources
-                foreach (var source in packageSourceProvider.Value.LoadPackageSources())
-                {
-                    if (source.IsEnabled)
-                    {
-                        sourceObjects[source.Source] = source;
-                    }
-                }
-
-                var enabledSources = sourceObjects.Values
-                    .Select(source => source.Source)
-                    .Distinct(StringComparer.Ordinal)
-                    .ToList();
-
-                packageSources.UnionWith(enabledSources);
+                sourceObjects[sourceUri] = new PackageSource(sourceUri);
             }
 
-            // Always add fallback sources
-            packageSources.UnionWith(FallbackSources);
+            // Use PackageSource objects from the provider when possible (since those will have credentials from nuget.config)
+            foreach (var source in packageSourcesFromProvider)
+            {
+                if (source.IsEnabled && (useNugetConfigSources || sourceObjects.ContainsKey(source.Source)))
+                {
+                    sourceObjects[source.Source] = source;
+                }
+            }
 
             if (CachingSourceProvider == null)
             {
                 // Create a shared caching provider if one does not exist already
-                CachingSourceProvider = new CachingSourceProvider(packageSourceProvider.Value);
+                CachingSourceProvider = new CachingSourceProvider(packageSourceProvider);
             }
 
-            return packageSources.Select(sourceUri =>
-            {
-                PackageSource source;
-                if (!sourceObjects.TryGetValue(sourceUri, out source))
-                {
-                    source = new PackageSource(sourceUri);
-                }
-
-                return CachingSourceProvider.CreateRepository(source);
-            }).ToList();
+            return sourceObjects.Select(entry => CachingSourceProvider.CreateRepository(entry.Value)).ToList();
         }
 
         public void ApplyStandardProperties(RestoreRequest request)
