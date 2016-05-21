@@ -118,7 +118,7 @@ Invoke-BuildStep 'Running NuGet.Clients tests' {
     -ev +BuildErrors
 
 Invoke-BuildStep 'Merging NuGet.exe' {
-        param($Configuration) Invoke-ILMerge $Configuration
+        param($Configuration) Invoke-ILMerge $Configuration $MSPFXPath
     } `
     -args $Configuration `
     -skip:($SkipILMerge -or $SkipCSProj -or $Fast) `

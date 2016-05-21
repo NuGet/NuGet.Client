@@ -9,17 +9,25 @@ if ((Split-Path -Path $PSScriptRoot -Leaf) -eq "scripts") {
     $NuGetClientRoot = Split-Path -Path $NuGetClientRoot -Parent
 }
 
-$MSBuildExe = Join-Path ${env:ProgramFiles(x86)} 'MSBuild\14.0\Bin\msbuild.exe'
-$NuGetExe = Join-Path $NuGetClientRoot '.nuget\nuget.exe'
-$ILMerge = Join-Path $NuGetClientRoot 'packages\ILMerge.2.14.1208\tools\ILMerge.exe'
-$XunitConsole = Join-Path $NuGetClientRoot 'packages\xunit.runner.console.2.1.0\tools\xunit.console.x86.exe'
 $CLIRoot = Join-Path $NuGetClientRoot 'cli'
-$DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
 $Nupkgs = Join-Path $NuGetClientRoot nupkgs
 $Artifacts = Join-Path $NuGetClientRoot artifacts
 $Intermediate = Join-Path $Artifacts obj
+
 $NuGetCoreSln = Join-Path $NuGetClientRoot 'NuGet.Core.sln'
 $NuGetClientSln = Join-Path $NuGetClientRoot 'NuGet.Client.sln'
+
+$DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
+$MSBuildExe = Join-Path ${env:ProgramFiles(x86)} 'MSBuild\14.0\Bin\msbuild.exe'
+$NuGetExe = Join-Path $NuGetClientRoot '.nuget\nuget.exe'
+$XunitConsole = Join-Path $NuGetClientRoot 'packages\xunit.runner.console.2.1.0\tools\xunit.console.x86.exe'
+$ILMerge = Join-Path $NuGetClientRoot 'packages\ILMerge.2.14.1208\tools\ILMerge.exe'
+
+Set-Alias dotnet $DotNetExe
+Set-Alias msbuild $MSBuildExe
+Set-Alias nuget $NuGetExe
+Set-Alias xunit $XunitConsole
+Set-Alias ilmerge $ILMerge
 
 Function Read-PackageSources {
     param($NuGetConfig)
@@ -362,7 +370,7 @@ Function Test-XProject {
             $directoryName = Split-Path $_ -Leaf
 
             pushd $_
-            
+
             # Check if dnxcore50 exists in the project.json file
             $xtestProjectJson = Join-Path $_ "project.json"
             if (Get-Content $($xtestProjectJson) | Select-String "netcoreapp1.0") {
@@ -372,7 +380,7 @@ Function Test-XProject {
                 & $DotNetExe test --configuration $Configuration --framework netcoreapp1.0
                 if (-not $?) {
                     Error-Log "Tests failed @""$_"" on CoreCLR. Code: $LASTEXITCODE"
-                }                    
+                }
             }
 
             # Run tests for CLR
@@ -394,8 +402,8 @@ Function Test-XProject {
                     & $XunitConsole $desktopTestAssembly -html $htmlOutput
                     if (-not $?) {
                         Error-Log "Tests failed @""$_"" on CLR. Code: $LASTEXITCODE"
-                    }     
-                }           
+                    }
+                }
             }
 
             popd
@@ -488,7 +496,8 @@ Function Read-FileList($FilePath) {
 Function Invoke-ILMerge {
     [CmdletBinding()]
     param(
-        [string]$Configuration = $DefaultConfiguration
+        [string]$Configuration = $DefaultConfiguration,
+        [string]$KeyFile
     )
     $buildArtifactsFolder = [io.path]::combine($Artifacts, 'NuGet.CommandLine', $Configuration)
     $ignoreList = Read-FileList (Join-Path $buildArtifactsFolder '.mergeignore')
@@ -504,11 +513,15 @@ Function Invoke-ILMerge {
         Error-Log "Missing build artifacts listed in include list: $($notFound -join ', ')"
     }
 
-	# Note that the Dev14 path will become conditional on which target we're building against (TODO)
+    # Note that the Dev14 path will become conditional on which target we're building against (TODO)
     Trace-Log 'Creating the ilmerged nuget.exe'
     $opts = , 'NuGet.exe'
     $opts += $buildArtifacts
     $opts += "/out:$Artifacts\NuGet.exe"
+    if ($KeyFile) {
+        $opts += "/delaysign"
+        $opts += "/keyfile:$KeyFile"
+    }
     if ($VerbosePreference) {
         $opts += '/log'
     }
