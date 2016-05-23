@@ -194,7 +194,7 @@ namespace NuGet.Commands
             string targetPath = files.FirstOrDefault();
             if (targetPath == null)
             {
-                targetPath = Path.Combine(_packArgs.BasePath, "bin", configuration, builder.Id, ".dll");
+                targetPath = Path.Combine(_packArgs.BasePath, "bin", configuration, builder.Id + ".dll");
             }
 
             NuGetFramework targetFramework = NuGetFramework.AnyFramework;
