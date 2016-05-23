@@ -145,10 +145,10 @@ namespace NuGet.Commands
                 }
             }
 
-            if (!string.IsNullOrEmpty(_packArgs.OutputDirectory))
+            if (!string.IsNullOrEmpty(_packArgs.BasePath))
             {
-                string outputDirectory = Path.GetFullPath(Path.Combine(_packArgs.OutputDirectory, ".."));
-                properties += $" -b \"{outputDirectory}\"";
+                string basePath = Path.GetFullPath(_packArgs.BasePath)  ;
+                properties += $" -b \"{basePath}\"";
             }
 
             string dotnetLocation = NuGetEnvironment.GetDotNetLocation();
@@ -158,7 +158,6 @@ namespace NuGet.Commands
                 UseShellExecute = false,
                 FileName = dotnetLocation,
                 Arguments = $"build {properties}",
-                WorkingDirectory = _packArgs.BasePath,
                 RedirectStandardOutput = false,
                 RedirectStandardError = false
             };
@@ -180,17 +179,6 @@ namespace NuGet.Commands
 
         private void AddOutputFiles(PackageBuilder builder, bool includeSymbols)
         {
-            // Get the target file path
-            string outputDirectory;
-            if (_packArgs.OutputDirectory != null)
-            {
-                outputDirectory = Path.Combine(_packArgs.OutputDirectory, "bin");
-            }
-            else
-            {
-                outputDirectory = Path.Combine(_packArgs.CurrentDirectory, "bin");
-            }
-
             // Default to Debug unless the configuration was passed in as a property
             string configuration = "Debug";
             foreach (var property in _packArgs.Properties)
@@ -201,7 +189,13 @@ namespace NuGet.Commands
                 }
             }
 
-            string targetPath = Path.Combine(outputDirectory, configuration, builder.Id + ".dll");
+            IEnumerable<string> files = PathResolver.PerformWildcardSearch(_packArgs.BasePath, $"**\\{builder.Id}\\bin\\{configuration}\\");
+            string targetPath = files.FirstOrDefault();
+            if (targetPath == null)
+            {
+                targetPath = Path.Combine(_packArgs.BasePath, "bin", configuration, builder.Id, ".dll");
+            }
+
             NuGetFramework targetFramework = NuGetFramework.AnyFramework;
 
             // List of extensions to allow in the output path
@@ -606,6 +600,8 @@ namespace NuGet.Commands
             CheckForUnsupportedFrameworks(builder);
 
             ExcludeFiles(builder.Files);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 
             // Track if the package file was already present on disk
             bool isExistingPackage = File.Exists(outputPath);
