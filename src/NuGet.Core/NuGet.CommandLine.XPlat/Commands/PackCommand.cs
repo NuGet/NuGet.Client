@@ -98,6 +98,7 @@ namespace NuGet.CommandLine.XPlat
                     packArgs.Logger = logger;
                     packArgs.Arguments = arguments.Values;
                     packArgs.Path = PackCommandRunner.GetInputFile(packArgs);
+                    packArgs.OutputDirectory = outputDirectory.Value();
 
                     // Set the current directory if the files being packed are in a different directory
                     PackCommandRunner.SetupCurrentDirectory(packArgs);
@@ -127,7 +128,6 @@ namespace NuGet.CommandLine.XPlat
                     packArgs.MsBuildDirectory = new Lazy<string>(() => string.Empty);
                     packArgs.NoDefaultExcludes = noDefaultExcludes.HasValue();
                     packArgs.NoPackageAnalysis = noPackageAnalysis.HasValue();
-                    packArgs.OutputDirectory = outputDirectory.Value();
 
                     if (properties.HasValue())
                     {
