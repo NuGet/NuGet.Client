@@ -158,6 +158,7 @@ namespace NuGet.ProjectModel
                 packageSpec.Dependencies,
                 rawPackageSpec,
                 "dependencies",
+                snapshotValue,
                 isGacOrFrameworkReference: false);
 
             packageSpec.Tools = ReadTools(packageSpec, rawPackageSpec).ToList();
@@ -233,6 +234,7 @@ namespace NuGet.ProjectModel
             IList<LibraryDependency> results,
             JObject settings,
             string propertyName,
+            string snapshotValue,
             bool isGacOrFrameworkReference)
         {
             var dependencies = settings[propertyName] as JObject;
@@ -348,6 +350,11 @@ namespace NuGet.ProjectModel
 
                     if (!string.IsNullOrEmpty(dependencyVersionValue))
                     {
+                        if (dependencyVersionValue.Contains("-*"))
+                        {
+                            dependencyVersionValue = dependencyVersionValue.Replace("-*", $"-{snapshotValue}");
+                        }
+
                         try
                         {
                             dependencyVersionRange = VersionRange.Parse(dependencyVersionValue);
@@ -599,6 +606,7 @@ namespace NuGet.ProjectModel
                 targetFrameworkInformation.Dependencies,
                 properties,
                 "dependencies",
+                string.Empty,
                 isGacOrFrameworkReference: false);
 
             var frameworkAssemblies = new List<LibraryDependency>();
@@ -607,6 +615,7 @@ namespace NuGet.ProjectModel
                 frameworkAssemblies,
                 properties,
                 "frameworkAssemblies",
+                string.Empty,
                 isGacOrFrameworkReference: true);
 
             frameworkAssemblies.ForEach(d => targetFrameworkInformation.Dependencies.Add(d));
