@@ -27,21 +27,21 @@ namespace NuGet.ProjectModel
         /// </summary>
         /// <param name="name">project name</param>
         /// <param name="packageSpecPath">file path</param>
-        public static PackageSpec GetPackageSpec(string name, string packageSpecPath)
+        public static PackageSpec GetPackageSpec(string name, string packageSpecPath, string snapshotValue = "")
         {
             using (var stream = new FileStream(packageSpecPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                return GetPackageSpec(stream, name, packageSpecPath);
+                return GetPackageSpec(stream, name, packageSpecPath, snapshotValue);
             }
         }
 
-        public static PackageSpec GetPackageSpec(string json, string name, string packageSpecPath)
+        public static PackageSpec GetPackageSpec(string json, string name, string packageSpecPath, string snapshotValue)
         {
             var ms = new MemoryStream(Encoding.UTF8.GetBytes(json));
-            return GetPackageSpec(ms, name, packageSpecPath);
+            return GetPackageSpec(ms, name, packageSpecPath, snapshotValue);
         }
 
-        public static PackageSpec GetPackageSpec(Stream stream, string name, string packageSpecPath)
+        public static PackageSpec GetPackageSpec(Stream stream, string name, string packageSpecPath, string snapshotValue = "")
         {
             // Load the raw JSON into the package spec object
             var reader = new JsonTextReader(new StreamReader(stream));
@@ -78,7 +78,7 @@ namespace NuGet.ProjectModel
             {
                 try
                 {
-                    packageSpec.Version = SpecifySnapshot(version.Value<string>(), snapshotValue: string.Empty);
+                    packageSpec.Version = SpecifySnapshot(version.Value<string>(), snapshotValue: snapshotValue);
                 }
                 catch (Exception ex)
                 {
