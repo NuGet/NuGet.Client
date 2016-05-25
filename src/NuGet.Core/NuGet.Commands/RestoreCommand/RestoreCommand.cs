@@ -373,7 +373,6 @@ namespace NuGet.Commands
                     fallbackPackageFolders,
                     walker,
                     contextForTool,
-                    writeToLockFile: true,
                     forceRuntimeGraphCreation: false,
                     token: token);
 
@@ -541,7 +540,6 @@ namespace NuGet.Commands
                 fallbackPackageFolders,
                 remoteWalker,
                 context,
-                writeToLockFile: true,
                 forceRuntimeGraphCreation: hasSupports,
                 token: token);
 
@@ -579,16 +577,16 @@ namespace NuGet.Commands
             // Walk additional runtime graphs for supports checks
             if (_success && _request.CompatibilityProfiles.Any())
             {
-                var compatibilityResult = await projectRestoreCommand.TryRestore(projectRange,
-                                                          _request.CompatibilityProfiles,
-                                                          allInstalledPackages,
-                                                          userPackageFolder,
-                                                          fallbackPackageFolders,
-                                                          remoteWalker,
-                                                          context,
-                                                          writeToLockFile: false,
-                                                          forceRuntimeGraphCreation: true,
-                                                          token: token);
+                var compatibilityResult = await projectRestoreCommand.TryRestore(
+                    projectRange,
+                    _request.CompatibilityProfiles,
+                    allInstalledPackages,
+                    userPackageFolder,
+                    fallbackPackageFolders,
+                    remoteWalker,
+                    context,
+                    forceRuntimeGraphCreation: true,
+                    token: token);
 
                 _success = compatibilityResult.Item1;
 
