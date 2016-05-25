@@ -31,10 +31,10 @@ namespace NuGet.Configuration.Test
                 Environment.SetEnvironmentVariable("RP_ENV_VAR", "ONE");
 
                 //Act
-                ISettings settings = new Settings(nugetConfigFileFolder, nugetConfigFile);
+                ISettings settings = new Settings(nugetConfigFileFolder, nugetConfigFile, isPath: true);
 
                 //Assert
-                Assert.Equal(settings.GetValue("config", "repositoryPath"), expectedRepositoryPath);
+                Assert.Equal(settings.GetValue("config", "repositoryPath"), Path.Combine(nugetConfigFileFolder,expectedRepositoryPath));
             }
         }
 
@@ -57,7 +57,55 @@ namespace NuGet.Configuration.Test
                 ISettings settings = new Settings(nugetConfigFileFolder, nugetConfigFile);
 
                 //Assert
-                var settingsForConfig = settings.GetSettingValues("config");
+                var settingsForConfig = settings.GetSettingValues("config", isPath: true);
+                Assert.Single(settingsForConfig);
+                Assert.Equal(settingsForConfig.Single().Value, Path.Combine(nugetConfigFileFolder, expectedRepositoryPath));
+            }
+        }
+
+        [Fact]
+        public void GetValueEvaluatesEnvironmentVariableWithAbsolutePath()
+        {
+            //Arrange
+            var expectedRepositoryPath = @"C:\log";
+
+            using (var nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var nugetConfigFile = "NuGet.config";
+                var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, nugetConfigFile);
+
+                File.WriteAllText(nugetConfigFilePath, DefaultNuGetConfigurationWithEnvironmentVariable);
+
+                Environment.SetEnvironmentVariable("RP_ENV_VAR", @"C:\log");
+
+                //Act
+                ISettings settings = new Settings(nugetConfigFileFolder, nugetConfigFile, isPath: true);
+
+                //Assert
+                Assert.Equal(settings.GetValue("config", "repositoryPath"), expectedRepositoryPath);
+            }
+        }
+
+        [Fact]
+        public void GetSettingValuesEvaluatesEnvironmentVariableWithAbsolutePath()
+        {
+            //Arrange
+            var expectedRepositoryPath = @"C:\log";
+
+            using (var nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var nugetConfigFile = "NuGet.config";
+                var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, nugetConfigFile);
+
+                File.WriteAllText(nugetConfigFilePath, DefaultNuGetConfigurationWithEnvironmentVariable);
+
+                Environment.SetEnvironmentVariable("RP_ENV_VAR", @"C:\log");
+
+                //Act
+                ISettings settings = new Settings(nugetConfigFileFolder, nugetConfigFile);
+
+                //Assert
+                var settingsForConfig = settings.GetSettingValues("config", isPath: true);
                 Assert.Single(settingsForConfig);
                 Assert.Equal(settingsForConfig.Single().Value, expectedRepositoryPath);
             }
