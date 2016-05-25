@@ -4,23 +4,27 @@
   "authors": [
     "yigalatz"
   ],
-  "tags": [
-    ""
-  ],
+  "packOptions": {
+    "tags": [
+      ""
+    ],
+    "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
+    "projectUrl": "https://github.com/NuGet/NuGet.Client"
+  },
   "copyright": "Copyright .NET Foundation. All rights reserved.",
-  "projectUrl": "https://github.com/NuGet/NuGet.Client",
-  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
-  "compilationOptions": {
+  "buildOptions": {
     "emitEntryPoint": true,
     "warningsAsErrors": true,
     "xmlDoc": true,
     "nowarn": [
       "CS1591"
-    ]
+    ],
+    "compile": {
+      "include": [
+        "../../../Shared/*.cs"
+      ]
+    }
   },
-  "compile": [
-    "../../../Shared/*.cs"
-  ],
   "dependencies": {
     "NuGet.Common": {
       "target": "project"
@@ -43,14 +47,14 @@
         "dnxcore50",
         "portable-net45+win8"
       ],
-      "compilationOptions": {
+      "buildOptions": {
         "define": [
           "IS_CORECLR"
         ]
       }
     },
     "net46": {
-      "compilationOptions": {
+      "buildOptions": {
         "define": [
           "IS_DESKTOP"
         ]

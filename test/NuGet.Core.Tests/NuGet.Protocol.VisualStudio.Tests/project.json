@@ -19,7 +19,7 @@
         "System.Runtime": "",
         "System.Threading.Tasks": ""
       },
-      "compilationOptions": {
+      "buildOptions": {
         "define": [
           "IS_DESKTOP"
         ]
