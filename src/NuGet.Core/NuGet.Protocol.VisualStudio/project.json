@@ -5,21 +5,25 @@
   ],
   "description": "NuGet Protocol for Visual Studio",
   "copyright": "Copyright .NET Foundation. All rights reserved.",
-  "projectUrl": "https://github.com/NuGet/NuGet.Client",
-  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
-  "tags": [
-    "nuget protocol"
-  ],
-  "compilationOptions": {
+  "packOptions": {
+    "tags": [
+      "nuget protocol"
+    ],
+    "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
+    "projectUrl": "https://github.com/NuGet/NuGet.Client"
+  },
+  "buildOptions": {
     "warningsAsErrors": true,
     "xmlDoc": true,
     "nowarn": [
       "CS1591"
-    ]
+    ],
+    "compile": {
+      "include": [
+        "../../../Shared/*.cs"
+      ]
+    }
   },
-  "compile": [
-    "../../../Shared/*.cs"
-  ],
   "dependencies": {
     "NuGet.Configuration": {
       "target": "project"
@@ -34,7 +38,7 @@
         "System.ComponentModel.Composition": "",
         "System.Runtime.Serialization": ""
       },
-      "compilationOptions": {
+      "buildOptions": {
         "define": [
           "IS_DESKTOP"
         ]

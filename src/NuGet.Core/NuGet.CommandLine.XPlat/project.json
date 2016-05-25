@@ -1,20 +1,24 @@
 ﻿{
   "version": "3.5.0-*",
   "copyright": "Copyright .NET Foundation. All rights reserved.",
-  "projectUrl": "https://github.com/NuGet/NuGet.Client",
-  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
+  "packOptions": {
+    "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
+    "projectUrl": "https://github.com/NuGet/NuGet.Client"
+  },
   "description": "NuGet 3 restore for dotnet CLI, DNX, and UWP",
-  "compilationOptions": {
+  "buildOptions": {
     "emitEntryPoint": true,
     "warningsAsErrors": true,
     "xmlDoc": true,
     "nowarn": [
       "CS1591"
-    ]
+    ],
+    "compile": {
+      "include": [
+        "../../../Shared/*.cs"
+      ]
+    }
   },
-  "compile": [
-    "../../../Shared/*.cs"
-  ],
   "dependencies": {
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0-rc2-20456",
     "Microsoft.Extensions.CommandLineUtils.Sources": {
@@ -31,7 +35,7 @@
   },
   "frameworks": {
     "net46": {
-      "compilationOptions": {
+      "buildOptions": {
         "define": [
           "IS_DESKTOP"
         ]
@@ -50,7 +54,7 @@
           "version": "1.0.0-rc2-3002339"
         }
       },
-      "compilationOptions": {
+      "buildOptions": {
         "define": [
           "IS_CORECLR"
         ]
