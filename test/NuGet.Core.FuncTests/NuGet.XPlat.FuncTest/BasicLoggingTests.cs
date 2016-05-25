@@ -1,4 +1,7 @@
-﻿using NuGet.CommandLine.XPlat;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using NuGet.CommandLine.XPlat;
 using Xunit;
 
 namespace NuGet.XPlat.FuncTest
@@ -175,28 +178,6 @@ namespace NuGet.XPlat.FuncTest
 
             // Assert
             Assert.Equal(0, exitCode);
-        }
-
-        [Fact]
-        public void BasicLogging_RestoreConfigFile_ExitCode()
-        {
-            // Arrange
-            var log = new TestCommandOutputLogger();
-
-            var args = new string[]
-            {
-                "restore",
-                "--configfile",
-                "MyNuGet.config",
-            };
-
-            // Act
-            var exitCode = Program.MainInternal(args, log);
-
-            // Assert
-            Assert.Equal(1, exitCode);
-            Assert.Equal(1, log.Errors);
-            Assert.Contains("MyNuGet.config", log.ShowErrors()); // file does not exist
         }
 
         [Fact]

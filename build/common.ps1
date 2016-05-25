@@ -20,7 +20,7 @@ $NuGetClientSln = Join-Path $NuGetClientRoot 'NuGet.Client.sln'
 $DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
 $MSBuildExe = Join-Path ${env:ProgramFiles(x86)} 'MSBuild\14.0\Bin\msbuild.exe'
 $NuGetExe = Join-Path $NuGetClientRoot '.nuget\nuget.exe'
-$XunitConsole = Join-Path $NuGetClientRoot 'packages\xunit.runner.console.2.1.0\tools\xunit.console.x86.exe'
+$XunitConsole = Join-Path $NuGetClientRoot 'packages\xunit.runner.console.2.1.0\tools\xunit.console.exe'
 $ILMerge = Join-Path $NuGetClientRoot 'packages\ILMerge.2.14.1208\tools\ILMerge.exe'
 
 Set-Alias dotnet $DotNetExe
@@ -57,8 +57,16 @@ Function Verbose-Log($VerboseMessage) {
     Write-Verbose "[$(Trace-Time)]`t$VerboseMessage"
 }
 
-Function Error-Log($ErrorMessage) {
-    Write-Error "[$(Trace-Time)]`t$ErrorMessage"
+Function Error-Log {
+    param(
+        [string]$ErrorMessage,
+        [switch]$Fatal)
+    if (-not $Fatal) {
+        Write-Error "[$(Trace-Time)]`t$ErrorMessage"
+    }
+    else {
+        Write-Error "[$(Trace-Time)]`t$ErrorMessage" -ErrorAction Stop
+    }
 }
 
 Function Warning-Log($WarningMessage) {
@@ -129,7 +137,7 @@ Function Update-Submodules {
         $opts += '--quiet'
     }
     Trace-Log 'Updating and initializing submodules'
-    Verbose-Log "git $opts"
+    Trace-Log "git $opts"
     & git $opts 2>&1
 }
 
@@ -156,14 +164,12 @@ Function Install-DotnetCLI {
     $installDotnet = Join-Path $CLIRoot "dotnet-install.ps1"
     $env:DOTNET_INSTALL_DIR=$NuGetClientRoot
 
-    New-Item -ItemType Directory -Force -Path $CLIRoot
-
-    wget https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/dotnet-install.ps1 -OutFile cli/dotnet-install.ps1
+    wget 'https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/dotnet-install.ps1' -OutFile 'cli/dotnet-install.ps1'
 
     & cli/dotnet-install.ps1 -Channel beta -i $CLIRoot -Version 1.0.0-preview1-002702
 
     if (-not (Test-Path $DotNetExe)) {
-        Error-Log "Unable to find dotnet.exe. The CLI install may have failed."
+        Error-Log "Unable to find dotnet.exe. The CLI install may have failed." -Fatal
     }
 
     # Display build info
@@ -273,10 +279,13 @@ Function Restore-SolutionPackages{
 # Restore nuget.core.sln projects
 Function Restore-XProjects {
 
-    $opts = 'restore', "src\NuGet.Core", "test\NuGet.Core.Tests", "test\NuGet.Core.FuncTests", "--verbosity", "minimal"
+    $opts = 'restore', "src\NuGet.Core", "test\NuGet.Core.Tests", "test\NuGet.Core.FuncTests"
+    if (-not $VerbosePreference) {
+        $opts += '--verbosity', 'minimal'
+    }
 
     Trace-Log "Restoring packages for xprojs"
-    Verbose-Log "$dotnetExe $opts"
+    Trace-Log "$dotnetExe $opts"
     & $dotnetExe $opts
     if (-not $?) {
         Error-Log "Restore failed @""$_"". Code: $LASTEXITCODE"
@@ -310,9 +319,11 @@ Function Invoke-DotnetPack {
     }
     Process {
         $XProjectLocations | %{
-            $opts = , 'pack'
-            $opts += $_
-            $opts += '--configuration', $Configuration
+            $opts = @()
+            if ($VerbosePreference) {
+                $opts += '-v'
+            }
+            $opts += 'pack', $_, '--configuration', $Configuration
 
             if ($Output) {
                 $opts += '--output', (Join-Path $Output (Split-Path $_ -Leaf))
@@ -324,7 +335,7 @@ Function Invoke-DotnetPack {
 
             Trace-Log "$DotNetExe $opts"
 
-            &$DotNetExe $opts
+            & $DotNetExe $opts
             if (-not $?) {
                 Error-Log "Pack failed @""$_"". Code: $LASTEXITCODE"
             }
@@ -363,8 +374,9 @@ Function Test-XProject {
         [string[]]$XProjectLocations,
         [string]$Configuration = $DefaultConfiguration
     )
+    Begin {}
     Process {
-        $XProjectLocations | %{
+        $XProjectLocations | Resolve-Path | %{
             Trace-Log "Running tests in ""$_"""
 
             $directoryName = Split-Path $_ -Leaf
@@ -373,33 +385,50 @@ Function Test-XProject {
 
             # Check if dnxcore50 exists in the project.json file
             $xtestProjectJson = Join-Path $_ "project.json"
-            if (Get-Content $($xtestProjectJson) | Select-String "netcoreapp1.0") {
+            $xproject = gc $xtestProjectJson -raw | ConvertFrom-Json
+            if ($xproject.frameworks.'netcoreapp1.0') {
                 # Run tests for Core CLR
+                $opts = @()
+                if ($VerbosePreference) {
+                    $opts += '-v'
+                }
+                $opts += 'test', '--configuration', $Configuration, '--framework', 'netcoreapp1.0'
 
-                Trace-Log "$DotNetExe test --configuration $Configuration --framework netcoreapp1.0"
-                & $DotNetExe test --configuration $Configuration --framework netcoreapp1.0
+                Trace-Log "$DotNetExe $opts"
+
+                & $DotNetExe $opts
+
                 if (-not $?) {
                     Error-Log "Tests failed @""$_"" on CoreCLR. Code: $LASTEXITCODE"
                 }
             }
 
             # Run tests for CLR
-            if (Get-Content $($xtestProjectJson) | Select-String "net46") {
-
+            if ($xproject.frameworks.net46) {
                 # Build
-                Trace-Log "$DotNetExe build --configuration $Configuration --runtime win7-x64"
-                & $DotNetExe build --configuration $Configuration --runtime win7-x64
+                $opts = @()
+                if ($VerbosePreference) {
+                    $opts += '-v'
+                }
+                $opts += 'build', '--configuration', $Configuration, '--runtime', 'win7-x64'
+
+                Trace-Log "$DotNetExe $opts"
+
+                & $DotNetExe $opts
 
                 if (-not $?) {
-                   Error-Log "Build failed for $directoryName. Code: $LASTEXITCODE"
+                    Error-Log "Build failed for $directoryName. Code: $LASTEXITCODE"
                 }
                 else {
                     $htmlOutput = Join-Path $_ "bin\$Configuration\net46\win7-x64\xunit.results.html"
                     $desktopTestAssembly = Join-Path $_ "bin\$Configuration\net46\win7-x64\$directoryName.dll"
+                    $opts = $desktopTestAssembly, '-html', $htmlOutput
+                    if ($VerbosePreference) {
+                        $opts += '-verbose'
+                    }
+                    Trace-Log "$XunitConsole $opts"
 
-                    Trace-Log "$XunitConsole $desktopTestAssembly -html $htmlOutput"
-
-                    & $XunitConsole $desktopTestAssembly -html $htmlOutput
+                    & $XunitConsole $opts
                     if (-not $?) {
                         Error-Log "Tests failed @""$_"" on CLR. Code: $LASTEXITCODE"
                     }
@@ -461,30 +490,33 @@ Function Test-ClientsProjects {
         [string]$Configuration = $DefaultConfiguration
     )
     $testProjectsLocation = Join-Path $NuGetClientRoot test\NuGet.Clients.Tests
-    $testProjects = Get-ChildItem $testProjectsLocation -Recurse -Filter '*.csproj'`
-        | %{ $_.FullName }`
-        | ?{ -not $_.EndsWith('WebAppTest.csproj') }
+    $testProjects = Get-ChildItem $testProjectsLocation -Recurse -Filter '*.csproj' |
+        %{ $_.FullName } |
+        ?{ -not $_.EndsWith('WebAppTest.csproj') }
 
-    foreach($testProj in $testProjects) {
-        Test-ClientProject $testProj -Configuration $Configuration
-    }
+    $testProjects | Test-ClientProject -Configuration $Configuration
 }
 
 Function Test-ClientProject {
     [CmdletBinding()]
     param(
         [parameter(ValueFromPipeline=$True, Mandatory=$True, Position=0)]
-        [string]$testProj,
+        [string[]]$TestProjects,
         [string]$Configuration = $DefaultConfiguration
     )
-    $opts = $testProj, "/t:RunTests", "/p:Configuration=$Configuration;RunTests=true"
-    if (-not $VerbosePreference) {
-        $opts += '/verbosity:minimal'
-    }
-    Trace-Log "$MSBuildExe $opts"
-    & $MSBuildExe $opts
-    if (-not $?) {
-        Error-Log "Tests failed @""$testProj"". Code: $LASTEXITCODE"
+    Begin {}
+    Process{
+        $TestProjects | %{
+            $opts = $_, "/t:RunTests", "/p:Configuration=$Configuration;RunTests=true"
+            if (-not $VerbosePreference) {
+                $opts += '/verbosity:minimal'
+            }
+            Trace-Log "$MSBuildExe $opts"
+            & $MSBuildExe $opts
+            if (-not $?) {
+                Error-Log "Tests failed @""$_"". Code: $LASTEXITCODE"
+            }
+        }
     }
 }
 
@@ -525,7 +557,7 @@ Function Invoke-ILMerge {
     if ($VerbosePreference) {
         $opts += '/log'
     }
-    Verbose-Log "$ILMerge $opts"
+    Trace-Log "$ILMerge $opts"
 
     pushd $buildArtifactsFolder
     try {

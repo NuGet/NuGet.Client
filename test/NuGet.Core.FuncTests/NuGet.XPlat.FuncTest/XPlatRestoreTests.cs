@@ -13,31 +13,20 @@ namespace NuGet.XPlat.FuncTest
     {
         [Theory]
         // Try with config file in the project directory
-        [InlineData(TestServers.Artifactory, false)]
-        [InlineData(TestServers.Klondike, false)]
-        [InlineData(TestServers.MyGet, false)]
-        [InlineData(TestServers.Nexus, false)]
-        [InlineData(TestServers.NuGetServer, false)]
-        [InlineData(TestServers.ProGet, false)]
-        // Try with config file in a different directory
-        [InlineData(TestServers.Artifactory, true)]
-        [InlineData(TestServers.Klondike, true)]
-        [InlineData(TestServers.MyGet, true)]
-        [InlineData(TestServers.Nexus, true)]
-        [InlineData(TestServers.NuGetServer, true)]
-        [InlineData(TestServers.ProGet, true)]
-        public void RestoreFromServerSucceeds(string sourceUri, bool configInDifferentDirectory)
+        [InlineData(TestServers.Artifactory)]
+        [InlineData(TestServers.Klondike)]
+        [InlineData(TestServers.MyGet)]
+        [InlineData(TestServers.Nexus)]
+        [InlineData(TestServers.NuGetServer)]
+        [InlineData(TestServers.ProGet)]
+        public void Restore_WithConfigFileInProjectDirectory_Succeeds(string sourceUri)
         {
-            // Arrange
             using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
             using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var configDir = configInDifferentDirectory ? TestFileSystemUtility.CreateRandomTestFolder() : null)
             {
-                var configFile = configInDifferentDirectory
-                    ? XPlatTestUtils.CopyFuncTestConfig(configDir)
-                    : XPlatTestUtils.CopyFuncTestConfig(projectDir);
+                var configFile = XPlatTestUtils.CopyFuncTestConfig(projectDir);
 
-                var specPath = Path.Combine(projectDir, "XPlatAuthenticationTests", "project.json");
+                var specPath = Path.Combine(projectDir, "XPlatRestoreTests", "project.json");
                 var spec = XPlatTestUtils.BasicConfigNetCoreApp;
 
                 XPlatTestUtils.AddDependency(spec, "costura.fody", "1.3.3");
@@ -57,22 +46,98 @@ namespace NuGet.XPlat.FuncTest
                     "--no-cache"
                 };
 
-                if (configInDifferentDirectory)
+                // Act
+                int exitCode = Program.MainInternal(args.ToArray(), log);
+
+                Assert.Contains($@"OK {sourceUri}/FindPackagesById()?id='fody'", log.ShowMessages());
+                Assert.Equal(string.Empty, log.ShowErrors());
+                Assert.Equal(0, exitCode);
+
+                var lockFilePath = Path.Combine(projectDir, "XPlatRestoreTests", "project.lock.json");
+                Assert.True(File.Exists(lockFilePath));
+            }
+        }
+
+        [Theory]
+        // Try with config file in a different directory
+        [InlineData(TestServers.Artifactory)]
+        [InlineData(TestServers.Klondike)]
+        [InlineData(TestServers.MyGet)]
+        [InlineData(TestServers.Nexus)]
+        [InlineData(TestServers.NuGetServer)]
+        [InlineData(TestServers.ProGet)]
+        public void Restore_WithConfigFileInDifferentDirectory_Succeeds(string sourceUri)
+        {
+            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var configDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var configFile = XPlatTestUtils.CopyFuncTestConfig(configDir);
+
+                var specPath = Path.Combine(projectDir, "XPlatRestoreTests", "project.json");
+                var spec = XPlatTestUtils.BasicConfigNetCoreApp;
+
+                XPlatTestUtils.AddDependency(spec, "costura.fody", "1.3.3");
+                XPlatTestUtils.AddDependency(spec, "fody", "1.29.4");
+                XPlatTestUtils.WriteJson(spec, specPath);
+
+                var log = new TestCommandOutputLogger();
+
+                var args = new List<string>()
                 {
-                    args.Add("--configfile");
-                    args.Add(configFile);
-                }
+                    "restore",
+                    projectDir,
+                    "--packages",
+                    packagesDir,
+                    "--source",
+                    sourceUri,
+                    "--no-cache",
+                    "--configfile",
+                    configFile
+                };
 
                 // Act
                 int exitCode = Program.MainInternal(args.ToArray(), log);
 
-                // Assert
+                Assert.Contains($@"OK {sourceUri}/FindPackagesById()?id='fody'", log.ShowMessages());
                 Assert.Equal(string.Empty, log.ShowErrors());
                 Assert.Equal(0, exitCode);
-                Assert.Contains($@"OK {sourceUri}/FindPackagesById()?id='fody'", log.ShowMessages());
 
-                var lockFilePath = Path.Combine(projectDir, "XPlatAuthenticationTests", "project.lock.json");
+                var lockFilePath = Path.Combine(projectDir, "XPlatRestoreTests", "project.lock.json");
                 Assert.True(File.Exists(lockFilePath));
+            }
+        }
+
+        [Fact]
+        public void Restore_WithMissingConfigFile_Fails()
+        {
+            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var configDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var specPath = Path.Combine(projectDir, "XPlatRestoreTests", "project.json");
+                var spec = XPlatTestUtils.BasicConfigNetCoreApp;
+
+                XPlatTestUtils.AddDependency(spec, "costura.fody", "1.3.3");
+                XPlatTestUtils.AddDependency(spec, "fody", "1.29.4");
+                XPlatTestUtils.WriteJson(spec, specPath);
+
+                var log = new TestCommandOutputLogger();
+
+                var args = new string[]
+                {
+                    "restore",
+                    projectDir,
+                    "--configfile",
+                    Path.Combine(configDir, "DoesNotExist.config"),
+                };
+
+                // Act
+                var exitCode = Program.MainInternal(args, log);
+
+                // Assert
+                Assert.Equal(1, exitCode);
+                Assert.Equal(1, log.Errors);
+                Assert.Contains("DoesNotExist.config", log.ShowErrors()); // file does not exist
             }
         }
     }

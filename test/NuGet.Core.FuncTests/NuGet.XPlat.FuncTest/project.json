@@ -1,6 +1,7 @@
 ﻿{
   "version": "3.5.0-*",
   "dependencies": {
+    "dotnet-test-xunit": "1.0.0-rc2-*",
     "NuGet.CommandLine.XPlat": {
       "target": "project"
     },
@@ -17,10 +18,9 @@
         "portable-net45+win8"
       ],
       "dependencies": {
-        "dotnet-test-xunit": "1.0.0-rc2-173361-36",
         "Microsoft.NETCore.App": {
           "type": "platform",
-          "version": "1.0.0-rc2-3002339"
+          "version": "1.0.0-rc2-*"
         }
       },
       "buildOptions": {

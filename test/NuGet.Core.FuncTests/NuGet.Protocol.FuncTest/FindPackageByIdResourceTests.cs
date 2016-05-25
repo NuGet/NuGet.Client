@@ -12,7 +12,6 @@ namespace NuGet.Protocol.FuncTest
     public class FindPackageByIdResourceTests
     {
         [Theory]
-        [InlineData(TestServers.NuGetServer)]
         [InlineData(TestServers.ProGet)]
         [InlineData(TestServers.Klondike)]
         [InlineData(TestServers.Artifactory)]
@@ -35,7 +34,6 @@ namespace NuGet.Protocol.FuncTest
         }
 
         [Theory]
-        [InlineData(TestServers.NuGetServer)]
         [InlineData(TestServers.ProGet)]
         [InlineData(TestServers.Klondike)]
         [InlineData(TestServers.Artifactory)]
@@ -58,7 +56,6 @@ namespace NuGet.Protocol.FuncTest
         }
 
         [Theory]
-        [InlineData(TestServers.NuGetServer)]
         [InlineData(TestServers.ProGet)]
         [InlineData(TestServers.Klondike)]
         [InlineData(TestServers.Artifactory)]
