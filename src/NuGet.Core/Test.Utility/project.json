@@ -1,18 +1,20 @@
 ﻿{
   "version": "3.5.0-*",
   "copyright": "Copyright .NET Foundation. All rights reserved.",
-  "projectUrl": "https://github.com/NuGet/NuGet.Client",
-  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
-  "compilationOptions": {
+  "packOptions": {
+    "projectUrl": "https://github.com/NuGet/NuGet.Client",
+    "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt"
+  },
+  "buildOptions": {
     "warningsAsErrors": true,
     "xmlDoc": true,
     "nowarn": [
       "CS1591"
+    ],
+    "compile": [
+      "../../../Shared/*.cs"
     ]
   },
-  "compile": [
-    "../../../Shared/*.cs"
-  ],
   "dependencies": {
     "xunit": "2.1.0",
     "Microsoft.VisualStudio.ProjectSystem.Interop": "1.0.0-*",
@@ -31,7 +33,7 @@
       "frameworkAssemblies": {
         "System.Runtime.Serialization": ""
       },
-      "compilationOptions": {
+      "buildOptions": {
         "define": [
           "IS_DESKTOP"
         ]
