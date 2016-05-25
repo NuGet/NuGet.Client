@@ -44,7 +44,6 @@ namespace NuGet.Commands
         public ISet<GraphItem<RemoteResolveResult>> Flattened { get; }
         public ISet<LibraryRange> Unresolved { get; }
         public bool InConflict { get; }
-        public bool WriteToLockFile { get; }
 
         public string Name { get; }
 
@@ -54,7 +53,6 @@ namespace NuGet.Commands
         public AnalyzeResult<RemoteResolveResult> AnalyzeResult { get; private set; }
 
         private RestoreTargetGraph(IEnumerable<ResolverConflict> conflicts,
-                                   bool writeToLockFile,
                                    NuGetFramework framework,
                                    string runtimeIdentifier,
                                    RuntimeGraph runtimeGraph,
@@ -65,7 +63,6 @@ namespace NuGet.Commands
                                    AnalyzeResult<RemoteResolveResult> analyzeResult)
         {
             Conflicts = conflicts;
-            WriteToLockFile = writeToLockFile;
             RuntimeIdentifier = runtimeIdentifier;
             RuntimeGraph = runtimeGraph;
             Framework = framework;
@@ -80,13 +77,12 @@ namespace NuGet.Commands
             Unresolved = unresolved;
         }
 
-        public static RestoreTargetGraph Create(bool writeToLockFile, IEnumerable<GraphNode<RemoteResolveResult>> graphs, RemoteWalkContext context, ILogger logger, NuGetFramework framework)
+        public static RestoreTargetGraph Create(IEnumerable<GraphNode<RemoteResolveResult>> graphs, RemoteWalkContext context, ILogger logger, NuGetFramework framework)
         {
-            return Create(writeToLockFile, RuntimeGraph.Empty, graphs, context, logger, framework, runtimeIdentifier: null);
+            return Create(RuntimeGraph.Empty, graphs, context, logger, framework, runtimeIdentifier: null);
         }
 
         public static RestoreTargetGraph Create(
-            bool writeToLockFile,
             RuntimeGraph runtimeGraph,
             IEnumerable<GraphNode<RemoteResolveResult>> graphs,
             RemoteWalkContext context,
@@ -166,7 +162,6 @@ namespace NuGet.Commands
 
             return new RestoreTargetGraph(
                 conflicts.Select(p => new ResolverConflict(p.Key, p.Value)),
-                writeToLockFile,
                 framework,
                 runtimeIdentifier,
                 runtimeGraph,
