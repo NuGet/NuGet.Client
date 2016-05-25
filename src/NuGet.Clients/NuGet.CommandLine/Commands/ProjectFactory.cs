@@ -984,8 +984,11 @@ namespace NuGet.CommandLine
                     var dependency = new PackageDependency(packageReference.PackageIdentity.Id, range);
 
                     var path = Path.Combine(_project.DirectoryPath, PackagesFolder, $"{packageReference.PackageIdentity.Id}.{packageReference.PackageIdentity.Version}.nupkg");
-                    PackageArchiveReader reader = new PackageArchiveReader(path);
-                    packagesAndDependencies.Add(packageReference.PackageIdentity.Id, new Tuple<PackageArchiveReader, PackageDependency>(reader, dependency));
+                    if (File.Exists(path))
+                    {
+                        PackageArchiveReader reader = new PackageArchiveReader(path);
+                        packagesAndDependencies.Add(packageReference.PackageIdentity.Id, new Tuple<PackageArchiveReader, PackageDependency>(reader, dependency));
+                    }
                 }
             }
         }
