@@ -409,7 +409,7 @@ namespace NuGet.Configuration
                 curr = curr._next;
             }
 
-            return ApplyEnvironmentTransform(ret);
+            return ret;
         }
 
         private string ApplyEnvironmentTransform(string configValue)
@@ -436,8 +436,6 @@ namespace NuGet.Configuration
                 curr.PopulateValues(section, settingValues, isPath);
                 curr = curr._next;
             }
-
-            settingValues.ForEach(settingValue => settingValue.Value = ApplyEnvironmentTransform(settingValue.Value));
 
             return settingValues.AsReadOnly();
         }
@@ -799,6 +797,7 @@ namespace NuGet.Configuration
 
             // Return the optional value which if not there will be null;
             var value = XElementUtility.GetOptionalAttributeValue(element, ConfigurationConstants.ValueAttribute);
+            value = ApplyEnvironmentTransform(value);
             if (!isPath
                 || String.IsNullOrEmpty(value))
             {
@@ -881,7 +880,7 @@ namespace NuGet.Configuration
                 throw new InvalidDataException(String.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, ConfigFilePath));
             }
 
-            var value = valueAttribute.Value;
+            var value = ApplyEnvironmentTransform(valueAttribute.Value);
             var originalValue = valueAttribute.Value;
             Uri uri;
 
