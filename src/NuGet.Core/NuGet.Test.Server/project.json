@@ -1,18 +1,22 @@
 ﻿{
   "version": "3.5.0-*",
   "copyright": "Copyright .NET Foundation. All rights reserved.",
-  "projectUrl": "https://github.com/NuGet/NuGet.Client",
-  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
-  "compilationOptions": {
+  "packOptions": {
+    "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
+    "projectUrl": "https://github.com/NuGet/NuGet.Client"
+  },
+  "buildOptions": {
     "warningsAsErrors": true,
     "xmlDoc": true,
     "nowarn": [
       "CS1591"
-    ]
+    ],
+    "compile": {
+      "include": [
+        "../../../Shared/*.cs"
+      ]
+    }
   },
-  "compile": [
-    "../../../Shared/*.cs"
-  ],
   "dependencies": {
     "NuGet.Common": {
       "target": "project"
@@ -20,7 +24,7 @@
   },
   "frameworks": {
     "net46": {
-      "compilationOptions": {
+      "buildOptions": {
         "define": [
           "IS_DESKTOP"
         ]
@@ -35,7 +39,7 @@
         "dnxcore50",
         "portable-net45+win8"
       ],
-      "compilationOptions": {
+      "buildOptions": {
         "define": [
           "IS_CORECLR"
         ]
