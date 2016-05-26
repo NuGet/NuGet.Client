@@ -48,7 +48,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
 
                 var logger = new TestLogger();
                 var lockPath = Path.Combine(project1.FullName, "project.lock.json");
@@ -124,7 +124,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(workingDir, "NuGet.Config"), String.Format(configFile, packageSource.FullName));
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
 
                 var configPath = Path.Combine(workingDir, "NuGet.Config");
 
@@ -209,10 +209,10 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(project2.FullName, "project.json"), project1Json);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
 
                 var specPath2 = Path.Combine(project2.FullName, "project.json");
-                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2);
+                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2, string.Empty);
 
                 var projPath1 = Path.Combine(project1.FullName, "project1.csproj");
                 var projPath2 = Path.Combine(project2.FullName, "project2.xproj");
@@ -319,10 +319,10 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(project2.FullName, "project.json"), project1Json);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
 
                 var specPath2 = Path.Combine(project2.FullName, "project.json");
-                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2);
+                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2, string.Empty);
 
                 var logger = new TestLogger();
                 var lockPath1 = Path.Combine(project1.FullName, "project.lock.json");
@@ -393,7 +393,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
 
                 var logger = new TestLogger();
                 var lockPath1 = Path.Combine(project1.FullName, "project.lock.json");

@@ -77,7 +77,7 @@ namespace NuGet.ProjectModel
             {
                 if (_packageSpec == null && PackageSpecPath != null && PackageSpecProjectName != null)
                 {
-                    _packageSpec = JsonPackageSpecReader.GetPackageSpec(PackageSpecProjectName, PackageSpecPath);
+                    _packageSpec = JsonPackageSpecReader.GetPackageSpec(PackageSpecProjectName, PackageSpecPath, string.Empty);
                 }
 
                 return _packageSpec;

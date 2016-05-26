@@ -24,7 +24,7 @@ namespace NuGet.ProjectModel.Test
                 }");
 
             // Act & Assert
-            var ex = Assert.Throws<FileFormatException>(() => JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", "project.json"));
+            var ex = Assert.Throws<FileFormatException>(() => JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", "project.json", string.Empty));
             Assert.Equal("Imports contains an invalid framework: '[  \"dotnet5.3\",  \"portable-net452+win81\",  \"furtureFramework\"]' in 'project.json'.", ex.InnerException.Message);
 
         }
@@ -46,7 +46,7 @@ namespace NuGet.ProjectModel.Test
                 }");
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", "project.json", string.Empty);
             var importFramework = spec.TargetFrameworks.First().Imports.ToList();
 
             // Assert
@@ -70,7 +70,7 @@ namespace NuGet.ProjectModel.Test
                 }");
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", "project.json", string.Empty);
             var importFramework = spec.TargetFrameworks.First().Imports.ToList();
             var expectedFramework = NuGetFramework.Parse("dotnet5.3");
 

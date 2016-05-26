@@ -296,7 +296,7 @@ namespace NuGet.Commands
 
         private static void LoadProjectJsonFile(PackageBuilder builder, string path, string basePath, string id, Stream stream, NuGetVersion version, string suffix, Func<string, string> propertyProvider)
         {
-            PackageSpec spec = JsonPackageSpecReader.GetPackageSpec(stream, id, path);
+            PackageSpec spec = JsonPackageSpecReader.GetPackageSpec(stream, id, path, suffix);
 
             if (id == null)
             {
