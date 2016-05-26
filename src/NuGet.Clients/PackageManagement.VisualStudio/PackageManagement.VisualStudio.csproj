@@ -51,17 +51,7 @@
     </Reference>
   </ItemGroup>
   <Choose>
-    <When Condition="$(VisualStudioVersion)=='14.0'">
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.ProjectSystem.V14Only">
-          <HintPath>$(ProgramFiles)\Microsoft Visual Studio 14.0\Common7\IDE\PrivateAssemblies\Microsoft.VisualStudio.ProjectSystem.V14Only.dll</HintPath>
-        </Reference>
-        <Reference Include="Microsoft.VisualStudio.ProjectSystem.Interop">
-          <HintPath>..\..\..\lib\VS14\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
-          <EmbedInteropTypes>True</EmbedInteropTypes>
-        </Reference>
-      </ItemGroup>
-    </When>
+    <When Condition="$(VisualStudioVersion)=='14.0'" />
     <When Condition="$(VisualStudioVersion)=='15.0'">
       <ItemGroup>
         <Reference Include="Microsoft.VisualStudio.ProjectSystem">
@@ -193,7 +183,6 @@
     <Compile Include="VSSettings.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>

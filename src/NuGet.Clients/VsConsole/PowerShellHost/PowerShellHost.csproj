@@ -101,7 +101,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="project.json" />
     <None Include="Scripts\Add-WrapperMembers.ps1" />
     <None Include="Scripts\NuGet.Types.ps1xml" />

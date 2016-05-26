@@ -22,9 +22,9 @@ param (
 )
 
 # For TeamCity - Incase any issue comes in this script fail the build. - Be default TeamCity returns exit code of 0 for all powershell even if it fails
-trap
-{
-    Write-Host "Build failed: $_" -ForegroundColor Red
+trap {
+    Write-Host "BUILD FAILED: $_" -ForegroundColor Red
+    Write-Host "ERROR DETAILS:" -ForegroundColor Red
     Write-Host $_.Exception -ForegroundColor Red
     Write-Host ("`r`n" * 3)
     exit 1
@@ -47,10 +47,8 @@ if (-not $BuildNumber) {
 }
 Trace-Log "Build #$BuildNumber started at $startTime"
 
-# Move to the script directory
-pushd $NuGetClientRoot
-
 $BuildErrors = @()
+
 Invoke-BuildStep 'Updating sub-modules' { Update-SubModules } `
     -skip:($SkipSubModules -or $Fast) `
     -ev +BuildErrors
@@ -124,8 +122,6 @@ Invoke-BuildStep 'Merging NuGet.exe' {
     -skip:($SkipILMerge -or $SkipCSProj -or $Fast) `
     -ev +BuildErrors
 
-popd
-
 Trace-Log ('-' * 60)
 
 ## Calculating Build time
@@ -133,15 +129,11 @@ $endTime = [DateTime]::UtcNow
 Trace-Log "Build #$BuildNumber ended at $endTime"
 Trace-Log "Time elapsed $(Format-ElapsedTime ($endTime - $startTime))"
 
-if ($BuildErrors) {
-    Trace-Log "Build's completed with following errors:"
-    $BuildErrors | Out-Default
-}
-
 Trace-Log ('=' * 60)
 
 if ($BuildErrors) {
-    Throw $BuildErrors.Count
+    $ErrorLines = $BuildErrors | %{ ">>> $($_.Exception.Message)" }
+    Error-Log "Build's completed with $($BuildErrors.Count) error(s):`r`n$($ErrorLines -join "`r`n")" -Fatal
 }
 
 Write-Host ("`r`n" * 3)

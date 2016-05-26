@@ -39,6 +39,10 @@ namespace NuGet
             get;
         }
 
+        /// <summary>
+        /// Returns package file stream
+        /// </summary>
+        /// <returns>Package file stream</returns>
         [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "This might be expensive")]
         Stream GetStream();
     }

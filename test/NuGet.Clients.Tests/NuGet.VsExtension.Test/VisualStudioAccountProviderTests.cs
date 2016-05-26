@@ -74,7 +74,7 @@ namespace NuGet.VsExtension.Test
         }
 
         [Fact]
-        public async Task VerifyContructorSetsId()
+        public void VerifyContructorSetsId()
         {
             Assert.StartsWith($"{typeof(VisualStudioAccountProvider).Name}", _provider.Id);
         }
