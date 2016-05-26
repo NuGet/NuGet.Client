@@ -49,7 +49,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
                 var project1PackagePath = SimpleTestPackageUtility.CreateFullPackage(
                     packageSource.FullName,
@@ -137,8 +137,8 @@ namespace NuGet.Commands.Test
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var specPath2 = Path.Combine(packageBProject.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
-                var spec2 = JsonPackageSpecReader.GetPackageSpec(packageBProjectJson, "packageB", specPath2, string.Empty);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec2 = JsonPackageSpecReader.GetPackageSpec(packageBProjectJson, "packageB", specPath2);
 
                 var packageAPath = SimpleTestPackageUtility.CreateFullPackage(
                     packageSource.FullName,
@@ -246,9 +246,9 @@ namespace NuGet.Commands.Test
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var specPath2 = Path.Combine(packageAProject.FullName, "project.json");
                 var specPath3 = Path.Combine(packageAExternalProject.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
-                var spec2 = JsonPackageSpecReader.GetPackageSpec(packageAProjectJson, "packageA", specPath2, string.Empty);
-                var spec3 = JsonPackageSpecReader.GetPackageSpec(packageAExternalProjectJson, "packageA", specPath3, string.Empty);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec2 = JsonPackageSpecReader.GetPackageSpec(packageAProjectJson, "packageA", specPath2);
+                var spec3 = JsonPackageSpecReader.GetPackageSpec(packageAExternalProjectJson, "packageA", specPath3);
 
                 var packageAPath = SimpleTestPackageUtility.CreateFullPackage(
                     packageSource.FullName,
@@ -361,8 +361,8 @@ namespace NuGet.Commands.Test
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var specPath2 = Path.Combine(packageAProject.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
-                var spec2 = JsonPackageSpecReader.GetPackageSpec(packageAProjectJson, "packageA", specPath2, string.Empty);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec2 = JsonPackageSpecReader.GetPackageSpec(packageAProjectJson, "packageA", specPath2);
 
                 var packageAPath = SimpleTestPackageUtility.CreateFullPackage(
                     packageSource.FullName,
@@ -464,8 +464,8 @@ namespace NuGet.Commands.Test
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var specPath2 = Path.Combine(packageAProject.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
-                var spec2 = JsonPackageSpecReader.GetPackageSpec(packageAProjectJson, "packageA", specPath2, string.Empty);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec2 = JsonPackageSpecReader.GetPackageSpec(packageAProjectJson, "packageA", specPath2);
 
                 var packageAPath = SimpleTestPackageUtility.CreateFullPackage(
                     packageSource.FullName,

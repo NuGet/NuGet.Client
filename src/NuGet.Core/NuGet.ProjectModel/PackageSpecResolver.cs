@@ -277,7 +277,7 @@ namespace NuGet.ProjectModel
                                         throw new InvalidOperationException(message, ex);
                                     }
 
-                                    project = JsonPackageSpecReader.GetPackageSpec(stream, Name, FullPath, string.Empty);
+                                    project = JsonPackageSpecReader.GetPackageSpec(stream, Name, FullPath, null);
                                 }
                                 finally
                                 {

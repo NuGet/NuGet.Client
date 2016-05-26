@@ -27,19 +27,18 @@ namespace NuGet.ProjectModel
         /// </summary>
         /// <param name="name">project name</param>
         /// <param name="packageSpecPath">file path</param>
-        /// <param name="snapshotValue">snapshot suffix value</param>
-        public static PackageSpec GetPackageSpec(string name, string packageSpecPath, string snapshotValue)
+        public static PackageSpec GetPackageSpec(string name, string packageSpecPath)
         {
             using (var stream = new FileStream(packageSpecPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                return GetPackageSpec(stream, name, packageSpecPath, snapshotValue);
+                return GetPackageSpec(stream, name, packageSpecPath, null);
             }
         }
 
-        public static PackageSpec GetPackageSpec(string json, string name, string packageSpecPath, string snapshotValue)
+        public static PackageSpec GetPackageSpec(string json, string name, string packageSpecPath)
         {
             var ms = new MemoryStream(Encoding.UTF8.GetBytes(json));
-            return GetPackageSpec(ms, name, packageSpecPath, snapshotValue);
+            return GetPackageSpec(ms, name, packageSpecPath, null);
         }
 
         public static PackageSpec GetPackageSpec(Stream stream, string name, string packageSpecPath, string snapshotValue)
@@ -74,12 +73,15 @@ namespace NuGet.ProjectModel
             {
                 packageSpec.Version = new NuGetVersion("1.0.0");
                 packageSpec.IsDefaultVersion = true;
+                packageSpec.HasVersionSnapshot = false;
             }
             else
             {
                 try
                 {
-                    packageSpec.Version = SpecifySnapshot(version.Value<string>(), snapshotValue: snapshotValue);
+                    bool hasVersionSnapshot;
+                    packageSpec.Version = SpecifySnapshot(version.Value<string>(), snapshotValue, out hasVersionSnapshot);
+                    packageSpec.HasVersionSnapshot = hasVersionSnapshot;
                 }
                 catch (Exception ex)
                 {
@@ -171,8 +173,9 @@ namespace NuGet.ProjectModel
             return packageSpec;
         }
 
-        private static NuGetVersion SpecifySnapshot(string version, string snapshotValue)
+        private static NuGetVersion SpecifySnapshot(string version, string snapshotValue, out bool hasVersionSnapshot)
         {
+            hasVersionSnapshot = false;
             if (version.EndsWith("-*"))
             {
                 if (string.IsNullOrEmpty(snapshotValue))
@@ -182,6 +185,7 @@ namespace NuGet.ProjectModel
                 else
                 {
                     version = version.Substring(0, version.Length - 1) + snapshotValue;
+                    hasVersionSnapshot = true;
                 }
             }
 

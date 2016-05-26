@@ -191,7 +191,7 @@ namespace NuGet.Commands
             {
                 if (File.Exists(path))
                 {
-                    result = JsonPackageSpecReader.GetPackageSpec(projectName, path, string.Empty);
+                    result = JsonPackageSpecReader.GetPackageSpec(projectName, path);
                 }
 
                 _projectJsonCache.Add(path, result);

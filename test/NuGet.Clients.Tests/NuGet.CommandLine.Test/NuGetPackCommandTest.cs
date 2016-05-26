@@ -119,7 +119,7 @@ namespace NuGet.CommandLine.Test
                     workingDirectory,
                     Path.GetFileName(workingDirectory) + ".project.json",
                 @"{
-  ""version"": ""1.0.0"",
+  ""version"": ""1.0.0-*"",
   ""title"": ""packageA"",
   ""authors"": [ ""test"" ],
   ""owners"": [ ""test"" ],
@@ -153,14 +153,14 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingDirectory,
-                    "pack " + Path.GetFileName(workingDirectory) + ".project.json",
+                    "pack " + Path.GetFileName(workingDirectory) + ".project.json -Suffix rc-123",
                     waitForExit: true);
                 Assert.Equal(0, r.Item1);
 
                 var id = Path.GetFileName(workingDirectory);
 
                 // Assert
-                var path = Path.Combine(workingDirectory, id + ".1.0.0.nupkg");
+                var path = Path.Combine(workingDirectory, id + ".1.0.0-rc-123.nupkg");
                 var package = new OptimizedZipPackage(path);
                 using (var zip = new ZipArchive(File.OpenRead(path)))
                 {
@@ -2829,7 +2829,7 @@ namespace " + projectName + @"
                     workingDirectory,
                     Path.GetFileName(workingDirectory) + ".project.json",
                 @"{
-  ""version"": ""1.0.0"",
+  ""version"": ""1.0.0-rc-*"",
   ""title"": ""packageA"",
   ""authors"": [ ""test"" ],
   ""owners"": [ ""test"" ],
@@ -2854,14 +2854,14 @@ namespace " + projectName + @"
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingDirectory,
-                    "pack " + Path.GetFileName(workingDirectory) + ".project.json",
+                    "pack " + Path.GetFileName(workingDirectory) + ".project.json -Suffix 1234",
                     waitForExit: true);
                 Assert.Equal(0, r.Item1);
 
                 var id = Path.GetFileName(workingDirectory);
 
                 // Assert
-                var path = Path.Combine(workingDirectory, id + ".1.0.0.nupkg");
+                var path = Path.Combine(workingDirectory, id + ".1.0.0-rc-1234.nupkg");
                 var package = new OptimizedZipPackage(path);
                 using (var zip = new ZipArchive(File.OpenRead(path)))
                 {

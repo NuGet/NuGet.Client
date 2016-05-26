@@ -29,7 +29,7 @@ namespace NuGet.ProjectModel.Test
 
             try
             {
-                var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+                var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             }
             catch (Exception ex)
             {
@@ -56,7 +56,7 @@ namespace NuGet.ProjectModel.Test
                         }";
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             var range = spec.Dependencies.Single().LibraryRange.VersionRange;
 
             // Assert
@@ -83,7 +83,7 @@ namespace NuGet.ProjectModel.Test
 
             try
             {
-                var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+                var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             }
             catch (Exception ex)
             {
@@ -114,7 +114,7 @@ namespace NuGet.ProjectModel.Test
 
             try
             {
-                var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+                var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             }
             catch (Exception ex)
             {
@@ -140,7 +140,7 @@ namespace NuGet.ProjectModel.Test
                         }";
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             var range = spec.TargetFrameworks.Single().Dependencies.Single().LibraryRange.VersionRange;
 
             // Assert
@@ -159,7 +159,7 @@ namespace NuGet.ProjectModel.Test
                          }";
 
             // Act
-            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             
             // Assert
             Assert.Equal(2, actual.Tools.Count);
@@ -187,7 +187,7 @@ namespace NuGet.ProjectModel.Test
                          }";
 
             // Act
-            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
 
             // Assert
             Assert.Equal(1, actual.Tools.Count);
@@ -209,7 +209,7 @@ namespace NuGet.ProjectModel.Test
                          }";
 
             // Act & Assert
-            var actual = Assert.Throws<FileFormatException>(() => JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty));
+            var actual = Assert.Throws<FileFormatException>(() => JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json"));
             Assert.Contains("Tools must specify a version range.", actual.Message);
         }
 
@@ -226,7 +226,7 @@ namespace NuGet.ProjectModel.Test
                          }";
 
             // Act & Assert
-            var actual = Assert.Throws<FileFormatException>(() => JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty));
+            var actual = Assert.Throws<FileFormatException>(() => JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json"));
             Assert.Contains("not a valid version string", actual.Message);
         }
 
@@ -243,7 +243,7 @@ namespace NuGet.ProjectModel.Test
                          }";
 
             // Act & Assert
-            var actual = Assert.Throws<FileFormatException>(() => JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty));
+            var actual = Assert.Throws<FileFormatException>(() => JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json"));
             Assert.Contains("not a valid version string", actual.Message);
         }
 
@@ -261,7 +261,7 @@ namespace NuGet.ProjectModel.Test
                          }";
 
             // Act & Assert
-            var actual = Assert.Throws<FileFormatException>(() => JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty));
+            var actual = Assert.Throws<FileFormatException>(() => JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json"));
             Assert.Contains("Imports contains an invalid framework: 'a' in 'project.json'.", actual.Message);
         }
 
@@ -279,7 +279,7 @@ namespace NuGet.ProjectModel.Test
                          }";
 
             // Act
-            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             
             // Assert
             Assert.Equal(1, actual.Tools.Count);
@@ -306,7 +306,7 @@ namespace NuGet.ProjectModel.Test
                          }";
 
             // Act
-            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             
             // Assert
             Assert.Equal(1, actual.Tools.Count);
@@ -333,7 +333,7 @@ namespace NuGet.ProjectModel.Test
                          }";
 
             // Act
-            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             
             // Assert
             Assert.Equal(1, actual.Tools.Count);
@@ -359,7 +359,7 @@ namespace NuGet.ProjectModel.Test
                          }";
 
             // Act
-            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
 
             // Assert
             var dep = actual.Dependencies.FirstOrDefault(d => d.Name.Equals("redist"));
@@ -387,7 +387,7 @@ namespace NuGet.ProjectModel.Test
                          }";
 
             // Act
-            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
 
             // Assert
             var dep = actual.Dependencies.FirstOrDefault(d => d.Name.Equals("redist"));
@@ -414,7 +414,7 @@ namespace NuGet.ProjectModel.Test
                          }";
 
             // Act
-            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
 
             // Assert
             var dep = actual.Dependencies.FirstOrDefault(d => d.Name.Equals("redist"));
@@ -448,7 +448,7 @@ namespace NuGet.ProjectModel.Test
         public void PackageSpecReader_PackOptions_Default(string json)
         {
             // Arrange & Act
-            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
 
             // Assert
             Assert.NotNull(actual.PackOptions);
@@ -490,7 +490,7 @@ namespace NuGet.ProjectModel.Test
                 .ToArray();
 
             // Act
-            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
 
             // Assert
             Assert.NotNull(actual.PackOptions);
@@ -554,7 +554,7 @@ namespace NuGet.ProjectModel.Test
         {
             // Arrange & Act & Assert
             var actual = Assert.Throws<FileFormatException>(
-                () => JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty));
+                () => JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json"));
 
             Assert.Contains("The pack options package type must be a string or array of strings in 'project.json'.", actual.Message);
         }

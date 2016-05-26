@@ -24,7 +24,7 @@ namespace NuGet.ProjectModel.Test
                         }";
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             var dependency = spec.Dependencies.Single();
 
             // Assert
@@ -47,7 +47,7 @@ namespace NuGet.ProjectModel.Test
                         }";
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             var dependency = spec.Dependencies.Single();
 
             // Assert
@@ -71,7 +71,7 @@ namespace NuGet.ProjectModel.Test
                         }";
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             var dependency = spec.Dependencies.Single();
 
             // Assert
@@ -98,7 +98,7 @@ namespace NuGet.ProjectModel.Test
 
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             var dependency = spec.Dependencies.Single();
 
             var futureFlag = LibraryIncludeFlagUtils.GetFlags(new string[] { "futureFlag" });
@@ -125,7 +125,7 @@ namespace NuGet.ProjectModel.Test
 
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             var dependency = spec.Dependencies.Single();
 
             // Assert
@@ -154,7 +154,7 @@ namespace NuGet.ProjectModel.Test
 
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             var dependency = spec.Dependencies.Single();
 
             // Assert
@@ -178,7 +178,7 @@ namespace NuGet.ProjectModel.Test
 
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             var dependency = spec.Dependencies.Single();
 
             // Assert
@@ -204,7 +204,7 @@ namespace NuGet.ProjectModel.Test
 
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             var dependency = spec.Dependencies.Single();
 
             // Assert
@@ -229,7 +229,7 @@ namespace NuGet.ProjectModel.Test
 
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             var dependency = spec.Dependencies.Single();
 
             // Assert
@@ -254,7 +254,7 @@ namespace NuGet.ProjectModel.Test
 
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             var dependency = spec.Dependencies.Single();
 
             // Assert
@@ -279,7 +279,7 @@ namespace NuGet.ProjectModel.Test
 
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             var dependency = spec.Dependencies.Single();
 
             // Assert
@@ -304,7 +304,7 @@ namespace NuGet.ProjectModel.Test
 
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             var dependency = spec.Dependencies.Single();
 
             // Assert
@@ -331,7 +331,7 @@ namespace NuGet.ProjectModel.Test
 
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             var dependency = spec.Dependencies.Single();
 
             // Assert
@@ -357,7 +357,7 @@ namespace NuGet.ProjectModel.Test
 
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             var dependency = spec.Dependencies.Single();
 
             // Assert
@@ -383,7 +383,7 @@ namespace NuGet.ProjectModel.Test
 
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             var dependency = spec.Dependencies.Single();
 
             // Assert
@@ -409,7 +409,7 @@ namespace NuGet.ProjectModel.Test
 
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             var dependency = spec.Dependencies.Single();
 
             // Assert
@@ -433,7 +433,7 @@ namespace NuGet.ProjectModel.Test
 
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             var dependency = spec.Dependencies.Single();
 
             // Assert

@@ -23,7 +23,7 @@ namespace NuGet.ProjectModel.Test
                         }";
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             var dependency = spec.Dependencies.Single();
 
             // Assert
@@ -47,7 +47,7 @@ namespace NuGet.ProjectModel.Test
                         }";
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             var dependency = spec.Dependencies.Single();
 
             // Assert
@@ -71,7 +71,7 @@ namespace NuGet.ProjectModel.Test
                         }";
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             var dependency = spec.Dependencies.Single();
 
             // Assert
@@ -95,7 +95,7 @@ namespace NuGet.ProjectModel.Test
                         }";
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             var dependency = spec.Dependencies.Single();
 
             // Assert
@@ -116,7 +116,7 @@ namespace NuGet.ProjectModel.Test
                         }";
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             var dependency = spec.Dependencies.Single();
 
             // Assert
@@ -146,7 +146,7 @@ namespace NuGet.ProjectModel.Test
 
             try
             {
-                var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+                var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
                 var dependency = spec.Dependencies.Single();
             }
             catch (FileFormatException ex)
@@ -182,7 +182,7 @@ namespace NuGet.ProjectModel.Test
 
             try
             {
-                var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+                var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
                 var dependency = spec.Dependencies.Single();
             }
             catch (FileFormatException ex)
@@ -218,7 +218,7 @@ namespace NuGet.ProjectModel.Test
 
             try
             {
-                var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+                var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
                 var dependency = spec.Dependencies.Single();
             }
             catch (FileFormatException ex)
@@ -254,7 +254,7 @@ namespace NuGet.ProjectModel.Test
 
             try
             {
-                var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json", string.Empty);
+                var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
                 var dependency = spec.Dependencies.Single();
             }
             catch (FileFormatException ex)

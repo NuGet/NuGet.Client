@@ -81,6 +81,12 @@ namespace NuGet.Packaging
             set;
         }
 
+        public bool HasSnapshotVersion
+        {
+            get;
+            set;
+        }
+
         public string Title
         {
             get;

@@ -96,7 +96,7 @@ namespace NuGet.ProjectModel.Test
         private static void VerifyJsonPackageSpecRoundTrip(string json)
         {
             // Arrange & Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "testName", @"C:\fake\path", string.Empty);
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "testName", @"C:\fake\path");
 
             JObject jsonObject = new JObject();
             JsonPackageSpecWriter.WritePackageSpec(spec, jsonObject);
