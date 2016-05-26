@@ -76,7 +76,7 @@ namespace NuGet.Commands
                 restoreContext.CacheContext,
                 restoreContext.Log);
 
-            var project = JsonPackageSpecReader.GetPackageSpec(file.Directory.Name, file.FullName);
+            var project = JsonPackageSpecReader.GetPackageSpec(file.Directory.Name, file.FullName, string.Empty);
 
             var request = new RestoreRequest(
                 project,

@@ -49,7 +49,7 @@ namespace NuGet.ProjectModel
                 if (File.Exists(jsonPath))
                 {
                     var projectName = Path.GetFileNameWithoutExtension(filePath);
-                    var spec = JsonPackageSpecReader.GetPackageSpec(projectName, jsonPath);
+                    var spec = JsonPackageSpecReader.GetPackageSpec(projectName, jsonPath, string.Empty);
 
                     var resolver = new PackageSpecResolver(spec);
 

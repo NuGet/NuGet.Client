@@ -73,8 +73,8 @@ namespace NuGet.Commands.Test
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var specPath2 = Path.Combine(project2.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
-                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
+                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2, string.Empty);
 
                 var logger = new TestLogger();
                 var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
@@ -148,8 +148,8 @@ namespace NuGet.Commands.Test
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var specPath2 = Path.Combine(project2.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
-                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
+                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2, string.Empty);
 
                 var logger = new TestLogger();
                 var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
@@ -220,8 +220,8 @@ namespace NuGet.Commands.Test
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var specPath2 = Path.Combine(project2.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
-                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
+                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2, string.Empty);
 
                 var logger = new TestLogger();
                 var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
@@ -298,8 +298,8 @@ namespace NuGet.Commands.Test
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var specPath2 = Path.Combine(project2.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
-                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
+                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2, string.Empty);
 
                 var logger = new TestLogger();
                 var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
@@ -383,8 +383,8 @@ namespace NuGet.Commands.Test
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var specPath2 = Path.Combine(project2.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
-                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
+                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2, string.Empty);
 
                 var logger = new TestLogger();
                 var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
@@ -464,8 +464,8 @@ namespace NuGet.Commands.Test
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var specPath2 = Path.Combine(project2.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
-                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
+                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2, string.Empty);
 
                 var logger = new TestLogger();
                 var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
@@ -532,7 +532,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(msbuidPath2, string.Empty);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
 
                 var logger = new TestLogger();
                 var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
@@ -602,7 +602,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
 
                 var logger = new TestLogger();
                 var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
@@ -674,8 +674,8 @@ namespace NuGet.Commands.Test
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var specPath2 = Path.Combine(project2.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
-                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
+                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2, string.Empty);
 
                 var logger = new TestLogger();
                 var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
@@ -749,8 +749,8 @@ namespace NuGet.Commands.Test
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var specPath2 = Path.Combine(project2.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
-                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
+                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2, string.Empty);
 
                 var logger = new TestLogger();
                 var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
@@ -824,8 +824,8 @@ namespace NuGet.Commands.Test
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var specPath2 = Path.Combine(project2.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
-                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
+                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2, string.Empty);
 
                 var logger = new TestLogger();
                 var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
@@ -940,9 +940,9 @@ namespace NuGet.Commands.Test
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var specPath2 = Path.Combine(project2.FullName, "project.json");
                 var specPath3 = Path.Combine(project3.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
-                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2);
-                var spec3 = JsonPackageSpecReader.GetPackageSpec(project3Json, "project3", specPath3);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
+                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2, string.Empty);
+                var spec3 = JsonPackageSpecReader.GetPackageSpec(project3Json, "project3", specPath3, string.Empty);
 
                 var logger = new TestLogger();
                 var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
@@ -1004,7 +1004,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(project1ProjPath, string.Empty);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
 
                 sources.Add(new PackageSource(packageSource.FullName));
 
@@ -1074,7 +1074,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(project1ProjPath, string.Empty);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
 
                 sources.Add(new PackageSource(packageSource.FullName));
 
@@ -1173,8 +1173,8 @@ namespace NuGet.Commands.Test
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var specPath2 = Path.Combine(project2.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
-                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
+                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2, string.Empty);
 
                 var logger = new TestLogger();
                 var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
@@ -1251,8 +1251,8 @@ namespace NuGet.Commands.Test
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var specPath2 = Path.Combine(project2.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
-                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
+                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2, string.Empty);
 
                 var logger = new TestLogger();
                 var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
@@ -1313,7 +1313,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(project2.FullName, "packages.config"), string.Empty);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
 
                 var logger = new TestLogger();
                 var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
@@ -1400,8 +1400,8 @@ namespace NuGet.Commands.Test
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var specPath2 = Path.Combine(project2.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
-                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
+                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2, string.Empty);
 
                 var logger = new TestLogger();
                 var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
@@ -1485,8 +1485,8 @@ namespace NuGet.Commands.Test
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var specPath2 = Path.Combine(project2.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
-                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1, string.Empty);
+                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2, string.Empty);
 
                 var logger = new TestLogger();
                 var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);

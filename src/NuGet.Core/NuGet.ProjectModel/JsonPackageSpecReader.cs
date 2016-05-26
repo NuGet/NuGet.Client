@@ -27,7 +27,8 @@ namespace NuGet.ProjectModel
         /// </summary>
         /// <param name="name">project name</param>
         /// <param name="packageSpecPath">file path</param>
-        public static PackageSpec GetPackageSpec(string name, string packageSpecPath, string snapshotValue = "")
+        /// <param name="snapshotValue">snapshot suffix value</param>
+        public static PackageSpec GetPackageSpec(string name, string packageSpecPath, string snapshotValue)
         {
             using (var stream = new FileStream(packageSpecPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
@@ -41,7 +42,7 @@ namespace NuGet.ProjectModel
             return GetPackageSpec(ms, name, packageSpecPath, snapshotValue);
         }
 
-        public static PackageSpec GetPackageSpec(Stream stream, string name, string packageSpecPath, string snapshotValue = "")
+        public static PackageSpec GetPackageSpec(Stream stream, string name, string packageSpecPath, string snapshotValue)
         {
             // Load the raw JSON into the package spec object
             var reader = new JsonTextReader(new StreamReader(stream));
@@ -158,7 +159,6 @@ namespace NuGet.ProjectModel
                 packageSpec.Dependencies,
                 rawPackageSpec,
                 "dependencies",
-                snapshotValue,
                 isGacOrFrameworkReference: false);
 
             packageSpec.Tools = ReadTools(packageSpec, rawPackageSpec).ToList();
@@ -234,7 +234,6 @@ namespace NuGet.ProjectModel
             IList<LibraryDependency> results,
             JObject settings,
             string propertyName,
-            string snapshotValue,
             bool isGacOrFrameworkReference)
         {
             var dependencies = settings[propertyName] as JObject;
@@ -350,18 +349,6 @@ namespace NuGet.ProjectModel
 
                     if (!string.IsNullOrEmpty(dependencyVersionValue))
                     {
-                        if (dependencyVersionValue.Contains("-*"))
-                        {
-                            if (string.IsNullOrEmpty(snapshotValue))
-                            {
-                                dependencyVersionValue = dependencyVersionValue.Replace("-*", "");
-                            }
-                            else
-                            {
-                                dependencyVersionValue = dependencyVersionValue.Replace("-*", $"-{snapshotValue}");
-                            }
-                        }
-
                         try
                         {
                             dependencyVersionRange = VersionRange.Parse(dependencyVersionValue);
@@ -613,7 +600,6 @@ namespace NuGet.ProjectModel
                 targetFrameworkInformation.Dependencies,
                 properties,
                 "dependencies",
-                string.Empty,
                 isGacOrFrameworkReference: false);
 
             var frameworkAssemblies = new List<LibraryDependency>();
@@ -622,7 +608,6 @@ namespace NuGet.ProjectModel
                 frameworkAssemblies,
                 properties,
                 "frameworkAssemblies",
-                string.Empty,
                 isGacOrFrameworkReference: true);
 
             frameworkAssemblies.ForEach(d => targetFrameworkInformation.Dependencies.Add(d));

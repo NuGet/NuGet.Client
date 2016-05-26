@@ -89,7 +89,8 @@ namespace NuGet.ProjectManagement
                 // Read the spec and add it to the cache
                 spec = JsonPackageSpecReader.GetPackageSpec(
                     projectName,
-                    projectJsonPath);
+                    projectJsonPath,
+                    string.Empty);
 
                 SpecCache.Add(projectJsonPath, spec);
             }
