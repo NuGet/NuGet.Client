@@ -8,7 +8,7 @@ root = true
 [*]
 end_of_line = CRLF
 
-[*.{cs,props,targets,xml,nuspec}]
+[*.{cs,props,targets,nuspec}]
 indent_style = space
 indent_size = 4
 
@@ -16,6 +16,6 @@ indent_size = 4
 indent_style = space
 indent_size = 2
 
-[*.{csproj,resx}]
+[*.{csproj,xml,resx}]
 indent_style = space
 indent_size = 2
