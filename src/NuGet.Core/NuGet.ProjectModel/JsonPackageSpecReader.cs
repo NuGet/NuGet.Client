@@ -352,7 +352,14 @@ namespace NuGet.ProjectModel
                     {
                         if (dependencyVersionValue.Contains("-*"))
                         {
-                            dependencyVersionValue = dependencyVersionValue.Replace("-*", $"-{snapshotValue}");
+                            if (string.IsNullOrEmpty(snapshotValue))
+                            {
+                                dependencyVersionValue = dependencyVersionValue.Replace("-*", "");
+                            }
+                            else
+                            {
+                                dependencyVersionValue = dependencyVersionValue.Replace("-*", $"-{snapshotValue}");
+                            }
                         }
 
                         try
