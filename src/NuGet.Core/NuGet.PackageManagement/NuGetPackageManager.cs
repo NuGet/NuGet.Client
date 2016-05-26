@@ -1891,7 +1891,8 @@ namespace NuGet.PackageManagement
                     var originalPackageSpec = JsonPackageSpecReader.GetPackageSpec(
                         rawPackageSpec.ToString(),
                         buildIntegratedProject.ProjectName,
-                        buildIntegratedProject.JsonConfigPath);
+                        buildIntegratedProject.JsonConfigPath,
+                        string.Empty);
 
                     var originalRestoreResult = await BuildIntegratedRestoreUtility.RestoreAsync(
                         buildIntegratedProject,
@@ -1919,7 +1920,8 @@ namespace NuGet.PackageManagement
                 // Create a package spec from the modified json
                 var packageSpec = JsonPackageSpecReader.GetPackageSpec(rawPackageSpec.ToString(),
                     buildIntegratedProject.ProjectName,
-                    buildIntegratedProject.JsonConfigPath);
+                    buildIntegratedProject.JsonConfigPath,
+                    string.Empty);
 
 
                 // Restore based on the modified package spec. This operation does not write the lock file to disk.

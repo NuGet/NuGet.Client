@@ -202,7 +202,7 @@ namespace NuGet.ProjectManagement.Projects
         {
             get
             {
-                return JsonPackageSpecReader.GetPackageSpec(ProjectName, JsonConfigPath);
+                return JsonPackageSpecReader.GetPackageSpec(ProjectName, JsonConfigPath, string.Empty);
             }
         }
 
