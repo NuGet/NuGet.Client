@@ -45,7 +45,6 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="Microsoft.Build" />
-    <Reference Include="Microsoft.Build.Framework" />
   </ItemGroup>
   <ItemGroup>
     <None Include="project.json" />

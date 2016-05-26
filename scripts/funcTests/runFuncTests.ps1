@@ -6,9 +6,9 @@ param (
 )
 
 # For TeamCity - Incase any issue comes in this script fail the build. - Be default TeamCity returns exit code of 0 for all powershell even if it fails
-trap
-{
-    Write-Host "Build failed: $_" -ForegroundColor Red
+trap {
+    Write-Host "BUILD FAILED: $_" -ForegroundColor Red
+    Write-Host "ERROR DETAILS:" -ForegroundColor Red
     Write-Host $_.Exception -ForegroundColor Red
     Write-Host ("`r`n" * 3)
     exit 1
@@ -55,11 +55,18 @@ Invoke-BuildStep 'Restoring projects' { Restore-XProjects } `
 $xtests = Find-XProjects $FuncTestRoot
 $xtests | Test-XProject -ev +BuildErrors
 
-popd
+Trace-Log ('-' * 60)
+
+## Calculating Build time
+$endTime = [DateTime]::UtcNow
+Trace-Log "Build completed at $endTime"
+Trace-Log "Time elapsed $(Format-ElapsedTime ($endTime - $startTime))"
+
+Trace-Log ('=' * 60)
 
 if ($BuildErrors) {
-    Trace-Log "Build's completed with following errors:"
-    $BuildErrors | Out-Default
+    $ErrorLines = $BuildErrors | %{ ">>> $($_.Exception.Message)" }
+    Error-Log "Build's completed with $($BuildErrors.Count) error(s):`r`n$($ErrorLines -join "`r`n")" -Fatal
 }
 
 Trace-Log ('=' * 60)
