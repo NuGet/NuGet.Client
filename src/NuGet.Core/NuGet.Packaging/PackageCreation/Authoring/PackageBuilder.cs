@@ -67,6 +67,8 @@ namespace NuGet.Packaging
             Authors = new HashSet<string>();
             Owners = new HashSet<string>();
             Tags = new HashSet<string>();
+            // Just like parameter replacements, these are also case insensitive, for consistency.
+            Properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
         public string Id
@@ -154,6 +156,16 @@ namespace NuGet.Packaging
         }
 
         public ISet<string> Tags
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Exposes the additional properties extracted by the metadata 
+        /// extractor or received from the command line.
+        /// </summary>
+        public Dictionary<string, string> Properties
         {
             get;
             private set;

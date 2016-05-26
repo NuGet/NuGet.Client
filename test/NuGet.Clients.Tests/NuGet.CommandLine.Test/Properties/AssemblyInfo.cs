@@ -9,3 +9,8 @@ using System.Runtime.InteropServices;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("33294bb8-5144-4363-b02c-332f6d94c1c1")]
+
+// Exercises the new metadata-driven manifest authoring
+[assembly: AssemblyMetadata("owner", "Outercurve")]
+[assembly: AssemblyInformationalVersion("3.3.0")]
+[assembly: AssemblyCopyright(".NET Foundation")]
