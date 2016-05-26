@@ -296,7 +296,7 @@ namespace NuGet.Commands
 
         private static void LoadProjectJsonFile(PackageBuilder builder, string path, string basePath, string id, Stream stream, NuGetVersion version, string suffix, Func<string, string> propertyProvider)
         {
-            PackageSpec spec = JsonPackageSpecReader.GetPackageSpec(stream, id, path);
+            var spec = JsonPackageSpecReader.GetPackageSpec(stream, id, path, suffix);
 
             if (id == null)
             {
@@ -309,12 +309,14 @@ namespace NuGet.Commands
             if (version != null)
             {
                 builder.Version = version;
+                builder.HasSnapshotVersion = false;
             }
             else if (!spec.IsDefaultVersion)
             {
                 builder.Version = spec.Version;
+                builder.HasSnapshotVersion = spec.HasVersionSnapshot;
 
-                if (suffix != null)
+                if (suffix != null && !spec.HasVersionSnapshot)
                 {
                     builder.Version = new NuGetVersion(builder.Version.Major, builder.Version.Minor, builder.Version.Patch, builder.Version.Revision, suffix, null);
                 }
@@ -569,6 +571,7 @@ namespace NuGet.Commands
             factory.SetIncludeSymbols(true);
             PackageBuilder symbolsBuilder = factory.CreateBuilder(_packArgs.BasePath, argsVersion, _packArgs.Suffix, buildIfNeeded: false);
             symbolsBuilder.Version = mainPackageBuilder.Version;
+            symbolsBuilder.HasSnapshotVersion = mainPackageBuilder.HasSnapshotVersion;
 
             // Get the file name for the sources package and build it
             string outputPath = GetOutputPath(symbolsBuilder, symbols: true);
@@ -583,9 +586,10 @@ namespace NuGet.Commands
             if (!String.IsNullOrEmpty(_packArgs.Version))
             {
                 builder.Version = new NuGetVersion(_packArgs.Version);
+                builder.HasSnapshotVersion = false;
             }
 
-            if (!string.IsNullOrEmpty(_packArgs.Suffix))
+            if (!string.IsNullOrEmpty(_packArgs.Suffix) && !builder.HasSnapshotVersion)
             {
                 string version = VersionFormatter.Instance.Format("V", builder.Version, VersionFormatter.Instance);
                 builder.Version = new NuGetVersion($"{version}-{_packArgs.Suffix}");

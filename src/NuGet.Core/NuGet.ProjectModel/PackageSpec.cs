@@ -52,6 +52,8 @@ namespace NuGet.ProjectModel
         }
         public bool IsDefaultVersion { get; set; }
 
+        public bool HasVersionSnapshot { get; set; }
+
         public string Description { get; set; }
 
         public string Summary { get; set; }
