@@ -105,6 +105,16 @@ namespace NuGet.Protocol
                     try
                     {
                         var response = await base.SendAsync(request, cancellationToken);
+
+                        if (response.StatusCode == HttpStatusCode.ProxyAuthenticationRequired &&
+                            HttpHandlerResourceV3.PromptForProxyCredentials != null)
+                        {
+                            if (await AcquireCredentialsAsync(request.RequestUri, beforeAuthId, cancellationToken))
+                            {
+                                continue;
+                            }
+                        }
+
                         if (HttpHandlerResourceV3.ProxyPassed != null && Proxy != null)
                         {
                             HttpHandlerResourceV3.ProxyPassed(Proxy);
@@ -113,55 +123,58 @@ namespace NuGet.Protocol
                         return response;
                     }
                     catch (HttpRequestException ex)
+                        when (ProxyAuthenticationRequired(ex) && HttpHandlerResourceV3.PromptForProxyCredentials != null)
                     {
-                        if (ProxyAuthenticationRequired(ex) &&
-                            HttpHandlerResourceV3.PromptForProxyCredentials != null)
-                        {
-                            ICredentials currentCredentials = Proxy.Credentials;
-
-                            try
-                            {
-                                await _credentialPromptLock.WaitAsync();
-
-                                // Check if the credentials have already changed
-                                if (beforeAuthId != _lastAuthId)
-                                {
-                                    continue;
-                                }
-
-                                // Limit the number of retries
-                                _authRetries++;
-                                if (_authRetries >= MaxAuthRetries)
-                                {
-                                    throw;
-                                }
-
-                                // prompt use for proxy credentials.
-                                var credentials = await HttpHandlerResourceV3
-                                    .PromptForProxyCredentials(request.RequestUri, Proxy, cancellationToken);
-
-                                if (credentials == null)
-                                {
-                                    throw;
-                                }
-
-                                // use the user provided credential to send the request again.
-                                Proxy.Credentials = credentials;
-
-                                // Mark that the credentials have been updated
-                                _lastAuthId = Guid.NewGuid();
-                            }
-                            finally
-                            {
-                                _credentialPromptLock.Release();
-                            }
-                        }
-                        else
+                        if (!await AcquireCredentialsAsync(request.RequestUri, beforeAuthId, cancellationToken))
                         {
                             throw;
                         }
                     }
                 }
+            }
+
+            private async Task<bool> AcquireCredentialsAsync(Uri requestUri, Guid beforeAuthId, CancellationToken cancellationToken)
+            {
+                ICredentials currentCredentials = Proxy.Credentials;
+
+                try
+                {
+                    await _credentialPromptLock.WaitAsync();
+
+                    // Check if the credentials have already changed
+                    if (beforeAuthId != _lastAuthId)
+                    {
+                        return true;
+                    }
+
+                    // Limit the number of retries
+                    _authRetries++;
+                    if (_authRetries >= MaxAuthRetries)
+                    {
+                        return false;
+                    }
+
+                    // prompt use for proxy credentials.
+                    var credentials = await HttpHandlerResourceV3
+                        .PromptForProxyCredentials(requestUri, Proxy, cancellationToken);
+
+                    if (credentials == null)
+                    {
+                        return false;
+                    }
+
+                    // use the user provided credential to send the request again.
+                    Proxy.Credentials = credentials;
+
+                    // Mark that the credentials have been updated
+                    _lastAuthId = Guid.NewGuid();
+                }
+                finally
+                {
+                    _credentialPromptLock.Release();
+                }
+
+                return true;
             }
 
             // Returns true if the cause of the exception is proxy authentication failure
