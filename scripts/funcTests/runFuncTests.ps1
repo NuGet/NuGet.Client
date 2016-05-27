@@ -36,6 +36,11 @@ trap {
 
 . "$PSScriptRoot\..\..\build\common.ps1"
 
+Write-Host ("`r`n" * 3)
+Trace-Log ('=' * 60)
+
+$startTime = [DateTime]::UtcNow
+
 $FuncScriptsRoot = Split-Path -Path $PSScriptRoot -Parent
 $NuGetClientRoot = Split-Path -Path $FuncScriptsRoot -Parent
 $FuncTestRoot = Join-Path $NuGetClientRoot "test\NuGet.Core.FuncTests"
