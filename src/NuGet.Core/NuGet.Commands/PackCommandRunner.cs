@@ -158,7 +158,7 @@ namespace NuGet.Commands
                 UseShellExecute = false,
                 FileName = dotnetLocation,
                 Arguments = $"build {properties}",
-                WorkingDirectory = _packArgs.BasePath,
+                WorkingDirectory = _packArgs.CurrentDirectory,
                 RedirectStandardOutput = false,
                 RedirectStandardError = false
             };
