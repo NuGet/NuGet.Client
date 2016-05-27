@@ -31,10 +31,10 @@ namespace NuGet.Configuration.Test
                 Environment.SetEnvironmentVariable("RP_ENV_VAR", "ONE");
 
                 //Act
-                ISettings settings = new Settings(nugetConfigFileFolder, nugetConfigFile, isPath: true);
+                ISettings settings = new Settings(nugetConfigFileFolder, nugetConfigFile);
 
                 //Assert
-                Assert.Equal(settings.GetValue("config", "repositoryPath"), Path.Combine(nugetConfigFileFolder,expectedRepositoryPath));
+                Assert.Equal(settings.GetValue("config", "repositoryPath", isPath: true), Path.Combine(nugetConfigFileFolder, expectedRepositoryPath));
             }
         }
 
@@ -67,7 +67,7 @@ namespace NuGet.Configuration.Test
         public void GetValueEvaluatesEnvironmentVariableWithAbsolutePath()
         {
             //Arrange
-            var expectedRepositoryPath = @"C:\log";
+            var expectedRepositoryPath = @"C:\log\two";
 
             using (var nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
@@ -79,10 +79,10 @@ namespace NuGet.Configuration.Test
                 Environment.SetEnvironmentVariable("RP_ENV_VAR", @"C:\log");
 
                 //Act
-                ISettings settings = new Settings(nugetConfigFileFolder, nugetConfigFile, isPath: true);
+                ISettings settings = new Settings(nugetConfigFileFolder, nugetConfigFile);
 
                 //Assert
-                Assert.Equal(settings.GetValue("config", "repositoryPath"), expectedRepositoryPath);
+                Assert.Equal(settings.GetValue("config", "repositoryPath", isPath: true), expectedRepositoryPath);
             }
         }
 
@@ -90,7 +90,7 @@ namespace NuGet.Configuration.Test
         public void GetSettingValuesEvaluatesEnvironmentVariableWithAbsolutePath()
         {
             //Arrange
-            var expectedRepositoryPath = @"C:\log";
+            var expectedRepositoryPath = @"C:\log\two";
 
             using (var nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
