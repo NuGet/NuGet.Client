@@ -2,7 +2,7 @@
 param (
     [ValidateSet("debug", "release")]
     [string]$Configuration = 'debug',
-    [ValidateSet("Release","rtm", "rc", "beta", "final", "zlocal")]
+    [ValidateSet("Release","rtm", "rc", "beta", "beta2", "final", "xprivate", "zlocal")]
     [string]$ReleaseLabel = 'zlocal',
     [int]$BuildNumber,
     [switch]$SkipRestore,
@@ -115,7 +115,7 @@ Invoke-BuildStep 'Building NuGet.Clients projects - Dev14 dependencies' {
     -skip:$SkipDev14 `
     -ev +BuildErrors
 
-## ILMerge the Dev14 exe only    
+## ILMerge the Dev14 exe only
 Invoke-BuildStep 'Merging NuGet.exe' {
         param($Configuration) Invoke-ILMerge $Configuration $MSPFXPath
     } `
