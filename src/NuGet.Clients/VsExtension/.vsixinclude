@@ -25,7 +25,6 @@ NuGet.DependencyResolver.dll
 NuGet.Frameworks.dll
 NuGet.Indexing.dll
 NuGet.LibraryModel.dll
-NuGet.Logging.dll
 NuGet.PackageManagement.dll
 NuGet.PackageManagement.UI.dll
 NuGet.Packaging.Core.dll
