@@ -85,7 +85,7 @@ namespace NuGet.Protocol.FuncTest
         [Theory]
         [InlineData(TestServers.ProGet)]
         [InlineData(TestServers.Klondike)]
-        [InlineData(TestServers.Artifactory)]
+        //[InlineData(TestServers.Artifactory)]
         [InlineData(TestServers.MyGet)]
         public async Task V2FeedParser_NormalizedVersion(string packageSource)
         {
@@ -106,7 +106,7 @@ namespace NuGet.Protocol.FuncTest
         [Theory]
         [InlineData(TestServers.ProGet)]
         [InlineData(TestServers.Klondike)]
-        [InlineData(TestServers.Artifactory)]
+        //[InlineData(TestServers.Artifactory)]
         [InlineData(TestServers.MyGet)]
         public async Task V2FeedParser_DownloadFromIdentityFromDifferentServer(string packageSource)
         {
@@ -133,7 +133,7 @@ namespace NuGet.Protocol.FuncTest
         // ProGet does not support seach portable framework, it will return empty packages
         [Theory]
         [InlineData(TestServers.Klondike)]
-        [InlineData(TestServers.Artifactory)]
+        //[InlineData(TestServers.Artifactory)]
         [InlineData(TestServers.MyGet)]
         public async Task V2FeedParser_SearchWithPortableFramework(string packageSource)
         {
@@ -161,7 +161,7 @@ namespace NuGet.Protocol.FuncTest
         [Theory]
         [InlineData(TestServers.ProGet)]
         [InlineData(TestServers.Klondike)]
-        [InlineData(TestServers.Artifactory)]
+        //[InlineData(TestServers.Artifactory)]
         [InlineData(TestServers.MyGet)]
         public async Task V2FeedParser_Search(string packageSource)
         {
@@ -189,7 +189,7 @@ namespace NuGet.Protocol.FuncTest
         [Theory]
         [InlineData(TestServers.ProGet)]
         [InlineData(TestServers.Klondike)]
-        [InlineData(TestServers.Artifactory)]
+        //[InlineData(TestServers.Artifactory)]
         [InlineData(TestServers.MyGet)]
         public async Task V2FeedParser_SearchWithPrerelease(string packageSource)
         {

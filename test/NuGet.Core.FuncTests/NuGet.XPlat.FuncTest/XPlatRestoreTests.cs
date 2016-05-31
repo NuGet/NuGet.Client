@@ -13,7 +13,7 @@ namespace NuGet.XPlat.FuncTest
     {
         [Theory]
         // Try with config file in the project directory
-        [InlineData(TestServers.Artifactory)]
+        //[InlineData(TestServers.Artifactory)]
         [InlineData(TestServers.Klondike)]
         [InlineData(TestServers.MyGet)]
         [InlineData(TestServers.Nexus)]
@@ -60,7 +60,7 @@ namespace NuGet.XPlat.FuncTest
 
         [Theory]
         // Try with config file in a different directory
-        [InlineData(TestServers.Artifactory)]
+        //[InlineData(TestServers.Artifactory)]
         [InlineData(TestServers.Klondike)]
         [InlineData(TestServers.MyGet)]
         [InlineData(TestServers.Nexus)]

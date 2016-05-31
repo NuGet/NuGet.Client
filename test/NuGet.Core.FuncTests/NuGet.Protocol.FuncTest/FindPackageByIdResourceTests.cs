@@ -14,7 +14,7 @@ namespace NuGet.Protocol.FuncTest
         [Theory]
         [InlineData(TestServers.ProGet)]
         [InlineData(TestServers.Klondike)]
-        [InlineData(TestServers.Artifactory)]
+        //[InlineData(TestServers.Artifactory)]
         [InlineData(TestServers.MyGet)]
         public async Task FindPackageByIdResource_NormalizedVersion(string packageSource)
         {
@@ -36,7 +36,7 @@ namespace NuGet.Protocol.FuncTest
         [Theory]
         [InlineData(TestServers.ProGet)]
         [InlineData(TestServers.Klondike)]
-        [InlineData(TestServers.Artifactory)]
+        //[InlineData(TestServers.Artifactory)]
         [InlineData(TestServers.MyGet)]
         public async Task FindPackageByIdResource_NoDependencyVersion(string packageSource)
         {
@@ -58,7 +58,7 @@ namespace NuGet.Protocol.FuncTest
         [Theory]
         [InlineData(TestServers.ProGet)]
         [InlineData(TestServers.Klondike)]
-        [InlineData(TestServers.Artifactory)]
+        //[InlineData(TestServers.Artifactory)]
         [InlineData(TestServers.MyGet)]
         public async Task FindPackageByIdResource_Basic(string packageSource)
         {
