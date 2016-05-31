@@ -85,11 +85,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         protected NuGetPackageManager PackageManager
         {
-            get { return new NuGetPackageManager(
-                _sourceRepositoryProvider,
-                ConfigSettings,
-                VsSolutionManager,
-                _deleteOnRestartManager); }
+            get
+            {
+                return new NuGetPackageManager(
+                    _sourceRepositoryProvider,
+                    ConfigSettings,
+                    VsSolutionManager,
+                    _deleteOnRestartManager);
+            }
         }
 
         /// <summary>
@@ -190,6 +193,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             get { return this; }
         }
 
+        /// <summary>
+        /// Determine if needs to log total time elapsed or not
+        /// </summary>
+        protected virtual bool IsLoggingTimeDisabled { get; }
+
         #endregion Properties
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to display friendly message to the console.")]
@@ -215,7 +223,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
 
             stopWatch.Stop();
-            LogCore(ProjectManagement.MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_TotalTime, stopWatch.Elapsed));
+
+            // Log total time elapsed except for Tab command
+            if (!IsLoggingTimeDisabled)
+            {
+                LogCore(ProjectManagement.MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_TotalTime, stopWatch.Elapsed));
+            }
         }
 
         /// <summary>
