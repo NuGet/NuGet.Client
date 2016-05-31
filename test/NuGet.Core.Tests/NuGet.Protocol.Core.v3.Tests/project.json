@@ -28,7 +28,7 @@
         "System.Diagnostics.TraceSource": "4.0.0-rc3-24128-00",
         "Microsoft.NETCore.App": {
           "type": "platform",
-          "version": "1.0.0-rc2-3002339"
+          "version": "1.0.0-rc3-004338"
         }
       },
       "buildOptions": {
