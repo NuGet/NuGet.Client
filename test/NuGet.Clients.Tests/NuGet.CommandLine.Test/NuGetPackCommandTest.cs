@@ -3086,6 +3086,72 @@ stuff \n <<".Replace("\r\n", "\n");
             }
         }
 
+        [Fact]
+        public void PackCommand_PackJsonCorrectLibPathInNupkg()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+
+                string id = Path.GetFileName(workingDirectory);
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "someDirName", id, "bin/Debug/netcoreapp1.0"),
+                    id + ".dll",
+                    string.Empty);
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "someDirName", id, "bin/Debug/netcoreapp1.0/win7-x64"),
+                    id + ".dll",
+                    string.Empty);
+
+                Util.CreateFile(
+                    workingDirectory,
+                    "project.json",
+                @"{
+  ""version"": ""1.0.0"",
+  ""title"": ""packageA"",
+  ""authors"": [ ""test"" ],
+  ""owners"": [ ""test"" ],
+  ""requireLicenseAcceptance"": ""false"",
+  ""description"": ""Description"",
+  ""copyright"": ""Copyright ©  2013"",
+  ""frameworks"": {
+    ""native"": {
+    },
+    ""uap10.0"": {
+    }
+  }
+}");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack project.json",
+                    waitForExit: true);
+                Assert.Equal(0, r.Item1);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, Path.GetFileName(workingDirectory) + ".1.0.0.nupkg");
+                var package = new OptimizedZipPackage(path);
+                var files = package.GetFiles().Select(f => f.Path).OrderBy(s => s).ToArray();
+                Array.Sort(files);
+
+                Assert.Equal(
+                    files,
+                    new string[]
+                    {
+                            @"lib\netcoreapp1.0\" + id + ".dll",
+                            @"lib\netcoreapp1.0\win7-x64\" + id + ".dll",
+                    });
+
+                Assert.False(r.Item2.Contains("Assembly outside lib folder"));
+            }
+        }
+
         private class PackageDepencyComparer : IEqualityComparer<PackageDependency>
         {
             public bool Equals(PackageDependency x, PackageDependency y)
