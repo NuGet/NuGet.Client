@@ -13,13 +13,20 @@ namespace NuGet.XPlat.FuncTest
     {
         [Theory]
         // Try with config file in the project directory
-        //[InlineData(TestServers.Artifactory)]
-        [InlineData(TestServers.Klondike)]
-        [InlineData(TestServers.MyGet)]
-        [InlineData(TestServers.Nexus)]
-        [InlineData(TestServers.NuGetServer)]
-        [InlineData(TestServers.ProGet)]
-        public void Restore_WithConfigFileInProjectDirectory_Succeeds(string sourceUri)
+        //[InlineData(TestServers.Artifactory, false)]
+        [InlineData(TestServers.Klondike, false)]
+        [InlineData(TestServers.MyGet, false)]
+        [InlineData(TestServers.Nexus, false)]
+        //[InlineData(TestServers.NuGetServer, false)]
+        [InlineData(TestServers.ProGet, false)]
+        // Try with config file in a different directory
+        //[InlineData(TestServers.Artifactory, true)]
+        [InlineData(TestServers.Klondike, true)]
+        [InlineData(TestServers.MyGet, true)]
+        [InlineData(TestServers.Nexus, true)]
+        //[InlineData(TestServers.NuGetServer, true)]
+        [InlineData(TestServers.ProGet, true)]
+        public void RestoreFromServerSucceeds(string sourceUri, bool configInDifferentDirectory)
         {
             // Arrange
             using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
@@ -50,44 +57,7 @@ namespace NuGet.XPlat.FuncTest
                     "--no-cache"
                 };
 
-                // Act
-                int exitCode = Program.MainInternal(args.ToArray(), log);
-
-                Assert.Contains($@"OK {sourceUri}/FindPackagesById()?id='fody'", log.ShowMessages());
-                Assert.Equal(string.Empty, log.ShowErrors());
-                Assert.Equal(0, exitCode);
-
-                var lockFilePath = Path.Combine(projectDir, "XPlatRestoreTests", "project.lock.json");
-                Assert.True(File.Exists(lockFilePath));
-            }
-        }
-
-        [Theory]
-        // Try with config file in a different directory
-        //[InlineData(TestServers.Artifactory)]
-        [InlineData(TestServers.Klondike)]
-        [InlineData(TestServers.MyGet)]
-        [InlineData(TestServers.Nexus)]
-        [InlineData(TestServers.NuGetServer)]
-        [InlineData(TestServers.ProGet)]
-        public void Restore_WithConfigFileInDifferentDirectory_Succeeds(string sourceUri)
-        {
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var configDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var configFile = XPlatTestUtils.CopyFuncTestConfig(configDir);
-
-                var specPath = Path.Combine(projectDir, "XPlatRestoreTests", "project.json");
-                var spec = XPlatTestUtils.BasicConfigNetCoreApp;
-
-                XPlatTestUtils.AddDependency(spec, "costura.fody", "1.3.3");
-                XPlatTestUtils.AddDependency(spec, "fody", "1.29.4");
-                XPlatTestUtils.WriteJson(spec, specPath);
-
-                var log = new TestCommandOutputLogger();
-
-                var args = new List<string>()
+                if (configInDifferentDirectory)
                 {
                     args.Add("--configfile");
                     args.Add(configFile);
