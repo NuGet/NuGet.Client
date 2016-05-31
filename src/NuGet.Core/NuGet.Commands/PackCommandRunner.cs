@@ -190,11 +190,19 @@ namespace NuGet.Commands
                 }
             }
 
-            IEnumerable<string> files = PathResolver.PerformWildcardSearch(_packArgs.BasePath, $"**\\{builder.Id}\\bin\\{configuration}\\");
+            string projectOutputDirectory;
+            string configFolderPath = $"\\{builder.Id}\\bin\\{configuration}";
+            IEnumerable<string> files = PathResolver.PerformWildcardSearch(_packArgs.BasePath, $"**{configFolderPath}\\");
             string targetPath = files.FirstOrDefault();
             if (targetPath == null)
             {
                 targetPath = Path.Combine(_packArgs.BasePath, "bin", configuration, builder.Id + ".dll");
+
+                projectOutputDirectory = Path.GetDirectoryName(targetPath);
+            }
+            else
+            {
+                projectOutputDirectory = targetPath.Substring(0, targetPath.IndexOf(configFolderPath) + configFolderPath.Length);
             }
 
             NuGetFramework targetFramework = NuGetFramework.AnyFramework;
@@ -214,8 +222,6 @@ namespace NuGet.Commands
                 // Include pdbs for symbol packages
                 allowedOutputExtensions.Add(".pdb");
             }
-
-            string projectOutputDirectory = Path.GetDirectoryName(targetPath);
 
             string targetFileName = Path.GetFileNameWithoutExtension(targetPath);
 
