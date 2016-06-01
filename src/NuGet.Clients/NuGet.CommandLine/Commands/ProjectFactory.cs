@@ -963,8 +963,7 @@ namespace NuGet.CommandLine
 
             var references = packagesProject.GetInstalledPackagesAsync(CancellationToken.None).Result;
 
-            var solutionDir = GetSolutionDir();
-            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(solutionDir, Configuration.NullSettings.Instance);
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(GetSolutionDir(), Configuration.NullSettings.Instance);
             PackageSource source = new PackageSource(packagesFolderPath);
             var repository = Repository.Factory.GetCoreV3(packagesFolderPath);
             var finder = repository.GetResource<FindPackageByIdResource>();
@@ -994,8 +993,6 @@ namespace NuGet.CommandLine
                     var packageName = $"{packageReference.PackageIdentity.Id}.{packageReference.PackageIdentity.Version}";
 
                     var stream = finder.GetNupkgStreamAsync(packageReference.PackageIdentity.Id, packageReference.PackageIdentity.Version, CancellationToken.None).Result;
-
-                    //var path = Path.Combine(packagesFolderPath, packageName, $"{packageName}.nupkg");
 
                     if (stream != null)
                     {
