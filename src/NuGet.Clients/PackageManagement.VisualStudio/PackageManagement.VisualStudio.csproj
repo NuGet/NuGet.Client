@@ -51,14 +51,18 @@
     </Reference>
   </ItemGroup>
   <Choose>
-    <When Condition="$(VisualStudioVersion)=='14.0'" />
-    <When Condition="$(VisualStudioVersion)=='15.0'">
+    <When Condition="$(VisualStudioVersion)=='14.0'">
       <ItemGroup>
         <Reference Include="Microsoft.VisualStudio.ProjectSystem">
-          <HintPath>$(ProgramFiles)\Microsoft Visual Studio 15.0\Common7\IDE\PrivateAssemblies\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
+          <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.14.1.127-pre\lib\net451\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
+          <EmbedInteropTypes>True</EmbedInteropTypes>
         </Reference>
+      </ItemGroup>
+    </When>
+    <When Condition="$(VisualStudioVersion)=='15.0'">
+      <ItemGroup>
         <Reference Include="Microsoft.VisualStudio.ProjectSystem.Interop">
-          <HintPath>..\..\..\lib\VS15\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
+          <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.15.0.183-pre\lib\net451\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
           <EmbedInteropTypes>True</EmbedInteropTypes>
         </Reference>
       </ItemGroup>
