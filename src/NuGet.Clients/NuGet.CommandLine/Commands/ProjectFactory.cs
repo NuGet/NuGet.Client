@@ -857,6 +857,12 @@ namespace NuGet.CommandLine
                 dependencies[dependency.Id] = dependency;
             }
 
+            // Release the open file handles
+            foreach (var package in packagesAndDependencies)
+            {                
+                package.Value.Item1.Dispose();
+            }
+
             if (IncludeReferencedProjects)
             {
                 AddProjectReferenceDependencies(dependencies);
@@ -963,10 +969,9 @@ namespace NuGet.CommandLine
 
             var references = packagesProject.GetInstalledPackagesAsync(CancellationToken.None).Result;
 
-            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(GetSolutionDir(), Configuration.NullSettings.Instance);
-            PackageSource source = new PackageSource(packagesFolderPath);
-            var repository = Repository.Factory.GetCoreV3(packagesFolderPath);
-            var finder = repository.GetResource<FindPackageByIdResource>();
+            var solutionDir = GetSolutionDir();
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(solutionDir, ReadSettings(solutionDir));
+            var sourceRepository = Repository.Factory.GetCoreV3(packagesFolderPath).GetResource<FindPackageByIdResource>();
 
             // Collect all packages
             IDictionary<PackageIdentity, PackageReference> packageReferences =
@@ -989,22 +994,33 @@ namespace NuGet.CommandLine
                         range = new VersionRange(packageReference.PackageIdentity.Version);
                     }
 
-                    var dependency = new PackageDependency(packageReference.PackageIdentity.Id, range);
-                    var packageName = $"{packageReference.PackageIdentity.Id}.{packageReference.PackageIdentity.Version}";
-
-                    var stream = finder.GetNupkgStreamAsync(packageReference.PackageIdentity.Id, packageReference.PackageIdentity.Version, CancellationToken.None).Result;
-
+                    var stream = sourceRepository.GetNupkgStreamAsync(packageReference.PackageIdentity.Id, packageReference.PackageIdentity.Version, CancellationToken.None).Result;
                     if (stream != null)
                     {
                         var reader = new PackageArchiveReader(stream);
-                        packagesAndDependencies.Add(packageReference.PackageIdentity.Id, new Tuple<PackageReaderBase, PackageDependency>(reader, dependency));
+                        var dependency = new PackageDependency(packageReference.PackageIdentity.Id, range);
+                        packagesAndDependencies.Add(packageReference.PackageIdentity.Id, Tuple.Create<PackageReaderBase, PackageDependency>(reader, dependency));
                     }
                     else
                     {
+                        var packageName = $"{packageReference.PackageIdentity.Id}.{packageReference.PackageIdentity.Version}";
                         throw new CommandLineException(NuGetResources.UnableToFindBuildOutput, $"{packageName}.nupkg");
                     }
                 }
             }
+        }
+
+        private Configuration.ISettings ReadSettings(string solutionDirectory)
+        {
+                // Read the solution-level settings
+                var solutionSettingsFile = Path.Combine(
+                    solutionDirectory,
+                    NuGetConstants.NuGetSolutionSettingsFolder);
+
+                return Configuration.Settings.LoadDefaultSettings(
+                    solutionSettingsFile,
+                    configFileName: null,
+                    machineWideSettings: MachineWideSettings);
         }
 
         private static void ProcessTransformFiles(PackageBuilder builder, IEnumerable<IPackageFile> transformFiles)
