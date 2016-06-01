@@ -1989,8 +1989,8 @@ namespace Proj1
   <package id=""testPackage1"" version=""1.1.0"" targetFramework=""net45"" />
   <package id=""testPackage2"" version=""1.1.0"" targetFramework=""net45"" developmentDependency=""true"" />
 </packages>");
-                Util.CreateTestPackage("testPackage1", "1.1.0", packagesFolder);
-                Util.CreateTestPackage("testPackage2", "1.1.0", packagesFolder);
+                Util.CreateTestPackage("testPackage1", "1.1.0", Path.Combine(packagesFolder, "testPackage1.1.1.0"));
+                Util.CreateTestPackage("testPackage2", "1.1.0", Path.Combine(packagesFolder, "testPackage2.1.1.0"));
 
                 Util.CreateFile(
                     proj1Directory,
@@ -2963,6 +2963,62 @@ stuff \n <<".Replace("\r\n", "\n");
                     actualDescription = description.Value.Replace("\r\n", "\n");
                     Assert.Equal(expectedDescription, actualDescription);
                 }
+            }
+        }
+
+
+        // Test that a missing dependency causes a failure
+        [Fact]
+        public void PackCommand_MissingPackageCausesError()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+                var packagesFolder = Path.Combine(proj1Directory, "packages");
+
+                Directory.CreateDirectory(packagesFolder);
+
+                // create project 1
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+
+                Util.CreateFile(
+                    proj1Directory,
+                    "packages.config",
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<packages>
+  <package id=""testPackage1"" version=""1.1.0"" targetFramework=""net45"" />
+  <package id=""doesNotExist"" version=""1.1.0"" targetFramework=""net45"" />
+</packages>");
+                Util.CreateTestPackage("testPackage1", "1.1.0", Path.Combine(packagesFolder, "testPackage1.1.1.0"));
+
+                Util.CreateFile(
+                    proj1Directory,
+                    "test.sln",
+                    "# test solution");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj1Directory,
+                    "pack proj1.csproj -build",
+                    waitForExit: true);
+                Assert.Equal(1, r.Item1);
+
+                // Assert
+                Assert.Contains("Unable to find 'doesNotExist.1.1.0.nupkg'.", r.Item3);
             }
         }
 

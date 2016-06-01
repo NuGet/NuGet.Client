@@ -18,7 +18,10 @@ namespace NuGet.CommandLine
 {
     using NuGet.Frameworks;
     using NuGet.Packaging;
+    using NuGet.PackageManagement;
     using NuGet.Packaging.Core;
+    using NuGet.Protocol;
+    using NuGet.Protocol.Core.Types;
 
     [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
     public class ProjectFactory : MSBuildUser, IProjectFactory
@@ -823,7 +826,7 @@ namespace NuGet.CommandLine
         private void ProcessDependencies(PackageBuilder builder)
         {
             // get all packages and dependencies, including the ones in project references
-            var packagesAndDependencies = new Dictionary<String, Tuple<PackageArchiveReader, PackageDependency>>();
+            var packagesAndDependencies = new Dictionary<String, Tuple<PackageReaderBase, PackageDependency>>();
             ApplyAction(p => p.AddDependencies(packagesAndDependencies));
 
             // list of all dependency packages
@@ -853,6 +856,8 @@ namespace NuGet.CommandLine
                 var dependency = packagesAndDependencies[package.GetIdentity().Id].Item2;
                 dependencies[dependency.Id] = dependency;
             }
+
+            DisposePackageReaders(packagesAndDependencies);
 
             if (IncludeReferencedProjects)
             {
@@ -902,7 +907,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        private bool FindDependency(PackageIdentity projectPackage, IEnumerable<Tuple<PackageArchiveReader, PackageDependency>> packagesAndDependencies)
+        private bool FindDependency(PackageIdentity projectPackage, IEnumerable<Tuple<PackageReaderBase, PackageDependency>> packagesAndDependencies)
         {
             // returns true if the dependency should be added to the package
             // This happens if the dependency is not a dependency of a dependecy
@@ -932,7 +937,7 @@ namespace NuGet.CommandLine
             return !found;
         }
 
-        private void AddDependencies(Dictionary<String, Tuple<PackageArchiveReader, PackageDependency>> packagesAndDependencies)
+        private void AddDependencies(Dictionary<String, Tuple<PackageReaderBase, PackageDependency>> packagesAndDependencies)
         {
             Dictionary<string, object> props = new Dictionary<string, object>();
             
@@ -960,6 +965,10 @@ namespace NuGet.CommandLine
 
             var references = packagesProject.GetInstalledPackagesAsync(CancellationToken.None).Result;
 
+            var solutionDir = GetSolutionDir();
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(solutionDir, ReadSettings(solutionDir));
+            var sourceRepository = Repository.Factory.GetCoreV3(packagesFolderPath).GetResource<FindPackageByIdResource>();
+
             // Collect all packages
             IDictionary<PackageIdentity, PackageReference> packageReferences =
                 references
@@ -981,13 +990,54 @@ namespace NuGet.CommandLine
                         range = new VersionRange(packageReference.PackageIdentity.Version);
                     }
 
-                    var dependency = new PackageDependency(packageReference.PackageIdentity.Id, range);
+                    var stream = sourceRepository.GetNupkgStreamAsync(packageReference.PackageIdentity.Id, packageReference.PackageIdentity.Version, CancellationToken.None).Result;
+                    if (stream != null)
+                    {
+                        try
+                        {
+                            var reader = new PackageArchiveReader(stream);
+                            var dependency = new PackageDependency(packageReference.PackageIdentity.Id, range);
+                            packagesAndDependencies.Add(packageReference.PackageIdentity.Id, Tuple.Create<PackageReaderBase, PackageDependency>(reader, dependency));
+                        }
+                        catch (Exception)
+                        {
+                            DisposePackageReaders(packagesAndDependencies);
+                            stream.Dispose();
 
-                    var path = Path.Combine(_project.DirectoryPath, PackagesFolder, $"{packageReference.PackageIdentity.Id}.{packageReference.PackageIdentity.Version}.nupkg");
-                    PackageArchiveReader reader = new PackageArchiveReader(path);
-                    packagesAndDependencies.Add(packageReference.PackageIdentity.Id, new Tuple<PackageArchiveReader, PackageDependency>(reader, dependency));
+                            throw;
+                        }
+                    }
+                    else
+                    {
+                        DisposePackageReaders(packagesAndDependencies);
+
+                        var packageName = $"{packageReference.PackageIdentity.Id}.{packageReference.PackageIdentity.Version}";
+                        throw new CommandLineException(NuGetResources.UnableToFindBuildOutput, $"{packageName}.nupkg");
+                    }
                 }
             }
+        }
+
+        private static void DisposePackageReaders(Dictionary<String, Tuple<PackageReaderBase, PackageDependency>> packagesAndDependencies)
+        {
+            // Release the open file handles
+            foreach (var package in packagesAndDependencies)
+            {
+                package.Value.Item1.Dispose();
+            }
+        }
+
+        private Configuration.ISettings ReadSettings(string solutionDirectory)
+        {
+                // Read the solution-level settings
+                var solutionSettingsFile = Path.Combine(
+                    solutionDirectory,
+                    NuGetConstants.NuGetSolutionSettingsFolder);
+
+                return Configuration.Settings.LoadDefaultSettings(
+                    solutionSettingsFile,
+                    configFileName: null,
+                    machineWideSettings: MachineWideSettings);
         }
 
         private static void ProcessTransformFiles(PackageBuilder builder, IEnumerable<IPackageFile> transformFiles)
@@ -1016,7 +1066,7 @@ namespace NuGet.CommandLine
             return Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path));
         }
 
-        private IEnumerable<IPackageFile> GetTransformFiles(PackageArchiveReader package)
+        private IEnumerable<IPackageFile> GetTransformFiles(PackageReaderBase package)
         {
             var groups = package.GetContentItems();
             return groups.SelectMany(g => g.Items).Where(IsTransformFile).Select(f => new PhysicalPackageFile() { TargetPath = f });
