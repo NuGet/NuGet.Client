@@ -192,7 +192,7 @@ namespace NuGet.Commands.FuncTest
                     MinClientVersion = "9.9.9"
                 };
 
-                var packagePath = Path.Combine(workingDir, "packagea.1.0.0.nupkg");
+                var packagePath = Path.Combine(workingDir, "packageA.1.0.0.nupkg");
 
                 SimpleTestPackageUtility.CreatePackages(workingDir, packageContext);
 
