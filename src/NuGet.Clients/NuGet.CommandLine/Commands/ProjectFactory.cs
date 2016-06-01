@@ -857,11 +857,7 @@ namespace NuGet.CommandLine
                 dependencies[dependency.Id] = dependency;
             }
 
-            // Release the open file handles
-            foreach (var package in packagesAndDependencies)
-            {                
-                package.Value.Item1.Dispose();
-            }
+            DisposePackageReaders(packagesAndDependencies);
 
             if (IncludeReferencedProjects)
             {
@@ -997,16 +993,37 @@ namespace NuGet.CommandLine
                     var stream = sourceRepository.GetNupkgStreamAsync(packageReference.PackageIdentity.Id, packageReference.PackageIdentity.Version, CancellationToken.None).Result;
                     if (stream != null)
                     {
-                        var reader = new PackageArchiveReader(stream);
-                        var dependency = new PackageDependency(packageReference.PackageIdentity.Id, range);
-                        packagesAndDependencies.Add(packageReference.PackageIdentity.Id, Tuple.Create<PackageReaderBase, PackageDependency>(reader, dependency));
+                        try
+                        {
+                            var reader = new PackageArchiveReader(stream);
+                            var dependency = new PackageDependency(packageReference.PackageIdentity.Id, range);
+                            packagesAndDependencies.Add(packageReference.PackageIdentity.Id, Tuple.Create<PackageReaderBase, PackageDependency>(reader, dependency));
+                        }
+                        catch (Exception)
+                        {
+                            DisposePackageReaders(packagesAndDependencies);
+                            stream.Dispose();
+
+                            throw;
+                        }
                     }
                     else
                     {
+                        DisposePackageReaders(packagesAndDependencies);
+
                         var packageName = $"{packageReference.PackageIdentity.Id}.{packageReference.PackageIdentity.Version}";
                         throw new CommandLineException(NuGetResources.UnableToFindBuildOutput, $"{packageName}.nupkg");
                     }
                 }
+            }
+        }
+
+        private static void DisposePackageReaders(Dictionary<String, Tuple<PackageReaderBase, PackageDependency>> packagesAndDependencies)
+        {
+            // Release the open file handles
+            foreach (var package in packagesAndDependencies)
+            {
+                package.Value.Item1.Dispose();
             }
         }
 
