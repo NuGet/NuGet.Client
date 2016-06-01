@@ -1989,8 +1989,8 @@ namespace Proj1
   <package id=""testPackage1"" version=""1.1.0"" targetFramework=""net45"" />
   <package id=""testPackage2"" version=""1.1.0"" targetFramework=""net45"" developmentDependency=""true"" />
 </packages>");
-                Util.CreateTestPackage("testPackage1", "1.1.0", packagesFolder);
-                Util.CreateTestPackage("testPackage2", "1.1.0", packagesFolder);
+                Util.CreateTestPackage("testPackage1", "1.1.0", Path.Combine(packagesFolder, "testPackage1.1.1.0"));
+                Util.CreateTestPackage("testPackage2", "1.1.0", Path.Combine(packagesFolder, "testPackage2.1.1.0"));
 
                 Util.CreateFile(
                     proj1Directory,
