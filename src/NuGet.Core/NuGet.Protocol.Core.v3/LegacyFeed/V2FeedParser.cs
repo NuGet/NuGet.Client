@@ -138,7 +138,7 @@ namespace NuGet.Protocol
                 UriUtility.UrlEncodeOdataParameter(package.Version.ToNormalizedString()));
 
             // Try to find the package directly
-            // Set max count to -1, get all packages 
+            // Set max count to -1, get all packages
             var packages = await QueryV2Feed(
                 uri,
                 package.Id,
@@ -404,7 +404,7 @@ namespace NuGet.Protocol
                     // Request the next url in parallel to parsing the current page
                     if (!string.IsNullOrEmpty(nextUri) && uri != nextUri)
                     {
-                        // a bug on the server side causes the same next link to be returned 
+                        // a bug on the server side causes the same next link to be returned
                         // for every page. To avoid falling into an infinite loop we must
                         // keep track here.
                         uri = nextUri;
@@ -434,7 +434,7 @@ namespace NuGet.Protocol
             return await _httpSource.ProcessResponseAsync(
                 () =>
                 {
-                    var request = new HttpRequestMessage(HttpMethod.Get, uri);
+                    var request = HttpRequestMessageFactory.Create(HttpMethod.Get, uri, log);
                     request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/atom+xml"));
                     request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xml"));
                     return request;

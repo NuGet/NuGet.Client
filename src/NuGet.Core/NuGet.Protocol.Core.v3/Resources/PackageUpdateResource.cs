@@ -246,8 +246,8 @@ namespace NuGet.Protocol.Core.Types
         // Indicates whether the specified source is a file source, such as: \\a\b, c:\temp, etc.
         private bool IsFileSource()
         {
-            //we leverage the detection already done at resource provider level. 
-            //that for file system, the "httpSource" is null. 
+            //we leverage the detection already done at resource provider level.
+            //that for file system, the "httpSource" is null.
             return _httpSource == null;
         }
 
@@ -261,7 +261,7 @@ namespace NuGet.Protocol.Core.Types
             CancellationToken token)
         {
             await _httpSource.ProcessResponseAsync(
-                () => CreateRequest(source, pathToPackage, apiKey),
+                () => CreateRequest(source, pathToPackage, apiKey, logger),
                 requestTimeout,
                 response =>
                 {
@@ -274,16 +274,17 @@ namespace NuGet.Protocol.Core.Types
 
         private HttpRequestMessage CreateRequest(string source,
             string pathToPackage,
-            string apiKey)
+            string apiKey,
+            ILogger log)
         {
             var fileStream = new FileStream(pathToPackage, FileMode.Open, FileAccess.Read, FileShare.Read);
-            var request = new HttpRequestMessage(HttpMethod.Put, GetServiceEndpointUrl(source, string.Empty));
+            var request = HttpRequestMessageFactory.Create(HttpMethod.Put, GetServiceEndpointUrl(source, string.Empty), log);
             var content = new MultipartFormDataContent();
 
             var packageContent = new StreamContent(fileStream);
             packageContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
             //"package" and "package.nupkg" are random names for content deserializing
-            //not tied to actual package name.  
+            //not tied to actual package name.
             content.Add(packageContent, "package", "package.nupkg");
             request.Content = content;
 
@@ -360,7 +361,7 @@ namespace NuGet.Protocol.Core.Types
                 {
                     // Review: Do these values need to be encoded in any way?
                     var url = String.Join("/", packageId, packageVersion);
-                    var request = new HttpRequestMessage(HttpMethod.Delete, GetServiceEndpointUrl(source, url));
+                    var request = HttpRequestMessageFactory.Create(HttpMethod.Delete, GetServiceEndpointUrl(source, url), logger);
                     if (!string.IsNullOrEmpty(apiKey))
                     {
                         request.Headers.Add(ApiKeyHeader, apiKey);
@@ -471,7 +472,7 @@ namespace NuGet.Protocol.Core.Types
                 if (Directory.GetFiles(idDirectory, "*.nupkg").Any() ||
                     Directory.GetFiles(idDirectory, "*.nuspec").Any())
                 {
-                    // ~/Foo/Foo.1.0.0.nupkg (LocalPackageRepository with PackageSaveModes.Nupkg) or 
+                    // ~/Foo/Foo.1.0.0.nupkg (LocalPackageRepository with PackageSaveModes.Nupkg) or
                     // ~/Foo/Foo.1.0.0.nuspec (LocalPackageRepository with PackageSaveMode.Nuspec)
                     return true;
                 }

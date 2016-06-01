@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Configuration;
 
 namespace NuGet.Protocol
@@ -56,6 +57,8 @@ namespace NuGet.Protocol
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
+            var logger = request.GetLogger() ?? NullLogger.Instance;
+
             while (true)
             {
                 // Store the auth start before sending the request
@@ -80,15 +83,15 @@ namespace NuGet.Protocol
                         return response;
                     }
 
-                    if (!await AcquireCredentialsAsync(request.RequestUri, cacheVersion, cancellationToken))
+                    if (!await AcquireCredentialsAsync(request.RequestUri, cacheVersion, logger, cancellationToken))
                     {
                         return response;
                     }
                 }
-                catch (HttpRequestException ex) 
+                catch (HttpRequestException ex)
                 when (ProxyAuthenticationRequired(ex) && _clientHandler.Proxy != null && _credentialService != null)
                 {
-                    if (!await AcquireCredentialsAsync(request.RequestUri, cacheVersion, cancellationToken))
+                    if (!await AcquireCredentialsAsync(request.RequestUri, cacheVersion, logger, cancellationToken))
                     {
                         throw;
                     }
@@ -117,7 +120,7 @@ namespace NuGet.Protocol
         }
 #endif
 
-        private async Task<bool> AcquireCredentialsAsync(Uri requestUri, Guid cacheVersion, CancellationToken cancellationToken)
+        private async Task<bool> AcquireCredentialsAsync(Uri requestUri, Guid cacheVersion, ILogger log, CancellationToken cancellationToken)
         {
             try
             {
@@ -141,11 +144,11 @@ namespace NuGet.Protocol
                 var proxyAddress = _clientHandler.Proxy.GetProxy(requestUri);
 
                 // prompt user for proxy credentials.
-                var credentials = await PromptForProxyCredentialsAsync(proxyAddress, _clientHandler.Proxy, cancellationToken);
+                var credentials = await PromptForProxyCredentialsAsync(proxyAddress, _clientHandler.Proxy, log, cancellationToken);
 
                 if (credentials == null)
                 {
-                    // user cancelled
+                    // user cancelled or error occured
                     return false;
                 }
 
@@ -160,21 +163,41 @@ namespace NuGet.Protocol
             }
         }
 
-        private async Task<NetworkCredential> PromptForProxyCredentialsAsync(Uri proxyAddress, IWebProxy proxy, CancellationToken cancellationToken)
+        private async Task<NetworkCredential> PromptForProxyCredentialsAsync(Uri proxyAddress, IWebProxy proxy, ILogger log, CancellationToken cancellationToken)
         {
-            var message = string.Format(
-                CultureInfo.CurrentCulture,
-                Strings.Http_CredentialsForProxy,
-                proxyAddress);
+            ICredentials promptCredentials;
 
-            var credentials = await _credentialService.GetCredentialsAsync(
-                proxyAddress,
-                proxy,
-                type: CredentialRequestType.Proxy,
-                message: message,
-                cancellationToken: cancellationToken);
+            try
+            {
+                var message = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.Http_CredentialsForProxy,
+                    proxyAddress);
 
-            return credentials?.GetCredential(proxyAddress, BasicAuthenticationType);
+                promptCredentials = await _credentialService.GetCredentialsAsync(
+                    proxyAddress,
+                    proxy,
+                    type: CredentialRequestType.Proxy,
+                    message: message,
+                    cancellationToken: cancellationToken);
+            }
+            catch (TaskCanceledException)
+            {
+                throw; // pass-thru
+            }
+            catch (OperationCanceledException)
+            {
+                // A valid response for VS dialog when user hits cancel button
+                promptCredentials = null;
+            }
+            catch (Exception e)
+            {
+                // Fatal credential service failure
+                log.LogError(ExceptionUtilities.DisplayMessage(e));
+                promptCredentials = null;
+            }
+
+            return promptCredentials?.GetCredential(proxyAddress, BasicAuthenticationType);;
         }
     }
 }

@@ -17,7 +17,6 @@ using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
-using Strings = NuGet.Protocol.Strings;
 
 namespace NuGet.Protocol
 {
@@ -88,7 +87,7 @@ namespace NuGet.Protocol
         /// </summary>
         public async Task<HttpSourceResult> GetAsync(
             string uri,
-            MediaTypeWithQualityHeaderValue[] accept,
+            MediaTypeWithQualityHeaderValue[] acceptHeaderValues,
             string cacheKey,
             HttpSourceCacheContext cacheContext,
             ILogger log,
@@ -134,11 +133,13 @@ namespace NuGet.Protocol
 
                     Func<HttpRequestMessage> requestFactory = () =>
                     {
-                        var request = new HttpRequestMessage(HttpMethod.Get, uri);
-                        foreach (var a in accept)
+                        var request = HttpRequestMessageFactory.Create(HttpMethod.Get, uri, log);
+
+                        foreach (var acceptHeaderValue in acceptHeaderValues)
                         {
-                            request.Headers.Accept.Add(a);
+                            request.Headers.Accept.Add(acceptHeaderValue);
                         }
+
                         return request;
                     };
 
@@ -255,7 +256,7 @@ namespace NuGet.Protocol
             CancellationToken token)
         {
             Func<Task<HttpResponseMessage>> request = () => SendWithRetrySupportAsync(
-                () => new HttpRequestMessage(HttpMethod.Get, uri),
+                () => HttpRequestMessageFactory.Create(HttpMethod.Get, uri, log),
                 DefaultRequestTimeout,
                 log,
                 token);

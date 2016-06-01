@@ -142,6 +142,43 @@ namespace NuGet.Protocol.Tests
                     Times.Exactly(2));
         }
 
+        [Fact]
+        public async Task SendAsync_WhenCredentialServiceThrows_Returns407()
+        {
+            var defaultClientHandler = GetDefaultClientHandler();
+
+            var service = Mock.Of<ICredentialService>();
+            Mock.Get(service)
+                .Setup(
+                    x => x.GetCredentialsAsync(
+                        ProxyAddress,
+                        It.IsAny<IWebProxy>(),
+                        CredentialRequestType.Proxy,
+                        It.IsAny<string>(),
+                        It.IsAny<CancellationToken>()))
+                .Throws(new InvalidOperationException("Credential service failed acquiring credentials"));
+
+            var handler = new ProxyAuthenticationHandler(defaultClientHandler, service, ProxyCache.Instance)
+            {
+                InnerHandler = GetLambdaHandler(HttpStatusCode.ProxyAuthenticationRequired)
+            };
+
+            var response = await SendAsync(handler);
+
+            Assert.NotNull(response);
+            Assert.Equal(HttpStatusCode.ProxyAuthenticationRequired, response.StatusCode);
+
+            Mock.Get(service)
+                .Verify(
+                    x => x.GetCredentialsAsync(
+                        ProxyAddress,
+                        It.IsAny<IWebProxy>(),
+                        CredentialRequestType.Proxy,
+                        It.IsAny<string>(),
+                        It.IsAny<CancellationToken>()),
+                    Times.Once());
+        }
+
         private static HttpClientHandler GetDefaultClientHandler()
         {
             var proxy = new TestProxy(ProxyAddress);
