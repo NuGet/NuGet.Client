@@ -22,6 +22,7 @@ namespace NuGet.CommandLine
     using NuGet.Packaging.Core;
     using NuGet.Protocol;
     using NuGet.Protocol.Core.Types;
+    using NuGet.Protocol.Core.v3;
 
     [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
     public class ProjectFactory : MSBuildUser, IProjectFactory
