@@ -193,7 +193,7 @@ namespace NuGet.Commands
             string projectOutputDirectory;
             string configFolderPath = $"\\{builder.Id}\\bin\\{configuration}";
             IEnumerable<string> files = PathResolver.PerformWildcardSearch(_packArgs.BasePath, $"**{configFolderPath}\\");
-            string targetPath = files.FirstOrDefault();
+            string targetPath = files.FirstOrDefault(f => f.EndsWith(builder.Id + ".dll"));
             if (targetPath == null)
             {
                 targetPath = Path.Combine(_packArgs.BasePath, "bin", configuration, builder.Id + ".dll");
