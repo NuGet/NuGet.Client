@@ -120,8 +120,8 @@ namespace NuGet.CommandLine.Test
                 Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
 
                 var content = File.ReadAllText(projectFile);
-                Assert.True(content.Contains(@"<HintPath>..\packages\b.2.0.0\lib\net45\B.dll</HintPath>"));
-                Assert.True(content.Contains(@"<HintPath>..\packages\a.2.0.0\lib\net45\A.dll</HintPath>"));
+                Assert.True(content.Contains(@"<HintPath>..\packages\B.2.0.0\lib\net45\B.dll</HintPath>"));
+                Assert.True(content.Contains(@"<HintPath>..\packages\A.2.0.0\lib\net45\A.dll</HintPath>"));
                 Assert.True(content.Contains(@"<Content Include=""test.txt"" />"));
             }
         }
@@ -200,8 +200,8 @@ namespace NuGet.CommandLine.Test
                 Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
 
                 var content = File.ReadAllText(projectFile);
-                Assert.False(content.Contains(@"<HintPath>..\packages\a.1.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.True(content.Contains(@"<HintPath>..\packages\a.2.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.False(content.Contains(@"<HintPath>..\packages\A.1.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.True(content.Contains(@"<HintPath>..\packages\A.2.0.0\lib\net45\file.dll</HintPath>"));
             }
         }
 
@@ -321,16 +321,16 @@ namespace NuGet.CommandLine.Test
                 Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
 
                 var content1 = File.ReadAllText(projectFile1);
-                Assert.False(content1.Contains(@"<HintPath>..\packages\a.1.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.True(content1.Contains(@"<HintPath>..\packages\a.2.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.False(content1.Contains(@"<HintPath>..\packages\b.1.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.False(content1.Contains(@"<HintPath>..\packages\b.2.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.False(content1.Contains(@"<HintPath>..\packages\A.1.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.True(content1.Contains(@"<HintPath>..\packages\A.2.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.False(content1.Contains(@"<HintPath>..\packages\B.1.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.False(content1.Contains(@"<HintPath>..\packages\B.2.0.0\lib\net45\file.dll</HintPath>"));
 
                 var content2 = File.ReadAllText(projectFile2);
-                Assert.True(content2.Contains(@"<HintPath>..\packages\b.1.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.False(content2.Contains(@"<HintPath>..\packages\b.2.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.False(content2.Contains(@"<HintPath>..\packages\a.1.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.False(content2.Contains(@"<HintPath>..\packages\a.2.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.True(content2.Contains(@"<HintPath>..\packages\B.1.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.False(content2.Contains(@"<HintPath>..\packages\B.2.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.False(content2.Contains(@"<HintPath>..\packages\A.1.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.False(content2.Contains(@"<HintPath>..\packages\A.2.0.0\lib\net45\file.dll</HintPath>"));
             }
         }
 
@@ -421,12 +421,12 @@ namespace NuGet.CommandLine.Test
                 Assert.Contains("No projects found with packages.config.", r.Item2);
 
                 var content1 = File.ReadAllText(projectFile1);
-                Assert.True(content1.Contains(@"<HintPath>..\packages\a.1.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.False(content1.Contains(@"<HintPath>..\packages\a.2.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.True(content1.Contains(@"<HintPath>..\packages\A.1.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.False(content1.Contains(@"<HintPath>..\packages\A.2.0.0\lib\net45\file.dll</HintPath>"));
 
                 var content2 = File.ReadAllText(projectFile2);
-                Assert.True(content2.Contains(@"<HintPath>..\packages\a.1.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.False(content2.Contains(@"<HintPath>..\packages\a.2.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.True(content2.Contains(@"<HintPath>..\packages\A.1.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.False(content2.Contains(@"<HintPath>..\packages\A.2.0.0\lib\net45\file.dll</HintPath>"));
             }
         }
 
@@ -504,7 +504,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
 
                 var content = File.ReadAllText(projectFile);
-                Assert.False(content.Contains(@"<HintPath>..\packages\a.2.0.0-beta\lib\net45\file.dll</HintPath>"));
+                Assert.False(content.Contains(@"<HintPath>..\packages\A.2.0.0-beta\lib\net45\file.dll</HintPath>"));
             }
         }
 
@@ -519,7 +519,7 @@ namespace NuGet.CommandLine.Test
                 var packagesDirectory = Path.Combine(solutionDirectory, "packages");
 
                 var a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
-                var a2 = new PackageIdentity("A", new NuGetVersion("2.0.0-BETA"));
+                var a2 = new PackageIdentity("A", new NuGetVersion("2.0.0-beta"));
 
                 var a1Package = Util.CreateTestPackage(
                     a1.Id,
@@ -583,8 +583,8 @@ namespace NuGet.CommandLine.Test
                 Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
 
                 var content = File.ReadAllText(projectFile);
-                Assert.False(content.Contains(@"<HintPath>..\packages\a.1.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.True(content.Contains(@"<HintPath>..\packages\a.2.0.0-beta\lib\net45\file.dll</HintPath>"));
+                Assert.False(content.Contains(@"<HintPath>..\packages\A.1.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.True(content.Contains(@"<HintPath>..\packages\A.2.0.0-beta\lib\net45\file.dll</HintPath>"));
             }
         }
 
@@ -673,9 +673,9 @@ namespace NuGet.CommandLine.Test
                 Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
 
                 var content = File.ReadAllText(projectFile);
-                Assert.False(content.Contains(@"<HintPath>..\packages\a.1.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.True(content.Contains(@"<HintPath>..\packages\a.2.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.False(content.Contains(@"<HintPath>..\packages\a.3.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.False(content.Contains(@"<HintPath>..\packages\A.1.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.True(content.Contains(@"<HintPath>..\packages\A.2.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.False(content.Contains(@"<HintPath>..\packages\A.3.0.0\lib\net45\file.dll</HintPath>"));
             }
         }
 
@@ -764,9 +764,9 @@ namespace NuGet.CommandLine.Test
                 Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
 
                 var content = File.ReadAllText(projectFile);
-                Assert.True(content.Contains(@"<HintPath>..\packages\a.1.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.False(content.Contains(@"<HintPath>..\packages\a.2.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.False(content.Contains(@"<HintPath>..\packages\a.3.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.True(content.Contains(@"<HintPath>..\packages\A.1.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.False(content.Contains(@"<HintPath>..\packages\A.2.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.False(content.Contains(@"<HintPath>..\packages\A.3.0.0\lib\net45\file.dll</HintPath>"));
             }
         }
 
@@ -844,8 +844,8 @@ namespace NuGet.CommandLine.Test
                 Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
 
                 var content = File.ReadAllText(projectFile);
-                Assert.False(content.Contains(@"<HintPath>..\packages\a.1.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.True(content.Contains(@"<HintPath>..\packages\a.2.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.False(content.Contains(@"<HintPath>..\packages\A.1.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.True(content.Contains(@"<HintPath>..\packages\A.2.0.0\lib\net45\file.dll</HintPath>"));
             }
         }
 
@@ -924,8 +924,8 @@ namespace NuGet.CommandLine.Test
                 Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
 
                 var content = File.ReadAllText(projectFile);
-                Assert.False(content.Contains(@"<HintPath>..\packages\a.1.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.True(content.Contains(@"<HintPath>..\packages\a.2.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.False(content.Contains(@"<HintPath>..\packages\A.1.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.True(content.Contains(@"<HintPath>..\packages\A.2.0.0\lib\net45\file.dll</HintPath>"));
             }
         }
 
@@ -1127,8 +1127,8 @@ namespace NuGet.CommandLine.Test
 
                 // Check the custom package folder is used in the assembly reference
                 var content1 = File.ReadAllText(projectFile);
-                Assert.False(content1.Contains(@"<HintPath>..\custom-pcks\a.1.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.True(content1.Contains(@"<HintPath>..\custom-pcks\a.2.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.False(content1.Contains(@"<HintPath>..\custom-pcks\A.1.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.True(content1.Contains(@"<HintPath>..\custom-pcks\A.2.0.0\lib\net45\file.dll</HintPath>"));
             }
         }
 
@@ -1217,8 +1217,8 @@ namespace NuGet.CommandLine.Test
                 // Check the custom package folder is used in the assembly reference
                 var content1 = File.ReadAllText(projectFile);
                 var customPackageFolderName = new DirectoryInfo(packagesDirectory.Path).Name;
-                Assert.False(content1.Contains(@"<HintPath>..\..\" + customPackageFolderName + @"\a.1.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.True(content1.Contains(@"<HintPath>..\..\" + customPackageFolderName + @"\a.2.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.False(content1.Contains(@"<HintPath>..\..\" + customPackageFolderName + @"\A.1.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.True(content1.Contains(@"<HintPath>..\..\" + customPackageFolderName + @"\A.2.0.0\lib\net45\file.dll</HintPath>"));
             }
         }
     }

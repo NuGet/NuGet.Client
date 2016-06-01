@@ -10,9 +10,7 @@ namespace NuGet.Packaging
     {
         public static IEnumerable<string> GetPackageFiles(this IPackageCoreReader packageReader, PackageSaveMode packageSaveMode)
         {
-            return packageReader
-                .GetFiles()
-                .Where(file => PackageHelper.IsPackageFile(file, packageSaveMode));
+            return packageReader.GetFiles().Where(file => PackageHelper.IsPackageFile(file, packageSaveMode));
         }
 
         public static IEnumerable<string> GetSatelliteFiles(this IPackageContentReader packageReader, string packageLanguage)

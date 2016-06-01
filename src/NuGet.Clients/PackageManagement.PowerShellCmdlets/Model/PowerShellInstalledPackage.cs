@@ -59,7 +59,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                     if (packageFolder != null)
                     {
-                        var defaultPackagePathResolver = new VersionFolderPathResolver(packageFolder);
+                        var defaultPackagePathResolver = new VersionFolderPathResolver(packageFolder, normalizePackageId: false);
                         installPackagePath = defaultPackagePathResolver.GetPackageFilePath(package.PackageIdentity.Id, package.PackageIdentity.Version);
                     }
                     else if (packageFolderProject != null)

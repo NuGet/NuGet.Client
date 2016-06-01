@@ -201,7 +201,9 @@ namespace NuGet.CommandLine.Test
                 Util.VerifyResultSuccess(result);
                 Util.VerifyPackageExists(testInfo.Package, testInfo.SourceParamFolder);
 
-                var versionFolderPathResolver = new VersionFolderPathResolver(testInfo.SourceParamFolder);
+                var versionFolderPathResolver = new VersionFolderPathResolver(
+                    testInfo.SourceParamFolder,
+                    normalizePackageId: true);
 
                 File.Delete(
                     versionFolderPathResolver.GetManifestFilePath(testInfo.Package.Id, testInfo.Package.Version));

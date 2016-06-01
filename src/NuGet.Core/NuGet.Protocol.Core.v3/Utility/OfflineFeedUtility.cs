@@ -34,7 +34,7 @@ namespace NuGet.Protocol.Core.Types
                 throw new ArgumentNullException(nameof(offlineFeed));
             }
 
-            var versionFolderPathResolver = new VersionFolderPathResolver(offlineFeed);
+            var versionFolderPathResolver = new VersionFolderPathResolver(offlineFeed, normalizePackageId: true);
             string nupkgFilePath = versionFolderPathResolver.GetPackageFilePath(packageIdentity.Id, packageIdentity.Version);
             string hashFilePath = versionFolderPathResolver.GetHashPath(packageIdentity.Id, packageIdentity.Version);
             string nuspecFilePath = versionFolderPathResolver.GetManifestFilePath(packageIdentity.Id, packageIdentity.Version);
@@ -70,7 +70,7 @@ namespace NuGet.Protocol.Core.Types
         }
         public static string GetPackageDirectory(PackageIdentity packageIdentity, string offlineFeed)
         {
-            var versionFolderPathResolver = new VersionFolderPathResolver(offlineFeed);
+            var versionFolderPathResolver = new VersionFolderPathResolver(offlineFeed, normalizePackageId: true);
             return Path.GetDirectoryName(
                 versionFolderPathResolver.GetPackageFilePath(packageIdentity.Id, packageIdentity.Version));
         }
@@ -192,7 +192,9 @@ namespace NuGet.Protocol.Core.Types
                             packageIdentity,
                             source,
                             logger,
+                            fixNuspecIdCasing: false,
                             packageSaveMode: packageSaveMode,
+                            normalizeFileNames: true,
                             xmlDocFileSaveMode: PackageExtractionBehavior.XmlDocFileSaveMode);
 
                         await PackageExtractor.InstallFromSourceAsync(

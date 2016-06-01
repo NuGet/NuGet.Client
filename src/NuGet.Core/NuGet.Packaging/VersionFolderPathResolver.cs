@@ -9,78 +9,67 @@ namespace NuGet.Packaging
     public class VersionFolderPathResolver
     {
         private readonly string _path;
+        private readonly bool _normalizePackageId;
 
-        public VersionFolderPathResolver(string path)
+        public VersionFolderPathResolver(string path, bool normalizePackageId = false)
         {
             _path = path;
+            _normalizePackageId = normalizePackageId;
         }
 
-        public string GetInstallPath(string packageId, NuGetVersion version)
+        public virtual string GetInstallPath(string packageId, NuGetVersion version)
         {
-            return Path.Combine(
-                _path,
-                GetPackageDirectory(packageId, version));
-        }
-
-        public string GetVersionListPath(string packageId)
-        {
-            return Path.Combine(
-                _path,
-                GetVersionListDirectory(packageId));
+            packageId = Normalize(packageId);
+            return Path.Combine(_path, GetPackageDirectory(packageId, version));
         }
 
         public string GetPackageFilePath(string packageId, NuGetVersion version)
         {
-            return Path.Combine(
-                GetInstallPath(packageId, version),
+            packageId = Normalize(packageId);
+            return Path.Combine(GetInstallPath(packageId, version),
                 GetPackageFileName(packageId, version));
         }
 
         public string GetManifestFilePath(string packageId, NuGetVersion version)
         {
             packageId = Normalize(packageId);
-            return Path.Combine(
-                GetInstallPath(packageId, version),
+            return Path.Combine(GetInstallPath(packageId, version),
                 GetManifestFileName(packageId, version));
         }
 
         public string GetHashPath(string packageId, NuGetVersion version)
         {
-            return Path.Combine(
-                GetInstallPath(packageId, version),
-                $"{Normalize(packageId)}.{Normalize(version)}.nupkg.sha512");
+            packageId = Normalize(packageId);
+            return Path.Combine(GetInstallPath(packageId, version),
+                $"{packageId}.{version.ToNormalizedString()}.nupkg.sha512");
         }
 
-        public string GetVersionListDirectory(string packageId)
+        public virtual string GetPackageDirectory(string packageId, NuGetVersion version)
         {
-            return Normalize(packageId);
+            packageId = Normalize(packageId);
+            return Path.Combine(packageId, version.ToNormalizedString());
         }
 
-        public string GetPackageDirectory(string packageId, NuGetVersion version)
+        public virtual string GetPackageFileName(string packageId, NuGetVersion version)
         {
-            return Path.Combine(
-                GetVersionListDirectory(packageId),
-                Normalize(version));
+            packageId = Normalize(packageId);
+            return $"{packageId}.{version.ToNormalizedString()}.nupkg";
         }
 
-        public string GetPackageFileName(string packageId, NuGetVersion version)
+        public virtual string GetManifestFileName(string packageId, NuGetVersion version)
         {
-            return $"{Normalize(packageId)}.{Normalize(version)}.nupkg";
-        }
-
-        public string GetManifestFileName(string packageId, NuGetVersion version)
-        {
-            return $"{Normalize(packageId)}.nuspec";
-        }
-
-        private string Normalize(NuGetVersion version)
-        {
-            return version.ToNormalizedString().ToLowerInvariant();
+            packageId = Normalize(packageId);
+            return packageId + ".nuspec";
         }
 
         private string Normalize(string packageId)
         {
-            return packageId.ToLowerInvariant();
+            if (_normalizePackageId)
+            {
+                packageId = packageId.ToLowerInvariant();
+            }
+
+            return packageId;
         }
     }
 }

@@ -29,7 +29,9 @@ namespace NuGet.Test.Utility
                     package: reader.GetIdentity(),
                     packagesDirectory: globalFolder,
                     logger: Common.NullLogger.Instance,
+                    fixNuspecIdCasing: true,
                     packageSaveMode: PackageSaveMode.Defaultv3,
+                    normalizeFileNames: true,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                 using (var stream = File.OpenRead(packagePath))

@@ -21,8 +21,8 @@ namespace NuGet.ProjectModel
             return Path.Combine(
                 _packagesDirectory,
                 ".tools",
-                packageId.ToLowerInvariant(),
-                version.ToNormalizedString().ToLowerInvariant(),
+                packageId,
+                version.ToNormalizedString(),
                 framework.GetShortFolderName(),
                 LockFileFormat.LockFileName);
         }

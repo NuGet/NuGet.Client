@@ -65,9 +65,7 @@ namespace NuGet.Test.Utility
             var version = packageContext.Version;
             var runtimeJson = packageContext.RuntimeJson;
 
-            var pathResolver = new VersionFolderPathResolver(null);
-            var packagePath = Path.Combine(repositoryDir, pathResolver.GetPackageFileName(id, new NuGetVersion(version)));
-            var file = new FileInfo(packagePath);
+            var file = new FileInfo(Path.Combine(repositoryDir, $"{id}.{version}.nupkg"));
 
             file.Directory.Create();
 

@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 
@@ -50,29 +51,10 @@ namespace NuGet.Packaging
             {
                 var packageIdentityFromNuspec = packageReader.GetIdentity();
 
-                var installPath = packagePathResolver.GetInstallPath(packageIdentityFromNuspec);
-                var packageDirectoryInfo = Directory.CreateDirectory(installPath);
+                var packageDirectoryInfo = Directory.CreateDirectory(packagePathResolver.GetInstallPath(packageIdentityFromNuspec));
                 var packageDirectory = packageDirectoryInfo.FullName;
 
                 var packageFiles = packageReader.GetPackageFiles(packageSaveMode);
-
-                if ((packageSaveMode & PackageSaveMode.Nuspec) == PackageSaveMode.Nuspec)
-                {
-                    var sourceNuspecFile = packageFiles.Single(p => PackageHelper.IsManifest(p));
-
-                    var targetNuspecPath = Path.Combine(
-                        packageDirectory,
-                        packagePathResolver.GetManifestFileName(packageIdentityFromNuspec));
-
-                    // Extract the .nuspec file with a well known file name.
-                    filesAdded.Add(packageReader.ExtractFile(
-                        sourceNuspecFile,
-                        targetNuspecPath,
-                        packageExtractionContext.Logger));
-
-                    packageFiles = packageFiles.Except(new[] { sourceNuspecFile });
-                }
-
                 var packageFileExtractor = new PackageFileExtractor(packageFiles, packageExtractionContext.XmlDocFileSaveMode);
 
                 filesAdded.AddRange(packageReader.CopyFiles(
@@ -82,17 +64,13 @@ namespace NuGet.Packaging
                     packageExtractionContext.Logger,
                     token));
 
-                if ((packageSaveMode & PackageSaveMode.Nupkg) == PackageSaveMode.Nupkg)
+                var nupkgFilePath = Path.Combine(packageDirectory, packagePathResolver.GetPackageFileName(packageIdentityFromNuspec));
+                if (packageSaveMode.HasFlag(PackageSaveMode.Nupkg))
                 {
                     // During package extraction, nupkg is the last file to be created
                     // Since all the packages are already created, the package stream is likely positioned at its end
                     // Reset it to the nupkgStartPosition
                     packageStream.Seek(nupkgStartPosition, SeekOrigin.Begin);
-
-                    var nupkgFilePath = Path.Combine(
-                        packageDirectory,
-                        packagePathResolver.GetPackageFileName(packageIdentityFromNuspec));
-
                     filesAdded.Add(packageStream.CopyToFile(nupkgFilePath));
                 }
 
@@ -200,7 +178,8 @@ namespace NuGet.Packaging
                 throw new ArgumentNullException(nameof(versionFolderPathContext));
             }
 
-            var packagePathResolver = new VersionFolderPathResolver(versionFolderPathContext.PackagesDirectory);
+            var packagePathResolver = new VersionFolderPathResolver(
+                versionFolderPathContext.PackagesDirectory, versionFolderPathContext.NormalizeFileNames);
 
             var packageIdentity = versionFolderPathContext.Package;
             var logger = versionFolderPathContext.Logger;
@@ -278,15 +257,23 @@ namespace NuGet.Packaging
                                 if ((packageSaveMode & PackageSaveMode.Nuspec) == PackageSaveMode.Nuspec)
                                 {
                                     packageReader.ExtractFile(nuspecFile, targetNuspec, logger);
+                                    if (versionFolderPathContext.FixNuspecIdCasing)
+                                    {
+                                        // DNU REFACTORING TODO: delete the hacky FixNuSpecIdCasing()
+                                        // and uncomment logic below after we
+                                        // have implementation of NuSpecFormatter.Read()
+                                        // Fixup the casing of the nuspec on disk to match what we expect
+                                        nuspecFile = Directory.EnumerateFiles(targetPath, "*" + PackagingCoreConstants.NuspecExtension).Single();
+                                        FixNuSpecIdCasing(nuspecFile, targetNuspec, packageIdentity.Id);
+                                    }
                                 }
 
                                 if ((packageSaveMode & PackageSaveMode.Files) == PackageSaveMode.Files)
                                 {
                                     var nupkgFileName = Path.GetFileName(targetNupkg);
-                                    var nuspecFileName = Path.GetFileName(targetNuspec);
                                     var hashFileName = Path.GetFileName(hashPath);
                                     var packageFiles = packageReader.GetFiles()
-                                        .Where(file => ShouldInclude(file, nupkgFileName, nuspecFileName, hashFileName));
+                                        .Where(file => ShouldInclude(file, nupkgFileName, nuspecFile, hashFileName));
                                     var packageFileExtractor = new PackageFileExtractor(
                                         packageFiles,
                                         versionFolderPathContext.XmlDocFileSaveMode);
@@ -346,10 +333,38 @@ namespace NuGet.Packaging
                 token: token);
         }
 
+        // DNU REFACTORING TODO: delete this temporary workaround after we have NuSpecFormatter.Read()
+        private static void FixNuSpecIdCasing(string nuspecFile, string targetNuspec, string correctedId)
+        {
+            var actualNuSpecName = Path.GetFileName(nuspecFile);
+            var expectedNuSpecName = Path.GetFileName(targetNuspec);
+
+            if (!string.Equals(actualNuSpecName, expectedNuSpecName, StringComparison.Ordinal))
+            {
+                var xDoc = XDocument.Parse(File.ReadAllText(nuspecFile),
+                    LoadOptions.PreserveWhitespace);
+                var metadataNode = xDoc.Root.Elements()
+                    .Where(e => StringComparer.Ordinal.Equals(e.Name.LocalName, "metadata")).First();
+                var node = metadataNode.Elements(XName.Get("id", metadataNode.GetDefaultNamespace().NamespaceName))
+                    .First();
+                node.Value = correctedId;
+
+                var tmpNuspecFile = nuspecFile + ".tmp";
+                File.Move(nuspecFile, tmpNuspecFile);
+
+                using (var stream = File.OpenWrite(targetNuspec))
+                {
+                    xDoc.Save(stream);
+                }
+
+                File.Delete(tmpNuspecFile);
+            }
+        }
+
         private static bool ShouldInclude(
             string fullName,
             string nupkgFileName,
-            string nuspecFileName,
+            string nuspecFile,
             string hashFileName)
         {
             // Not all the files from a zip file are needed
@@ -375,8 +390,11 @@ namespace NuGet.Packaging
 
             if (string.Equals(fullName, nupkgFileName, StringComparison.OrdinalIgnoreCase)
                 || string.Equals(fullName, hashFileName, StringComparison.OrdinalIgnoreCase)
-                || string.Equals(fullName, nuspecFileName, StringComparison.OrdinalIgnoreCase))
+                || string.Equals(fullName, nuspecFile, StringComparison.OrdinalIgnoreCase))
             {
+                // Return false when the fullName is the nupkg file or the hash file.
+                // Some packages accidentally have the nupkg file or the nupkg hash file in the package.
+                // We filter them out during package extraction
                 return false;
             }
 

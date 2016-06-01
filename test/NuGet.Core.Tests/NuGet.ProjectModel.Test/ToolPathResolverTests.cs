@@ -15,15 +15,15 @@ namespace NuGet.ProjectModel.Test
             var expected = Path.Combine(
                 "packages",
                 ".tools",
-                "packagea",
-                "3.1.4-beta",
+                "packageA",
+                "3.1.4",
                 "netstandard1.3",
                 "project.lock.json");
 
             // Act
             var actual = target.GetLockFilePath(
                 "packageA",
-                NuGetVersion.Parse("3.1.4-BETA"),
+                NuGetVersion.Parse("3.1.4"),
                 FrameworkConstants.CommonFrameworks.NetStandard13);
 
             // Assert

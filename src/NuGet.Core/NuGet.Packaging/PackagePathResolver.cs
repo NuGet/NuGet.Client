@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using System.Text;
 using NuGet.Packaging.Core;
 
 namespace NuGet.Packaging
@@ -15,11 +14,9 @@ namespace NuGet.Packaging
 
         public PackagePathResolver(string rootDirectory, bool useSideBySidePaths = true)
         {
-            if (string.IsNullOrEmpty(rootDirectory))
+            if (String.IsNullOrEmpty(rootDirectory))
             {
-                throw new ArgumentException(
-                    string.Format(Strings.StringCannotBeNullOrEmpty, nameof(rootDirectory)),
-                    nameof(rootDirectory));
+                throw new ArgumentException(String.Format(Strings.StringCannotBeNullOrEmpty, "rootDirectory"));
             }
             _rootDirectory = rootDirectory;
             _useSideBySidePaths = useSideBySidePaths;
@@ -30,60 +27,44 @@ namespace NuGet.Packaging
             get { return _rootDirectory; }
         }
 
-        public string GetPackageDirectoryName(PackageIdentity packageIdentity)
+        public virtual string GetPackageDirectoryName(PackageIdentity packageIdentity)
         {
-            var directory = GetPathBase(packageIdentity);
+            var directoryName = packageIdentity.Id;
+            if (_useSideBySidePaths)
+            {
+                directoryName += ".";
+                // Always use legacy package install path. Otherwise, restore may be broken for packages like 'Microsoft.Web.Infrastructure.1.0.0.0', installed using old clients
+                directoryName += packageIdentity.Version.ToString();
+            }
 
-            return directory.ToString();
+            return directoryName;
         }
 
-        public string GetPackageFileName(PackageIdentity packageIdentity)
+        public virtual string GetPackageFileName(PackageIdentity packageIdentity)
         {
-            var fileNameBase = GetPathBase(packageIdentity);
+            var fileNameBase = packageIdentity.Id;
+            if (_useSideBySidePaths)
+            {
+                fileNameBase += "." + packageIdentity.Version.ToString();
+            }
 
-            fileNameBase.Append(PackagingCoreConstants.NupkgExtension);
-
-            return fileNameBase.ToString();
+            return fileNameBase + PackagingCoreConstants.NupkgExtension;
         }
 
-        public string GetManifestFileName(PackageIdentity packageIdentity)
-        {
-            return packageIdentity.Id.ToLowerInvariant() + PackagingCoreConstants.NuspecExtension;
-        }
-
-        public string GetInstallPath(PackageIdentity packageIdentity)
+        public virtual string GetInstallPath(PackageIdentity packageIdentity)
         {
             return Path.Combine(_rootDirectory, GetPackageDirectoryName(packageIdentity));
         }
 
-        public string GetInstalledPath(PackageIdentity packageIdentity)
+        public virtual string GetInstalledPath(PackageIdentity packageIdentity)
         {
             var installedPackageFilePath = GetInstalledPackageFilePath(packageIdentity);
-
-            return string.IsNullOrEmpty(installedPackageFilePath) ? null : Path.GetDirectoryName(installedPackageFilePath);
+            return String.IsNullOrEmpty(installedPackageFilePath) ? null : Path.GetDirectoryName(installedPackageFilePath);
         }
 
-        public string GetInstalledPackageFilePath(PackageIdentity packageIdentity)
+        public virtual string GetInstalledPackageFilePath(PackageIdentity packageIdentity)
         {
             return PackagePathHelper.GetInstalledPackageFilePath(packageIdentity, this);
-        }
-
-        private StringBuilder GetPathBase(PackageIdentity packageIdentity)
-        {
-            var builder = new StringBuilder();
-
-            builder.Append(packageIdentity.Id.ToLowerInvariant());
-
-            if (_useSideBySidePaths)
-            {
-                builder.Append('.');
-
-                // Always use legacy package install path. Otherwise, restore may be broken for
-                // packages like 'Microsoft.Web.Infrastructure.1.0.0.0', installed using old clients.
-                builder.Append(packageIdentity.Version.ToString().ToLowerInvariant());
-            }
-
-            return builder;
         }
     }
 }

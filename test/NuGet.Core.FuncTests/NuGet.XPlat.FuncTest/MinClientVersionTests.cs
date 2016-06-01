@@ -150,7 +150,7 @@ namespace NuGet.XPlat.FuncTest
                     MinClientVersion = "9.9.9"
                 };
 
-                var packagePath = Path.Combine(workingDir, "packagea.1.0.0.nupkg");
+                var packagePath = Path.Combine(workingDir, "packageA.1.0.0.nupkg");
 
                 SimpleTestPackageUtility.CreatePackages(workingDir, packageContext);
 
@@ -160,10 +160,12 @@ namespace NuGet.XPlat.FuncTest
                     await PackageExtractor.InstallFromSourceAsync((stream) =>
                         fileStream.CopyToAsync(stream, 4096, CancellationToken.None),
                         new VersionFolderPathContext(new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0")),
-                            packagesDir,
-                            logger,
-                            PackageSaveMode.Defaultv3,
-                            XmlDocFileSaveMode.None),
+                        packagesDir,
+                        logger,
+                        false,
+                        PackageSaveMode.Defaultv3,
+                        false,
+                        XmlDocFileSaveMode.None),
                         CancellationToken.None);
                 }
 

@@ -192,7 +192,7 @@ namespace NuGet.Commands.FuncTest
                     MinClientVersion = "9.9.9"
                 };
 
-                var packagePath = Path.Combine(workingDir, "packagea.1.0.0.nupkg");
+                var packagePath = Path.Combine(workingDir, "packageA.1.0.0.nupkg");
 
                 SimpleTestPackageUtility.CreatePackages(workingDir, packageContext);
 
@@ -201,12 +201,13 @@ namespace NuGet.Commands.FuncTest
                 {
                     await PackageExtractor.InstallFromSourceAsync((stream) =>
                         fileStream.CopyToAsync(stream, 4096, CancellationToken.None),
-                        new VersionFolderPathContext(
-                            new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0")),
-                            packagesDir,
-                            logger,
-                            PackageSaveMode.Defaultv3,
-                            XmlDocFileSaveMode.None),
+                        new VersionFolderPathContext(new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0")),
+                        packagesDir,
+                        logger,
+                        false,
+                        PackageSaveMode.Defaultv3,
+                        false,
+                        XmlDocFileSaveMode.None),
                         CancellationToken.None);
                 }
 
@@ -423,9 +424,8 @@ namespace NuGet.Commands.FuncTest
                 var logger = new TestLogger();
 
                 // Create left over nupkg to simulate a corrupted install
-                var pathResolver = new VersionFolderPathResolver(packagesDir);
-                var nupkgFolder = pathResolver.GetInstallPath("Newtonsoft.Json", new NuGetVersion("7.0.1"));
-                var nupkgPath = pathResolver.GetPackageFilePath("Newtonsoft.Json", new NuGetVersion("7.0.1"));
+                var nupkgFolder = Path.Combine(packagesDir, "Newtonsoft.Json", "7.0.1");
+                var nupkgPath = Path.Combine(nupkgFolder, "Newtonsoft.Json.7.0.1.nupkg");
 
                 Directory.CreateDirectory(nupkgFolder);
 
@@ -1128,10 +1128,9 @@ namespace NuGet.Commands.FuncTest
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
+                var nuspecPath = Path.Combine(packagesDir, "NuGet.Versioning", "1.0.7", "NuGet.Versioning.nuspec");
 
                 // Assert
-                var pathResolver = new VersionFolderPathResolver(packagesDir);
-                var nuspecPath = pathResolver.GetManifestFilePath("NuGet.Versioning", new NuGetVersion("1.0.7"));
                 Assert.True(File.Exists(nuspecPath));
             }
         }
@@ -1161,10 +1160,9 @@ namespace NuGet.Commands.FuncTest
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
+                var nuspecPath = Path.Combine(packagesDir, "owin", "1.0.0", "owin.nuspec");
 
                 // Assert
-                var pathResolver = new VersionFolderPathResolver(packagesDir);
-                var nuspecPath = pathResolver.GetManifestFilePath("owin", new NuGetVersion("1.0.0"));
                 Assert.True(File.Exists(nuspecPath));
             }
         }

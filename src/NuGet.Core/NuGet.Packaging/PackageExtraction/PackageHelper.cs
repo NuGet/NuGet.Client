@@ -21,8 +21,6 @@ namespace NuGet.Packaging
             "[Content_Types].xml"
         };
 
-        private static readonly char[] Slashes = new char[] { '/', '\\' };
-
         private const string ExcludeExtension = ".nupkg.sha512";
 
         public static bool IsAssembly(string path)
@@ -32,26 +30,15 @@ namespace NuGet.Packaging
                    path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase); 
         }
 
-        public static bool IsNuspec(string path)
-        {
-            return path.EndsWith(PackagingCoreConstants.NuspecExtension, StringComparison.OrdinalIgnoreCase);
-        }
-
         public static bool IsManifest(string path)
         {
-            return IsRoot(path) && IsNuspec(path);
-        }
-
-        private static bool IsRoot(string path)
-        {
-            // True if the path contains no directory slashes.
-            return path.IndexOfAny(Slashes) == -1;
+            return Path.GetExtension(path).Equals(PackagingCoreConstants.NuspecExtension, StringComparison.OrdinalIgnoreCase);
         }
 
         public static bool IsPackageFile(string packageFileName, PackageSaveMode packageSaveMode)
         {
-            if (string.IsNullOrEmpty(packageFileName)
-                || string.IsNullOrEmpty(Path.GetFileName(packageFileName)))
+            if (String.IsNullOrEmpty(packageFileName)
+                || String.IsNullOrEmpty(Path.GetFileName(packageFileName)))
             {
                 // This is to ignore archive entries that are not really files
                 return false;
@@ -64,8 +51,7 @@ namespace NuGet.Packaging
 
             if ((packageSaveMode & PackageSaveMode.Files) == PackageSaveMode.Files)
             {
-                return !ExcludePaths.Any(p =>
-                    packageFileName.StartsWith(p, StringComparison.OrdinalIgnoreCase)) &&
+                return !ExcludePaths.Any(p => packageFileName.StartsWith(p, StringComparison.OrdinalIgnoreCase)) &&
                     !packageFileName.EndsWith(ExcludeExtension, StringComparison.OrdinalIgnoreCase);
             }
 
