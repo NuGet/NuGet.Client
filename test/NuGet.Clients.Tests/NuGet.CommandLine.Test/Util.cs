@@ -85,6 +85,7 @@ namespace NuGet.CommandLine.Test
             var packageFileName = string.Format("{0}.{1}.nupkg", packageId, version);
             var packageFileFullPath = Path.Combine(path, packageFileName);
 
+            Directory.CreateDirectory(path);
             using (var fileStream = File.Create(packageFileFullPath))
             {
                 packageBuilder.Save(fileStream);
@@ -186,6 +187,7 @@ namespace NuGet.CommandLine.Test
 
             var packageFileName = string.Format("{0}.{1}.nupkg", packageId, version);
             var packageFileFullPath = Path.Combine(path, packageFileName);
+            Directory.CreateDirectory(path);
             using (var fileStream = File.Create(packageFileFullPath))
             {
                 packageBuilder.Save(fileStream);
