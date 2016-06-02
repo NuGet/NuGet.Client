@@ -888,8 +888,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <param name="args"></param>
         public void Log(ProjectManagement.MessageLevel level, string message, params object[] args)
         {
-            string formattedMessage = String.Format(CultureInfo.CurrentCulture, message, args);
-            BlockingCollection.Add(new LogMessage(level, formattedMessage));
+            if (args.Length > 0)
+            {
+                message = string.Format(CultureInfo.CurrentCulture, message, args);
+            }
+
+            BlockingCollection.Add(new LogMessage(level, message));
         }
 
         /// <summary>

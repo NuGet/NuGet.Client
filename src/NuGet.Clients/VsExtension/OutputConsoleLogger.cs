@@ -58,8 +58,12 @@ namespace NuGetVSExtension
                 || level == MessageLevel.Error
                 || level == MessageLevel.Warning)
             {
-                var s = string.Format(CultureInfo.CurrentCulture, message, args);
-                OutputConsole.WriteLine(s);
+                if (args.Length > 0)
+                {
+                    message = string.Format(CultureInfo.CurrentCulture, message, args);
+                }
+                
+                OutputConsole.WriteLine(message);
             }
         }
 

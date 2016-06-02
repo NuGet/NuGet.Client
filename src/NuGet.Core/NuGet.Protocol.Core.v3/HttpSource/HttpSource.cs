@@ -346,6 +346,8 @@ namespace NuGet.Protocol
                         // Only one request may prompt and attempt to auth at a time
                         await _httpClientLock.WaitAsync();
 
+                        cancellationToken.ThrowIfCancellationRequested();
+
                         // Auth may have happened on another thread, if so just continue
                         if (beforeLockId != _lastAuthId)
                         {
@@ -370,6 +372,8 @@ namespace NuGet.Protocol
 
                         // Prompt the user
                         promptCredentials = await PromptForCredentials(cancellationToken);
+
+                        cancellationToken.ThrowIfCancellationRequested();
 
                         if (promptCredentials != null)
                         {

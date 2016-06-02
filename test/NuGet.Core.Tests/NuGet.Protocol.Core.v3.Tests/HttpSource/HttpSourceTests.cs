@@ -28,6 +28,41 @@ namespace NuGet.Protocol.Core.v3.Tests
         private const string FakeSource = "https://fake.server/users.json";
 
         [Fact]
+        public async Task HttpSource_ThrowsWhenCredentialPromptIsCanceled()
+        {
+            // Arrange
+            using (await UsingSemaphore.WaitAsync(HttpHandlerResourceV3Lock))
+            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var cts = new CancellationTokenSource();
+                var tc = new TestContext(td);
+
+                tc.SetResponseSequence(new[]
+                {
+                    new HttpResponseMessage(HttpStatusCode.Unauthorized)
+                });
+
+                var prompted = false;
+                HttpHandlerResourceV3.PromptForCredentials = (uri, token) =>
+                {
+                    cts.Cancel();
+                    prompted = true;
+                    return Task.FromResult(tc.Credentials);
+                };
+
+                // Act & Assert
+                await Assert.ThrowsAsync<OperationCanceledException>(
+                    () => tc.HttpSource.GetAsync(
+                        new Uri(FakeSource),
+                        new MediaTypeWithQualityHeaderValue[0],
+                        tc.Logger,
+                        cts.Token));
+
+                Assert.True(prompted, "The user should have been prompted for credentials.");
+            }
+        }
+
+        [Fact]
         public async Task HttpSource_PromptsForCredentialsOn401()
         {
             // Arrange

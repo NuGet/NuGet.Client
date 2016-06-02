@@ -91,6 +91,10 @@ namespace NuGet.Credentials
                     taskResponse = new CredentialResponse(CredentialStatus.ProviderNotApplicable);
                 }
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (PluginException)
             {
                 throw;
@@ -165,6 +169,8 @@ namespace NuGet.Credentials
 
             process.CancelErrorRead();
             process.CancelOutputRead();
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             var exitCode = process.ExitCode;
 

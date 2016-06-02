@@ -141,6 +141,8 @@ namespace NuGet.Protocol
                 {
                     await _credentialPromptLock.WaitAsync();
 
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     // Check if the credentials have already changed
                     if (beforeAuthId != _lastAuthId)
                     {
@@ -157,6 +159,8 @@ namespace NuGet.Protocol
                     // prompt use for proxy credentials.
                     var credentials = await HttpHandlerResourceV3
                         .PromptForProxyCredentials(requestUri, Proxy, cancellationToken);
+
+                    cancellationToken.ThrowIfCancellationRequested();
 
                     if (credentials == null)
                     {
