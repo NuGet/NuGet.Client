@@ -150,7 +150,7 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
             }
 
             // Check sub directories
-            foreach (var dir in  rootDirectoryInfo.EnumerateDirectories(filter))
+            foreach (var dir in  rootDirectoryInfo.EnumerateDirectories())
             {
                 foreach (var path in dir.EnumerateFiles(filter))
                 {

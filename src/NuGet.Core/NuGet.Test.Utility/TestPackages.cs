@@ -119,7 +119,7 @@ namespace NuGet.Test.Utility
                 zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                                       <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
                                          <metadata>
-                                        <id>" + result.Id + @"RefPackage</id>
+                                        <id>" + result.Id + @"</id>
                                             <version>" + result.Version + @"</version>
                                             <title />
                                            <references>
