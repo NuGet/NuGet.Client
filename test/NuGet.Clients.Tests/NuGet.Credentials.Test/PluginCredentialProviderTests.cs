@@ -236,6 +236,34 @@ namespace NuGet.Credentials.Test
         }
 
         [Fact]
+        public async Task WhenCredentialProviderIsCanceled_Throws()
+        {
+            // Arrange
+            var provider = _mockProvider;
+            var uri = new Uri("http://host/");
+            var proxy = null as IWebProxy;
+            var type = CredentialRequestType.Unauthorized;
+            var message = null as string;
+            var isRetry = true;
+            var nonInteractive = true;
+            var exception = new OperationCanceledException();
+            _mockProvider
+                .Setup(x => x.Execute(It.IsAny<PluginCredentialRequest>(), It.IsAny<CancellationToken>()))
+                .Throws(exception);
+
+            // Act & Assert
+            var actual = await Assert.ThrowsAsync<OperationCanceledException>(() => provider.Object.GetAsync(
+                uri,
+                proxy,
+                type,
+                message,
+                isRetry,
+                nonInteractive,
+                CancellationToken.None));
+            Assert.Same(exception, actual);
+        }
+
+        [Fact]
         public void SetsIdBasedOnTypeAndFilename()
         {
             var provider = new PluginCredentialProvider(@"c:\some\path\provider.exe", 5);

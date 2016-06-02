@@ -34,7 +34,12 @@ namespace StandaloneUI
                 return;
             }
 
-            var line = string.Format(message, args) + Environment.NewLine;
+            if (args.Length > 0)
+            {
+                message = string.Format(message, args);
+            }
+
+            var line = message + Environment.NewLine;
             _textBox.Text += line;
             _scrollViewer.ScrollToEnd();
         }

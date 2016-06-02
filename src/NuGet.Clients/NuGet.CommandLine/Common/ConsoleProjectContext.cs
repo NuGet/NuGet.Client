@@ -24,7 +24,11 @@ namespace NuGet.CommandLine
 
         public void Log(ProjectManagement.MessageLevel level, string message, params object[] args)
         {
-            message = string.Format(CultureInfo.CurrentCulture, message, args);
+            if (args.Length > 0)
+            {
+                message = string.Format(CultureInfo.CurrentCulture, message, args);
+            }
+            
             switch (level)
             {
                 case ProjectManagement.MessageLevel.Debug:

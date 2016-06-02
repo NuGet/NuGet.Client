@@ -96,6 +96,7 @@ namespace NuGet.Protocol
                     response.StatusCode == HttpStatusCode.Forbidden)
                 {
                     promptCredentials = await AcquireCredentialsAsync(response.StatusCode, beforeLockVersion, logger, cancellationToken);
+
                     if (promptCredentials == null)
                     {
                         return response;
@@ -119,6 +120,8 @@ namespace NuGet.Protocol
             {
                 // Only one request may prompt and attempt to auth at a time
                 await _httpClientLock.WaitAsync();
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 // Auth may have happened on another thread, if so just continue
                 if (credentialsVersion != _credentials.Version)
@@ -166,6 +169,9 @@ namespace NuGet.Protocol
                     // null means cancelled by user or error occured
                     // block subsequent attempts to annoy user with prompts
                     authState.IsBlocked = true;
+
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     return null;
                 }
 

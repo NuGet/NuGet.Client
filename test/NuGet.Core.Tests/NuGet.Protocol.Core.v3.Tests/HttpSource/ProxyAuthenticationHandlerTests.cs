@@ -102,6 +102,49 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
+        public async Task SendAsync_WhenCancelledDuringAcquiringCredentials_Throws()
+        {
+            // Arrange
+            var defaultClientHandler = GetDefaultClientHandler();
+
+            var cts = new CancellationTokenSource();
+
+            var service = Mock.Of<ICredentialService>();
+            Mock.Get(service)
+                .Setup(
+                    x => x.GetCredentialsAsync(
+                        ProxyAddress,
+                        It.IsAny<IWebProxy>(),
+                        CredentialRequestType.Proxy,
+                        It.IsAny<string>(),
+                        It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new TaskCanceledException())
+                .Callback(() => cts.Cancel());
+
+            var handler = new ProxyAuthenticationHandler(defaultClientHandler, service, ProxyCache.Instance);
+
+            var responses = new Queue<HttpStatusCode>(
+                new[] { HttpStatusCode.ProxyAuthenticationRequired, HttpStatusCode.OK });
+            var innerHandler = new LambdaMessageHandler(
+                _ => new HttpResponseMessage(responses.Dequeue()));
+            handler.InnerHandler = innerHandler;
+
+            // Act
+            await Assert.ThrowsAsync<TaskCanceledException>(
+                () => SendAsync(handler, cancellationToken: cts.Token));
+
+            Mock.Get(service)
+                .Verify(
+                    x => x.GetCredentialsAsync(
+                        ProxyAddress,
+                        It.IsAny<IWebProxy>(),
+                        CredentialRequestType.Proxy,
+                        It.IsAny<string>(),
+                        It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+
+        [Fact]
         public async Task SendAsync_WithWrongCredentials_StopsRetryingAfter3Times()
         {
             var defaultClientHandler = GetDefaultClientHandler();
@@ -191,11 +234,14 @@ namespace NuGet.Protocol.Tests
                 _ => new HttpResponseMessage(statusCode));
         }
 
-        private static async Task<HttpResponseMessage> SendAsync(HttpMessageHandler handler, HttpRequestMessage request = null)
+        private static async Task<HttpResponseMessage> SendAsync(
+            HttpMessageHandler handler,
+            HttpRequestMessage request = null,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             using (var client = new HttpClient(handler))
             {
-                return await client.SendAsync(request ?? new HttpRequestMessage(HttpMethod.Get, "http://foo"));
+                return await client.SendAsync(request ?? new HttpRequestMessage(HttpMethod.Get, "http://foo"), cancellationToken);
             }
         }
     }

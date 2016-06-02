@@ -126,6 +126,8 @@ namespace NuGet.Protocol
             {
                 await _credentialPromptLock.WaitAsync();
 
+                cancellationToken.ThrowIfCancellationRequested();
+
                 // Check if the credentials have already changed
                 if (cacheVersion != _credentialCache.Version)
                 {
@@ -145,6 +147,8 @@ namespace NuGet.Protocol
 
                 // prompt user for proxy credentials.
                 var credentials = await PromptForProxyCredentialsAsync(proxyAddress, _clientHandler.Proxy, log, cancellationToken);
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 if (credentials == null)
                 {
