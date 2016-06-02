@@ -410,7 +410,6 @@ namespace NuGet.CommandLine.Test
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
                 var package = new OptimizedZipPackage(path);
                 var files = package.GetFiles().Select(f => f.Path).OrderBy(s => s).ToArray();
-                Array.Sort(files);
 
                 Assert.Equal(
                     files,
@@ -478,7 +477,6 @@ namespace NuGet.CommandLine.Test
                 var path = Path.Combine(workingDirectory, Path.GetFileName(workingDirectory) + ".1.0.0.nupkg");
                 var package = new OptimizedZipPackage(path);
                 var files = package.GetFiles().Select(f => f.Path).OrderBy(s => s).ToArray();
-                Array.Sort(files);
 
                 Assert.Equal(
                     files,
@@ -3138,7 +3136,6 @@ stuff \n <<".Replace("\r\n", "\n");
                 var path = Path.Combine(workingDirectory, Path.GetFileName(workingDirectory) + ".1.0.0.nupkg");
                 var package = new OptimizedZipPackage(path);
                 var files = package.GetFiles().Select(f => f.Path).OrderBy(s => s).ToArray();
-                Array.Sort(files);
 
                 Assert.Equal(
                     files,
@@ -3204,6 +3201,76 @@ stuff \n <<".Replace("\r\n", "\n");
 
                 // Assert
                 Assert.Contains("Unable to find 'doesNotExist.1.1.0.nupkg'.", r.Item3);
+            }
+        }
+
+        [Fact]
+        public void PackCommand_PackJsonCorrectLibPathInNupkgWithOutputName()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var id = "packageId";
+                var workingDirectory = Path.Combine(testFolder, id);
+                string dllName = "myDllName";
+
+                Directory.CreateDirectory(id);
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "someDirName", id, "bin/Debug/netcoreapp1.0"),
+                    dllName + ".dll",
+                    string.Empty);
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "someDirName", id, "bin/Debug/netcoreapp1.0/win7-x64"),
+                    dllName + ".dll",
+                    string.Empty);
+
+                Util.CreateFile(
+                    workingDirectory,
+                    "project.json",
+                @"{
+  ""version"": ""1.0.0"",
+  ""title"": ""packageA"",
+  ""authors"": [ ""test"" ],
+  ""owners"": [ ""test"" ],
+  ""requireLicenseAcceptance"": ""false"",
+  ""description"": ""Description"",
+  ""buildOptions"": {
+    ""outputName"": """ + dllName + @""",
+  },
+  ""copyright"": ""Copyright ©  2013"",
+  ""frameworks"": {
+    ""native"": {
+    },
+    ""uap10.0"": {
+    }
+  }
+}");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack project.json",
+                    waitForExit: true);
+                Assert.Equal(0, r.Item1);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, Path.GetFileName(workingDirectory) + ".1.0.0.nupkg");
+                var package = new OptimizedZipPackage(path);
+                var files = package.GetFiles().Select(f => f.Path).OrderBy(s => s).ToArray();
+
+                Assert.Equal(
+                    files,
+                    new string[]
+                    {
+                            @"lib\netcoreapp1.0\" + dllName + ".dll",
+                            @"lib\netcoreapp1.0\win7-x64\" + dllName + ".dll",
+                    });
+
+                Assert.False(r.Item2.Contains("Assembly outside lib folder"));
             }
         }
 

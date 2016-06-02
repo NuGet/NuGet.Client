@@ -190,13 +190,15 @@ namespace NuGet.Commands
                 }
             }
 
+            var dllName = builder.OutputName == null ? builder.Id : builder.OutputName;
+
             string projectOutputDirectory;
             string configFolderPath = $"\\{builder.Id}\\bin\\{configuration}";
             IEnumerable<string> files = PathResolver.PerformWildcardSearch(_packArgs.BasePath, $"**{configFolderPath}\\");
-            string targetPath = files.FirstOrDefault(f => f.EndsWith(builder.Id + ".dll"));
+            string targetPath = files.FirstOrDefault(f => f.EndsWith(dllName + ".dll"));
             if (targetPath == null)
             {
-                targetPath = Path.Combine(_packArgs.BasePath, "bin", configuration, builder.Id + ".dll");
+                targetPath = Path.Combine(_packArgs.BasePath, "bin", configuration, dllName + ".dll");
 
                 projectOutputDirectory = Path.GetDirectoryName(targetPath);
             }
@@ -372,6 +374,10 @@ namespace NuGet.Commands
             if (spec.Language != null)
             {
                 builder.Language = spec.Language;
+            }
+            if (spec.BuildOptions != null && spec.BuildOptions.OutputName != null)
+            {
+                builder.OutputName = spec.BuildOptions.OutputName;
             }
 
             foreach (var include in spec.PackInclude)
