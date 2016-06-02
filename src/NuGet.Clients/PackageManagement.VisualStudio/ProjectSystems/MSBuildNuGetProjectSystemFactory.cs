@@ -41,13 +41,11 @@ namespace NuGet.PackageManagement.VisualStudio
                         Strings.DTE_ProjectUnsupported, EnvDTEProjectUtility.GetName(envDTEProject)));
             }
 
-#if VS14
             if (EnvDTEProjectUtility.SupportsINuGetProjectSystem(envDTEProject))
             {
                 throw new InvalidOperationException(
                     string.Format(CultureInfo.CurrentCulture, Strings.DTE_ProjectUnsupported, typeof(IMSBuildNuGetProjectSystem).FullName));
             }
-#endif
 
             var guids = VsHierarchyUtility.GetProjectTypeGuids(envDTEProject);
             if (guids.Contains(NuGetVSConstants.CppProjectTypeGuid)) // Got a cpp project
