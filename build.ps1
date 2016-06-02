@@ -2,8 +2,8 @@
 param (
     [ValidateSet("debug", "release")]
     [string]$Configuration = 'debug',
-    [ValidateSet("Release","rtm", "rc", "beta", "local")]
-    [string]$ReleaseLabel = 'local',
+    [ValidateSet("Release","rtm", "rc", "beta", "beta2", "final", "xprivate", "zlocal")]
+    [string]$ReleaseLabel = 'zlocal',
     [int]$BuildNumber,
     [switch]$SkipRestore,
     [switch]$CleanCache,
@@ -22,9 +22,9 @@ param (
 )
 
 # For TeamCity - Incase any issue comes in this script fail the build. - Be default TeamCity returns exit code of 0 for all powershell even if it fails
-trap
-{
-    Write-Host "Build failed: $_" -ForegroundColor Red
+trap {
+    Write-Host "BUILD FAILED: $_" -ForegroundColor Red
+    Write-Host "ERROR DETAILS:" -ForegroundColor Red
     Write-Host $_.Exception -ForegroundColor Red
     Write-Host ("`r`n" * 3)
     exit 1
@@ -43,26 +43,25 @@ if (-not $BuildNumber) {
 }
 Trace-Log "Build #$BuildNumber started at $startTime"
 
-# Move to the script directory
-pushd $NuGetClientRoot
-
 $BuildErrors = @()
+
 Invoke-BuildStep 'Updating sub-modules' { Update-SubModules } `
     -skip:($SkipSubModules -or $Fast) `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Cleaning artifacts' { Clear-Artifacts } `
+    -skip:$SkipXProj `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Cleaning nupkgs' { Clear-Nupkgs } `
     -skip:$SkipXProj `
     -ev +BuildErrors
 
-Invoke-BuildStep 'Cleaning package cache' { Clear-PackageCache } `
-    -skip:(-not $CleanCache) `
+Invoke-BuildStep 'Installing NuGet.exe' { Install-NuGet } `
     -ev +BuildErrors
 
-Invoke-BuildStep 'Installing NuGet.exe' { Install-NuGet } `
+Invoke-BuildStep 'Cleaning package cache' { Clear-PackageCache } `
+    -skip:(-not $CleanCache) `
     -ev +BuildErrors
 
 # Restoring tools required for build
@@ -74,7 +73,8 @@ Invoke-BuildStep 'Installing runtime' { Install-DNX CoreCLR; Install-DNX CLR -De
     -ev +BuildErrors
 
 Invoke-BuildStep 'Enabling delayed signing' {
-        param($MSPFXPath, $NuGetPFXPath) Enable-DelaySigning $MSPFXPath $NuGetPFXPath
+        param($MSPFXPath, $NuGetPFXPath)
+        Enable-DelaySigning $MSPFXPath $NuGetPFXPath
     } `
     -args $MSPFXPath, $NuGetPFXPath `
     -skip:((-not $MSPFXPath) -and (-not $NuGetPFXPath)) `
@@ -98,28 +98,28 @@ Invoke-BuildStep 'Building NuGet.Clients projects' {
     -ev +BuildErrors
 
 Invoke-BuildStep 'Running NuGet.Core tests' {
-        param($SkipRestore, $Fast)
-        Test-CoreProjects -SkipRestore:$SkipRestore -Fast:$Fast
+        param($SkipRestore, $Fast, $Configuration)
+        Test-CoreProjects -SkipRestore:$SkipRestore -Fast:$Fast -Configuration -Configuration $Configuration
     } `
-    -args $SkipRestore, $Fast `
+    -args $SkipRestore, $Fast, $Configuration `
     -skip:($SkipXProj -or (-not $RunTests)) `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Running NuGet.Clients tests' {
-        param($Configuration) Test-ClientsProjects $Configuration
+        param($Configuration)
+        Test-ClientsProjects $Configuration
     } `
     -args $Configuration `
     -skip:($SkipCSproj -or (-not $RunTests)) `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Merging NuGet.exe' {
-        param($Configuration) Invoke-ILMerge $Configuration
+        param($Configuration, $MSPFXPath)
+        Invoke-ILMerge $Configuration $MSPFXPath
     } `
-    -args $Configuration `
+    -args $Configuration, $MSPFXPath `
     -skip:($SkipILMerge -or $SkipCSProj -or $Fast) `
     -ev +BuildErrors
-
-popd
 
 Trace-Log ('-' * 60)
 
@@ -128,15 +128,11 @@ $endTime = [DateTime]::UtcNow
 Trace-Log "Build #$BuildNumber ended at $endTime"
 Trace-Log "Time elapsed $(Format-ElapsedTime ($endTime - $startTime))"
 
-if ($BuildErrors) {
-    Trace-Log "Build's completed with following errors:"
-    $BuildErrors | Out-Default
-}
-
 Trace-Log ('=' * 60)
 
 if ($BuildErrors) {
-    Throw $BuildErrors.Count
+    $ErrorLines = $BuildErrors | %{ ">>> $($_.Exception.Message)" }
+    Error-Log "Build's completed with $($BuildErrors.Count) error(s):`r`n$($ErrorLines -join "`r`n")" -Fatal
 }
 
 Write-Host ("`r`n" * 3)
