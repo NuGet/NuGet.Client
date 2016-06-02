@@ -159,6 +159,12 @@ namespace NuGet.Packaging
             set;
         }
 
+        public string OutputName
+        {
+            get;
+            set;
+        }
+
         public ISet<string> Tags
         {
             get;

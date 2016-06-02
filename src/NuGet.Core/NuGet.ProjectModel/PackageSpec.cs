@@ -76,6 +76,8 @@ namespace NuGet.ProjectModel
 
         public string Language { get; set; }
 
+        public string OutputName { get; set; }
+
         public string[] Tags { get; set; }
 
         public IList<string> ContentFiles { get; set; }

@@ -114,6 +114,12 @@ namespace NuGet.ProjectModel
             packageSpec.Summary = rawPackageSpec.GetValue<string>("summary");
             packageSpec.ReleaseNotes = rawPackageSpec.GetValue<string>("releaseNotes");
 
+            var buildOptions = rawPackageSpec["buildOptions"] as JObject;
+            if (buildOptions != null)
+            {
+                packageSpec.OutputName = buildOptions.GetValue<string>("outputName");
+            }
+
             var requireLicenseAcceptance = rawPackageSpec["requireLicenseAcceptance"];
 
             if (requireLicenseAcceptance != null)
