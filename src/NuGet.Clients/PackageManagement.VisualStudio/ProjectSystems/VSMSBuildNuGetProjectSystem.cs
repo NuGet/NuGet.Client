@@ -30,7 +30,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private const string BinDir = "bin";
         private const string NuGetImportStamp = "NuGetPackageImportStamp";
         private IVsProjectBuildSystem _buildSystem;
-        private bool _buildSystemFetched;
 
         public VSMSBuildNuGetProjectSystem(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
         {
@@ -71,10 +70,9 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                if (!_buildSystemFetched)
+                if (_buildSystem == null)
                 {
                     _buildSystem = EnvDTEProjectUtility.GetVsProjectBuildSystem(EnvDTEProject);
-                    _buildSystemFetched = true;
                 }
 
                 return _buildSystem;

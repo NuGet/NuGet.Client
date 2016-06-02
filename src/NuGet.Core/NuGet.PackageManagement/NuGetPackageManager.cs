@@ -1946,8 +1946,10 @@ namespace NuGet.PackageManagement
                 }
 
                 // Write out the lock file
+                buildIntegratedProject.BeginProcessing();
                 var logger = new ProjectContextLogger(nuGetProjectContext);
                 restoreResult.Commit(logger);
+                buildIntegratedProject.EndProcessing();
 
                 // Write out a message for each action
                 foreach (var action in nuGetProjectActions)
