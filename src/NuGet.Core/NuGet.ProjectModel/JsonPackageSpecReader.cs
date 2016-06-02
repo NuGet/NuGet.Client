@@ -117,7 +117,10 @@ namespace NuGet.ProjectModel
             var buildOptions = rawPackageSpec["buildOptions"] as JObject;
             if (buildOptions != null)
             {
-                packageSpec.OutputName = buildOptions.GetValue<string>("outputName");
+                packageSpec.BuildOptions = new BuildOptions()
+                {
+                    OutputName = buildOptions.GetValue<string>("outputName")
+                };
             }
 
             var requireLicenseAcceptance = rawPackageSpec["requireLicenseAcceptance"];

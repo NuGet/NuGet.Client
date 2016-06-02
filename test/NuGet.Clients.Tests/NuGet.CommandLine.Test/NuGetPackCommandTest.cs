@@ -410,7 +410,6 @@ namespace NuGet.CommandLine.Test
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
                 var package = new OptimizedZipPackage(path);
                 var files = package.GetFiles().Select(f => f.Path).OrderBy(s => s).ToArray();
-                Array.Sort(files);
 
                 Assert.Equal(
                     files,
@@ -478,7 +477,6 @@ namespace NuGet.CommandLine.Test
                 var path = Path.Combine(workingDirectory, Path.GetFileName(workingDirectory) + ".1.0.0.nupkg");
                 var package = new OptimizedZipPackage(path);
                 var files = package.GetFiles().Select(f => f.Path).OrderBy(s => s).ToArray();
-                Array.Sort(files);
 
                 Assert.Equal(
                     files,
@@ -3138,7 +3136,6 @@ stuff \n <<".Replace("\r\n", "\n");
                 var path = Path.Combine(workingDirectory, Path.GetFileName(workingDirectory) + ".1.0.0.nupkg");
                 var package = new OptimizedZipPackage(path);
                 var files = package.GetFiles().Select(f => f.Path).OrderBy(s => s).ToArray();
-                Array.Sort(files);
 
                 Assert.Equal(
                     files,
@@ -3212,12 +3209,14 @@ stuff \n <<".Replace("\r\n", "\n");
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                string id = Path.GetFileName(workingDirectory);
+                var id = "packageId";
+                var workingDirectory = Path.Combine(testFolder, id);
                 string dllName = "myDllName";
 
+                Directory.CreateDirectory(id);
                 Util.CreateFile(
                     Path.Combine(workingDirectory, "someDirName", id, "bin/Debug/netcoreapp1.0"),
                     dllName + ".dll",
@@ -3262,7 +3261,6 @@ stuff \n <<".Replace("\r\n", "\n");
                 var path = Path.Combine(workingDirectory, Path.GetFileName(workingDirectory) + ".1.0.0.nupkg");
                 var package = new OptimizedZipPackage(path);
                 var files = package.GetFiles().Select(f => f.Path).OrderBy(s => s).ToArray();
-                Array.Sort(files);
 
                 Assert.Equal(
                     files,

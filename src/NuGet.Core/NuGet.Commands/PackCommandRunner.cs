@@ -375,9 +375,9 @@ namespace NuGet.Commands
             {
                 builder.Language = spec.Language;
             }
-            if (spec.OutputName != null)
+            if (spec.BuildOptions != null && spec.BuildOptions.OutputName != null)
             {
-                builder.OutputName = spec.OutputName;
+                builder.OutputName = spec.BuildOptions.OutputName;
             }
 
             foreach (var include in spec.PackInclude)

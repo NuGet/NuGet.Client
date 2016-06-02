@@ -558,5 +558,43 @@ namespace NuGet.ProjectModel.Test
 
             Assert.Contains("The pack options package type must be a string or array of strings in 'project.json'.", actual.Message);
         }
+
+        [Theory]
+        [InlineData("{}", null, true)]
+        [InlineData(@"{
+                        ""buildOptions"": {}
+                      }", null, false)]
+        [InlineData(@"{
+                        ""buildOptions"": {
+                          ""outputName"": ""dllName""
+                        }
+                      }", "dllName", false)]
+        [InlineData(@"{
+                        ""buildOptions"": {
+                          ""outputName"": ""dllName2"",
+                          ""emitEntryPoint"": true
+                        }
+                      }", "dllName2", false)]
+        [InlineData(@"{
+                        ""buildOptions"": {
+                          ""outputName"": null
+                        }
+                      }", null, false)]
+        public void PackageSpecReader_BuildOptions(string json, string expectedValue, bool nullBuildOptions)
+        {
+            // Arrange & Act
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+
+            // Assert
+            if (nullBuildOptions)
+            {
+                Assert.Null(actual.BuildOptions);
+            }
+            else
+            {
+                Assert.NotNull(actual.BuildOptions);
+                Assert.Equal(expectedValue, actual.BuildOptions.OutputName);
+            }
+        }
     }
 }
