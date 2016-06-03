@@ -61,11 +61,11 @@ Invoke-BuildStep 'Cleaning nupkgs' { Clear-Nupkgs } `
     -skip:$SkipXProj `
     -ev +BuildErrors
 
-Invoke-BuildStep 'Cleaning package cache' { Clear-PackageCache } `
-    -skip:(-not $CleanCache) `
+Invoke-BuildStep 'Installing NuGet.exe' { Install-NuGet } `
     -ev +BuildErrors
 
-Invoke-BuildStep 'Installing NuGet.exe' { Install-NuGet } `
+Invoke-BuildStep 'Cleaning package cache' { Clear-PackageCache } `
+    -skip:(-not $CleanCache) `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Installing dotnet CLI' { Install-DotnetCLI } `
@@ -77,7 +77,8 @@ Invoke-BuildStep 'Restoring solution packages' { Restore-SolutionPackages } `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Enabling delayed signing' {
-        param($MSPFXPath, $NuGetPFXPath) Enable-DelaySigning $MSPFXPath $NuGetPFXPath
+        param($MSPFXPath, $NuGetPFXPath)
+        Enable-DelaySigning $MSPFXPath $NuGetPFXPath
     } `
     -args $MSPFXPath, $NuGetPFXPath `
     -skip:((-not $MSPFXPath) -and (-not $NuGetPFXPath)) `
@@ -102,23 +103,25 @@ Invoke-BuildStep 'Building NuGet.Clients projects' {
 
 Invoke-BuildStep 'Running NuGet.Core tests' {
         param($SkipRestore, $Fast)
-        Test-CoreProjects -SkipRestore:$SkipRestore -Fast:$Fast -Configuration:$Configuration
+        Test-CoreProjects -SkipRestore:$SkipRestore -Fast:$Fast -Configuration $Configuration
     } `
     -args $SkipRestore, $Fast, $Configuration `
     -skip:(-not $RunTests) `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Running NuGet.Clients tests' {
-        param($Configuration) Test-ClientsProjects $Configuration
+        param($Configuration)
+        Test-ClientsProjects $Configuration
     } `
     -args $Configuration `
     -skip:(-not $RunTests) `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Merging NuGet.exe' {
-        param($Configuration) Invoke-ILMerge $Configuration $MSPFXPath
+        param($Configuration, $MSPFXPath)
+        Invoke-ILMerge $Configuration $MSPFXPath
     } `
-    -args $Configuration `
+    -args $Configuration, $MSPFXPath `
     -skip:($SkipILMerge -or $SkipCSProj -or $Fast) `
     -ev +BuildErrors
 

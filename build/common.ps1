@@ -100,9 +100,14 @@ Function Invoke-BuildStep {
         [switch]$SkipExecution
     )
     if (-not $SkipExecution) {
+        if ($env:TEAMCITY_VERSION) {
+            Write-Output "##teamcity[blockOpened name='$BuildStep']"
+        }
+
         Trace-Log "[BEGIN] $BuildStep"
         $sw = [Diagnostics.Stopwatch]::StartNew()
         $completed = $false
+
         try {
             Invoke-Command $Expression -ArgumentList $Arguments -ErrorVariable err
             $completed = $true
@@ -120,6 +125,10 @@ Function Invoke-BuildStep {
                 else {
                     Error-Log "[FAILED +$(Format-ElapsedTime $sw.Elapsed)] $BuildStep"
                 }
+            }
+
+            if ($env:TEAMCITY_VERSION) {
+                Write-Output "##teamcity[blockClosed name='$BuildStep']"
             }
         }
     }
@@ -176,10 +185,48 @@ Function Install-DotnetCLI {
     & $DotNetExe --info
 }
 
+function Enable-DelaySigningForDotNet {
+    param(
+        $xproject,
+        $KeyFile
+    )
+    Verbose-Log "Adding keyFile '$KeyFile' to buildOptions"
+
+    $buildOptions = $xproject.buildOptions
+
+    if ($buildOptions -eq $null) {
+        $newSection = ConvertFrom-Json -InputObject '{ }'
+        $xproject | Add-Member -Name "buildOptions" -value $newSection -MemberType NoteProperty
+        $buildOptions = $xproject.buildOptions
+    }
+
+    if (-not $xproject.buildOptions.keyFile) {
+        $buildOptions | Add-Member -Name "keyFile" -value $KeyFile -MemberType NoteProperty
+    }
+    else {
+        Warning-Log "keyFile already exists"
+    }
+
+    if (-not $xproject.buildOptions.delaySign) {
+        $buildOptions | Add-Member -Name "delaySign" -value $true -MemberType NoteProperty
+    }
+    else {
+        Warning-Log "delaySign already exists"
+    }
+}
+
+Function Save-ProjectFile ($xproject, $fileName) {
+    Trace-Log "Saving project to '$fileName'"
+    $xproject | ConvertTo-Json -Depth 999 | Out-File $fileName
+}
+
 # Enables delay signed build
 Function Enable-DelaySigning {
     [CmdletBinding()]
-    param($MSPFXPath, $NuGetPFXPath)
+    param(
+        $MSPFXPath,
+        $NuGetPFXPath
+    )
     if (Test-Path $MSPFXPath) {
         Trace-Log "Setting NuGet.Core solution to delay sign using $MSPFXPath"
         $env:DNX_BUILD_KEY_FILE=$MSPFXPath
@@ -187,6 +234,22 @@ Function Enable-DelaySigning {
 
         Trace-Log "Using the Microsoft Key for NuGet Command line $MSPFXPath"
         $env:MS_PFX_PATH=$MSPFXPath
+
+        $XProjectsLocation = Join-Path $NuGetClientRoot '\src\NuGet.Core'
+        Trace-Log "Adding KeyFile '$MSPFXPath' to project files in '$XProjectsLocation'"
+        (Get-ChildItem $XProjectsLocation -rec -Filter 'project.json') |
+            %{ $_.FullName } |
+            %{
+                Verbose-Log "Processing '$_'"
+                $xproject = (Get-Content $_ -Raw) | ConvertFrom-Json
+                if (-not $xproject) {
+                    Write-Error "'$_' is not a valid json file"
+                }
+                else {
+                    Enable-DelaySigningForDotNet $xproject $MSPFXPath
+                    Save-ProjectFile $xproject $_
+                }
+            }
     }
 
     if (Test-Path $NuGetPFXPath) {
@@ -204,27 +267,14 @@ Function Format-BuildNumber([int]$BuildNumber) {
     '{0:D4}' -f $BuildNumber
 }
 
-## Cleans the machine level cache from all packages
 Function Clear-PackageCache {
     [CmdletBinding()]
     param()
-    Trace-Log 'Removing .NUGET packages'
+    Trace-Log 'Cleaning package cache (except the web cache)'
 
-    if (Test-Path $env:userprofile\.nuget\packages) {
-        rm -r $env:userprofile\.nuget\packages -Force
-    }
-
-    Trace-Log 'Removing NuGet web cache'
-
-    if (Test-Path $env:localappdata\NuGet\v3-cache) {
-        rm -r $env:localappdata\NuGet\v3-cache -Force
-    }
-
-    Trace-Log 'Removing NuGet machine cache'
-
-    if (Test-Path $env:localappdata\NuGet\Cache) {
-        rm -r $env:localappdata\NuGet\Cache -Force
-    }
+    & nuget locals packages-cache -clear -verbosity detailed
+    #& nuget locals global-packages -clear -verbosity detailed
+    & nuget locals temp -clear -verbosity detailed
 }
 
 Function Clear-Artifacts {
