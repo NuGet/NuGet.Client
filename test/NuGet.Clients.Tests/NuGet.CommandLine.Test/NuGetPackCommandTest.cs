@@ -3205,8 +3205,10 @@ stuff \n <<".Replace("\r\n", "\n");
             }
         }
 
-        [Fact]
-        public void PackCommand_PackJsonCorrectLibPathInNupkgWithOutputName()
+        [Theory]
+        [InlineData(".dll")]
+        [InlineData(".exe")]
+        public void PackCommand_PackJsonCorrectLibPathInNupkgWithOutputName(string extension)
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -3220,12 +3222,12 @@ stuff \n <<".Replace("\r\n", "\n");
                 Directory.CreateDirectory(id);
                 Util.CreateFile(
                     Path.Combine(workingDirectory, "someDirName", id, "bin/Debug/netcoreapp1.0"),
-                    dllName + ".dll",
+                    dllName + extension,
                     string.Empty);
 
                 Util.CreateFile(
                     Path.Combine(workingDirectory, "someDirName", id, "bin/Debug/netcoreapp1.0/win7-x64"),
-                    dllName + ".dll",
+                    dllName + extension,
                     string.Empty);
 
                 Util.CreateFile(
@@ -3267,8 +3269,8 @@ stuff \n <<".Replace("\r\n", "\n");
                     files,
                     new string[]
                     {
-                            @"lib\netcoreapp1.0\" + dllName + ".dll",
-                            @"lib\netcoreapp1.0\win7-x64\" + dllName + ".dll",
+                            @"lib\netcoreapp1.0\" + dllName + extension,
+                            @"lib\netcoreapp1.0\win7-x64\" + dllName + extension,
                     });
 
                 Assert.False(r.Item2.Contains("Assembly outside lib folder"));

@@ -190,16 +190,20 @@ namespace NuGet.Commands
                 }
             }
 
-            var dllName = builder.OutputName == null ? builder.Id : builder.OutputName;
+            var outputName = builder.OutputName == null ? builder.Id : builder.OutputName;
 
             string projectOutputDirectory;
             var configFolderPath = $"\\{builder.Id}\\bin\\{configuration}";
             var path = string.IsNullOrEmpty(_packArgs.BasePath) ? _packArgs.CurrentDirectory : _packArgs.BasePath;
             var files = PathResolver.PerformWildcardSearch(path, $"**{configFolderPath}\\");
-            var targetPath = files.FirstOrDefault(f => f.EndsWith(dllName + ".dll"));
+            var targetPath = files.FirstOrDefault(f => f.EndsWith(outputName + ".dll") ||
+                                                    f.EndsWith(outputName + ".exe") ||
+                                                    f.EndsWith(outputName + ".xml") ||
+                                                    f.EndsWith(outputName + ".winmd") ||
+                                                    f.EndsWith(outputName + ".runtimeconfig.json"));
             if (targetPath == null)
             {
-                targetPath = Path.Combine(path, "bin", configuration, dllName + ".dll");
+                targetPath = Path.Combine(path, "bin", configuration, outputName + ".dll");
 
                 projectOutputDirectory = Path.GetDirectoryName(targetPath);
             }
