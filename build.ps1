@@ -99,7 +99,7 @@ Invoke-BuildStep 'Building NuGet.Clients projects' {
 
 Invoke-BuildStep 'Running NuGet.Core tests' {
         param($SkipRestore, $Fast, $Configuration)
-        Test-CoreProjects -SkipRestore:$SkipRestore -Fast:$Fast -Configuration -Configuration $Configuration
+        Test-CoreProjects -SkipRestore:$SkipRestore -Fast:$Fast -Configuration $Configuration
     } `
     -args $SkipRestore, $Fast, $Configuration `
     -skip:($SkipXProj -or (-not $RunTests)) `
