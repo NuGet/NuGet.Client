@@ -171,6 +171,11 @@ namespace NuGet.Packaging
             return NuspecReader.GetFrameworkReferenceGroups();
         }
 
+        public bool IsServiceable()
+        {
+            return NuspecReader.IsServiceable();
+        }
+
         public IEnumerable<FrameworkSpecificGroup> GetBuildItems()
         {
             var id = GetIdentity().Id;

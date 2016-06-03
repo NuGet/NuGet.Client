@@ -505,6 +505,47 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
+        public void CreatePackageWithServiceableElement()
+        {
+            // Arrange
+            PackageBuilder builder = new PackageBuilder()
+            {
+                Id = "A",
+                Version = NuGetVersion.Parse("1.0"),
+                Description = "Description",
+                Authors = { "testAuthor" },
+                Serviceable = true,
+                Files =
+                {
+                    CreatePackageFile("content" + Path.DirectorySeparatorChar + "winrt53" + Path.DirectorySeparatorChar + "one.txt")
+                }
+            };
+
+            using (var ms = new MemoryStream())
+            {
+                builder.Save(ms);
+
+                ms.Seek(0, SeekOrigin.Begin);
+
+                var manifestStream = GetManifestStream(ms);
+
+                // Assert
+                Assert.Equal(@"<?xml version=""1.0"" encoding=""utf-8""?>
+<package xmlns=""http://schemas.microsoft.com/packaging/2016/06/nuspec.xsd"">
+  <metadata>
+    <id>A</id>
+    <version>1.0.0</version>
+    <authors>testAuthor</authors>
+    <owners>testAuthor</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Description</description>
+    <serviceable>true</serviceable>
+  </metadata>
+</package>", manifestStream.ReadToEnd());
+            }
+        }
+
+        [Fact]
         public void CreatePackageWithPackageTypes()
         {
             // Arrange
@@ -1742,6 +1783,7 @@ Description is required.");
     <language>en-US</language>
     <licenseUrl>http://somesite/somelicense.txt</licenseUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <serviceable>true</serviceable>
     <copyright>2010</copyright>
     <packageTypes>
         <packageType name=""foo"" />
@@ -1769,7 +1811,7 @@ Description is required.");
             Assert.Equal("This is the Description (With, Comma-Separated, Words, in Parentheses).", builder.Description);
             Assert.Equal(new Uri("http://somesite/somelicense.txt"), builder.LicenseUrl);
             Assert.True(builder.RequireLicenseAcceptance);
-
+            Assert.True(builder.Serviceable);
             Assert.Equal(2, builder.PackageTypes.Count);
             Assert.Equal("foo", builder.PackageTypes.ElementAt(0).Name);
             Assert.Equal(new Version(0, 0), builder.PackageTypes.ElementAt(0).Version);
