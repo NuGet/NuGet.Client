@@ -40,8 +40,8 @@ $env:DOTNET_INSTALL_DIR=$CLIRoot
 $RunTests = (-not $SkipTests) -and (-not $Fast)
 
 # Test for erroneous targeting input
-$Dev14Installed = Test-MSBuildVersionPresent -MSBuildVersion:"14"
-$Dev15Installed = Test-MSBuildVersionPresent -MSBuildVersion:"15"
+$Dev14Installed = Test-MSBuildVersionPresent -MSBuildVersion "14"
+$Dev15Installed = Test-MSBuildVersionPresent -MSBuildVersion "15"
 if ($SkipDev15 -and -not $Dev14Installed) {
     Error-Log "Dev14 targeted but not installed" -Fatal
 }
@@ -76,11 +76,11 @@ Invoke-BuildStep 'Cleaning nupkgs' { Clear-Nupkgs } `
     -skip:$SkipXProj `
     -ev +BuildErrors
 
-Invoke-BuildStep 'Cleaning package cache' { Clear-PackageCache } `
-    -skip:(-not $CleanCache) `
+Invoke-BuildStep 'Installing NuGet.exe' { Install-NuGet } `
     -ev +BuildErrors
 
-Invoke-BuildStep 'Installing NuGet.exe' { Install-NuGet } `
+Invoke-BuildStep 'Cleaning package cache' { Clear-PackageCache } `
+    -skip:(-not $CleanCache) `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Installing dotnet CLI' { Install-DotnetCLI } `
@@ -92,7 +92,8 @@ Invoke-BuildStep 'Restoring solution packages' { Restore-SolutionPackages } `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Enabling delayed signing' {
-        param($MSPFXPath, $NuGetPFXPath) Enable-DelaySigning $MSPFXPath $NuGetPFXPath
+        param($MSPFXPath, $NuGetPFXPath)
+        Enable-DelaySigning $MSPFXPath $NuGetPFXPath
     } `
     -args $MSPFXPath, $NuGetPFXPath `
     -skip:((-not $MSPFXPath) -and (-not $NuGetPFXPath)) `
@@ -109,7 +110,7 @@ Invoke-BuildStep 'Building NuGet.Core projects' {
 ## Building the Dev14 Tooling solution
 Invoke-BuildStep 'Building NuGet.Clients projects - Dev14 dependencies' {
         param($Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore, $Fast)
-        Build-ClientsProjects $Configuration $ReleaseLabel $BuildNumber -MSBuildVersion:"14" -SkipRestore:$SkipRestore -Fast:$Fast
+        Build-ClientsProjects $Configuration $ReleaseLabel $BuildNumber -MSBuildVersion "14" -SkipRestore:$SkipRestore -Fast:$Fast
     } `
     -args $Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore, $Fast `
     -skip:$SkipDev14 `
@@ -117,16 +118,17 @@ Invoke-BuildStep 'Building NuGet.Clients projects - Dev14 dependencies' {
 
 ## ILMerge the Dev14 exe only
 Invoke-BuildStep 'Merging NuGet.exe' {
-        param($Configuration) Invoke-ILMerge $Configuration $MSPFXPath
+        param($Configuration, $MSPFXPath)
+        Invoke-ILMerge $Configuration $MSPFXPath
     } `
-    -args $Configuration `
+    -args $Configuration, $MSPFXPath `
     -skip:($SkipILMerge -or $Fast -or $SkipDev14) `
     -ev +BuildErrors
 
 ## Building the Dev15 Tooling solution
 Invoke-BuildStep 'Building NuGet.Clients projects - Dev15 dependencies' {
         param($Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore, $Fast)
-        Build-ClientsProjects $Configuration $ReleaseLabel $BuildNumber -MSBuildVersion:"15" -SkipRestore:$SkipRestore -Fast:$Fast
+        Build-ClientsProjects $Configuration $ReleaseLabel $BuildNumber -MSBuildVersion "15" -SkipRestore:$SkipRestore -Fast:$Fast
     } `
     -args $Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore, $Fast `
     -skip:$SkipDev15 `
@@ -134,21 +136,23 @@ Invoke-BuildStep 'Building NuGet.Clients projects - Dev15 dependencies' {
 
 Invoke-BuildStep 'Running NuGet.Core tests' {
         param($SkipRestore, $Fast)
-        Test-CoreProjects -SkipRestore:$SkipRestore -Fast:$Fast -Configuration:$Configuration
+        Test-CoreProjects -SkipRestore:$SkipRestore -Fast:$Fast -Configuration $Configuration
     } `
     -args $SkipRestore, $Fast, $Configuration `
     -skip:(-not $RunTests) `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Running NuGet.Clients tests - Dev14 dependencies' {
-        param($Configuration) Test-ClientsProjects -Configuration:$Configuration -MSBuildVersion:"14"
+        param($Configuration)
+        Test-ClientsProjects -Configuration:$Configuration -MSBuildVersion "14"
     } `
     -args $Configuration `
     -skip:((-not $RunTests) -or $SkipDev14) `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Running NuGet.Clients tests - Dev15 dependencies' {
-        param($Configuration) Test-ClientsProjects -Configuration:$Configuration -MSBuildVersion:"15"
+        param($Configuration)
+        Test-ClientsProjects -Configuration $Configuration -MSBuildVersion "15"
     } `
     -args $Configuration `
     -skip:((-not $RunTests) -or $SkipDev15) `
