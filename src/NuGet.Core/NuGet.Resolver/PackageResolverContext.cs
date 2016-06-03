@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using NuGet.Configuration;
+using NuGet.Logging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 
@@ -28,7 +29,8 @@ namespace NuGet.Resolver
             IEnumerable<Packaging.PackageReference> packagesConfig,
             IEnumerable<PackageIdentity> preferredVersions,
             IEnumerable<SourcePackageDependencyInfo> availablePackages,
-            IEnumerable<PackageSource> packageSources)
+            IEnumerable<PackageSource> packageSources,
+            ILogger log)
         {
             if (targetIds == null)
             {
@@ -70,6 +72,7 @@ namespace NuGet.Resolver
             PreferredVersions = new HashSet<PackageIdentity>(preferredVersions, PackageIdentity.Comparer);
             AvailablePackages = availablePackages;
             PackageSources = packageSources;
+            Log = log;
             Debug.Assert(PreferredVersions.GroupBy(p => p.Id, StringComparer.OrdinalIgnoreCase)
                 .All(group => group.Count() == 1), "duplicate preferred ids");
         }
@@ -111,6 +114,11 @@ namespace NuGet.Resolver
         /// Package Sources
         /// </summary>
         public IEnumerable<PackageSource> PackageSources { get; }
+
+        /// <summary>
+        /// Logging adapter
+        /// </summary>
+        public ILogger Log { get; }
 
     }
 }

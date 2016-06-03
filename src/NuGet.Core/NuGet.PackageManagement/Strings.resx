@@ -288,4 +288,10 @@
   <data name="FoundPackageInPackagesFolder" xml:space="preserve">
     <value>Found package '{0} {1}' in '{2}'.</value>
   </data>
+  <data name="GatherTotalTime" xml:space="preserve">
+    <value>Gathering dependency information took {0}</value>
+  </data>
+  <data name="NugetActionsTotalTime" xml:space="preserve">
+    <value>Executing nuget actions took {0}</value>
+  </data>
 </root>

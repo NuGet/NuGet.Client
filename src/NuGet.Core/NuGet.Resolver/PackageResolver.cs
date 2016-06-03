@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -23,6 +25,7 @@ namespace NuGet.Resolver
         /// </summary>
         public IEnumerable<PackageIdentity> Resolve(PackageResolverContext context, CancellationToken token)
         {
+            var stopWatch = new Stopwatch();
             token.ThrowIfCancellationRequested();
 
             if (context == null)
@@ -146,7 +149,10 @@ namespace NuGet.Resolver
                             String.Join(" => ", circularReferences.Select(package => $"{package.Id} {package.Version.ToNormalizedString()}"))));
                     }
 
-                    // solution found!                    
+                    // solution found!
+                    stopWatch.Stop();
+                    context.Log.LogMinimal(
+                        string.Format(Strings.ResolverTotalTime, DatetimeUtility.ToReadableTimeFormat(stopWatch.Elapsed)));
                     return sortedSolution.ToArray();
                 }
             }

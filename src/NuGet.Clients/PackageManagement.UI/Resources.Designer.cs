@@ -628,6 +628,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Owner(s):.
+        /// </summary>
+        public static string Label_Owners {
+            get {
+                return ResourceManager.GetString("Label_Owners", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to NuGet Package Manager: {0}.
         /// </summary>
         public static string Label_PackageManager {
@@ -795,6 +804,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Link_LearnAboutUninstallOptions {
             get {
                 return ResourceManager.GetString("Link_LearnAboutUninstallOptions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Time Elapsed: {0}.
+        /// </summary>
+        public static string Operation_TotalTime {
+            get {
+                return ResourceManager.GetString("Operation_TotalTime", resourceCulture);
             }
         }
         

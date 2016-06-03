@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,6 +42,9 @@ namespace NuGet.PackageManagement.UI
             DependencyObject windowOwner,
             CancellationToken token)
         {
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+
             await PerformActionImplAsync(
                 uiService,
                 () =>
@@ -76,6 +80,9 @@ namespace NuGet.PackageManagement.UI
                 },
                 windowOwner,
                 token);
+
+            stopWatch.Stop();
+            uiService.ProgressWindow.Log(ProjectManagement.MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Operation_TotalTime, stopWatch.Elapsed));
         }
 
         /// <summary>
@@ -88,6 +95,9 @@ namespace NuGet.PackageManagement.UI
             DependencyObject windowOwner,
             CancellationToken token)
         {
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+
             await PerformActionImplAsync(
                 uiService,
                 () =>
@@ -110,6 +120,9 @@ namespace NuGet.PackageManagement.UI
                 },
                 windowOwner,
                 token);
+
+            stopWatch.Stop();
+            uiService.ProgressWindow.Log(ProjectManagement.MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Operation_TotalTime, stopWatch.Elapsed));
         }
 
         /// <summary>

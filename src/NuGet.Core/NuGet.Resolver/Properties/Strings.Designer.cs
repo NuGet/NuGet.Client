@@ -105,6 +105,15 @@ namespace NuGet.Resolver
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("PackagesConfigConstraint"), p0, p1, p2);
         }
+		
+		/// <summary>
+        ///    Looks up a localized string similar to Resolving dependency information took {0}.
+        /// </summary>
+        internal static string ResolverTotalTime {
+            get {
+                return GetString("ResolverTotalTime");
+            }
+        }
 
         /// <summary>
         /// Unable to find a version of '{0}' that is compatible with {1}.
