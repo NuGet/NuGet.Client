@@ -181,7 +181,7 @@ namespace NuGet.Commands
         private void AddOutputFiles(PackageBuilder builder, bool includeSymbols)
         {
             // Default to Debug unless the configuration was passed in as a property
-            string configuration = "Debug";
+            var configuration = "Debug";
             foreach (var property in _packArgs.Properties)
             {
                 if (String.Equals(Configuration, property.Key, StringComparison.OrdinalIgnoreCase))
@@ -193,12 +193,13 @@ namespace NuGet.Commands
             var dllName = builder.OutputName == null ? builder.Id : builder.OutputName;
 
             string projectOutputDirectory;
-            string configFolderPath = $"\\{builder.Id}\\bin\\{configuration}";
-            IEnumerable<string> files = PathResolver.PerformWildcardSearch(_packArgs.BasePath, $"**{configFolderPath}\\");
-            string targetPath = files.FirstOrDefault(f => f.EndsWith(dllName + ".dll"));
+            var configFolderPath = $"\\{builder.Id}\\bin\\{configuration}";
+            var path = string.IsNullOrEmpty(_packArgs.BasePath) ? _packArgs.CurrentDirectory : _packArgs.BasePath;
+            var files = PathResolver.PerformWildcardSearch(path, $"**{configFolderPath}\\");
+            var targetPath = files.FirstOrDefault(f => f.EndsWith(dllName + ".dll"));
             if (targetPath == null)
             {
-                targetPath = Path.Combine(_packArgs.BasePath, "bin", configuration, dllName + ".dll");
+                targetPath = Path.Combine(path, "bin", configuration, dllName + ".dll");
 
                 projectOutputDirectory = Path.GetDirectoryName(targetPath);
             }
@@ -225,7 +226,7 @@ namespace NuGet.Commands
                 allowedOutputExtensions.Add(".pdb");
             }
 
-            string targetFileName = Path.GetFileNameWithoutExtension(targetPath);
+            var targetFileName = Path.GetFileNameWithoutExtension(targetPath);
 
             if (!Directory.Exists(projectOutputDirectory))
             {
@@ -234,7 +235,7 @@ namespace NuGet.Commands
 
             foreach (var file in GetFiles(projectOutputDirectory, targetFileName, allowedOutputExtensions))
             {
-                string targetFolder = Path.GetDirectoryName(file).Replace(projectOutputDirectory + Path.DirectorySeparatorChar, "");
+                var targetFolder = Path.GetDirectoryName(file).Replace(projectOutputDirectory + Path.DirectorySeparatorChar, "");
 
                 var packageFile = new PhysicalPackageFile
                 {
@@ -729,14 +730,16 @@ namespace NuGet.Commands
             }
 
             var path = physicalPackageFile.SourcePath;
-            // Make sure that the basepath has a directory separator
 
-            int index = path.IndexOf(PathUtility.EnsureTrailingSlash(_packArgs.BasePath), StringComparison.OrdinalIgnoreCase);
+            // Make sure that the basepath has a directory separator
+            var basePath = string.IsNullOrEmpty(_packArgs.BasePath) ? _packArgs.CurrentDirectory : _packArgs.BasePath;
+
+            int index = path.IndexOf(PathUtility.EnsureTrailingSlash(basePath), StringComparison.OrdinalIgnoreCase);
             if (index != -1)
             {
                 // Since wildcards are going to be relative to the base path, remove the BasePath portion of the file's source path.
                 // Also remove any leading path separator slashes
-                path = path.Substring(index + _packArgs.BasePath.Length).TrimStart(Path.DirectorySeparatorChar);
+                path = path.Substring(index + basePath.Length).TrimStart(Path.DirectorySeparatorChar);
             }
 
             return path;
@@ -859,6 +862,13 @@ namespace NuGet.Commands
                 if (string.IsNullOrEmpty(packArgs.OutputDirectory))
                 {
                     packArgs.OutputDirectory = packArgs.CurrentDirectory;
+                }
+                packArgs.OutputDirectory = Path.GetFullPath(packArgs.OutputDirectory);
+
+                if (!string.IsNullOrEmpty(packArgs.BasePath))
+                {
+                    // Make sure base path is not relative before changing the current directory
+                    packArgs.BasePath = Path.GetFullPath(packArgs.BasePath);
                 }
 
                 packArgs.CurrentDirectory = directory;
