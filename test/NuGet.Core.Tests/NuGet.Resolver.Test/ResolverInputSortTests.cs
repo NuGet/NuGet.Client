@@ -35,7 +35,7 @@ namespace NuGet.Resolver.Test
                 Enumerable.Empty<PackageIdentity>(),
                 packages,
                 Enumerable.Empty<PackageSource>(),
-                Common.NullLogger.Instance);
+                Logging.NullLogger.Instance);
 
             var grouped = GroupPackages(packages);
 
@@ -71,7 +71,7 @@ namespace NuGet.Resolver.Test
                 Enumerable.Empty<PackageIdentity>(),
                 packages,
                 Enumerable.Empty<PackageSource>(),
-                Common.NullLogger.Instance);
+                Logging.NullLogger.Instance);
 
             var grouped = GroupPackages(packages);
 
@@ -109,7 +109,7 @@ namespace NuGet.Resolver.Test
                 Enumerable.Empty<PackageIdentity>(),
                 packages,
                 Enumerable.Empty<PackageSource>(),
-                Common.NullLogger.Instance);
+                Logging.NullLogger.Instance);
 
             var grouped = GroupPackages(packages);
 
@@ -146,7 +146,7 @@ namespace NuGet.Resolver.Test
                 Enumerable.Empty<PackageIdentity>(),
                 packages,
                 Enumerable.Empty<PackageSource>(),
-                Common.NullLogger.Instance);
+                Logging.NullLogger.Instance);
 
             var grouped = GroupPackages(packages);
 
@@ -182,7 +182,7 @@ namespace NuGet.Resolver.Test
                 Enumerable.Empty<PackageIdentity>(),
                 packages,
                 Enumerable.Empty<PackageSource>(),
-                Common.NullLogger.Instance);
+                Logging.NullLogger.Instance);
 
             var grouped = GroupPackages(packages);
 
@@ -220,7 +220,7 @@ namespace NuGet.Resolver.Test
                 Enumerable.Empty<PackageIdentity>(),
                 packages,
                 Enumerable.Empty<PackageSource>(),
-                Common.NullLogger.Instance);
+                Logging.NullLogger.Instance);
 
             var grouped = GroupPackages(packages);
 

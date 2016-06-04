@@ -536,7 +536,7 @@ namespace NuGet.Resolver.Test
                 targets,
                 sourceRepository,
                 Enumerable.Empty<PackageSource>(),
-				Common.NullLogger.Instance);
+				Logging.NullLogger.Instance);
 
             var solution = resolver.Resolve(context, CancellationToken.None).ToArray();
             var packages = solution.ToDictionary(p => p.Id);
@@ -1002,7 +1002,7 @@ namespace NuGet.Resolver.Test
                 targets,
                 availablePackages,
                 Enumerable.Empty<PackageSource>(),
-				Common.NullLogger.Instance);
+				Logging.NullLogger.Instance);
         }
     }
 }
