@@ -134,7 +134,7 @@ namespace NuGet.LibraryModel
             }
 
             return TypeConstraint == other.TypeConstraint
-                && string.Equals(Name, other.Name)
+                && string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase)
                 && Equals(VersionRange, other.VersionRange);
         }
 
@@ -147,7 +147,7 @@ namespace NuGet.LibraryModel
         {
             unchecked
             {
-                return ((Name != null ? Name.GetHashCode() : 0) * 397) ^
+                return ((Name != null ? StringComparer.OrdinalIgnoreCase.GetHashCode(Name) : 0) * 397) ^
                        (VersionRange != null ? VersionRange.GetHashCode() : 0) ^
                        TypeConstraint.GetHashCode();
             }

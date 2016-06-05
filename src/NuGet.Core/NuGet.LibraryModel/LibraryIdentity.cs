@@ -40,7 +40,7 @@ namespace NuGet.LibraryModel
             {
                 return true;
             }
-            return string.Equals(Name, other.Name) &&
+            return string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase) &&
                    Equals(Version, other.Version) &&
                    Equals(Type, other.Type);
         }
@@ -54,7 +54,7 @@ namespace NuGet.LibraryModel
         {
             unchecked
             {
-                return ((Name != null ? Name.GetHashCode() : 0) * 397) ^
+                return ((Name != null ? StringComparer.OrdinalIgnoreCase.GetHashCode(Name) : 0) * 397) ^
                        (Version != null ? Version.GetHashCode() : 0) ^
                        (Type != null ? Type.GetHashCode() : 0);
             }

@@ -22,6 +22,82 @@ namespace NuGet.Commands.FuncTest
 {
     public class RestoreCommandTests
     {
+        /// <summary>
+        /// This test fixes https://github.com/NuGet/Home/issues/2901.
+        /// </summary>
+        [Fact]
+        public async Task RestoreCommand_DependenciesOfDifferentCase()
+        {
+            // Arrange
+            var sources = new List<PackageSource> { new PackageSource("https://www.nuget.org/api/v2/") };
+
+            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // This test is verifying the following dependency graph:
+                //
+                // A ---> B -> D -> F
+                //   \
+                //    --> C -> d -> F
+                //
+                // D and d are the same package ID but with different casing. The resulting restore
+                // graph should see both F nodes as the same dependency since D and d refer to the
+                // same thing. No dependency conflicts should occur.
+                var specDirB = Path.Combine(projectDir, "projects", "b");
+                Directory.CreateDirectory(specDirB);
+                var specPathB = Path.Combine(specDirB, "project.json");
+                File.WriteAllText(
+                    specPathB,
+                    @"
+                    {
+                      ""dependencies"": {
+                        ""microsoft.NETCore.Runtime.CoreCLR"": ""1.0.2-rc2-24027""
+                      },
+                      ""frameworks"": {
+                        ""netstandard1.5"": {}
+                      }
+                    }
+                    ");
+                var specB = JsonPackageSpecReader.GetPackageSpec("b", specPathB);
+
+                var specDirA = Path.Combine(projectDir, "projects", "a");
+                Directory.CreateDirectory(specDirA);
+                var specPathA = Path.Combine(specDirA, "project.json");
+                File.WriteAllText(
+                    specPathA,
+                    @"
+                    {
+                      ""dependencies"": {
+                        ""b"": {
+                          ""target"": ""project""
+                        },
+                        ""Microsoft.NETCore.Runtime"": ""1.0.2-rc2-24027""
+                      },
+                      ""frameworks"": {
+                        ""netcoreapp1.0"": {}
+                      }
+                    }
+                    ");
+                var specA = JsonPackageSpecReader.GetPackageSpec("a", specPathA);
+                
+                var logger = new TestLogger();
+                var request = new RestoreRequest(specA, sources, packagesDir, logger)
+                {
+                    LockFilePath = Path.Combine(specDirA, "project.lock.json")
+                };
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+
+                // Assert
+                Assert.Equal(1, result.RestoreGraphs.Count());
+                var graph = result.RestoreGraphs.First();
+                Assert.Equal(0, graph.Conflicts.Count());
+                Assert.True(result.Success, "The restore should have been successful.");
+            }
+        }
+
         [Fact]
         public async Task RestoreCommand_VerifyMinClientVersionV2Source()
         {
