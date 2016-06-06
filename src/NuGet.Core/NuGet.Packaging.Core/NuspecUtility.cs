@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
+using NuGet.Packaging;
 
 namespace NuGet.Packaging.Core
 {
@@ -19,6 +20,7 @@ namespace NuGet.Packaging.Core
         public static readonly string PackageType = "packageType";
         public static readonly string PackageTypeName = "name";
         public static readonly string PackageTypeVersion = "version";
+        public static readonly string Serviceable = "serviceable";
 
         /// <summary>
         /// Gets the package types from a .nuspec metadata XML element.
@@ -89,6 +91,26 @@ namespace NuGet.Packaging.Core
             }
 
             return packageTypes;
+        }
+
+        /// <summary>
+        /// Gets the value of serviceable element from a .nuspec metadata XML element.
+        /// </summary>
+        /// <param name="metadataNode">The metadata XML element.</param>
+        /// <returns>
+        /// true if the serviceable element is set in the .nuspec file as true, else false.
+        /// </returns>
+        public static bool IsServiceable(XElement metadataNode)
+        {
+            var metadataNamespace = metadataNode.GetDefaultNamespace().NamespaceName;
+            var element = metadataNode.Elements(XName.Get(Serviceable, metadataNamespace)).FirstOrDefault();
+            if (element == null)
+            {
+                return false;
+            }
+
+            string value = element.Value ?? element.Value.Trim();
+            return System.Xml.XmlConvert.ToBoolean(value);
         }
     }
 }

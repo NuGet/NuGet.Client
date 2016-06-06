@@ -51,7 +51,11 @@ namespace NuGet.Packaging.Xml
             AddElementIfNotNull(elem, ns, "copyright", metadata.Copyright);
             AddElementIfNotNull(elem, ns, "language", metadata.Language);
             AddElementIfNotNull(elem, ns, "tags", metadata.Tags);
-            
+            if (metadata.Serviceable)
+            {
+                elem.Add(new XElement(ns + "serviceable", metadata.Serviceable));
+            }
+
             if (metadata.PackageTypes != null && metadata.PackageTypes.Any())
             {
                 elem.Add(GetXElementFromManifestPackageTypes(ns, metadata.PackageTypes));

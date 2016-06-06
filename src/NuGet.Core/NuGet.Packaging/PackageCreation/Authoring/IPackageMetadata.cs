@@ -26,6 +26,7 @@ namespace NuGet.Packaging
         string ReleaseNotes { get; }
         string Language { get; }
         string Tags { get; }
+        bool Serviceable { get; }
         string Copyright { get; }
 
         /// <summary>
