@@ -200,6 +200,7 @@ namespace NuGet.Packaging.Test
                 dependencies: new[] { new PackageDependency("Test", VersionRange.Parse("1.2.0")) },
                 assemblyReference: new[] { new FrameworkAssemblyReference("System.Data", new[] { NuGetFramework.Parse("4.0") }) },
                 references: references,
+                serviceable: true,
                 packageTypes: new[]
                 {
                     new PackageType("foo", new Version(2, 0, 0)),
@@ -221,6 +222,7 @@ namespace NuGet.Packaging.Test
                 Copyright = "Copyright 2012",
                 Language = "fr-FR",
                 Tags = "Test Unit",
+                Serviceable = true,
                 DependencyGroups = new[]
                                     {
                                         new PackageDependencyGroup(
@@ -358,6 +360,41 @@ namespace NuGet.Packaging.Test
             Assert.Equal(new[] { "Luan" }, manifest.Metadata.Authors);
             Assert.False(manifest.Metadata.RequireLicenseAcceptance);
             Assert.True(manifest.Metadata.DevelopmentDependency);
+            Assert.Equal("Descriptions", manifest.Metadata.Description);
+        }
+
+        [Fact]
+        public void ReadServiceable()
+        {
+            // Arrange
+            string content = @"<?xml version=""1.0""?>
+<package xmlns=""http://schemas.microsoft.com/packaging/2016/06/nuspec.xsd"">
+  <metadata hello=""world"">
+    <id>A</id>
+    <version>1.0</version>
+    <authors>Luan</authors>
+    <owners>Luan</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <developmentDependency>true</developmentDependency>
+    <description>Descriptions</description>
+    <serviceable>true</serviceable>
+    <extra>This element is not defined in schema.</extra>
+  </metadata>
+  <clark>meko</clark>
+  <files>
+      <file src=""my.txt"" destination=""outdir"" />
+  </files>
+</package>";
+            // Act
+            var manifest = Manifest.ReadFrom(content.AsStream(), validateSchema: false);
+
+            // Assert
+            Assert.Equal("A", manifest.Metadata.Id);
+            Assert.Equal(NuGetVersion.Parse("1.0"), manifest.Metadata.Version);
+            Assert.Equal(new[] { "Luan" }, manifest.Metadata.Authors);
+            Assert.False(manifest.Metadata.RequireLicenseAcceptance);
+            Assert.True(manifest.Metadata.DevelopmentDependency);
+            Assert.True(manifest.Metadata.Serviceable);
             Assert.Equal("Descriptions", manifest.Metadata.Description);
         }
 
@@ -689,6 +726,7 @@ namespace NuGet.Packaging.Test
             Assert.Equal(expected.Metadata.DevelopmentDependency, actual.Metadata.DevelopmentDependency);
             Assert.Equal(expected.Metadata.Summary, actual.Metadata.Summary);
             Assert.Equal(expected.Metadata.Tags, actual.Metadata.Tags);
+            Assert.Equal(expected.Metadata.Serviceable, actual.Metadata.Serviceable);
             Assert.Equal(expected.Metadata.MinClientVersion, actual.Metadata.MinClientVersion);
 
             if (expected.Metadata.DependencyGroups != null)
@@ -814,6 +852,7 @@ namespace NuGet.Packaging.Test
                                             string iconUrl = null,
                                             bool? requiresLicenseAcceptance = null,
                                             bool? developmentDependency = null,
+                                            bool serviceable = false,
                                             string description = "Test description",
                                             string summary = null,
                                             string releaseNotes = null,
@@ -885,6 +924,10 @@ namespace NuGet.Packaging.Test
             if (tags != null)
             {
                 metadata.Add(new XElement("tags", tags));
+            }
+            if (serviceable)
+            {
+                metadata.Add(new XElement("serviceable", true));
             }
             if (dependencies != null)
             {

@@ -54,6 +54,11 @@ namespace NuGet.Packaging
         /// </summary>
         internal const string SchemaVersionV7 = "http://schemas.microsoft.com/packaging/2016/04/nuspec.xsd";
 
+        /// <summary>
+        /// Added serviceble element under metadata.
+        /// </summary>
+        internal const string SchemaVersionV8 = "http://schemas.microsoft.com/packaging/2016/06/nuspec.xsd";
+
         private static readonly string[] VersionToSchemaMappings = new[] {
             SchemaVersionV1,
             SchemaVersionV2,
@@ -61,7 +66,8 @@ namespace NuGet.Packaging
             SchemaVersionV4,
             SchemaVersionV5,
             SchemaVersionV6,
-            SchemaVersionV7
+            SchemaVersionV7,
+            SchemaVersionV8
         };
 
 #if !IS_CORECLR

@@ -472,6 +472,25 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
+        public void PackageReader_Serviceable()
+        {
+            // Arrange
+            using (var packageFile = TestPackages.GetServiceablePackage())
+            {
+                var zip = TestPackages.GetZip(packageFile);
+
+                using (PackageArchiveReader reader = new PackageArchiveReader(zip))
+                {
+                    // Act
+                    var actual = reader.IsServiceable();
+
+                    // Assert
+                    Assert.True(actual);
+                }
+            }
+        }
+
+        [Fact]
         public void PackageReader_PackageTypes()
         {
             // Arrange

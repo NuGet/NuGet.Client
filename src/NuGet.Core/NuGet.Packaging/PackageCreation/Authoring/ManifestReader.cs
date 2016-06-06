@@ -121,6 +121,9 @@ namespace NuGet.Packaging
                 case "tags":
                     manifestMetadata.Tags = value;
                     break;
+                case "serviceable":
+                    manifestMetadata.Serviceable = XmlConvert.ToBoolean(value);
+                    break;
                 case "dependencies":
                     manifestMetadata.DependencyGroups = ReadDependencyGroups(element);
                     break;

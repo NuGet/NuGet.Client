@@ -129,6 +129,12 @@ namespace NuGet.Packaging
             set;
         }
 
+        public bool Serviceable
+        {
+            get;
+            set;
+        }
+
         public bool DevelopmentDependency
         {
             get;
@@ -506,6 +512,7 @@ namespace NuGet.Packaging
             ProjectUrl = metadata.ProjectUrl;
             RequireLicenseAcceptance = metadata.RequireLicenseAcceptance;
             DevelopmentDependency = metadata.DevelopmentDependency;
+            Serviceable = metadata.Serviceable;
             Description = metadata.Description;
             Summary = metadata.Summary;
             ReleaseNotes = metadata.ReleaseNotes;

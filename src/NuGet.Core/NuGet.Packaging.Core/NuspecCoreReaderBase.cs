@@ -110,6 +110,14 @@ namespace NuGet.Packaging.Core
         }
 
         /// <summary>
+        /// Returns if the package is serviceable.
+        /// </summary>
+        public virtual bool IsServiceable()
+        {
+            return NuspecUtility.IsServiceable(MetadataNode);
+        }
+
+        /// <summary>
         /// The developmentDependency attribute
         /// </summary>
         public virtual bool GetDevelopmentDependency()

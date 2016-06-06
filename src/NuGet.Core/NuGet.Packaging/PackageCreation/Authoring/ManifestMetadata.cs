@@ -38,6 +38,7 @@ namespace NuGet.Packaging
             Authors = copy.Authors;
             Owners = copy.Owners;
             Tags = string.IsNullOrEmpty(copy.Tags) ? null : copy.Tags.Trim();
+            Serviceable = copy.Serviceable;
             _licenseUrl = copy.LicenseUrl?.OriginalString;
             _projectUrl = copy.ProjectUrl?.OriginalString;
             _iconUrl = copy.IconUrl?.OriginalString;
@@ -166,6 +167,8 @@ namespace NuGet.Packaging
         public string Language { get; set; }
 
         public string Tags { get; set; }
+
+        public bool Serviceable { get; set; }
 
         private IEnumerable<PackageDependencyGroup> _dependencyGroups = new List<PackageDependencyGroup>();
         public IEnumerable<PackageDependencyGroup> DependencyGroups

@@ -242,6 +242,19 @@ namespace NuGet.Packaging.Test
                   </metadata>
                 </package>";
 
+        private const string ServiceablePackageTypesElement = @"<?xml version=""1.0""?>
+                <package xmlns=""http://schemas.microsoft.com/packaging/2016/06/nuspec.xsd"">
+                  <metadata>
+                    <id>packageA</id>
+                    <version>1.0.1-alpha</version>
+                    <title>Package A</title>
+                    <authors>ownera, ownerb</authors>
+                    <owners>ownera, ownerb</owners>
+                    <description>package A description.</description>
+                    <serviceable>true</serviceable>
+                  </metadata>
+                </package>";
+
         [Fact]
         public void NuspecReaderTests_NamespaceOnMetadata()
         {
@@ -479,6 +492,19 @@ namespace NuGet.Packaging.Test
 
             // Assert
             Assert.Equal(0, actual.Count);
+        }
+
+        [Fact]
+        public void NuspecReaderTests_ServiceablePackage()
+        {
+            // Arrange
+            var reader = GetReader(ServiceablePackageTypesElement);
+
+            // Act
+            var actual = reader.IsServiceable();
+
+            // Assert
+            Assert.True(actual);
         }
 
         private static NuspecReader GetReader(string nuspec)
