@@ -193,20 +193,20 @@ namespace NuGet.VisualStudio
 
         public bool IsPackageInstalledEx(Project project, string packageId, string versionString)
         {
-            SemanticVersion version;
+            NuGetVersion version;
             if (versionString == null)
             {
                 version = null;
             }
-            else if (!SemanticVersion.TryParse(versionString, out version))
+            else if (!NuGetVersion.TryParse(versionString, out version))
             {
-                throw new ArgumentException(VsResources.InvalidSemanticVersionString, "versionString");
+                throw new ArgumentException(VsResources.InvalidNuGetVersionString, "versionString");
             }
 
             return IsPackageInstalled(project, packageId, version);
         }
 
-        public bool IsPackageInstalled(Project project, string packageId, SemanticVersion version)
+        public bool IsPackageInstalled(Project project, string packageId, NuGetVersion version)
         {
             if (project == null)
             {
@@ -231,14 +231,8 @@ namespace NuGet.VisualStudio
 
                     if (version != null)
                     {
-                        NuGetVersion semVer = null;
-                        if (!NuGetVersion.TryParse(version.ToString(), out semVer))
-                        {
-                            throw new ArgumentException(VsResources.InvalidSemanticVersionString, "version");
-                        }
-
                         packages = packages.Where(p =>
-                                        VersionComparer.VersionRelease.Equals(p.PackageIdentity.Version, semVer));
+                                        VersionComparer.VersionRelease.Equals(p.PackageIdentity.Version, version));
                     }
 
                     return packages.Any();

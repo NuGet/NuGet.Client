@@ -159,8 +159,8 @@
   <data name="PreinstalledPackages_VersionConflict" xml:space="preserve">
     <value>Attempting to install version '{1}' of '{0}' but the project already includes a different version. Skipping...</value>
   </data>
-  <data name="InvalidSemanticVersionString" xml:space="preserve">
-    <value>The provided version string is not a valid semantic version.</value>
+  <data name="InvalidNuGetVersionString" xml:space="preserve">
+    <value>The provided version string is not a valid nuget version.</value>
   </data>
   <data name="InvalidPackageList" xml:space="preserve">
     <value>Package list contains invalid or duplicate entries.</value>

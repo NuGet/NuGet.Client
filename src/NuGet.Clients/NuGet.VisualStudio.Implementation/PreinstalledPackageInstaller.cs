@@ -171,9 +171,21 @@ namespace NuGet.VisualStudio
             var repositorySource = new Configuration.PackageSource(repositoryPath);
             var failedPackageErrors = new List<string>();
 
-            var repository = configuration.IsPreunzipped
-                ? _sourceProvider.CreateRepository(repositorySource, FeedType.FileSystemUnzipped)
-                : _sourceProvider.CreateRepository(repositorySource);
+            var feedType = FeedType.Undefined;
+
+            if (configuration.IsPreunzipped)
+            {
+                if (Directory.EnumerateFiles(repositorySource.Source, "*.nupkg", SearchOption.TopDirectoryOnly).Any())
+                {
+                    feedType = FeedType.FileSystemUnzipped;
+                }
+                else
+                {
+                    feedType = FeedType.FileSystemV3;
+                }
+            }
+
+            var repository = _sourceProvider.CreateRepository(repositorySource, feedType);
 
             // find the project
             var defaultProjectContext = new VSAPIProjectContext();
