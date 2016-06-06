@@ -383,7 +383,6 @@ namespace NuGet.Commands
                     localRepository,
                     walker,
                     contextForTool,
-                    writeToLockFile: true,
                     token: token);
 
                 var graphs = result.Item2;
@@ -547,7 +546,6 @@ namespace NuGet.Commands
                 localRepository,
                 remoteWalker,
                 context,
-                writeToLockFile: true,
                 token: token);
 
             var success = result.Item1;
@@ -583,14 +581,14 @@ namespace NuGet.Commands
             // Walk additional runtime graphs for supports checks
             if (_success && _request.CompatibilityProfiles.Any())
             {
-                var compatibilityResult = await projectRestoreCommand.TryRestore(projectRange,
-                                                          _request.CompatibilityProfiles,
-                                                          allInstalledPackages,
-                                                          localRepository,
-                                                          remoteWalker,
-                                                          context,
-                                                          writeToLockFile: false,
-                                                          token: token);
+                var compatibilityResult = await projectRestoreCommand.TryRestore(
+                    projectRange,
+                    _request.CompatibilityProfiles,
+                    allInstalledPackages,
+                    localRepository,
+                    remoteWalker,
+                    context,
+                    token: token);
 
                 _success = compatibilityResult.Item1;
 

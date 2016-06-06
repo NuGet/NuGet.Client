@@ -40,7 +40,6 @@ namespace NuGet.Commands
             NuGetv3LocalRepository localRepository,
             RemoteDependencyWalker remoteWalker,
             RemoteWalkContext context,
-            bool writeToLockFile,
             CancellationToken token)
         {
             var allRuntimes = RuntimeGraph.Empty;
@@ -56,7 +55,6 @@ namespace NuGet.Commands
                     pair.Key,
                     remoteWalker,
                     context,
-                    writeToLockFile: writeToLockFile,
                     token: token));
             }
 
@@ -99,7 +97,6 @@ namespace NuGet.Commands
                         context,
                         localRepository,
                         runtimeGraph,
-                        writeToLockFile: writeToLockFile,
                         token: token));
                 }
 
@@ -133,7 +130,6 @@ namespace NuGet.Commands
             NuGetFramework framework,
             RemoteDependencyWalker walker,
             RemoteWalkContext context,
-            bool writeToLockFile,
             CancellationToken token)
         {
             return WalkDependenciesAsync(projectRange,
@@ -142,7 +138,6 @@ namespace NuGet.Commands
                 runtimeGraph: RuntimeGraph.Empty,
                 walker: walker,
                 context: context,
-                writeToLockFile: writeToLockFile,
                 token: token);
         }
 
@@ -152,7 +147,6 @@ namespace NuGet.Commands
             RuntimeGraph runtimeGraph,
             RemoteDependencyWalker walker,
             RemoteWalkContext context,
-            bool writeToLockFile,
             CancellationToken token)
         {
             var name = FrameworkRuntimePair.GetName(framework, runtimeIdentifier);
@@ -212,7 +206,7 @@ namespace NuGet.Commands
             _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_ResolvingConflicts, name));
 
             // Flatten and create the RestoreTargetGraph to hold the packages
-            var result = RestoreTargetGraph.Create(writeToLockFile, runtimeGraph, graphs, context, _logger, framework, runtimeIdentifier);
+            var result = RestoreTargetGraph.Create(runtimeGraph, graphs, context, _logger, framework, runtimeIdentifier);
 
             // Check if the dependencies got bumped up
             // ...but not if there is an existing locked lock file.
@@ -356,7 +350,6 @@ namespace NuGet.Commands
             RemoteWalkContext context,
             NuGetv3LocalRepository localRepository,
             RuntimeGraph runtimes,
-            bool writeToLockFile,
             CancellationToken token)
         {
             var resultGraphs = new List<Task<RestoreTargetGraph>>();
@@ -370,7 +363,6 @@ namespace NuGet.Commands
                     runtimes,
                     walker,
                     context,
-                    writeToLockFile,
                     token));
             }
 
