@@ -14,14 +14,16 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Versioning;
 
-namespace NuGet.CommandLine
+using NuGet.CommandLine;
+using NuGet.Frameworks;
+using NuGet.Packaging;
+using NuGet.PackageManagement;
+using NuGet.Packaging.Core;
+using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
+
+namespace Todd.NuGet.CommandLine
 {
-    using NuGet.Frameworks;
-    using NuGet.Packaging;
-    using NuGet.PackageManagement;
-    using NuGet.Packaging.Core;
-    using NuGet.Protocol;
-    using NuGet.Protocol.Core.Types;
 
     [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
     public class ProjectFactory : MSBuildUser, IProjectFactory
@@ -29,8 +31,8 @@ namespace NuGet.CommandLine
         // Its type is Microsoft.Build.Evaluation.Project
         private dynamic _project;
 
-        private Common.ILogger _logger;
-        private Configuration.ISettings _settings;
+        private ILogger _logger;
+        private ISettings _settings;
         private bool _usingJsonFile;
 
         // Files we want to always exclude from the resulting package
@@ -59,7 +61,7 @@ namespace NuGet.CommandLine
         private const string TransformFileExtension = ".transform";
 
         [Import]
-        public Configuration.IMachineWideSettings MachineWideSettings { get; set; }
+        public IMachineWideSettings MachineWideSettings { get; set; }
 
         public static IProjectFactory ProjectCreator(PackArgs packArgs, string path)
         {
@@ -141,13 +143,13 @@ namespace NuGet.CommandLine
             }                
         }
 
-        private Configuration.ISettings DefaultSettings
+        private ISettings DefaultSettings
         {
             get
             {
                 if (null == _settings)
                 {
-                    _settings = Configuration.Settings.LoadDefaultSettings(
+                    _settings = Settings.LoadDefaultSettings(
                         _project.DirectoryPath,
                         null,
                         MachineWideSettings);
@@ -188,11 +190,11 @@ namespace NuGet.CommandLine
 
         public LogLevel LogLevel { get; set; }
 
-        public Common.ILogger Logger
+        public ILogger Logger
         {
             get
             {
-                return _logger ?? Common.NullLogger.Instance;
+                return _logger ?? NullLogger.Instance;
             }
             set
             {
@@ -1027,14 +1029,14 @@ namespace NuGet.CommandLine
             }
         }
 
-        private Configuration.ISettings ReadSettings(string solutionDirectory)
+        private ISettings ReadSettings(string solutionDirectory)
         {
                 // Read the solution-level settings
                 var solutionSettingsFile = Path.Combine(
                     solutionDirectory,
                     NuGetConstants.NuGetSolutionSettingsFolder);
 
-                return Configuration.Settings.LoadDefaultSettings(
+                return Settings.LoadDefaultSettings(
                     solutionSettingsFile,
                     configFileName: null,
                     machineWideSettings: MachineWideSettings);
@@ -1275,7 +1277,7 @@ namespace NuGet.CommandLine
 
         private void WriteDetail(string format, params object[] args)
         {
-            var console = _logger as NuGet.Common.Console;
+            var console = _logger as Console;
             if (console != null && console.Verbosity == Verbosity.Detailed)
             {
                 console.WriteLine(format, args);
