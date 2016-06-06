@@ -5,8 +5,12 @@
 # Project K
 project.lock.json
 artifacts/
-**/.vs/
 
+# VSCode
+**/.vs/
+**/.vscode/
+
+cli/
 **/nupkgs/*.nupkg
 packages/
 .nuget/nuget.exe

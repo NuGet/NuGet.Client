@@ -22,11 +22,6 @@ fi
 
 dnvm use 1.0.0-rc1-update1 -runtime coreclr
 
-# init the repo
-
-git submodule init
-git submodule update
-
 # clear caches
 if [ "$CLEAR_CACHE" == "1" ]
 then
@@ -38,7 +33,7 @@ then
 fi
 
 # restore packages
-dnu restore
+dnu restore src/NuGet.Core
 dnu restore test/NuGet.Core.FuncTests
 
 # run tests
@@ -46,17 +41,17 @@ for testProject in `find test/NuGet.Core.FuncTests -type f -name project.json`
 do
 	if grep -q dnxcore50 "$testProject"; then
          echo "Running tests in $testProject on CoreCLR"
-		 
+
 		 dnvm use 1.0.0-rc1-update1 -runtime coreclr
 		 dnx --project $testProject test -parallel none
-		 
+
 		 if [ $? -ne 0 ]; then
 			echo "$testProject FAILED on CoreCLR"
 			RESULTCODE=1
-		 fi		 
+		 fi
 	else
          echo "Skipping the tests in $testProject on CoreCLR"
-	fi	
+	fi
 done
 
 exit $RESULTCODE

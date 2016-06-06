@@ -1,6 +1,10 @@
-﻿using System.Net;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Common.Test
@@ -18,35 +22,35 @@ namespace NuGet.Common.Test
         private const string Tls12Name = "TLSv1.2";
         private const string Tls12TestUrl = "https://www.ssllabs.com:10303/";
 
-        [Theory]
-        [InlineData(Ssl20Name, Ssl20TestUrl, false)] // not supported
-        [InlineData(Ssl30Name, Ssl30TestUrl, null)]  // platform-specific support
-        [InlineData(Tls10Name, Tls10TestUrl, true)]  // supported everywhere
-        [InlineData(Tls11Name, Tls11TestUrl, true)]  // supported everywhere
-        [InlineData(Tls12Name, Tls12TestUrl, true)]  // supported everywhere
-        public async Task NetworkProtocolUtility_SupportedProtocols(string name, string url, bool? supported)
+        [ConditionalFact(typeof(MacOSRuntimeCondition))]
+        public async Task NetworkProtocolUtility_NotSupportedProtocol()
         {
+            var url = Ssl20TestUrl;
+
             // Arrange
             NetworkProtocolUtility.ConfigureSupportedSslProtocols();
             var client = new HttpClient();
 
-            if (!supported.HasValue)
-            {
-#if DNXCORE50
-                // .NET Core bug: https://github.com/dotnet/corefx/issues/6668
-                if (name == Ssl30Name)
-                {
-                    supported = RuntimeEnvironmentHelper.IsLinux;
-                }
-#else
-                if (name == Ssl30Name)
-                {
-                    supported = false;
-                }
-#endif
-            }
+            // Act & Assert
+            await Assert.ThrowsAsync<HttpRequestException>(() => client.GetAsync(url));
+        }
 
-            if (supported.Value)
+        [ConditionalFact(typeof(MacOSRuntimeCondition))]
+        public async Task NetworkProtocolUtility_PlatformSpecific()
+        {
+            var url = Ssl30TestUrl;
+
+            NetworkProtocolUtility.ConfigureSupportedSslProtocols();
+            var client = new HttpClient();
+
+#if DNXCORE50
+            // .NET Core bug: https://github.com/dotnet/corefx/issues/6668
+            var supported = RuntimeEnvironmentHelper.IsLinux;
+#else
+            var supported = false;
+#endif
+
+            if (supported)
             {
                 // Act
                 using (var response = await client.GetAsync(url))
@@ -59,6 +63,24 @@ namespace NuGet.Common.Test
             {
                 // Act & Assert
                 await Assert.ThrowsAsync<HttpRequestException>(() => client.GetAsync(url));
+            }
+        }
+
+        [Theory]
+        [InlineData(Tls10Name, Tls10TestUrl)]
+        [InlineData(Tls11Name, Tls11TestUrl)]
+        [InlineData(Tls12Name, Tls12TestUrl)]
+        public async Task NetworkProtocolUtility_SupportedProtocols(string name, string url)
+        {
+            // Arrange
+            NetworkProtocolUtility.ConfigureSupportedSslProtocols();
+            var client = new HttpClient();
+
+            // Act
+            using (var response = await client.GetAsync(url))
+            {
+                // Assert
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             }
         }
     }
