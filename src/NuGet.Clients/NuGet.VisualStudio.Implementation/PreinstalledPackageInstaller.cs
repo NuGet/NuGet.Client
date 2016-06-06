@@ -19,6 +19,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio.Implementation.Resources;
@@ -171,13 +172,16 @@ namespace NuGet.VisualStudio
             var repositorySource = new Configuration.PackageSource(repositoryPath);
             var failedPackageErrors = new List<string>();
 
-            var repository = configuration.IsPreunzipped
-                ? _sourceProvider.CreateRepository(repositorySource, FeedType.FileSystemUnzipped)
-                : _sourceProvider.CreateRepository(repositorySource);
-
             // find the project
             var defaultProjectContext = new VSAPIProjectContext();
             var nuGetProject = await PackageManagementHelpers.GetProjectAsync(_solutionManager, project, defaultProjectContext);
+
+            // For BuildIntegratedNuGetProject, nuget will ignore preunzipped configuration.
+            var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
+
+            var repository = (buildIntegratedProject == null && configuration.IsPreunzipped) ?
+                _sourceProvider.CreateRepository(repositorySource, FeedType.FileSystemUnzipped) :
+                _sourceProvider.CreateRepository(repositorySource);
 
             var repoProvider = new PreinstalledRepositoryProvider(errorHandler, _sourceProvider);
             repoProvider.AddFromSource(repository);
