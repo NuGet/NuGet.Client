@@ -26,28 +26,28 @@ namespace NuGet.Protocol.Tests
                 var package = SimpleTestPackageUtility.CreateFullPackage(workingDir, "DeepEqual", "1.4.0.1-rc");
                 var packageBytes = File.ReadAllBytes(package.FullName);
 
-                var responses = new Dictionary<string, Func<HttpResponseMessage>>
+                var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
                 {
                     {
                         source,
-                        () => new HttpResponseMessage(HttpStatusCode.OK)
+                        _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                         {
                             Content = new TestContent(JsonData.IndexWithFlatContainer)
-                        }
+                        })
                     },
                     {
                         "https://api.nuget.org/v3-flatcontainer/deepequal/index.json",
-                        () => new HttpResponseMessage(HttpStatusCode.OK)
+                        _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                         {
                             Content = new TestContent(JsonData.DeepEqualFlatContainerIndex)
-                        }
+                        })
                     },
                     {
                         "https://api.nuget.org/v3-flatcontainer/deepequal/1.4.0.1-rc/deepequal.1.4.0.1-rc.nupkg",
-                        () => new HttpResponseMessage(HttpStatusCode.OK)
+                        _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                         {
                             Content = new ByteArrayContent(packageBytes)
-                        }
+                        })
                     }
                 };
 

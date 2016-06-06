@@ -25,7 +25,7 @@ namespace Test.Utility
         {
         }
 
-        public TestHttpSource(PackageSource source, Dictionary<string, Func<HttpResponseMessage>> responses) : base(
+        public TestHttpSource(PackageSource source, Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>> responses) : base(
             source,
             () => Task.FromResult<HttpHandlerResource>(
                     new TestHttpHandler(new TestMessageHandler(responses))))

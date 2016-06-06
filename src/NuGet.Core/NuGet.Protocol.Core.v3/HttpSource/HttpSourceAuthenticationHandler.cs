@@ -71,7 +71,7 @@ namespace NuGet.Protocol
             HttpResponseMessage response = null;
             ICredentials promptCredentials = null;
 
-            var logger = request.GetLogger() ?? NullLogger.Instance;
+            var configuration = request.GetOrCreateConfiguration();
 
             // Authorizing may take multiple attempts
             while (true)
@@ -93,9 +93,13 @@ namespace NuGet.Protocol
                 }
 
                 if (response.StatusCode == HttpStatusCode.Unauthorized ||
-                    response.StatusCode == HttpStatusCode.Forbidden)
+                    (configuration.PromptOn403 && response.StatusCode == HttpStatusCode.Forbidden))
                 {
-                    promptCredentials = await AcquireCredentialsAsync(response.StatusCode, beforeLockVersion, logger, cancellationToken);
+                    promptCredentials = await AcquireCredentialsAsync(
+                        response.StatusCode,
+                        beforeLockVersion,
+                        configuration.Logger,
+                        cancellationToken);
 
                     if (promptCredentials == null)
                     {

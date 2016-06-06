@@ -4,18 +4,17 @@
 using System;
 using System.Diagnostics;
 using System.Net.Http;
-using NuGet.Common;
 
 namespace NuGet.Protocol
 {
-    internal static class HttpRequestMessageExtensions
+    public static class HttpRequestMessageExtensions
     {
-        public static readonly string NuGetLoggerKey = "NuGet_Logger";
+        private static readonly string NuGetConfigurationKey = "NuGet_Configuration";
 
         /// <summary>
         /// Clones an <see cref="HttpRequestMessage" /> request.
         /// </summary>
-        public static HttpRequestMessage Clone(this HttpRequestMessage request)
+        internal static HttpRequestMessage Clone(this HttpRequestMessage request)
         {
             Debug.Assert(request.Content == null, "Cloning the request content is not yet implemented.");
 
@@ -39,38 +38,42 @@ namespace NuGet.Protocol
         }
 
         /// <summary>
-        /// Retrieves a logger instance attached to the given request as custom property.
+        /// Retrieves the HTTP request configuration instance attached to the given message as custom property.
         /// </summary>
-        /// <param name="request">Request message</param>
-        /// <returns>Logger instance if exists, or null otherwise.</returns>
-        public static ILogger GetLogger(this HttpRequestMessage request)
+        /// <param name="request">The HTTP request message.</param>
+        /// <returns>Configuration instance if exists, or a default instance otherwise.</returns>
+        public static HttpRequestMessageConfiguration GetOrCreateConfiguration(this HttpRequestMessage request)
         {
             if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
 
-            return request.GetProperty<ILogger>(NuGetLoggerKey);
+            var foundInstance = request.GetProperty<HttpRequestMessageConfiguration>(NuGetConfigurationKey);
+
+            return foundInstance ?? HttpRequestMessageConfiguration.Default;
         }
 
         /// <summary>
-        /// Attaches a logger instance to the given request message as custom property.
+        /// Attaches an HTTP request configuration instance to the given message as custom property.
+        /// If the configuration has already been set on the request message, the old configuration
+        /// is replaced.
         /// </summary>
-        /// <param name="request">A request message</param>
-        /// <param name="logger">A logger instance</param>
-        public static void SetLogger(this HttpRequestMessage request, ILogger logger)
+        /// <param name="request">The HTTP request message.</param>
+        /// <param name="configuration">An HTTP request message configuration instance.</param>
+        public static void SetConfiguration(this HttpRequestMessage request, HttpRequestMessageConfiguration configuration)
         {
             if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
 
-            if (logger == null)
+            if (configuration == null)
             {
-                throw new ArgumentNullException(nameof(logger));
+                throw new ArgumentNullException(nameof(configuration));
             }
 
-            request.Properties[NuGetLoggerKey] = logger;
+            request.Properties[NuGetConfigurationKey] = configuration;
         }
 
         private static T GetProperty<T>(this HttpRequestMessage request, string key)

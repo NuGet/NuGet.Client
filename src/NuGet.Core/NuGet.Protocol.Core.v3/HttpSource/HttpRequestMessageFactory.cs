@@ -22,19 +22,12 @@ namespace NuGet.Protocol
         /// <returns>Instance of <see cref="HttpRequestMessage"/></returns>
         public static HttpRequestMessage Create(HttpMethod method, string requestUri, ILogger log)
         {
-            if (requestUri == null)
-            {
-                throw new ArgumentNullException(nameof(requestUri));
-            }
-
             if (log == null)
             {
                 throw new ArgumentNullException(nameof(log));
             }
 
-            var request = new HttpRequestMessage(method, requestUri);
-            request.SetLogger(log);
-            return request;
+            return Create(method, requestUri, new HttpRequestMessageConfiguration(log));
         }
 
         /// <summary>
@@ -46,18 +39,67 @@ namespace NuGet.Protocol
         /// <returns>Instance of <see cref="HttpRequestMessage"/></returns>
         public static HttpRequestMessage Create(HttpMethod method, Uri requestUri, ILogger log)
         {
-            if (requestUri == null)
-            {
-                throw new ArgumentNullException(nameof(requestUri));
-            }
-
             if (log == null)
             {
                 throw new ArgumentNullException(nameof(log));
             }
 
+            return Create(method, requestUri, new HttpRequestMessageConfiguration(log));
+        }
+
+        /// <summary>
+        /// Creates an instance of <see cref="HttpRequestMessage"/>.
+        /// </summary>
+        /// <param name="method">Desired HTTP verb</param>
+        /// <param name="requestUri">Request URI</param>
+        /// <param name="configuration">The request configuration</param>
+        /// <returns>Instance of <see cref="HttpRequestMessage"/></returns>
+        public static HttpRequestMessage Create(
+            HttpMethod method,
+            string requestUri,
+            HttpRequestMessageConfiguration configuration)
+        {
+            if (requestUri == null)
+            {
+                throw new ArgumentNullException(nameof(requestUri));
+            }
+
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
             var request = new HttpRequestMessage(method, requestUri);
-            request.SetLogger(log);
+            request.SetConfiguration(configuration);
+
+            return request;
+        }
+
+        /// <summary>
+        /// Creates an instance of <see cref="HttpRequestMessage"/>.
+        /// </summary>
+        /// <param name="method">Desired HTTP verb</param>
+        /// <param name="requestUri">Request URI</param>
+        /// <param name="configuration">The request configuration</param>
+        /// <returns>Instance of <see cref="HttpRequestMessage"/></returns>
+        public static HttpRequestMessage Create(
+            HttpMethod method,
+            Uri requestUri,
+            HttpRequestMessageConfiguration configuration)
+        {
+            if (requestUri == null)
+            {
+                throw new ArgumentNullException(nameof(requestUri));
+            }
+
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
+            var request = new HttpRequestMessage(method, requestUri);
+            request.SetConfiguration(configuration);
+
             return request;
         }
     }

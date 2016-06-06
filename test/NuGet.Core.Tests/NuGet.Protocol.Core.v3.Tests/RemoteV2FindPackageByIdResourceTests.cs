@@ -51,28 +51,28 @@ namespace NuGet.Protocol.Tests
                 var package = SimpleTestPackageUtility.CreateFullPackage(workingDir, "xunit", "2.2.0-beta1-build3239");
                 var packageBytes = File.ReadAllBytes(package.FullName);
 
-                var responses = new Dictionary<string, Func<HttpResponseMessage>>
+                var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
                 {
                     {
                         serviceAddress,
-                        () => new HttpResponseMessage(HttpStatusCode.OK)
+                        _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                         {
                             Content = new TestContent(string.Empty)
-                        }
+                        })
                     },
                     {
                         serviceAddress + "FindPackagesById()?id='XUNIT'",
-                        () => new HttpResponseMessage(HttpStatusCode.OK)
+                        _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                         {
                             Content = new TestContent(TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()))
-                        }
+                        })
                     },
                     {
                         "https://www.nuget.org/api/v2/package/xunit/2.2.0-beta1-build3239",
-                        () => new HttpResponseMessage(HttpStatusCode.OK)
+                        _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                         {
                             Content = new ByteArrayContent(packageBytes)
-                        }
+                        })
                     }
                 };
 
@@ -105,28 +105,28 @@ namespace NuGet.Protocol.Tests
                 var package = SimpleTestPackageUtility.CreateFullPackage(workingDir, "WindowsAzure.Storage", "6.2.2-preview");
                 var packageBytes = File.ReadAllBytes(package.FullName);
 
-                var responses = new Dictionary<string, Func<HttpResponseMessage>>
+                var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
                 {
                     {
                         serviceAddress,
-                        () => new HttpResponseMessage(HttpStatusCode.OK)
+                        _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                         {
                             Content = new TestContent(string.Empty)
-                        }
+                        })
                     },
                     {
                         serviceAddress + "FindPackagesById()?id='WINDOWSAZURE.STORAGE'",
-                        () => new HttpResponseMessage(HttpStatusCode.OK)
+                        _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                         {
                             Content = new TestContent(TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()))
-                        }
+                        })
                     },
                     {
                         "https://www.nuget.org/api/v2/package/WindowsAzure.Storage/6.2.2-preview",
-                        () => new HttpResponseMessage(HttpStatusCode.OK)
+                        _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                         {
                             Content = new ByteArrayContent(packageBytes)
-                        }
+                        })
                     }
                 };
 

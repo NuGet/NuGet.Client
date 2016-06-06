@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 
@@ -23,7 +24,7 @@ namespace Test.Utility
         /// <summary>
         /// Creates a handler to override url requests to static content
         /// </summary>
-        public static TestHttpHandlerProvider CreateHttpHandler(Dictionary<string, Func<HttpResponseMessage>> responses)
+        public static TestHttpHandlerProvider CreateHttpHandler(Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>> responses)
         {
             return new TestHttpHandlerProvider(() => new TestMessageHandler(responses));
         }
@@ -41,7 +42,10 @@ namespace Test.Utility
         /// <summary>
         /// Creates a source and injects an http handler to override the normal http calls
         /// </summary>
-        public static SourceRepository CreateSource(string sourceUrl, IEnumerable<Lazy<INuGetResourceProvider>> providers, Dictionary<string, Func<HttpResponseMessage>> responses)
+        public static SourceRepository CreateSource(
+            string sourceUrl,
+            IEnumerable<Lazy<INuGetResourceProvider>> providers,
+            Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>> responses)
         {
             var handler = new Lazy<INuGetResourceProvider>(() => CreateHttpHandler(responses));
 

@@ -13,9 +13,9 @@ namespace Test.Utility
 {
     public class TestMessageHandler : HttpClientHandler
     {
-        private Dictionary<string, Func<HttpResponseMessage>> _responses;
+        private Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>> _responses;
 
-        public TestMessageHandler(Dictionary<string, Func<HttpResponseMessage>> responses)
+        public TestMessageHandler(Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>> responses)
         {
             _responses = responses;
         }
@@ -30,11 +30,11 @@ namespace Test.Utility
             return SendAsyncPublic(request);
         }
         
-        private Dictionary<string, Func<HttpResponseMessage>> GetResponse(Dictionary<string, string> responses, string errorContent)
+        private Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>> GetResponse(Dictionary<string, string> responses, string errorContent)
         {
-            return responses.ToDictionary<KeyValuePair<string, string>, string, Func<HttpResponseMessage>>(
+            return responses.ToDictionary<KeyValuePair<string, string>, string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>(
                 pair => pair.Key,
-                pair => () => GetResponseMessage(pair.Value, errorContent),
+                pair => _ => Task.FromResult(GetResponseMessage(pair.Value, errorContent)),
                 responses.Comparer);
         }
 
@@ -74,12 +74,12 @@ namespace Test.Utility
             return msg;
         }
         
-        public virtual Task<HttpResponseMessage> SendAsyncPublic(HttpRequestMessage request)
+        public virtual async Task<HttpResponseMessage> SendAsyncPublic(HttpRequestMessage request)
         {
-            Func<HttpResponseMessage> getResponse;
+            Func<HttpRequestMessage, Task<HttpResponseMessage>> getResponse;
             if (_responses.TryGetValue(request.RequestUri.AbsoluteUri, out getResponse))
             {
-                return Task.FromResult(getResponse());
+                return await getResponse(request);
             }
             else
             {

@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
+using NuGet.Protocol;
 using NuGet.Configuration;
 using Xunit;
 
@@ -54,7 +55,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task SendAsync_WithAcquiredCredentials_RetriesRequest()
+        public async Task SendAsync_WithAcquiredCredentialsOn401_RetriesRequest()
         {
             var packageSource = new PackageSource("http://package.source.net");
             var clientHandler = new HttpClientHandler();
@@ -90,6 +91,72 @@ namespace NuGet.Protocol.Tests
                         It.IsAny<string>(),
                         It.IsAny<CancellationToken>()),
                     Times.Once());
+        }
+
+        [Fact]
+        public async Task SendAsync_WithAcquiredCredentialsOn403_RetriesRequest()
+        {
+            // Arrange
+            var packageSource = new PackageSource("http://package.source.net");
+            var clientHandler = new HttpClientHandler();
+
+            var credentialService = Mock.Of<ICredentialService>();
+            Mock.Get(credentialService)
+                .Setup(
+                    x => x.GetCredentialsAsync(
+                        packageSource.SourceUri,
+                        It.IsAny<IWebProxy>(),
+                        CredentialRequestType.Forbidden,
+                        It.IsAny<string>(),
+                        It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult<ICredentials>(new NetworkCredential()));
+
+            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService)
+            {
+                InnerHandler = GetLambdaMessageHandler(
+                    HttpStatusCode.Forbidden, HttpStatusCode.OK)
+            };
+
+            // Act
+            var response = await SendAsync(handler);
+
+            // Assert
+            Assert.NotNull(response);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            Mock.Get(credentialService)
+                .Verify(
+                    x => x.GetCredentialsAsync(
+                        packageSource.SourceUri,
+                        It.IsAny<IWebProxy>(),
+                        CredentialRequestType.Forbidden,
+                        It.IsAny<string>(),
+                        It.IsAny<CancellationToken>()),
+                    Times.Once());
+        }
+
+        [Fact]
+        public async Task SendAsync_With403PromptDisabled_Returns403()
+        {
+            // Arrange
+            var packageSource = new PackageSource("http://package.source.net");
+            var clientHandler = new HttpClientHandler();
+
+            var credentialService = new Mock<ICredentialService>(MockBehavior.Strict);
+            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService.Object)
+            {
+                InnerHandler = GetLambdaMessageHandler(HttpStatusCode.Forbidden)
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://foo");
+            request.SetConfiguration(new HttpRequestMessageConfiguration(promptOn403: false));
+
+            // Act
+            var response = await SendAsync(handler, request: request);
+
+            // Assert
+            Assert.NotNull(response);
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 
         [Fact]

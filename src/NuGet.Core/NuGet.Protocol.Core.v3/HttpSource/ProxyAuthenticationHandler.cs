@@ -57,7 +57,7 @@ namespace NuGet.Protocol
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
-            var logger = request.GetLogger() ?? NullLogger.Instance;
+            var logger = request.GetOrCreateConfiguration().Logger;
 
             while (true)
             {
