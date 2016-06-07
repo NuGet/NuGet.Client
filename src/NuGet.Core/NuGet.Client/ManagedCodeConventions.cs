@@ -138,6 +138,12 @@ namespace NuGet.Client
                 {
                     return true;
                 }
+                else if (Object.Equals(AnyFramework.AnyFramework, availableFrameworkName))
+                {
+                    // If the convention does not contain a TxM it will use AnyFramework, this is
+                    // always compatible with other frameworks.
+                    return true;
+                }
                 else if (criteriaFrameworkName.IsAny
                          || availableFrameworkName.IsAny)
                 {
@@ -329,12 +335,20 @@ namespace NuGet.Client
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
                         {
-                            "runtimes/{rid}/native/{any?}",
+                            "runtimes/{rid}/native-txm/{tfm}/{any?}",
+                            new PatternDefinition("runtimes/{rid}/native/{any?}", defaults: new Dictionary<string, object>
+                            {
+                                { "tfm", AnyFramework.Instance }
+                            }),
                             "native/{any?}",
                         },
                     pathPatterns: new PatternDefinition[]
                     {
-                        "runtimes/{rid}/native/{any}",
+                        "runtimes/{rid}/native-txm/{tfm}/{any}",
+                        new PatternDefinition("runtimes/{rid}/native/{any}", defaults: new Dictionary<string, object>
+                        {
+                            { "tfm", AnyFramework.Instance }
+                        }),
                         "native/{any}",
                     });
 
@@ -358,7 +372,7 @@ namespace NuGet.Client
                         "build/{tfm}/{msbuild?}",
                         new PatternDefinition("build/{msbuild?}", defaults: new Dictionary<string, object>
                         {
-                            { "tfm", NuGetFramework.AnyFramework }
+                            { "tfm", AnyFramework.Instance }
                         })
                     },
                     pathPatterns: new PatternDefinition[]
@@ -366,7 +380,7 @@ namespace NuGet.Client
                         "build/{tfm}/{msbuild}",
                         new PatternDefinition("build/{msbuild}", defaults: new Dictionary<string, object>
                         {
-                            { "tfm", NuGetFramework.AnyFramework }
+                            { "tfm", AnyFramework.Instance }
                         })
                     });
 
