@@ -9,7 +9,6 @@ using NuGet.Configuration;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3;
-using NuGet.CommandLine.XPlat.Native;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -119,8 +118,8 @@ namespace NuGet.CommandLine.XPlat
 
                         if (inferRuntimes.HasValue())
                         {
-                            string runtimeOSname = PlatformApis.GetRuntimeOsName();
-                            string os = PlatformApis.GetOSName();
+                            var runtimeOSname = PlatformApis.GetRuntimeOsName();
+                            var os = PlatformApis.GetOSName();
                             var defaultRuntimes = RequestRuntimeUtility.GetDefaultRestoreRuntimes(os, runtimeOSname);
                             restoreContext.FallbackRuntimes.UnionWith(defaultRuntimes);
                         }
