@@ -168,16 +168,12 @@ namespace NuGet.Commands
             lockFileLib.ResourceAssemblies.AddRange(resourceGroup);
 
             // Native
-            var nativeCriteria = targetGraph.Conventions.Criteria.ForRuntime(targetGraph.RuntimeIdentifier);
-
-            var nativeGroup = contentItems.FindBestItemGroup(
-                nativeCriteria,
+            var nativeGroup = GetLockFileItems(
+                orderedCriteria,
+                contentItems,
                 targetGraph.Conventions.Patterns.NativeLibraries);
 
-            if (nativeGroup != null)
-            {
-                lockFileLib.NativeLibraries = nativeGroup.Items.Select(p => new LockFileItem(p.Path)).ToList();
-            }
+            lockFileLib.ResourceAssemblies.AddRange(nativeGroup);
 
             // content v2 items
             var contentFileGroups = contentItems.FindItemGroups(targetGraph.Conventions.Patterns.ContentFiles);
