@@ -124,6 +124,15 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to load credential provider from assembly {0}..
+        /// </summary>
+        internal static string CredentialProviderFailed_ImportedProvider {
+            get {
+                return ResourceManager.GetString("CredentialProviderFailed_ImportedProvider", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The legacy NuGet credential provider failed to load..
         /// </summary>
         internal static string CredentialProviderFailed_LegacyCredentialProvider {

@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.IO;
+using System.Linq;
 using EnvDTE;
 using Microsoft.VisualStudio.ComponentModelHost;
 using NuGet.Credentials;
@@ -20,6 +21,7 @@ namespace NuGetVSExtension
     public class VsCredentialProviderImporter
     {
         private readonly DTE _dte;
+        private readonly Action<Exception, string> _errorDelegate;
         private readonly Func<ICredentialProvider> _fallbackProviderFactory;
         private readonly Action _initializer;
 
@@ -30,8 +32,11 @@ namespace NuGetVSExtension
         /// <param name="fallbackProviderFactory">Factory method used to create a fallback provider for
         /// Dev14 in case a VSTS credential provider can not be imported.</param>
         /// <param name="errorDelegate">Used to write error messages to the user.</param>
-        public VsCredentialProviderImporter(DTE dte, Func<ICredentialProvider> fallbackProviderFactory)
-            : this(dte, fallbackProviderFactory, initializer: null)
+        public VsCredentialProviderImporter(
+            DTE dte, 
+            Func<ICredentialProvider> fallbackProviderFactory,
+            Action<Exception, string> errorDelegate)
+            : this(dte, fallbackProviderFactory, errorDelegate, initializer: null)
         {
         }
 
@@ -47,6 +52,7 @@ namespace NuGetVSExtension
         public VsCredentialProviderImporter (
             DTE dte,
             Func<ICredentialProvider> fallbackProviderFactory,
+            Action<Exception, string> errorDelegate,
             Action initializer)
         {
             if (dte == null)
@@ -59,39 +65,82 @@ namespace NuGetVSExtension
                 throw new ArgumentNullException(nameof(fallbackProviderFactory));
             }
 
+            if (errorDelegate == null)
+            {
+                throw new ArgumentNullException(nameof(errorDelegate));
+            }
+
             _dte = dte;
+            _errorDelegate = errorDelegate;
             _fallbackProviderFactory = fallbackProviderFactory;
             _initializer = initializer ?? Initialize;
         }
 
-        [Import("VisualStudioAccountProvider", typeof(IVsCredentialProvider), AllowDefault = true)]
-        public IVsCredentialProvider ImportedProvider { get; set; }
+        [ImportMany(typeof(IVsCredentialProvider))]
+        public IEnumerable<Lazy<IVsCredentialProvider>> ImportedProviders { get; set; }
 
         /// <summary>
         /// Plugin providers are entered loaded the same way as other nuget extensions,
         /// matching any extension named CredentialProvider.*.exe.
         /// </summary>
         /// <returns>An enumeration of plugin providers</returns>
-        public ICredentialProvider GetProvider()
+        public IReadOnlyCollection<ICredentialProvider> GetProviders()
         {
-            ICredentialProvider result = null;
+            var results = new List<ICredentialProvider>();
 
             _initializer();
 
-            if (ImportedProvider != null)
+            if (ImportedProviders != null)
             {
-                result = new VsCredentialProviderAdapter(ImportedProvider);
+                foreach (var importedProviderFactory in ImportedProviders)
+                {
+                    try
+                    {
+                        var importedProvider = importedProviderFactory.Value;
+                        results.Add(new VsCredentialProviderAdapter(importedProvider));
+                    }
+                    catch (Exception exception)
+                    {
+                        var targetAssemblyPath = exception.TargetSite.DeclaringType.Assembly.Location;
+
+                        _errorDelegate(
+                            exception,
+                            string.Format(Resources.CredentialProviderFailed_ImportedProvider, targetAssemblyPath)
+                            );
+                    }
+                }
             }
 
-            // Dev15+ will provide a credential provider for VSTS.
+            // Dev15 + will provide a credential provider for VSTS.
             // If we are in Dev14, and no imported VSTS provider is found,
             // then fallback on the built-in VisualStudioAccountProvider
-            if (result == null && IsDev14)
+            if (IsDev14 && !HasImportedVstsProvider(results))
             {
-                result = _fallbackProviderFactory();
+                try
+                {
+                    var fallbackProvider = _fallbackProviderFactory();
+                    if (fallbackProvider != null)
+                    {
+                        results.Add(fallbackProvider);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    _errorDelegate(exception, Resources.CredentialProviderFailed_VisualStudioAccountProvider);
+                }
             }
+            
+            // Ensure imported providers ordering is deterministic
+            results.Sort((a, b) => a.GetType().FullName.CompareTo(b.GetType().FullName));
 
-            return result;
+            return results;
+        }
+
+        private static bool HasImportedVstsProvider(IEnumerable<ICredentialProvider> results)
+        {
+            return results.FirstOrDefault(p => p.Id.EndsWith(
+                ".NuGetCredentialProvider.VisualStudioAccountProvider",
+                StringComparison.OrdinalIgnoreCase)) != null;
         }
 
         private void Initialize()
