@@ -151,7 +151,7 @@ namespace NuGet.CommandLine
                 }
                 catch (Exception e)
                 {
-                    if (Console.Verbosity == Verbosity.Detailed || ExceptionLogger.Instance.ShowStack)
+                    if (Console.Verbosity == LogLevel.Verbose || ExceptionLogger.Instance.ShowStack)
                     {
                         Console.WriteWarning(e.ToString());
                     }
@@ -171,7 +171,7 @@ namespace NuGet.CommandLine
             }
             catch (CommandLineException e)
             {
-                if (Console.Verbosity == Verbosity.Detailed || ExceptionLogger.Instance.ShowStack)
+                if (Console.Verbosity == LogLevel.Verbose || ExceptionLogger.Instance.ShowStack)
                 {
                     Console.WriteWarning(e.ToString());
                 }

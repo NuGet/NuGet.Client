@@ -44,7 +44,7 @@ namespace NuGet.CommandLine
         public bool Help { get; set; }
 
         [Option(typeof(NuGetCommand), "Option_Verbosity")]
-        public Verbosity Verbosity { get; set; }
+        public LogLevel Verbosity { get; set; }
 
         [Option(typeof(NuGetCommand), "Option_NonInteractive")]
         public bool NonInteractive { get; set; }
@@ -149,7 +149,7 @@ namespace NuGet.CommandLine
 
         protected virtual bool ShouldOutputNuGetVersion
         {
-            get { return Console.Verbosity == Verbosity.Detailed; }
+            get { return Console.Verbosity == LogLevel.Verbose; }
         }
 
         /// <summary>

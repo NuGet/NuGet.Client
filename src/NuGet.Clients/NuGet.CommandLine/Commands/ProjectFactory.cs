@@ -12,17 +12,16 @@ using System.Xml.Linq;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Versioning;
-
-using NuGet.CommandLine;
 using NuGet.Frameworks;
-using NuGet.Packaging;
 using NuGet.PackageManagement;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 
-namespace Todd.NuGet.CommandLine
+namespace NuGet.CommandLine
 {
 
     [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
@@ -31,13 +30,13 @@ namespace Todd.NuGet.CommandLine
         // Its type is Microsoft.Build.Evaluation.Project
         private dynamic _project;
 
-        private ILogger _logger;
-        private ISettings _settings;
+        private Common.ILogger _logger;
+        private Configuration.ISettings _settings;
         private bool _usingJsonFile;
 
         // Files we want to always exclude from the resulting package
         private static readonly HashSet<string> _excludeFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
-            Constants.PackageReferenceFile,
+            NuGetConstants.PackageReferenceFile,
             "Web.Debug.config",
             "Web.Release.config"
         };
@@ -61,7 +60,7 @@ namespace Todd.NuGet.CommandLine
         private const string TransformFileExtension = ".transform";
 
         [Import]
-        public IMachineWideSettings MachineWideSettings { get; set; }
+        public Configuration.IMachineWideSettings MachineWideSettings { get; set; }
 
         public static IProjectFactory ProjectCreator(PackArgs packArgs, string path)
         {
@@ -123,33 +122,16 @@ namespace Todd.NuGet.CommandLine
             }
 
             IConsole console = Logger as IConsole;
-            switch (LogLevel)
-            {
-                case LogLevel.Verbose:
-                {
-                    console.Verbosity = Verbosity.Detailed;
-                    break;
-                }
-                case LogLevel.Information:
-                {
-                    console.Verbosity = Verbosity.Normal;
-                    break;
-                }
-                case LogLevel.Minimal:
-                {
-                    console.Verbosity = Verbosity.Quiet;
-                    break;
-                }
-            }                
+            console.Verbosity = LogLevel;
         }
 
-        private ISettings DefaultSettings
+        private Configuration.ISettings DefaultSettings
         {
             get
             {
                 if (null == _settings)
                 {
-                    _settings = Settings.LoadDefaultSettings(
+                    _settings = Configuration.Settings.LoadDefaultSettings(
                         _project.DirectoryPath,
                         null,
                         MachineWideSettings);
@@ -190,11 +172,11 @@ namespace Todd.NuGet.CommandLine
 
         public LogLevel LogLevel { get; set; }
 
-        public ILogger Logger
+        public Common.ILogger Logger
         {
             get
             {
-                return _logger ?? NullLogger.Instance;
+                return _logger ?? Common.NullLogger.Instance;
             }
             set
             {
@@ -203,7 +185,7 @@ namespace Todd.NuGet.CommandLine
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to continue regardless of any error we encounter extracting metadata.")]
-        public PackageBuilder CreateBuilder(string basePath, NuGetVersion version, string suffix, bool buildIfNeeded)
+        public Packaging.PackageBuilder CreateBuilder(string basePath, NuGetVersion version, string suffix, bool buildIfNeeded)
         {
             if (buildIfNeeded)
             {
@@ -219,7 +201,7 @@ namespace Todd.NuGet.CommandLine
                         Path.GetFullPath(Path.GetDirectoryName(TargetPath))));
             }
 
-            var builder = new PackageBuilder();
+            var builder = new Packaging.PackageBuilder();
 
             try
             {
@@ -242,7 +224,7 @@ namespace Todd.NuGet.CommandLine
                         Path.GetFileName(TargetPath)));
 
                 IConsole console = Logger as IConsole;
-                if (console != null && console.Verbosity == Verbosity.Detailed)
+                if (console != null && console.Verbosity == LogLevel.Verbose)
                 {
                     Logger.LogError(ex.ToString());
                 }
@@ -255,7 +237,7 @@ namespace Todd.NuGet.CommandLine
             }
 
             var projectAuthor = InitializeProperties(builder);
-            Manifest manifest = null;
+            Packaging.Manifest manifest = null;
 
             // If there is a project.json file, load that and skip any nuspec that may exist
             if (!PackCommandRunner.ProcessProjectJsonFile(builder, basePath, builder.Id, version, suffix, GetPropertyValue))
@@ -314,7 +296,7 @@ namespace Todd.NuGet.CommandLine
             return builder;
         }
 
-        public string InitializeProperties(IPackageMetadata metadata)
+        public string InitializeProperties(Packaging.IPackageMetadata metadata)
         {
             // Set the properties that were resolved from the assembly/project so they can be
             // resolved by name if the nuspec contains tokens
@@ -484,7 +466,7 @@ namespace Todd.NuGet.CommandLine
             return false;
         }
 
-        private void ExtractMetadataFromProject(PackageBuilder builder)
+        private void ExtractMetadataFromProject(Packaging.PackageBuilder builder)
         {
             builder.Id = builder.Id ??
                         _project.GetPropertyValue("AssemblyName") ??
@@ -623,7 +605,7 @@ namespace Todd.NuGet.CommandLine
         /// </summary>
         /// <param name="dependencies">The dependencies collection where the new dependencies
         /// are added into.</param>
-        private void AddProjectReferenceDependencies(Dictionary<string, PackageDependency> dependencies)
+        private void AddProjectReferenceDependencies(Dictionary<string, Packaging.Core.PackageDependency> dependencies)
         {
             var processedProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var projectsToProcess = new Queue<object>();
@@ -674,7 +656,7 @@ namespace Todd.NuGet.CommandLine
             }
         }
 
-        private bool ProcessJsonFile(PackageBuilder builder, string basePath, string id)
+        private bool ProcessJsonFile(Packaging.PackageBuilder builder, string basePath, string id)
         {
             return PackCommandRunner.ProcessProjectJsonFile(builder, basePath, id, null, null, GetPropertyValue);
         }
@@ -682,7 +664,7 @@ namespace Todd.NuGet.CommandLine
         // Creates a package dependency from the given project, which has a corresponding
         // nuspec file.
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to continue regardless of any error we encounter extracting metadata.")]
-        private PackageDependency CreateDependencyFromProject(dynamic project, Dictionary<string, PackageDependency> dependencies)
+        private Packaging.Core.PackageDependency CreateDependencyFromProject(dynamic project, Dictionary<string, Packaging.Core.PackageDependency> dependencies)
         {
             try
             {
@@ -690,7 +672,7 @@ namespace Todd.NuGet.CommandLine
                 projectFactory.Build = Build;
                 projectFactory.ProjectProperties = ProjectProperties;
                 projectFactory.BuildProject();
-                var builder = new PackageBuilder();
+                var builder = new Packaging.PackageBuilder();
 
                 // If building an xproj, then TargetPath points to the folder where the framework folders will be
                 // instead of to a single dll. Skip trying to ExtractMetadata from the dll and instead
@@ -733,7 +715,7 @@ namespace Todd.NuGet.CommandLine
                     versionRange = VersionRange.Parse(builder.Version.ToString());
                 }
 
-                return new PackageDependency(
+                return new Packaging.Core.PackageDependency(
                     builder.Id,
                     versionRange);
             }
@@ -748,7 +730,7 @@ namespace Todd.NuGet.CommandLine
             }
         }
 
-        private void AddOutputFiles(PackageBuilder builder)
+        private void AddOutputFiles(Packaging.PackageBuilder builder)
         {
             // Get the target framework of the project
             FrameworkName targetFramework = TargetFramework;
@@ -816,7 +798,7 @@ namespace Todd.NuGet.CommandLine
                         targetFolder = Path.Combine(ReferenceFolder, shortFolderName);
                     }
                 }
-                var packageFile = new PhysicalPackageFile
+                var packageFile = new Packaging.PhysicalPackageFile
                 {
                     SourcePath = file,
                     TargetPath = Path.Combine(targetFolder, Path.GetFileName(file))
@@ -825,10 +807,10 @@ namespace Todd.NuGet.CommandLine
             }
         }
 
-        private void ProcessDependencies(PackageBuilder builder)
+        private void ProcessDependencies(Packaging.PackageBuilder builder)
         {
             // get all packages and dependencies, including the ones in project references
-            var packagesAndDependencies = new Dictionary<String, Tuple<PackageReaderBase, PackageDependency>>();
+            var packagesAndDependencies = new Dictionary<String, Tuple<PackageReaderBase, Packaging.Core.PackageDependency>>();
             ApplyAction(p => p.AddDependencies(packagesAndDependencies));
 
             // list of all dependency packages
@@ -837,7 +819,7 @@ namespace Todd.NuGet.CommandLine
             // Add the transform file to the package builder
             ProcessTransformFiles(builder, packages.SelectMany(GetTransformFiles));
 
-            var dependencies = new Dictionary<string, PackageDependency>();
+            var dependencies = new Dictionary<string, Packaging.Core.PackageDependency>();
             if (!_usingJsonFile)
             {
                 dependencies = builder.DependencyGroups.SelectMany(d => d.Packages)
@@ -875,7 +857,7 @@ namespace Todd.NuGet.CommandLine
                         var i = 0;
                         foreach (var group in builder.DependencyGroups.ToList())
                         {
-                            List<PackageDependency> newPackagesList = new List<PackageDependency>(group.Packages);
+                            List<Packaging.Core.PackageDependency> newPackagesList = new List<Packaging.Core.PackageDependency>(group.Packages);
                             foreach (var dependency in dependencies)
                             {
                                 if (!newPackagesList.Contains(dependency.Value))
@@ -909,7 +891,7 @@ namespace Todd.NuGet.CommandLine
             }
         }
 
-        private bool FindDependency(PackageIdentity projectPackage, IEnumerable<Tuple<PackageReaderBase, PackageDependency>> packagesAndDependencies)
+        private bool FindDependency(PackageIdentity projectPackage, IEnumerable<Tuple<PackageReaderBase, Packaging.Core.PackageDependency>> packagesAndDependencies)
         {
             // returns true if the dependency should be added to the package
             // This happens if the dependency is not a dependency of a dependecy
@@ -939,7 +921,7 @@ namespace Todd.NuGet.CommandLine
             return !found;
         }
 
-        private void AddDependencies(Dictionary<String, Tuple<PackageReaderBase, PackageDependency>> packagesAndDependencies)
+        private void AddDependencies(Dictionary<String, Tuple<PackageReaderBase, Packaging.Core.PackageDependency>> packagesAndDependencies)
         {
             Dictionary<string, object> props = new Dictionary<string, object>();
             
@@ -948,16 +930,16 @@ namespace Todd.NuGet.CommandLine
                 props.Add(property.Name, property.EvaluatedValue);
             }
             
-            if (!props.ContainsKey(ProjectManagement.NuGetProjectMetadataKeys.TargetFramework))
+            if (!props.ContainsKey(NuGetProjectMetadataKeys.TargetFramework))
             {
-                props.Add(ProjectManagement.NuGetProjectMetadataKeys.TargetFramework, new NuGetFramework(TargetFramework.Identifier, TargetFramework.Version, TargetFramework.Profile));
+                props.Add(NuGetProjectMetadataKeys.TargetFramework, new NuGetFramework(TargetFramework.Identifier, TargetFramework.Version, TargetFramework.Profile));
             }
-            if (!props.ContainsKey(ProjectManagement.NuGetProjectMetadataKeys.Name))
+            if (!props.ContainsKey(NuGetProjectMetadataKeys.Name))
             {
-                props.Add(ProjectManagement.NuGetProjectMetadataKeys.Name, Path.GetFileNameWithoutExtension(_project.FullPath));
+                props.Add(NuGetProjectMetadataKeys.Name, Path.GetFileNameWithoutExtension(_project.FullPath));
             }
 
-            ProjectManagement.PackagesConfigNuGetProject packagesProject = new ProjectManagement.PackagesConfigNuGetProject(_project.DirectoryPath, props);
+            PackagesConfigNuGetProject packagesProject = new PackagesConfigNuGetProject(_project.DirectoryPath, props);
 
             if (!packagesProject.PackagesConfigExists())
             {
@@ -972,12 +954,12 @@ namespace Todd.NuGet.CommandLine
             var sourceRepository = Repository.Factory.GetCoreV3(packagesFolderPath).GetResource<FindPackageByIdResource>();
 
             // Collect all packages
-            IDictionary<PackageIdentity, PackageReference> packageReferences =
+            IDictionary<PackageIdentity, Packaging.PackageReference> packageReferences =
                 references
                 .Where(r => !r.IsDevelopmentDependency)
                 .ToDictionary(r => r.PackageIdentity);
             // add all packages and create an associated dependency to the dictionary
-            foreach (PackageReference reference in packageReferences.Values)
+            foreach (Packaging.PackageReference reference in packageReferences.Values)
             {
                 var packageReference = references.FirstOrDefault(r => r.PackageIdentity == reference.PackageIdentity);
                 if (packageReference != null && !packagesAndDependencies.ContainsKey(packageReference.PackageIdentity.Id))
@@ -998,8 +980,8 @@ namespace Todd.NuGet.CommandLine
                         try
                         {
                             var reader = new PackageArchiveReader(stream);
-                            var dependency = new PackageDependency(packageReference.PackageIdentity.Id, range);
-                            packagesAndDependencies.Add(packageReference.PackageIdentity.Id, Tuple.Create<PackageReaderBase, PackageDependency>(reader, dependency));
+                            var dependency = new Packaging.Core.PackageDependency(packageReference.PackageIdentity.Id, range);
+                            packagesAndDependencies.Add(packageReference.PackageIdentity.Id, Tuple.Create<PackageReaderBase, Packaging.Core.PackageDependency>(reader, dependency));
                         }
                         catch (Exception)
                         {
@@ -1020,7 +1002,7 @@ namespace Todd.NuGet.CommandLine
             }
         }
 
-        private static void DisposePackageReaders(Dictionary<String, Tuple<PackageReaderBase, PackageDependency>> packagesAndDependencies)
+        private static void DisposePackageReaders(Dictionary<String, Tuple<PackageReaderBase, Packaging.Core.PackageDependency>> packagesAndDependencies)
         {
             // Release the open file handles
             foreach (var package in packagesAndDependencies)
@@ -1029,20 +1011,20 @@ namespace Todd.NuGet.CommandLine
             }
         }
 
-        private ISettings ReadSettings(string solutionDirectory)
+        private Configuration.ISettings ReadSettings(string solutionDirectory)
         {
                 // Read the solution-level settings
                 var solutionSettingsFile = Path.Combine(
                     solutionDirectory,
                     NuGetConstants.NuGetSolutionSettingsFolder);
 
-                return Settings.LoadDefaultSettings(
+                return Configuration.Settings.LoadDefaultSettings(
                     solutionSettingsFile,
                     configFileName: null,
                     machineWideSettings: MachineWideSettings);
         }
 
-        private static void ProcessTransformFiles(PackageBuilder builder, IEnumerable<IPackageFile> transformFiles)
+        private static void ProcessTransformFiles(Packaging.PackageBuilder builder, IEnumerable<Packaging.IPackageFile> transformFiles)
         {
             // Group transform by target file
             var transformGroups = transformFiles.GroupBy(file => RemoveExtension(file.Path), StringComparer.OrdinalIgnoreCase);
@@ -1050,7 +1032,7 @@ namespace Todd.NuGet.CommandLine
 
             foreach (var transformGroup in transformGroups)
             {
-                IPackageFile file;
+                Packaging.IPackageFile file;
                 if (fileLookup.TryGetValue(transformGroup.Key, out file))
                 {
                     // Replace the original file with a file that removes the transforms
@@ -1068,10 +1050,10 @@ namespace Todd.NuGet.CommandLine
             return Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path));
         }
 
-        private IEnumerable<IPackageFile> GetTransformFiles(PackageReaderBase package)
+        private IEnumerable<Packaging.IPackageFile> GetTransformFiles(PackageReaderBase package)
         {
             var groups = package.GetContentItems();
-            return groups.SelectMany(g => g.Items).Where(IsTransformFile).Select(f => new PhysicalPackageFile() { TargetPath = f });
+            return groups.SelectMany(g => g.Items).Where(IsTransformFile).Select(f => new Packaging.PhysicalPackageFile() { TargetPath = f });
         }
 
         private static bool IsTransformFile(string file)
@@ -1107,7 +1089,7 @@ namespace Todd.NuGet.CommandLine
             return ProjectHelper.GetSolutionDir(_project.DirectoryPath);
         }
 
-        private Manifest ProcessNuspec(PackageBuilder builder, string basePath)
+        private Packaging.Manifest ProcessNuspec(Packaging.PackageBuilder builder, string basePath)
         {
             string nuspecFile = GetNuspec();
 
@@ -1126,7 +1108,7 @@ namespace Todd.NuGet.CommandLine
             {
                 // Don't validate the manifest since this might be a partial manifest
                 // The bulk of the metadata might be coming from the project.
-                Manifest manifest = Manifest.ReadFrom(stream, GetPropertyValue, validateSchema: true);
+                Packaging.Manifest manifest = Packaging.Manifest.ReadFrom(stream, GetPropertyValue, validateSchema: true);
                 builder.Populate(manifest.Metadata);
 
                 if (manifest.Files != null)
@@ -1167,10 +1149,10 @@ namespace Todd.NuGet.CommandLine
             }
         }
 
-        private void AddFiles(PackageBuilder builder, string itemType, string targetFolder)
+        private void AddFiles(Packaging.PackageBuilder builder, string itemType, string targetFolder)
         {
             // Skip files that are added by dependency packages
-            ProjectManagement.FolderNuGetProject project = new ProjectManagement.FolderNuGetProject(_project.FullPath);
+            FolderNuGetProject project = new FolderNuGetProject(_project.FullPath);
             var referencesTask = project.GetInstalledPackagesAsync(new CancellationToken());
             referencesTask.Wait();
             var references = referencesTask.Result;
@@ -1248,7 +1230,7 @@ namespace Todd.NuGet.CommandLine
                             targetFilePath));
                 }
 
-                var packageFile = new PhysicalPackageFile
+                var packageFile = new Packaging.PhysicalPackageFile
                 {
                     SourcePath = fullPath,
                     TargetPath = targetPath
@@ -1257,7 +1239,7 @@ namespace Todd.NuGet.CommandLine
             }
         }
 
-        private void AddFileToBuilder(PackageBuilder builder, PhysicalPackageFile packageFile)
+        private void AddFileToBuilder(Packaging.PackageBuilder builder, Packaging.PhysicalPackageFile packageFile)
         {
             if (!builder.Files.Any(p => packageFile.Path.Equals(p.Path, StringComparison.OrdinalIgnoreCase)))
             {
@@ -1277,8 +1259,8 @@ namespace Todd.NuGet.CommandLine
 
         private void WriteDetail(string format, params object[] args)
         {
-            var console = _logger as Console;
-            if (console != null && console.Verbosity == Verbosity.Detailed)
+            var console = _logger as IConsole;
+            if (console != null && console.Verbosity == LogLevel.Verbose)
             {
                 console.WriteLine(format, args);
             }
@@ -1320,12 +1302,12 @@ namespace Todd.NuGet.CommandLine
             return Path.GetFileName(fullPath);
         }
 
-        private class ReverseTransformFormFile : IPackageFile
+        private class ReverseTransformFormFile : Packaging.IPackageFile
         {
             private readonly Lazy<Func<Stream>> _streamFactory;
             private readonly string _effectivePath;
 
-            public ReverseTransformFormFile(IPackageFile file, IEnumerable<IPackageFile> transforms)
+            public ReverseTransformFormFile(Packaging.IPackageFile file, IEnumerable<Packaging.IPackageFile> transforms)
             {
                 Path = file.Path + ".transform";
                 _streamFactory = new Lazy<Func<Stream>>(() => ReverseTransform(file, transforms), isThreadSafe: false);
@@ -1352,7 +1334,7 @@ namespace Todd.NuGet.CommandLine
             }
 
             [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "We need to return the MemoryStream for use.")]
-            private static Func<Stream> ReverseTransform(IPackageFile file, IEnumerable<IPackageFile> transforms)
+            private static Func<Stream> ReverseTransform(Packaging.IPackageFile file, IEnumerable<Packaging.IPackageFile> transforms)
             {
                 // Get the original
                 XElement element = GetElement(file);
@@ -1371,7 +1353,7 @@ namespace Todd.NuGet.CommandLine
                 return () => new MemoryStream(buffer);
             }
 
-            private static XElement GetElement(IPackageFile file)
+            private static XElement GetElement(Packaging.IPackageFile file)
             {
                 using (Stream stream = file.GetStream())
                 {

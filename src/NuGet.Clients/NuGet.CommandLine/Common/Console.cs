@@ -77,7 +77,7 @@ namespace NuGet.Common
             }
         }
 
-        public Verbosity Verbosity
+        public LogLevel Verbosity
         {
             get; set; 
         }
@@ -89,7 +89,7 @@ namespace NuGet.Common
 
         private TextWriter Out
         {
-            get { return Verbosity == Verbosity.Quiet ? TextWriter.Null : System.Console.Out; }
+            get { return Verbosity == LogLevel.Minimal ? TextWriter.Null : System.Console.Out; }
         }
 
         public void Write(object value)
@@ -361,7 +361,7 @@ namespace NuGet.Common
 
         public void LogDebug(string data)
         {
-            if (Verbosity == Verbosity.Detailed)
+            if (Verbosity == LogLevel.Verbose)
             {
                 WriteColor(Out, ConsoleColor.Gray, data);
             }
@@ -369,7 +369,7 @@ namespace NuGet.Common
 
         public void LogVerbose(string data)
         {
-            if (Verbosity == Verbosity.Detailed)
+            if (Verbosity == LogLevel.Verbose)
             {
                 WriteLine(data);
             }
@@ -377,7 +377,7 @@ namespace NuGet.Common
 
         public void LogInformation(string data)
         {
-            if (Verbosity == Verbosity.Normal || Verbosity == Verbosity.Detailed)
+            if (Verbosity == LogLevel.Information || Verbosity == LogLevel.Verbose)
             {
                 WriteLine(data);
             }
