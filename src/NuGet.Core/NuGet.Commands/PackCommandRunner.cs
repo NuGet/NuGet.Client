@@ -394,7 +394,6 @@ namespace NuGet.Commands
 
             if (spec.PackOptions != null)
             {
-                PackCommandRunner runner = new PackCommandRunner(new PackArgs() { BasePath = basePath }, null);
                 if (spec.PackOptions.IncludeExcludeFiles != null)
                 {
                     string fullExclude;
@@ -413,7 +412,7 @@ namespace NuGet.Commands
                     {
                         foreach (var includeFile in spec.PackOptions.IncludeExcludeFiles.IncludeFiles)
                         {
-                            var resolvedPath = runner.ResolvePath(new PhysicalPackageFile() { SourcePath = includeFile });
+                            var resolvedPath = ResolvePath(new PhysicalPackageFile() { SourcePath = includeFile }, basePath);
 
                             builder.AddFiles(basePath, includeFile, resolvedPath, filesExclude);
                         }
@@ -813,6 +812,13 @@ namespace NuGet.Commands
 
         private string ResolvePath(IPackageFile packageFile)
         {
+            var basePath = string.IsNullOrEmpty(_packArgs.BasePath) ? _packArgs.CurrentDirectory : _packArgs.BasePath;
+
+            return ResolvePath(packageFile, basePath);
+        }
+
+        private static string ResolvePath(IPackageFile packageFile, string basePath)
+        {
             var physicalPackageFile = packageFile as PhysicalPackageFile;
 
             // For PhysicalPackageFiles, we want to filter by SourcePaths, the path on disk. The Path value maps to the TargetPath
@@ -824,8 +830,6 @@ namespace NuGet.Commands
             var path = physicalPackageFile.SourcePath;
 
             // Make sure that the basepath has a directory separator
-            var basePath = string.IsNullOrEmpty(_packArgs.BasePath) ? _packArgs.CurrentDirectory : _packArgs.BasePath;
-
             int index = path.IndexOf(PathUtility.EnsureTrailingSlash(basePath), StringComparison.OrdinalIgnoreCase);
             if (index != -1)
             {
