@@ -279,9 +279,11 @@ namespace NuGet.Commands
                 version = new NuGetVersion(_packArgs.Version);
             }
 
+            var basePath = string.IsNullOrEmpty(_packArgs.BasePath) ? _packArgs.CurrentDirectory : _packArgs.BasePath;
+
             using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read))
             {
-                LoadProjectJsonFile(builder, path, _packArgs.BasePath, Path.GetFileName(Path.GetDirectoryName(path)), stream, version, _packArgs.Suffix, propertyProvider);
+                LoadProjectJsonFile(builder, path, basePath, Path.GetFileName(Path.GetDirectoryName(path)), stream, version, _packArgs.Suffix, propertyProvider);
             }
 
             return builder;
@@ -390,6 +392,70 @@ namespace NuGet.Commands
                 builder.AddFiles(basePath, include.Value, include.Key);
             }
 
+            if (spec.PackOptions != null)
+            {
+                PackCommandRunner runner = new PackCommandRunner(new PackArgs() { BasePath = basePath }, null);
+                if (spec.PackOptions?.IncludeExcludeFiles != null)
+                {
+                    string fullExclude;
+                    string filesExclude;
+                    CalculateExcludes(spec.PackOptions.IncludeExcludeFiles, out fullExclude, out filesExclude);
+
+                    if (spec.PackOptions.IncludeExcludeFiles.Include != null)
+                    {
+                        foreach (var include in spec.PackOptions.IncludeExcludeFiles.Include)
+                        {
+                            builder.AddFiles(basePath, include, string.Empty, fullExclude);
+                        }
+                    }
+
+                    if (spec.PackOptions.IncludeExcludeFiles.IncludeFiles != null)
+                    {
+                        foreach (var includeFile in spec.PackOptions.IncludeExcludeFiles.IncludeFiles)
+                        {
+                            var resolvedPath = runner.ResolvePath(new PhysicalPackageFile() { SourcePath = includeFile });
+
+                            builder.AddFiles(basePath, includeFile, resolvedPath, filesExclude);
+                        }
+                    }
+                }
+
+                if (spec.PackOptions?.Mappings != null)
+                {
+                    foreach (var map in spec.PackOptions.Mappings)
+                    {
+                        string fullExclude;
+                        string filesExclude;
+                        CalculateExcludes(map.Value, out fullExclude, out filesExclude);
+
+                        if (map.Value.Include != null)
+                        {
+                            // Include paths from project.json are glob matching strings.
+                            // Calling AddFiles for "path/**" with an output target of "newpath/"
+                            // should go to "newpath/filename" but instead goes to "newpath/path/filename".
+                            // To get around this, do a WildcardSearch ahead of the AddFiles to get full paths.
+                            // Passing in the target path will then what we want.
+                            foreach (var include in map.Value.Include)
+                            {
+                                var matchedFiles = PathResolver.PerformWildcardSearch(basePath, include);
+                                foreach (var matchedFile in matchedFiles)
+                                {
+                                    builder.AddFiles(basePath, matchedFile, map.Key, fullExclude);
+                                }
+                            }
+                        }
+
+                        if (map.Value.IncludeFiles != null)
+                        {
+                            foreach (var include in map.Value.IncludeFiles)
+                            {
+                                builder.AddFiles(basePath, include, map.Key, filesExclude);
+                            }
+                        }
+                    }
+                }
+            }
+
             if (spec.Tags.Any())
             {
                 builder.Tags.AddRange(spec.Tags);
@@ -416,6 +482,28 @@ namespace NuGet.Commands
             }
 
             builder.PackageTypes = new Collection<PackageType>(spec.PackOptions?.PackageType?.ToList() ?? new List<PackageType>());
+        }
+
+        private static void CalculateExcludes(IncludeExcludeFiles files, out string fullExclude, out string filesExclude)
+        {
+            fullExclude = string.Empty;
+            filesExclude = string.Empty;
+            if (files.Exclude != null &&
+                files.Exclude.Any())
+            {
+                fullExclude = string.Join(";", files.Exclude);
+            }
+
+            if (files.ExcludeFiles != null &&
+                files.ExcludeFiles.Any())
+            {
+                if (!string.IsNullOrEmpty(fullExclude))
+                {
+                    fullExclude += ";";
+                }
+                filesExclude += string.Join(";", files.ExcludeFiles);
+                fullExclude += filesExclude;
+            }
         }
 
         private static void AddDependencyGroups(IEnumerable<LibraryDependency> dependencies, NuGetFramework framework, PackageBuilder builder)
@@ -837,7 +925,21 @@ namespace NuGet.Commands
             }
             else
             {
-                version = String.IsNullOrEmpty(_packArgs.Version) ? builder.Version.ToNormalizedString() : _packArgs.Version;
+                if (String.IsNullOrEmpty(_packArgs.Version))
+                {
+                    if (builder.Version == null)
+                    {
+                        version = "1.0.0";
+                    }
+                    else
+                    {
+                        version = builder.Version.ToNormalizedString();
+                    }
+                }
+                else
+                {
+                    version = _packArgs.Version;
+                }
             }
 
             // Output file is {id}.{version}

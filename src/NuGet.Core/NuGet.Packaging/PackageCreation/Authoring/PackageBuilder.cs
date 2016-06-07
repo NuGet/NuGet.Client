@@ -605,7 +605,9 @@ namespace NuGet.Packaging
 
             ExcludeFiles(searchFiles, basePath, exclude);
 
-            if (!PathResolver.IsWildcardSearch(source) && !PathResolver.IsDirectoryPath(source) && !searchFiles.Any())
+            // Don't throw if the exclude is what made this find no files. Adding files from
+            // project.json ends up calling this one file at a time where some may be filtered out.  
+            if (!PathResolver.IsWildcardSearch(source) && !PathResolver.IsDirectoryPath(source) && !searchFiles.Any() && string.IsNullOrEmpty(exclude))
             {
                 throw new FileNotFoundException(
                     String.Format(CultureInfo.CurrentCulture, NuGetResources.PackageAuthoring_FileNotFound, source));

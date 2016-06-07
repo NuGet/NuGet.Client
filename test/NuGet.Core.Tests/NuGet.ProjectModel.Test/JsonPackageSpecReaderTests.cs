@@ -559,6 +559,98 @@ namespace NuGet.ProjectModel.Test
             Assert.Contains("The pack options package type must be a string or array of strings in 'project.json'.", actual.Message);
         }
 
+        [Fact]
+        public void PackageSpecReader_PackOptions_Files1()
+        {
+            // Arrange & Act
+            string json = @"{
+                        ""packOptions"": {
+                          ""files"": {
+                            ""include"": ""file1"",
+                            ""exclude"": ""file2"",
+                            ""includeFiles"": ""file3"",
+                            ""excludeFiles"": ""file4"",
+                            ""mappings"": {
+                              ""dest/path"": ""./src/path""
+                            }
+                          }
+                        }
+                      }";
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+
+            // Assert
+            Assert.NotNull(actual.PackOptions);
+            Assert.Equal(1, actual.PackOptions.IncludeExcludeFiles.Include.Count);
+            Assert.Equal(1, actual.PackOptions.IncludeExcludeFiles.Exclude.Count);
+            Assert.Equal(1, actual.PackOptions.IncludeExcludeFiles.IncludeFiles.Count);
+            Assert.Equal(1, actual.PackOptions.IncludeExcludeFiles.ExcludeFiles.Count);
+            Assert.Equal("file1", actual.PackOptions.IncludeExcludeFiles.Include.First());
+            Assert.Equal("file2", actual.PackOptions.IncludeExcludeFiles.Exclude.First());
+            Assert.Equal("file3", actual.PackOptions.IncludeExcludeFiles.IncludeFiles.First());
+            Assert.Equal("file4", actual.PackOptions.IncludeExcludeFiles.ExcludeFiles.First());
+            Assert.NotNull(actual.PackOptions.Mappings);
+            Assert.Equal(1, actual.PackOptions.Mappings.Count());
+            Assert.Equal("dest/path", actual.PackOptions.Mappings.First().Key);
+            Assert.Equal(1, actual.PackOptions.Mappings.First().Value.Include.Count());
+            Assert.Null(actual.PackOptions.Mappings.First().Value.Exclude);
+            Assert.Null(actual.PackOptions.Mappings.First().Value.IncludeFiles);
+            Assert.Null(actual.PackOptions.Mappings.First().Value.ExcludeFiles);
+            Assert.Equal("./src/path", actual.PackOptions.Mappings.First().Value.Include.First());
+        }
+
+        [Fact]
+        public void PackageSpecReader_PackOptions_Files2()
+        {
+            // Arrange & Act
+            string json = @"{
+                        ""packOptions"": {
+                          ""files"": {
+                            ""include"": [""file1a"", ""file1b""],
+                            ""exclude"": [""file2a"", ""file2b""],
+                            ""includeFiles"": [""file3a"", ""file3b""],
+                            ""excludeFiles"": [""file4a"", ""file4b""],
+                            ""mappings"": {
+                              ""dest/path1"": [""./src/path1"", ""./src/path2""],
+                              ""dest/path2"": {
+                                ""includeFiles"": [""map1a"", ""map1b""],
+                              },
+                            }
+                          }
+                        }
+                      }";
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+
+            // Assert
+            Assert.NotNull(actual.PackOptions);
+            Assert.Equal(2, actual.PackOptions.IncludeExcludeFiles.Include.Count);
+            Assert.Equal(2, actual.PackOptions.IncludeExcludeFiles.Exclude.Count);
+            Assert.Equal(2, actual.PackOptions.IncludeExcludeFiles.IncludeFiles.Count);
+            Assert.Equal(2, actual.PackOptions.IncludeExcludeFiles.ExcludeFiles.Count);
+            Assert.Equal("file1a", actual.PackOptions.IncludeExcludeFiles.Include.First());
+            Assert.Equal("file2a", actual.PackOptions.IncludeExcludeFiles.Exclude.First());
+            Assert.Equal("file3a", actual.PackOptions.IncludeExcludeFiles.IncludeFiles.First());
+            Assert.Equal("file4a", actual.PackOptions.IncludeExcludeFiles.ExcludeFiles.First());
+            Assert.Equal("file1b", actual.PackOptions.IncludeExcludeFiles.Include.Last());
+            Assert.Equal("file2b", actual.PackOptions.IncludeExcludeFiles.Exclude.Last());
+            Assert.Equal("file3b", actual.PackOptions.IncludeExcludeFiles.IncludeFiles.Last());
+            Assert.Equal("file4b", actual.PackOptions.IncludeExcludeFiles.ExcludeFiles.Last());
+            Assert.NotNull(actual.PackOptions.Mappings);
+            Assert.Equal(2, actual.PackOptions.Mappings.Count());
+            Assert.Equal("dest/path1", actual.PackOptions.Mappings.First().Key);
+            Assert.Equal("dest/path2", actual.PackOptions.Mappings.Last().Key);
+            Assert.Equal(2, actual.PackOptions.Mappings.First().Value.Include.Count());
+            Assert.Null(actual.PackOptions.Mappings.First().Value.Exclude);
+            Assert.Null(actual.PackOptions.Mappings.First().Value.IncludeFiles);
+            Assert.Null(actual.PackOptions.Mappings.First().Value.ExcludeFiles);
+            Assert.Equal("./src/path1", actual.PackOptions.Mappings.First().Value.Include.First());
+            Assert.Equal("./src/path2", actual.PackOptions.Mappings.First().Value.Include.Last());
+            Assert.Null(actual.PackOptions.Mappings.Last().Value.Include);
+            Assert.Null(actual.PackOptions.Mappings.Last().Value.Exclude);
+            Assert.Null(actual.PackOptions.Mappings.Last().Value.ExcludeFiles);
+            Assert.Equal("map1a", actual.PackOptions.Mappings.Last().Value.IncludeFiles.First());
+            Assert.Equal("map1b", actual.PackOptions.Mappings.Last().Value.IncludeFiles.Last());
+        }
+
         [Theory]
         [InlineData("{}", null, true)]
         [InlineData(@"{

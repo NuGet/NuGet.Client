@@ -9,5 +9,7 @@ namespace NuGet.ProjectModel
     public class PackOptions
     {
         public IReadOnlyList<PackageType> PackageType { get; set; }
+        public IncludeExcludeFiles IncludeExcludeFiles { get; set; }
+        public Dictionary<string, IncludeExcludeFiles> Mappings { get; set; } = new Dictionary<string, IncludeExcludeFiles>();
     }
 }

@@ -21,6 +21,7 @@ namespace NuGet.ProjectModel
     {
         public static readonly string PackOptions = "packOptions";
         public static readonly string PackageType = "packageType";
+        public static readonly string Files = "files";
 
         /// <summary>
         /// Load and parse a project.json file
@@ -234,11 +235,56 @@ namespace NuGet.ProjectModel
                 packageTypeNames = Enumerable.Empty<string>();
             }
 
+            Dictionary<string, IncludeExcludeFiles> mappings = null;
+            IncludeExcludeFiles files = null;
+            var rawFiles = rawPackOptions[Files] as JObject;
+            if (rawFiles != null)
+            {
+                files = new IncludeExcludeFiles();
+                if (!files.HandleIncludeExcludeFiles(rawFiles))
+                {
+                    files = null;
+                }
+
+                var rawMappings = rawFiles["mappings"] as JObject;
+
+                if (rawMappings != null)
+                {
+                    mappings = new Dictionary<string, IncludeExcludeFiles>();
+                    foreach (var pair in rawMappings)
+                    {
+                        var key = pair.Key;
+                        var value = pair.Value;
+                        if (value.Type == JTokenType.String ||
+                            value.Type == JTokenType.Array)
+                        {
+                            IEnumerable<string> includeFiles;
+                            TryGetStringEnumerableFromJArray(value, out includeFiles);
+                            var includeExcludeFiles = new IncludeExcludeFiles()
+                            {
+                                Include = includeFiles?.ToList()
+                            };
+                            mappings.Add(key, includeExcludeFiles);
+                        }
+                        else if (value.Type == JTokenType.Object)
+                        {
+                            var includeExcludeFiles = new IncludeExcludeFiles();
+                            if (includeExcludeFiles.HandleIncludeExcludeFiles(value as JObject))
+                            {
+                                mappings.Add(key, includeExcludeFiles);
+                            }
+                        }
+                    }
+                }
+            }
+
             return new PackOptions
             {
                 PackageType = packageTypeNames
                     .Select(name => new PackageType(name, Packaging.Core.PackageType.EmptyVersion))
-                    .ToList()
+                    .ToList(),
+                IncludeExcludeFiles = files,
+                Mappings = mappings
             };
         }
 
@@ -524,7 +570,7 @@ namespace NuGet.ProjectModel
             return isValid;
         }
 
-        private static bool TryGetStringEnumerableFromJArray(JToken token, out IEnumerable<string> result)
+        public static bool TryGetStringEnumerableFromJArray(JToken token, out IEnumerable<string> result)
         {
             IEnumerable<string> values;
             if (token == null)
