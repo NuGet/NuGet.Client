@@ -28,7 +28,7 @@ namespace NuGet.Protocol
 
             var feedType = await source.GetFeedType(token);
             // For unzipped file system source, we treat it as v2.
-            if (feedType == FeedType.FileSystemV2 || feedType == FeedType.FileSystemUnzipped)
+            if (feedType == FeedType.FileSystemV2)
             {
                 resource = new LocalV2FindPackageByIdResource(source.PackageSource);
             }
