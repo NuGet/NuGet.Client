@@ -3026,6 +3026,194 @@ stuff \n <<".Replace("\r\n", "\n");
         }
 
         [Fact]
+        public void PackCommand_JsonPackOptionsFiles()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles"),
+                    "image1.jpg",
+                    "");
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles"),
+                    "image2.jpg",
+                    "");
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles"),
+                    "image3.jpg",
+                    "");
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles"),
+                    "file1.txt",
+                    "");
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles"),
+                    "file2.txt",
+                    "");
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles"),
+                    "file3.txt",
+                    "");
+
+                Directory.CreateDirectory(
+                    Path.Combine(workingDirectory, "bin/Debug"));
+
+                Util.CreateFile(
+                    workingDirectory,
+                    Path.GetFileName(workingDirectory) + ".project.json",
+                @"{
+  ""version"": ""1.0.0-*"",
+  ""title"": ""packageA"",
+  ""authors"": [ ""test"" ],
+  ""owners"": [ ""test"" ],
+  ""requireLicenseAcceptance"": ""false"",
+  ""description"": ""Description"",
+  ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""files"": {
+      ""include"": ""contentFiles/**"",
+      ""exclude"": ""contentFiles/**.txt"",
+      ""includeFiles"": [ ""contentFiles/file2.txt"" ],
+      ""excludeFiles"": [ ""contentFiles/image3.jpg"" ],
+    }
+  }
+}");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack " + Path.GetFileName(workingDirectory) + ".project.json",
+                    waitForExit: true);
+                Assert.Equal(0, r.Item1);
+
+                var id = Path.GetFileName(workingDirectory);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, id + ".1.0.0.nupkg");
+                var package = new OptimizedZipPackage(path);
+                using (var zip = new ZipArchive(File.OpenRead(path)))
+                {
+                    var manifestReader
+                        = new StreamReader(zip.Entries.Single(file => file.FullName == id + ".nuspec").Open());
+                    var nuspecXml = XDocument.Parse(manifestReader.ReadToEnd());
+
+                    var files = package.GetFiles().Select(f => f.Path).OrderBy(s => s).ToArray();
+
+                    Assert.Equal(
+                        new string[]
+                        {
+                            @"contentFiles\file2.txt",
+                            @"contentFiles\image1.jpg",
+                            @"contentFiles\image2.jpg",
+                        },
+                        files);
+                }
+            }
+        }
+
+        [Fact]
+        public void PackCommand_JsonPackOptionsFilesMappings()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles"),
+                    "image1.jpg",
+                    "");
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles"),
+                    "image2.jpg",
+                    "");
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles"),
+                    "image3.jpg",
+                    "");
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles"),
+                    "file1.txt",
+                    "");
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles"),
+                    "file2.txt",
+                    "");
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles"),
+                    "file3.txt",
+                    "");
+
+                Directory.CreateDirectory(
+                    Path.Combine(workingDirectory, "bin/Debug"));
+
+                Util.CreateFile(
+                    workingDirectory,
+                    Path.GetFileName(workingDirectory) + ".project.json",
+                @"{
+  ""version"": ""1.0.0-*"",
+  ""title"": ""packageA"",
+  ""authors"": [ ""test"" ],
+  ""owners"": [ ""test"" ],
+  ""requireLicenseAcceptance"": ""false"",
+  ""description"": ""Description"",
+  ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""files"": {
+      ""mappings"": {
+          ""map1"" : {
+            ""include"": ""contentFiles/**"",
+            ""exclude"": ""contentFiles/**.txt""
+          },
+          ""map2"": {
+            ""includeFiles"": [ ""contentFiles/file2.txt"", ""contentFiles/file3.txt"" ],
+            ""excludeFiles"": [ ""contentFiles/file3.txt"" ]
+          }
+        }
+      }
+    }
+  }
+}");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack " + Path.GetFileName(workingDirectory) + ".project.json",
+                    waitForExit: true);
+                Assert.Equal(0, r.Item1);
+
+                var id = Path.GetFileName(workingDirectory);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, id + ".1.0.0.nupkg");
+                var package = new OptimizedZipPackage(path);
+                using (var zip = new ZipArchive(File.OpenRead(path)))
+                {
+                    var manifestReader
+                        = new StreamReader(zip.Entries.Single(file => file.FullName == id + ".nuspec").Open());
+                    var nuspecXml = XDocument.Parse(manifestReader.ReadToEnd());
+
+                    var files = package.GetFiles().Select(f => f.Path).OrderBy(s => s).ToArray();
+
+                    Assert.Equal(
+                        new string[]
+                        {
+                            @"map1\image1.jpg",
+                            @"map1\image2.jpg",
+                            @"map1\image3.jpg",
+                            @"map2\file2.txt",
+                        },
+                        files);
+                }
+            }
+        }
+
+        [Fact]
         public void PackCommand_JsonSnapshotRcValue()
         {
             var nugetexe = Util.GetNuGetExePath();
