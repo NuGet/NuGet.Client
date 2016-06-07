@@ -339,7 +339,8 @@ namespace NuGet.Client
                             new PatternDefinition("runtimes/{rid}/native/{any?}", defaults: new Dictionary<string, object>
                             {
                                 { "tfm", AnyFramework.Instance }
-                            })
+                            }),
+                            "native/{any?}"
                         },
                     pathPatterns: new PatternDefinition[]
                     {
@@ -347,7 +348,8 @@ namespace NuGet.Client
                         new PatternDefinition("runtimes/{rid}/native/{any}", defaults: new Dictionary<string, object>
                         {
                             { "tfm", AnyFramework.Instance }
-                        })
+                        }),
+                        "native/{any}"
                     });
 
                 ResourceAssemblies = new PatternSet(
