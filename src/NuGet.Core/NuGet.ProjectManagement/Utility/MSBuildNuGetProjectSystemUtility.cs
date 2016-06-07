@@ -116,59 +116,51 @@ namespace NuGet.ProjectManagement
             packageItemListAsArchiveEntryNames.Sort(new PackageItemComparer());
             try
             {
-                try
-                {
-                    var paths = packageItemListAsArchiveEntryNames.Select(file => ResolvePath(fileTransformers, fte => fte.InstallExtension,
-                        GetEffectivePathForContentFile(packageTargetFramework, file)));
-                    paths = paths.Where(p => !string.IsNullOrEmpty(p));
+                var paths = packageItemListAsArchiveEntryNames.Select(file => ResolvePath(fileTransformers, fte => fte.InstallExtension,
+                    GetEffectivePathForContentFile(packageTargetFramework, file)));
+                paths = paths.Where(p => !string.IsNullOrEmpty(p));
 
-                    msBuildNuGetProjectSystem.BeginProcessing();
-                    msBuildNuGetProjectSystem.RegisterProcessedFiles(paths);
-                }
-                catch (Exception)
-                {
-                    // Ignore all exceptions for now
-                }
-
-                foreach (var file in packageItemListAsArchiveEntryNames)
-                {
-                    if (IsEmptyFolder(file))
-                    {
-                        continue;
-                    }
-
-                    var effectivePathForContentFile = GetEffectivePathForContentFile(packageTargetFramework, file);
-
-                    // Resolve the target path
-                    IPackageFileTransformer installTransformer;
-                    var path = ResolveTargetPath(msBuildNuGetProjectSystem,
-                        fileTransformers,
-                        fte => fte.InstallExtension, effectivePathForContentFile, out installTransformer);
-
-                    if (msBuildNuGetProjectSystem.IsSupportedFile(path))
-                    {
-                        if (installTransformer != null)
-                        {
-                            installTransformer.TransformFile(() => packageReader.GetStream(file), path, msBuildNuGetProjectSystem);
-                        }
-                        else
-                        {
-                            // Ignore uninstall transform file during installation
-                            string truncatedPath;
-                            var uninstallTransformer =
-                                FindFileTransformer(fileTransformers, fte => fte.UninstallExtension, effectivePathForContentFile, out truncatedPath);
-                            if (uninstallTransformer != null)
-                            {
-                                continue;
-                            }
-                            TryAddFile(msBuildNuGetProjectSystem, path, () => packageReader.GetStream(file));
-                        }
-                    }
-                }
+                msBuildNuGetProjectSystem.RegisterProcessedFiles(paths);
             }
-            finally
+            catch (Exception)
             {
-                msBuildNuGetProjectSystem.EndProcessing();
+                // Ignore all exceptions for now
+            }
+
+            foreach (var file in packageItemListAsArchiveEntryNames)
+            {
+                if (IsEmptyFolder(file))
+                {
+                    continue;
+                }
+
+                var effectivePathForContentFile = GetEffectivePathForContentFile(packageTargetFramework, file);
+
+                // Resolve the target path
+                IPackageFileTransformer installTransformer;
+                var path = ResolveTargetPath(msBuildNuGetProjectSystem,
+                    fileTransformers,
+                    fte => fte.InstallExtension, effectivePathForContentFile, out installTransformer);
+
+                if (msBuildNuGetProjectSystem.IsSupportedFile(path))
+                {
+                    if (installTransformer != null)
+                    {
+                        installTransformer.TransformFile(() => packageReader.GetStream(file), path, msBuildNuGetProjectSystem);
+                    }
+                    else
+                    {
+                        // Ignore uninstall transform file during installation
+                        string truncatedPath;
+                        var uninstallTransformer =
+                            FindFileTransformer(fileTransformers, fte => fte.UninstallExtension, effectivePathForContentFile, out truncatedPath);
+                        if (uninstallTransformer != null)
+                        {
+                            continue;
+                        }
+                        TryAddFile(msBuildNuGetProjectSystem, path, () => packageReader.GetStream(file));
+                    }
+                }
             }
         }
 
@@ -182,130 +174,120 @@ namespace NuGet.ProjectManagement
             var packageTargetFramework = frameworkSpecificGroup.TargetFramework;
             IPackageFileTransformer transformer;
 
-            try
+            var directoryLookup = frameworkSpecificGroup.Items.ToLookup(
+                p => Path.GetDirectoryName(ResolveTargetPath(projectSystem,
+                    fileTransformers,
+                    fte => fte.UninstallExtension,
+                    GetEffectivePathForContentFile(packageTargetFramework, p),
+                    out transformer)));
+
+            // Get all directories that this package may have added
+            var directories = from grouping in directoryLookup
+                              from directory in FileSystemUtility.GetDirectories(grouping.Key, altDirectorySeparator: false)
+                              orderby directory.Length descending
+                              select directory;
+
+            string projectFullPath = projectSystem.ProjectFullPath;
+
+            // Remove files from every directory
+            foreach (var directory in directories)
             {
-                projectSystem.BeginProcessing();
+                var directoryFiles = directoryLookup.Contains(directory) ? directoryLookup[directory] : Enumerable.Empty<string>();
 
-
-                var directoryLookup = frameworkSpecificGroup.Items.ToLookup(
-                    p => Path.GetDirectoryName(ResolveTargetPath(projectSystem,
-                        fileTransformers,
-                        fte => fte.UninstallExtension,
-                        GetEffectivePathForContentFile(packageTargetFramework, p),
-                        out transformer)));
-
-                // Get all directories that this package may have added
-                var directories = from grouping in directoryLookup
-                                  from directory in FileSystemUtility.GetDirectories(grouping.Key, altDirectorySeparator: false)
-                                  orderby directory.Length descending
-                                  select directory;
-
-                string projectFullPath = projectSystem.ProjectFullPath;
-
-                // Remove files from every directory
-                foreach (var directory in directories)
+                if (!Directory.Exists(Path.Combine(projectFullPath, directory)))
                 {
-                    var directoryFiles = directoryLookup.Contains(directory) ? directoryLookup[directory] : Enumerable.Empty<string>();
+                    continue;
+                }
 
-                    if (!Directory.Exists(Path.Combine(projectFullPath, directory)))
+                foreach (var file in directoryFiles)
+                {
+                    if (IsEmptyFolder(file))
                     {
                         continue;
                     }
 
-                    foreach (var file in directoryFiles)
+                    // Resolve the path
+                    var path = ResolveTargetPath(projectSystem,
+                        fileTransformers,
+                        fte => fte.UninstallExtension,
+                        GetEffectivePathForContentFile(packageTargetFramework, file),
+                        out transformer);
+
+                    if (projectSystem.IsSupportedFile(path))
                     {
-                        if (IsEmptyFolder(file))
+                        // Register the file being uninstalled (used by web site project system).
+                        projectSystem.RegisterProcessedFiles(new[] { path });
+
+                        if (transformer != null)
                         {
-                            continue;
-                        }
+                            // TODO: use the framework from packages.config instead of the current framework
+                            // which may have changed during re-targeting
+                            var projectFramework = projectSystem.TargetFramework;
 
-                        // Resolve the path
-                        var path = ResolveTargetPath(projectSystem,
-                            fileTransformers,
-                            fte => fte.UninstallExtension,
-                            GetEffectivePathForContentFile(packageTargetFramework, file),
-                            out transformer);
-
-                        if (projectSystem.IsSupportedFile(path))
-                        {
-                            // Register the file being uninstalled (used by web site project system).
-                            projectSystem.RegisterProcessedFiles(new[] { path });
-
-                            if (transformer != null)
+                            var matchingFiles = new List<InternalZipFileInfo>();
+                            foreach (var otherPackagePath in otherPackagesPath)
                             {
-                                // TODO: use the framework from packages.config instead of the current framework
-                                // which may have changed during re-targeting
-                                var projectFramework = projectSystem.TargetFramework;
-
-                                var matchingFiles = new List<InternalZipFileInfo>();
-                                foreach (var otherPackagePath in otherPackagesPath)
+                                using (var otherPackageZipReader = new PackageArchiveReader(otherPackagePath))
                                 {
-                                    using (var otherPackageZipReader = new PackageArchiveReader(otherPackagePath))
-                                    {
-                                        // use the project framework to find the group that would have been installed
-                                        var mostCompatibleContentFilesGroup = GetMostCompatibleGroup(
-                                            projectFramework,
-                                            otherPackageZipReader.GetContentItems());
+                                    // use the project framework to find the group that would have been installed
+                                    var mostCompatibleContentFilesGroup = GetMostCompatibleGroup(
+                                        projectFramework,
+                                        otherPackageZipReader.GetContentItems());
 
-                                        if (IsValid(mostCompatibleContentFilesGroup))
+                                    if (IsValid(mostCompatibleContentFilesGroup))
+                                    {
+                                        // Should not normalize content files group.
+                                        // It should be like a ZipFileEntry with a forward slash.
+                                        foreach (var otherPackageItem in mostCompatibleContentFilesGroup.Items)
                                         {
-                                            // Should not normalize content files group.
-                                            // It should be like a ZipFileEntry with a forward slash.
-                                            foreach (var otherPackageItem in mostCompatibleContentFilesGroup.Items)
+                                            if (GetEffectivePathForContentFile(packageTargetFramework, otherPackageItem)
+                                                .Equals(GetEffectivePathForContentFile(packageTargetFramework, file), StringComparison.OrdinalIgnoreCase))
                                             {
-                                                if (GetEffectivePathForContentFile(packageTargetFramework, otherPackageItem)
-                                                    .Equals(GetEffectivePathForContentFile(packageTargetFramework, file), StringComparison.OrdinalIgnoreCase))
-                                                {
-                                                    matchingFiles.Add(new InternalZipFileInfo(otherPackagePath, otherPackageItem));
-                                                }
+                                                matchingFiles.Add(new InternalZipFileInfo(otherPackagePath, otherPackageItem));
                                             }
                                         }
                                     }
                                 }
+                            }
 
-                                try
+                            try
+                            {
+                                var zipArchiveFileEntry = PathUtility.GetEntry(zipArchive, file);
+                                if (zipArchiveFileEntry != null)
                                 {
-                                    var zipArchiveFileEntry = PathUtility.GetEntry(zipArchive, file);
-                                    if (zipArchiveFileEntry != null)
-                                    {
-                                        transformer.RevertFile(zipArchiveFileEntry.Open, path, matchingFiles, projectSystem);
-                                    }
-                                }
-                                catch (Exception e)
-                                {
-                                    projectSystem.NuGetProjectContext.Log(MessageLevel.Warning, e.Message);
+                                    transformer.RevertFile(zipArchiveFileEntry.Open, path, matchingFiles, projectSystem);
                                 }
                             }
-                            else
+                            catch (Exception e)
                             {
-                                try
-                                {
-                                    var zipArchiveFileEntry = PathUtility.GetEntry(zipArchive, file);
-                                    if (zipArchiveFileEntry != null)
-                                    {
-                                        DeleteFileSafe(path, zipArchiveFileEntry.Open, projectSystem);
-                                    }
-                                }
-                                catch (Exception e)
-                                {
-                                    projectSystem.NuGetProjectContext.Log(MessageLevel.Warning, e.Message);
-                                }
-                                
+                                projectSystem.NuGetProjectContext.Log(MessageLevel.Warning, e.Message);
                             }
                         }
-                    }
+                        else
+                        {
+                            try
+                            {
+                                var zipArchiveFileEntry = PathUtility.GetEntry(zipArchive, file);
+                                if (zipArchiveFileEntry != null)
+                                {
+                                    DeleteFileSafe(path, zipArchiveFileEntry.Open, projectSystem);
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                projectSystem.NuGetProjectContext.Log(MessageLevel.Warning, e.Message);
+                            }
 
-                    // If the directory is empty then delete it
-                    if (!GetFilesSafe(projectSystem, directory).Any()
-                        && !GetDirectoriesSafe(projectSystem, directory).Any())
-                    {
-                        DeleteDirectorySafe(projectSystem, directory);
+                        }
                     }
                 }
-            }
-            finally
-            {
-                projectSystem.EndProcessing();
+
+                // If the directory is empty then delete it
+                if (!GetFilesSafe(projectSystem, directory).Any()
+                    && !GetDirectoriesSafe(projectSystem, directory).Any())
+                {
+                    DeleteDirectorySafe(projectSystem, directory);
+                }
             }
         }
 
