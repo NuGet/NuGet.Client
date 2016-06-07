@@ -107,6 +107,48 @@ namespace NuGet.Protocol.Core.v3.Tests
         }
 
         [Fact]
+        public async Task HttpSource_Allows403CredentialPromptToBeDisabled()
+        {
+            // Arrange
+            using (await UsingSemaphore.WaitAsync(HttpHandlerResourceV3Lock))
+            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var tc = new TestContext(td);
+
+                var request = new HttpRequestMessage();
+                request.SetConfiguration(new HttpRequestMessageConfiguration(promptOn403: false));
+                tc.SetResponseSequence(new[]
+                {
+                    new HttpResponseMessage(HttpStatusCode.Forbidden)
+                    {
+                        RequestMessage = request   
+                    }
+                });
+
+                var prompted = false;
+                HttpHandlerResourceV3.PromptForCredentialsAsync = (uri, type, message, token) =>
+                {
+                    prompted = true;
+                    return Task.FromResult(tc.Credentials);
+                };
+
+                // Act
+                var statusCode = await tc.HttpSource.ProcessResponseAsync(
+                    () => new HttpRequestMessage(),
+                    response =>
+                    {
+                        return Task.FromResult(response.StatusCode);
+                    },
+                    tc.Logger,
+                    CancellationToken.None);
+
+                // Assert
+                Assert.False(prompted, "The user should have not been prompted for credentials.");
+                Assert.Equal(HttpStatusCode.Forbidden, statusCode);
+            }
+        }
+
+        [Fact]
         public async Task HttpSource_GetNoContent()
         {
             // Arrange

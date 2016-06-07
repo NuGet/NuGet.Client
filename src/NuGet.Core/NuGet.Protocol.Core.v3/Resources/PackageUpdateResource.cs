@@ -11,7 +11,6 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.Protocol.Core.v3;
 using NuGet.Versioning;
 using Strings = NuGet.Protocol.Core.v3.Strings;
 
@@ -263,7 +262,7 @@ namespace NuGet.Protocol.Core.Types
             CancellationToken token)
         {
             await _httpSource.ProcessResponseAsync(
-                () => CreateRequest(source, pathToPackage, apiKey),
+                () => CreateRequest(source, pathToPackage, apiKey, logger),
                 requestTimeout,
                 response =>
                 {
@@ -276,10 +275,18 @@ namespace NuGet.Protocol.Core.Types
 
         private HttpRequestMessage CreateRequest(string source,
             string pathToPackage,
-            string apiKey)
+            string apiKey,
+            ILogger log)
         {
             var fileStream = new FileStream(pathToPackage, FileMode.Open, FileAccess.Read, FileShare.Read);
-            var request = new HttpRequestMessage(HttpMethod.Put, GetServiceEndpointUrl(source, string.Empty));
+            var hasApiKey = !string.IsNullOrEmpty(apiKey);
+            var request = HttpRequestMessageFactory.Create(
+                HttpMethod.Put,
+                GetServiceEndpointUrl(source, string.Empty),
+                new HttpRequestMessageConfiguration(
+                    logger: log,
+                    promptOn403: !hasApiKey)); // Receiving an HTTP 403 when providing an API key typically indicates
+                                               // an invalid API key, so prompting for credentials does not help.
             var content = new MultipartFormDataContent();
 
             var packageContent = new StreamContent(fileStream);
@@ -293,7 +300,7 @@ namespace NuGet.Protocol.Core.Types
             // Otherwise the whole package needs to be sent to the server before the PUT fails.
             request.Headers.TransferEncodingChunked = true;
 
-            if (!string.IsNullOrEmpty(apiKey))
+            if (hasApiKey)
             {
                 request.Headers.Add(ApiKeyHeader, apiKey);
             }
@@ -361,9 +368,18 @@ namespace NuGet.Protocol.Core.Types
                 () =>
                 {
                     // Review: Do these values need to be encoded in any way?
-                    var url = String.Join("/", packageId, packageVersion);
-                    var request = new HttpRequestMessage(HttpMethod.Delete, GetServiceEndpointUrl(source, url));
-                    if (!string.IsNullOrEmpty(apiKey))
+                    var url = string.Join("/", packageId, packageVersion);
+                    var hasApiKey = !string.IsNullOrEmpty(apiKey);
+                    var request = HttpRequestMessageFactory.Create(
+                        HttpMethod.Delete,
+                        GetServiceEndpointUrl(source, url),
+                        new HttpRequestMessageConfiguration(
+                            logger: logger,
+                            promptOn403: !hasApiKey)); // Receiving an HTTP 403 when providing an API key typically
+                                                       // indicates an invalid API key, so prompting for credentials
+                                                       // does not help.
+
+                    if (hasApiKey)
                     {
                         request.Headers.Add(ApiKeyHeader, apiKey);
                     }

@@ -369,8 +369,11 @@ namespace NuGet.Protocol
                 // Read the response headers before reading the entire stream to avoid timeouts from large packages.
                 response = await RetryHandler.SendAsync(request, log, cancellationToken);
 
+                var configuration = response.RequestMessage?.GetOrCreateConfiguration()
+                    ?? HttpRequestMessageConfiguration.Default;
+
                 if (response.StatusCode == HttpStatusCode.Unauthorized ||
-                    response.StatusCode == HttpStatusCode.Forbidden)
+                    (configuration.PromptOn403 && response.StatusCode == HttpStatusCode.Forbidden))
                 {
                     try
                     {
