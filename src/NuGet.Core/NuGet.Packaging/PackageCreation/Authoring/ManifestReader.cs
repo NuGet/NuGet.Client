@@ -307,7 +307,7 @@ namespace NuGet.Packaging
                 files.AddRange(srcElement.Value.Trim(';').Split(';').Select(s => 
                     new ManifestFile
                     {
-                        Source = s.SafeTrim().TrimStart(slashes),
+                        Source = s.SafeTrim(),
                         Target = target,
                         Exclude = exclude
                     }));

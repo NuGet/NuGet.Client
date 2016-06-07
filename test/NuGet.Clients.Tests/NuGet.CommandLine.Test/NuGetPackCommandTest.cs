@@ -54,7 +54,7 @@ namespace NuGet.CommandLine.Test
   </metadata>
   <files>
     <file src=""contentFiles/any/any/image.jpg"" target=""\Content\image.jpg"" />
-    <file src=""/contentFiles/any/any/image2.jpg"" target=""Content\other\image2.jpg"" />
+    <file src=""contentFiles/any/any/image2.jpg"" target=""Content\other\image2.jpg"" />
   </files>
 </package>");
 
