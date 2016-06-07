@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
-using Microsoft.Extensions.PlatformAbstractions;
 using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.ProjectModel;
@@ -117,9 +117,9 @@ namespace NuGet.CommandLine.XPlat
 
                         if (inferRuntimes.HasValue())
                         {
-                            var defaultRuntimes = RequestRuntimeUtility.GetDefaultRestoreRuntimes(
-                                PlatformServices.Default.Runtime.OperatingSystem,
-                                PlatformServices.Default.Runtime.GetRuntimeOsName());
+                            var runtimeOSname = PlatformApis.GetRuntimeOsName();
+                            var os = PlatformApis.GetOSName();
+                            var defaultRuntimes = RequestRuntimeUtility.GetDefaultRestoreRuntimes(os, runtimeOSname);
                             restoreContext.FallbackRuntimes.UnionWith(defaultRuntimes);
                         }
 
