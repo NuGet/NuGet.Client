@@ -710,7 +710,7 @@ namespace NuGet.Packaging
 
         private static void CreatePart(ZipArchive package, string path, Stream sourceStream)
         {
-            if (PackageHelper.IsNuspec(path) || ProjectJsonPathUtilities.IsProjectConfig(path))
+            if (PackageHelper.IsNuspec(path))
             {
                 return;
             }
