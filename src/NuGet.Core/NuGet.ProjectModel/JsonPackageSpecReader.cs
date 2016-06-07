@@ -570,7 +570,7 @@ namespace NuGet.ProjectModel
             return isValid;
         }
 
-        public static bool TryGetStringEnumerableFromJArray(JToken token, out IEnumerable<string> result)
+        internal static bool TryGetStringEnumerableFromJArray(JToken token, out IEnumerable<string> result)
         {
             IEnumerable<string> values;
             if (token == null)

@@ -395,7 +395,7 @@ namespace NuGet.Commands
             if (spec.PackOptions != null)
             {
                 PackCommandRunner runner = new PackCommandRunner(new PackArgs() { BasePath = basePath }, null);
-                if (spec.PackOptions?.IncludeExcludeFiles != null)
+                if (spec.PackOptions.IncludeExcludeFiles != null)
                 {
                     string fullExclude;
                     string filesExclude;
@@ -420,7 +420,7 @@ namespace NuGet.Commands
                     }
                 }
 
-                if (spec.PackOptions?.Mappings != null)
+                if (spec.PackOptions.Mappings != null)
                 {
                     foreach (var map in spec.PackOptions.Mappings)
                     {
@@ -929,6 +929,9 @@ namespace NuGet.Commands
                 {
                     if (builder.Version == null)
                     {
+                        // If the version is null, the user will get an error later saying that a version
+                        // is required. Specifying a version here just keeps it from throwing until
+                        // it gets to the better error message. It won't actually get used.
                         version = "1.0.0";
                     }
                     else
