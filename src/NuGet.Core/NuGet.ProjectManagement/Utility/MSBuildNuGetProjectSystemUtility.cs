@@ -118,8 +118,10 @@ namespace NuGet.ProjectManagement
             {
                 try
                 {
-                    var paths = packageItemListAsArchiveEntryNames.Select(file => ResolvePath(fileTransformers, fte => fte.InstallExtension,
-                        GetEffectivePathForContentFile(packageTargetFramework, file)));
+                    var paths =
+                        packageItemListAsArchiveEntryNames.Select(
+                            file => ResolvePath(fileTransformers, fte => fte.InstallExtension,
+                                GetEffectivePathForContentFile(packageTargetFramework, file)));
                     paths = paths.Where(p => !string.IsNullOrEmpty(p));
 
                     msBuildNuGetProjectSystem.BeginProcessing();
@@ -149,14 +151,16 @@ namespace NuGet.ProjectManagement
                     {
                         if (installTransformer != null)
                         {
-                            installTransformer.TransformFile(() => packageReader.GetStream(file), path, msBuildNuGetProjectSystem);
+                            installTransformer.TransformFile(() => packageReader.GetStream(file), path,
+                                msBuildNuGetProjectSystem);
                         }
                         else
                         {
                             // Ignore uninstall transform file during installation
                             string truncatedPath;
                             var uninstallTransformer =
-                                FindFileTransformer(fileTransformers, fte => fte.UninstallExtension, effectivePathForContentFile, out truncatedPath);
+                                FindFileTransformer(fileTransformers, fte => fte.UninstallExtension,
+                                    effectivePathForContentFile, out truncatedPath);
                             if (uninstallTransformer != null)
                             {
                                 continue;
@@ -185,8 +189,6 @@ namespace NuGet.ProjectManagement
             try
             {
                 projectSystem.BeginProcessing();
-
-
                 var directoryLookup = frameworkSpecificGroup.Items.ToLookup(
                     p => Path.GetDirectoryName(ResolveTargetPath(projectSystem,
                         fileTransformers,
@@ -196,16 +198,18 @@ namespace NuGet.ProjectManagement
 
                 // Get all directories that this package may have added
                 var directories = from grouping in directoryLookup
-                                  from directory in FileSystemUtility.GetDirectories(grouping.Key, altDirectorySeparator: false)
-                                  orderby directory.Length descending
-                                  select directory;
+                    from directory in FileSystemUtility.GetDirectories(grouping.Key, altDirectorySeparator: false)
+                    orderby directory.Length descending
+                    select directory;
 
                 string projectFullPath = projectSystem.ProjectFullPath;
 
                 // Remove files from every directory
                 foreach (var directory in directories)
                 {
-                    var directoryFiles = directoryLookup.Contains(directory) ? directoryLookup[directory] : Enumerable.Empty<string>();
+                    var directoryFiles = directoryLookup.Contains(directory)
+                        ? directoryLookup[directory]
+                        : Enumerable.Empty<string>();
 
                     if (!Directory.Exists(Path.Combine(projectFullPath, directory)))
                     {
@@ -229,7 +233,7 @@ namespace NuGet.ProjectManagement
                         if (projectSystem.IsSupportedFile(path))
                         {
                             // Register the file being uninstalled (used by web site project system).
-                            projectSystem.RegisterProcessedFiles(new[] { path });
+                            projectSystem.RegisterProcessedFiles(new[] {path});
 
                             if (transformer != null)
                             {
@@ -253,10 +257,14 @@ namespace NuGet.ProjectManagement
                                             // It should be like a ZipFileEntry with a forward slash.
                                             foreach (var otherPackageItem in mostCompatibleContentFilesGroup.Items)
                                             {
-                                                if (GetEffectivePathForContentFile(packageTargetFramework, otherPackageItem)
-                                                    .Equals(GetEffectivePathForContentFile(packageTargetFramework, file), StringComparison.OrdinalIgnoreCase))
+                                                if (GetEffectivePathForContentFile(packageTargetFramework,
+                                                    otherPackageItem)
+                                                    .Equals(
+                                                        GetEffectivePathForContentFile(packageTargetFramework, file),
+                                                        StringComparison.OrdinalIgnoreCase))
                                                 {
-                                                    matchingFiles.Add(new InternalZipFileInfo(otherPackagePath, otherPackageItem));
+                                                    matchingFiles.Add(new InternalZipFileInfo(otherPackagePath,
+                                                        otherPackageItem));
                                                 }
                                             }
                                         }
@@ -268,7 +276,8 @@ namespace NuGet.ProjectManagement
                                     var zipArchiveFileEntry = PathUtility.GetEntry(zipArchive, file);
                                     if (zipArchiveFileEntry != null)
                                     {
-                                        transformer.RevertFile(zipArchiveFileEntry.Open, path, matchingFiles, projectSystem);
+                                        transformer.RevertFile(zipArchiveFileEntry.Open, path, matchingFiles,
+                                            projectSystem);
                                     }
                                 }
                                 catch (Exception e)
@@ -290,7 +299,7 @@ namespace NuGet.ProjectManagement
                                 {
                                     projectSystem.NuGetProjectContext.Log(MessageLevel.Warning, e.Message);
                                 }
-                                
+
                             }
                         }
                     }
