@@ -361,6 +361,15 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error getting the credential provider.  {0}.
+        /// </summary>
+        internal static string VsCredentialProviderImport_GenericError {
+            get {
+                return ResourceManager.GetString("VsCredentialProviderImport_GenericError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error loading VisualStudioAcountProvider. {0}.
         /// </summary>
         internal static string VsCredentialProviderImporter_LoadErrorFormat {

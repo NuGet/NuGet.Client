@@ -6,6 +6,7 @@ using System.ComponentModel.Composition;
 using System.IO;
 using EnvDTE;
 using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.Shell;
 using NuGet.Credentials;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
@@ -84,28 +85,46 @@ namespace NuGetVSExtension
         /// <returns>An enumeration of plugin providers</returns>
         public ICredentialProvider GetProvider()
         {
-            this._initializer();
             ICredentialProvider result = null;
 
-            if (ImportedProvider != null)
+            try
             {
-                result = new VsCredentialProviderAdapter(ImportedProvider);
-            }
+                _initializer();
 
-            // Dev15+ will provide a credential provider for VSTS.
-            // If we are in Dev14, and no imported VSTS provider is found,
-            // then fallback on the built-in VisualStudioAccountProvider
-            if (result == null && IsDev14)
+                if (ImportedProvider != null)
+                {
+                    result = new VsCredentialProviderAdapter(ImportedProvider);
+                }
+
+                // Dev15+ will provide a credential provider for VSTS.
+                // If we are in Dev14, and no imported VSTS provider is found,
+                // then fallback on the built-in VisualStudioAccountProvider
+                if (result == null && IsDev14)
+                {
+                    // Handle any type load exception constructing the provider
+                    try
+                    {
+                        result = _fallbackProviderFactory();
+                    }
+                    catch (Exception e) when
+                        (e is BadImageFormatException ||
+                         e is FileLoadException ||
+                         e is TypeLoadException)
+                    {
+                        _errorDelegate(string.Format(Resources.VsCredentialProviderImporter_LoadErrorFormat,
+                            e.Message));
+                    }
+                }
+            }
+            catch (Exception e)
             {
-                // Handle any type load exception constructing the provider
-                try
-                {
-                    result = this._fallbackProviderFactory();
-                }
-                catch (Exception e) when (e is BadImageFormatException || e is FileLoadException)
-                {
-                    this._errorDelegate(string.Format(Resources.VsCredentialProviderImporter_LoadErrorFormat, e.Message));
-                }
+                // Typicall catching all exceptions is discuraged however the code calling this method
+                // is in the initialization of NuGet and is checking for the existance of a credential
+                // provider.   Crashing here is crashing at the NuGet startup in the IDE.  Considering
+                // the scenario is not close to 100% of the NuGet usage scenarios catching the exception
+                // writting the error and proceeding without the provider is a safer option.
+                _errorDelegate(string.Format(Resources.VsCredentialProviderImport_GenericError,
+                    e.Message));
             }
 
             return result;
