@@ -66,6 +66,11 @@ namespace NuGet.CommandLine.XPlat
                     Strings.OutputDirectory_Description,
                     CommandOptionType.SingleValue);
 
+                var serviceable = pack.Option(
+                    "--serviceable",
+                    Strings.Serviceable_Description,
+                    CommandOptionType.NoValue);
+
                 var suffix = pack.Option(
                     "--suffix <suffix>",
                     Strings.Suffix_Description,
@@ -141,6 +146,7 @@ namespace NuGet.CommandLine.XPlat
                         }
                     }
 
+                    packArgs.Serviceable = serviceable.HasValue();
                     packArgs.Suffix = suffix.Value();
                     packArgs.Symbols = symbols.HasValue();
                     if (versionOption.HasValue())
