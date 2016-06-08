@@ -1275,7 +1275,7 @@ namespace NuGet.CommandLine
 
         private void WriteDetail(string format, params object[] args)
         {
-            var console = _logger as Common.Console;
+            var console = _logger as Console;
             if (console != null && console.Verbosity == Verbosity.Detailed)
             {
                 console.WriteLine(format, args);

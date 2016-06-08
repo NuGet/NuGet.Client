@@ -2,7 +2,7 @@
 using System.Resources;
 using System.Threading;
 
-namespace NuGet
+namespace NuGet.CommandLine
 {
     internal static class LocalizedResourceManager
     {

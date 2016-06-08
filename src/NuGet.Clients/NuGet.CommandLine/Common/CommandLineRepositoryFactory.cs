@@ -3,7 +3,7 @@
 
 using NuGet.Protocol.Core.Types;
 
-namespace NuGet.Common
+namespace NuGet.CommandLine
 {
     public class CommandLineRepositoryFactory : PackageRepositoryFactory
     {

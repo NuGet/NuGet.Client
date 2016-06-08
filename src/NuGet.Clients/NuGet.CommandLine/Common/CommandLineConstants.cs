@@ -1,4 +1,4 @@
-﻿namespace NuGet.Common
+﻿namespace NuGet.CommandLine
 {
     internal static class CommandLineConstants
     {

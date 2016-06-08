@@ -7,7 +7,7 @@ using NuGet.Credentials;
 using System.Threading;
 using NuGet.Configuration;
 
-namespace NuGet
+namespace NuGet.CommandLine
 {
     public class ConsoleCredentialProvider : Credentials.ICredentialProvider
     {

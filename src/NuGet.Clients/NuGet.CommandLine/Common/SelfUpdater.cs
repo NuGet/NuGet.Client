@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Runtime.Versioning;
 using NuGet.Configuration;
 
-namespace NuGet.Common
+namespace NuGet.CommandLine
 {
     /// <summary>
     /// Handles updating the executing instance of NuGet.exe
