@@ -555,7 +555,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Set the internal serviceable flag in the package.
+        ///    Looks up a localized string similar to Sets the nuspec serviceable element to true..
         /// </summary>
         public static string Serviceable_Description {
             get {
