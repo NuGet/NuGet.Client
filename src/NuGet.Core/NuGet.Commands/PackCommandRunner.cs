@@ -699,6 +699,11 @@ namespace NuGet.Commands
                 builder.Version = new NuGetVersion($"{version}-{_packArgs.Suffix}");
             }
 
+            if (_packArgs.Serviceable)
+            {
+                builder.Serviceable = true;
+            }
+
             if (_packArgs.MinClientVersion != null)
             {
                 builder.MinClientVersion = _packArgs.MinClientVersion;

@@ -26,6 +26,7 @@ namespace NuGet.Commands
         public bool NoPackageAnalysis { get; set; }
         public string OutputDirectory { get; set; }
         public string Path { get; set; }
+        public bool Serviceable { get; set; }
         public string Suffix { get; set; }
         public bool Symbols { get; set; }
         public bool Tool { get; set; }

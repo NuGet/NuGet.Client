@@ -555,6 +555,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Sets the nuspec serviceable element to true..
+        /// </summary>
+        public static string Serviceable_Description {
+            get {
+                return ResourceManager.GetString("Serviceable_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Specifies the server URL.
         /// </summary>
         public static string Source_Description {
