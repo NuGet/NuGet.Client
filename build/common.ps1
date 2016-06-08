@@ -564,10 +564,13 @@ Function Test-ClientsProjects {
         [string]$Configuration = $DefaultConfiguration,
         [string]$MSBuildVersion = $DefaultMSBuildVersion
     )
+    
+    # We don't run command line tests on Dev15 as we don't build a nuget.exe for this version
     $testProjectsLocation = Join-Path $NuGetClientRoot test\NuGet.Clients.Tests
     $testProjects = Get-ChildItem $testProjectsLocation -Recurse -Filter '*.csproj' |
         %{ $_.FullName } |
-        ?{ -not $_.EndsWith('WebAppTest.csproj') }
+        ?{ -not $_.EndsWith('WebAppTest.csproj') -and 
+           -not ($_.EndsWith('NuGet.CommandLine.Test.csproj') -and ($MSBuildVersion -eq '15'))}
 
     $testProjects | Test-ClientProject -Configuration $Configuration -MSBuildVersion $MSBuildVersion
 }
