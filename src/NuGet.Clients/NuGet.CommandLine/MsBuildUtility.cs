@@ -397,7 +397,7 @@ namespace NuGet.CommandLine
 
                 if (console != null)
                 {
-                    if (console.Verbosity == LogLevel.Verbose)
+                    if (console.Verbosity == Verbosity.Detailed)
                     {
                         console.WriteLine(
                             LocalizedResourceManager.GetString(

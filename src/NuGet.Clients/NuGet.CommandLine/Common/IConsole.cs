@@ -7,7 +7,7 @@ namespace NuGet.Common
     {
         int CursorLeft { get; set; }
         int WindowWidth { get; set; }
-        LogLevel Verbosity { get; set; }
+        Verbosity Verbosity { get; set; }
         bool IsNonInteractive { get; set; }
 
         void Write(object value);

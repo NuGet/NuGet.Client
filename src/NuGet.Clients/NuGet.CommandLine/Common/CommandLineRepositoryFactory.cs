@@ -27,7 +27,7 @@ namespace NuGet.Common
                         return;
                     }
 
-                    if (_console.Verbosity == LogLevel.Verbose)
+                    if (_console.Verbosity == Verbosity.Detailed)
                     {
                         _console.WriteLine(
                             System.ConsoleColor.Green,

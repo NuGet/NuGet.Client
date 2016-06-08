@@ -122,7 +122,24 @@ namespace NuGet.CommandLine
             }
 
             IConsole console = Logger as IConsole;
-            console.Verbosity = LogLevel;
+            switch (LogLevel)
+            {
+                case LogLevel.Verbose:
+                {
+                    console.Verbosity = Verbosity.Detailed;
+                    break;
+                }
+                case LogLevel.Information:
+                {
+                    console.Verbosity = Verbosity.Normal;
+                    break;
+                }
+                case LogLevel.Minimal:
+                {
+                    console.Verbosity = Verbosity.Quiet;
+                    break;
+                }
+            }                
         }
 
         private Configuration.ISettings DefaultSettings
@@ -224,7 +241,7 @@ namespace NuGet.CommandLine
                         Path.GetFileName(TargetPath)));
 
                 IConsole console = Logger as IConsole;
-                if (console != null && console.Verbosity == LogLevel.Verbose)
+                if (console != null && console.Verbosity == Verbosity.Detailed)
                 {
                     Logger.LogError(ex.ToString());
                 }
@@ -1259,8 +1276,8 @@ namespace NuGet.CommandLine
 
         private void WriteDetail(string format, params object[] args)
         {
-            var console = _logger as IConsole;
-            if (console != null && console.Verbosity == LogLevel.Verbose)
+            var console = _logger as Common.Console;
+            if (console != null && console.Verbosity == Verbosity.Detailed)
             {
                 console.WriteLine(format, args);
             }

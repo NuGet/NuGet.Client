@@ -520,7 +520,7 @@ namespace NuGet.CommandLine
 
                 var file = solutionFiles[0];
 
-                if (Verbosity == Common.LogLevel.Verbose)
+                if (Verbosity == Verbosity.Detailed)
                 {
                     Console.WriteLine(
                         LocalizedResourceManager.GetString("RestoreCommandRestoringPackagesForSolution"),
@@ -537,7 +537,7 @@ namespace NuGet.CommandLine
 
             if (File.Exists(packagesConfigFile))
             {
-                if (Verbosity == Common.LogLevel.Verbose)
+                if (Verbosity == Verbosity.Detailed)
                 {
                     Console.WriteLine(
                             LocalizedResourceManager.GetString(

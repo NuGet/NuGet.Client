@@ -114,7 +114,24 @@ namespace NuGet.CommandLine
             packArgs.Exclude = Exclude;
             packArgs.ExcludeEmptyDirectories = ExcludeEmptyDirectories;
             packArgs.IncludeReferencedProjects = IncludeReferencedProjects;
-            packArgs.LogLevel = Verbosity;
+            switch (Verbosity)
+            {
+                case Verbosity.Detailed:
+                {
+                    packArgs.LogLevel = Common.LogLevel.Verbose;
+                    break;
+                }
+                case Verbosity.Normal:
+                {
+                    packArgs.LogLevel = Common.LogLevel.Information;
+                    break;
+                }
+                case Verbosity.Quiet:
+                {
+                    packArgs.LogLevel = Common.LogLevel.Minimal;
+                    break;
+                }
+            }
             packArgs.MinClientVersion = _minClientVersionValue;
             packArgs.NoDefaultExcludes = NoDefaultExcludes;
             packArgs.NoPackageAnalysis = NoPackageAnalysis;

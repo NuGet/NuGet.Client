@@ -151,7 +151,7 @@ namespace NuGet.Commands
             if (Verbose)
             {
                 Console.WriteWarning(LocalizedResourceManager.GetString("Option_VerboseDeprecated"));
-                Verbosity = Common.LogLevel.Verbose;
+                Verbosity = Verbosity.Detailed;
             }
 
             var listEndpoints = await GetListEndpointsAsync();
@@ -161,7 +161,7 @@ namespace NuGet.Commands
 
             if (packages != null)
             {
-                if (Verbosity == Common.LogLevel.Verbose)
+                if (Verbosity == Verbosity.Detailed)
                 {
                     /***********************************************
                      * Package-Name
