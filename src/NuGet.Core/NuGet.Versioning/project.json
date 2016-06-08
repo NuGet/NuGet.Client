@@ -29,7 +29,7 @@
         "System.Linq": "4.0.0-beta-23109",
         "System.Resources.ResourceManager": "4.0.0-beta-23109",
         "System.Reflection": "4.0.10-beta-23109",
-        "System.Runtime.Extensions": "4.0.11-beta-*"
+        "System.Runtime.Extensions": "4.0.11-beta-23516"
       }
     }
   }

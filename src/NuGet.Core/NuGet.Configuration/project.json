@@ -33,7 +33,7 @@
     },
     "dnxcore50": {
       "dependencies": {
-        "System.Runtime.Extensions": "4.0.11-beta-*",
+        "System.Runtime.Extensions": "4.0.11-beta-23516",
         "System.Collections": "4.0.10-beta-23109",
         "System.Collections.Concurrent": "4.0.10-beta-23109",
         "System.Diagnostics.Debug": "4.0.10-beta-23109",
