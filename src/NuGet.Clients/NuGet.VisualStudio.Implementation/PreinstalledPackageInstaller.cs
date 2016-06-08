@@ -176,6 +176,7 @@ namespace NuGet.VisualStudio
             var defaultProjectContext = new VSAPIProjectContext();
             var nuGetProject = await PackageManagementHelpers.GetProjectAsync(_solutionManager, project, defaultProjectContext);
 
+            // For BuildIntegratedNuGetProject, nuget will ignore preunzipped configuration.
             var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
 
             var repository = (buildIntegratedProject == null && configuration.IsPreunzipped) ?

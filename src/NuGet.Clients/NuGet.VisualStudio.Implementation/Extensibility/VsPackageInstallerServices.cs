@@ -188,7 +188,7 @@ namespace NuGet.VisualStudio
 
         public bool IsPackageInstalled(Project project, string packageId)
         {
-            return IsPackageInstalled(project, packageId, version: null);
+            return IsPackageInstalled(project, packageId, nugetVersion: null);
         }
 
         public bool IsPackageInstalledEx(Project project, string packageId, string versionString)
@@ -206,7 +206,20 @@ namespace NuGet.VisualStudio
             return IsPackageInstalled(project, packageId, version);
         }
 
-        public bool IsPackageInstalled(Project project, string packageId, NuGetVersion version)
+        public bool IsPackageInstalled(Project project, string packageId, SemanticVersion version)
+        {
+            NuGetVersion nugetVersion;
+            if (NuGetVersion.TryParse(version.ToString(), out nugetVersion))
+            {
+                return IsPackageInstalled(project, packageId, nugetVersion);
+            }
+            else
+            {
+                throw new ArgumentException(VsResources.InvalidNuGetVersionString, "versionString");
+            }
+        }
+
+        private bool IsPackageInstalled(Project project, string packageId, NuGetVersion nugetVersion)
         {
             if (project == null)
             {
@@ -229,10 +242,10 @@ namespace NuGet.VisualStudio
                     var packages = installedPackageReferences.Where(p =>
                                         StringComparer.OrdinalIgnoreCase.Equals(p.PackageIdentity.Id, packageId));
 
-                    if (version != null)
+                    if (nugetVersion != null)
                     {
                         packages = packages.Where(p =>
-                                        VersionComparer.VersionRelease.Equals(p.PackageIdentity.Version, version));
+                                        VersionComparer.VersionRelease.Equals(p.PackageIdentity.Version, nugetVersion));
                     }
 
                     return packages.Any();
