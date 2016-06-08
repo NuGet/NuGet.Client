@@ -35,11 +35,6 @@
       "dependencies": {
         "NETStandard.Library": "1.6.0"
       },
-      "imports": [
-        "dotnet5.6",
-        "dnxcore50",
-        "portable-net45+win8"
-      ],
       "buildOptions": {
         "define": [
           "IS_CORECLR"
