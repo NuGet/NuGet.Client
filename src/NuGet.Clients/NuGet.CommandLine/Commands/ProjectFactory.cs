@@ -16,7 +16,6 @@ using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.ProjectManagement;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -947,16 +946,16 @@ namespace NuGet.CommandLine
                 props.Add(property.Name, property.EvaluatedValue);
             }
             
-            if (!props.ContainsKey(NuGetProjectMetadataKeys.TargetFramework))
+            if (!props.ContainsKey(ProjectManagement.NuGetProjectMetadataKeys.TargetFramework))
             {
-                props.Add(NuGetProjectMetadataKeys.TargetFramework, new NuGetFramework(TargetFramework.Identifier, TargetFramework.Version, TargetFramework.Profile));
+                props.Add(ProjectManagement.NuGetProjectMetadataKeys.TargetFramework, new NuGetFramework(TargetFramework.Identifier, TargetFramework.Version, TargetFramework.Profile));
             }
-            if (!props.ContainsKey(NuGetProjectMetadataKeys.Name))
+            if (!props.ContainsKey(ProjectManagement.NuGetProjectMetadataKeys.Name))
             {
-                props.Add(NuGetProjectMetadataKeys.Name, Path.GetFileNameWithoutExtension(_project.FullPath));
+                props.Add(ProjectManagement.NuGetProjectMetadataKeys.Name, Path.GetFileNameWithoutExtension(_project.FullPath));
             }
 
-            PackagesConfigNuGetProject packagesProject = new PackagesConfigNuGetProject(_project.DirectoryPath, props);
+            ProjectManagement.PackagesConfigNuGetProject packagesProject = new ProjectManagement.PackagesConfigNuGetProject(_project.DirectoryPath, props);
 
             if (!packagesProject.PackagesConfigExists())
             {
@@ -1169,7 +1168,7 @@ namespace NuGet.CommandLine
         private void AddFiles(Packaging.PackageBuilder builder, string itemType, string targetFolder)
         {
             // Skip files that are added by dependency packages
-            FolderNuGetProject project = new FolderNuGetProject(_project.FullPath);
+            ProjectManagement.FolderNuGetProject project = new ProjectManagement.FolderNuGetProject(_project.FullPath);
             var referencesTask = project.GetInstalledPackagesAsync(new CancellationToken());
             referencesTask.Wait();
             var references = referencesTask.Result;
