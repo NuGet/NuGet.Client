@@ -44,9 +44,9 @@
         "portable-net45+win8"
       ],
       "dependencies": {
-        "NETStandard.Library": "1.6.0-rc3-24128-00",
-        "System.ObjectModel": "4.0.12-rc3-24128-00",
-        "System.Dynamic.Runtime": "4.0.11-rc3-24128-00"
+        "NETStandard.Library": "1.6.0-rc3-24208-04",
+        "System.ObjectModel": "4.0.12-rc3-24208-04",
+        "System.Dynamic.Runtime": "4.0.11-rc3-24208-04"
       },
       "buildOptions": {
         "define": [
