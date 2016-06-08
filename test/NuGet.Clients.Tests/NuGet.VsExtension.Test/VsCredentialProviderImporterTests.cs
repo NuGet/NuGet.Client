@@ -83,5 +83,21 @@ namespace NuGet.VsExtension.Test
 
             Assert.IsType<VsCredentialProviderAdapter>(result);
         }
+
+        [Fact]
+        public void WhenVstsIntializerThrows_ThenGetProviderReturnsNull()
+        {
+            _mockDte.Setup(x => x.Version).Returns("14.0.247200.00");
+            var importer = new VsCredentialProviderImporter(
+                _mockDte.Object,
+                _fallbackProviderFactory,
+                _errorDelegate,
+                () => { throw new ArgumentException(); });
+            importer.Version = _mockDte.Object.Version;
+
+            var result = importer.GetProvider();
+
+            Assert.Null(result);
+        }
     }
 }

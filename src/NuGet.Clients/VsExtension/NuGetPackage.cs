@@ -379,10 +379,17 @@ namespace NuGetVSExtension
                 new CredentialProviderAdapter(new SettingsCredentialProvider(NuGet.NullCredentialProvider.
                     Instance, packageSourceProvider)));
 
+            Action<string> errorDelegate = (error) =>
+            {
+                _outputConsoleLogger.OutputConsole.WriteLine(error);
+                ActivityLog.LogWarning(ExceptionHelper.LogEntrySource, error);
+            };
+
             var importer = new VsCredentialProviderImporter(
-                this._dte,
+                _dte,
                 VisualStudioAccountProvider.FactoryMethod,
-                this._outputConsoleLogger.OutputConsole.WriteLine);
+                errorDelegate);
+
             var vstsProvider = importer.GetProvider();
             if (vstsProvider != null)
             {
