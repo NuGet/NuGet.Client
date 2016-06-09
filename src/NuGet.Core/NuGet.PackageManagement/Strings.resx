@@ -294,4 +294,14 @@
   <data name="FoundPackageInPackagesFolder" xml:space="preserve">
     <value>Found package '{0} {1}' in '{2}'.</value>
   </data>
+  <data name="MultiplePackageTypesNotSupported" xml:space="preserve">
+    <value>Package '{0}' has multiple package types, which is not supported.</value>
+    <comment>{0} is replaced with the package identity.</comment>
+  </data>
+  <data name="UnsupportedPackageType" xml:space="preserve">
+    <value>Package '{0}' has a package type '{1}' that is not supported by project '{2}'.</value>
+    <comment>{0} is the package identity.
+{1} is the unsupported package type.
+{2} is the project name.</comment>
+  </data>
 </root>

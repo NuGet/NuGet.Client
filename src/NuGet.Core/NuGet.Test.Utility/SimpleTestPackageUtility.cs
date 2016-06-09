@@ -164,6 +164,25 @@ namespace NuGet.Test.Utility
                     }
                 }
 
+                if (packageContext.PackageTypes.Any())
+                {
+                    var metadata = xml.Element("package").Element("metadata");
+                    var packageTypes = new XElement("packageTypes");
+                    metadata.Add(packageTypes);
+
+                    foreach (var packageType in packageContext.PackageTypes)
+                    {
+                        var packageTypeElement = new XElement("packageType");
+                        packageTypeElement.Add(new XAttribute("name", packageType.Name));
+                        if (packageType.Version != PackageType.EmptyVersion)
+                        {
+                            packageTypeElement.Add(new XAttribute("version", packageType.Version));
+                        }
+
+                        packageTypes.Add(packageTypeElement);
+                    }
+                }
+
                 zip.AddEntry($"{id}.nuspec", xml.ToString(), Encoding.UTF8);
             }
 

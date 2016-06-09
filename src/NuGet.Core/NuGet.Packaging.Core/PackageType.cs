@@ -38,6 +38,26 @@ namespace NuGet.Packaging.Core
             return Equals(obj as PackageType);
         }
 
+        public static bool operator ==(PackageType a, PackageType b)
+        {
+            if (ReferenceEquals(a, b))
+            {
+                return true;
+            }
+            
+            if (((object)a == null) || ((object)b == null))
+            {
+                return false;
+            }
+
+            return a.Equals(b);
+        }
+
+        public static bool operator !=(PackageType a, PackageType b)
+        {
+            return !(a == b);
+        }
+
         public bool Equals(PackageType other)
         {
             if (other == null)

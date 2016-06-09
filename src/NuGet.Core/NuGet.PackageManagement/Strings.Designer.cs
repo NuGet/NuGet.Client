@@ -213,6 +213,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Package &apos;{0}&apos; has multiple package types, which is not supported..
+        /// </summary>
+        public static string MultiplePackageTypesNotSupported {
+            get {
+                return ResourceManager.GetString("MultiplePackageTypesNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Already referencing a newer version of &apos;{0}&apos;...
         /// </summary>
         public static string NewerVersionAlreadyReferenced {
@@ -569,6 +578,15 @@ namespace NuGet.PackageManagement {
         public static string UnsupportedPackageFeature {
             get {
                 return ResourceManager.GetString("UnsupportedPackageFeature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Package &apos;{0}&apos; has a package type &apos;{1}&apos; that is not supported by project &apos;{2}&apos;. .
+        /// </summary>
+        public static string UnsupportedPackageType {
+            get {
+                return ResourceManager.GetString("UnsupportedPackageType", resourceCulture);
             }
         }
         

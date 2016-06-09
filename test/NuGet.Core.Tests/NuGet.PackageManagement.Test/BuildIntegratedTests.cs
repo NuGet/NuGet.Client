@@ -3,11 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Moq;
 using Newtonsoft.Json.Linq;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.PackageManagement;
@@ -317,6 +320,9 @@ namespace NuGet.Test
                     testSolutionManager,
                     deleteOnRestartManager);
 
+                var installationCompatibility = new Mock<IInstallationCompatibility>();
+                nuGetPackageManager.InstallationCompatibility = installationCompatibility.Object;
+
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var token = CancellationToken.None;
 
@@ -340,6 +346,17 @@ namespace NuGet.Test
                 // Assert
                 Assert.Equal(packageIdentity, installedPackages.First().PackageIdentity);
                 Assert.True(File.Exists(lockFile));
+
+                installationCompatibility.Verify(
+                    x => x.EnsurePackageCompatibility(
+                        buildIntegratedProject,
+                        It.Is<INuGetPathContext>(y => y.UserPackageFolder != null),
+                        It.Is<IEnumerable<NuGetProjectAction>>(
+                            y => y.Count() == 1 &&
+                            y.First().NuGetProjectActionType == NuGetProjectActionType.Install &&
+                            y.First().PackageIdentity == packageIdentity),
+                        It.IsAny<RestoreResult>()),
+                    Times.Once);
             }
         }
 
