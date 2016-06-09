@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using NuGet.Common;
+using NuGet.Protocol;
 
 namespace NuGet.CommandLine.Test
 {
@@ -54,6 +55,8 @@ namespace NuGet.CommandLine.Test
             Put = new RouteTable(BasePath);
             Delete = new RouteTable(BasePath);
         }
+
+        private List<string> ServerWarnings { get; } = new List<string>();
 
         /// <summary>
         /// Starts the mock server.
@@ -303,6 +306,11 @@ namespace NuGet.CommandLine.Test
                         {
                             response.StatusCode = (int)r;
                         }
+
+                        foreach (var warning in ServerWarnings)
+                        {
+                            response.Headers.Add(ProtocolConstants.ServerWarningHeader, warning);
+                        }
                     }
                     else
                     {
@@ -415,6 +423,22 @@ namespace NuGet.CommandLine.Test
         {
             XDocument doc = new XDocument(ToODataEntryXElement(package));
             return doc.ToString();
+        }
+
+        public void AddServerWarnings(string[] messages)
+        {
+            if (messages == null)
+            {
+                return;
+            }
+
+            foreach (var message in messages)
+            {
+                if (!string.IsNullOrEmpty(message))
+                {
+                    ServerWarnings.Add(message);
+                }
+            }
         }
 
         public void Dispose()

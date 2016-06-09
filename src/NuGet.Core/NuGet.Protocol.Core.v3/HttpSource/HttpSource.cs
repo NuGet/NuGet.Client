@@ -271,6 +271,8 @@ namespace NuGet.Protocol
             try
             {
                 response = await RetryHandler.SendAsync(request, log, cancellationToken);
+				
+                response.LogServerWarning(log);
             }
             catch
             {
