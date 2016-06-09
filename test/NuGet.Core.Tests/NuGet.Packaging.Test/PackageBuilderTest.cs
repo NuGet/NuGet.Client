@@ -2473,6 +2473,51 @@ Enabling license acceptance requires a license url.");
             }
         }
 
+        [Fact]
+        public void PackageBuilderWorksWithFileNameWithoutAnExtension()
+        {
+            // Arrange
+            var fileNames = new[] {
+                        @"myfile",
+                    };
+
+            // Act
+            var builder = new PackageBuilder { Id = "test", Version = NuGetVersion.Parse("1.0"), Description = "test" };
+            builder.Authors.Add("test");
+            foreach (var name in fileNames)
+            {
+                builder.Files.Add(CreatePackageFile(name.Replace('\\', Path.DirectorySeparatorChar)));
+            }
+
+            // Assert
+            using (MemoryStream stream = new MemoryStream())
+            {
+                builder.Save(stream);
+
+                using (var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true))
+                {
+                    var files = archive.GetFiles().OrderBy(s => s).ToArray();
+
+                    // Linux sorts the first two in different order than Windows
+                    Assert.Contains<string>(@"[Content_Types].xml", files);
+                    Assert.Contains<string>(@"_rels/.rels", files);
+                    Assert.Equal(@"myfile", files[2]);
+
+                    Assert.StartsWith(@"package/services/metadata/core-properties/", files[3]);
+                    Assert.EndsWith(@".psmdcp", files[3]);
+
+                    Assert.Equal(@"test.nuspec", files[4]);
+
+                    var contentTypesReader
+                        = new StreamReader(archive.Entries.Single(file => file.FullName == @"[Content_Types].xml").Open());
+                    var contentTypesXml = XDocument.Parse(contentTypesReader.ReadToEnd());
+                    var node = contentTypesXml.Descendants().Single(e => e.Name.LocalName == "Override");
+
+                    Assert.StartsWith(@"<Override PartName=""/myfile"" ContentType=""application/octet""", node.ToString());
+                }
+            }
+        }
+
         private static IPackageFile CreatePackageFile(string name)
         {
             var file = new Mock<IPackageFile>();

@@ -324,8 +324,8 @@ namespace NuGet.Packaging
                 WriteManifest(package, DetermineMinimumSchemaVersion(Files, DependencyGroups), psmdcpPath);
 
                 // Write the files to the package
-                HashSet<string> filesWithoutExtensions;
-                var extensions = WriteFiles(package, out filesWithoutExtensions);
+                HashSet<string> filesWithoutExtensions = new HashSet<string>();
+                var extensions = WriteFiles(package, filesWithoutExtensions);
 
                 extensions.Add("nuspec");
 
@@ -564,10 +564,9 @@ namespace NuGet.Packaging
             }
         }
 
-        private HashSet<string> WriteFiles(ZipArchive package, out HashSet<string> filesWithoutExtensions)
+        private HashSet<string> WriteFiles(ZipArchive package, HashSet<string> filesWithoutExtensions)
         {
             var extensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            filesWithoutExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             // Add files that might not come from expanding files on disk
             foreach (IPackageFile file in new HashSet<IPackageFile>(Files))
