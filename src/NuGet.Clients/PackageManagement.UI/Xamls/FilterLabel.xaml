@@ -19,7 +19,7 @@
       <RowDefinition Height="auto" />
       <RowDefinition Height="auto" />
     </Grid.RowDefinitions>
-    <Button
+    <Button x:Name="_labelButton"
       Grid.Row="0"
       Click="ButtonClicked">
       <Button.Template>

@@ -105,6 +105,8 @@
         Margin="3,0"
         VerticalAlignment="Center"
         Padding="0"
+        ToolTip="{x:Static nuget:Resources.ToolTip_Refresh}"
+        AutomationProperties.Name="{x:Static nuget:Resources.ToolTip_Refresh}"
         Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
         Command="{x:Static nuget:Commands.RestartSearchCommand}">
         <Image
@@ -160,6 +162,8 @@
         AutomationProperties.AutomationId="Button_Settings"
         VerticalAlignment="Center"
         Padding="0"
+        ToolTip="{x:Static nuget:Resources.ToolTip_Settings}"
+        AutomationProperties.Name="{x:Static nuget:Resources.ToolTip_Settings}"
         Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
         Click="_settingsButton_Click">
         <Rectangle
