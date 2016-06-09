@@ -14,7 +14,7 @@ using NuGet.Packaging.Core;
 
 namespace NuGet.ProjectManagement
 {
-    internal static class MSBuildNuGetProjectSystemUtility
+    public static class MSBuildNuGetProjectSystemUtility
     {
         internal static FrameworkSpecificGroup GetMostCompatibleGroup(NuGetFramework projectTargetFramework,
             IEnumerable<FrameworkSpecificGroup> itemGroups)
@@ -34,6 +34,36 @@ namespace NuGet.ProjectManagement
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Parse existing nuget framework for .net core 4.5.1 or 4.5 and return compatible framework instance
+        /// </summary>
+        /// <param name="framework"></param>
+        /// <returns></returns>
+        public static NuGetFramework GetCompatibleFramework(NuGetFramework framework)
+        {
+            if (framework == null)
+            {
+                throw new ArgumentNullException("framework");
+            }
+
+            // if the framework is .net core 4.5.1 return windows 8.1
+            if (framework.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.NetCore)
+                && framework.Version.Equals(Version.Parse("4.5.1.0")))
+            {
+                return new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows,
+                       new Version("8.1"), framework.Profile);
+            }
+            // if the framework is .net core 4.5 return 8.0
+            if (framework.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.NetCore)
+                && framework.Version.Equals(Version.Parse("4.5.0.0")))
+            {
+                return new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows,
+                       new Version("8.0"), framework.Profile);
+            }
+
+            return framework;
         }
 
         /// <summary>

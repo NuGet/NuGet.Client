@@ -34,5 +34,7 @@ namespace NuGet.ProjectManagement
             = new ReadOnlyCollection<string>(new[] { ".dll", ".exe", ".winmd" });
 
         public const string ResourceAssemblyExtension = ".resources.dll";
+
+        public static readonly string NativeTFM = "Native, Version=0.0";
     }
 }
