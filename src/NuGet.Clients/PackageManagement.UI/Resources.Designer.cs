@@ -1242,6 +1242,24 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Refresh.
+        /// </summary>
+        public static string ToolTip_Refresh {
+            get {
+                return ResourceManager.GetString("ToolTip_Refresh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Settings.
+        /// </summary>
+        public static string ToolTip_Settings {
+            get {
+                return ResourceManager.GetString("ToolTip_Settings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Uninstall this package..
         /// </summary>
         public static string ToolTip_UninstallButton {
