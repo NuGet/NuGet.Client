@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement.UI;
 using NuGet.Versioning;
@@ -45,7 +44,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         public AsyncLazy<IEnumerable<NuGetVersion>> AsyncLazyVersions { get; set; }
 
-        public SemanticVersion Version
+        public NuGet.SemanticVersion Version
         {
             get
             {
@@ -53,8 +52,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                 if (nVersion != null)
                 {
-                    SemanticVersion sVersion;
-                    SemanticVersion.TryParse(nVersion.ToNormalizedString(), out sVersion);
+                    NuGet.SemanticVersion sVersion;
+                    NuGet.SemanticVersion.TryParse(nVersion.ToNormalizedString(), out sVersion);
                     return sVersion;
                 }
 
