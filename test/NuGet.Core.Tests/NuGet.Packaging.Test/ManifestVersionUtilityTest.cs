@@ -10,30 +10,6 @@ namespace NuGet.Packaging.Test
     public class ManifestVersionUtilityTest
     {
         [Fact]
-        public void GetManifestVersionReturns8IfServiceableIsSet()
-        {
-            // Arrange
-            var metadata = new ManifestMetadata
-            {
-                Id = "Foo",
-                Version = NuGetVersion.Parse("1.0"),
-                Authors = new[] { "A, B" },
-                Description = "Description",
-                Serviceable = true,
-                PackageTypes = new[]
-                {
-                    new PackageType("Bar", new System.Version(2, 0))
-                }
-            };
-
-            // Act
-            var version = ManifestVersionUtility.GetManifestVersion(metadata);
-
-            // Assert
-            Assert.Equal(8, version);
-        }
-
-        [Fact]
         public void GetManifestVersionReturns7IfPackageTypesAreSet()
         {
             // Arrange

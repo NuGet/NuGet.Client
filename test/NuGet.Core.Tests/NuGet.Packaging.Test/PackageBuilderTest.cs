@@ -531,7 +531,7 @@ namespace NuGet.Packaging.Test
 
                 // Assert
                 Assert.Equal(@"<?xml version=""1.0"" encoding=""utf-8""?>
-<package xmlns=""http://schemas.microsoft.com/packaging/2016/06/nuspec.xsd"">
+<package xmlns=""http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd"">
   <metadata>
     <id>A</id>
     <version>1.0.0</version>
