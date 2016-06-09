@@ -324,11 +324,12 @@ namespace NuGet.Packaging
                 WriteManifest(package, DetermineMinimumSchemaVersion(Files, DependencyGroups), psmdcpPath);
 
                 // Write the files to the package
-                var extensions = WriteFiles(package);
+                HashSet<string> filesWithoutExtensions;
+                var extensions = WriteFiles(package, out filesWithoutExtensions);
 
                 extensions.Add("nuspec");
 
-                WriteOpcContentTypes(package, extensions);
+                WriteOpcContentTypes(package, extensions, filesWithoutExtensions);
 
                 WriteOpcPackageProperties(package, psmdcpPath);
             }
@@ -563,9 +564,10 @@ namespace NuGet.Packaging
             }
         }
 
-        private HashSet<string> WriteFiles(ZipArchive package)
+        private HashSet<string> WriteFiles(ZipArchive package, out HashSet<string> filesWithoutExtensions)
         {
             var extensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            filesWithoutExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             // Add files that might not come from expanding files on disk
             foreach (IPackageFile file in new HashSet<IPackageFile>(Files))
@@ -581,6 +583,10 @@ namespace NuGet.Packaging
                         if (!string.IsNullOrEmpty(fileExtension))
                         {
                             extensions.Add(fileExtension.Substring(1));
+                        }
+                        else
+                        {
+                            filesWithoutExtensions.Add($"/{file.Path.Replace("\\", "/")}");
                         }
                     }
                     catch
@@ -781,7 +787,7 @@ namespace NuGet.Packaging
             }
         }
 
-        private static void WriteOpcContentTypes(ZipArchive package, HashSet<string> extensions)
+        private static void WriteOpcContentTypes(ZipArchive package, HashSet<string> extensions, HashSet<string> filesWithoutExtensions)
         {
             // OPC backwards compatibility
             ZipArchiveEntry relsEntry = package.CreateEntry("[Content_Types].xml", CompressionLevel.Optimal);
@@ -800,6 +806,15 @@ namespace NuGet.Packaging
                 element.Add(
                     new XElement(content + "Default",
                         new XAttribute("Extension", extension),
+                        new XAttribute("ContentType", "application/octet")
+                        )
+                    );
+            }
+            foreach (var file in filesWithoutExtensions)
+            {
+                element.Add(
+                    new XElement(content + "Override",
+                        new XAttribute("PartName", file),
                         new XAttribute("ContentType", "application/octet")
                         )
                     );
