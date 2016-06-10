@@ -34,5 +34,13 @@ namespace NuGet.ProjectManagement
             = new ReadOnlyCollection<string>(new[] { ".dll", ".exe", ".winmd" });
 
         public const string ResourceAssemblyExtension = ".resources.dll";
+
+        public static readonly string NativeTFM = "Native, Version=0.0";
+        public static readonly string JSProjectExt = ".jsproj";
+        public static readonly string VCXProjextExt = ".vcxproj";
+        public static readonly string ProjectExt = "ProjectExt";
+        public static readonly string TargetPlatformIdentifier = "TargetPlatformIdentifier";
+        public static readonly string TargetPlatformVersion = "TargetPlatformVersion";
+        public static readonly string TargetFrameworkMoniker = "TargetFrameworkMoniker";
     }
 }

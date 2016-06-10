@@ -600,19 +600,9 @@ namespace NuGet.PackageManagement.VisualStudio
             if (!String.IsNullOrEmpty(targetFrameworkMoniker))
             {
                 var framework = NuGetFramework.Parse(targetFrameworkMoniker);
-                //if the framework is .net core 4.5.1 return windows 8.1
-                if (framework.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.NetCore)
-                    && framework.Version.Equals(Version.Parse("4.5.1.0")))
-                {
-                    return new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, Version.Parse("8.1"), framework.Profile);
-                }
-                //if the framework is .net core 4.5 return 8.0
-                if (framework.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.NetCore)
-                    && framework.Version.Equals(Version.Parse("4.5.0.0")))
-                {
-                    return new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, Version.Parse("8.0"), framework.Profile);
-                }
-                return NuGetFramework.Parse(targetFrameworkMoniker);
+
+                // further parse framework for .net core 4.5.1 or 4.5 and get compatible framework instance
+               return MSBuildNuGetProjectSystemUtility.GetProjectFrameworkReplacement(framework);
             }
 
             return NuGetFramework.UnsupportedFramework;
@@ -660,7 +650,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 // The C++ project does not have a TargetFrameworkMoniker property set. 
                 // We hard-code the return value to Native.
-                return "Native, Version=0.0";
+                return Constants.NativeTFM;
             }
 
             string targetFramework = GetPropertyValue<string>(envDTEProject, "TargetFrameworkMoniker");
