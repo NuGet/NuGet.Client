@@ -226,30 +226,11 @@ namespace NuGetConsole
 
         private string GetPackageInstalledPath(PackageIdentity packageIdentity)
         {
-            string effectiveGlobalPackagesFolder = null;
-            if (!string.IsNullOrEmpty(SolutionDirectory))
-            {
-                // Package not found in packages folder
-                effectiveGlobalPackagesFolder = BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
-                                                        SolutionDirectory,
-                                                        Settings);
-            }
-            else
-            {
-                // No solution available. Use default global packages folder
-                effectiveGlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(Settings);
-            }
-
-            var versionFolderPathResolver = new VersionFolderPathResolver(effectiveGlobalPackagesFolder);
-            var hashPath = versionFolderPathResolver.GetHashPath(packageIdentity.Id, packageIdentity.Version);
-
-            if (File.Exists(hashPath))
-            {
-                var packageInstallPath = Path.GetDirectoryName(hashPath);
-                return packageInstallPath;
-            }
-
-            return null;
+            var nugetPaths = NuGetPathContext.Create(Settings);
+            var fallbackResolver = new FallbackPackagePathResolver(nugetPaths);
+            
+            // Verify the package exists and return the path. Return null otherwise.
+            return fallbackResolver.GetPackageDirectory(packageIdentity.Id, packageIdentity.Version);
         }
 
         private async Task ExecuteScriptCoreAsync(

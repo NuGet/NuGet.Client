@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using NuGet.Common;
-using NuGet.Configuration;
 
-namespace NuGet.CommandLine.XPlat
+namespace NuGet.Configuration
 {
-    public class CommandLineXPlatMachineWideSetting : IMachineWideSettings
+    /// <summary>
+    /// Machine wide settings based on the default machine wide config directory.
+    /// </summary>
+    public class XPlatMachineWideSetting : IMachineWideSettings
     {
         Lazy<IEnumerable<Settings>> _settings;
 
-        public CommandLineXPlatMachineWideSetting()
+        public XPlatMachineWideSetting()
         {
             var baseDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.MachineWideConfigDirectory);
             _settings = new Lazy<IEnumerable<Settings>>(

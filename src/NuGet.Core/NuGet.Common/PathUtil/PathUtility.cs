@@ -1,10 +1,48 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace NuGet.Common
 {
     public static class PathUtility
     {
+        /// <summary>
+        /// Returns OrdinalIgnoreCase windows and mac. Ordinal for linux.
+        /// </summary>
+        /// <returns></returns>
+        public static StringComparer GetStringComparerBasedOnOS()
+        {
+            if (RuntimeEnvironmentHelper.IsWindows || RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                return StringComparer.OrdinalIgnoreCase;
+            }
+
+            return StringComparer.Ordinal;
+        }
+
+        /// <summary>
+        /// Returns distinct orderd paths based on the file system case sensitivity.
+        /// </summary>
+        public static IEnumerable<string> GetUniquePathsBasedOnOS(IEnumerable<string> paths)
+        {
+            if (paths == null)
+            {
+                throw new ArgumentNullException(nameof(paths));
+            }
+
+            var unique = new HashSet<string>(GetStringComparerBasedOnOS());
+
+            foreach (var path in paths)
+            {
+                if (unique.Add(path))
+                {
+                    yield return path;
+                }
+            }
+
+            yield break;
+        }
+
         public static string GetPathWithForwardSlashes(string path)
         {
             return path.Replace('\\', '/');

@@ -108,7 +108,7 @@ namespace NuGet.CommandLine.XPlat
                             GlobalPackagesFolder = packagesDirectory.HasValue() ? packagesDirectory.Value() : null,
                             Inputs = new List<string>(argRoot.Values),
                             Log = log,
-                            MachineWideSettings = new CommandLineXPlatMachineWideSetting(),
+                            MachineWideSettings = new XPlatMachineWideSetting(),
                             RequestProviders = providers,
                             Sources = sources.Values,
                             FallbackSources = fallBack.Values,

@@ -129,8 +129,14 @@
   <data name="InvalidNullSettingsOperation" xml:space="preserve">
     <value>"{0}" cannot be called on a NullSettings. This may be caused on account of insufficient permissions to read or write to "%AppData%\NuGet\NuGet.config".</value>
   </data>
+  <data name="MustContainAbsolutePath" xml:space="preserve">
+    <value>'{0}' must contain an absolute path '{1}'.</value>
+  </data>
   <data name="PackageSource_Invalid" xml:space="preserve">
     <value>The package source does not belong to the collection of available sources.</value>
+  </data>
+  <data name="RelativeEnvVarPath" xml:space="preserve">
+    <value>Environment variable '{0}' must contain an absolute path, the full path of '{1}' cannot be determined.</value>
   </data>
   <data name="Settings_FileName_Cannot_Be_A_Path" xml:space="preserve">
     <value>Parameter 'fileName' to Settings must be just a fileName and not a path</value>

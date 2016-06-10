@@ -37,7 +37,7 @@ namespace NuGet.Commands
         public async Task<Tuple<bool, List<RestoreTargetGraph>, RuntimeGraph>> TryRestore(LibraryRange projectRange,
             IEnumerable<FrameworkRuntimePair> frameworkRuntimePairs,
             HashSet<LibraryIdentity> allInstalledPackages,
-            NuGetv3LocalRepository localRepository,
+            IReadOnlyList<NuGetv3LocalRepository> localRepositories,
             RemoteDependencyWalker remoteWalker,
             RemoteWalkContext context,
             bool writeToLockFile,
@@ -75,8 +75,11 @@ namespace NuGet.Commands
                 _request.MaxDegreeOfConcurrency,
                 token);
 
+            // The user global package folder is always ordered first.
+            var userPackageFolder = localRepositories.First();
+
             // Clear the in-memory cache for newly installed packages
-            localRepository.ClearCacheForIds(allInstalledPackages.Select(package => package.Name));
+            userPackageFolder.ClearCacheForIds(allInstalledPackages.Select(package => package.Name));
 
             // Resolve runtime dependencies
             var runtimeGraphs = new List<RestoreTargetGraph>();
@@ -86,7 +89,7 @@ namespace NuGet.Commands
                 foreach (var graph in graphs)
                 {
                     // Get the runtime graph for this specific tfm graph
-                    var runtimeGraph = GetRuntimeGraph(graph, localRepository);
+                    var runtimeGraph = GetRuntimeGraph(graph, localRepositories);
                     var runtimeIds = runtimesByFramework[graph.Framework];
 
                     // Merge all runtimes for the output
@@ -97,7 +100,6 @@ namespace NuGet.Commands
                         runtimeIds.Where(rid => !string.IsNullOrEmpty(rid)),
                         remoteWalker,
                         context,
-                        localRepository,
                         runtimeGraph,
                         writeToLockFile: writeToLockFile,
                         token: token));
@@ -123,7 +125,7 @@ namespace NuGet.Commands
                     token);
 
                 // Clear the in-memory cache for newly installed packages
-                localRepository.ClearCacheForIds(allInstalledPackages.Select(package => package.Name));
+                userPackageFolder.ClearCacheForIds(allInstalledPackages.Select(package => package.Name));
             }
 
             return Tuple.Create(true, graphs, allRuntimes);
@@ -354,7 +356,6 @@ namespace NuGet.Commands
             IEnumerable<string> runtimeIds,
             RemoteDependencyWalker walker,
             RemoteWalkContext context,
-            NuGetv3LocalRepository localRepository,
             RuntimeGraph runtimes,
             bool writeToLockFile,
             CancellationToken token)
@@ -377,7 +378,7 @@ namespace NuGet.Commands
             return Task.WhenAll(resultGraphs);
         }
 
-        private RuntimeGraph GetRuntimeGraph(RestoreTargetGraph graph, NuGetv3LocalRepository localRepository)
+        private RuntimeGraph GetRuntimeGraph(RestoreTargetGraph graph, IReadOnlyList<NuGetv3LocalRepository> localRepositories)
         {
             // TODO: Caching!
             RuntimeGraph runtimeGraph;
@@ -403,11 +404,11 @@ namespace NuGet.Commands
                 }
 
                 // Locate the package in the local repository
-                var package = localRepository.FindPackagesById(match.Library.Name)
-                    .FirstOrDefault(p => p.Version == match.Library.Version);
+                var info = NuGetv3LocalRepositoryUtility.GetPackage(localRepositories, match.Library.Name, match.Library.Version);
 
-                if (package != null)
+                if (info != null)
                 {
+                    var package = info.Package;
                     var nextGraph = LoadRuntimeGraph(package);
                     if (nextGraph != null)
                     {

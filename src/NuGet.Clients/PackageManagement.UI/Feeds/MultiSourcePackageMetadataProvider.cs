@@ -20,13 +20,13 @@ namespace NuGet.PackageManagement.UI
     {
         private readonly IEnumerable<SourceRepository> _sourceRepositories;
         private readonly SourceRepository _localRepository;
-        private readonly SourceRepository _globalLocalRepository;
+        private readonly IEnumerable<SourceRepository> _globalLocalRepositories;
         private readonly Common.ILogger _logger;
 
         public MultiSourcePackageMetadataProvider(
             IEnumerable<SourceRepository> sourceRepositories,
             SourceRepository optionalLocalRepository,
-            SourceRepository optionalGlobalLocalRepository,
+            IEnumerable<SourceRepository> optionalGlobalLocalRepositories,
             Common.ILogger logger)
         {
             if (sourceRepositories == null)
@@ -37,7 +37,7 @@ namespace NuGet.PackageManagement.UI
 
             _localRepository = optionalLocalRepository;
 
-            _globalLocalRepository = optionalGlobalLocalRepository;
+            _globalLocalRepositories = optionalGlobalLocalRepositories;
 
             if (logger == null)
             {
@@ -110,21 +110,39 @@ namespace NuGet.PackageManagement.UI
             return completed.SelectMany(p => p);
         }
 
-        public async Task<IPackageSearchMetadata> GetLocalPackageMetadataAsync(PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
+        /// <summary>
+        /// Get package metadata from the package folders.
+        /// </summary>
+        public async Task<IPackageSearchMetadata> GetLocalPackageMetadataAsync(
+            PackageIdentity identity,
+            bool includePrerelease,
+            CancellationToken cancellationToken)
         {
-            var result = await _localRepository.GetPackageMetadataFromLocalSourceAsync(identity, cancellationToken);
+            var sources = new List<SourceRepository>();
 
-            if (result == null)
+            if (_localRepository != null)
             {
-                result = await _globalLocalRepository?.GetPackageMetadataFromLocalSourceAsync(identity, cancellationToken);
+                sources.Add(_localRepository);
+            }
 
-                if (result == null)
+            if (_globalLocalRepositories != null)
+            {
+                sources.AddRange(_globalLocalRepositories);
+            }
+
+            // Take the package from the first source it is found in
+            foreach (var source in sources)
+            {
+                var result = await source.GetPackageMetadataFromLocalSourceAsync(identity, cancellationToken);
+
+                if (result != null)
                 {
-                    return null;
+                    return result.WithVersions(asyncValueFactory: 
+                        () => FetchAndMergeVersionsAsync(identity, includePrerelease, cancellationToken));
                 }
             }
 
-            return result.WithVersions(asyncValueFactory: () => FetchAndMergeVersionsAsync(identity, includePrerelease, cancellationToken));
+            return null;
         }
 
         private static async Task<IEnumerable<VersionInfo>> MergeVersionsAsync(PackageIdentity identity, IEnumerable<IPackageSearchMetadata> packages)

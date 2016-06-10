@@ -394,8 +394,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 var packagesFolderPath = packageManager.PackagesFolderSourceRepository.PackageSource.Source;
                 var packagePathResolver = new PackagePathResolver(packagesFolderPath);
 
-                var globalFolderPath = SettingsUtility.GetGlobalPackagesFolder(_settings);
-                var globalPathResolver = new VersionFolderPathResolver(globalFolderPath);
+                var nugetPaths = NuGetPathContext.Create(_settings);
+                var fallbackResolver = new FallbackPackagePathResolver(nugetPaths);
 
                 var finishedPackages = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
 
@@ -419,7 +419,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             else
                             {
                                 // Global package
-                                pathToPackage = globalPathResolver.GetInstallPath(package.Id, package.Version);
+                                pathToPackage = fallbackResolver.GetPackageDirectory(package.Id, package.Version);
                             }
 
                             if (!string.IsNullOrEmpty(pathToPackage))
