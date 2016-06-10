@@ -33,6 +33,7 @@ namespace NuGet.PackageManagement
             ExternalProjectReferenceContext context,
             IEnumerable<SourceRepository> sources,
             string effectiveGlobalPackagesFolder,
+            IEnumerable<string> fallbackPackageFolders,
             CancellationToken token)
         {
             return await RestoreAsync(
@@ -40,6 +41,7 @@ namespace NuGet.PackageManagement
                 context,
                 sources,
                 effectiveGlobalPackagesFolder,
+                fallbackPackageFolders,
                 c => { },
                 token);
         }
@@ -52,6 +54,7 @@ namespace NuGet.PackageManagement
             ExternalProjectReferenceContext context,
             IEnumerable<SourceRepository> sources,
             string effectiveGlobalPackagesFolder,
+            IEnumerable<string> fallbackPackageFolders,
             Action<SourceCacheContext> cacheContextModifier,
             CancellationToken token)
         {
@@ -60,6 +63,7 @@ namespace NuGet.PackageManagement
                 cacheContextModifier(cacheContext);
 
                 var providers = RestoreCommandProviders.Create(effectiveGlobalPackagesFolder,
+                    fallbackPackageFolders,
                     sources,
                     cacheContext,
                     context.Logger);
@@ -269,10 +273,11 @@ namespace NuGet.PackageManagement
         /// <remarks>Floating versions and project.json files with supports require a full restore.</remarks>
         public static async Task<bool> IsRestoreRequired(
             IReadOnlyList<BuildIntegratedNuGetProject> projects,
-            VersionFolderPathResolver pathResolver,
+            IReadOnlyList<string> packageFolderPaths,
             ExternalProjectReferenceContext referenceContext)
         {
-            var hashesChecked = new HashSet<string>();
+            var packagesChecked = new HashSet<PackageIdentity>();
+            var pathResolvers = packageFolderPaths.Select(path => new VersionFolderPathResolver(path));
 
             // Validate project.lock.json files
             foreach (var project in projects)
@@ -301,23 +306,36 @@ namespace NuGet.PackageManagement
                 // Verify all libraries are on disk
                 foreach (var library in lockFile.Libraries)
                 {
-                    // Verify the SHA for each package
-                    var hashPath = pathResolver.GetHashPath(library.Name, library.Version);
+                    var identity = new PackageIdentity(library.Name, library.Version);
 
-                    // Libraries shared between projects can be skipped
-                    if (hashesChecked.Add(hashPath))
+                    // Each id/version only needs to be checked once
+                    if (packagesChecked.Add(identity))
                     {
-                        if (File.Exists(hashPath))
-                        {
-                            var sha512 = File.ReadAllText(hashPath);
+                        var found = false;
 
-                            if (library.Sha512 != sha512)
+                        //  Check each package folder. These need to match the order used for restore.
+                        foreach (var resolver in pathResolvers)
+                        {
+                            // Verify the SHA for each package
+                            var hashPath = resolver.GetHashPath(library.Name, library.Version);
+
+                            if (File.Exists(hashPath))
                             {
-                                // A package has changed
-                                return true;
+                                found = true;
+                                var sha512 = File.ReadAllText(hashPath);
+
+                                if (library.Sha512 != sha512)
+                                {
+                                    // A package has changed
+                                    return true;
+                                }
+
+                                // Skip checking the rest of the package folders
+                                break;
                             }
                         }
-                        else
+
+                        if (!found)
                         {
                             // A package is missing
                             return true;

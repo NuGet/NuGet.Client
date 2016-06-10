@@ -20,14 +20,12 @@ namespace NuGet.Commands
             LockFileLibrary library,
             LocalPackageInfo package,
             RestoreTargetGraph targetGraph,
-            VersionFolderPathResolver defaultPackagePathResolver,
             LibraryIncludeFlags dependencyType)
         {
             return CreateLockFileTargetLibrary(
                 library,
                 package,
                 targetGraph,
-                defaultPackagePathResolver,
                 dependencyType: dependencyType,
                 targetFrameworkOverride: null,
                 dependencies: null);
@@ -37,7 +35,6 @@ namespace NuGet.Commands
             LockFileLibrary library,
             LocalPackageInfo package,
             RestoreTargetGraph targetGraph,
-            VersionFolderPathResolver defaultPackagePathResolver,
             LibraryIncludeFlags dependencyType,
             NuGetFramework targetFrameworkOverride,
             IEnumerable<LibraryDependency> dependencies)

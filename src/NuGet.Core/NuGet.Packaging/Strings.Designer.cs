@@ -150,6 +150,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Unable to find fallback package folder &apos;{0}&apos;..
+        /// </summary>
+        public static string FallbackFolderNotFound {
+            get {
+                return ResourceManager.GetString("FallbackFolderNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to {0} This validation error occurred in a &apos;{1}&apos; element..
         /// </summary>
         public static string InvalidNuspecElement {
@@ -200,6 +209,15 @@ namespace NuGet.Packaging {
         public static string MultipleNuspecFiles {
             get {
                 return ResourceManager.GetString("MultipleNuspecFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to &apos;{0}&apos; must contain an absolute path &apos;{1}&apos;..
+        /// </summary>
+        public static string MustContainAbsolutePath {
+            get {
+                return ResourceManager.GetString("MustContainAbsolutePath", resourceCulture);
             }
         }
         

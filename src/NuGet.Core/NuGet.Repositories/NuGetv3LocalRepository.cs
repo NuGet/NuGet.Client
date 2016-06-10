@@ -19,12 +19,13 @@ namespace NuGet.Repositories
     {
         private readonly ConcurrentDictionary<string, IEnumerable<LocalPackageInfo>> _cache
             = new ConcurrentDictionary<string, IEnumerable<LocalPackageInfo>>(StringComparer.OrdinalIgnoreCase);
-        private readonly VersionFolderPathResolver _pathResolver;
+
+        public VersionFolderPathResolver PathResolver { get; }
 
         public NuGetv3LocalRepository(string path)
         {
             RepositoryRoot = path;
-            _pathResolver = new VersionFolderPathResolver(path);
+            PathResolver = new VersionFolderPathResolver(path);
         }
 
         public string RepositoryRoot { get; }
@@ -41,7 +42,7 @@ namespace NuGet.Repositories
                 {
                     var packages = new List<LocalPackageInfo>();
 
-                    var packageIdRoot = _pathResolver.GetVersionListPath(id);
+                    var packageIdRoot = PathResolver.GetVersionListPath(id);
 
                     if (!Directory.Exists(packageIdRoot))
                     {
@@ -59,14 +60,14 @@ namespace NuGet.Repositories
                             continue;
                         }
 
-                        var hashPath = _pathResolver.GetHashPath(id, version);
+                        var hashPath = PathResolver.GetHashPath(id, version);
 
                         // The hash file is written last. If this file does not exist then the package is
                         // incomplete and should not be used.
                         if (File.Exists(hashPath))
                         {
-                            var manifestPath = _pathResolver.GetManifestFilePath(id, version);
-                            var zipPath = _pathResolver.GetPackageFilePath(id, version);
+                            var manifestPath = PathResolver.GetManifestFilePath(id, version);
+                            var zipPath = PathResolver.GetPackageFilePath(id, version);
 
                             packages.Add(new LocalPackageInfo(id, version, fullVersionDir, manifestPath, zipPath));
                         }

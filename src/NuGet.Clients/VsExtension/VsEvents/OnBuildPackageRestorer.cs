@@ -468,12 +468,18 @@ namespace NuGetVSExtension
                     return true;
                 }
 
-                var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(Settings);
-                var pathResolver = new VersionFolderPathResolver(globalPackagesFolder);
+                // Read package folder locations
+                var nugetPaths = NuGetPathContext.Create(Settings);
+                var packageFolderPaths = new List<string>();
 
+                // Folder paths must be in order of priority
+                packageFolderPaths.Add(nugetPaths.UserPackageFolder);
+                packageFolderPaths.AddRange(nugetPaths.FallbackPackageFolders);
+
+                // Verify all packages exist and have the expected hashes
                 var restoreRequired = await BuildIntegratedRestoreUtility.IsRestoreRequired(
-                    projects, 
-                    pathResolver, 
+                    projects,
+                    packageFolderPaths, 
                     referenceContext);
 
                 if (restoreRequired)
@@ -512,23 +518,24 @@ namespace NuGetVSExtension
 
             var projectName = NuGetProject.GetUniqueNameOrName(project);
 
-            var effectiveGlobalPackagesFolder = BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
-                                                    SolutionManager?.SolutionDirectory,
-                                                    Settings);
+            var nugetPathContext = NuGetPathContext.Create(Settings);
 
             using (var cacheContext = new SourceCacheContext())
             {
-                providerCache.GetOrCreate(effectiveGlobalPackagesFolder,
+                providerCache.GetOrCreate(
+                    nugetPathContext.UserPackageFolder,
+                    nugetPathContext.FallbackPackageFolders,
                     enabledSources,
                     cacheContext,
                     context.Logger);
 
                 // Pass down the CancellationToken from the dialog
                 var restoreResult = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                context,
-                enabledSources,
-                effectiveGlobalPackagesFolder,
-                token);
+                    context,
+                    enabledSources,
+                    nugetPathContext.UserPackageFolder,
+                     nugetPathContext.FallbackPackageFolders,
+                    token);
 
                 if (!restoreResult.Success)
                 {

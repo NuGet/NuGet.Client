@@ -19,54 +19,6 @@ namespace NuGet.ProjectManagement
     /// </summary>
     public static class BuildIntegratedProjectUtility
     {
-        public static string GetEffectiveGlobalPackagesFolder(string solutionDirectory, ISettings settings)
-        {
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
-
-            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
-            if (Path.IsPathRooted(globalPackagesFolder))
-            {
-                return globalPackagesFolder;
-            }
-
-            if (string.IsNullOrEmpty(solutionDirectory))
-            {
-                throw new ArgumentNullException(nameof(solutionDirectory));
-            }
-
-            if (!Path.IsPathRooted(solutionDirectory))
-            {
-                throw new ArgumentException(Strings.SolutionDirectoryMustBeRooted);
-            }
-
-            return Path.GetFullPath(Path.Combine(solutionDirectory, globalPackagesFolder));
-        }
-
-        /// <returns>a global packages folder, or null in scenarios where it cannot be computed.</returns>
-        public static string GetEffectiveGlobalPackagesFolderOrNull(string solutionDirectory, ISettings settings)
-        {
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
-
-            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
-            if (Path.IsPathRooted(globalPackagesFolder))
-            {
-                return globalPackagesFolder;
-            }
-
-            if (string.IsNullOrEmpty(solutionDirectory) || !Path.IsPathRooted(solutionDirectory))
-            {
-                return null;
-            }
-
-            return Path.GetFullPath(Path.Combine(solutionDirectory, globalPackagesFolder));
-        }
-
         /// <summary>
         /// Get the root path of a package from the global folder.
         /// </summary>

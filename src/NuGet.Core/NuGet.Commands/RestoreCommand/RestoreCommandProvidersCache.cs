@@ -30,7 +30,8 @@ namespace NuGet.Commands
 
         public RestoreCommandProviders GetOrCreate(
             string globalPackagesPath,
-            List<SourceRepository> sources,
+            IReadOnlyList<string> fallbackPackagesPaths,
+            IReadOnlyList<SourceRepository> sources,
             SourceCacheContext cacheContext,
             ILogger log)
         {
@@ -46,6 +47,24 @@ namespace NuGet.Commands
             });
 
             var localProviders = new List<IRemoteDependencyProvider>() { local };
+            var fallbackFolders = new List<NuGetv3LocalRepository>();
+
+            foreach (var fallbackPath in fallbackPackagesPaths)
+            {
+                var cache = _globalCache.GetOrAdd(fallbackPath, (path) => new NuGetv3LocalRepository(path));
+                fallbackFolders.Add(cache);
+
+                var localProvider = _localProvider.GetOrAdd(fallbackPath, (path) =>
+                {
+                    // Create a v3 file system source
+                    var pathSource = Repository.Factory.GetCoreV3(path, FeedType.FileSystemV3);
+
+                    // Throw for fallback package folders
+                    return new SourceRepositoryDependencyProvider(pathSource, log, cacheContext, ignoreFailedSources: false, ignoreWarning: false);
+                });
+
+                localProviders.Add(localProvider);
+            }
 
             var remoteProviders = new List<IRemoteDependencyProvider>(sources.Count);
 
@@ -55,7 +74,7 @@ namespace NuGet.Commands
                 remoteProviders.Add(remoteProvider);
             }
 
-            return new RestoreCommandProviders(globalCache, localProviders, remoteProviders, cacheContext);
+            return new RestoreCommandProviders(globalCache, fallbackFolders, localProviders, remoteProviders, cacheContext);
         }
     }
 }
