@@ -151,6 +151,11 @@ namespace NuGet.Commands
                 properties += $" -b \"{basePath}\"";
             }
 
+            if (!string.IsNullOrEmpty(_packArgs.Suffix))
+            {
+                properties += $" --version-suffix {_packArgs.Suffix}";
+            }
+
             string dotnetLocation = NuGetEnvironment.GetDotNetLocation();
 
             var processStartInfo = new ProcessStartInfo
