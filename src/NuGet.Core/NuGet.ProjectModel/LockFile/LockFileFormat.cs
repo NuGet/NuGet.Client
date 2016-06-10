@@ -45,6 +45,7 @@ namespace NuGet.ProjectModel
         private const string FrameworkProperty = "framework";
         private const string ToolsProperty = "tools";
         private const string ProjectFileToolGroupsProperty = "projectFileToolGroups";
+        private const string PackageFoldersProperty = "packageFolders";
 
         // Legacy property names
         private const string RuntimeAssembliesProperty = "runtimeAssemblies";
@@ -175,6 +176,7 @@ namespace NuGet.ProjectModel
             lockFile.ProjectFileDependencyGroups = ReadObject(cursor[ProjectFileDependencyGroupsProperty] as JObject, ReadProjectFileDependencyGroup);
             lockFile.Tools = ReadObject(cursor[ToolsProperty] as JObject, ReadTarget);
             lockFile.ProjectFileToolGroups = ReadObject(cursor[ProjectFileToolGroupsProperty] as JObject, ReadProjectFileDependencyGroup);
+            lockFile.PackageFolders = ReadObject(cursor[PackageFoldersProperty] as JObject, ReadFileItem);
             return lockFile;
         }
 
@@ -195,6 +197,11 @@ namespace NuGet.ProjectModel
             if (lockFile.ProjectFileToolGroups != null)
             {
                 json[ProjectFileToolGroupsProperty] = WriteObject(lockFile.ProjectFileToolGroups, WriteProjectFileDependencyGroup);
+            }
+
+            if (lockFile.PackageFolders?.Any() == true)
+            {
+                json[PackageFoldersProperty] = WriteObject(lockFile.PackageFolders, WriteFileItem);
             }
 
             return json;
