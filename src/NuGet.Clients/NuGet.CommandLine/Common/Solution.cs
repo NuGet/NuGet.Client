@@ -114,17 +114,5 @@ namespace NuGet.Common
             }
             this.Projects = projects;
         }
-
-        private static Type GetSolutionParserType(Assembly msbuildAssembly)
-        {
-            var solutionParserType = msbuildAssembly.GetType("Microsoft.Build.Construction.SolutionParser");
-
-            if (solutionParserType == null)
-            {
-                throw new CommandLineException(LocalizedResourceManager.GetString("Error_CannotLoadTypeSolutionParser"));
-            }
-
-            return solutionParserType;
-        }
     }
 }

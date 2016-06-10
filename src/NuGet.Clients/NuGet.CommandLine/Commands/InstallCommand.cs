@@ -26,8 +26,6 @@ namespace NuGet.CommandLine
         UsageExampleResourceName = "InstallCommandUsageExamples")]
     public class InstallCommand : DownloadCommandBase
     {
-        private static readonly object _satelliteLock = new object();
-
         [Option(typeof(NuGetCommand), "InstallCommandOutputDirDescription")]
         public string OutputDirectory { get; set; }
 
@@ -45,11 +43,6 @@ namespace NuGet.CommandLine
 
         [Option(typeof(NuGetCommand), "InstallCommandSolutionDirectory")]
         public string SolutionDirectory { get; set; }
-
-        private bool AllowMultipleVersions
-        {
-            get { return !ExcludeVersion; }
-        }
 
         [ImportingConstructor]
         public InstallCommand()

@@ -9,14 +9,6 @@ namespace NuGet
 {
     public static class CommandLineUtility
     {
-        public readonly static string ApiKeysSectionName = "apikeys";
-
-        public static string GetApiKey(ISettings settings, string source)
-        {
-            var value = settings.GetDecryptedValue(CommandLineUtility.ApiKeysSectionName, source);
-            return value;
-        }
-
         public static void ValidateSource(string source)
         {
             Uri result;

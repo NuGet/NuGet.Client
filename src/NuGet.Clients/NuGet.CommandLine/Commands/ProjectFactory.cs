@@ -30,7 +30,6 @@ namespace NuGet.CommandLine
         private dynamic _project;
 
         private Common.ILogger _logger;
-        private Configuration.ISettings _settings;
         private bool _usingJsonFile;
 
         // Files we want to always exclude from the resulting package
@@ -111,7 +110,6 @@ namespace NuGet.CommandLine
             _project = project;
             ProjectProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             AddSolutionDir();
-            _settings = null;
 
             // Get the target framework of the project
             string targetFrameworkMoniker = _project.GetPropertyValue("TargetFrameworkMoniker");
@@ -139,21 +137,6 @@ namespace NuGet.CommandLine
                     break;
                 }
             }                
-        }
-
-        private Configuration.ISettings DefaultSettings
-        {
-            get
-            {
-                if (null == _settings)
-                {
-                    _settings = Configuration.Settings.LoadDefaultSettings(
-                        _project.DirectoryPath,
-                        null,
-                        MachineWideSettings);
-                }
-                return _settings;
-            }
         }
 
         private string TargetPath
@@ -410,29 +393,6 @@ namespace NuGet.CommandLine
             }
 
             TargetPath = ResolveTargetPath();
-        }
-
-        private object CreateLoggers()
-        {
-            var consoleLoggerType = _msbuildAssembly.GetType(
-                "Microsoft.Build.Logging.ConsoleLogger",
-                throwOnError: true);
-            var consoleLogger = Activator.CreateInstance(
-                consoleLoggerType);
-            var verbosityProperty = consoleLoggerType.GetProperty("Verbosity");
-            verbosityProperty.SetMethod.Invoke(consoleLogger, new object[] { Microsoft.Build.Framework.LoggerVerbosity.Quiet });
-
-            var iloggerType = _frameworkAssembly.GetType(
-                "Microsoft.Build.Framework.ILogger",
-                throwOnError: true);
-            var loggerList = typeof(List<>)
-                .MakeGenericType(iloggerType)
-                .GetConstructor(Type.EmptyTypes)
-                .Invoke(null);
-            var addMethod = loggerList.GetType().GetMethod("Add");
-            addMethod.Invoke(loggerList, new[] { consoleLogger });
-
-            return loggerList;
         }
 
         private string ResolveTargetPath()

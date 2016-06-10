@@ -49,9 +49,7 @@ namespace NuGet.CommandLine
             string inputPath,
             RestoreArgs restoreContext)
         {
-            var paths = new List<string>();
             var requests = new List<RestoreSummaryRequest>();
-            var rootPath = Path.GetDirectoryName(inputPath);
 
             var entryPoints = _projectProvider.GetEntryPoints();
 
