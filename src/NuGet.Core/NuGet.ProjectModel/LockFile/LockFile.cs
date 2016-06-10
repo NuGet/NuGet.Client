@@ -26,6 +26,7 @@ namespace NuGet.ProjectModel
         public IList<LockFileTarget> Targets { get; set; } = new List<LockFileTarget>();
         public IList<LockFileTarget> Tools { get; set; } = new List<LockFileTarget>();
         public IList<ProjectFileDependencyGroup> ProjectFileToolGroups { get; set; } = new List<ProjectFileDependencyGroup>();
+        public IList<LockFileItem> PackageFolders { get; set; } = new List<LockFileItem>();
 
         public bool IsValidForPackageSpec(PackageSpec spec)
         {
@@ -171,7 +172,8 @@ namespace NuGet.ProjectModel
                 && Libraries.OrderedEquals(other.Libraries, library => library.Name, StringComparer.OrdinalIgnoreCase)
                 && Targets.OrderedEquals(other.Targets, target => target.Name, StringComparer.Ordinal)
                 && ProjectFileToolGroups.OrderedEquals(other.ProjectFileToolGroups, group => group.FrameworkName, StringComparer.OrdinalIgnoreCase)
-                && Tools.OrderedEquals(other.Tools, target => target.Name, StringComparer.Ordinal);
+                && Tools.OrderedEquals(other.Tools, target => target.Name, StringComparer.Ordinal)
+                && PackageFolders.SequenceEqual<LockFileItem>(other.PackageFolders);
         }
 
         public override bool Equals(object obj)
@@ -196,6 +198,11 @@ namespace NuGet.ProjectModel
             HashLockFileTargets(combiner, Targets);
             HashProjectFileDependencyGroups(combiner, ProjectFileToolGroups);
             HashLockFileTargets(combiner, Tools);
+
+            foreach (var item in PackageFolders)
+            {
+                combiner.AddObject(item);
+            }
 
             return combiner.CombinedHash;
         }

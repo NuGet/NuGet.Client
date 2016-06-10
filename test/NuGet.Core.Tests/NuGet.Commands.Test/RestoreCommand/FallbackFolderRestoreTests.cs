@@ -90,11 +90,23 @@ namespace NuGet.Commands.Test
                 var lockFile = result.LockFile;
                 await result.CommitAsync(logger, CancellationToken.None);
 
+                var lockFormat = new LockFileFormat();
+                var fromDisk = lockFormat.Read(result.LockFilePath);
+
                 // Assert
                 Assert.True(result.Success);
                 Assert.Equal(2, lockFile.Libraries.Count);
                 Assert.Equal(0, result.GetAllInstalled().Count);
                 Assert.False(Directory.Exists(packagesDir.FullName));
+
+                Assert.Equal(2, lockFile.PackageFolders.Count);
+                Assert.Equal(packagesDir.FullName, lockFile.PackageFolders[0].Path);
+                Assert.Equal(fallbackFolder.FullName, lockFile.PackageFolders[1].Path);
+
+                // Verify folders are round tripped
+                Assert.Equal(2, fromDisk.PackageFolders.Count);
+                Assert.Equal(packagesDir.FullName, fromDisk.PackageFolders[0].Path);
+                Assert.Equal(fallbackFolder.FullName, fromDisk.PackageFolders[1].Path);
             }
         }
 
@@ -179,6 +191,9 @@ namespace NuGet.Commands.Test
                 Assert.Equal(2, lockFile.Libraries.Count);
                 Assert.Equal(0, result.GetAllInstalled().Count);
                 Assert.False(Directory.Exists(packagesDir.FullName));
+                Assert.Equal(2, lockFile.PackageFolders.Count);
+                Assert.Equal(packagesDir.FullName, lockFile.PackageFolders[0].Path);
+                Assert.Equal(fallbackFolder.FullName, lockFile.PackageFolders[1].Path);
             }
         }
 
@@ -266,6 +281,9 @@ namespace NuGet.Commands.Test
                 Assert.Equal(1, result.GetAllInstalled().Count);
                 Assert.Equal("package/packageB 1.0.0", result.GetAllInstalled().Single().ToString());
                 Assert.Equal("packageb", Path.GetFileName(Directory.GetDirectories(packagesDir.FullName).Single()));
+                Assert.Equal(2, lockFile.PackageFolders.Count);
+                Assert.Equal(packagesDir.FullName, lockFile.PackageFolders[0].Path);
+                Assert.Equal(fallbackFolder.FullName, lockFile.PackageFolders[1].Path);
             }
         }
 
@@ -349,6 +367,10 @@ namespace NuGet.Commands.Test
                 Assert.Equal(2, lockFile.Libraries.Count);
                 Assert.Equal(2, result.GetAllInstalled().Count);
                 Assert.Equal(2, Directory.GetDirectories(packagesDir.FullName).Length);
+                Assert.Equal(3, lockFile.PackageFolders.Count);
+                Assert.Equal(packagesDir.FullName, lockFile.PackageFolders[0].Path);
+                Assert.Equal(fallbackFolder.FullName, lockFile.PackageFolders[1].Path);
+                Assert.Equal(fallbackFolder2.FullName, lockFile.PackageFolders[2].Path);
             }
         }
 

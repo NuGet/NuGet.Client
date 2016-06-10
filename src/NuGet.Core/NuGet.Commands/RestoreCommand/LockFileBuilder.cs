@@ -304,6 +304,8 @@ namespace NuGet.Commands
 
             PopulateTools(toolRestoreResults, lockFile);
 
+            PopulatePackageFolders(localRepositories.Select(repo => repo.RepositoryRoot).Distinct(), lockFile);
+
             return lockFile;
         }
 
@@ -346,6 +348,11 @@ namespace NuGet.Commands
                         .Select(x => x.LibraryRange.ToLockFileDependencyGroupString())
                         .OrderBy(dependency => dependency, StringComparer.Ordinal)));
             }
+        }
+
+        private static void PopulatePackageFolders(IEnumerable<string> packageFolders, LockFile lockFile)
+        {
+            lockFile.PackageFolders.AddRange(packageFolders.Select(path => new LockFileItem(path)));
         }
 
         private static LockFileLibrary CreateLockFileLibrary(LocalPackageInfo package, string sha512, string path)
