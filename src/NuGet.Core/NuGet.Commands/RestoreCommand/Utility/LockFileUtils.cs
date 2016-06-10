@@ -168,11 +168,8 @@ namespace NuGet.Commands
             lockFileLib.ResourceAssemblies.AddRange(resourceGroup);
 
             // Native
-            var nativeCriteria = new List<SelectionCriteria>(orderedCriteria);
-            nativeCriteria.Add(targetGraph.Conventions.Criteria.ForRuntime(targetGraph.RuntimeIdentifier));
-
             var nativeGroup = GetLockFileItems(
-                nativeCriteria,
+                orderedCriteria,
                 contentItems,
                 targetGraph.Conventions.Patterns.NativeLibraries);
 
