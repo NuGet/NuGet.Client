@@ -159,7 +159,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Password decryption failed for source : &apos;{0}&apos; is unsupported on this platform. A clear text password may be used instead..
+        ///    Looks up a localized string similar to Password decryption is not supported on this platform (Windows/.NET Core). The following feed uses an encrypted password: &apos;{0}&apos;. You can use a clear text password as a workaround, or pass it on the commandline.
         /// </summary>
         public static string UnsupportedDecryptPassword {
             get {
@@ -168,7 +168,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Password encryption failed for source : &apos;{0}&apos; is unsupported on this platform. A clear text password may be used instead..
+        ///    Looks up a localized string similar to Password encryption is not supported on this platform (Windows/.NET Core). The following feed try to use an encrypted password: &apos;{0}&apos;. You can use a clear text password as a workaround, or pass it on the commandline.
         /// </summary>
         public static string UnsupportedEncryptPassword {
             get {

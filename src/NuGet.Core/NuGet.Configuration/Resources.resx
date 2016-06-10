@@ -151,10 +151,10 @@
     <value>Unexpected failure reading NuGet.Config. Path: '{0}'.</value>
   </data>
   <data name="UnsupportedDecryptPassword" xml:space="preserve">
-    <value>Password decryption failed for source : '{0}' is unsupported on this platform. A clear text password may be used instead.</value>
+    <value>Password decryption is not supported on this platform (Windows/.NET Core). The following feed uses an encrypted password: '{0}'. You can use a clear text password as a workaround, or pass it on the commandline.</value>
   </data>
   <data name="UnsupportedEncryptPassword" xml:space="preserve">
-    <value>Password encryption failed for source : '{0}' is unsupported on this platform. A clear text password may be used instead.</value>
+    <value>Password encryption is not supported on this platform (Windows/.NET Core). The following feed try to use an encrypted password: '{0}'. You can use a clear text password as a workaround, or pass it on the commandline.</value>
   </data>
   <data name="UserSettings_UnableToParseConfigFile" xml:space="preserve">
     <value>Unable to parse config file '{0}'.</value>
