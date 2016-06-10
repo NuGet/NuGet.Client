@@ -176,7 +176,7 @@ Function Install-DotnetCLI {
 
     wget 'https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/dotnet-install.ps1' -OutFile 'cli/dotnet-install.ps1'
 
-    & cli/dotnet-install.ps1 -Channel preview -i $CLIRoot -Version 1.0.0-preview2-002911
+    & cli/dotnet-install.ps1 -Channel preview -i $CLIRoot -Version 1.0.0-preview2-003030
 
     if (-not (Test-Path $DotNetExe)) {
         Error-Log "Unable to find dotnet.exe. The CLI install may have failed." -Fatal
@@ -383,7 +383,7 @@ Function Invoke-DotnetPack {
             if($ReleaseLabel -ne 'Release') {
                 $opts += '--version-suffix', "${ReleaseLabel}-${BuildNumber}"
             }
-
+            $opts += '--serviceable'
             Trace-Log "$DotNetExe $opts"
 
             & $DotNetExe $opts
