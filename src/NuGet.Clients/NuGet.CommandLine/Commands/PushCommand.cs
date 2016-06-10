@@ -29,9 +29,7 @@ namespace NuGet.CommandLine
         public override async Task ExecuteCommandAsync()
         {
             string packagePath = Arguments[0];
-            string sourcePath = Source;
             string apiKeyValue = ApiKey;
-            int timeoutSeconds = Timeout;
 
             if (string.IsNullOrEmpty(apiKeyValue) && Arguments.Count > 1)
             {
