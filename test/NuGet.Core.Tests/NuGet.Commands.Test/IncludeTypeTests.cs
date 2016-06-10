@@ -38,7 +38,8 @@ namespace NuGet.Commands.Test
                 },
                 ""frameworks"": {
                 ""net46"": {}
-                }
+                },
+                ""runtimes"": { ""any"": { } }
             }";
 
                 var configJson1 = @"{
@@ -46,7 +47,8 @@ namespace NuGet.Commands.Test
                 },
                 ""frameworks"": {
                 ""net46"": {}
-                }
+                },
+                ""runtimes"": { ""any"": { } }
             }";
 
                 CreateXYZ(Path.Combine(workingDir, "repository"), "all", string.Empty);
@@ -55,7 +57,7 @@ namespace NuGet.Commands.Test
                 var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
                 result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
 
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
                 var targets = target.Libraries.ToDictionary(lib => lib.Name);
 
@@ -91,7 +93,8 @@ namespace NuGet.Commands.Test
                 },
                 ""frameworks"": {
                 ""net46"": {}
-                }
+                },
+                ""runtimes"": { ""any"": { } }
             }";
 
                 var configJson1 = @"{
@@ -99,7 +102,8 @@ namespace NuGet.Commands.Test
                 },
                 ""frameworks"": {
                 ""net46"": {}
-                }
+                },
+                ""runtimes"": { ""any"": { } }
             }";
 
                 CreateXYZ(Path.Combine(workingDir, "repository"), "all", string.Empty);
@@ -108,7 +112,7 @@ namespace NuGet.Commands.Test
                 var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
                 result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
 
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
                 var targets = target.Libraries.ToDictionary(lib => lib.Name);
 
@@ -141,7 +145,8 @@ namespace NuGet.Commands.Test
                 },
                 ""frameworks"": {
                 ""net46"": {}
-                }
+                },
+                ""runtimes"": { ""any"": { } }
             }";
 
                 var configJson1 = @"{
@@ -149,7 +154,8 @@ namespace NuGet.Commands.Test
                 },
                 ""frameworks"": {
                 ""net46"": {}
-                }
+                },
+                ""runtimes"": { ""any"": { } }
             }";
 
                 CreateXYZ(Path.Combine(workingDir, "repository"), "all", string.Empty);
@@ -158,7 +164,7 @@ namespace NuGet.Commands.Test
                 var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
                 result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
 
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
                 var targets = target.Libraries.ToDictionary(lib => lib.Name);
 
@@ -209,7 +215,8 @@ namespace NuGet.Commands.Test
                 },
                 ""frameworks"": {
                 ""net46"": {}
-                }
+                },
+                ""runtimes"": { ""any"": { } }
             }";
 
                 var configJson1 = @"{
@@ -217,7 +224,8 @@ namespace NuGet.Commands.Test
                 },
                 ""frameworks"": {
                 ""net46"": {}
-                }
+                },
+                ""runtimes"": { ""any"": { } }
             }";
 
                 CreateXYZ(Path.Combine(workingDir, "repository"), "all", string.Empty);
@@ -226,7 +234,7 @@ namespace NuGet.Commands.Test
                 var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
                 result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
 
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
                 var targets = target.Libraries.ToDictionary(lib => lib.Name);
 
@@ -277,7 +285,8 @@ namespace NuGet.Commands.Test
                 },
                 ""frameworks"": {
                 ""net46"": {}
-                }
+                },
+                ""runtimes"": { ""any"": { } }
             }";
 
                 var configJson1 = @"{
@@ -285,7 +294,8 @@ namespace NuGet.Commands.Test
                 },
                 ""frameworks"": {
                 ""net46"": {}
-                }
+                },
+                ""runtimes"": { ""any"": { } }
             }";
 
                 CreateXYZ(Path.Combine(workingDir, "repository"), "all", string.Empty);
@@ -293,7 +303,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
 
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
                 var targets = target.Libraries.ToDictionary(lib => lib.Name);
 
@@ -344,7 +354,8 @@ namespace NuGet.Commands.Test
                     },
                     ""frameworks"": {
                     ""net46"": {}
-                    }
+                    },
+                ""runtimes"": { ""any"": { } }
                 }";
 
                 var configJson2 = @"{
@@ -356,7 +367,8 @@ namespace NuGet.Commands.Test
                     },
                     ""frameworks"": {
                     ""net46"": {}
-                    }
+                    },
+                  ""runtimes"": { ""any"": { } }
                 }";
 
                 var configJson1 = @"{
@@ -364,7 +376,8 @@ namespace NuGet.Commands.Test
                     },
                     ""frameworks"": {
                     ""net46"": {}
-                    }
+                    },
+                  ""runtimes"": { ""any"": { } }
                 }";
 
                 CreateXYZ(Path.Combine(workingDir, "repository"));
@@ -372,7 +385,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var result = await TriangleProjectSetup(workingDir, logger, configJson1, configJson2, configJson3);
 
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
                 var targets = target.Libraries.ToDictionary(lib => lib.Name);
 
@@ -414,7 +427,8 @@ namespace NuGet.Commands.Test
                         },
                         ""frameworks"": {
                             ""net46"": {}
-                        }
+                        },
+                        ""runtimes"": { ""any"": { } }
                     }";
 
                 CreateAToB(Path.Combine(workingDir, "repository"));
@@ -422,7 +436,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var result = await StandardSetup(workingDir, logger, projectJson);
 
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
                 var targets = target.Libraries.ToDictionary(lib => lib.Name);
 
@@ -454,7 +468,8 @@ namespace NuGet.Commands.Test
                         },
                         ""frameworks"": {
                             ""net46"": {}
-                        }
+                        },
+                        ""runtimes"": { ""any"": { } }
                  }";
 
                 var x = new SimpleTestPackageContext()
@@ -494,7 +509,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var result = await StandardSetup(workingDir, logger, projectJson);
 
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
                 var targets = target.Libraries.ToDictionary(lib => lib.Name);
 
@@ -528,7 +543,8 @@ namespace NuGet.Commands.Test
                         },
                         ""frameworks"": {
                             ""net46"": {}
-                        }
+                        },
+                        ""runtimes"": { ""any"": { } }
                  }";
 
                 var z1 = new SimpleTestPackageContext()
@@ -589,7 +605,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var result = await StandardSetup(workingDir, logger, projectJson);
 
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
                 var targets = target.Libraries.ToDictionary(lib => lib.Name);
 
@@ -620,7 +636,8 @@ namespace NuGet.Commands.Test
                     },
                     ""frameworks"": {
                     ""net46"": {}
-                    }
+                    },
+                    ""runtimes"": { ""any"": { } }
                 }";
 
                 var configJson1 = @"{
@@ -632,7 +649,8 @@ namespace NuGet.Commands.Test
                     },
                     ""frameworks"": {
                     ""net46"": {}
-                    }
+                    },
+                    ""runtimes"": { ""any"": { } }
                 }";
 
                 CreateXYZ(Path.Combine(workingDir, "repository"));
@@ -640,7 +658,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
 
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
                 var msbuildTargets = GetInstalledTargets(workingDir);
 
@@ -671,7 +689,8 @@ namespace NuGet.Commands.Test
                     },
                     ""frameworks"": {
                     ""net46"": {}
-                    }
+                    },
+                    ""runtimes"": { ""any"": { } }
                 }";
 
                 var configJson1 = @"{
@@ -680,7 +699,8 @@ namespace NuGet.Commands.Test
                     },
                     ""frameworks"": {
                     ""net46"": {}
-                    }
+                    },
+                    ""runtimes"": { ""any"": { } }
                 }";
 
                 CreateXYZ(Path.Combine(workingDir, "repository"));
@@ -688,7 +708,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
 
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
                 var msbuildTargets = GetInstalledTargets(workingDir);
 
@@ -719,7 +739,8 @@ namespace NuGet.Commands.Test
                     },
                     ""frameworks"": {
                     ""net46"": {}
-                    }
+                    },
+                    ""runtimes"": { ""any"": { } }
                 }";
 
                 var configJson1 = @"{
@@ -727,7 +748,8 @@ namespace NuGet.Commands.Test
                 },
                 ""frameworks"": {
                 ""net46"": {}
-                }
+                },
+                ""runtimes"": { ""any"": { } }
             }";
 
                 CreateXYZ(Path.Combine(workingDir, "repository"));
@@ -735,7 +757,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
 
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
                 var msbuildTargets = GetInstalledTargets(workingDir);
 
@@ -766,7 +788,8 @@ namespace NuGet.Commands.Test
                     },
                     ""frameworks"": {
                     ""net46"": {}
-                    }
+                    },
+                    ""runtimes"": { ""any"": { } }
                 }";
 
                 var configJson1 = @"{
@@ -774,7 +797,8 @@ namespace NuGet.Commands.Test
                     },
                     ""frameworks"": {
                     ""net46"": {}
-                    }
+                    },
+                    ""runtimes"": { ""any"": { } }
                 }";
 
                 CreateXYZ(Path.Combine(workingDir, "repository"));
@@ -782,7 +806,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
 
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
@@ -813,7 +837,8 @@ namespace NuGet.Commands.Test
                     },
                     ""frameworks"": {
                     ""net46"": {}
-                    }
+                    },
+                    ""runtimes"": { ""any"": { } }
                 }";
 
                 var configJson1 = @"{
@@ -821,7 +846,8 @@ namespace NuGet.Commands.Test
                     },
                     ""frameworks"": {
                     ""net46"": {}
-                    }
+                    },
+                    ""runtimes"": { ""any"": { } }
                 }";
 
                 CreateXYZ(Path.Combine(workingDir, "repository"));
@@ -829,7 +855,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
 
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
@@ -864,7 +890,8 @@ namespace NuGet.Commands.Test
                     },
                     ""frameworks"": {
                     ""net46"": {}
-                    }
+                    },
+                    ""runtimes"": { ""any"": { } }
                 }";
 
                 var configJson1 = @"{
@@ -873,7 +900,8 @@ namespace NuGet.Commands.Test
                     },
                     ""frameworks"": {
                     ""net46"": {}
-                    }
+                    },
+                    ""runtimes"": { ""any"": { } }
                 }";
 
                 CreateXYZ(Path.Combine(workingDir, "repository"));
@@ -881,7 +909,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
 
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
@@ -916,7 +944,8 @@ namespace NuGet.Commands.Test
                     },
                     ""frameworks"": {
                     ""net46"": {}
-                    }
+                    },
+                    ""runtimes"": { ""any"": { } }
                 }";
 
                 var configJson1 = @"{
@@ -924,12 +953,13 @@ namespace NuGet.Commands.Test
                     },
                     ""frameworks"": {
                     ""net46"": {}
-                    }
+                    },
+                    ""runtimes"": { ""any"": { } }
                 }";
 
                 var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
 
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
@@ -962,7 +992,8 @@ namespace NuGet.Commands.Test
                     },
                     ""frameworks"": {
                     ""net46"": {}
-                    }
+                    },
+                    ""runtimes"": { ""any"": { } }
                 }";
 
                 var configJson1 = @"{
@@ -970,11 +1001,12 @@ namespace NuGet.Commands.Test
                     },
                     ""frameworks"": {
                     ""net46"": {}
-                    }
+                    },
+                    ""runtimes"": { ""any"": { } }
                 }";
 
                 var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
                 var dependencies = target.Libraries.Single(lib => lib.Name == "TestProject2").Dependencies;
 
                 // Assert
@@ -1005,7 +1037,8 @@ namespace NuGet.Commands.Test
                     },
                     ""frameworks"": {
                     ""net46"": {}
-                    }
+                    },
+                    ""runtimes"": { ""any"": { } }
                 }";
 
                 var configJson2 = @"{
@@ -1013,7 +1046,8 @@ namespace NuGet.Commands.Test
                     },
                     ""frameworks"": {
                     ""net46"": {}
-                    }
+                    },
+                    ""runtimes"": { ""any"": { } }
                 }";
 
                 var repository = Path.Combine(workingDir, "repository");
@@ -1033,7 +1067,7 @@ namespace NuGet.Commands.Test
                 SimpleTestPackageUtility.CreateFullPackage(repository, contextY);
 
                 var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
@@ -1064,7 +1098,8 @@ namespace NuGet.Commands.Test
                         },
                         ""frameworks"": {
                             ""net46"": {}
-                        }
+                        },
+                        ""runtimes"": { ""any"": { } }
                  }";
 
                 CreateXYZ(Path.Combine(workingDir, "repository"));
@@ -1072,7 +1107,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var result = await StandardSetup(workingDir, logger, projectJson);
 
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
                 var targets = target.Libraries.ToDictionary(lib => lib.Name);
 
@@ -1109,7 +1144,8 @@ namespace NuGet.Commands.Test
                         },
                         ""frameworks"": {
                             ""net46"": {}
-                        }
+                        },
+                         ""runtimes"": { ""any"": { } }
                  }";
 
                 CreateXYZ(Path.Combine(workingDir, "repository"), string.Empty, "build");
@@ -1117,7 +1153,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var result = await StandardSetup(workingDir, logger, projectJson);
 
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
                 var targets = target.Libraries.ToDictionary(lib => lib.Name);
 
@@ -1150,7 +1186,8 @@ namespace NuGet.Commands.Test
                                     ""packageZ"": ""1.0.0""
                                 }
                             }
-                        }
+                        },
+                    ""runtimes"": { ""any"": { } }
                  }";
 
                 CreateXYZ(Path.Combine(workingDir, "repository"), string.Empty, "build");
@@ -1158,7 +1195,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var result = await StandardSetup(workingDir, logger, projectJson);
 
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
                 var targets = target.Libraries.ToDictionary(lib => lib.Name);
 
@@ -1192,7 +1229,8 @@ namespace NuGet.Commands.Test
                         },
                         ""frameworks"": {
                             ""net46"": {}
-                        }
+                        },
+                    ""runtimes"": { ""any"": { } }
                  }";
 
                 CreateXYZ(Path.Combine(workingDir, "repository"));
@@ -1200,7 +1238,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var result = await StandardSetup(workingDir, logger, projectJson);
 
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
                 var targets = target.Libraries.ToDictionary(lib => lib.Name);
 
@@ -1232,7 +1270,8 @@ namespace NuGet.Commands.Test
                         },
                         ""frameworks"": {
                             ""net46"": {}
-                        }
+                        },
+                    ""runtimes"": { ""any"": { } }
                  }";
 
                 CreateXYZ(Path.Combine(workingDir, "repository"), string.Empty, "build");
@@ -1240,7 +1279,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var result = await StandardSetup(workingDir, logger, projectJson);
 
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
                 var targets = target.Libraries.ToDictionary(lib => lib.Name);
 
@@ -1273,7 +1312,8 @@ namespace NuGet.Commands.Test
                         },
                         ""frameworks"": {
                             ""net46"": {}
-                        }
+                        },
+                    ""runtimes"": { ""any"": { } }
                  }";
 
                 CreateXYZ(Path.Combine(workingDir, "repository"), "runtime", string.Empty);
@@ -1281,7 +1321,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var result = await StandardSetup(workingDir, logger, projectJson);
 
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
                 var targets = target.Libraries.ToDictionary(lib => lib.Name);
 
@@ -1316,7 +1356,8 @@ namespace NuGet.Commands.Test
                         },
                         ""frameworks"": {
                             ""net46"": {}
-                        }
+                        },
+                    ""runtimes"": { ""any"": { } }
                  }";
 
                 CreateXYZ(Path.Combine(workingDir, "repository"), "contentFiles", string.Empty);
@@ -1324,7 +1365,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var result = await StandardSetup(workingDir, logger, projectJson);
 
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
                 var targets = target.Libraries.ToDictionary(lib => lib.Name);
 
@@ -1359,7 +1400,8 @@ namespace NuGet.Commands.Test
                         },
                         ""frameworks"": {
                             ""net46"": {}
-                        }
+                        },
+                    ""runtimes"": { ""any"": { } }
                     }";
 
                 CreateAToB(Path.Combine(workingDir, "repository"));
@@ -1367,7 +1409,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var result = await StandardSetup(workingDir, logger, projectJson);
 
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
                 var targets = target.Libraries.ToDictionary(lib => lib.Name);
 
@@ -1401,7 +1443,8 @@ namespace NuGet.Commands.Test
                         },
                         ""frameworks"": {
                             ""net46"": {}
-                        }
+                        },
+                    ""runtimes"": { ""any"": { } }
                     }";
 
                 CreateAToB(Path.Combine(workingDir, "repository"));
@@ -1409,7 +1452,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var result = await StandardSetup(workingDir, logger, projectJson);
 
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
                 var targets = target.Libraries.ToDictionary(lib => lib.Name);
 
@@ -1446,7 +1489,8 @@ namespace NuGet.Commands.Test
                         },
                         ""frameworks"": {
                             ""net46"": {}
-                        }
+                        },
+                        ""runtimes"": { ""any"": { } }
                     }")]
         [InlineData(@"{
                         ""dependencies"": {
@@ -1460,7 +1504,8 @@ namespace NuGet.Commands.Test
                         },
                         ""frameworks"": {
                             ""net46"": {}
-                        }
+                        },
+                        ""runtimes"": { ""any"": { } }
                     }")]
         [InlineData(@"{
                         ""dependencies"": {
@@ -1474,7 +1519,8 @@ namespace NuGet.Commands.Test
                         },
                         ""frameworks"": {
                             ""net46"": {}
-                        }
+                        },
+                        ""runtimes"": { ""any"": { } }
                     }")]
         [InlineData(@"{
                         ""dependencies"": {
@@ -1485,7 +1531,8 @@ namespace NuGet.Commands.Test
                         },
                         ""frameworks"": {
                             ""net46"": {}
-                        }
+                        },
+                        ""runtimes"": { ""any"": { } }
                     }")]
         [InlineData(@"{
                         ""dependencies"": {
@@ -1497,7 +1544,8 @@ namespace NuGet.Commands.Test
                         },
                         ""frameworks"": {
                             ""net46"": {}
-                        }
+                        },
+                        ""runtimes"": { ""any"": { } }
                     }")]
         [InlineData(@"{
                         ""dependencies"": {
@@ -1508,7 +1556,8 @@ namespace NuGet.Commands.Test
                         },
                         ""frameworks"": {
                             ""net46"": {}
-                        }
+                        },
+                        ""runtimes"": { ""any"": { } }
                     }")]
         [InlineData(@"{
                         ""dependencies"": {
@@ -1519,7 +1568,8 @@ namespace NuGet.Commands.Test
                         },
                         ""frameworks"": {
                             ""net46"": {}
-                        }
+                        },
+                        ""runtimes"": { ""any"": { } }
                     }")]
         [InlineData(@"{
                         ""dependencies"": {
@@ -1527,7 +1577,8 @@ namespace NuGet.Commands.Test
                         },
                         ""frameworks"": {
                             ""net46"": {}
-                        }
+                        },
+                        ""runtimes"": { ""any"": { } }
                     }")]
         public async Task IncludeType_SingleProjectEquivalentToTheDefault(string projectJson)
         {
@@ -1543,7 +1594,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var result = await StandardSetup(workingDir, logger, projectJson);
 
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), "any");
 
                 var targets = target.Libraries.ToDictionary(lib => lib.Name);
 
