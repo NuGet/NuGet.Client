@@ -1272,14 +1272,14 @@ namespace NuGet.CommandLine.Test
                 Util.CreateFile(
                     projectDirectory1,
                     "proj1.jsproj",
-                    Util.CreateProjFileContent(contentFiles: new[] { "test.txt" }));
+                    Util.CreateProjFileContent());
 
                 Directory.CreateDirectory(projectDirectory2);
 
                 Util.CreateFile(
                     projectDirectory2,
                     "proj2.vcxproj",
-                    Util.CreateProjFileContent(contentFiles: new[] { "test.txt" }));
+                    Util.CreateProjFileContent());
 
                 Util.CreateFile(solutionDirectory, "a.sln",
                     Util.CreateSolutionFileContent());
@@ -1333,12 +1333,6 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
-
-                var content1 = File.ReadAllText(projectFile1);
-                Assert.Contains(@"<Content Include=""test.txt"" />", content1);
-                
-                var content2 = File.ReadAllText(projectFile2);
-                Assert.Contains(@"<Content Include=""test.txt"" />", content2);
             }
         }
     }
