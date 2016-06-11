@@ -35,6 +35,7 @@ namespace NuGet.PackageManagement
     /// </summary>
     public class NuGetPackageManager
     {
+        private IReadOnlyList<SourceRepository> _globalPackageFolderRepositories;
         private ISourceRepositoryProvider SourceRepositoryProvider { get; }
 
         private ISolutionManager SolutionManager { get; }
@@ -46,8 +47,6 @@ namespace NuGet.PackageManagement
         public FolderNuGetProject PackagesFolderNuGetProject { get; set; }
 
         public SourceRepository PackagesFolderSourceRepository { get; set; }
-
-        public SourceRepository GlobalPackagesFolderSourceRepository { get; set; }
 
         /// <summary>
         /// To construct a NuGetPackageManager that does not need a SolutionManager like NuGet.exe
@@ -86,8 +85,6 @@ namespace NuGet.PackageManagement
             Settings = settings;
 
             InitializePackagesFolderInfo(packagesFolderPath, excludeVersion);
-
-            GlobalPackagesFolderSourceRepository = null;
         }
 
         /// <summary>
@@ -135,12 +132,39 @@ namespace NuGet.PackageManagement
 
             InitializePackagesFolderInfo(PackagesFolderPathUtility.GetPackagesFolderPath(SolutionManager, Settings), excludeVersion);
             DeleteOnRestartManager = deleteOnRestartManager;
+        }
 
-            string globalPackagesFolder = BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolderOrNull(solutionManager.SolutionDirectory, settings);
-            if (globalPackagesFolder != null)
+        /// <summary>
+        /// SourceRepositories for the user global package folder and all fallback package folders.
+        /// </summary>
+        public IReadOnlyList<SourceRepository> GlobalPackageFolderRepositories
+        {
+            get
             {
-                var globalPackagesSource = new Configuration.PackageSource(globalPackagesFolder);
-                GlobalPackagesFolderSourceRepository = SourceRepositoryProvider.CreateRepository(globalPackagesSource, FeedType.FileSystemV3);
+                if (_globalPackageFolderRepositories == null)
+                {
+                    var sources = new List<SourceRepository>();
+
+                    // Read package folders from settings
+                    var pathContext = NuGetPathContext.Create(Settings);
+                    var folders = new List<string>();
+                    folders.Add(pathContext.UserPackageFolder);
+                    folders.AddRange(pathContext.FallbackPackageFolders);
+
+                    foreach (var folder in folders)
+                    {
+                        // Create a repo for each folder
+                        var source = SourceRepositoryProvider.CreateRepository(
+                            new PackageSource(folder),
+                            FeedType.FileSystemV3);
+
+                        sources.Add(source);
+                    }
+
+                    _globalPackageFolderRepositories = sources;
+                }
+
+                return _globalPackageFolderRepositories;
             }
         }
 
@@ -1876,9 +1900,7 @@ namespace NuGet.PackageManagement
             var logger = new ProjectContextLogger(nuGetProjectContext);
             var buildIntegratedContext = new ExternalProjectReferenceContext(logger);
 
-            var effectiveGlobalPackagesFolder = BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
-                                                    SolutionManager?.SolutionDirectory,
-                                                    Settings);
+            var pathContext = NuGetPathContext.Create(Settings);
 
             // For installs only use cache entries newer than the current time.
             // This is needed for scenarios where a new package shows up in search
@@ -1890,7 +1912,8 @@ namespace NuGet.PackageManagement
                 cacheContext.ListMaxAge = DateTimeOffset.UtcNow;
 
                 var providers = RestoreCommandProviders.Create(
-                    effectiveGlobalPackagesFolder,
+                    pathContext.UserPackageFolder,
+                    pathContext.FallbackPackageFolders,
                     sources,
                     cacheContext,
                     logger);
@@ -2042,9 +2065,7 @@ namespace NuGet.PackageManagement
                         restoreResult.LockFile),
                     PackageIdentity.Comparer);
 
-                var effectiveGlobalPackagesFolder = BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
-                                                        SolutionManager?.SolutionDirectory,
-                                                        Settings);
+                var pathContext = NuGetPathContext.Create(Settings);
 
                 // Find all dependencies in sorted order, then using the order run init.ps1 for only the new packages.
                 foreach (var package in sortedPackages)
@@ -2053,7 +2074,7 @@ namespace NuGet.PackageManagement
                     {
                         var packageInstallPath =
                             BuildIntegratedProjectUtility.GetPackagePathFromGlobalSource(
-                                effectiveGlobalPackagesFolder,
+                                pathContext.UserPackageFolder,
                                 package);
 
                         await buildIntegratedProject.ExecuteInitScriptAsync(
@@ -2081,7 +2102,8 @@ namespace NuGet.PackageManagement
                         parent,
                         referenceContext,
                         projectAction.Sources,
-                        effectiveGlobalPackagesFolder,
+                        pathContext.UserPackageFolder,
+                        pathContext.FallbackPackageFolders,
                         cacheContextModifier,
                         token);
                 }

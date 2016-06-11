@@ -1338,8 +1338,10 @@ EndProject");
                 'netcore50': { }
             }
 }");
+                var nugetConfigDir = Path.Combine(workingPath, ".nuget");
 
-                Util.CreateFile(Path.Combine(workingPath, ".nuget"), "nuget.config",
+
+                Util.CreateFile(nugetConfigDir, "nuget.config",
 @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <config>
@@ -1367,70 +1369,15 @@ EndProject");
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
                 var packageFileA = Path.Combine(
-                    workingPath,
+                    nugetConfigDir,
                     @"..\..\GlobalPackages2\packageA\1.1.0\packageA.1.1.0.nupkg");
 
                 var packageFileB = Path.Combine(
-                    workingPath,
+                    nugetConfigDir,
                     @"..\..\GlobalPackages2\packageB\2.2.0\packageB.2.2.0.nupkg");
 
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
-            }
-        }
-
-        [Fact]
-        public void RestoreCommand_FromProjectJson_RelativeGlobalPackagesFolder_NoSolutionDirectory()
-        {
-            // Arrange
-            var nugetexe = Util.GetNuGetExePath();
-
-            using (var basePath = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var workingPath = Path.Combine(basePath, "sub1", "sub2");
-                var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
-                Directory.CreateDirectory(repositoryPath);
-                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
-
-                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
-                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
-                Util.CreateFile(workingPath, "project.json",
-@"{
-  'dependencies': {
-    'packageA': '1.1.0',
-    'packageB': '2.2.0'
-  },
-  'frameworks': {
-                'netcore50': { }
-            }
-}");
-
-                Util.CreateFile(workingPath, "nuget.config",
-@"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-  <config>
-    <add key=""globalPackagesFolder"" value=""..\..\GlobalPackages2"" />
-  </config>
-</configuration>");
-
-                string[] args = new string[] {
-                    "restore",
-                    "-Source",
-                    repositoryPath,
-                    "project.json"
-                };
-
-                // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
-
-                // Assert
-                Assert.NotEqual(0, r.Item1);
-                var error = r.Item3;
-                Assert.True(error.Contains(NuGetResources.RestoreCommandCannotDetermineGlobalPackagesFolder));
             }
         }
 

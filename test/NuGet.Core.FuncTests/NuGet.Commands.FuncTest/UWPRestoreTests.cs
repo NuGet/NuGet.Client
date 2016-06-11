@@ -304,6 +304,7 @@ namespace NuGet.Commands.FuncTest
                 await result.CommitAsync(logger, CancellationToken.None);
 
                 var lockFileJson = JObject.Parse(File.OpenText(request.LockFilePath).ReadToEnd());
+                RemovePackageFolders(lockFileJson);
 
                 // Assert
                 Assert.True(result.Success);
@@ -371,6 +372,7 @@ namespace NuGet.Commands.FuncTest
                 await result.CommitAsync(logger, CancellationToken.None);
 
                 var lockFileJson = JObject.Parse(File.OpenText(request.LockFilePath).ReadToEnd());
+                RemovePackageFolders(lockFileJson);
 
                 // Assert
                 Assert.True(result.Success);
@@ -494,6 +496,11 @@ namespace NuGet.Commands.FuncTest
         private Stream GetResource(string name)
         {
             return GetType().GetTypeInfo().Assembly.GetManifestResourceStream(name);
+        }
+
+        private void RemovePackageFolders(JObject json)
+        {
+            json.Remove("packageFolders");
         }
     }
 }

@@ -4,6 +4,7 @@ using System.IO;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
 using NuGet.Commands;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat
@@ -129,7 +130,7 @@ namespace NuGet.CommandLine.XPlat
                         packArgs.MinClientVersion = version;
                     }
 
-                    packArgs.MachineWideSettings = new CommandLineXPlatMachineWideSetting();
+                    packArgs.MachineWideSettings = new XPlatMachineWideSetting();
                     packArgs.MsBuildDirectory = new Lazy<string>(() => string.Empty);
                     packArgs.NoDefaultExcludes = noDefaultExcludes.HasValue();
                     packArgs.NoPackageAnalysis = noPackageAnalysis.HasValue();

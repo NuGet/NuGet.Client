@@ -272,36 +272,53 @@ namespace NuGet.Test.Utility
         /// </summary>
         public static async Task CreateFolderFeedV3(string root, PackageSaveMode saveMode, params PackageIdentity[] packages)
         {
-            var contexts = packages.Select(package => new SimpleTestPackageContext(package)).ToList();
-            var pathResolver = new VersionFolderPathResolver(root);
+            var contexts = packages.Select(p => new SimpleTestPackageContext(p)).ToArray();
 
+            await CreateFolderFeedV3(root, saveMode, contexts);
+        }
+
+        /// <summary>
+        /// Create a v3 folder of nupkgs
+        /// </summary>
+        public static async Task CreateFolderFeedV3(string root, PackageSaveMode saveMode, params SimpleTestPackageContext[] contexts)
+        {
             using (var tempRoot = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                CreatePackages(contexts, tempRoot);
+                CreatePackages(tempRoot, contexts);
 
-                foreach (var file in Directory.GetFiles(tempRoot))
+                await CreateFolderFeedV3(root, saveMode, Directory.GetFiles(tempRoot));
+            }
+        }
+
+        /// <summary>
+        /// Create a v3 folder of nupkgs
+        /// </summary>
+        public static async Task CreateFolderFeedV3(string root, PackageSaveMode saveMode, params string[] nupkgPaths)
+        {
+            var pathResolver = new VersionFolderPathResolver(root);
+
+            foreach (var file in nupkgPaths)
+            {
+                PackageIdentity identity = null;
+
+                using (var reader = new PackageArchiveReader(File.OpenRead(file)))
                 {
-                    PackageIdentity identity = null;
+                    identity = reader.GetIdentity();
+                }
 
-                    using (var reader = new PackageArchiveReader(File.OpenRead(file)))
+                if (!File.Exists(pathResolver.GetHashPath(identity.Id, identity.Version)))
+                {
+                    using (var fileStream = File.OpenRead(file))
                     {
-                        identity = reader.GetIdentity();
-                    }
-
-                    if (!File.Exists(pathResolver.GetHashPath(identity.Id, identity.Version)))
-                    {
-                        using (var fileStream = File.OpenRead(file))
-                        {
-                            await PackageExtractor.InstallFromSourceAsync((stream) =>
-                                fileStream.CopyToAsync(stream, 4096, CancellationToken.None),
-                                new VersionFolderPathContext(
-                                    identity,
-                                    root,
-                                    NullLogger.Instance,
-                                    saveMode,
-                                    XmlDocFileSaveMode.None),
-                                    CancellationToken.None);
-                        }
+                        await PackageExtractor.InstallFromSourceAsync((stream) =>
+                            fileStream.CopyToAsync(stream, 4096, CancellationToken.None),
+                            new VersionFolderPathContext(
+                                identity,
+                                root,
+                                NullLogger.Instance,
+                                saveMode,
+                                XmlDocFileSaveMode.None),
+                                CancellationToken.None);
                     }
                 }
             }

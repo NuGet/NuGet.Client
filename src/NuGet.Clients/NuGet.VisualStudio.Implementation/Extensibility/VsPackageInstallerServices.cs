@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
+using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
@@ -55,10 +56,7 @@ namespace NuGet.VisualStudio
                     {
                         InitializePackageManagerAndPackageFolderPath();
 
-                        var effectiveGlobalPackagesFolder =
-                            BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
-                                _solutionManager.SolutionDirectory,
-                                _settings);
+                        var effectiveGlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(_settings);
 
                         foreach (var project in _solutionManager.GetNuGetProjects())
                         {

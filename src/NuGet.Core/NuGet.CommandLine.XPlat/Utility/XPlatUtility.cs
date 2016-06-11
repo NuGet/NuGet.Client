@@ -21,7 +21,7 @@ namespace NuGet.CommandLine.XPlat
             return Settings.LoadDefaultSettings(
                 Directory.GetCurrentDirectory(),
                 configFileName: null,
-                machineWideSettings: new CommandLineXPlatMachineWideSetting());
+                machineWideSettings: new XPlatMachineWideSetting());
         }
 
         public static LogLevel GetLogLevel(CommandOption verbosity)

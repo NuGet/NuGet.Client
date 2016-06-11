@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Configuration;
 using NuGet.PackageManagement.UI;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
@@ -36,18 +37,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 var projectName = entry.Key.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
 
                 FolderNuGetProject packageFolderProject = null;
-                VersionFolderPathResolver pathResolver = null;
+                FallbackPackagePathResolver fallbackResolver = null;
 
                 // Build a project-specific strategy for resolving a package .nupkg path.
                 if (nugetProject is INuGetIntegratedProject) // This is technically incorrect for DNX projects,
                                                              // however since that experience is deprecated we don't
                                                              // care.
                 {
-                    var packageFolder = BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
-                        SolutionManager.SolutionDirectory,
-                        settings);
-
-                    pathResolver = new VersionFolderPathResolver(packageFolder);
+                    var pathContext = NuGetPathContext.Create(settings);
+                    fallbackResolver = new FallbackPackagePathResolver(pathContext);
                 }
                 else
                 {
@@ -66,9 +64,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     string licenseUrl = null;
 
                     // Try to get the path to the package .nupkg on disk.
-                    if (pathResolver != null)
+                    if (fallbackResolver != null)
                     {
-                        installPackagePath = pathResolver.GetPackageFilePath(
+                        var packageInfo = fallbackResolver.GetPackageInfo(
+                            package.PackageIdentity.Id,
+                            package.PackageIdentity.Version);
+
+                        installPackagePath = packageInfo?.PathResolver.GetPackageFilePath(
                             package.PackageIdentity.Id,
                             package.PackageIdentity.Version);
                     }

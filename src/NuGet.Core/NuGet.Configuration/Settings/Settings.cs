@@ -125,6 +125,20 @@ namespace NuGet.Configuration
         }
 
         /// <summary>
+        /// Load default settings based on a directory.
+        /// This includes machine wide settings.
+        /// </summary>
+        public static ISettings LoadDefaultSettings(string root)
+        {
+            return LoadDefaultSettings(
+                root,
+                configFileName: null,
+                machineWideSettings: new XPlatMachineWideSetting(),
+                loadAppDataSettings: true,
+                useTestingGlobalPath: false);
+        }
+
+        /// <summary>
         /// Loads user settings from the NuGet configuration files. The method walks the directory
         /// tree in <paramref name="root" /> up to its root, and reads each NuGet.config file
         /// it finds in the directories. It then reads the user specific settings,

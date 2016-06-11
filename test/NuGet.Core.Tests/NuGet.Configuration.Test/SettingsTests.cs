@@ -2146,7 +2146,7 @@ namespace NuGet.Configuration.Test
             var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
 <config>
-<add key=""globalPackagesFolder"" value=""C:\Temp\NuGet"" />
+<add key=""globalPackagesFolder"" value=""a"" />
 </config>
 </configuration>";
 
@@ -2160,7 +2160,7 @@ namespace NuGet.Configuration.Test
                 var globalPackagesFolderPath = SettingsUtility.GetGlobalPackagesFolder(settings);
 
                 // Assert
-                Assert.Equal(@"C:\Temp\NuGet", globalPackagesFolderPath);
+                Assert.Equal(Path.Combine(mockBaseDirectory, "a"), globalPackagesFolderPath);
             }
         }
 
@@ -2180,12 +2180,13 @@ namespace NuGet.Configuration.Test
             {
                 ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 Settings settings = new Settings(mockBaseDirectory);
+                var expected = Path.GetFullPath(Path.Combine(mockBaseDirectory, @"..\..\NuGetPackages"));
 
                 // Act
                 var globalPackagesFolderPath = SettingsUtility.GetGlobalPackagesFolder(settings);
 
                 // Assert
-                Assert.Equal(@"..\..\NuGetPackages", globalPackagesFolderPath);
+                Assert.Equal(expected, globalPackagesFolderPath);
             }
         }
 

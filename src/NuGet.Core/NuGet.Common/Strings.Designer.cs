@@ -60,6 +60,33 @@ namespace NuGet.Common {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to An absolute path is required: &apos;{0}&apos;..
+        /// </summary>
+        internal static string AbsolutePathRequired {
+            get {
+                return ResourceManager.GetString("AbsolutePathRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to At least one package folder path must be provided..
+        /// </summary>
+        internal static string NoPackageFoldersFound {
+            get {
+                return ResourceManager.GetString("NoPackageFoldersFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Package folder not found: &apos;{0}&apos;..
+        /// </summary>
+        internal static string PackageFolderNotFound {
+            get {
+                return ResourceManager.GetString("PackageFolderNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Unable to determine the current NuGet client version..
         /// </summary>
         internal static string UnableToDetemineClientVersion {
