@@ -23,25 +23,25 @@ namespace NuGet.Packaging
 
         }
 
-        public FallbackPackagePathResolver(string UserPackageFolder, IEnumerable<string> fallbackPackageFolders)
+        public FallbackPackagePathResolver(string userPackageFolder, IEnumerable<string> fallbackPackageFolders)
         {
             if (fallbackPackageFolders == null)
             {
                 throw new ArgumentNullException(nameof(fallbackPackageFolders));
             }
 
-            if (UserPackageFolder == null)
+            if (userPackageFolder == null)
             {
-                throw new ArgumentNullException(nameof(UserPackageFolder));
+                throw new ArgumentNullException(nameof(userPackageFolder));
             }
 
             var packageFolders = new List<string>();
 
             // The user's packages folder may not exist, this is expected if the fallback
             // folders contain all packages.
-            if (Directory.Exists(UserPackageFolder))
+            if (Directory.Exists(userPackageFolder))
             {
-                packageFolders.Add(UserPackageFolder);
+                packageFolders.Add(userPackageFolder);
             }
 
             // All fallback folders must exist

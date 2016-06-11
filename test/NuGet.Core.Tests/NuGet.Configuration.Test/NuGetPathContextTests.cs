@@ -41,7 +41,7 @@ namespace NuGet.Configuration.Test
                 Assert.Equal(testFolder, pathContext.FallbackPackageFolders[0]);
                 Assert.Equal(srcFolder, pathContext.FallbackPackageFolders[1]);
                 Assert.Equal(globalFolder, pathContext.UserPackageFolder);
-                Assert.Equal(http, pathContext.HttpCache);
+                Assert.Equal(http, pathContext.HttpCacheFolder);
             }
         }
 
@@ -60,7 +60,7 @@ namespace NuGet.Configuration.Test
                 // Assert
                 Assert.Equal(0, pathContext.FallbackPackageFolders.Count);
                 Assert.Equal(globalFolder, pathContext.UserPackageFolder);
-                Assert.Equal(http, pathContext.HttpCache);
+                Assert.Equal(http, pathContext.HttpCacheFolder);
             }
         }
     }

@@ -37,7 +37,8 @@ namespace NuGet.Commands
         public async Task<Tuple<bool, List<RestoreTargetGraph>, RuntimeGraph>> TryRestore(LibraryRange projectRange,
             IEnumerable<FrameworkRuntimePair> frameworkRuntimePairs,
             HashSet<LibraryIdentity> allInstalledPackages,
-            IReadOnlyList<NuGetv3LocalRepository> localRepositories,
+            NuGetv3LocalRepository userPackageFolder,
+            IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders,
             RemoteDependencyWalker remoteWalker,
             RemoteWalkContext context,
             bool writeToLockFile,
@@ -75,11 +76,12 @@ namespace NuGet.Commands
                 _request.MaxDegreeOfConcurrency,
                 token);
 
-            // The user global package folder is always ordered first.
-            var userPackageFolder = localRepositories.First();
-
             // Clear the in-memory cache for newly installed packages
             userPackageFolder.ClearCacheForIds(allInstalledPackages.Select(package => package.Name));
+
+            var localRepositories = new List<NuGetv3LocalRepository>();
+            localRepositories.Add(userPackageFolder);
+            localRepositories.AddRange(fallbackPackageFolders);
 
             // Resolve runtime dependencies
             var runtimeGraphs = new List<RestoreTargetGraph>();

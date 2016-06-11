@@ -12,7 +12,7 @@ namespace NuGet.Common
         /// <returns></returns>
         public static StringComparer GetStringComparerBasedOnOS()
         {
-            if (RuntimeEnvironmentHelper.IsWindows || RuntimeEnvironmentHelper.IsMacOSX)
+            if (RuntimeEnvironmentHelper.IsWindows)
             {
                 return StringComparer.OrdinalIgnoreCase;
             }

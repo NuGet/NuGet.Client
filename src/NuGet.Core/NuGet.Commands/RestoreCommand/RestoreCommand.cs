@@ -77,14 +77,21 @@ namespace NuGet.Commands
 
             var contextForProject = CreateRemoteWalkContext(_request);
 
-            var graphs = await ExecuteRestoreAsync(localRepositories, contextForProject, token);
+            var graphs = await ExecuteRestoreAsync(
+                _request.DependencyProviders.GlobalPackages,
+                _request.DependencyProviders.FallbackPackageFolders,
+                contextForProject,
+                token);
 
             // Only execute tool restore if the request lock file version is 2 or greater.
             // Tools did not exist prior to v2 lock files.
             var toolRestoreResults = Enumerable.Empty<ToolRestoreResult>();
             if (_request.LockFileVersion >= 2)
             {
-                toolRestoreResults = await ExecuteToolRestoresAsync(localRepositories, token);
+                toolRestoreResults = await ExecuteToolRestoresAsync(
+                                    _request.DependencyProviders.GlobalPackages,
+                                    _request.DependencyProviders.FallbackPackageFolders,
+                                    token);
             }
 
             var lockFile = BuildLockFile(
@@ -286,11 +293,16 @@ namespace NuGet.Commands
         }
 
         private async Task<IEnumerable<ToolRestoreResult>> ExecuteToolRestoresAsync(
-            IReadOnlyList<NuGetv3LocalRepository> localRepositories,
+            NuGetv3LocalRepository userPackageFolder,
+            IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders,
             CancellationToken token)
         {
             var toolPathResolver = new ToolPathResolver(_request.PackagesDirectory);
             var results = new List<ToolRestoreResult>();
+
+            var localRepositories = new List<NuGetv3LocalRepository>();
+            localRepositories.Add(userPackageFolder);
+            localRepositories.AddRange(fallbackPackageFolders);
 
             foreach (var tool in _request.Project.Tools)
             {
@@ -382,7 +394,8 @@ namespace NuGet.Commands
                     tool.LibraryRange,
                     projectFrameworkRuntimePairs,
                     allInstalledPackages,
-                    localRepositories,
+                    userPackageFolder,
+                    fallbackPackageFolders,
                     walker,
                     contextForTool,
                     writeToLockFile: true,
@@ -455,7 +468,8 @@ namespace NuGet.Commands
         }
 
         private async Task<IEnumerable<RestoreTargetGraph>> ExecuteRestoreAsync(
-            IReadOnlyList<NuGetv3LocalRepository> localRepositories,
+            NuGetv3LocalRepository userPackageFolder,
+            IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders,
             RemoteWalkContext context,
             CancellationToken token)
         {
@@ -547,7 +561,8 @@ namespace NuGet.Commands
                 projectRange,
                 projectFrameworkRuntimePairs,
                 allInstalledPackages,
-                localRepositories,
+                userPackageFolder,
+                fallbackPackageFolders,
                 remoteWalker,
                 context,
                 writeToLockFile: true,
@@ -589,7 +604,8 @@ namespace NuGet.Commands
                 var compatibilityResult = await projectRestoreCommand.TryRestore(projectRange,
                                                           _request.CompatibilityProfiles,
                                                           allInstalledPackages,
-                                                          localRepositories,
+                                                          userPackageFolder,
+                                                          fallbackPackageFolders,
                                                           remoteWalker,
                                                           context,
                                                           writeToLockFile: false,

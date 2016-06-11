@@ -21,6 +21,6 @@ namespace NuGet.Common
         /// <summary>
         /// Http file cache.
         /// </summary>
-        string HttpCache { get; }
+        string HttpCacheFolder { get; }
     }
 }

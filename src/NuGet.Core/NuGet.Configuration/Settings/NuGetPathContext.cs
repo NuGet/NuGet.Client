@@ -19,7 +19,7 @@ namespace NuGet.Configuration
         /// <summary>
         /// User level http cache.
         /// </summary>
-        public string HttpCache { get; internal set; }
+        public string HttpCacheFolder { get; internal set; }
 
         /// <summary>
         /// Load paths from already loaded settings.
@@ -37,7 +37,7 @@ namespace NuGet.Configuration
             {
                 FallbackPackageFolders = SettingsUtility.GetFallbackPackageFolders(settings),
                 UserPackageFolder = SettingsUtility.GetGlobalPackagesFolder(settings),
-                HttpCache = SettingsUtility.GetHttpCacheFolder(settings)
+                HttpCacheFolder = SettingsUtility.GetHttpCacheFolder(settings)
             };
         }
 
