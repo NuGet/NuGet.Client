@@ -29,6 +29,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays", Justification = "PowerShell API requirement")]
         public string[] ProjectName { get; set; }
 
+        /// <summary>
+        /// logging time disabled for tab command
+        /// </summary>
+        protected override bool IsLoggingTimeDisabled
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         protected override void ProcessRecordCore()
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
