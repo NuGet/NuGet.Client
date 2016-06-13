@@ -261,12 +261,12 @@ namespace NuGet.PackageManagement
         /// and <paramref name="nuGetProjectContext" /> are used in the process.
         /// </summary>
         public async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(
-            NuGetProject nuGetProject, 
+            NuGetProject nuGetProject,
             string packageId,
-            ResolutionContext resolutionContext, 
+            ResolutionContext resolutionContext,
             INuGetProjectContext nuGetProjectContext,
-            IEnumerable<SourceRepository> primarySources, 
-            IEnumerable<SourceRepository> secondarySources, 
+            IEnumerable<SourceRepository> primarySources,
+            IEnumerable<SourceRepository> secondarySources,
             CancellationToken token)
         {
             if (nuGetProject == null)
@@ -779,7 +779,7 @@ namespace NuGet.PackageManagement
                 }
 
                 // Remove packages that do not meet the constraints specified in the UpdateConstrainst
-                prunedAvailablePackages = PrunePackageTree.PruneByUpdateConstraints(prunedAvailablePackages, projectInstalledPackageReferences, resolutionContext.VersionConstraints);                
+                prunedAvailablePackages = PrunePackageTree.PruneByUpdateConstraints(prunedAvailablePackages, projectInstalledPackageReferences, resolutionContext.VersionConstraints);
 
                 // Remove all but the highest packages that are of the same Id as a specified packageId
                 if (packageId != null)
@@ -1626,6 +1626,11 @@ namespace NuGet.PackageManagement
                             logger);
                     }
 
+                    if (msbuildProject != null)
+                    {
+                        msbuildProject.MSBuildNuGetProjectSystem.BeginProcessing();
+                    }
+
                     foreach (var nuGetProjectAction in actionsList)
                     {
                         executedNuGetProjectActions.Push(nuGetProjectAction);
@@ -1703,6 +1708,11 @@ namespace NuGet.PackageManagement
                         }
 
                         downloadTokenSource.Dispose();
+                    }
+
+                    if (msbuildProject != null)
+                    {
+                        msbuildProject.MSBuildNuGetProjectSystem.EndProcessing();
                     }
                 }
 
