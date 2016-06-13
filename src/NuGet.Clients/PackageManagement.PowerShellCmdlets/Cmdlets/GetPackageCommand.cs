@@ -84,6 +84,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         public List<NuGetProject> Projects { get; private set; }
 
+        /// <summary>
+        /// logging time disabled for tab command
+        /// </summary>
+        protected override bool IsLoggingTimeDisabled
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         private void Preprocess()
         {
             UseRemoteSourceOnly = ListAvailable.IsPresent || (!String.IsNullOrEmpty(Source) && !Updates.IsPresent);
