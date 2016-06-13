@@ -50,8 +50,8 @@
     },
     "netstandard1.3": {
       "dependencies": {
-        "NETStandard.Library": "1.6.0-rc3-24210-10",
-        "System.IO.Compression": "4.1.0-rc3-24210-10"
+        "NETStandard.Library": "1.6.0",
+        "System.IO.Compression": "4.1.0"
       },
       "imports": [
         "dotnet5.6",
