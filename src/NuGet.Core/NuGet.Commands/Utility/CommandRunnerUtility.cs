@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Protocol;
@@ -41,14 +45,26 @@ namespace NuGet.Commands
             return symbolSource;
         }
 
-        public static string GetApiKey(ISettings settings, string source, string apiKey)
+        public static string GetApiKey(ISettings settings, string endpoint, string source, string defaultApiKey, bool isSymbolApiKey)
         {
-            if (string.IsNullOrEmpty(apiKey))
+            // try searching API key by endpoint first
+            // needed to support config key mappings like 'https://www.nuget.org/api/v2/package'
+            var apiKey = SettingsUtility.GetDecryptedValue(settings, ConfigurationConstants.ApiKeys, endpoint);
+
+            // if not found try finding it by source url
+            apiKey = apiKey ?? SettingsUtility.GetDecryptedValue(settings, ConfigurationConstants.ApiKeys, source);
+
+            // fallback for a case of nuget.org source
+            // try to retrieve an api key mapped to a default "gallery" url
+            if (apiKey == null
+                && source.IndexOf(NuGetConstants.NuGetHostName, StringComparison.OrdinalIgnoreCase) >= 0)
             {
-                apiKey = SettingsUtility.GetDecryptedValue(settings, ConfigurationConstants.ApiKeys, source);
+                var defaultConfigKey = isSymbolApiKey ? NuGetConstants.DefaultSymbolServerUrl : NuGetConstants.DefaultGalleryServerUrl;
+                apiKey = SettingsUtility.GetDecryptedValue(settings, ConfigurationConstants.ApiKeys, defaultConfigKey);
             }
 
-            return apiKey;
+            // return an API key when found or the default one
+            return apiKey ?? defaultApiKey;
         }
 
         public static async Task<PackageUpdateResource> GetPackageUpdateResource(IPackageSourceProvider sourceProvider, string source)

@@ -13,6 +13,15 @@ namespace NuGet.Configuration
         public static readonly string V2LegacyFeedUrl = "https://go.microsoft.com/fwlink/?LinkID=230477";
 
         public static readonly string V1FeedUrl = "https://go.microsoft.com/fwlink/?LinkID=206669";
+
+        /// <summary>
+        /// NuGet.org gallery Url used as a source display name and as a default "id" when storing nuget.org API key.
+        /// </summary>
+        /// <remarks>
+        /// Albeit this url is not actual feed we should keep it unchanged for back-compat with earlier NuGet versions.
+        /// Typical scenario leading to adding this url to config file is to run setApiKey command without a source:
+        /// nuget.exe setApiKey XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+        /// </remarks>
         public static readonly string DefaultGalleryServerUrl = "https://www.nuget.org";
         public static readonly string DefaultSymbolServerUrl = "https://nuget.smbsrc.net/";
 

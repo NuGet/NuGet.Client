@@ -12,6 +12,9 @@ namespace NuGet.CommandLine.Test
 {
     public class NuGetPushCommandTest
     {
+        private const string ApiKeyHeader = "X-NuGet-ApiKey";
+        private static readonly string NuGetExePath = Util.GetNuGetExePath();
+
         private readonly string _originalCredentialProvidersEnvar =
             Environment.GetEnvironmentVariable(ExtensionLocator.CredentialProvidersEnvar);
 
@@ -90,13 +93,12 @@ namespace NuGet.CommandLine.Test
             {
                 // Arrange
                 string packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
-                string config = string.Format(
-$@"<?xml version='1.0' encoding='utf-8'?>
+                string config = $@"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
   <config>
     <add key='DefaultPushSource' value='{source}' />
   </config>
-</configuration>");
+</configuration>";
 
                 string configFileName = Path.Combine(packageDirectory, "nuget.config");
                 File.WriteAllText(configFileName, config);
@@ -127,13 +129,12 @@ $@"<?xml version='1.0' encoding='utf-8'?>
             {
                 // Arrange
                 string packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
-                string config = string.Format(
-$@"<?xml version='1.0' encoding='utf-8'?>
+                string config = $@"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
   <config>
     <add key='DefaultPushSource' value='..\{Path.GetFileName(source)}' />
   </config>
-</configuration>");
+</configuration>";
 
                 string configFileName = Path.Combine(packageDirectory, "nuget.config");
                 File.WriteAllText(configFileName, config);
@@ -162,8 +163,7 @@ $@"<?xml version='1.0' encoding='utf-8'?>
             {
                 // Arrange
                 string packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
-                string config = string.Format(
-$@"<?xml version='1.0' encoding='utf-8'?>
+                string config = $@"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
   <config>
     <add key='DefaultPushSource' value='name' />
@@ -171,7 +171,7 @@ $@"<?xml version='1.0' encoding='utf-8'?>
   <packageSources>
     <add key='name' value='{source}' />
   </packageSources>
-</configuration>");
+</configuration>";
 
                 string configFileName = Path.Combine(packageDirectory, "nuget.config");
                 File.WriteAllText(configFileName, config);
@@ -221,7 +221,7 @@ $@"<?xml version='1.0' encoding='utf-8'?>
 
         // Same as PushCommand_PushToFileSystemSource, except that the directory is specified
         // in UNC format.
-        [WindowsNTFactAttribute]
+        [WindowsNTFact]
         public void PushCommand_PushToFileSystemSourceUncStyle()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -421,14 +421,14 @@ $@"<?xml version='1.0' encoding='utf-8'?>
                 Directory.CreateDirectory(pushSource);
                 Directory.CreateDirectory(pushSymbolsSource);
 
-                var config = string.Format($@"<?xml version='1.0' encoding='utf-8'?>
-                    <configuration>
-                        <packageSources>
-                            <clear />
-                            <add key='pushSource' value='{pushSource}' />
-                            <add key='pushSymbolsSource' value='{pushSymbolsSource}' />
-                        </packageSources>
-                    </configuration>");
+                var config = $@"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+    <packageSources>
+        <clear />
+        <add key='pushSource' value='{pushSource}' />
+        <add key='pushSymbolsSource' value='{pushSymbolsSource}' />
+    </packageSources>
+</configuration>";
                 File.WriteAllText(configFileName, config);
 
                 // Act
@@ -1465,45 +1465,54 @@ $@"<?xml version='1.0' encoding='utf-8'?>
         public void PushCommand_PushToServer_ApiKeyAsThirdArgument()
         {
             // Arrange
-            var nugetexe = Util.GetNuGetExePath();
+            var testApiKey = Guid.NewGuid().ToString();
+            Util.ClearWebCache();
+
             using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
-                var expectedApiKey = "SOME_API_KEY";
-                string actualApiKey = null;
 
                 using (var server = new MockServer())
                 {
                     server.Put.Add("/nuget", r =>
                     {
-                        actualApiKey = r.Headers["X-NuGet-ApiKey"];
-
-                        byte[] buffer = MockServer.GetPushedPackage(r);
-                        using (var of = new FileStream(outputFileName, FileMode.Create))
+                        var h = r.Headers[ApiKeyHeader];
+                        if (!string.Equals(h, testApiKey, StringComparison.OrdinalIgnoreCase))
                         {
-                            of.Write(buffer, 0, buffer.Length);
+                            return HttpStatusCode.Unauthorized;
                         }
+
+                        MockServer.SavePushedPackage(r, outputFileName);
 
                         return HttpStatusCode.Created;
                     });
+
                     server.Start();
 
                     // Act
-                    string[] args = new string[] { "push", packageFileName, expectedApiKey, "-Source", server.Uri + "nuget" };
+                    var args = new [] 
+                    {
+                        "push",
+                        packageFileName,
+                        testApiKey,
+                        "-Source",
+                        server.Uri + "nuget",
+                        "-NonInteractive"
+                    };
+
                     var result = CommandRunner.Run(
-                        nugetexe,
+                        NuGetExePath,
                         Directory.GetCurrentDirectory(),
                         string.Join(" ", args),
-                        true);
+                        waitForExit: true);
+
                     server.Stop();
 
                     // Assert
-                    var output = result.Item2;
-                    Assert.Equal(0, result.Item1);
-                    Assert.Contains("Your package was pushed.", output);
+                    Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
+                    Assert.Contains("Your package was pushed.", result.Item2);
                     AssertFileEqual(packageFileName, outputFileName);
-                    Assert.Equal(expectedApiKey, actualApiKey);
                 }
             }
         }
@@ -1511,201 +1520,165 @@ $@"<?xml version='1.0' encoding='utf-8'?>
         [Fact]
         public void PushCommand_PushToServer_ApiKeyAsNamedArgument()
         {
+            // Arrange
+            var testApiKey = Guid.NewGuid().ToString();
             Util.ClearWebCache();
-            var nugetexe = Util.GetNuGetExePath();
+
             using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-
             {
-                // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
-                string outputFileName = Path.Combine(packagesDirectory, "t1.nupkg");
-
-                // Server setup
-                var indexJson = Util.CreateIndexJson();
+                var outputFileName = Path.Combine(packagesDirectory, "t1.nupkg");
 
                 using (var serverV3 = new MockServer())
                 {
-                    serverV3.Get.Add("/", r =>
+                    // Server setup
+                    var indexJson = Util.CreateIndexJson();
+
+                    Util.AddFlatContainerResource(indexJson, serverV3);
+                    Util.AddPublishResource(indexJson, serverV3);
+
+                    serverV3.Get.Add("/index.json", r =>
                     {
-                        var path = r.Url.AbsolutePath;
-
-                        if (path == "/index.json")
+                        return new Action<HttpListenerResponse>(response =>
                         {
-                            return new Action<HttpListenerResponse>(response =>
-                            {
-                                response.StatusCode = 200;
-                                response.ContentType = "text/javascript";
-                                MockServer.SetResponseContent(response, indexJson.ToString());
-                            });
-                        }
-
-                        throw new Exception("This test needs to be updated to support: " + path);
+                            response.StatusCode = 200;
+                            response.ContentType = "text/javascript";
+                            MockServer.SetResponseContent(response, indexJson.ToString());
+                        });
                     });
 
-                    using (var serverV2 = new MockServer())
+                    serverV3.Get.Add("/push", r => "OK");
+                    serverV3.Put.Add("/push", r =>
                     {
-                        Util.AddFlatContainerResource(indexJson, serverV3);
-                        Util.AddPublishResource(indexJson, serverV2);
-
-                        serverV2.Get.Add("/push", r => "OK");
-                        serverV2.Put.Add("/push", r =>
+                        var h = r.Headers[ApiKeyHeader];
+                        if (!string.Equals(h, testApiKey, StringComparison.OrdinalIgnoreCase))
                         {
-                            var h = r.Headers["X-NuGet-ApiKey"];
-                            if (!h.Equals("blah-blah", StringComparison.OrdinalIgnoreCase))
-                            {
-                                return HttpStatusCode.Unauthorized;
-                            }
+                            return HttpStatusCode.Unauthorized;
+                        }
 
-                            byte[] buffer = MockServer.GetPushedPackage(r);
-                            using (var of = new FileStream(outputFileName, FileMode.Create))
-                            {
-                                of.Write(buffer, 0, buffer.Length);
-                            }
+                        MockServer.SavePushedPackage(r, outputFileName);
 
-                            return HttpStatusCode.Created;
-                        });
+                        return HttpStatusCode.Created;
+                    });
 
-                        serverV3.Start();
-                        serverV2.Start();
+                    serverV3.Start();
 
-                        // Act
-                        string[] args = new string[]
-                        {
-                            "push",
-                            packageFileName,
-                            "should-be-ignored", // The named argument is preferred over the positional argument.
-                            "-Source",
-                            serverV3.Uri + "index.json",
-                            "-ApiKey",
-                            "blah-blah"
-                        };
+                    // Act
+                    var args = new []
+                    {
+                        "push",
+                        packageFileName,
+                        "should-be-ignored", // The named argument is preferred over the positional argument.
+                        "-Source",
+                        serverV3.Uri + "index.json",
+                        "-ApiKey",
+                        testApiKey,
+                        "-NonInteractive"
+                    };
 
-                        var result = CommandRunner.Run(
-                                        nugetexe,
-                                        Directory.GetCurrentDirectory(),
-                                        string.Join(" ", args),
-                                        true);
-                        serverV2.Stop();
-                        serverV3.Stop();
+                    var result = CommandRunner.Run(
+                        NuGetExePath,
+                        Directory.GetCurrentDirectory(),
+                        string.Join(" ", args),
+                        waitForExit: true);
 
-                        // Assert
-                        Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
-                        var output = result.Item2;
-                        Assert.Contains("Your package was pushed.", output);
-                        AssertFileEqual(packageFileName, outputFileName);
-                    }
+                    serverV3.Stop();
+
+                    // Assert
+                    Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
+                    Assert.Contains("Your package was pushed.", result.Item2);
+                    AssertFileEqual(packageFileName, outputFileName);
                 }
             }
         }
 
-        [Fact]
-        public void PushCommand_PushToServerV3_ApiKeyFromConfig()
+        [Theory]
+        [InlineData("{0}index.json")] // package source url
+        [InlineData("{0}push")] // push package endpoint
+        public void PushCommand_PushToServerV3_ApiKeyFromConfig(string configKeyFormatString)
         {
+            var testApiKey = Guid.NewGuid().ToString();
             Util.ClearWebCache();
-            var nugetexe = Util.GetNuGetExePath();
+
             using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", randomTestFolder);
                 string outputFileName = Path.Combine(randomTestFolder, "t1.nupkg");
 
-                // Server setup
-                var indexJson = Util.CreateIndexJson();
-
                 using (var serverV3 = new MockServer())
                 {
-                    serverV3.Get.Add("/", r =>
+                    // Server setup
+                    var indexJson = Util.CreateIndexJson();
+
+                    Util.AddFlatContainerResource(indexJson, serverV3);
+                    Util.AddPublishResource(indexJson, serverV3);
+
+                    serverV3.Get.Add("/index.json", r =>
                     {
-                        var path = r.Url.AbsolutePath;
-
-                        if (path == "/index.json")
+                        return new Action<HttpListenerResponse>(response =>
                         {
-                            return new Action<HttpListenerResponse>(response =>
-                            {
-                                response.StatusCode = 200;
-                                response.ContentType = "text/javascript";
-                                MockServer.SetResponseContent(response, indexJson.ToString());
-                            });
-                        }
-
-                        throw new Exception("This test needs to be updated to support: " + path);
+                            response.StatusCode = 200;
+                            response.ContentType = "text/javascript";
+                            MockServer.SetResponseContent(response, indexJson.ToString());
+                        });
                     });
 
-                    using (var serverV2 = new MockServer())
+                    serverV3.Get.Add("/push", r => "OK");
+                    serverV3.Put.Add("/push", r =>
                     {
-                        Util.AddFlatContainerResource(indexJson, serverV3);
-                        Util.AddPublishResource(indexJson, serverV2);
-
-                        serverV2.Get.Add("/push", r => "OK");
-                        serverV2.Put.Add("/push", r =>
+                        var h = r.Headers[ApiKeyHeader];
+                        if (!string.Equals(h, testApiKey, StringComparison.OrdinalIgnoreCase))
                         {
-                            var h = r.Headers["X-NuGet-ApiKey"];
-                            if (string.IsNullOrEmpty(h)
-                            || !h.Equals("blah-blah", StringComparison.OrdinalIgnoreCase))
-                            {
-                                return HttpStatusCode.Unauthorized;
-                            }
+                            return HttpStatusCode.Unauthorized;
+                        }
 
-                            byte[] buffer = MockServer.GetPushedPackage(r);
-                            using (var of = new FileStream(outputFileName, FileMode.Create))
-                            {
-                                of.Write(buffer, 0, buffer.Length);
-                            }
+                        MockServer.SavePushedPackage(r, outputFileName);
 
-                            return HttpStatusCode.Created;
-                        });
+                        return HttpStatusCode.Created;
+                    });
 
-                        serverV3.Start();
-                        serverV2.Start();
+                    serverV3.Start();
 
-                        var config = string.Format(@"<?xml version='1.0' encoding='utf-8'?>
-                                                    <configuration>
-                                                      <packageSources>
-                                                        <add key='nuget.org' value='{0}' protocolVersion='3' />
-                                                        <add key='nuget.org' value='{1}' />
-                                                      </packageSources>
-                                                      <packageRestore>
-                                                        <add key='enabled' value='True' />
-                                                        <add key='automatic' value='True' />
-                                                      </packageRestore>
-                                                      <disabledPackageSources />
-                                                      <apikeys>
-                                                        <add key='{2}' value='{3}' />
-                                                      </apikeys>
-                                                    </configuration>",
-                                                    serverV3.Uri + "index.json",
-                                                    serverV2.Uri + "push",
-                                                    serverV2.Uri + "push",
-                                                    Configuration.EncryptionUtility.EncryptString("blah-blah"));
+                    var configKey = string.Format(configKeyFormatString, serverV3.Uri);
 
-                        var configFileName = Path.Combine(randomTestFolder, "nuget.config");
-                        File.WriteAllText(configFileName, config);
+                    var config = $@"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+    <packageSources>
+        <add key='nuget.org' value='{serverV3.Uri}index.json' protocolVersion='3' />
+    </packageSources>
+    <apikeys>
+        <add key='{configKey}' value='{Configuration.EncryptionUtility.EncryptString(testApiKey)}' />
+    </apikeys>
+</configuration>";
 
-                        // Act
-                        string[] args = new string[]
-                        {
-                            "push",
-                            packageFileName,
-                            "-Source",
-                            serverV3.Uri + "index.json",
-                            "-ConfigFile",
-                            configFileName
-                        };
+                    var configFileName = Path.Combine(randomTestFolder, "nuget.config");
+                    File.WriteAllText(configFileName, config);
 
-                        var result = CommandRunner.Run(
-                                        nugetexe,
-                                        Directory.GetCurrentDirectory(),
-                                        string.Join(" ", args),
-                                        true);
-                        serverV2.Stop();
-                        serverV3.Stop();
+                    // Act
+                    var args = new[]
+                    {
+                        "push",
+                        packageFileName,
+                        "-Source",
+                        "nuget.org",
+                        "-ConfigFile",
+                        configFileName,
+                        "-NonInteractive"
+                    };
 
-                        // Assert
-                        Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
-                        var output = result.Item2;
-                        Assert.Contains("Your package was pushed.", output);
-                        AssertFileEqual(packageFileName, outputFileName);
-                    }
+                    var result = CommandRunner.Run(
+                        NuGetExePath,
+                        Directory.GetCurrentDirectory(),
+                        string.Join(" ", args),
+                        waitForExit: true);
+
+                    serverV3.Stop();
+
+                    // Assert
+                    Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
+                    Assert.Contains("Your package was pushed.", result.Item2);
+                    AssertFileEqual(packageFileName, outputFileName);
                 }
             }
         }

@@ -130,6 +130,15 @@ namespace NuGet.CommandLine.Test
             return result;
         }
 
+        public static void SavePushedPackage(HttpListenerRequest r, string outputFileName)
+        {
+            var buffer = GetPushedPackage(r);
+            using (var of = new FileStream(outputFileName, FileMode.Create))
+            {
+                of.Write(buffer, 0, buffer.Length);
+            }
+        }
+
         /// <summary>
         /// Returns the index of the first occurrence of <paramref name="pattern"/> in
         /// <paramref name="buffer"/>. The search starts at a specified position.

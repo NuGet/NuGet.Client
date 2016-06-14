@@ -49,9 +49,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="project.json" />
-    <None Include="xunit.runner.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
@@ -82,6 +79,7 @@
     <Compile Include="NuGetPackCommandTest.cs" />
     <Compile Include="NuGetPushCommandTest.cs" />
     <Compile Include="NuGetRestoreCommandTest.cs" />
+    <Compile Include="NuGetSetApiKeyTests.cs" />
     <Compile Include="NuGetUpdateCommandTests.cs" />
     <Compile Include="PortReserver.cs" />
     <Compile Include="RestoreProjectJsonTest.cs" />

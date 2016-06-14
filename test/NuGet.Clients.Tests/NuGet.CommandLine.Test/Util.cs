@@ -243,6 +243,11 @@ namespace NuGet.CommandLine.Test
             }
 
             var fileFullName = Path.Combine(directory, fileName);
+            CreateFile(fileFullName, fileContent);
+        }
+
+        public static void CreateFile(string fileFullName, string fileContent)
+        {
             using (var writer = new StreamWriter(fileFullName))
             {
                 writer.Write(fileContent);
@@ -374,20 +379,24 @@ namespace NuGet.CommandLine.Test
 
         public static JObject CreateIndexJson()
         {
-            return JObject.Parse(@"{
-                  ""version"": ""3.2.0"",
-                  ""resources"": [],
-                ""@context"": {
-                ""@vocab"": ""http://schema.nuget.org/services#"",
-                ""comment"": ""http://www.w3.org/2000/01/rdf-schema#comment""
-                    }}");
+            return JObject.Parse(@"
+{
+    ""version"": ""3.2.0"",
+    ""resources"": [],
+    ""@context"": {
+        ""@vocab"": ""http://schema.nuget.org/services#"",
+        ""comment"": ""http://www.w3.org/2000/01/rdf-schema#comment""
+    }
+}");
         }
 
         public static void AddFlatContainerResource(JObject index, MockServer server)
         {
-            var resource = new JObject();
-            resource.Add("@id", string.Format("{0}flat", server.Uri));
-            resource.Add("@type", "PackageBaseAddress/3.0.0");
+            var resource = new JObject
+            {
+                { "@id", $"{server.Uri}flat" },
+                { "@type", "PackageBaseAddress/3.0.0" }
+            };
 
             var array = index["resources"] as JArray;
             array.Add(resource);
@@ -395,9 +404,11 @@ namespace NuGet.CommandLine.Test
 
         public static void AddRegistrationResource(JObject index, MockServer server)
         {
-            var resource = new JObject();
-            resource.Add("@id", string.Format("{0}reg", server.Uri));
-            resource.Add("@type", "RegistrationsBaseUrl/3.0.0-beta");
+            var resource = new JObject
+            {
+                { "@id", $"{server.Uri}reg" },
+                { "@type", "RegistrationsBaseUrl/3.0.0-beta" }
+            };
 
             var array = index["resources"] as JArray;
             array.Add(resource);
@@ -405,9 +416,11 @@ namespace NuGet.CommandLine.Test
 
         public static void AddLegacyUrlResource(JObject index, MockServer serverV2)
         {
-            var resource = new JObject();
-            resource.Add("@id", string.Format("{0}", serverV2.Uri));
-            resource.Add("@type", "LegacyGallery/2.0.0");
+            var resource = new JObject
+            {
+                { "@id", serverV2.Uri },
+                { "@type", "LegacyGallery/2.0.0" }
+            };
 
             var array = index["resources"] as JArray;
             array.Add(resource);
@@ -415,9 +428,11 @@ namespace NuGet.CommandLine.Test
 
         public static void AddPublishResource(JObject index, MockServer publishServer)
         {
-            var resource = new JObject();
-            resource.Add("@id", string.Format("{0}push", publishServer.Uri));
-            resource.Add("@type", "PackagePublish/2.0.0");
+            var resource = new JObject
+            {
+                { "@id", $"{publishServer.Uri}push" },
+                { "@type", "PackagePublish/2.0.0" }
+            };
 
             var array = index["resources"] as JArray;
             array.Add(resource);
