@@ -260,9 +260,9 @@ namespace NuGet.Protocol.Core.Types
             ILogger logger,
             CancellationToken token)
         {
+            var serviceEndpointUrl = GetServiceEndpointUrl(source, string.Empty);
             await _httpSource.ProcessResponseAsync(
-                () => CreateRequest(source, pathToPackage, apiKey, logger),
-                requestTimeout,
+                new HttpSourceRequest(() => CreateRequest(serviceEndpointUrl, pathToPackage, apiKey, logger)),
                 response =>
                 {
                     response.EnsureSuccessStatusCode();
@@ -272,7 +272,8 @@ namespace NuGet.Protocol.Core.Types
                 token);
         }
 
-        private HttpRequestMessage CreateRequest(string source,
+        private HttpRequestMessage CreateRequest(
+            Uri serviceEndpointUrl,
             string pathToPackage,
             string apiKey,
             ILogger log)
@@ -281,7 +282,7 @@ namespace NuGet.Protocol.Core.Types
             var hasApiKey = !string.IsNullOrEmpty(apiKey);
             var request = HttpRequestMessageFactory.Create(
                 HttpMethod.Put,
-                GetServiceEndpointUrl(source, string.Empty),
+                serviceEndpointUrl,
                 new HttpRequestMessageConfiguration(
                     logger: log,
                     promptOn403: !hasApiKey)); // Receiving an HTTP 403 when providing an API key typically indicates
@@ -364,28 +365,31 @@ namespace NuGet.Protocol.Core.Types
             ILogger logger,
             CancellationToken token)
         {
+            var url = string.Join("/", packageId, packageVersion);
+            var serviceEndpointUrl = GetServiceEndpointUrl(source, url);
+
             await _httpSource.ProcessResponseAsync(
-                () =>
-                {
-                    // Review: Do these values need to be encoded in any way?
-                    var url = string.Join("/", packageId, packageVersion);
-                    var hasApiKey = !string.IsNullOrEmpty(apiKey);
-                    var request = HttpRequestMessageFactory.Create(
-                        HttpMethod.Delete,
-                        GetServiceEndpointUrl(source, url),
-                        new HttpRequestMessageConfiguration(
-                            logger: logger,
-                            promptOn403: !hasApiKey)); // Receiving an HTTP 403 when providing an API key typically
-                                                       // indicates an invalid API key, so prompting for credentials
-                                                       // does not help.
-
-                    if (hasApiKey)
+                new HttpSourceRequest(
+                    () =>
                     {
-                        request.Headers.Add(ApiKeyHeader, apiKey);
-                    }
+                        // Review: Do these values need to be encoded in any way?
+                        var hasApiKey = !string.IsNullOrEmpty(apiKey);
+                        var request = HttpRequestMessageFactory.Create(
+                            HttpMethod.Delete,
+                            serviceEndpointUrl,
+                            new HttpRequestMessageConfiguration(
+                                logger: logger,
+                                promptOn403: !hasApiKey)); // Receiving an HTTP 403 when providing an API key typically
+                                                           // indicates an invalid API key, so prompting for credentials
+                                                           // does not help.
 
-                    return request;
-                },
+                        if (hasApiKey)
+                        {
+                            request.Headers.Add(ApiKeyHeader, apiKey);
+                        }
+
+                        return request;
+                    }),
                 response =>
                 {
                     response.EnsureSuccessStatusCode();

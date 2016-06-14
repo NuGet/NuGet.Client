@@ -101,7 +101,7 @@ namespace NuGet.Protocol
             try
             {
                 lastRequestUri = await client.ProcessResponseAsync(
-                    () => HttpRequestMessageFactory.Create(HttpMethod.Get, url, log),
+                    new HttpSourceRequest(() => HttpRequestMessageFactory.Create(HttpMethod.Get, url, log)),
                     response =>
                     {
                         if (response.RequestMessage == null)

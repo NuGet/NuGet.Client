@@ -18,7 +18,10 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange & Act & Assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
-                new DownloadTimeoutStream(null, new MemoryStream(), TimeSpan.Zero));
+                new DownloadTimeoutStream(
+                    downloadName: null,
+                    networkStream: new MemoryStream(),
+                    timeout: TimeSpan.Zero));
             Assert.Equal("downloadName", exception.ParamName);
         }
         
@@ -27,7 +30,11 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange & Act & Assert
             var exception = Assert.Throws<ArgumentNullException>(() =>
-                new DownloadTimeoutStream("downloadName", null, TimeSpan.Zero));
+                new DownloadTimeoutStream(
+                    downloadName: "downloadName",
+                    networkStream: null,
+                    timeout: TimeSpan.Zero));
+
             Assert.Equal("networkStream", exception.ParamName);
         }
         
@@ -90,7 +97,10 @@ namespace NuGet.Protocol.Tests
             {
                 OnRead = (buffer, offset, count) => { throw expected; } 
             };
-            var timeoutStream = new DownloadTimeoutStream("download", slowStream, TimeSpan.FromSeconds(1));
+            var timeoutStream = new DownloadTimeoutStream(
+                "download",
+                slowStream,
+                TimeSpan.FromSeconds(1));
             
             // Act & Assert
             var actual = await Assert.ThrowsAsync<IOException>(() =>

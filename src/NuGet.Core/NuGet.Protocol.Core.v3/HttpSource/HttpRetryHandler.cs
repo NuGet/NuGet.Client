@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -66,24 +67,35 @@ namespace NuGet.Protocol
                         // disposing it.
                         response?.Dispose();
 
-                        var timeoutMessage = string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.Http_Timeout,
-                            requestMessage.Method,
-                            requestUri,
-                            (int)request.RequestTimeout.TotalMilliseconds);
-
                         log.LogInformation("  " + string.Format(
                             CultureInfo.InvariantCulture,
                             Strings.Http_RequestLog,
                             requestMessage.Method,
                             requestUri));
 
+                        // Issue the request.
+                        var timeoutMessage = string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Http_Timeout,
+                            requestMessage.Method,
+                            requestUri,
+                            (int)request.RequestTimeout.TotalMilliseconds);
                         response = await TimeoutUtility.StartWithTimeout(
                             timeoutToken => request.HttpClient.SendAsync(requestMessage, request.CompletionOption, timeoutToken),
                             request.RequestTimeout,
                             timeoutMessage,
                             cancellationToken);
+
+                        // Wrap the response stream so that the download can timeout.
+                        if (response.Content != null)
+                        {
+                            var networkStream = await response.Content.ReadAsStreamAsync();
+                            var newContent = new DownloadTimeoutStreamContent(
+                                requestUri,
+                                networkStream,
+                                request.DownloadTimeout);
+                            response.Content = newContent;
+                        }
 
                         log.LogInformation("  " + string.Format(
                             CultureInfo.InvariantCulture,
@@ -97,9 +109,17 @@ namespace NuGet.Protocol
                             success = false;
                         }
                     }
-                    catch (Exception e) when (!(e is OperationCanceledException))
+                    catch (OperationCanceledException)
+                    {
+                        response?.Dispose();
+
+                        throw;
+                    }
+                    catch (Exception e)
                     {
                         success = false;
+
+                        response?.Dispose();
 
                         if (tries >= request.MaxTries)
                         {

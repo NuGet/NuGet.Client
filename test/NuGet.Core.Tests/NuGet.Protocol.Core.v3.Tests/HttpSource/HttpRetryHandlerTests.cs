@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -115,12 +117,12 @@ namespace NuGet.Protocol.Tests
                 RequestTimeout = Timeout.InfiniteTimeSpan,
                 RetryDelay = TimeSpan.Zero
             };
+            var log = new TestLogger();
 
             // Act
-            await retryHandler.SendAsync(
-                request,
-                new TestLogger(), 
-                CancellationToken.None);
+            using (await retryHandler.SendAsync(request, log, CancellationToken.None))
+            {
+            }
 
             // Assert
             Assert.Equal(MaxTries, requests.Count);
@@ -148,12 +150,12 @@ namespace NuGet.Protocol.Tests
                 RequestTimeout = LargeTimeout,
                 RetryDelay = TimeSpan.Zero
             };
+            var log = new TestLogger();
 
             // Act
-            await retryHandler.SendAsync(
-                request,
-                new TestLogger(),
-                CancellationToken.None);
+            using (await retryHandler.SendAsync(request, log, CancellationToken.None))
+            {
+            }
 
             // Assert
             Assert.Equal(MaxTries, hits);
@@ -243,14 +245,16 @@ namespace NuGet.Protocol.Tests
                 RequestTimeout = Timeout.InfiniteTimeSpan,
                 RetryDelay = SmallTimeout
             };
+            var log = new TestLogger();
 
             // Act
             var timer = new Stopwatch();
             timer.Start();
-            await retryHandler.SendAsync(
-                request,
-                new TestLogger(),
-                CancellationToken.None);
+
+            using (await retryHandler.SendAsync(request, log, CancellationToken.None))
+            {
+            }
+
             timer.Stop();
 
             // Assert
@@ -281,12 +285,12 @@ namespace NuGet.Protocol.Tests
                 RequestTimeout = Timeout.InfiniteTimeSpan,
                 RetryDelay = TimeSpan.Zero
             };
+            var log = new TestLogger();
 
             // Act
-            await retryHandler.SendAsync(
-                request,
-                new TestLogger(),
-                CancellationToken.None);
+            using (await retryHandler.SendAsync(request, log, CancellationToken.None))
+            {
+            }
 
             // Assert
             Assert.Equal(MaxTries, hits);
@@ -313,16 +317,15 @@ namespace NuGet.Protocol.Tests
                 RequestTimeout = Timeout.InfiniteTimeSpan,
                 RetryDelay = TimeSpan.Zero
             };
+            var log = new TestLogger();
 
             // Act
-            var response = await retryHandler.SendAsync(
-                request,
-                new TestLogger(),
-                CancellationToken.None);
-
-            // Assert
-            Assert.Equal(1, hits);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            using (var response = await retryHandler.SendAsync(request, log, CancellationToken.None))
+            {
+                // Assert
+                Assert.Equal(1, hits);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            }
         }
 
         [Fact]
@@ -346,16 +349,60 @@ namespace NuGet.Protocol.Tests
                 RequestTimeout = Timeout.InfiniteTimeSpan,
                 RetryDelay = TimeSpan.Zero
             };
+            var log = new TestLogger();
 
             // Act
-            var response = await retryHandler.SendAsync(
-               request,
-                new TestLogger(),
-                CancellationToken.None);
+            using (var response = await retryHandler.SendAsync(request, log, CancellationToken.None))
+            {
+                // Assert
+                Assert.Equal(1, hits);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            }
+        }
 
-            // Assert
-            Assert.Equal(1, hits);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        [Fact]
+        public async Task HttpRetryHandler_TimesOutDownload()
+        {
+            // Arrange
+            var hits = 0;
+            var memoryStream = new MemoryStream(Encoding.ASCII.GetBytes("foobar"));
+            var expectedMilliseconds = 50;
+            Func<HttpRequestMessage, HttpResponseMessage> handler = requestMessage =>
+            {
+                hits++;
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StreamContent(new SlowStream(memoryStream)
+                    {
+                        DelayPerByte = TimeSpan.FromSeconds(1)
+                    })
+                };
+            };
+
+            var retryHandler = new HttpRetryHandler();
+            var testHandler = new TestHandler(handler);
+            var httpClient = new HttpClient(testHandler);
+            var request = new HttpRetryHandlerRequest(httpClient, () => new HttpRequestMessage(HttpMethod.Get, TestUrl))
+            {
+                DownloadTimeout = TimeSpan.FromMilliseconds(expectedMilliseconds)
+            };
+            var destinationStream = new MemoryStream();
+            var log = new TestLogger();
+
+            // Act
+            using (var response = await retryHandler.SendAsync(request, log, CancellationToken.None))
+            using (var stream = await response.Content.ReadAsStreamAsync())
+            {
+                var actual = await Assert.ThrowsAsync<IOException>(() => stream.CopyToAsync(destinationStream));
+
+                // Assert
+                Assert.Equal(1, hits);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.IsType<TimeoutException>(actual.InnerException);
+                Assert.EndsWith(
+                    $"timed out because no data was received for {expectedMilliseconds}ms.",
+                    actual.Message);
+            }
         }
 
         [Fact]
@@ -390,17 +437,16 @@ namespace NuGet.Protocol.Tests
                 RequestTimeout = Timeout.InfiniteTimeSpan,
                 RetryDelay = TimeSpan.Zero
             };
+            var log = new TestLogger();
 
             // Act
-            var response = await retryHandler.SendAsync(
-                request,
-                new TestLogger(),
-                CancellationToken.None);
-
-            // Assert
-            Assert.True(sent503);
-            Assert.Equal(3, tries);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            using (var response = await retryHandler.SendAsync(request, log, CancellationToken.None))
+            {
+                // Assert
+                Assert.True(sent503);
+                Assert.Equal(3, tries);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            }
         }
 
         private static async Task<T> ThrowsException<T>(ITestServer server) where T : Exception

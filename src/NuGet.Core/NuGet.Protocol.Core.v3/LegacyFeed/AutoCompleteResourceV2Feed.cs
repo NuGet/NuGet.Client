@@ -77,9 +77,8 @@ namespace NuGet.Protocol
             CancellationToken token)
         {
             return await _httpSource.ProcessStreamAsync(
-                   uri: apiEndpointUri,
-                   ignoreNotFounds: false,
-                   processAsync: stream =>
+                   new HttpSourceRequest(apiEndpointUri, logger),
+                   stream =>
                    {
                        using (var reader = new StreamReader(stream))
                        using (var jsonReader = new JsonTextReader(reader))
@@ -89,8 +88,8 @@ namespace NuGet.Protocol
                            return Task.FromResult(json);
                        }
                    },
-                   log: logger,
-                   token: token);
+                   logger,
+                   token);
         }
     }
 }

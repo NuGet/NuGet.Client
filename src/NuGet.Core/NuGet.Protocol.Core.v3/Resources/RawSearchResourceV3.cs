@@ -82,10 +82,9 @@ namespace NuGet.Protocol
                     try
                     {
                         searchJson = await _client.GetJObjectAsync(
-                            uri: queryUrl.Uri,
-                            ignoreNotFounds: false,
-                            log: log,
-                            token: cancellationToken);
+                            new HttpSourceRequest(queryUrl.Uri, log),
+                            log,
+                            cancellationToken);
                     }
                     catch when (i < _searchEndpoints.Length - 1)
                     {

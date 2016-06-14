@@ -568,8 +568,7 @@ namespace NuGet.CommandLine.Test
                     "restore",
                     slnPath,
                     "-Verbosity",
-                    "detailed",
-                    "-DisableParallelProcessing"
+                    "detailed"
                 };
 
                 var task = Task.Run(() =>
@@ -660,8 +659,7 @@ namespace NuGet.CommandLine.Test
                     "restore",
                     slnPath,
                     "-Verbosity",
-                    "detailed",
-                    "-DisableParallelProcessing"
+                    "detailed"
                 };
 
                 var task = Task.Run(() =>

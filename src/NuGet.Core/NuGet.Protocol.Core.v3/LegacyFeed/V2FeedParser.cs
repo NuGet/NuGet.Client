@@ -432,20 +432,20 @@ namespace NuGet.Protocol
             CancellationToken token)
         {
             return await _httpSource.ProcessResponseAsync(
-                () =>
-                {
-                    var request = HttpRequestMessageFactory.Create(HttpMethod.Get, uri, log);
-                    request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/atom+xml"));
-                    request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xml"));
-                    return request;
-                },
+                new HttpSourceRequest(
+                    () =>
+                    {
+                        var request = HttpRequestMessageFactory.Create(HttpMethod.Get, uri, log);
+                        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/atom+xml"));
+                        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xml"));
+                        return request;
+                    }),
                 async response =>
                 {
                     if (response.StatusCode == HttpStatusCode.OK)
                     {
                         var networkStream = await response.Content.ReadAsStreamAsync();
-                        var timeoutStream = new DownloadTimeoutStream(uri, networkStream, _httpSource.DownloadTimeout);
-                        return LoadXml(timeoutStream);
+                        return LoadXml(networkStream);
                     }
                     else if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
                     {

@@ -159,14 +159,20 @@ namespace NuGet.Protocol
                         // (2) cache for pages is valid for only 30 min.
                         // So we decide to leave current logic and observe.
                         using (var data = await _httpSource.GetAsync(
-                            uri,
-                            new[] { new MediaTypeWithQualityHeaderValue("application/atom+xml"), new MediaTypeWithQualityHeaderValue("application/xml") },
-                            $"list_{id}_page{page}",
-                            CreateCacheContext(retry),
+                            new HttpSourceCachedRequest(
+                                uri,
+                                $"list_{id}_page{page}",
+                                CreateCacheContext(retry))
+                            {
+                                AcceptHeaderValues =
+                                {
+                                    new MediaTypeWithQualityHeaderValue("application/atom+xml"),
+                                    new MediaTypeWithQualityHeaderValue("application/xml")
+                                },
+                                EnsureValidContents = stream => HttpStreamValidation.ValidateXml(uri, stream)
+                            },
                             Logger,
-                            ignoreNotFounds: false,
-                            ensureValidContents: stream => HttpStreamValidation.ValidateXml(uri, stream),
-                            cancellationToken: cancellationToken))
+                            cancellationToken))
                         {
                             if (data.Status == HttpSourceResultStatus.NoContent)
                             {
@@ -271,13 +277,15 @@ namespace NuGet.Protocol
                 try
                 {
                     using (var data = await _httpSource.GetAsync(
-                        package.ContentUri,
-                        "nupkg_" + package.Identity.Id + "." + package.Identity.Version,
-                        CreateCacheContext(retry),
+                        new HttpSourceCachedRequest(
+                            package.ContentUri,
+                            "nupkg_" + package.Identity.Id + "." + package.Identity.Version,
+                            CreateCacheContext(retry))
+                        {
+                            EnsureValidContents = stream => HttpStreamValidation.ValidateNupkg(package.ContentUri, stream)
+                        },
                         Logger,
-                        ignoreNotFounds: false,
-                        ensureValidContents: stream => HttpStreamValidation.ValidateNupkg(package.ContentUri, stream),
-                        cancellationToken: cancellationToken))
+                        cancellationToken))
                     {
                         return new NupkgEntry
                         {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
 using NuGet.Commands;
 using NuGet.Configuration;
@@ -121,6 +122,11 @@ namespace NuGet.CommandLine.XPlat
                             var os = PlatformApis.GetOSName();
                             var defaultRuntimes = RequestRuntimeUtility.GetDefaultRestoreRuntimes(os, runtimeOSname);
                             restoreContext.FallbackRuntimes.UnionWith(defaultRuntimes);
+                        }
+
+                        if (restoreContext.DisableParallel)
+                        {
+                            HttpSourceResourceProvider.Throttle = SemaphoreSlimThrottle.CreateBinarySemaphore();
                         }
 
                         var restoreSummaries = await RestoreRunner.Run(restoreContext);
