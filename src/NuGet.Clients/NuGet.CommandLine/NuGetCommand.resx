@@ -5317,4 +5317,8 @@ nuget locals global-packages -list</value>
   <data name="Option_ForceEnglishOutput" xml:space="preserve">
     <value>Forces the application to run using an invariant, English-based culture.</value>
   </data>
+  <data name="RestoreCommandUsageExamples" xml:space="preserve">
+    <value>nuget restore MySoluion.sln</value>
+    <comment>command line example, do not localize</comment>
+  </data>
 </root>

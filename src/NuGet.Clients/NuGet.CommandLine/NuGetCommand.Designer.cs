@@ -10612,6 +10612,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to nuget restore MySoluion.sln.
+        /// </summary>
+        internal static string RestoreCommandUsageExamples {
+            get {
+                return ResourceManager.GetString("RestoreCommandUsageExamples", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to [&lt;solution&gt; | &lt;packages.config file&gt; | &lt;project.json&gt; | &lt;Microsoft Build project&gt;] [options].
         /// </summary>
         internal static string RestoreCommandUsageSummary {
