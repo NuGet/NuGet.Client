@@ -80,7 +80,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                             It.Is<IReadOnlyDictionary<string, object>>(y =>
                                 y.ContainsKey("Frameworks") &&
                                 Enumerable.SequenceEqual(
-                                    (IEnumerable<NuGetFramework>)y["Frameworks"], tc.SupportedFrameworks)),
+                                    (IEnumerable<NuGetFramework>)y["Frameworks"],
+                                    new[]
+                                    {
+                                        NuGetFramework.Parse("net45"),
+                                        NuGetFramework.Parse("netstandard1.0")
+                                    })),
                             It.IsAny<TextWriter>(),
                             It.IsAny<IProgress<INuGetPackageInstallProgress>>(),
                             It.IsAny<CancellationToken>()),
