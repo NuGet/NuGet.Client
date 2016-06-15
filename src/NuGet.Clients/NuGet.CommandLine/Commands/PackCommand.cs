@@ -98,10 +98,6 @@ namespace NuGet.CommandLine
 
             Console.WriteLine(LocalizedResourceManager.GetString("PackageCommandAttemptingToBuildPackage"), Path.GetFileName(packArgs.Path));
 
-            // If the BasePath is not specified, use the directory of the input file (nuspec / proj) file
-            BasePath = String.IsNullOrEmpty(BasePath) ? Path.GetDirectoryName(Path.GetFullPath(packArgs.Path)) : BasePath;
-            BasePath = BasePath.TrimEnd(Path.DirectorySeparatorChar);
-
             if (!String.IsNullOrEmpty(MinClientVersion))
             {
                 if (!System.Version.TryParse(MinClientVersion, out _minClientVersionValue))

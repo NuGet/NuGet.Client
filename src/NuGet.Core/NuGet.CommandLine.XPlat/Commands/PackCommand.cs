@@ -105,15 +105,12 @@ namespace NuGet.CommandLine.XPlat
                     packArgs.Arguments = arguments.Values;
                     packArgs.Path = PackCommandRunner.GetInputFile(packArgs);
                     packArgs.OutputDirectory = outputDirectory.Value();
+                    packArgs.BasePath = basePath.Value();
 
                     // Set the current directory if the files being packed are in a different directory
                     PackCommandRunner.SetupCurrentDirectory(packArgs);
 
                     logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.PackageCommandAttemptingToBuildPackage, Path.GetFileName(packArgs.Path)));
-
-                    // If the BasePath is not specified, use the directory of the input file (nuspec / proj) file
-                    packArgs.BasePath = !basePath.HasValue() ? Path.GetDirectoryName(Path.GetFullPath(packArgs.Path)) : basePath.Value();
-                    packArgs.BasePath = packArgs.BasePath.TrimEnd(Path.DirectorySeparatorChar);
 
                     packArgs.Build = build.HasValue();
                     packArgs.Exclude = exclude.Values;
