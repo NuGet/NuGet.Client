@@ -111,9 +111,10 @@ namespace NuGet.CommandLine.XPlat
 
                     logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.PackageCommandAttemptingToBuildPackage, Path.GetFileName(packArgs.Path)));
 
-                    // If the BasePath is not specified, use the directory of the input file (nuspec / proj) file
-                    packArgs.BasePath = !basePath.HasValue() ? Path.GetDirectoryName(Path.GetFullPath(packArgs.Path)) : basePath.Value();
-                    packArgs.BasePath = packArgs.BasePath.TrimEnd(Path.DirectorySeparatorChar);
+                    if (basePath.HasValue())
+                    {
+                        packArgs.BasePath = basePath.Value();
+                    }
 
                     packArgs.Build = build.HasValue();
                     packArgs.Exclude = exclude.Values;
