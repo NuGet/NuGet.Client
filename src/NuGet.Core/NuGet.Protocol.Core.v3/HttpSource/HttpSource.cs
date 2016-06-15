@@ -357,6 +357,13 @@ namespace NuGet.Protocol
             // Set user agent
             UserAgent.SetUserAgent(httpClient);
 
+            // Set accept-language header
+            string acceptLanguage = CultureInfo.CurrentUICulture.ToString();
+            if (!string.IsNullOrEmpty(acceptLanguage))
+            {
+                httpClient.DefaultRequestHeaders.AcceptLanguage.ParseAdd(acceptLanguage);
+            }
+
             return httpClient;
         }
 
