@@ -105,16 +105,12 @@ namespace NuGet.CommandLine.XPlat
                     packArgs.Arguments = arguments.Values;
                     packArgs.Path = PackCommandRunner.GetInputFile(packArgs);
                     packArgs.OutputDirectory = outputDirectory.Value();
+                    packArgs.BasePath = basePath.Value();
 
                     // Set the current directory if the files being packed are in a different directory
                     PackCommandRunner.SetupCurrentDirectory(packArgs);
 
                     logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.PackageCommandAttemptingToBuildPackage, Path.GetFileName(packArgs.Path)));
-
-                    if (basePath.HasValue())
-                    {
-                        packArgs.BasePath = basePath.Value();
-                    }
 
                     packArgs.Build = build.HasValue();
                     packArgs.Exclude = exclude.Values;
