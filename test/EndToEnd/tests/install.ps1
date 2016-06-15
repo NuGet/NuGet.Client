@@ -2910,7 +2910,7 @@ function Test-InstallPackagesConfigOnline
 
     # Act
 	$p | Install-Package Newtonsoft.Json
-    $p | Install-Package https://raw.githubusercontent.com/NuGet/json-ld.net/master/src/JsonLD/packages.config
+    $p | Install-Package https://raw.githubusercontent.com/NuGet/json-ld.net/7dc9becb263a7210ebcd2f571c2a7a07409c240a/src/JsonLD/packages.config
 
     # Assert
     Assert-Package $p Newtonsoft.Json 4.0.1
