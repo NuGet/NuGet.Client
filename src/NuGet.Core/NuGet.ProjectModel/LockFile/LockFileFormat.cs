@@ -23,7 +23,6 @@ namespace NuGet.ProjectModel
 
         private static readonly char[] PathSplitChars = new[] { LockFile.DirectorySeparatorChar };
 
-        private const string LockedProperty = "locked";
         private const string VersionProperty = "version";
         private const string LibrariesProperty = "libraries";
         private const string TargetsProperty = "targets";
@@ -123,7 +122,6 @@ namespace NuGet.ProjectModel
                 // Ran into parsing errors, mark it as unlocked and out-of-date
                 return new LockFile
                 {
-                    IsLocked = false,
                     Version = int.MinValue,
                     Path = path
                 };
@@ -169,7 +167,6 @@ namespace NuGet.ProjectModel
         private static LockFile ReadLockFile(JObject cursor)
         {
             var lockFile = new LockFile();
-            lockFile.IsLocked = ReadBool(cursor, LockedProperty, defaultValue: false);
             lockFile.Version = ReadInt(cursor, VersionProperty, defaultValue: int.MinValue);
             lockFile.Libraries = ReadObject(cursor[LibrariesProperty] as JObject, ReadLibrary);
             lockFile.Targets = ReadObject(cursor[TargetsProperty] as JObject, ReadTarget);
@@ -183,7 +180,6 @@ namespace NuGet.ProjectModel
         private static JObject WriteLockFile(LockFile lockFile)
         {
             var json = new JObject();
-            json[LockedProperty] = new JValue(lockFile.IsLocked);
             json[VersionProperty] = new JValue(lockFile.Version);
             json[TargetsProperty] = WriteObject(lockFile.Targets, WriteTarget);
             json[LibrariesProperty] = WriteObject(lockFile.Libraries, WriteLibrary);

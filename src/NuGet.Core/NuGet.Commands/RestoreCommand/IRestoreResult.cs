@@ -15,12 +15,6 @@ namespace NuGet.Commands
         string LockFilePath { get; }
 
         /// <summary>
-        /// Gets a boolean indicating if the lock file will be re-written on <see cref="Commit"/>
-        /// because the file needs to be re-locked.
-        /// </summary>
-        bool RelockFile { get; }
-
-        /// <summary>
         /// Gets the lock file that was generated during the restore or, in the case of a locked lock file,
         /// was used to determine the packages to install during the restore.
         /// </summary>

@@ -110,8 +110,6 @@ namespace NuGet.CommandLine
 
         private int SummarizeLockfile(PackageSpec project, LockFile lockfile, string targetName)
         {
-            _log.LogMinimal($"Locked: {lockfile.IsLocked}");
-
             if (project == null)
             {
                 _log.LogMinimal($"Up-to-date: Unknown");

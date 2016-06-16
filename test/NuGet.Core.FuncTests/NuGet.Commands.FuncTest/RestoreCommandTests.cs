@@ -1689,92 +1689,6 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_LockedLockFile()
-        {
-            const string project = @"
-{
-    ""dependencies"": {
-        ""System.Runtime"": ""4.0.10-beta-23019""
-    },
-    ""frameworks"": {
-        ""dotnet"": { }
-    }
-}";
-
-            const string lockFileContent = @"{
-  ""locked"": true,
-  ""version"": 1,
-  ""targets"": {
-    "".NETPlatform,Version=v5.0"": {
-      ""System.Runtime/4.0.10-beta-23019"": {
-        ""compile"": {
-          ""ref/dotnet/System.Runtime.dll"": {}
-        }
-      }
-    }
-  },
-  ""libraries"": {
-    ""System.Runtime/4.0.10-beta-23019"": {
-      ""sha512"": ""JkGp8sCzxxRY1GS+p1SEk8WcaT8pu++/5b94ar2i/RaUN/OzkcGP/6OLFUxUf1uar75pUvotpiMawVt1dCEUVA=="",
-      ""type"": ""Package"",
-      ""files"": [
-        ""_rels/.rels"",
-        ""System.Runtime.nuspec"",
-        ""License.rtf"",
-        ""ref/dotnet/System.Runtime.dll"",
-        ""ref/net451/_._"",
-        ""lib/net451/_._"",
-        ""ref/win81/_._"",
-        ""lib/win81/_._"",
-        ""ref/netcore50/System.Runtime.dll"",
-        ""package/services/metadata/core-properties/cdec43993f064447a2d882cbfd022539.psmdcp"",
-        ""[Content_Types].xml""
-      ]
-    }
-  },
-  ""projectFileDependencyGroups"": {
-    """": [
-      ""System.Runtime >= 4.0.10-beta-23019""
-    ],
-    "".NETPlatform,Version=v5.0"": []
-  }
-}
-";
-
-            // Arrange
-            var sources = new List<PackageSource>();
-
-            // TODO(anurse): We should be mocking this out or using a stable source...
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
-
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(project, "TestProject", specPath);
-
-                var lockFileFormat = new LockFileFormat();
-                var lockFile = lockFileFormat.Parse(lockFileContent, "In Memory");
-                Assert.True(lockFile.IsLocked); // Just to make sure no-one accidentally unlocks it :)
-
-                var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.ExistingLockFile = lockFile;
-
-                // Act
-                var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
-                var installed = result.GetAllInstalled();
-
-                // Assert
-                Assert.Equal(1, installed.Count);
-                Assert.Equal("System.Runtime", installed.Single().Name);
-                Assert.Equal(NuGetVersion.Parse("4.0.10-beta-23019"), installed.Single().Version);
-            }
-        }
-
-        [Fact]
         public async Task RestoreCommand_LockedLockFileWithOutOfDateProject()
         {
             const string project = @"
@@ -1788,7 +1702,6 @@ namespace NuGet.Commands.FuncTest
 }";
 
             const string lockFileContent = @"{
-  ""locked"": true,
   ""version"": 1,
   ""targets"": {
     "".NETPlatform,Version=v5.0"": {
@@ -1840,7 +1753,6 @@ namespace NuGet.Commands.FuncTest
 
                 var lockFileFormat = new LockFileFormat();
                 var lockFile = lockFileFormat.Parse(lockFileContent, "In Memory");
-                Assert.True(lockFile.IsLocked); // Just to make sure no-one accidentally unlocks it :)
 
                 var logger = new TestLogger();
                 var request = new RestoreRequest(spec, sources, packagesDir, logger);

@@ -23,9 +23,6 @@ namespace NuGet.Commands
             LockFilePath = lockFilePath;
             LockFile = lockFile;
             PreviousLockFile = previousLockFile;
-            
-            // "locked" property is not supported on tools
-            RelockFile = false;
         }
 
         public string ToolName { get; }
@@ -35,6 +32,5 @@ namespace NuGet.Commands
         public string LockFilePath { get; }
         public LockFile LockFile { get; }
         public LockFile PreviousLockFile { get; }
-        public bool RelockFile { get; }
     }
 }

@@ -33,12 +33,6 @@ namespace NuGet.Commands
         public IEnumerable<ToolRestoreResult> ToolRestoreResults { get; }
 
         /// <summary>
-        /// Gets a boolean indicating if the lock file will be re-written on <see cref="Commit"/>
-        /// because the file needs to be re-locked.
-        /// </summary>
-        public bool RelockFile { get; }
-
-        /// <summary>
         /// Gets the lock file that was generated during the restore or, in the case of a locked lock file,
         /// was used to determine the packages to install during the restore.
         /// </summary>
@@ -149,53 +143,49 @@ namespace NuGet.Commands
             bool toolCommit,
             CancellationToken token)
         {
-            // Don't write the lock file if it is Locked AND we're not re-locking the file
-            if (!result.LockFile.IsLocked || result.RelockFile || toolCommit)
+            // Avoid writing out the lock file if it is the same to avoid triggering an intellisense
+            // update on a restore with no actual changes.
+            if (forceWrite
+                || result.PreviousLockFile == null
+                || !result.PreviousLockFile.Equals(result.LockFile))
             {
-                // Avoid writing out the lock file if it is the same to avoid triggering an intellisense
-                // update on a restore with no actual changes.
-                if (forceWrite
-                    || result.PreviousLockFile == null
-                    || !result.PreviousLockFile.Equals(result.LockFile))
+                if (toolCommit)
                 {
-                    if (toolCommit)
-                    {
-                        log.LogDebug($"Writing tool lock file to disk. Path: {result.LockFilePath}");
-                        
-                        await ConcurrencyUtilities.ExecuteWithFileLockedAsync(
-                            result.LockFilePath,
-                            lockedToken =>
-                            {
-                                var lockFileDirectory = Path.GetDirectoryName(result.LockFilePath);
-                                Directory.CreateDirectory(lockFileDirectory);
-                                
-                                lockFileFormat.Write(result.LockFilePath, result.LockFile);
-                                
-                                return Task.FromResult(0);
-                            },
-                            token);
-                    }
-                    else
-                    {
-                        log.LogMinimal($"Writing lock file to disk. Path: {result.LockFilePath}");
-                        
-                        lockFileFormat.Write(result.LockFilePath, result.LockFile);
-                    }
+                    log.LogDebug($"Writing tool lock file to disk. Path: {result.LockFilePath}");
+
+                    await ConcurrencyUtilities.ExecuteWithFileLockedAsync(
+                        result.LockFilePath,
+                        lockedToken =>
+                        {
+                            var lockFileDirectory = Path.GetDirectoryName(result.LockFilePath);
+                            Directory.CreateDirectory(lockFileDirectory);
+
+                            lockFileFormat.Write(result.LockFilePath, result.LockFile);
+
+                            return Task.FromResult(0);
+                        },
+                        token);
                 }
                 else
                 {
-                    if (toolCommit)
-                    {
-                        log.LogDebug($"Tool lock file has not changed. Skipping lock file write. Path: {result.LockFilePath}");
-                    }
-                    else
-                    {
-                        log.LogMinimal($"Lock file has not changed. Skipping lock file write. Path: {result.LockFilePath}");
-                    }
+                    log.LogMinimal($"Writing lock file to disk. Path: {result.LockFilePath}");
+
+                    lockFileFormat.Write(result.LockFilePath, result.LockFile);
+                }
+            }
+            else
+            {
+                if (toolCommit)
+                {
+                    log.LogDebug($"Tool lock file has not changed. Skipping lock file write. Path: {result.LockFilePath}");
+                }
+                else
+                {
+                    log.LogMinimal($"Lock file has not changed. Skipping lock file write. Path: {result.LockFilePath}");
                 }
             }
         }
-        
+
         private static void WriteLockFile(
             LockFileFormat lockFileFormat,
             IRestoreResult result,

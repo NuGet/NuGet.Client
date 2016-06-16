@@ -1029,62 +1029,6 @@ namespace NuGet.Test
         }
 
         [Fact]
-        public async Task BuildIntegratedRestoreUtility_StayLocked()
-        {
-            // Arrange
-            var projectName = "testproj";
-
-            using (var rootFolder = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
-                projectFolder.Create();
-                var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
-                var msbuildProjectPath = new FileInfo(Path.Combine(projectFolder.FullName, $"{projectName}.csproj"));
-                CreateConfigJson(projectConfig.FullName);
-
-                var sources = new List<SourceRepository>
-            {
-                Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
-            };
-
-                var projectTargetFramework = NuGetFramework.Parse("uap10.0");
-                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework,
-                    new TestNuGetProjectContext());
-                var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName, msBuildNuGetProjectSystem);
-
-                var effectiveGlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(NullSettings.Instance);
-
-                var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                    GetExternalProjectReferenceContext(),
-                    sources,
-                    effectiveGlobalPackagesFolder,
-                    Enumerable.Empty<string>(),
-                    CancellationToken.None);
-
-                var format = new LockFileFormat();
-
-                var path = Path.Combine(projectFolder.FullName, "project.lock.json");
-
-                // Set the lock file to locked=true
-                var lockFile = result.LockFile;
-                lockFile.IsLocked = true;
-                format.Write(path, lockFile);
-
-                // Act
-                result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                    GetExternalProjectReferenceContext(),
-                    sources,
-                    effectiveGlobalPackagesFolder,
-                    Enumerable.Empty<string>(),
-                    CancellationToken.None);
-
-                // Assert
-                Assert.True(result.LockFile.IsLocked);
-                Assert.True(result.Success);
-            }
-        }
-
-        [Fact]
         public async Task BuildIntegratedRestoreUtility_RestoreToRelativePathGlobalPackagesFolder()
         {
             // Arrange
