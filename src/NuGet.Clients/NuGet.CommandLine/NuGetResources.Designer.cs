@@ -8845,6 +8845,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Nothing to do. This project does not specify any packages for NuGet to restore..
+        /// </summary>
+        public static string ProjectRestoreCommandNoPackagesConfigOrProjectJson {
+            get {
+                return ResourceManager.GetString("ProjectRestoreCommandNoPackagesConfigOrProjectJson", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to There is no default source, please specify a source..
         /// </summary>
         public static string PushCommandNoSourceError {
@@ -9849,15 +9858,6 @@ namespace NuGet.CommandLine {
         public static string RestoreCommandFileNotFound_trk {
             get {
                 return ResourceManager.GetString("RestoreCommandFileNotFound_trk", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unable to restore. The project does not contain a project.json or packages.config file..
-        /// </summary>
-        public static string RestoreCommandNoPackagesConfigOrProjectJson {
-            get {
-                return ResourceManager.GetString("RestoreCommandNoPackagesConfigOrProjectJson", resourceCulture);
             }
         }
         
@@ -11014,6 +11014,15 @@ namespace NuGet.CommandLine {
         public static string SettingsCredentials_UsingSavedCredentials {
             get {
                 return ResourceManager.GetString("SettingsCredentials_UsingSavedCredentials", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nothing to do. None of the projects in this solution specify any packages for NuGet to restore..
+        /// </summary>
+        public static string SolutionRestoreCommandNoPackagesConfigOrProjectJson {
+            get {
+                return ResourceManager.GetString("SolutionRestoreCommandNoPackagesConfigOrProjectJson", resourceCulture);
             }
         }
         

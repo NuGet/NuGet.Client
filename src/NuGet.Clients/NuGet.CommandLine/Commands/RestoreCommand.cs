@@ -74,10 +74,11 @@ namespace NuGet.CommandLine
             var hasProjectJsonFiles = restoreInputs.RestoreV3Context.Inputs.Any();
             if (!hasPackagesConfigFiles && !hasProjectJsonFiles)
             {
-                var message = string.Format(
-                    CultureInfo.CurrentCulture,
-                    LocalizedResourceManager.GetString("RestoreCommandNoPackagesConfigOrProjectJson"));
-                throw new CommandLineException(message);
+
+                Console.LogMinimal(LocalizedResourceManager.GetString(restoreInputs.RestoringWithSolutionFile
+                        ? "SolutionRestoreCommandNoPackagesConfigOrProjectJson"
+                        : "ProjectRestoreCommandNoPackagesConfigOrProjectJson"));
+                return;
             }
 
             // packages.config
