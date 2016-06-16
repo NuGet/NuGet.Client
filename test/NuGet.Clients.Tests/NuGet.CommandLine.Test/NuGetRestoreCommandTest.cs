@@ -256,59 +256,7 @@ namespace NuGet.CommandLine.Test
 
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var repositoryPath = Path.Combine(workingPath, "Repository");
-                var proj1Directory = Path.Combine(workingPath, "proj1");
-                var proj2Directory = Path.Combine(workingPath, "proj2");
-
-                Directory.CreateDirectory(repositoryPath);
-                Directory.CreateDirectory(proj1Directory);
-                Directory.CreateDirectory(proj2Directory);
-
-                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
-                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
-
-                Util.CreateFile(workingPath, "a.sln",
-                    @"
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
-Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj1"", ""proj1\proj1.csproj"", ""{A04C59CC-7622-4223-B16B-CDF2ECAD438D}""
-EndProject
-Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj2"", ""proj2\proj2.csproj"", ""{42641DAE-D6C4-49D4-92EA-749D2573554A}""
-EndProject");
-
-                Util.CreateFile(proj1Directory, "proj1.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Include='packages.config' />
-  </ItemGroup>
-</Project>");
-                Util.CreateFile(proj1Directory, "packages.config",
-@"<packages>
-  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
-</packages>");
-
-                Util.CreateFile(proj2Directory, "proj2.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Include='packages.config' />
-  </ItemGroup>
-</Project>");
-                Util.CreateFile(proj2Directory, configFileName,
-@"<packages>
-  <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
-</packages>");
+                var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, "packages.config", configFileName);
 
                 // Act
                 var r = CommandRunner.Run(
@@ -390,6 +338,76 @@ EndProject");
             }
         }
 
+        [Fact]
+        public void RestoreCommand_FromSolutionFileNoProjects_ReportsNothingToDoWithoutError()
+        {
+            // Verify we display a simple informational message, no errors
+
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                Directory.CreateDirectory(workingPath);
+
+                Util.CreateFile(workingPath, "a.sln",
+                    @"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    "restore",
+                    waitForExit: true);
+
+                // Assert
+                Assert.True(string.IsNullOrEmpty(r.Item3)); // No error
+                Assert.Contains("Nothing to do", r.Item2); // Informative message
+            }
+        }
+
+        [Theory]
+        [InlineData("", "")]
+        [InlineData("", "packages.config")]
+        [InlineData("project.json", "")]
+        public void RestoreCommand_FromSolutionFile_ReportsNothingToDoWithoutError(string proj1ConfigFileName, string proj2ConfigFileName)
+        {
+            // Verify we display a simple informational message if we don't encounter any projects with project.json
+            // or packages.config, no errors.
+
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, proj1ConfigFileName, proj2ConfigFileName);
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    "restore -Source " + repositoryPath,
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+                Assert.True(string.IsNullOrEmpty(r.Item3)); // No error
+
+                if (string.IsNullOrEmpty(proj1ConfigFileName) && string.IsNullOrEmpty(proj2ConfigFileName))
+                {
+                    Assert.Contains("Nothing to do", r.Item2); // Informative message
+                }
+                else
+                {
+                    Assert.DoesNotContain("Nothing to do", r.Item2);
+                }
+            }
+
+        }
+
         [Theory]
         [InlineData("packages.config")]
         [InlineData("packages.proj2.config")]
@@ -400,59 +418,7 @@ EndProject");
 
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var repositoryPath = Path.Combine(workingPath, "Repository");
-                var proj1Directory = Path.Combine(workingPath, "proj1");
-                var proj2Directory = Path.Combine(workingPath, "proj2");
-
-                Directory.CreateDirectory(repositoryPath);
-                Directory.CreateDirectory(proj1Directory);
-                Directory.CreateDirectory(proj2Directory);
-
-                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
-                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
-
-                Util.CreateFile(workingPath, "a.sln",
-                    @"
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
-Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj1"", ""proj1\proj1.csproj"", ""{A04C59CC-7622-4223-B16B-CDF2ECAD438D}""
-EndProject
-Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj2"", ""proj2\proj2.csproj"", ""{42641DAE-D6C4-49D4-92EA-749D2573554A}""
-EndProject");
-
-                Util.CreateFile(proj1Directory, "proj1.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Include='packages.config' />
-  </ItemGroup>
-</Project>");
-                Util.CreateFile(proj1Directory, "packages.config",
-@"<packages>
-  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
-</packages>");
-
-                Util.CreateFile(proj2Directory, "proj2.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Include='packages.config' />
-  </ItemGroup>
-</Project>");
-                Util.CreateFile(proj2Directory, configFileName,
-@"<packages>
-  <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
-</packages>");
+                var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, "packages.config", configFileName);
 
                 // Act
                 var r = CommandRunner.Run(
@@ -480,59 +446,7 @@ EndProject");
 
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var repositoryPath = Path.Combine(workingPath, "Repository");
-                var proj1Directory = Path.Combine(workingPath, "proj1");
-                var proj2Directory = Path.Combine(workingPath, "proj2");
-
-                Directory.CreateDirectory(repositoryPath);
-                Directory.CreateDirectory(proj1Directory);
-                Directory.CreateDirectory(proj2Directory);
-
-                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
-                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
-
-                Util.CreateFile(workingPath, "a.sln",
-                    @"
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
-Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj1"", ""proj1\proj1.csproj"", ""{A04C59CC-7622-4223-B16B-CDF2ECAD438D}""
-EndProject
-Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj2"", ""proj2\proj2.csproj"", ""{42641DAE-D6C4-49D4-92EA-749D2573554A}""
-EndProject");
-
-                Util.CreateFile(proj1Directory, "proj1.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Include='packages.config' />
-  </ItemGroup>
-</Project>");
-                Util.CreateFile(proj1Directory, "packages.config",
-@"<packages>
-  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
-</packages>");
-
-                Util.CreateFile(proj2Directory, "proj2.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Include='packages.config' />
-  </ItemGroup>
-</Project>");
-                Util.CreateFile(proj2Directory, configFileName,
-@"<packages>
-  <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
-</packages>");
+                var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, "packages.config", configFileName);
 
                 // Act
                 var r = CommandRunner.Run(
@@ -667,25 +581,6 @@ EndProject");
 
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var repositoryPath = Path.Combine(workingPath, "Repository");
-                var proj1Directory = Path.Combine(workingPath, "proj1");
-                var proj2Directory = Path.Combine(workingPath, "proj2");
-
-                Directory.CreateDirectory(repositoryPath);
-                Directory.CreateDirectory(proj1Directory);
-                Directory.CreateDirectory(proj2Directory);
-
-                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
-                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
-
-                Util.CreateFile(workingPath, "a.sln",
-                    @"
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
-Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj1"", ""proj1\proj1.csproj"", ""{A04C59CC-7622-4223-B16B-CDF2ECAD438D}""
-EndProject
-Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj2"", ""proj2\proj2.csproj"", ""{42641DAE-D6C4-49D4-92EA-749D2573554A}""
-EndProject");
                 Util.CreateFile(workingPath, "my.config",
                     @"
 <?xml version=""1.0"" encoding=""utf-8""?>
@@ -694,40 +589,8 @@ EndProject");
     <add key=""enabled"" value=""True"" />
   </packageRestore>
 </configuration>");
+                var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, configFileName, "packages.config");
 
-                Util.CreateFile(proj1Directory, "proj1.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Include='packages.config' />
-  </ItemGroup>
-</Project>");
-                Util.CreateFile(proj1Directory, configFileName,
-@"<packages>
-  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
-</packages>");
-
-                Util.CreateFile(proj2Directory, "proj2.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Include='packages.config' />
-  </ItemGroup>
-</Project>");
-                Util.CreateFile(proj2Directory, "packages.config",
-@"<packages>
-  <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
-</packages>");
 
                 // Act
                 var r = CommandRunner.Run(
@@ -760,25 +623,7 @@ EndProject");
 
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var repositoryPath = Path.Combine(workingPath, "Repository");
-                var proj1Directory = Path.Combine(workingPath, "proj1");
-                var proj2Directory = Path.Combine(workingPath, "proj2");
-
-                Directory.CreateDirectory(repositoryPath);
-                Directory.CreateDirectory(proj1Directory);
-                Directory.CreateDirectory(proj2Directory);
-
-                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
-                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
-
-                Util.CreateFile(workingPath, "a.sln",
-                    @"
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
-Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj1"", ""proj1\proj1.csproj"", ""{A04C59CC-7622-4223-B16B-CDF2ECAD438D}""
-EndProject
-Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj2"", ""proj2\proj2.csproj"", ""{42641DAE-D6C4-49D4-92EA-749D2573554A}""
-EndProject");
+                var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, "packages.config", "packages.config");
                 Util.CreateFile(workingPath, "my.config",
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -786,40 +631,6 @@ EndProject");
     <add key=""enabled"" value=""True"" />
   </packageRestore>
 </configuration>");
-
-                Util.CreateFile(proj1Directory, "proj1.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Include='packages.config' />
-  </ItemGroup>
-</Project>");
-                Util.CreateFile(proj1Directory, "packages.config",
-@"<packages>
-  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
-</packages>");
-
-                Util.CreateFile(proj2Directory, "proj2.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Include='packages.config' />
-  </ItemGroup>
-</Project>");
-                Util.CreateFile(proj2Directory, "packages.config",
-@"<packages>
-  <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
-</packages>");
 
                 // Act
                 var r = CommandRunner.Run(
@@ -855,59 +666,7 @@ EndProject");
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var repositoryPath = Path.Combine(workingPath, "Repository");
-                var proj1Directory = Path.Combine(workingPath, "proj1");
-                var proj2Directory = Path.Combine(workingPath, "proj2");
-
-                Directory.CreateDirectory(repositoryPath);
-                Directory.CreateDirectory(proj1Directory);
-                Directory.CreateDirectory(proj2Directory);
-
-                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
-                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
-
-                Util.CreateFile(workingPath, "a.sln",
-                    @"
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
-Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj1"", ""proj1\proj1.csproj"", ""{A04C59CC-7622-4223-B16B-CDF2ECAD438D}""
-EndProject
-Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj2"", ""proj2\proj2.csproj"", ""{42641DAE-D6C4-49D4-92EA-749D2573554A}""
-EndProject");
-
-                Util.CreateFile(proj1Directory, "proj1.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Include='packages.config' />
-  </ItemGroup>
-</Project>");
-                Util.CreateFile(proj1Directory, "packages.config",
-@"<packages>
-  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
-</packages>");
-
-                Util.CreateFile(proj2Directory, "proj2.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Include='packages.config' />
-  </ItemGroup>
-</Project>");
-                Util.CreateFile(proj2Directory, configFileName,
-@"<packages>
-  <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
-</packages>");
+                var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, "packages.config", configFileName);
 
                 // Act
                 var r = CommandRunner.Run(
@@ -1163,59 +922,7 @@ EndProject");
 
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var repositoryPath = Path.Combine(workingPath, "Repository");
-                var proj1Directory = Path.Combine(workingPath, "proj1");
-                var proj2Directory = Path.Combine(workingPath, "proj2");
-
-                Directory.CreateDirectory(repositoryPath);
-                Directory.CreateDirectory(proj1Directory);
-                Directory.CreateDirectory(proj2Directory);
-
-                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
-                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
-
-                Util.CreateFile(workingPath, "a.sln",
-                    @"
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
-Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj1"", ""proj1\proj1.csproj"", ""{A04C59CC-7622-4223-B16B-CDF2ECAD438D}""
-EndProject
-Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj2"", ""proj2\proj2.csproj"", ""{42641DAE-D6C4-49D4-92EA-749D2573554A}""
-EndProject");
-
-                Util.CreateFile(proj1Directory, "proj1.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Include='packages.config' />
-  </ItemGroup>
-</Project>");
-                Util.CreateFile(proj1Directory, "packages.config",
-@"<packages>
-  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
-</packages>");
-
-                Util.CreateFile(proj2Directory, "proj2.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Include='packages.config' />
-  </ItemGroup>
-</Project>");
-                Util.CreateFile(proj2Directory, "packages.config",
-@"<packages>
-  <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
-</packages>");
+                var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, "packages.config", "packages.config");
 
                 // Act
                 var r = CommandRunner.Run(
