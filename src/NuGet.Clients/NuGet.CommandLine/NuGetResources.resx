@@ -494,8 +494,11 @@
     <value>Restoring NuGet packages...
 To prevent NuGet from downloading packages during build, open the Visual Studio Options dialog, click on the Package Manager node and uncheck '{0}'.</value>
   </data>
-  <data name="RestoreCommandNoPackagesConfigOrProjectJson" xml:space="preserve">
-   <value>Unable to restore. The project does not contain a project.json or packages.config file.</value>
+  <data name="ProjectRestoreCommandNoPackagesConfigOrProjectJson" xml:space="preserve">
+   <value>Nothing to do. This project does not specify any packages for NuGet to restore.</value>
+ </data>
+  <data name="SolutionRestoreCommandNoPackagesConfigOrProjectJson" xml:space="preserve">
+   <value>Nothing to do. None of the projects in this solution specify any packages for NuGet to restore.</value>
  </data>
   <data name="Error_CannotGetGetAllProjectFileNamesMethod" xml:space="preserve">
     <value>Cannot get the GetAllProjectFileNamesMethod from type  Mono.XBuild.CommandLine.SolutionParser.</value>
