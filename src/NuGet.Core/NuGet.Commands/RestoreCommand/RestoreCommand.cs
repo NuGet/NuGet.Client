@@ -73,8 +73,6 @@ namespace NuGet.Commands
                 Path.Combine(_request.Project.BaseDirectory, LockFileFormat.LockFileName) :
                 _request.LockFilePath;
 
-            var relockFile = ShouldRelockFile(_request.ExistingLockFile, _request.Project);
-
             var contextForProject = CreateRemoteWalkContext(_request);
 
             var graphs = await ExecuteRestoreAsync(
@@ -100,8 +98,7 @@ namespace NuGet.Commands
                 graphs,
                 localRepositories,
                 contextForProject,
-                toolRestoreResults,
-                relockFile);
+                toolRestoreResults);
 
             if (!ValidateRestoreGraphs(graphs, _logger))
             {
@@ -147,19 +144,10 @@ namespace NuGet.Commands
             IEnumerable<RestoreTargetGraph> graphs,
             IReadOnlyList<NuGetv3LocalRepository> localRepositories,
             RemoteWalkContext contextForProject,
-            IEnumerable<ToolRestoreResult> toolRestoreResults,
-            bool relockFile)
+            IEnumerable<ToolRestoreResult> toolRestoreResults)
         {
             // Build the lock file
-            LockFile lockFile;
-            if (existingLockFile != null && existingLockFile.IsLocked)
-            {
-                // No lock file to write!
-                lockFile = existingLockFile;
-            }
-            else
-            {
-                lockFile = new LockFileBuilder(_request.LockFileVersion, _logger, _includeFlagGraphs)
+            var lockFile = new LockFileBuilder(_request.LockFileVersion, _logger, _includeFlagGraphs)
                     .CreateLockFile(
                         existingLockFile,
                         project,
@@ -168,26 +156,7 @@ namespace NuGet.Commands
                         contextForProject,
                         toolRestoreResults);
 
-                // If the lock file was locked originally but we are re-locking it, well... re-lock it :)
-                lockFile.IsLocked = relockFile;
-            }
-
             return lockFile;
-        }
-
-        private bool ShouldRelockFile(LockFile existingLockFile, PackageSpec project)
-        {
-            bool relockFile = false;
-            if (existingLockFile != null
-                && existingLockFile.IsLocked
-                && !existingLockFile.IsValidForPackageSpec(project, _request.LockFileVersion))
-            {
-                // The lock file was locked, but the project.json is out of date
-                relockFile = true;
-                existingLockFile.IsLocked = false;
-                _logger.LogMinimal(Strings.Log_LockFileOutOfDate);
-            }
-            return relockFile;
         }
 
         private static bool ValidateRestoreGraphs(IEnumerable<RestoreTargetGraph> graphs, ILogger logger)
@@ -415,8 +384,7 @@ namespace NuGet.Commands
                     graphs,
                     localRepositories,
                     contextForTool,
-                    Enumerable.Empty<ToolRestoreResult>(),
-                    false);
+                    Enumerable.Empty<ToolRestoreResult>());
 
                 // Build the path based off of the resolved tool. For now, we assume there is only
                 // ever one target.

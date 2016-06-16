@@ -161,56 +161,13 @@ namespace NuGet.Commands
         {
             var name = FrameworkRuntimePair.GetName(framework, runtimeIdentifier);
             var graphs = new List<GraphNode<RemoteResolveResult>>();
-            if (_request.ExistingLockFile != null && _request.ExistingLockFile.IsLocked)
-            {
-                // Walk all the items in the lock file target and just synthesize the outer graph
-                var target = _request.ExistingLockFile.GetTarget(framework, runtimeIdentifier);
 
-                token.ThrowIfCancellationRequested();
-                if (target != null)
-                {
-                    foreach (var targetLibrary in target.Libraries)
-                    {
-                        token.ThrowIfCancellationRequested();
-
-                        var library = _request.ExistingLockFile.GetLibrary(targetLibrary.Name, targetLibrary.Version);
-                        if (library == null)
-                        {
-                            _logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Log_LockFileMissingLibraryForTargetLibrary,
-                                targetLibrary.Name,
-                                targetLibrary.Version,
-                                target.Name));
-                            continue; // This library is not in the main lockfile?
-                        }
-
-                        var range = new LibraryRange()
-                        {
-                            Name = library.Name,
-                            TypeConstraint = LibraryDependencyTargetUtils.Parse(library.Type),
-                            VersionRange = new VersionRange(
-                                minVersion: library.Version,
-                                includeMinVersion: true,
-                                maxVersion: library.Version,
-                                includeMaxVersion: true)
-                        };
-                        graphs.Add(await walker.WalkAsync(
-                            range,
-                            framework,
-                            runtimeIdentifier,
-                            runtimeGraph,
-                            recursive: false));
-                    }
-                }
-            }
-            else
-            {
-                graphs.Add(await walker.WalkAsync(
-                    projectRange,
-                    framework,
-                    runtimeIdentifier,
-                    runtimeGraph,
-                    recursive: true));
-            }
+            graphs.Add(await walker.WalkAsync(
+                projectRange,
+                framework,
+                runtimeIdentifier,
+                runtimeGraph,
+                recursive: true));
 
             // Resolve conflicts
             _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_ResolvingConflicts, name));
@@ -219,10 +176,9 @@ namespace NuGet.Commands
             var result = RestoreTargetGraph.Create(writeToLockFile, runtimeGraph, graphs, context, _logger, framework, runtimeIdentifier);
 
             // Check if the dependencies got bumped up
-            // ...but not if there is an existing locked lock file.
-            if (_request.ExistingLockFile == null || !_request.ExistingLockFile.IsLocked)
+            if (_request.ExistingLockFile == null)
             {
-                // No lock file, OR the lock file is unlocked, so check dependencies
+                // No lock file, so check dependencies
                 CheckDependencies(result, _request.Project.Dependencies);
 
                 var fxInfo = _request.Project.GetTargetFramework(framework);

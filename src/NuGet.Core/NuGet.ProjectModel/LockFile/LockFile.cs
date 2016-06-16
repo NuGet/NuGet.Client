@@ -20,7 +20,6 @@ namespace NuGet.ProjectModel
         // Set the version to the current default for new files.
         public int Version { get; set; } = LockFileFormat.Version;
         public string Path { get; set; }
-        public bool IsLocked { get; set; }
         public IList<ProjectFileDependencyGroup> ProjectFileDependencyGroups { get; set; } = new List<ProjectFileDependencyGroup>();
         public IList<LockFileLibrary> Libraries { get; set; } = new List<LockFileLibrary>();
         public IList<LockFileTarget> Targets { get; set; } = new List<LockFileTarget>();
@@ -166,8 +165,7 @@ namespace NuGet.ProjectModel
                 return true;
             }
 
-            return IsLocked == other.IsLocked
-                && Version == other.Version
+            return Version == other.Version
                 && ProjectFileDependencyGroups.OrderedEquals(other.ProjectFileDependencyGroups, group => group.FrameworkName, StringComparer.OrdinalIgnoreCase)
                 && Libraries.OrderedEquals(other.Libraries, library => library.Name, StringComparer.OrdinalIgnoreCase)
                 && Targets.OrderedEquals(other.Targets, target => target.Name, StringComparer.Ordinal)
@@ -185,7 +183,6 @@ namespace NuGet.ProjectModel
         {
             var combiner = new HashCodeCombiner();
 
-            combiner.AddObject(IsLocked);
             combiner.AddObject(Version);
 
             HashProjectFileDependencyGroups(combiner, ProjectFileDependencyGroups);
