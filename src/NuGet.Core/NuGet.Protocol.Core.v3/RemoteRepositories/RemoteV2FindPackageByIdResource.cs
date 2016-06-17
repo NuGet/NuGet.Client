@@ -32,6 +32,7 @@ namespace NuGet.Protocol
 
         // An unlisted package's publish time must be 1900-01-01T00:00:00.
         private static readonly DateTime _unlistedPublishedTime = new DateTime(1900, 1, 1, 0, 0, 0);
+        private static readonly MediaTypeWithQualityHeaderValue[] _acceptHeaderValues = new[] { new MediaTypeWithQualityHeaderValue("application/atom+xml"), new MediaTypeWithQualityHeaderValue("application/xml") };
 
         private readonly string _baseUri;
         private readonly HttpSource _httpSource;
@@ -160,7 +161,7 @@ namespace NuGet.Protocol
                         // So we decide to leave current logic and observe.
                         using (var data = await _httpSource.GetAsync(
                             uri,
-                            new[] { new MediaTypeWithQualityHeaderValue("application/atom+xml"), new MediaTypeWithQualityHeaderValue("application/xml") },
+                            _acceptHeaderValues,
                             $"list_{id}_page{page}",
                             CreateCacheContext(retry),
                             Logger,
