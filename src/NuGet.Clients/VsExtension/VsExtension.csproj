@@ -23,20 +23,21 @@
     <CopyOutputSymbolsToOutputDirectory>true</CopyOutputSymbolsToOutputDirectory>
     <DeployExtension Condition=" '$(BuildingInsideVisualStudio)' != 'true' ">false</DeployExtension>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <AssemblyName>NuGet.Tools</AssemblyName>
   </PropertyGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '14.0'">
       <PropertyGroup>
         <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
         <DefineConstants>$(DefineConstants);VS14</DefineConstants>
-        <AssemblyName>NuGet.Tools</AssemblyName>
+        <CustomVsixName>NuGet.Tools.vsix</CustomVsixName>
       </PropertyGroup>
     </When>
     <When Condition="'$(VisualStudioVersion)' == '15.0'">
       <PropertyGroup>
         <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
         <DefineConstants>$(DefineConstants);VS15</DefineConstants>
-        <AssemblyName>NuGet.Tools.Dev15</AssemblyName>
+        <CustomVsixName>NuGet.Tools.Dev15.vsix</CustomVsixName>
       </PropertyGroup>
     </When>
   </Choose>
@@ -326,22 +327,23 @@
       <SourceVsixManifest Include="source.extension.dev15.vsixmanifest" />
     </ItemGroup>
   </Target>
+  <ItemGroup>
+    <VsixIncludeFile Include=".vsixinclude" />
+  </ItemGroup>
   <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
-    <VsixIncludeFile Include=".vsixinclude.dev14" />
     <VsixIgnoreFile Include=".vsixignore.dev14" />
     <None Include="source.extension.dev14.vsixmanifest">
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
   <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
-    <VsixIncludeFile Include=".vsixinclude.dev15" />
     <VsixIgnoreFile Include=".vsixignore.dev15" />
     <None Include="source.extension.dev15.vsixmanifest">
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
   <PropertyGroup>
-    <PostBuildEvent>"$(MSBuildProjectDirectory)\EnsureDirectoryAndCopy.bat" "$(TargetVsixContainer)" "$(ArtifactRoot)"</PostBuildEvent>
+    <PostBuildEvent>copy /y "$(TargetVsixContainer)" "$(ArtifactRoot)\$(CustomVsixName)"</PostBuildEvent>
   </PropertyGroup>
   <Target Name="ReadVsixIncludeListFromFile">
     <ReadLinesFromFile File="@(VsixIncludeFile)">
