@@ -1801,30 +1801,7 @@ namespace NuGet.PackageManagement
 
                 // Delete the package directories as the last step, so that, if an uninstall had to be rolled back, we can just use the package file on the directory
                 // Also, always perform deletion of package directories, even in a rollback, so that there are no stale package directories
-                foreach (var packageWithDirectoryToBeDeleted in packageWithDirectoriesToBeDeleted)
-                {
-                    var packageFolderPath = PackagesFolderNuGetProject.GetInstalledPath(packageWithDirectoryToBeDeleted);
-                    try
-                    {
-                        await DeletePackage(packageWithDirectoryToBeDeleted, nuGetProjectContext, token);
-                    }
-                    finally
-                    {
-                        if (DeleteOnRestartManager != null)
-                        {
-                            if (Directory.Exists(packageFolderPath))
-                            {
-                                DeleteOnRestartManager.MarkPackageDirectoryForDeletion(
-                                    packageWithDirectoryToBeDeleted,
-                                    packageFolderPath,
-                                    nuGetProjectContext);
-
-                                // Raise the event to notify listners to update the UI etc.
-                                DeleteOnRestartManager.CheckAndRaisePackageDirectoriesMarkedForDeletion();
-                            }
-                        }
-                    }
-                }
+                await DeletePackageDirectoriesAsync(nuGetProjectContext, packageWithDirectoriesToBeDeleted, token);
 
                 // Save project
                 SolutionManager?.SaveProject(nuGetProject);
@@ -1840,6 +1817,38 @@ namespace NuGet.PackageManagement
                 if (exceptionInfo != null)
                 {
                     exceptionInfo.Throw();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deletes the package directories for the supplied list of packages. If an error occurs (for example,
+        /// a directory is in use), marks the directory for deletion when VS is restarted.
+        /// </summary>
+        public async Task DeletePackageDirectoriesAsync(INuGetProjectContext nuGetProjectContext, HashSet<PackageIdentity> packages, CancellationToken token)
+        {
+            foreach (var packageWithDirectoryToBeDeleted in packages)
+            {
+                var packageFolderPath = PackagesFolderNuGetProject.GetInstalledPath(packageWithDirectoryToBeDeleted);
+                try
+                {
+                    await DeletePackage(packageWithDirectoryToBeDeleted, nuGetProjectContext, token);
+                }
+                finally
+                {
+                    if (DeleteOnRestartManager != null)
+                    {
+                        if (Directory.Exists(packageFolderPath))
+                        {
+                            DeleteOnRestartManager.MarkPackageDirectoryForDeletion(
+                                packageWithDirectoryToBeDeleted,
+                                packageFolderPath,
+                                nuGetProjectContext);
+
+                            // Raise the event to notify listners to update the UI etc.
+                            DeleteOnRestartManager.CheckAndRaisePackageDirectoriesMarkedForDeletion();
+                        }
+                    }
                 }
             }
         }
@@ -2285,7 +2294,7 @@ namespace NuGet.PackageManagement
 
             // Step-2: Check if the package directory could be deleted
             if (!(nuGetProject is INuGetIntegratedProject)
-                && !await PackageExistsInAnotherNuGetProject(nuGetProject, packageIdentity, SolutionManager, token))
+                && !await PackageExistsInAnotherNuGetProject(nuGetProject, packageIdentity, SolutionManager, token, excludeIntegrated: true))
             {
                 packageWithDirectoriesToBeDeleted.Add(packageIdentity);
             }
@@ -2302,7 +2311,7 @@ namespace NuGet.PackageManagement
         /// project <paramref name="nuGetProject" /> is also installed in any
         /// other projects in the solution.
         /// </summary>
-        public static async Task<bool> PackageExistsInAnotherNuGetProject(NuGetProject nuGetProject, PackageIdentity packageIdentity, ISolutionManager solutionManager, CancellationToken token)
+        public static async Task<bool> PackageExistsInAnotherNuGetProject(NuGetProject nuGetProject, PackageIdentity packageIdentity, ISolutionManager solutionManager, CancellationToken token, bool excludeIntegrated = false)
         {
             if (nuGetProject == null)
             {
@@ -2324,14 +2333,20 @@ namespace NuGet.PackageManagement
             var nuGetProjectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
             foreach (var otherNuGetProject in solutionManager.GetNuGetProjects())
             {
-                var otherNuGetProjectName = NuGetProject.GetUniqueNameOrName(otherNuGetProject);
-                if (!otherNuGetProjectName.Equals(nuGetProjectName, StringComparison.OrdinalIgnoreCase))
+                if (excludeIntegrated && otherNuGetProject is INuGetIntegratedProject)
                 {
-                    var packageExistsInAnotherNuGetProject = (await otherNuGetProject.GetInstalledPackagesAsync(token)).Any(pr => pr.PackageIdentity.Equals(packageIdentity));
-                    if (packageExistsInAnotherNuGetProject)
-                    {
-                        return true;
-                    }
+                    continue;
+                }
+
+                var otherNuGetProjectName = NuGetProject.GetUniqueNameOrName(otherNuGetProject);
+                if (otherNuGetProjectName.Equals(nuGetProjectName, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                if ((await otherNuGetProject.GetInstalledPackagesAsync(token)).Any(pr => pr.PackageIdentity.Equals(packageIdentity)))
+                {
+                    return true;
                 }
             }
 
