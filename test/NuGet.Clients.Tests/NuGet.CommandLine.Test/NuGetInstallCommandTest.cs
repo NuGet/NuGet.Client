@@ -175,7 +175,11 @@ namespace NuGet.CommandLine.Test
                 string[] args2 = new string[]
                 {
                     "install",
-                    packagesConfig
+                    packagesConfig,
+                    "-OutputDirectory",
+                    "outputDir",
+                    "-Source",
+                    repositoryPath
                 };
 
                 var r1 = CommandRunner.Run(

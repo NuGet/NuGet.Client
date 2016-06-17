@@ -16,7 +16,9 @@ using System.Threading.Tasks;
 using System.Windows.Media;
 using EnvDTE;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
@@ -24,6 +26,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
+using NuGet.Resolver;
 using NuGetUIThreadHelper = NuGet.PackageManagement.UI.NuGetUIThreadHelper;
 using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 
@@ -347,10 +350,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                 // invoke init.ps1 files in the order of package dependency.
                 // if A -> B, we invoke B's init.ps1 before A's.
-                var sortedPackages = new List<PackageIdentity>();
-
-                var packagesFolderPackages = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
-                var globalPackages = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
 
                 var projects = _solutionManager.GetNuGetProjects().ToList();
                 var packageManager = new NuGetPackageManager(
@@ -359,6 +358,10 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     _solutionManager,
                     _deleteOnRestartManager);
 
+                var packagesConfigInstalled = new Dictionary<NuGetFramework, HashSet<PackageIdentity>>();
+                var sortedGlobalPackages = new List<PackageIdentity>();
+
+                // Sort projects by type
                 foreach (var project in projects)
                 {
                     // Skip project K projects.
@@ -372,94 +375,173 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     if (buildIntegratedProject != null)
                     {
                         var packages = BuildIntegratedProjectUtility.GetOrderedProjectDependencies(buildIntegratedProject);
-                        sortedPackages.AddRange(packages);
-                        globalPackages.UnionWith(packages);
+                        sortedGlobalPackages.AddRange(packages);
                     }
                     else
                     {
+                        // Read packages.config
                         var installedRefs = await project.GetInstalledPackagesAsync(CancellationToken.None);
 
-                        if (installedRefs != null
-                            && installedRefs.Any())
+                        if (installedRefs?.Any() == true)
                         {
-                            // This will be an empty list if packages have not been restored
-                            var installedPackages = await packageManager.GetInstalledPackagesInDependencyOrder(project, CancellationToken.None);
-                            sortedPackages.AddRange(installedPackages);
-                            packagesFolderPackages.UnionWith(installedPackages);
+                            // Index packages.config references by target framework since this affects dependencies
+                            NuGetFramework targetFramework;
+                            if (!project.TryGetMetadata(NuGetProjectMetadataKeys.TargetFramework, out targetFramework))
+                            {
+                                targetFramework = NuGetFramework.AnyFramework;
+                            }
+
+                            HashSet<PackageIdentity> fwPackages;
+                            if (!packagesConfigInstalled.TryGetValue(targetFramework, out fwPackages))
+                            {
+                                fwPackages = new HashSet<PackageIdentity>();
+                                packagesConfigInstalled.Add(targetFramework, fwPackages);
+                            }
+
+                            fwPackages.UnionWith(installedRefs.Select(reference => reference.PackageIdentity));
                         }
                     }
                 }
 
-                // Get the path to the Packages folder.
-                var packagesFolderPath = packageManager.PackagesFolderSourceRepository.PackageSource.Source;
-                var packagePathResolver = new PackagePathResolver(packagesFolderPath);
+                // Each id/version should only be executed once
+                var finishedPackages = new HashSet<PackageIdentity>();
 
-                var nugetPaths = NuGetPathContext.Create(_settings);
-                var fallbackResolver = new FallbackPackagePathResolver(nugetPaths);
-
-                var finishedPackages = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
-
-                foreach (var package in sortedPackages)
+                // Packages.config projects
+                if (packagesConfigInstalled.Any())
                 {
-                    // Packages may occur under multiple projects, but we only need to run it once.
-                    if (!finishedPackages.Contains(package))
+                    await ExecuteInitPs1ForPackagesConfig(
+                        packageManager,
+                        packagesConfigInstalled,
+                        finishedPackages);
+                }
+
+                // build integrated projects
+                if (sortedGlobalPackages.Any())
+                {
+                    ExecuteInitPs1ForBuildIntegrated(
+                        sortedGlobalPackages,
+                        finishedPackages);
+                }
+            }
+        }
+
+        private async Task ExecuteInitPs1ForPackagesConfig(
+            NuGetPackageManager packageManager,
+            Dictionary<NuGetFramework, HashSet<PackageIdentity>> packagesConfigInstalled,
+            HashSet<PackageIdentity> finishedPackages)
+        {
+            // Get the path to the Packages folder.
+            var packagesFolderPath = packageManager.PackagesFolderSourceRepository.PackageSource.Source;
+            var packagePathResolver = new PackagePathResolver(packagesFolderPath);
+
+            var packagesToOrder = new HashSet<ResolverPackage>();
+            var resolvedPackages = new HashSet<PackageIdentity>();
+
+            var dependencyInfoResource = await packageManager
+                .PackagesFolderSourceRepository
+                .GetResourceAsync<DependencyInfoResource>();
+
+            // Order by the highest framework first to make this deterministic
+            // Process each framework/id/version once to avoid duplicate work
+            // Packages may have different dependendcy orders depending on the framework, but there is 
+            // no way to fully solve this across an entire solution so we make a best effort here.
+            foreach (var framework in packagesConfigInstalled.Keys.OrderByDescending(fw => fw, new NuGetFrameworkSorter()))
+            {
+                foreach (var package in packagesConfigInstalled[framework])
+                {
+                    if (resolvedPackages.Add(package))
                     {
-                        finishedPackages.Add(package);
+                        var dependencyInfo = await dependencyInfoResource.ResolvePackage(
+                            package,
+                            framework,
+                            NullLogger.Instance,
+                            CancellationToken.None);
 
-                        try
+                        // This will be null for unrestored packages
+                        if (dependencyInfo != null)
                         {
-                            string pathToPackage = null;
-
-                            // If the package exists in both the global and packages folder, use the packages folder copy.
-                            if (packagesFolderPackages.Contains(package))
-                            {
-                                // Local package in the packages folder
-                                pathToPackage = packagePathResolver.GetInstalledPath(package);
-                            }
-                            else
-                            {
-                                // Global package
-                                pathToPackage = fallbackResolver.GetPackageDirectory(package.Id, package.Version);
-                            }
-
-                            if (!string.IsNullOrEmpty(pathToPackage))
-                            {
-                                var toolsPath = Path.Combine(pathToPackage, "tools");
-                                var scriptPath = Path.Combine(toolsPath, PowerShellScripts.Init);
-
-                                if (Directory.Exists(toolsPath))
-                                {
-                                    AddPathToEnvironment(toolsPath);
-                                    if (File.Exists(scriptPath))
-                                    {
-                                        if (_scriptExecutor.TryMarkVisited(
-                                            package,
-                                            PackageInitPS1State.FoundAndExecuted))
-                                        {
-                                            var scriptPackage = new ScriptPackage(
-                                                package.Id,
-                                                package.Version.ToString(),
-                                                pathToPackage);
-
-                                            Runspace.ExecuteScript(pathToPackage, scriptPath, scriptPackage);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        _scriptExecutor.TryMarkVisited(package, PackageInitPS1State.NotFound);
-                                    }
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            // if execution of Init scripts fails, do not let it crash our console
-                            ReportError(ex);
-
-                            ExceptionHelper.WriteToActivityLog(ex);
+                            packagesToOrder.Add(new ResolverPackage(dependencyInfo, listed: true, absent: false));
                         }
                     }
                 }
+            }
+
+            // Prioritize packages.config folder paths over global folder paths for legacy.
+
+            // Order packages by dependency order
+            var sortedPackages = ResolverUtility.TopologicalSort(packagesToOrder);
+            foreach (var package in sortedPackages)
+            {
+                if (finishedPackages.Add(package))
+                {
+                    // Find the package path in the packages folder
+                    var pathToPackage = packagePathResolver.GetInstalledPath(package);
+
+                    ExecuteInitPs1(pathToPackage, package);
+                }
+            }
+        }
+
+        private void ExecuteInitPs1ForBuildIntegrated(
+            List<PackageIdentity> sortedGlobalPackages,
+            HashSet<PackageIdentity> finishedPackages)
+        {
+            var nugetPaths = NuGetPathContext.Create(_settings);
+            var fallbackResolver = new FallbackPackagePathResolver(nugetPaths);
+
+            foreach (var package in sortedGlobalPackages)
+            {
+                if (finishedPackages.Add(package))
+                {
+                    // Find the package path across all folders
+                    var pathToPackage = fallbackResolver.GetPackageDirectory(package.Id, package.Version);
+
+                    ExecuteInitPs1(pathToPackage, package);
+                }
+            }
+        }
+
+        private void ExecuteInitPs1(string pathToPackage, PackageIdentity package)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(pathToPackage))
+                {
+                    var toolsPath = Path.Combine(pathToPackage, "tools");
+                    var scriptPath = Path.Combine(toolsPath, PowerShellScripts.Init);
+
+                    if (Directory.Exists(toolsPath))
+                    {
+                        AddPathToEnvironment(toolsPath);
+                        if (File.Exists(scriptPath))
+                        {
+                            if (_scriptExecutor.TryMarkVisited(
+                                package,
+                                PackageInitPS1State.FoundAndExecuted))
+                            {
+
+
+                                var scriptPackage = new ScriptPackage(
+                                    package.Id,
+                                    package.Version.ToString(),
+                                    pathToPackage);
+
+                                Runspace.ExecuteScript(pathToPackage, scriptPath, scriptPackage);
+                            }
+                        }
+                        else
+                        {
+                            _scriptExecutor.TryMarkVisited(package, PackageInitPS1State.NotFound);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // if execution of Init scripts fails, do not let it crash our console
+                ReportError(ex);
+
+                ExceptionHelper.WriteToActivityLog(ex);
             }
         }
 
@@ -695,7 +777,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             @"$__pc_args=@();$input|%{$__pc_args+=$_};if(Test-Path Function:\TabExpansion2){(TabExpansion2 $__pc_args[0] $__pc_args[0].length).CompletionMatches|%{$_.CompletionText}}else{TabExpansion $__pc_args[0] $__pc_args[1]};Remove-Variable __pc_args -Scope 0;",
                             new[] { line, lastWord },
                             outputResults: false)
-                            select (s == null ? null : s.ToString());
+                                    select (s == null ? null : s.ToString());
                         return query.ToArray();
                     }, _token);
             }
