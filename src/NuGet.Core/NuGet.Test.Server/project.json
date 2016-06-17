@@ -1,21 +1,48 @@
 ﻿{
-  "version": "3.4.0-*",
-  "compilationOptions": {
-    "warningsAsErrors": true
+  "version": "3.5.0-*",
+  "copyright": "Copyright .NET Foundation. All rights reserved.",
+  "packOptions": {
+    "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
+    "projectUrl": "https://github.com/NuGet/NuGet.Client"
+  },
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "xmlDoc": true,
+    "nowarn": [
+      "CS1591"
+    ],
+    "compile": {
+      "include": [
+        "../../../Shared/*.cs"
+      ]
+    }
   },
   "dependencies": {
-    "NuGet.Common": "3.4.0-*"
+    "NuGet.Common": {
+      "target": "project"
+    }
   },
   "frameworks": {
-    "dnx451": { },
-    "dnxcore50": {
+    "net46": {
+      "buildOptions": {
+        "define": [
+          "IS_DESKTOP"
+        ]
+      }
+    },
+    "netstandard1.3": {
       "dependencies": {
-        "System.Net.NetworkInformation": "4.0.10-beta-23019",
-        "System.Collections": "4.0.0-beta-23109",
-        "System.Net.Http": "4.0.0-beta-23109",
-        "System.Net.Sockets": "4.1.0-beta-23516",
-        "System.Linq": "4.0.0-beta-23109",
-        "System.Runtime": "4.0.20-beta-2310"
+        "NETStandard.Library": "1.6.0-rc3-24128-00"
+      },
+      "imports": [
+        "dotnet5.6",
+        "dnxcore50",
+        "portable-net45+win8"
+      ],
+      "buildOptions": {
+        "define": [
+          "IS_CORECLR"
+        ]
       }
     }
   }

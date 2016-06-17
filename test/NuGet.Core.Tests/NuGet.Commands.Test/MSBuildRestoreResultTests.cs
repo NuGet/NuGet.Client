@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
-using Microsoft.Extensions.PlatformAbstractions;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
 using Xunit;
@@ -39,7 +39,7 @@ namespace NuGet.Commands.Test
                     Assert.False(File.Exists(targetsPath));
 
                     // Act
-                    msBuildRestoreResult.Commit(Logging.NullLogger.Instance);
+                    msBuildRestoreResult.Commit(Common.NullLogger.Instance);
 
                     Assert.True(File.Exists(targetsPath));
                     var xml = XDocument.Load(targetsPath);
@@ -50,7 +50,7 @@ namespace NuGet.Commands.Test
                     var element = elements.Single();
                     string expected = null;
 
-                    if (PlatformServices.Default.Runtime.OperatingSystem.Equals("windows", StringComparison.OrdinalIgnoreCase))
+                    if (RuntimeEnvironmentHelper.IsWindows)
                     {
                         expected = Path.Combine(@"$(UserProfile)", ".nuget", "packages") + Path.DirectorySeparatorChar;
                     }

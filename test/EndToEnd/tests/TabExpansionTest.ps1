@@ -296,9 +296,9 @@ function Test-TabExpansionForVersionForUninstallPackage {
 
 function Test-TabExpansionForProjectsReturnsBothUniqueNamesAndSafeNames {
     # Arrange
-    $f = New-SolutionFolder 'Folder1'
-    $p1 = $f | New-ClassLibrary 'ProjectA'
-    $p3 = $f | New-WebApplication 'ProjectB'
+    New-SolutionFolder 'Folder1'
+    $p1 = New-ClassLibrary 'ProjectA' 'Folder1'
+    $p3 = New-WebApplication 'ProjectB' 'Folder1'
 
     $p2 = New-ConsoleApplication 'ProjectA'
 

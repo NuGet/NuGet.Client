@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using NuGet.Logging;
+using NuGet.Common;
 using NuGet.ProjectModel;
 
 namespace NuGet.ProjectManagement

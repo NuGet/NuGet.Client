@@ -18,6 +18,8 @@ using NuGet.Resolver;
 using NuGet.ProjectManagement;
 using NuGet.Versioning;
 using Task = System.Threading.Tasks.Task;
+using NuGet.PackageManagement.UI;
+using NuGet.Configuration;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -117,11 +119,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             if (!string.IsNullOrEmpty(Id))
             {
-                if (Id.EndsWith(Constants.PackageReferenceFile, StringComparison.OrdinalIgnoreCase))
+                if (Id.EndsWith(NuGetConstants.PackageReferenceFile, StringComparison.OrdinalIgnoreCase))
                 {
                     _readFromPackagesConfig = true;
                 }
-                else if (Id.EndsWith(Constants.PackageExtension, StringComparison.OrdinalIgnoreCase))
+                else if (Id.EndsWith(PackagingCoreConstants.NupkgExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     _readFromDirectPackagePath = true;
                     if (UriHelper.IsHttpSource(Id))
@@ -254,11 +256,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     if (identity != null)
                     {
                         Directory.CreateDirectory(Source);
-                        string downloadPath = Path.Combine(Source, identity + Constants.PackageExtension);
+                        string downloadPath = Path.Combine(Source, identity + PackagingCoreConstants.NupkgExtension);
 
                         using (var client = new System.Net.Http.HttpClient())
                         {
-                            ThreadHelper.JoinableTaskFactory.Run(async delegate
+                            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                             {
                                 using (Stream downloadStream = await client.GetStreamAsync(Id))
                                 {
@@ -304,7 +306,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             if (!string.IsNullOrEmpty(path))
             {
                 string lastPart = path.Split(new[] { divider }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
-                lastPart = lastPart.Replace(Constants.PackageExtension, "");
+                lastPart = lastPart.Replace(PackagingCoreConstants.NupkgExtension, "");
                 string[] parts = lastPart.Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);
                 StringBuilder builderForId = new StringBuilder();
                 StringBuilder builderForVersion = new StringBuilder();
@@ -361,7 +363,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             get
             {
-                _context = new ResolutionContext(GetDependencyBehavior(), _allowPrerelease, false, VersionConstraints.None);
+                // ResolutionContext contains a cache, this should only be created once per command
+                if (_context == null)
+                {
+                    _context = new ResolutionContext(GetDependencyBehavior(), _allowPrerelease, false, VersionConstraints.None);
+                }
+
                 return _context;
             }
         }

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
+using NuGet.Common;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -50,7 +51,20 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 root = Path.Combine(SolutionManager.SolutionDirectory, EnvDTEProjectUtility.NuGetSolutionSettingsFolder);
             }
-            SolutionSettings = Configuration.Settings.LoadDefaultSettings(root, configFileName: null, machineWideSettings: MachineWideSettings);
+
+            try
+            {
+                SolutionSettings = Configuration.Settings.LoadDefaultSettings(root, configFileName: null, machineWideSettings: MachineWideSettings);
+            }
+            catch (Configuration.NuGetConfigurationException ex)
+            {
+                MessageHelper.ShowErrorMessage(ExceptionUtilities.DisplayMessage(ex), Strings.ConfigErrorDialogBoxTitle);
+            }
+
+            if (SolutionSettings == null)
+            {
+                SolutionSettings = Configuration.NullSettings.Instance;
+            }
         }
 
         private void OnSolutionOpenedOrClosed(object sender, EventArgs e)
@@ -66,12 +80,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public bool DeleteSection(string section)
         {
-            return SolutionSettings.DeleteSection(section);
+            return CanChangeSettings && SolutionSettings.DeleteSection(section);
         }
 
         public bool DeleteValue(string section, string key)
         {
-            return SolutionSettings.DeleteValue(section, key);
+            return CanChangeSettings && SolutionSettings.DeleteValue(section, key);
         }
 
         public IList<KeyValuePair<string, string>> GetNestedValues(string section, string subSection)
@@ -106,22 +120,43 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public void SetNestedValues(string section, string subSection, IList<KeyValuePair<string, string>> values)
         {
-            SolutionSettings.SetNestedValues(section, subSection, values);
+            if (CanChangeSettings)
+            {
+                SolutionSettings.SetNestedValues(section, subSection, values);
+            }
         }
 
         public void SetValue(string section, string key, string value)
         {
-            SolutionSettings.SetValue(section, key, value);
+            if (CanChangeSettings)
+            {
+                SolutionSettings.SetValue(section, key, value);
+            }
         }
 
         public void SetValues(string section, IReadOnlyList<Configuration.SettingValue> values)
         {
-            SolutionSettings.SetValues(section, values);
+            if (CanChangeSettings)
+            {
+                SolutionSettings.SetValues(section, values);
+            }
         }
 
         public void UpdateSections(string section, IReadOnlyList<Configuration.SettingValue> values)
         {
-            SolutionSettings.UpdateSections(section, values);
+            if (CanChangeSettings)
+            {
+                SolutionSettings.UpdateSections(section, values);
+            }
+        }
+
+        private bool CanChangeSettings
+        {
+            get
+            {
+                // The value for SolutionSettings can't possibly be null, but it could be a read-only instance
+                return !object.ReferenceEquals(SolutionSettings, Configuration.NullSettings.Instance);
+            }
         }
     }
 }

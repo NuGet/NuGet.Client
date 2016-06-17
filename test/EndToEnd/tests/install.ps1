@@ -209,7 +209,7 @@ function Test-InstallPackageInvokeInstallScriptAndInitScript {
 #    Install-Package PackageWithScripts -Source $context.RepositoryRoot
 #
 #    # Now close the solution and reopen it
-#    $solutionDir = $dte.Solution.FullName
+#    $solutionDir = Get-SolutionFullName
 #    Close-Solution
 #    Remove-Item function:\Get-World
 #    Assert-False (Test-Path function:\Get-World)
@@ -568,7 +568,7 @@ function Test-InstallPackageWithNonExistentFrameworkReferences {
     $p = New-ClassLibrary
 
     # Arrange
-    Assert-Throws { $p | Install-Package PackageWithNonExistentGacReferences -Source $context.RepositoryRoot } "Failed to add reference to 'System.Awesome'. Please make sure that it is in the Global Assembly Cache."
+    Assert-Throws { $p | Install-Package PackageWithNonExistentGacReferences -Source $context.RepositoryRoot } "Failed to add reference. The package 'PackageWithNonExistentGacReferences' tried to add a framework reference to 'System.Awesome' which was not found in the GAC. This is possibly a bug in the package. Please contact the package owners for assistance."
 }
 
 function Test-InstallPackageWorksWithProjectsHavingSameNames {
@@ -584,14 +584,13 @@ function Test-InstallPackageWorksWithProjectsHavingSameNames {
     #
 
     # Arrange
-    Write-Host -ForegroundColor Red 'This test will fail, blocked by support for piping multiple projects to Install-Package'
-    $f = New-SolutionFolder 'Folder1'
-    $p1 = $f | New-ClassLibrary 'ProjectA'
-    $p2 = $f | New-ClassLibrary 'ProjectB'
+    New-SolutionFolder 'Folder1'
+    $p1 = New-ClassLibrary 'ProjectA' 'Folder1'
+    $p2 = New-ClassLibrary 'ProjectB'  'Folder1'
 
-    $g = New-SolutionFolder 'Folder2'
-    $p3 = $g | New-ClassLibrary 'ProjectA'
-    $p4 = $g | New-ConsoleApplication 'ProjectC'
+    New-SolutionFolder 'Folder2'
+    $p3 = New-ClassLibrary 'ProjectA' 'Folder2'
+    $p4 = New-ConsoleApplication 'ProjectC' 'Folder2'
 
     $p5 = New-ConsoleApplication 'ProjectA'
 
@@ -600,6 +599,7 @@ function Test-InstallPackageWorksWithProjectsHavingSameNames {
 
     # Assert
     $all = @( $p1, $p2, $p3, $p4, $p5 )
+
     $all | % { Assert-Package $_ elmah }
 }
 
@@ -1109,21 +1109,21 @@ function Test-InstallPackageAfterRenaming {
         $context
     )
     # Arrange
-    $f = New-SolutionFolder 'Folder1' | New-SolutionFolder 'Folder2'
-    $p0 = New-ClassLibrary 'ProjectX'
-    $p1 = $f | New-ClassLibrary 'ProjectA'
-    $p2 = $f | New-ClassLibrary 'ProjectB'
+    New-SolutionFolder 'Folder1'
+    New-SolutionFolder 'Folder1\Folder2'
+    $p1 = New-ClassLibrary 'ProjectA' 'Folder1\Folder2'
+    $p2 = New-ClassLibrary 'ProjectB' 'Folder1\Folder2'
 
     # Act
     $p1.Name = "ProjectX"
     Install-Package jquery -Version 1.5 -Source $context.RepositoryPath -project "Folder1\Folder2\ProjectX"
 
-    $f.Name = "Folder3"
+    Rename-SolutionFolder "Folder1\Folder2" "Folder3"
     Install-Package jquery -Version 1.5 -Source $context.RepositoryPath -project "Folder1\Folder3\ProjectB"
 
     # Assert
     Assert-NotNull (Get-ProjectItem $p1 scripts\jquery-1.5.js)
-    Assert-NotNull (Get-ProjectItem $p2 scripts\jquery-1.5.js) 
+    Assert-NotNull (Get-ProjectItem $p2 scripts\jquery-1.5.js)
 }
 
 function Test-InstallPackageIntoSecondProjectWithIncompatibleAssembliesDoesNotRollbackIfInUse {
@@ -1134,19 +1134,19 @@ function Test-InstallPackageIntoSecondProjectWithIncompatibleAssembliesDoesNotRo
     # Act
     $p1 | Install-Package NuGet.Core
 
-    if ($dte.Version -eq "10.0")
+    if ((Get-VSVersion) -eq "10.0")
     {
         $profile = "Silverlight,Version=v4.0,Profile=WindowsPhone"
     }
-    elseif ($dte.Version -eq "11.0")
+    elseif ((Get-VSVersion) -eq "11.0")
     {
         $profile = "Silverlight,Version=v4.0,Profile=WindowsPhone71"
     }
-    elseif ($dte.Version -eq "12.0")
+    elseif ((Get-VSVersion) -eq "12.0")
     {
         $profile = "WindowsPhone,Version=v8.0"
     }
-	elseif ($dte.Version -eq "14.0")
+	elseif ((Get-VSVersion) -eq "14.0")
 	{
         $profile = "WindowsPhoneApp,Version=v8.1"
     }
@@ -1746,7 +1746,7 @@ function Test-InstallingPackageaAfterNuGetDirectoryIsRenamedContinuesUsingDirect
     $a | Install-Package SolutionLevelPkg -version 1.0.0 -source $context.RepositoryRoot
 
     # Assert
-    $solutionFile = Get-SolutionPath
+    $solutionFile = Get-SolutionFullName
     $solutionDir = Split-Path $solutionFile -Parent
 
     $configFile = "$solutionDir\.nuget\packages.config"
@@ -2372,7 +2372,7 @@ function Test-InstallMetadataPackageAddPackageToProject
 function Test-FrameworkAssemblyReferenceShouldNotHaveBindingRedirect
 {
     # This test uses a particular profile which is available only in VS 2012.
-    if ($dte.Version -ne "11.0")
+    if ((Get-VSVersion) -ne "11.0")
     {
         return
     }
@@ -2407,7 +2407,7 @@ function Test-FrameworkAssemblyReferenceShouldNotHaveBindingRedirect
 function Test-NonFrameworkAssemblyReferenceShouldHaveABindingRedirect
 {
     # This test uses a particular profile which is available only in VS 2012.
-    if ($dte.Version -eq "10.0" -or $dte.Version -eq "12.0")
+    if ((Get-VSVersion) -eq "10.0" -or (Get-VSVersion) -eq "12.0")
     {
         return
     }
@@ -2436,7 +2436,7 @@ function Test-NonFrameworkAssemblyReferenceShouldHaveABindingRedirect
 # NuGet is not involved in that step. We may need to update the template.
 function InstallPackageIntoJavaScriptApplication
 {
-    if ($dte.Version -eq "10.0")
+    if ((Get-VSVersion) -eq "10.0")
     {
         return
     }
@@ -2454,7 +2454,7 @@ function InstallPackageIntoJavaScriptApplication
 function Test-InstallPackageIntoJavaScriptWindowsPhoneApp
 {
     # this test is only applicable to VS 2013 on Windows 8.1
-    if ($dte.Version -eq "10.0" -or $dte.Version -eq "11.0" -or [System.Environment]::OSVersion.Version -lt 6.3)
+    if ((Get-VSVersion) -eq "10.0" -or (Get-VSVersion) -eq "11.0" -or [System.Environment]::OSVersion.Version -lt 6.3)
     {
         return;
     }
@@ -2471,7 +2471,7 @@ function Test-InstallPackageIntoJavaScriptWindowsPhoneApp
 
 function Test-InstallPackageIntoNativeWinStoreApplication
 {
-    if ($dte.Version -eq "10.0")
+    if ((Get-VSVersion) -eq "10.0")
     {
         return
     }
@@ -2491,7 +2491,7 @@ function Test-InstallPackageIntoJSAppOnWin81UseTheCorrectFxFolder
     param($context)
 
     # this test is only applicable to VS 2013 on Windows 8.1
-    if ($dte.Version -eq "10.0" -or $dte.Version -eq "11.0" -or [System.Environment]::OSVersion.Version -lt 6.3)
+    if ((Get-VSVersion) -eq "10.0" -or (Get-VSVersion) -eq "11.0" -or [System.Environment]::OSVersion.Version -lt 6.3)
     {
         return
     }
@@ -2514,7 +2514,7 @@ function Test-InstallPackageIntoJSWindowsPhoneAppOnWin81UseTheCorrectFxFolder
     param($context)
 
     # this test is only applicable to VS 2013 on Windows 8.1
-    if ($dte.Version -eq "10.0" -or $dte.Version -eq "11.0" -or [System.Environment]::OSVersion.Version -lt 6.3)
+    if ((Get-VSVersion) -eq "10.0" -or (Get-VSVersion) -eq "11.0" -or [System.Environment]::OSVersion.Version -lt 6.3)
     {
         return
     }
@@ -2579,7 +2579,7 @@ function Test-InstallPackageIntoJSAppOnWin81AcceptWinmdFile
     param($context)
 
     # this test is only applicable to VS 2013 on Windows 8.1
-    if ($dte.Version -eq "10.0" -or $dte.Version -eq "11.0" -or [System.Environment]::OSVersion.Version -lt 6.3)
+    if ((Get-VSVersion) -eq "10.0" -or (Get-VSVersion) -eq "11.0" -or [System.Environment]::OSVersion.Version -lt 6.3)
     {
         return
     }
@@ -2598,7 +2598,7 @@ function Test-PackageWithConfigTransformInstallToWinJsProject
 {
     param($context)
 
-    if ($dte.Version -eq "10.0")
+    if ((Get-VSVersion) -eq "10.0")
     {
         return
     }
@@ -2620,7 +2620,7 @@ function Test-InstallPackageIntoLightSwitchApplication
     param($context)
 
     # this test is only applicable to VS 2013 because it has the latest LightSwitch template
-    if ($dte.Version -ne "12.0")
+    if ((Get-VSVersion) -ne "12.0")
     {
         return
     }
@@ -2719,7 +2719,7 @@ function Test-InstallPackageToWebsitePreservesProjectConfigFile
     # Arrange
     $p = New-Website "CoolProject"
     $packagesConfigFileName = "packages.CoolProject.config"
-    if ($dte.Version -gt '10.0')
+    if ((Get-VSVersion) -gt '10.0')
     {
         # on dev 11.0 etc, the project name could be something lkie
         # "CoolProject(12)". So we need to get the project name
@@ -2910,7 +2910,7 @@ function Test-InstallPackagesConfigOnline
 
     # Act
 	$p | Install-Package Newtonsoft.Json
-    $p | Install-Package https://raw.githubusercontent.com/NuGet/json-ld.net/master/src/JsonLD/packages.config
+    $p | Install-Package https://raw.githubusercontent.com/NuGet/json-ld.net/7dc9becb263a7210ebcd2f571c2a7a07409c240a/src/JsonLD/packages.config
 
     # Assert
     Assert-Package $p Newtonsoft.Json 4.0.1

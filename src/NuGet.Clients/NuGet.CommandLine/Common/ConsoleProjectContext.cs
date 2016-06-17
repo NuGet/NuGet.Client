@@ -7,9 +7,9 @@ namespace NuGet.CommandLine
 {
     public class ConsoleProjectContext : INuGetProjectContext
     {
-        private readonly Logging.ILogger _logger;
+        private readonly Common.ILogger _logger;
 
-        public ConsoleProjectContext(Logging.ILogger logger)
+        public ConsoleProjectContext(Common.ILogger logger)
         {
             _logger = logger;
         }
@@ -24,16 +24,25 @@ namespace NuGet.CommandLine
 
         public void Log(ProjectManagement.MessageLevel level, string message, params object[] args)
         {
-            message = string.Format(CultureInfo.CurrentCulture, message, args);
+            if (args.Length > 0)
+            {
+                message = string.Format(CultureInfo.CurrentCulture, message, args);
+            }
+            
             switch (level)
             {
                 case ProjectManagement.MessageLevel.Debug:
+                    _logger.LogDebug(message);
+                    break;
+
                 case ProjectManagement.MessageLevel.Info:
                     _logger.LogMinimal(message);
                     break;
+
                 case ProjectManagement.MessageLevel.Warning:
                     _logger.LogWarning(message);
                     break;
+
                 case ProjectManagement.MessageLevel.Error:
                     _logger.LogError(message);
                     break;

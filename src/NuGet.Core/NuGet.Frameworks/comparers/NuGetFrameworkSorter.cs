@@ -11,7 +11,12 @@ namespace NuGet.Frameworks
     /// The order is not particularly useful here beyond making things deterministic
     /// since it compares completely different frameworks.
     /// </summary>
-    public class NuGetFrameworkSorter : IComparer<NuGetFramework>
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    class NuGetFrameworkSorter : IComparer<NuGetFramework>
     {
         public NuGetFrameworkSorter()
         {

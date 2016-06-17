@@ -14,6 +14,7 @@ namespace NuGet.Protocol.Core.Types
             SearchFilter filters,
             int skip,
             int take,
+            Common.ILogger log,
             CancellationToken cancellationToken);
     }
 }

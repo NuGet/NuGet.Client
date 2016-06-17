@@ -17,10 +17,13 @@ namespace NuGet.Configuration
         public void CreateConfigurationDefaultsReturnsNonNullConfigurationDefaults()
         {
             // Arrange
-            ConfigurationDefaults ConfigurationDefaults = GetConfigurationDefaults(@"<configuration></configuration>");
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationDefaults ConfigurationDefaults = GetConfigurationDefaults(@"<configuration></configuration>", mockBaseDirectory);
 
-            // Act & Assert
-            Assert.NotNull(ConfigurationDefaults);
+                // Act & Assert
+                Assert.NotNull(ConfigurationDefaults);
+            }
         }
 
         [Fact]
@@ -78,7 +81,7 @@ namespace NuGet.Configuration
                 var defaultPushSource = "<add key='DefaultPushSource' value='" + feed2 + "' />";
                 File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement, defaultPushSource));
 
-                Assert.Throws<XmlException>(() =>
+                Assert.Throws<NuGetConfigurationException>(() =>
                 {
                     ConfigurationDefaults configDefaults = new ConfigurationDefaults(nugetConfigFileFolder, nugetConfigFile);
                 });
@@ -106,24 +109,29 @@ namespace NuGet.Configuration
         public void GetDefaultPushSourceReadsTheCorrectValue()
         {
             // Arrange
-            var configurationDefaultsContent = @"
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var configurationDefaultsContent = @"
 <configuration>
      <config>
         <add key='DefaultPushSource' value='http://contoso.com/packages/' />
     </config>
 </configuration>";
 
-            // Act & Assert
-            ConfigurationDefaults ConfigurationDefaults = GetConfigurationDefaults(configurationDefaultsContent);
+                // Act & Assert
+                ConfigurationDefaults ConfigurationDefaults = GetConfigurationDefaults(configurationDefaultsContent, mockBaseDirectory);
 
-            Assert.Equal(ConfigurationDefaults.DefaultPushSource, "http://contoso.com/packages/");
+                Assert.Equal("http://contoso.com/packages/", ConfigurationDefaults.DefaultPushSource);
+            }
         }
 
         [Fact]
         public void GetDefaultPackageSourcesReturnsValidPackageSources()
         {
             // Arrange
-            var configurationDefaultsContent = @"
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var configurationDefaultsContent = @"
 <configuration>
     <packageSources>
         <add key='Contoso Package Source' value='http://contoso.com/packages/' />
@@ -133,22 +141,23 @@ namespace NuGet.Configuration
         <add key='NuGet Official Feed' value='true' />
     </disabledPackageSources>
 </configuration>";
-            // Act & Assert
-            ConfigurationDefaults ConfigurationDefaults = GetConfigurationDefaults(configurationDefaultsContent);
+                // Act & Assert
+                ConfigurationDefaults ConfigurationDefaults = GetConfigurationDefaults(configurationDefaultsContent, mockBaseDirectory);
 
-            Assert.NotNull(ConfigurationDefaults.DefaultPackageSources);
+                Assert.NotNull(ConfigurationDefaults.DefaultPackageSources);
 
-            List<PackageSource> defaultPackageSources = ConfigurationDefaults.DefaultPackageSources.ToList();
+                List<PackageSource> defaultPackageSources = ConfigurationDefaults.DefaultPackageSources.ToList();
 
-            Assert.Equal(defaultPackageSources.Count, 2);
+                Assert.Equal(defaultPackageSources.Count, 2);
 
-            Assert.Equal(defaultPackageSources[0].Name, "Contoso Package Source");
-            Assert.True(defaultPackageSources[0].IsEnabled);
-            Assert.True(defaultPackageSources[0].IsOfficial);
+                Assert.Equal(defaultPackageSources[0].Name, "Contoso Package Source");
+                Assert.True(defaultPackageSources[0].IsEnabled);
+                Assert.True(defaultPackageSources[0].IsOfficial);
 
-            Assert.Equal(defaultPackageSources[1].Name, "NuGet Official Feed");
-            Assert.False(defaultPackageSources[1].IsEnabled);
-            Assert.True(defaultPackageSources[1].IsOfficial);
+                Assert.Equal(defaultPackageSources[1].Name, "NuGet Official Feed");
+                Assert.False(defaultPackageSources[1].IsEnabled);
+                Assert.True(defaultPackageSources[1].IsOfficial);
+            }
         }
 
         [Fact]
@@ -165,6 +174,125 @@ namespace NuGet.Configuration
 
                 ConfigurationDefaults configDefaults = new ConfigurationDefaults(nugetConfigFileFolder, nugetConfigFile);
                 Assert.True(configDefaults.DefaultPackageSources.ToList().Count == 0);
+            }
+        }
+
+        [Fact]
+        public void GetDefaultPackageSourcesFromSourceProvider()
+        {
+            // Arrange
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var configurationDefaultsContent = @"
+<configuration>
+    <packageSources>
+        <add key='Contoso Package Source' value='http://contoso.com/packages/' />
+    </packageSources>
+      <config>
+        <add key='DefaultPushSource' value='http://contoso.com/packages/' />
+    </config>
+</configuration>";
+                var config = @"
+<configuration>
+    <packageSources>
+        <add key='v2' value='http://www.nuget.org/api/v2/' />
+    </packageSources>
+</configuration>";
+
+                File.WriteAllText(Path.Combine(mockBaseDirectory, "NuGet.Config"), config);
+                var settings = Settings.LoadDefaultSettings(mockBaseDirectory,
+                    configFileName: null,
+                    machineWideSettings: null,
+                    loadAppDataSettings: false,
+                    useTestingGlobalPath: false);
+                ConfigurationDefaults ConfigurationDefaults = GetConfigurationDefaults(configurationDefaultsContent, mockBaseDirectory);
+
+                var packageSourceProvider = new PackageSourceProvider(settings, null, ConfigurationDefaults.DefaultPackageSources);
+
+                // Act
+                List<PackageSource> packageSources = packageSourceProvider.LoadPackageSources().ToList();
+
+                // Assert
+                Assert.Equal("http://contoso.com/packages/", ConfigurationDefaults.DefaultPushSource);
+                Assert.Equal(2, packageSources.Count());
+                Assert.Equal("v2", packageSources[0].Name);
+                Assert.Equal("Contoso Package Source", packageSources[1].Name);
+            }
+        }
+
+        public void GetDefaultSameNamePackageSourcesFromSourceProvider()
+        {
+            // Arrange
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var configurationDefaultsContent = @"
+<configuration>
+    <packageSources>
+        <add key='Contoso Package Source' value='http://contoso.com/packages/' />
+    </packageSources>
+</configuration>";
+                var config = @"
+<configuration>
+    <packageSources>
+        <add key='Contoso Package Source' value='http://www.nuget.org/api/v2/' />
+    </packageSources>
+</configuration>";
+
+                File.WriteAllText(Path.Combine(mockBaseDirectory, "NuGet.Config"), config);
+                var settings = Settings.LoadDefaultSettings(mockBaseDirectory,
+                    configFileName: null,
+                    machineWideSettings: null,
+                    loadAppDataSettings: false,
+                    useTestingGlobalPath: false);
+                ConfigurationDefaults ConfigurationDefaults = GetConfigurationDefaults(configurationDefaultsContent, mockBaseDirectory);
+
+                var packageSourceProvider = new PackageSourceProvider(settings, null, ConfigurationDefaults.DefaultPackageSources);
+
+                // Act
+                List<PackageSource> packageSources = packageSourceProvider.LoadPackageSources().ToList();
+
+                // Assert
+                Assert.Equal(1, packageSources.Count());
+                Assert.Equal("Contoso Package Source", packageSources[0].Name);
+                Assert.Equal("http://www.nuget.org/api/v2/", packageSources[0].Source);
+            }
+        }
+
+        public void GetDefaultSameSourcePackageSourcesFromSourceProvider()
+        {
+            // Arrange
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var configurationDefaultsContent = @"
+<configuration>
+    <packageSources>
+        <add key='Contoso Package Source' value='http://www.nuget.org/api/v2/' />
+    </packageSources>
+</configuration>";
+                var config = @"
+<configuration>
+    <packageSources>
+        <add key='v2' value='http://www.nuget.org/api/v2/' />
+    </packageSources>
+</configuration>";
+
+                File.WriteAllText(Path.Combine(mockBaseDirectory, "NuGet.Config"), config);
+                var settings = Settings.LoadDefaultSettings(mockBaseDirectory,
+                    configFileName: null,
+                    machineWideSettings: null,
+                    loadAppDataSettings: false,
+                    useTestingGlobalPath: false);
+                ConfigurationDefaults ConfigurationDefaults = GetConfigurationDefaults(configurationDefaultsContent, mockBaseDirectory);
+
+                var packageSourceProvider = new PackageSourceProvider(settings, null, ConfigurationDefaults.DefaultPackageSources);
+
+                // Act
+                List<PackageSource> packageSources = packageSourceProvider.LoadPackageSources().ToList();
+
+                // Assert
+                Assert.Equal(1, packageSources.Count());
+                Assert.Equal("v2", packageSources[0].Name);
+                Assert.Equal("http://www.nuget.org/api/v2/", packageSources[0].Source);
             }
         }
 
@@ -213,17 +341,11 @@ namespace NuGet.Configuration
             }
         }
 
-        private ConfigurationDefaults GetConfigurationDefaults(string configurationDefaultsContent)
+        private ConfigurationDefaults GetConfigurationDefaults(string configurationDefaultsContent, TestDirectory mockBaseDirectory)
         {
             var configurationDefaultsPath = "NuGetDefaults.config";
-            var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder();
-            Directory.CreateDirectory(mockBaseDirectory);
-
-            using (var file = File.Create(Path.Combine(mockBaseDirectory, configurationDefaultsPath)))
-            {
-                var info = new UTF8Encoding(true).GetBytes(configurationDefaultsContent);
-                file.Write(info, 0, info.Count());
-            }
+      
+            File.WriteAllText(Path.Combine(mockBaseDirectory, configurationDefaultsPath), configurationDefaultsContent);
             return new ConfigurationDefaults(mockBaseDirectory, configurationDefaultsPath);
         }
     }

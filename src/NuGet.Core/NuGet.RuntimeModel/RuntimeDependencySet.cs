@@ -33,12 +33,9 @@ namespace NuGet.RuntimeModel
                 return false;
             }
 
-            var dependenciesEqual = Dependencies
-                .OrderBy(p => p.Key, StringComparer.Ordinal)
-                .SequenceEqual(other.Dependencies.OrderBy(p => p.Key, StringComparer.Ordinal));
 
-            return string.Equals(other.Id, Id, StringComparison.Ordinal) &&
-                   dependenciesEqual;
+            return string.Equals(other.Id, Id, StringComparison.Ordinal)
+                && Dependencies.OrderedEquals(other.Dependencies, p => p.Key, StringComparer.Ordinal);
         }
 
         public override bool Equals(object obj)
@@ -48,10 +45,10 @@ namespace NuGet.RuntimeModel
 
         public override int GetHashCode()
         {
-            return new HashCodeCombiner()
-                .AddObject(Id)
-                .AddObject(Dependencies)
-                .CombinedHash;
+            var combiner = new HashCodeCombiner();
+            combiner.AddObject(Id);
+            combiner.AddObject(Dependencies);
+            return combiner.CombinedHash;
         }
 
         public RuntimeDependencySet Clone()

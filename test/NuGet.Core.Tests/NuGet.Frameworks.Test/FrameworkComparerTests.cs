@@ -23,11 +23,12 @@ namespace NuGet.Test
             var fw5 = NuGetFramework.Parse("xamarinios");
             var fw6 = NuGetFramework.Parse("sl5");
             // package-based in the precedence list
-            var fw7 = NuGetFramework.Parse("netstandardapp1.1");
-            var fw8 = NuGetFramework.Parse("netstandard1.1");
-            var fw9 = NuGetFramework.Parse("dotnet5.2");
+            var fw7 = NuGetFramework.Parse("netcoreapp1.0");
+            var fw8 = NuGetFramework.Parse("netstandardapp1.1");
+            var fw9 = NuGetFramework.Parse("netstandard1.1");
+            var fw10 = NuGetFramework.Parse("dotnet5.2");
             // package-based not in the precedence list
-            var fw10 = NuGetFramework.Parse("dnxcore50");
+            var fw11 = NuGetFramework.Parse("dnxcore50");
 
             var list = new List<NuGetFramework>
             {
@@ -37,6 +38,7 @@ namespace NuGet.Test
                 fw5,
                 fw9,
                 fw2,
+                fw11,
                 fw4,
                 fw1,
                 fw7,
@@ -60,6 +62,7 @@ namespace NuGet.Test
             Assert.Equal(fw8, list[7]);
             Assert.Equal(fw9, list[8]);
             Assert.Equal(fw10, list[9]);
+            Assert.Equal(fw11, list[10]);
         }
 
         [Fact]
@@ -114,19 +117,23 @@ namespace NuGet.Test
         public void FrameworkComparer_PackageBasedFrameworkPreferredAndNormalOrdering()
         {
             // Arrange
-            var fw1 = NuGetFramework.Parse("netstandardapp1.1");
-            var fw2 = NuGetFramework.Parse("netstandardapp1.0");
-            var fw3 = NuGetFramework.Parse("netstandard1.1");
-            var fw4 = NuGetFramework.Parse("netstandard1.0");
-            var fw5 = NuGetFramework.Parse("dotnet5.2");
-            var fw6 = NuGetFramework.Parse("dotnet5.1");
-            var fw7 = NuGetFramework.Parse("dnxcore50");
+            var fw1 = NuGetFramework.Parse("netcoreapp1.1");
+            var fw2 = NuGetFramework.Parse("netcoreapp1.0");
+            var fw3 = NuGetFramework.Parse("netstandardapp1.1");
+            var fw4 = NuGetFramework.Parse("netstandardapp1.0");
+            var fw5 = NuGetFramework.Parse("netstandard1.1");
+            var fw6 = NuGetFramework.Parse("netstandard1.0");
+            var fw7 = NuGetFramework.Parse("dotnet5.2");
+            var fw8 = NuGetFramework.Parse("dotnet5.1");
+            var fw9 = NuGetFramework.Parse("dnxcore50");
 
             var list = new List<NuGetFramework>
             {
+                fw9,
                 fw6,
                 fw3,
                 fw5,
+                fw8,
                 fw2,
                 fw7,
                 fw4,
@@ -147,6 +154,8 @@ namespace NuGet.Test
             Assert.Equal(fw5, list[4]);
             Assert.Equal(fw6, list[5]);
             Assert.Equal(fw7, list[6]);
+            Assert.Equal(fw8, list[7]);
+            Assert.Equal(fw9, list[8]);
         }
 
         [Fact]

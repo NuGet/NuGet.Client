@@ -19,20 +19,13 @@ namespace NuGet.Repositories
     {
         private readonly ConcurrentDictionary<string, IEnumerable<LocalPackageInfo>> _cache
             = new ConcurrentDictionary<string, IEnumerable<LocalPackageInfo>>(StringComparer.OrdinalIgnoreCase);
-        private readonly bool _checkPackageIdCase;
-        private readonly VersionFolderPathResolver _pathResolver;
+
+        public VersionFolderPathResolver PathResolver { get; }
 
         public NuGetv3LocalRepository(string path)
-            : this(path, checkPackageIdCase: false)
-        {
-        }
-
-        public NuGetv3LocalRepository(string path, bool checkPackageIdCase)
         {
             RepositoryRoot = path;
-            _checkPackageIdCase = checkPackageIdCase;
-
-            _pathResolver = new VersionFolderPathResolver(path);
+            PathResolver = new VersionFolderPathResolver(path);
         }
 
         public string RepositoryRoot { get; }
@@ -49,7 +42,7 @@ namespace NuGet.Repositories
                 {
                     var packages = new List<LocalPackageInfo>();
 
-                    var packageIdRoot = Path.Combine(RepositoryRoot, id);
+                    var packageIdRoot = PathResolver.GetVersionListPath(id);
 
                     if (!Directory.Exists(packageIdRoot))
                     {
@@ -67,31 +60,14 @@ namespace NuGet.Repositories
                             continue;
                         }
 
-                        // If we need to help ensure case-sensitivity, we try to get
-                        // the package id in accurate casing by extracting the name of nuspec file
-                        // Otherwise we just use the passed in package id for efficiency
-                        if (_checkPackageIdCase)
-                        {
-                            var manifestFileName = Path.GetFileName(
-                                Directory.EnumerateFiles(fullVersionDir, "*.nuspec")
-                                    .FirstOrDefault());
-
-                            if (string.IsNullOrEmpty(manifestFileName))
-                            {
-                                continue;
-                            }
-
-                            id = Path.GetFileNameWithoutExtension(manifestFileName);
-                        }
-
-                        var hashPath = _pathResolver.GetHashPath(id, version);
+                        var hashPath = PathResolver.GetHashPath(id, version);
 
                         // The hash file is written last. If this file does not exist then the package is
                         // incomplete and should not be used.
                         if (File.Exists(hashPath))
                         {
-                            var manifestPath = _pathResolver.GetManifestFilePath(id, version);
-                            var zipPath = _pathResolver.GetPackageFilePath(id, version);
+                            var manifestPath = PathResolver.GetManifestFilePath(id, version);
+                            var zipPath = PathResolver.GetPackageFilePath(id, version);
 
                             packages.Add(new LocalPackageInfo(id, version, fullVersionDir, manifestPath, zipPath));
                         }

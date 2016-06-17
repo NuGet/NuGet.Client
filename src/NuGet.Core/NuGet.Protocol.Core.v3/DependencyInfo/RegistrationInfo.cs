@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace NuGet.Protocol.Core.v3.DependencyInfo
+namespace NuGet.Protocol
 {
     internal class RegistrationInfo
     {

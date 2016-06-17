@@ -58,7 +58,7 @@ namespace NuGet.DependencyResolver
                         }
                     };
 
-                    if (runtimeDependency.Id == libraryRange.Name)
+                    if (StringComparer.OrdinalIgnoreCase.Equals(runtimeDependency.Id, libraryRange.Name))
                     {
                         if (libraryRange.VersionRange != null &&
                             runtimeDependency.VersionRange != null &&
@@ -175,7 +175,7 @@ namespace NuGet.DependencyResolver
 
             return library =>
             {
-                if (item.Data.Match.Library.Name == library.Name)
+                if (StringComparer.OrdinalIgnoreCase.Equals(item.Data.Match.Library.Name, library.Name))
                 {
                     return DependencyResult.Cycle;
                 }
@@ -339,12 +339,6 @@ namespace NuGet.DependencyResolver
 
             if (match == null)
             {
-                // HACK(anurse): Reference requests are not resolved and just left as-is
-                if (libraryRange.TypeConstraint == LibraryDependencyTarget.Reference)
-                {
-                    return CreateReferenceMatch(libraryRange);
-                }
-
                 return CreateUnresolvedMatch(libraryRange);
             }
 
@@ -373,35 +367,12 @@ namespace NuGet.DependencyResolver
             };
         }
 
-        private GraphItem<RemoteResolveResult> CreateReferenceMatch(LibraryRange libraryRange)
-        {
-            var identity = new LibraryIdentity()
-            {
-                Name = libraryRange.Name,
-                Type = LibraryTypes.Reference,
-                Version = libraryRange.VersionRange?.MinVersion
-            };
-            return new GraphItem<RemoteResolveResult>(identity)
-            {
-                Data = new RemoteResolveResult()
-                {
-                    Match = new RemoteMatch()
-                    {
-                        Library = identity,
-                        Path = null,
-                        Provider = null
-                    },
-                    Dependencies = Enumerable.Empty<LibraryDependency>()
-                }
-            };
-        }
-
         private static GraphItem<RemoteResolveResult> CreateUnresolvedMatch(LibraryRange libraryRange)
         {
             var identity = new LibraryIdentity()
             {
                 Name = libraryRange.Name,
-                Type = LibraryTypes.Unresolved,
+                Type = LibraryType.Unresolved,
                 Version = libraryRange.VersionRange?.MinVersion
             };
             return new GraphItem<RemoteResolveResult>(identity)
@@ -450,7 +421,7 @@ namespace NuGet.DependencyResolver
                 if (remoteMatch != null)
                 {
                     // Try to see if the specific version found on the remote exists locally. This avoids any unnecessary
-                    // remote access incase we already have it in the cache/local packages folder.
+                    // remote access incase we already have it in the cache/local packages folder. 
                     var localMatch = await FindLibraryByVersion(remoteMatch.Library, framework, _context.LocalLibraryProviders, cancellationToken);
 
                     if (localMatch != null
@@ -470,7 +441,7 @@ namespace NuGet.DependencyResolver
             {
                 // Check for the specific version locally.
                 var localMatch = await FindLibraryByVersion(libraryRange, framework, _context.LocalLibraryProviders, cancellationToken);
-
+ 
                 if (localMatch != null
                     && localMatch.Library.Version.Equals(libraryRange.VersionRange.MinVersion))
                 {
@@ -558,7 +529,7 @@ namespace NuGet.DependencyResolver
         private static string GetRootPathForParentProject(GraphEdge<RemoteResolveResult> outerEdge)
         {
             if (outerEdge != null
-                && LibraryTypes.Project.Equals(outerEdge.Item.Key.Type, StringComparison.Ordinal)
+                && outerEdge.Item.Key.Type == LibraryType.Project
                 && outerEdge.Item.Data.Match.Path != null)
             {
                 var projectJsonPath = new FileInfo(outerEdge.Item.Data.Match.Path);

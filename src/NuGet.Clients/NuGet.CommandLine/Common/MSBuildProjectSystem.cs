@@ -14,6 +14,7 @@ namespace NuGet.Common
     public class MSBuildProjectSystem : MSBuildUser, IMSBuildNuGetProjectSystem
     {
         private const string TargetName = "EnsureNuGetPackageBuildImports";
+
         private readonly string _projectDirectory;
 
         public MSBuildProjectSystem(
@@ -46,16 +47,60 @@ namespace NuGet.Common
         {
             get
             {
-                string moniker = GetPropertyValue("TargetFrameworkMoniker");
+                // this is required to get the right TFM for native or js projects since TargetFrameworkMoniker
+                // property won't give the accurate value for these kind of projects
+                var moniker = GetTargetFrameworkString();
+
                 if (String.IsNullOrEmpty(moniker))
                 {
                     return null;
                 }
-                return NuGetFramework.Parse(moniker);
+
+                var framework = NuGetFramework.Parse(moniker);
+
+                // further parse framework for .net core 4.5.1 or 4.5 and get compatible framework instance
+                return MSBuildNuGetProjectSystemUtility.GetProjectFrameworkReplacement(framework);
             }
         }
 
         private dynamic Project { get; }
+
+        private string GetTargetFrameworkString()
+        {
+            var extension = GetPropertyValue(ProjectManagement.Constants.ProjectExt);
+
+            // Check for JS project
+            if (StringComparer.OrdinalIgnoreCase.Equals(ProjectManagement.Constants.JSProjectExt, extension))
+            {
+                // JavaScript apps do not have a TargetFrameworkMoniker property set.
+                // We read the TargetPlatformIdentifier and TargetPlatformVersion instead
+                var platformIdentifier = GetPropertyValue(ProjectManagement.Constants.TargetPlatformIdentifier);
+                var platformVersion = GetPropertyValue(ProjectManagement.Constants.TargetPlatformVersion);
+
+                // use the default values for JS if they were not given
+                if (string.IsNullOrEmpty(platformVersion))
+                {
+                    platformVersion = "0.0";
+                }
+
+                if (string.IsNullOrEmpty(platformIdentifier))
+                {
+                    platformIdentifier = "Windows";
+                }
+
+                return string.Format(CultureInfo.InvariantCulture, "{0}, Version={1}", platformIdentifier, platformVersion);
+            }
+
+            // Check for C++ project
+            if (StringComparer.OrdinalIgnoreCase.Equals(ProjectManagement.Constants.VCXProjextExt, extension))
+            {
+                // The C++ project does not have a TargetFrameworkMoniker property set. 
+                // We hard-code the return value to Native.
+                return ProjectManagement.Constants.NativeTFM;
+            }
+
+            return GetPropertyValue(ProjectManagement.Constants.TargetFrameworkMoniker);
+        }
 
         public void AddBindingRedirects()
         {
@@ -72,7 +117,7 @@ namespace NuGet.Common
             FileSystemUtility.AddFile(ProjectFullPath, path, stream, NuGetProjectContext);
         }
 
-        public void AddFrameworkReference(string name)
+        public void AddFrameworkReference(string name, string packageId)
         {
             // No-op
         }
@@ -84,7 +129,7 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(targetFullPath));
             }
 
-            var targetRelativePath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(_projectDirectory), targetFullPath);
+            var targetRelativePath = NuGet.PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(_projectDirectory), targetFullPath);
             var imports = Project.Xml.Imports;
             bool notImported = true;
             if (imports != null)
@@ -124,15 +169,26 @@ namespace NuGet.Common
 
         public void AddReference(string referencePath)
         {
-            string fullPath = PathUtility.GetAbsolutePath(_projectDirectory, referencePath);
-            string relativePath = PathUtility.GetRelativePath(Project.FullPath, fullPath);
-            // REVIEW: Do we need to use the fully qualified the assembly name for strong named assemblies?
-            string include = Path.GetFileNameWithoutExtension(fullPath);
+            string fullPath = NuGet.PathUtility.GetAbsolutePath(_projectDirectory, referencePath);
+            string relativePath = NuGet.PathUtility.GetRelativePath(Project.FullPath, fullPath);
+            string assemblyFileName = Path.GetFileNameWithoutExtension(fullPath);
+
+            try
+            {
+                // using full qualified assembly name for strong named assemblies
+                var assemblyName = AssemblyName.GetAssemblyName(fullPath);
+                assemblyFileName = assemblyName.FullName;
+            }
+            catch (Exception)
+            {
+                //ignore exception if we weren't able to get assembly strong name, we'll still use assembly file name to add reference
+            }
 
             Project.AddItem(
                 "Reference",
-                include,
-                new[] { new KeyValuePair<string, string>("HintPath", relativePath) });
+                assemblyFileName,
+                new[] { new KeyValuePair<string, string>("HintPath", relativePath),
+                        new KeyValuePair<string, string>("Private", "True")});
         }
 
         public void BeginProcessing()
@@ -235,7 +291,7 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(targetFullPath));
             }
 
-            var targetRelativePath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(_projectDirectory), targetFullPath);
+            var targetRelativePath = NuGet.PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(_projectDirectory), targetFullPath);
             if (Project.Xml.Imports != null)
             {
                 // search for this import statement and remove it

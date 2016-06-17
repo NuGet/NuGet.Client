@@ -7,7 +7,6 @@ using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Net;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
@@ -18,11 +17,14 @@ using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet;
+using NuGet.Common;
+using NuGet.Credentials;
 using NuGet.Options;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGetConsole;
 using NuGetConsole.Implementation;
@@ -30,7 +32,7 @@ using IMachineWideSettings = NuGet.Configuration.IMachineWideSettings;
 using ISettings = NuGet.Configuration.ISettings;
 using Resx = NuGet.PackageManagement.UI.Resources;
 using Strings = NuGet.PackageManagement.VisualStudio.Strings;
-using NuGet.Credentials;
+using UI = NuGet.PackageManagement.UI;
 
 namespace NuGetVSExtension
 {
@@ -64,7 +66,7 @@ namespace NuGetVSExtension
     public sealed class NuGetPackage : Package, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
         // It is displayed in the Help - About box of Visual Studio
-        public const string ProductVersion = "3.4.0";
+        public const string ProductVersion = "3.5.0";
         private static readonly object _credentialsPromptLock = new object();
 
         private static readonly string[] _visualizerSupportedSKUs = { "Premium", "Ultimate" };
@@ -195,9 +197,27 @@ namespace NuGetVSExtension
                 if (_solutionManager == null)
                 {
                     _solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
+                    _solutionManager.AfterNuGetProjectRenamed += SolutionManager_NuGetProjectRenamed;
                     Debug.Assert(_solutionManager != null);
                 }
                 return _solutionManager;
+            }
+        }
+
+        private void SolutionManager_NuGetProjectRenamed(object sender, NuGetProjectEventArgs e)
+        {
+            VSSolutionManager manager = SolutionManager as VSSolutionManager;
+            if (manager != null)
+            {
+                Project project = manager.GetDTEProject(manager.GetNuGetProjectSafeName(e.NuGetProject));
+                var windowFrame = FindExistingWindowFrame(project);
+                if (windowFrame != null)
+                {
+                    windowFrame.SetProperty((int) __VSFPROPID.VSFPROPID_OwnerCaption, String.Format(
+                        CultureInfo.CurrentCulture,
+                        Resx.Label_NuGetWindowCaption,
+                        project.Name));
+                }
             }
         }
 
@@ -255,8 +275,9 @@ namespace NuGetVSExtension
         protected override void Initialize()
         {
             base.Initialize();
-            Styles.Initialize();
-            Brushes.Initialize();
+            LoadSettings();
+            Styles.LoadVsStyles();
+            Brushes.LoadVsBrushes();
 
             // ***
             // VsNuGetDiagnostics.Initialize(
@@ -274,6 +295,7 @@ namespace NuGetVSExtension
             _dteEvents = _dte.Events.DTEEvents;
             _dteEvents.OnBeginShutdown += OnBeginShutDown;
 
+            _outputConsoleLogger = new OutputConsoleLogger(this);
             SetDefaultCredentialProvider();
 
             if (SolutionManager != null)
@@ -285,7 +307,6 @@ namespace NuGetVSExtension
                     };
             }
 
-            _outputConsoleLogger = new OutputConsoleLogger(this);
             _uiProjectContext = new NuGetUIProjectContext(
                 _outputConsoleLogger,
                 SourceControlManagerProvider,
@@ -321,6 +342,10 @@ namespace NuGetVSExtension
 
             // This initializes the IVSSourceControlTracker, even though _vsSourceControlTracker is unused.
             _vsSourceControlTracker = ServiceLocator.GetInstanceSafe<IVsSourceControlTracker>();
+
+            // This instantiates a decoupled ICommand instance responsible to locate and display output pane by a UI control
+            var serviceProvider = ServiceLocator.GetInstanceSafe<System.IServiceProvider>();
+            UI.Commands.ShowErrorsCommand = new ShowErrorsCommand(serviceProvider);
         }
 
         /// <summary>
@@ -329,68 +354,52 @@ namespace NuGetVSExtension
         /// </summary>
         private void SetDefaultCredentialProvider()
         {
-            var webProxy = (IVsWebProxy)GetService(typeof(SVsWebProxy));
-            Debug.Assert(webProxy != null);
-
-            PackageSourceProvider packageSourceProvider = new PackageSourceProvider(
-                new SettingsToLegacySettings(Settings));
-
-            var credentialProviders = new List<NuGet.Credentials.ICredentialProvider>
-            {
-                new CredentialProviderAdapter(new SettingsCredentialProvider(
-                    NuGet.NullCredentialProvider.Instance, packageSourceProvider)),
-                new VisualStudioAccountProvider(),
-                new VisualStudioCredentialProvider(webProxy)
-            };
-
             var credentialService = new CredentialService(
-                credentialProviders,
-                (s) => this._outputConsoleLogger.OutputConsole.WriteLine(s),
+                GetCredentialProviders(),
+                this._outputConsoleLogger.OutputConsole.WriteLine,
                 nonInteractive: false);
 
-            HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(credentialService); ;
+            HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(credentialService);
 
-            // Set up proxy handling for v3 sources.
-            // We need to sync the v2 proxy cache and v3 proxy cache so that the user will not
-            // get prompted twice for the same authenticated proxy.
-            var v2ProxyCache = ProxyCache.Instance;
-            NuGet.Protocol.Core.v3.HttpHandlerResourceV3.PromptForProxyCredentials =
-                async (uri, proxy, cancellationToken) =>
-                {
-                    var v2Credentials = v2ProxyCache?.GetProxy(uri)?.Credentials;
-                    if (v2Credentials != null && proxy.Credentials != v2Credentials)
-                    {
-                        // if cached v2 credentials have not been used, try using it first.
-                        return v2Credentials;
-                    }
+            HttpHandlerResourceV3.CredentialService = credentialService;
 
-                    return await credentialService
-                        .GetCredentials(uri, proxy, isProxy: true, cancellationToken: cancellationToken);
-                };
-
-            NuGet.Protocol.Core.v3.HttpHandlerResourceV3.ProxyPassed = proxy =>
+            HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>
             {
-                // add the proxy to v2 proxy cache.
-                v2ProxyCache?.Add(proxy);
-            };
-
-            NuGet.Protocol.Core.v3.HttpHandlerResourceV3.PromptForCredentials =
-                async (uri, cancellationToken) =>
-                {
-                    // Get the proxy for this URI so we can pass it to the credentialService methods
-                    // this lets them use the proxy if they have to hit the network.
-                    var proxyCache = ProxyCache.Instance;
-                    var proxy = proxyCache?.GetProxy(uri);
-
-                    return await credentialService
-                        .GetCredentials(uri, proxy: proxy, isProxy: false, cancellationToken: cancellationToken);
-                };
-
-            NuGet.Protocol.Core.v3.HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>
-            {
+                // v2 stack credentials update
                 NuGet.CredentialStore.Instance.Add(uri, credentials);
-                NuGet.Configuration.CredentialStore.Instance.Add(uri, credentials);
             };
+        }
+
+        private IEnumerable<NuGet.Credentials.ICredentialProvider> GetCredentialProviders()
+        {
+            var packageSourceProvider = new PackageSourceProvider(new SettingsToLegacySettings(Settings));
+            var credentialProviders = new List<NuGet.Credentials.ICredentialProvider>();
+
+            credentialProviders.Add(
+                new CredentialProviderAdapter(new SettingsCredentialProvider(NuGet.NullCredentialProvider.
+                    Instance, packageSourceProvider)));
+
+            Action<string> errorDelegate = (error) =>
+            {
+                _outputConsoleLogger.OutputConsole.WriteLine(error);
+                ActivityLog.LogWarning(ExceptionHelper.LogEntrySource, error);
+            };
+
+            var importer = new VsCredentialProviderImporter(
+                _dte,
+                VisualStudioAccountProvider.FactoryMethod,
+                errorDelegate);
+
+            var vstsProvider = importer.GetProvider();
+            if (vstsProvider != null)
+            {
+                credentialProviders.Add(vstsProvider);
+            }
+
+            var webProxy = (IVsWebProxy)GetService(typeof(SVsWebProxy));
+            Debug.Assert(webProxy != null);
+            credentialProviders.Add(new VisualStudioCredentialProvider(webProxy));
+            return credentialProviders;
         }
 
         private void AddMenuCommandHandlers()
@@ -650,12 +659,12 @@ namespace NuGetVSExtension
             var uiFactory = ServiceLocator.GetInstance<INuGetUIFactory>();
             var uiController = uiFactory.Create(uiContext, _uiProjectContext);
 
-            var model = new PackageManagerModel(uiController, uiContext, isSolution: false);
+            var model = new PackageManagerModel(uiController, uiContext, isSolution: false, editorFactoryGuid: GuidList.guidNuGetEditorType);
             var vsWindowSearchHostfactory = ServiceLocator.GetGlobalService<SVsWindowSearchHostFactory, IVsWindowSearchHostFactory>();
             var vsShell = ServiceLocator.GetGlobalService<SVsShell, IVsShell4>();
-            var control = new PackageManagerControl(model, Settings, vsWindowSearchHostfactory, vsShell);
+            var control = new PackageManagerControl(model, Settings, vsWindowSearchHostfactory, vsShell, _outputConsoleLogger);
             var windowPane = new PackageManagerWindowPane(control);
-            var guidEditorType = Guid.Empty;
+            var guidEditorType = GuidList.guidNuGetEditorType;
             var guidCommandUI = Guid.Empty;
             var caption = String.Format(
                 CultureInfo.CurrentCulture,
@@ -868,13 +877,13 @@ namespace NuGetVSExtension
             var uiController = uiFactory.Create(uiContext, _uiProjectContext);
 
             var solutionName = (string)_dte.Solution.Properties.Item("Name").Value;
-            var model = new PackageManagerModel(uiController, uiContext, isSolution: true);
+            var model = new PackageManagerModel(uiController, uiContext, isSolution: true, editorFactoryGuid: GuidList.guidNuGetEditorType);
             model.SolutionName = solutionName;
             var vsWindowSearchHostfactory = ServiceLocator.GetGlobalService<SVsWindowSearchHostFactory, IVsWindowSearchHostFactory>();
             var vsShell = ServiceLocator.GetGlobalService<SVsShell, IVsShell4>();
-            var control = new PackageManagerControl(model, Settings, vsWindowSearchHostfactory, vsShell);
+            var control = new PackageManagerControl(model, Settings, vsWindowSearchHostfactory, vsShell, _outputConsoleLogger);
             var windowPane = new PackageManagerWindowPane(control);
-            var guidEditorType = Guid.Empty;
+            var guidEditorType = GuidList.guidNuGetEditorType;
             var guidCommandUI = Guid.Empty;
             var caption = Resx.Label_SolutionNuGetWindowCaption;
             var documentName = _dte.Solution.FullName;
@@ -1110,6 +1119,19 @@ namespace NuGetVSExtension
 
             // Clean up optimized zips used by NuGet.Core as part of the V2 Protocol
             OptimizedZipPackage.PurgeCache();
+        }
+
+        private void LoadSettings()
+        {
+            try
+            {
+                _settings = ServiceLocator.GetInstance<ISettings>();
+                Debug.Assert(_settings != null);
+            }
+            catch (Exception e)
+            {
+                MessageHelper.ShowErrorMessage(ExceptionUtilities.DisplayMessage(e), Resources.ErrorDialogBoxTitle);
+            }
         }
 
         #region IVsPersistSolutionOpts implementation

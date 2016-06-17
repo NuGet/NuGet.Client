@@ -117,14 +117,24 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="InvalidPackageTypeVersion" xml:space="preserve">
+    <value>Nuspec file contains a package type with an invalid package version '{0}'.</value>
+    <comment>{0} is the invalid version string.</comment>
+  </data>
   <data name="MissingMetadataNode" xml:space="preserve">
     <value>Nuspec file does not contain the '{0}' node.</value>
   </data>
   <data name="MissingNuspec" xml:space="preserve">
     <value>Nuspec file does not exist in package.</value>
   </data>
+  <data name="MissingPackageTypeName" xml:space="preserve">
+    <value>Nuspec file contains a package type that is missing the name attribute.</value>
+  </data>
   <data name="MultipleNuspecFiles" xml:space="preserve">
     <value>Package contains multiple nuspec files.</value>
+  </data>
+  <data name="MultiplePackageTypes" xml:space="preserve">
+    <value>Nuspec file contains multiple package types. Zero or one package type nodes are allowed.</value>
   </data>
   <data name="StringCannotBeNullOrEmpty" xml:space="preserve">
     <value>String argument '{0}' cannot be null or empty</value>

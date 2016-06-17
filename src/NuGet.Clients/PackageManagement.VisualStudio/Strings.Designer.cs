@@ -70,6 +70,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to NuGet operation failed.
+        /// </summary>
+        public static string ConfigErrorDialogBoxTitle {
+            get {
+                return ResourceManager.GetString("ConfigErrorDialogBoxTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Added file &apos;{0}&apos; to project &apos;{1}&apos;..
         /// </summary>
         public static string Debug_AddedFileToProject {
@@ -151,7 +160,7 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to add reference to &apos;{0}&apos;. Please make sure that it is in the Global Assembly Cache..
+        ///   Looks up a localized string similar to Failed to add reference. The package &apos;{0}&apos; tried to add a framework reference to &apos;{1}&apos; which was not found in the GAC. This is possibly a bug in the package. Please contact the package owners for assistance..
         /// </summary>
         public static string FailedToAddGacReference {
             get {

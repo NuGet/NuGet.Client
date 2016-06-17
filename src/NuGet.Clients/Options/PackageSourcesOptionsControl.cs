@@ -14,6 +14,7 @@ using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
 
@@ -94,29 +95,31 @@ namespace NuGet.Options
             var selectedSource = (Configuration.PackageSource)PackageSourcesListBox.SelectedItem;
             var selectedMachineSource = (Configuration.PackageSource)MachineWidePackageSourcesListBox.SelectedItem;
 
-            if (selectedSource != null)
+            if (selectedMachineSource != null)
             {
-                // THIS BLOCK corresponds to PackageSourcesListBox
+                // This block corresponds to MachineWidePackageSourcesListBox
+                addButton.Enabled = false;
+                removeButton.Enabled = false;
+                MoveUpButton.Enabled = false;
+                MoveDownButton.Enabled = false;
+                BrowseButton.Enabled = false;
+                updateButton.Enabled = false;
 
+                NewPackageName.ReadOnly = NewPackageSource.ReadOnly = true;
+            }
+            else
+            {
+                // This block corresponds to PackageSourcesListBox
                 MoveUpButton.Enabled = selectedSource != null && PackageSourcesListBox.SelectedIndex > 0;
                 MoveDownButton.Enabled = selectedSource != null && PackageSourcesListBox.SelectedIndex < PackageSourcesListBox.Items.Count - 1;
 
-                // do not allow deleting the official NuGet source
-                bool allowEditing = selectedSource != null && !selectedSource.IsOfficial;
+                bool allowEditing = selectedSource != null;
 
                 BrowseButton.Enabled = updateButton.Enabled = removeButton.Enabled = allowEditing;
                 NewPackageName.ReadOnly = NewPackageSource.ReadOnly = !allowEditing;
 
                 // Always enable addButton for PackageSourceListBox
                 addButton.Enabled = true;
-            }
-            else if (selectedMachineSource != null)
-            {
-                // THIS BLOCK corresponds to MachineWidePackageSourcesListBox
-
-                addButton.Enabled = removeButton.Enabled = MoveUpButton.Enabled = MoveDownButton.Enabled = BrowseButton.Enabled = updateButton.Enabled = false;
-
-                NewPackageName.ReadOnly = NewPackageSource.ReadOnly = true;
             }
         }
 
@@ -227,15 +230,12 @@ namespace NuGet.Options
                     _packageSourceProvider.SavePackageSources(packageSources);
                 }
             }
-            catch (InvalidOperationException)
+            catch (Configuration.NuGetConfigurationException e)
             {
-                MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigInvalidOperation, Resources.ErrorDialogBoxTitle);
+                MessageHelper.ShowErrorMessage(ExceptionUtilities.DisplayMessage(e), Resources.ErrorDialogBoxTitle);
                 return false;
             }
-            catch (UnauthorizedAccessException)
-            {
-                MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigUnauthorizedAccess, Resources.ErrorDialogBoxTitle);
-            }
+
             // find the enabled package source 
             return true;
         }
@@ -343,7 +343,7 @@ namespace NuGet.Options
                 return TryUpdateSourceResults.InvalidSource;
             }
 
-            if (!(PathValidator.IsValidLocalPath(source) || PathValidator.IsValidUncPath(source) || PathValidator.IsValidUrl(source)))
+            if (!(Common.PathValidator.IsValidLocalPath(source) || Common.PathValidator.IsValidUncPath(source) || Common.PathValidator.IsValidUrl(source)))
             {
                 MessageHelper.ShowWarningMessage(Resources.ShowWarning_InvalidSource, Resources.ShowWarning_Title);
                 SelectAndFocus(NewPackageSource);
@@ -473,11 +473,15 @@ namespace NuGet.Options
             var currentListBox = (ListBox)sender;
             if (e.Button == MouseButtons.Right)
             {
-                currentListBox.SelectedIndex = currentListBox.IndexFromPoint(e.Location);
+                int itemIndexToSelect = currentListBox.IndexFromPoint(e.Location);
+                if (itemIndexToSelect >= 0 && itemIndexToSelect < currentListBox.Items.Count)
+                {
+                    currentListBox.SelectedIndex = itemIndexToSelect;
+                }
             }
             else if (e.Button == MouseButtons.Left)
             {
-                int itemIndex = currentListBox.IndexFromPoint(e.Location);
+                int itemIndex = currentListBox.SelectedIndex;
                 if (itemIndex >= 0
                     && itemIndex < currentListBox.Items.Count)
                 {

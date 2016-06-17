@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using NuGet.Common;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -27,12 +29,15 @@ namespace NuGet.ProjectModel
             = new Dictionary<string, ExternalProjectReference>(StringComparer.OrdinalIgnoreCase);
 
         // RootPath -> Resolver
-        private readonly Dictionary<string, IPackageSpecResolver> _resolverCache
-            = new Dictionary<string, IPackageSpecResolver>(StringComparer.Ordinal);
+        private readonly ConcurrentDictionary<string, IPackageSpecResolver> _resolverCache
+            = new ConcurrentDictionary<string, IPackageSpecResolver>(StringComparer.Ordinal);
+
+        private readonly ILogger _logger;
 
         public PackageSpecReferenceDependencyProvider(
             IPackageSpecResolver projectResolver,
-            IEnumerable<ExternalProjectReference> externalProjects)
+            IEnumerable<ExternalProjectReference> externalProjects,
+            ILogger logger)
         {
             if (projectResolver == null)
             {
@@ -44,9 +49,16 @@ namespace NuGet.ProjectModel
                 throw new ArgumentNullException(nameof(externalProjects));
             }
 
-            _defaultResolver = projectResolver;
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
 
-            _resolverCache.Add(projectResolver.RootPath, projectResolver);
+            _defaultResolver = projectResolver;
+            _logger = logger;
+
+            // The constructor is only executed by a single thread, so TryAdd is fine.
+            _resolverCache.TryAdd(projectResolver.RootPath, projectResolver);
 
             foreach (var project in externalProjects)
             {
@@ -82,6 +94,7 @@ namespace NuGet.ProjectModel
 
         public Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework, string rootPath)
         {
+            Library library = null;
             var name = libraryRange.Name;
 
             ExternalProjectReference externalReference = null;
@@ -121,6 +134,9 @@ namespace NuGet.ProjectModel
                 targetFrameworkInfo = packageSpec.GetTargetFramework(targetFramework);
                 dependencies.AddRange(targetFrameworkInfo.Dependencies);
 
+                // Remove all framework assemblies
+                dependencies.RemoveAll(d => d.LibraryRange.TypeConstraint == LibraryDependencyTarget.Reference);
+
                 // Disallow projects (resolved by directory) for non-xproj msbuild projects.
                 // If there is no msbuild path then resolving by directory is allowed.
                 // CSProj does not allow directory to directory look up.
@@ -149,7 +165,7 @@ namespace NuGet.ProjectModel
 
                 // Non-Xproj projects may only have one TxM, all external references should be 
                 // included if this is an msbuild based project.
-                if (packageSpec != null 
+                if (packageSpec != null
                     && !XProjUtility.IsMSBuildBasedProject(externalReference.MSBuildProjectPath))
                 {
                     // Create an exclude list of all references from the non-selected TxM
@@ -200,55 +216,6 @@ namespace NuGet.ProjectModel
                     }));
             }
 
-            if (resolvedUsingDirectory && targetFramework.IsDesktop())
-            {
-                // For xproj add in the default references for Desktop
-                dependencies.Add(new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange
-                    {
-                        Name = "mscorlib",
-                        TypeConstraint = LibraryDependencyTarget.Reference
-                    }
-                });
-
-                dependencies.Add(new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange
-                    {
-                        Name = "System",
-                        TypeConstraint = LibraryDependencyTarget.Reference
-                    }
-                });
-
-                dependencies.Add(new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange
-                    {
-                        Name = "System.Core",
-                        TypeConstraint = LibraryDependencyTarget.Reference
-                    }
-                });
-
-                dependencies.Add(new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange
-                    {
-                        Name = "Microsoft.CSharp",
-                        TypeConstraint = LibraryDependencyTarget.Reference
-                    }
-                });
-            }
-
-            // Mark the library as unresolved if there were specified frameworks
-            // and none of them resolved
-            var resolved = true;
-            if (targetFrameworkInfo != null)
-            {
-                resolved = !(targetFrameworkInfo.FrameworkName == null &&
-                                     packageSpec.TargetFrameworks.Any());
-            }
-
             // Remove duplicate dependencies. A reference can exist both in csproj and project.json
             // dependencies is already ordered by importance here
             var uniqueDependencies = new List<LibraryDependency>(dependencies.Count);
@@ -262,18 +229,18 @@ namespace NuGet.ProjectModel
                 }
             }
 
-            var library = new Library
+            library = new Library
             {
                 LibraryRange = libraryRange,
                 Identity = new LibraryIdentity
                 {
                     Name = externalReference?.ProjectName ?? packageSpec.Name,
                     Version = packageSpec?.Version ?? NuGetVersion.Parse("1.0.0"),
-                    Type = LibraryTypes.Project,
+                    Type = LibraryType.Project,
                 },
                 Path = packageSpec?.FilePath,
                 Dependencies = uniqueDependencies,
-                Resolved = resolved
+                Resolved = true
             };
 
             if (packageSpec != null)
@@ -305,9 +272,25 @@ namespace NuGet.ProjectModel
                 library[KnownLibraryProperties.MSBuildProjectPath] = msbuildPath;
             }
 
+            if (packageSpec != null)
+            {
+                // Record all frameworks in the project
+                library[KnownLibraryProperties.ProjectFrameworks] = new List<NuGetFramework>(
+                    packageSpec.TargetFrameworks.Select(fw => fw.FrameworkName));
+            }
+
             if (targetFrameworkInfo != null)
             {
                 library[KnownLibraryProperties.TargetFrameworkInformation] = targetFrameworkInfo;
+
+                // Add framework references
+                var frameworkReferences = targetFrameworkInfo.Dependencies
+                    .Where(d => d.LibraryRange.TypeConstraint == LibraryDependencyTarget.Reference)
+                    .Select(d => d.Name)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                library[KnownLibraryProperties.FrameworkAssemblies] = frameworkReferences;
 
                 // Add a compile asset for msbuild to xproj projects
                 if (targetFrameworkInfo.FrameworkName != null
@@ -342,19 +325,19 @@ namespace NuGet.ProjectModel
 
             if (!string.IsNullOrEmpty(rootPath))
             {
-                IPackageSpecResolver cachedResolver;
-                if (_resolverCache.TryGetValue(rootPath, out cachedResolver))
-                {
-                    specResolver = cachedResolver;
-                }
-                else
-                {
-                    specResolver = new PackageSpecResolver(rootPath);
-                    _resolverCache.Add(rootPath, specResolver);
-                }
+                specResolver = _resolverCache.GetOrAdd(
+                    rootPath,
+                    _createPackageSpecResolver);
             }
 
             return specResolver;
+        }
+
+        private static readonly Func<string, PackageSpecResolver> _createPackageSpecResolver = CreatePackageSpecResolver;
+
+        private static PackageSpecResolver CreatePackageSpecResolver(string rootPath)
+        {
+            return new PackageSpecResolver(rootPath);
         }
 
         /// <summary>

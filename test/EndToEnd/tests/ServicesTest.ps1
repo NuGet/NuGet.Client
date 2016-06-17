@@ -46,7 +46,7 @@ function Test-GetInstalledPackagesMultipleProjectsSameVersion {
 
     $cm = Get-VsComponentModel
     $installerServices = $cm.GetService([NuGet.VisualStudio.IVsPackageInstallerServices])
-	
+    
     # Act
     $packages = @($installerServices.GetInstalledPackages())
 
@@ -68,7 +68,7 @@ function Test-GetInstalledPackagesMultipleProjectsDifferentVersion {
 
     $cm = Get-VsComponentModel
     $installerServices = $cm.GetService([NuGet.VisualStudio.IVsPackageInstallerServices])
-	
+    
     # Act
     $packages = @($installerServices.GetInstalledPackages())
 
@@ -87,7 +87,7 @@ function Test-GetInstalledPackagesMVCTemplate
 
     # Arrange
     $p = New-MvcWebSite
-	
+    
     $cm = Get-VsComponentModel
     $installerServices = $cm.GetService([NuGet.VisualStudio.IVsPackageInstallerServices])
 
@@ -95,7 +95,7 @@ function Test-GetInstalledPackagesMVCTemplate
     $packages = @($installerServices.GetInstalledPackages())
 
     # Assert
-	Write-Host $packages
+    Write-Host $packages
 
     Assert-AreEqual 30 $packages.Count
     Assert-AreEqual Microsoft.Web.Infrastructure $packages[0].Id
@@ -209,7 +209,7 @@ function VsPackageInstallerEvents {
         $p | Uninstall-Package jquery
 
         
-		# Assert
+        # Assert
         Assert-AreEqual 1 $global:installing
         Assert-AreEqual 1 $global:installed
         Assert-AreEqual 1 $global:uninstalling
@@ -221,11 +221,51 @@ function VsPackageInstallerEvents {
         $installerEvents.remove_PackageUninstalling($uninstallingHandler)
         $installerEvents.remove_PackageUninstalled($uninstalledHandler)
 
-		Remove-Variable "installing"   -scope global
-		Remove-Variable "installed"    -scope global
-		Remove-Variable "uninstalling" -scope global
-		Remove-Variable "uninstalled"  -scope global
+        Remove-Variable "installing"   -scope global
+        Remove-Variable "installed"    -scope global
+        Remove-Variable "uninstalling" -scope global
+        Remove-Variable "uninstalled"  -scope global
     }
+}
+
+function Test-InstallLatestStablePackageAPI
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+
+    # Act
+    [API.Test.InternalAPITestHook]::InstallLatestPackageApi("TestPackage.ListedStable", $false) 
+
+    # Assert
+    Assert-Package $p TestPackage.ListedStable 2.0.6
+}
+
+function Test-InstallLatestStablePackageAPIForOnlyPrerelease
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+
+    # Act & Assert
+    Assert-Throws { [API.Test.InternalAPITestHook]::InstallLatestPackageApi("TestPackage.AlwaysPrerelease", $false)  } "Exception calling `"InstallLatestPackageApi`" with `"2`" argument(s): `"No latest version found for 'TestPackage.AlwaysPrerelease' for the given source repositories and resolution context`""
+    Assert-NoPackage $p TestPackage.AlwaysPrerelease
+}
+
+function Test-InstallLatestPrereleasePackageAPI 
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+
+    # Act
+    [API.Test.InternalAPITestHook]::InstallLatestPackageApi("TestPackage.AlwaysPrerelease", $true) 
+
+    # Assert
+    Assert-Package $p TestPackage.AlwaysPrerelease 5.0.0-beta
 }
 
 function Test-InstallPackageAPI 
@@ -290,7 +330,7 @@ function Test-InstallPackageAPIUnreachableSource
     $p = New-ClassLibrary
 
     # Act&Assert
-    Assert-Throws {[API.Test.InternalAPITestHook]::InstallPackageApiBadSource("owin","1.0.0") } "Exception calling `"InstallPackageApiBadSource`" with `"2`" argument(s): `"The remote name could not be resolved: 'packagesource'`""
+    Assert-Throws {[API.Test.InternalAPITestHook]::InstallPackageApiBadSource("owin","1.0.0") } "Exception calling `"InstallPackageApiBadSource`" with `"2`" argument(s): `"Unable to load the service index for source http://packagesource.`""
     Assert-NoPackage $p "owin"
 }
 
@@ -365,6 +405,69 @@ function Test-GetSourceAPI
     Assert-NotNull $sources
 }
 
+function Test-CompareSemanticVersions
+{
+    # Arrange
+    $cm = Get-VsComponentModel
+    $service = $cm.GetService([NuGet.VisualStudio.IVsSemanticVersionComparer])
+    $versionA = "3.1.0-beta-001"
+    $versionB = "2.9.0.0"
+    
+    # Act
+    $actual = $service.Compare($versionA, $versionB)
+
+    # Assert
+    Assert-True ($actual > 0) "$actual should be greater than zero."
+}
+
+function Test-ParseFrameworkName
+{
+    # Arrange
+    $cm = Get-VsComponentModel
+    $service = $cm.GetService([NuGet.VisualStudio.IVsFrameworkParser])
+    $framework = "net45"
+    
+    # Act
+    $actual = $service.ParseFrameworkName($framework)
+
+    # Assert
+    Assert-AreEqual ".NETFramework,Version=v4.5" $actual.ToString()
+}
+
+function Test-GetShortFolderName
+{
+    # Arrange
+    $cm = Get-VsComponentModel
+    $service = $cm.GetService([NuGet.VisualStudio.IVsFrameworkParser])
+    $framework = [System.Runtime.Versioning.FrameworkName](".NETStandard,Version=v1.3")
+    
+    # Act
+    $actual = $service.GetShortFrameworkName($framework)
+
+    # Assert
+    Assert-AreEqual "netstandard1.3" $actual.ToString()
+}
+
+function Test-GetNearest
+{
+    # Arrange
+    $cm = Get-VsComponentModel
+    $service = $cm.GetService([NuGet.VisualStudio.IVsFrameworkCompatibility])
+    $target = [System.Runtime.Versioning.FrameworkName](".NETFramework,Version=v4.5.1")
+    [System.Runtime.Versioning.FrameworkName[]] $frameworks = @(
+        [System.Runtime.Versioning.FrameworkName](".NETFramework,Version=v3.5"),
+        [System.Runtime.Versioning.FrameworkName](".NETFramework,Version=v4.0"),
+        [System.Runtime.Versioning.FrameworkName](".NETFramework,Version=v4.5"),
+        [System.Runtime.Versioning.FrameworkName](".NETFramework,Version=v4.5.2")
+    )
+    
+    # Act
+    $actual = $service.GetNearest($target, $frameworks)
+
+    # Assert
+    Assert-AreEqual ".NETFramework,Version=v4.5" $actual.ToString()
+}
+
 function Test-GetNetStandardVersions 
 {
     # Arrange
@@ -381,6 +484,7 @@ function Test-GetNetStandardVersions
     Assert-AreEqual ".NETStandard,Version=v1.3" ($actual | Select-Object -Index 3)
     Assert-AreEqual ".NETStandard,Version=v1.4" ($actual | Select-Object -Index 4)
     Assert-AreEqual ".NETStandard,Version=v1.5" ($actual | Select-Object -Index 5)
+    Assert-AreEqual ".NETStandard,Version=v1.6" ($actual | Select-Object -Index 6)
 }
 
 function Test-GetFrameworksSupportingNetStandard
@@ -394,8 +498,9 @@ function Test-GetFrameworksSupportingNetStandard
 
     # Assert
     Assert-AreEqual ".NETCore,Version=v5.0" ($actual | Select-Object -Index 0)
-    Assert-AreEqual ".NETFramework,Version=v4.5.1" ($actual | Select-Object -Index 1)
-    Assert-AreEqual ".NETPortable,Version=v0.0,Profile=Profile151" ($actual | Select-Object -Index 2)
+    Assert-AreEqual ".NETCoreApp,Version=v1.0" ($actual | Select-Object -Index 1)
+    Assert-AreEqual ".NETFramework,Version=v4.5.1" ($actual | Select-Object -Index 2)
+    Assert-AreEqual ".NETPortable,Version=v0.0,Profile=Profile151" ($actual | Select-Object -Index 3)
 }
 
 function Test-RestorePackageAPI
@@ -427,7 +532,7 @@ function Test-InstallPackageAPIPackageNotExist
     $p = New-ClassLibrary
 
     # Act & Assert
-    Assert-Throws { [API.Test.InternalAPITestHook]::InstallPackageApi("NotExistPackage","") } "Exception calling `"InstallPackageApi`" with `"2`" argument(s): `"No latest version found for the 'NotExistPackage' for the given source repositories and resolution context`""
+    Assert-Throws { [API.Test.InternalAPITestHook]::InstallPackageApi("NotExistPackage","") } "Exception calling `"InstallPackageApi`" with `"2`" argument(s): `"No latest version found for 'NotExistPackage' for the given source repositories and resolution context`""
 }
 
 function Test-InstallPackageAPIInstalledPackage

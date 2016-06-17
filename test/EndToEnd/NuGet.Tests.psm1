@@ -62,7 +62,19 @@ else
 $generatePackagesExePath = $testExtensions[0]
 $testExtensions.RemoveAt(0)
 
-if ($dte.Version.SubString(0, 2) -eq "10")
+$testExtensions | %{
+    if (!(Test-Path $_))
+    {
+        throw "Test extension $_ is not found. `
+If you are running from your dev box, please build your NuGet.Clients solution first. Goodbye!"
+    }
+
+    Import-Module $_
+}
+
+$VSVersion = [API.Test.VSHelper]::GetVSVersion()
+
+if ($VSVersion.SubString(0, 2) -eq "10")
 {
     $targetFrameworkVersion = "v4.0"
 }
@@ -91,12 +103,14 @@ Register-TabExpansion 'Run-Test' @{
 }
 
 function Rearrange-Tests {
-    param($tests)    
+    param($tests)
 
-    if ($dte.Version -eq "12.0" -or $dte.Version -eq "14.0")
+    if ($VSVersion -eq "12.0" -or $VSVersion -eq "14.0" -or $VSVersion -eq "15.0")
     {
-        # TODO: Running PackageRestore tests on Dev12 RTM causes hang problem,
-		# so disable those tests for now.
+        # Tracked by issue: https://github.com/NuGet/Home/issues/2387
+        # And, the commit is linked to the issue
+        # TODO: PackageRestore tests should be fixed and enabled or deleted
+        # They were only ever running on Dev10.
         $tests = $tests | ? {!($_.Name -like 'Test-PackageRestore*') }
     }
 
@@ -108,33 +122,42 @@ function global:Run-Test {
     param(
         [parameter(ParameterSetName="Test", Position=0)]
         [string]$Test,
-        [parameter(ParameterSetName="File", Mandatory=$true, Position=1)]
+        [Parameter(Position=1)]
+        [string]$RunId="",
+        [parameter(ParameterSetName="File", Mandatory=$true, Position=2)]
         [string]$File,
-		[parameter(ParameterSetName="Exclude", Mandatory=$true, Position=1)]
+		[parameter(ParameterSetName="Exclude", Mandatory=$true, Position=2)]
         [string]$Exclude,
-        [parameter(Position=2)]
+        [parameter(Position=3)]
         [bool]$LaunchResultsOnFailure=$true
     )
 
     Write-Verbose "Loading test extensions modules"
-    $testExtensions | %{ Import-Module $_ }
 
     # Close the solution after every test run
-    $dte.Solution.Close()
+    [API.Test.VSSolutionHelper]::CloseSolution()
     
     # Load the utility script since we need to use guid
     . $utilityPath
     
     # Get a reference to the powershell window so we can set focus after the tests are over
-    $window = $dte.ActiveWindow
+    [API.Test.VSHelper]::StorePSWindow()
     
-    $testRunId = New-Guid
+    if ($RunId)
+    {
+        $testRunId = $RunId
+    }
+    else
+    {
+        $testRunId = New-Guid
+    }
+
     $testRunOutputPath = Join-Path $testOutputPath $testRunId
     $testLogFile = Join-Path $testRunOutputPath log.txt
     $testRealTimeResultsFile = Join-Path $testRunOutputPath Realtimeresults.txt
     
     # Create the output folder
-    mkdir $testRunOutputPath | Out-Null
+    mkdir $testRunOutputPath -ErrorAction Ignore | Out-Null
        
     # Load all of the helper scripts from the current location
     Get-ChildItem $currentPath -Filter *.ps1 | %{ 
@@ -339,7 +362,7 @@ function global:Run-Test {
                         }
 
                         if ($tests.Count -gt 1 -or (!$testSucceeded -and $counter -eq 0)) {
-                            $dte.Solution.Close()
+                            [API.Test.VSSolutionHelper]::CloseSolution()
                         }
 
                         if ($testSucceeded -or $counter -eq 1) {
@@ -372,7 +395,7 @@ function global:Run-Test {
         rm function:\Test*
         
         # Set focus back to powershell
-        $window.SetFocus()
+        [API.Test.VSHelper]::FocusStoredPSWindow()
                
         Write-TestResults $testRunId $results.Values $testRunOutputPath $testLogFile $LaunchResultsOnFailure
 

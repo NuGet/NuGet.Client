@@ -13,6 +13,7 @@ namespace NuGet.LibraryModel
         private static ConcurrentDictionary<string, LibraryDependencyTypeKeyword> _keywords = new ConcurrentDictionary<string, LibraryDependencyTypeKeyword>();
 
         public static readonly LibraryDependencyTypeKeyword Default;
+        public static readonly LibraryDependencyTypeKeyword Platform;
         public static readonly LibraryDependencyTypeKeyword Build;
         public static readonly LibraryDependencyTypeKeyword Preprocess;
         public static readonly LibraryDependencyTypeKeyword Private;
@@ -45,6 +46,19 @@ namespace NuGet.LibraryModel
                         LibraryDependencyTypeFlag.MainExport,
                         LibraryDependencyTypeFlag.RuntimeComponent,
                         LibraryDependencyTypeFlag.BecomesNupkgDependency,
+                    },
+                flagsToRemove: emptyFlags);
+
+            Platform = Declare(
+                "platform",
+                flagsToAdd: new[]
+                    {
+                        LibraryDependencyTypeFlag.MainReference,
+                        LibraryDependencyTypeFlag.MainSource,
+                        LibraryDependencyTypeFlag.MainExport,
+                        LibraryDependencyTypeFlag.RuntimeComponent,
+                        LibraryDependencyTypeFlag.BecomesNupkgDependency,
+                        LibraryDependencyTypeFlag.SharedFramework
                     },
                 flagsToRemove: emptyFlags);
 
@@ -93,6 +107,11 @@ namespace NuGet.LibraryModel
             DeclareOnOff("DevComponent", LibraryDependencyTypeFlag.DevComponent, emptyFlags);
             DeclareOnOff("PreprocessComponent", LibraryDependencyTypeFlag.PreprocessComponent, emptyFlags);
             DeclareOnOff("BecomesNupkgDependency", LibraryDependencyTypeFlag.BecomesNupkgDependency, emptyFlags);
+        }
+
+        public LibraryDependencyType CreateType()
+        {
+            return LibraryDependencyType.Default.Combine(FlagsToAdd, FlagsToRemove);
         }
 
         private static void DeclareOnOff(string name, LibraryDependencyTypeFlag flag, IEnumerable<LibraryDependencyTypeFlag> emptyFlags)

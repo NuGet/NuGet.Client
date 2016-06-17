@@ -152,21 +152,6 @@ function Assert-Reference {
     }
 }
 
-function Assert-Build {
-    param(
-        [parameter(Mandatory = $true)]
-        $Project,
-        [string]$Configuration
-    )
-    
-    Build-Project $Project $Configuration
-    
-    # Get the errors from the error list
-    $errors = Get-Errors    
-    
-    Assert-AreEqual 0 $errors.Count "Failed to build `"$($Project.Name)`. There were errors in the list."
-}
-
 function Assert-Throws {
     param(
         [parameter(Mandatory = $true)]

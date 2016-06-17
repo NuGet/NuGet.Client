@@ -31,6 +31,9 @@ namespace NuGet.Resolver
             // remove empty and absent packages, absent packages cannot have error messages
             solution = solution.Where(package => package != null && !package.Absent);
 
+            // maintain visited packages set to avoid processing same package again
+            var visitedPackages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
             var allPackageIds = new HashSet<string>(solution.Select(package => package.Id), StringComparer.OrdinalIgnoreCase);
             var newPackageIdSet = new HashSet<string>(newPackageIds, StringComparer.OrdinalIgnoreCase);
             var installedPackageIds = new HashSet<string>(packagesConfig.Select(package => package.PackageIdentity.Id), StringComparer.OrdinalIgnoreCase);
@@ -56,11 +59,11 @@ namespace NuGet.Resolver
                 }
             }
 
-            // 2. find cases where the target package is missing dependencies
+            // 2. find cases where the target package or it's dependencies don't satisfy version constraint with available packages
             foreach (var targetPackage in solution.Where(package => newPackageIdSet.Contains(package.Id))
                 .OrderBy(package => package.Id, StringComparer.OrdinalIgnoreCase))
             {
-                var brokenDependency = GetBrokenDependencies(targetPackage, solution)
+                var brokenDependency = GetBrokenDependenciesWithInstalledPackages(targetPackage, solution, availablePackages, visitedPackages)
                     .OrderBy(package => package.Id, StringComparer.OrdinalIgnoreCase)
                     .FirstOrDefault();
 
@@ -111,9 +114,11 @@ namespace NuGet.Resolver
             IEnumerable<PackageSource> packageSources)
         {
             var message = new StringBuilder();
+            var problemPackage = solution.Where(package => StringComparer.OrdinalIgnoreCase.Equals(package.Id, problemPackageId)).FirstOrDefault();
 
             // List the package that has an issue, and all packages dependant on the package.
-            var dependantPackages = solution.Where(package => package.FindDependencyRange(problemPackageId) != null)
+            var dependantPackages = solution.Where(package => package.FindDependencyRange(problemPackageId) != null && 
+                !IsDependencySatisfied(package.Dependencies.FirstOrDefault(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, problemPackageId)), problemPackage))
                 .Select(package => FormatDependencyConstraint(package, problemPackageId))
                 .OrderBy(s => s, StringComparer.OrdinalIgnoreCase);
 
@@ -188,6 +193,50 @@ namespace NuGet.Resolver
             return $"'{package.Id} {package.Version.ToNormalizedString()} {Strings.DependencyConstraint}: {dependencyString}'";
         }
 
+        /// <summary>
+        /// This will try and get broken dependencies for target or it's dependencies WRT installed packages as well as all available packages to install
+        /// </summary>
+        /// <param name="package">target package</param>
+        /// <param name="solution">last best known solution</param>
+        /// <param name="availablePackages">all available packages from all sources</param>
+        /// <returns>list of broken dependencies</returns>
+        private static IEnumerable<PackageDependency> GetBrokenDependenciesWithInstalledPackages(ResolverPackage package, IEnumerable<ResolverPackage> solution, IEnumerable<PackageDependencyInfo> availablePackages, HashSet<string> visitedPackages)
+        {
+            if(visitedPackages.Contains(package.Id))
+            {
+                yield break;
+            }
+
+            // BFS traversal of graph
+            var queue = new Queue<ResolverPackage>();
+            queue.Enqueue(package);
+
+            while (queue.Count > 0)
+            {
+                var node = queue.Dequeue();
+                foreach (var dependency in node.Dependencies)
+                {
+                    var target = solution.FirstOrDefault(targetPackage => StringComparer.OrdinalIgnoreCase.Equals(targetPackage.Id, dependency.Id));
+
+                    // true, if solution doesn't contain this dependency or
+                    // if neither solution package satisfy this dependency version nor available packages had any package which could satisfy this dependency.
+                    // This is required because our solution might not have selected the right version of this dependent package.
+                    if (target == null || (!IsDependencySatisfied(dependency, target) &&
+                        !availablePackages.Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, dependency.Id)).Any(p => IsDependencySatisfied(dependency, p))))
+                    {
+                        yield return dependency;
+                    }
+
+                    if (target != null && visitedPackages.Add(dependency.Id))
+                    {
+                        queue.Enqueue(target);
+                    }
+                }
+            }
+
+            yield break;
+        }
+
         private static IEnumerable<PackageDependency> GetBrokenDependencies(ResolverPackage package, IEnumerable<ResolverPackage> packages)
         {
             foreach (var dependency in package.Dependencies)
@@ -207,6 +256,11 @@ namespace NuGet.Resolver
         {
             return package != null && !package.Absent
                 && (dependency.VersionRange == null || dependency.VersionRange.Satisfies(package.Version));
+        }
+
+        public static bool IsDependencySatisfied(PackageDependency dependency, PackageIdentity package)
+        {
+            return package != null && (dependency.VersionRange == null || dependency.VersionRange.Satisfies(package.Version));
         }
 
         private static IEnumerable<ResolverPackage> GetPackagesWithBrokenDependenciesOnId(string targetId, IEnumerable<ResolverPackage> packages)
@@ -302,8 +356,9 @@ namespace NuGet.Resolver
             }
 
             // add any unsorted nodes onto the end of the result
-            var sorted = new HashSet<string>(result.Select(n => n.Id), StringComparer.OrdinalIgnoreCase);
-            result.AddRange(nodes.Where(n => !sorted.Contains(n.Id)));
+            var uniqueResult = new HashSet<string>(result.Select(n => n.Id), StringComparer.OrdinalIgnoreCase);
+            var sorted = nodes.Where(n => !uniqueResult.Contains(n.Id)).OrderBy(p => p.Id, StringComparer.OrdinalIgnoreCase);
+            result.AddRange(sorted);
 
             return result;
         }
@@ -330,54 +385,97 @@ namespace NuGet.Resolver
         }
 
         /// <summary>
-        /// Returns the first circular dependency found
+        /// Returns the first circular dependency found for a package. Please sort solution topologically first to improve performance.
         /// </summary>
-        public static IEnumerable<ResolverPackage> FindCircularDependency(IEnumerable<ResolverPackage> solution)
+        public static IEnumerable<ResolverPackage> FindFirstCircularDependency(IEnumerable<ResolverPackage> solution)
         {
-            // check each package to see if it is part of a loop, sort by id to keep the result deterministic
-            foreach (var package in solution.OrderBy(package => package.Id, StringComparer.OrdinalIgnoreCase))
-            {
-                var result = FindCircularDependency(package, Enumerable.Empty<string>(), solution);
+            // to keep track of visited packages to avoid processing them again
+            var visitedPackages = new HashSet<ResolverPackage>();
 
+            var packageLookUp = solution.ToDictionary(p => p.Id, StringComparer.OrdinalIgnoreCase);
+
+            // check each package to see if it is part of a loop, sort by id to keep the result deterministic
+            foreach (var package in solution)
+            {                
+                var result = FindCircularDependency(package, packageLookUp, visitedPackages);
                 if (result.Any())
                 {
-                    // loop found
                     return result;
                 }
             }
 
-            // no loops detected
             return Enumerable.Empty<ResolverPackage>();
         }
 
-        private static IEnumerable<ResolverPackage> FindCircularDependency(ResolverPackage package, IEnumerable<string> parents, IEnumerable<ResolverPackage> solution)
+        private static List<ResolverPackage> FindCircularDependency(ResolverPackage package, Dictionary<string, ResolverPackage> packageLookUp, HashSet<ResolverPackage> visitedPackages)
         {
             // avoid checking depths beyond 20 packages deep
-            if (parents.Count() < 20 && package != null && !package.Absent && package.Dependencies.Any())
-            {
-                // walk the dependencies
-                foreach (var dependency in package.Dependencies.OrderBy(d => d.Id, StringComparer.OrdinalIgnoreCase))
+            if (package != null && !package.Absent && package.Dependencies.Any())
+            {                
+                var queue = new Queue<QueueNode>();
+
+                // added the first initial node to queue
+                var node = new QueueNode(package, new List<ResolverPackage>());
+                queue.Enqueue(node);
+
+                // BFS traversal to traverse through all the packages to find out circular dependency
+                while (queue.Count > 0)
                 {
-                    var dependencyPackage = solution.FirstOrDefault(solutionPackage => StringComparer.OrdinalIgnoreCase.Equals(solutionPackage.Id, dependency.Id));
+                    var source = queue.Dequeue();
 
-                    if (parents.Contains(dependency.Id, StringComparer.OrdinalIgnoreCase))
+                    // access parent packages list and add current package as well
+                    var parentPackages = new List<ResolverPackage>(source.ParentPackages);
+                    parentPackages.Add(source.Package);
+
+                    // walk the dependencies
+                    foreach (var dependency in source.Package.Dependencies.OrderBy(d => d.Id, StringComparer.OrdinalIgnoreCase))
                     {
-                        // loop detected
-                        return new ResolverPackage[] { package, dependencyPackage };
-                    }
+                        var dependencyPackage = packageLookUp[dependency.Id];
 
-                    // recurse on dependencies
-                    var result = FindCircularDependency(dependencyPackage, parents.Concat(new string[] { package.Id }), solution);
-
-                    if (result.Any())
-                    {
-                        return (new ResolverPackage[] { package }).Concat(result);
+                        // If already visited, then it means it doesn't have any circular dependency so we can avoid processing this node again
+                        if (!visitedPackages.Contains(dependencyPackage))
+                        {                            
+                            if (parentPackages.Contains(dependencyPackage))
+                            {
+                                // circular dependency detected
+                                parentPackages.Add(dependencyPackage);
+                                return parentPackages;
+                            }
+                            // add child node to Queue to process further
+                            var newQNode = new QueueNode(dependencyPackage, parentPackages);
+                            queue.Enqueue(newQNode);
+                        }
                     }
                 }
             }
 
+            // add processed packages to local cache
+            visitedPackages.Add(package);
+
             // end of the walk
-            return Enumerable.Empty<ResolverPackage>();
+            return new List<ResolverPackage>();
         }
+
+        /// <summary>
+        /// Simple QueueNode class to hold package n it's parent nodes list together
+        /// </summary>
+        private class QueueNode
+        {
+            public QueueNode(ResolverPackage package, List<ResolverPackage> parentPackages)
+            {
+                Package = package;
+                ParentPackages = parentPackages;
+            }
+
+            /// <summary>
+            /// Package node
+            /// </summary>
+            public ResolverPackage Package { get; }
+
+            /// <summary>
+            /// Complete Parent list for the given package
+            /// </summary>
+            public List<ResolverPackage> ParentPackages { get; }
+        }         
     }
 }

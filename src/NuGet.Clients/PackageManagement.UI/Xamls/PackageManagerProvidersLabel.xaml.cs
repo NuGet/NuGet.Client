@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -51,7 +52,7 @@ namespace NuGet.PackageManagement.UI
             var providers = DataContext as AlternativePackageManagerProviders;
             if (providers == null ||
                 string.IsNullOrEmpty(FormatString) ||
-                providers.PackageManagerProviders.IsEmpty())
+                !providers.PackageManagerProviders.Any())
             {
                 Visibility = Visibility.Collapsed;
                 return;

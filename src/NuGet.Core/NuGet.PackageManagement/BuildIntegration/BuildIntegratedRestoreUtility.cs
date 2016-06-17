@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -32,6 +33,7 @@ namespace NuGet.PackageManagement
             ExternalProjectReferenceContext context,
             IEnumerable<SourceRepository> sources,
             string effectiveGlobalPackagesFolder,
+            IEnumerable<string> fallbackPackageFolders,
             CancellationToken token)
         {
             return await RestoreAsync(
@@ -39,6 +41,7 @@ namespace NuGet.PackageManagement
                 context,
                 sources,
                 effectiveGlobalPackagesFolder,
+                fallbackPackageFolders,
                 c => { },
                 token);
         }
@@ -51,6 +54,7 @@ namespace NuGet.PackageManagement
             ExternalProjectReferenceContext context,
             IEnumerable<SourceRepository> sources,
             string effectiveGlobalPackagesFolder,
+            IEnumerable<string> fallbackPackageFolders,
             Action<SourceCacheContext> cacheContextModifier,
             CancellationToken token)
         {
@@ -59,6 +63,7 @@ namespace NuGet.PackageManagement
                 cacheContextModifier(cacheContext);
 
                 var providers = RestoreCommandProviders.Create(effectiveGlobalPackagesFolder,
+                    fallbackPackageFolders,
                     sources,
                     cacheContext,
                     context.Logger);
@@ -75,7 +80,7 @@ namespace NuGet.PackageManagement
                 token.ThrowIfCancellationRequested();
 
                 // Write out the lock file and msbuild files
-                result.Commit(context.Logger);
+                await result.CommitAsync(context.Logger, token);
 
                 return result;
             }
@@ -103,9 +108,9 @@ namespace NuGet.PackageManagement
                 request.LockFileVersion = await GetLockFileVersion(project, context);
 
                 // Add the existing lock file if it exists
-                var lockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(project.JsonConfigPath);
+                var lockFilePath = ProjectJsonPathUtilities.GetLockFilePath(project.JsonConfigPath);
                 request.LockFilePath = lockFilePath;
-                request.ExistingLockFile = GetLockFile(lockFilePath, logger);
+                request.ExistingLockFile = LockFileUtilities.GetLockFile(lockFilePath, logger);
 
                 // Find the full closure of project.json files and referenced projects
                 var projectReferences = await project.GetProjectReferenceClosureAsync(context);
@@ -268,15 +273,16 @@ namespace NuGet.PackageManagement
         /// <remarks>Floating versions and project.json files with supports require a full restore.</remarks>
         public static async Task<bool> IsRestoreRequired(
             IReadOnlyList<BuildIntegratedNuGetProject> projects,
-            VersionFolderPathResolver pathResolver,
+            IReadOnlyList<string> packageFolderPaths,
             ExternalProjectReferenceContext referenceContext)
         {
-            var hashesChecked = new HashSet<string>();
+            var packagesChecked = new HashSet<PackageIdentity>();
+            var pathResolvers = packageFolderPaths.Select(path => new VersionFolderPathResolver(path));
 
             // Validate project.lock.json files
             foreach (var project in projects)
             {
-                var lockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(project.JsonConfigPath);
+                var lockFilePath = ProjectJsonPathUtilities.GetLockFilePath(project.JsonConfigPath);
 
                 if (!File.Exists(lockFilePath))
                 {
@@ -300,23 +306,36 @@ namespace NuGet.PackageManagement
                 // Verify all libraries are on disk
                 foreach (var library in lockFile.Libraries)
                 {
-                    // Verify the SHA for each package
-                    var hashPath = pathResolver.GetHashPath(library.Name, library.Version);
+                    var identity = new PackageIdentity(library.Name, library.Version);
 
-                    // Libraries shared between projects can be skipped
-                    if (hashesChecked.Add(hashPath))
+                    // Each id/version only needs to be checked once
+                    if (packagesChecked.Add(identity))
                     {
-                        if (File.Exists(hashPath))
-                        {
-                            var sha512 = File.ReadAllText(hashPath);
+                        var found = false;
 
-                            if (library.Sha512 != sha512)
+                        //  Check each package folder. These need to match the order used for restore.
+                        foreach (var resolver in pathResolvers)
+                        {
+                            // Verify the SHA for each package
+                            var hashPath = resolver.GetHashPath(library.Name, library.Version);
+
+                            if (File.Exists(hashPath))
                             {
-                                // A package has changed
-                                return true;
+                                found = true;
+                                var sha512 = File.ReadAllText(hashPath);
+
+                                if (library.Sha512 != sha512)
+                                {
+                                    // A package has changed
+                                    return true;
+                                }
+
+                                // Skip checking the rest of the package folders
+                                break;
                             }
                         }
-                        else
+
+                        if (!found)
                         {
                             // A package is missing
                             return true;
@@ -387,24 +406,6 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
-        /// Returns the lockfile if it exists, otherwise null.
-        /// </summary>
-        public static LockFile GetLockFile(string lockFilePath, Logging.ILogger logger)
-        {
-            LockFile lockFile = null;
-
-            if (File.Exists(lockFilePath))
-            {
-                var format = new LockFileFormat();
-
-                // A corrupt lock file will log errors and return null
-                lockFile = format.Read(lockFilePath, logger);
-            }
-
-            return lockFile;
-        }
-
-        /// <summary>
         /// If the project is non-xproj and has no xproj references it may fallback to v1.
         /// </summary>
         public static async Task<int> GetLockFileVersion(
@@ -419,31 +420,10 @@ namespace NuGet.PackageManagement
             {
                 var references = await buildProject.GetProjectReferenceClosureAsync(referenceContext);
 
-                lockFileVersion = GetLockFileVersion(references);
+                lockFileVersion = LockFileUtilities.GetLockFileVersion(references);
             }
 
             return lockFileVersion;
-        }
-
-        // MSBuild for VS2015U1 fails when projects are in the lock file since it treats them as packages.
-        // To work around that NuGet will downgrade the lock file if there are only csproj references.
-        // Projects with zero project references can go to v2, and projects with xproj references must be
-        // at least v2 to work.
-        // references should include the parent project
-        public static int GetLockFileVersion(IReadOnlyList<ExternalProjectReference> references)
-        {
-            var version = LockFileFormat.Version;
-
-            // if xproj is used the higher version must be used
-            if (references.Any(reference => reference.ExternalProjectReferences.Count > 0)
-                && !references.Any(reference =>
-                        reference.MSBuildProjectPath?.EndsWith(XProjUtility.XProjExtension) == true))
-            {
-                // Fallback to v1 for non-xprojs with p2ps
-                version = 1;
-            }
-
-            return version;
         }
 
         /// <summary>

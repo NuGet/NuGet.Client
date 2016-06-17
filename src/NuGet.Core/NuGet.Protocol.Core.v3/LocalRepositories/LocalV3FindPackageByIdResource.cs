@@ -10,21 +10,21 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
-namespace NuGet.Protocol.Core.v3.LocalRepositories
+namespace NuGet.Protocol
 {
     public class LocalV3FindPackageByIdResource : FindPackageByIdResource
     {
         // Use cache insensitive compare for windows
-        private readonly ConcurrentDictionary<string, List<PackageInfo>> _cache 
-            = new ConcurrentDictionary<string, List<PackageInfo>>(
-                RuntimeEnvironmentHelper.IsWindows ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        private readonly ConcurrentDictionary<string, List<NuGetVersion>> _cache
+            = new ConcurrentDictionary<string, List<NuGetVersion>>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<PackageIdentity, PackageIdentity> _packageIdentityCache
+            = new ConcurrentDictionary<PackageIdentity, PackageIdentity>();
 
         private readonly string _source;
         private readonly VersionFolderPathResolver _resolver;
@@ -42,72 +42,113 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
 
         public override Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, CancellationToken token)
         {
-            var versions = GetPackageInfos(id).Select(v => v.NuGetVersion);
-            return Task.FromResult(versions);
+            return Task.FromResult(GetVersions(id).AsEnumerable());
         }
 
         public override Task<Stream> GetNupkgStreamAsync(string id, NuGetVersion version, CancellationToken token)
         {
-            var info = GetPackageInfo(id, version);
+            var matchedVersion = GetVersion(id, version);
             Stream result = null;
-            if (info != null)
+            if (matchedVersion != null)
             {
-                var packagePath = Path.Combine(info.Path, $"{id}.{version.ToNormalizedString()}.nupkg");
+                var packagePath = _resolver.GetPackageFilePath(id, matchedVersion);
                 result = File.OpenRead(packagePath);
             }
 
             return Task.FromResult(result);
         }
 
+        public override Task<PackageIdentity> GetOriginalIdentityAsync(string id, NuGetVersion version, CancellationToken token)
+        {
+            var matchedVersion = GetVersion(id, version);
+            PackageIdentity outputIdentity = null;
+            if (matchedVersion != null)
+            {
+                outputIdentity = _packageIdentityCache.GetOrAdd(
+                   new PackageIdentity(id, matchedVersion),
+                   inputIdentity =>
+                   {
+                       return ProcessNuspecReader(
+                           inputIdentity.Id,
+                           inputIdentity.Version,
+                           nuspecReader => nuspecReader.GetIdentity());
+                   });
+            }
+
+            return Task.FromResult(outputIdentity);
+        }
+
         public override Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(string id, NuGetVersion version, CancellationToken token)
         {
-            var info = GetPackageInfo(id, version);
+            var matchedVersion = GetVersion(id, version);
             FindPackageByIdDependencyInfo dependencyInfo = null;
-            if (info != null)
+            if (matchedVersion != null)
             {
-                var nuspecPath = Path.Combine(info.Path, $"{id}.nuspec");
-                using (var stream = File.OpenRead(nuspecPath))
-                {
-                    NuspecReader nuspecReader;
-                    try
+                dependencyInfo = ProcessNuspecReader(
+                    id,
+                    matchedVersion,
+                    nuspecReader =>
                     {
-                        nuspecReader = new NuspecReader(stream);
-                    }
-                    catch (XmlException ex)
-                    {
-                        var message = string.Format(CultureInfo.CurrentCulture, Strings.Protocol_PackageMetadataError, id + "." + version, _source);
-                        var inner = new PackagingException(message, ex);
+                        // Populate the package identity cache while we have the .nuspec open.
+                        var identity = nuspecReader.GetIdentity();
+                        _packageIdentityCache.TryAdd(identity, identity);
 
-                        throw new FatalProtocolException(message, inner);
-                    }
-                    catch (PackagingException ex)
-                    {
-                        var message = string.Format(CultureInfo.CurrentCulture, Strings.Protocol_PackageMetadataError, id + "." + version, _source);
-
-                        throw new FatalProtocolException(message, ex);
-                    }
-
-                    dependencyInfo = GetDependencyInfo(nuspecReader);
-                }
+                        return GetDependencyInfo(nuspecReader);
+                    });
             }
 
             return Task.FromResult(dependencyInfo);
         }
 
-        private PackageInfo GetPackageInfo(string id, NuGetVersion version)
+        private T ProcessNuspecReader<T>(string id, NuGetVersion version, Func<NuspecReader, T> process)
         {
-            return GetPackageInfos(id).FirstOrDefault(package => package.NuGetVersion == version);
+            var nuspecPath = _resolver.GetManifestFilePath(id, version);
+            using (var stream = File.OpenRead(nuspecPath))
+            {
+                NuspecReader nuspecReader;
+                try
+                {
+                    nuspecReader = new NuspecReader(stream);
+                }
+                catch (XmlException ex)
+                {
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Protocol_PackageMetadataError, id + "." + version, _source);
+                    var inner = new PackagingException(message, ex);
+
+                    throw new FatalProtocolException(message, inner);
+                }
+                catch (PackagingException ex)
+                {
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Protocol_PackageMetadataError, id + "." + version, _source);
+
+                    throw new FatalProtocolException(message, ex);
+                }
+
+                return process(nuspecReader);
+            }
         }
 
-        private List<PackageInfo> GetPackageInfos(string id)
+        private NuGetVersion GetVersion(string id, NuGetVersion version)
         {
-            return _cache.GetOrAdd(id, (keyId) => GetPackageInfosCore(keyId));
+            return GetVersions(id).FirstOrDefault(v => v == version);
         }
 
-        private List<PackageInfo> GetPackageInfosCore(string id)
+        private List<NuGetVersion> GetVersions(string id)
         {
-            var packages = new List<PackageInfo>();
-            var idDir = new DirectoryInfo(Path.Combine(_source, id));
+            return _cache.GetOrAdd(id, keyId => GetVersionsCore(keyId));
+        }
+
+        private List<NuGetVersion> GetVersionsCore(string id)
+        {
+            var versions = new List<NuGetVersion>();
+            var idDir = new DirectoryInfo(_resolver.GetVersionListPath(id));
+
+            if (!Directory.Exists(_source))
+            {
+                var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToRetrievePackage, _source);
+
+                throw new FatalProtocolException(message);
+            }
 
             if (idDir.Exists)
             {
@@ -137,22 +178,11 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
                         continue;
                     }
 
-                    packages.Add(new PackageInfo
-                    {
-                        Path = versionDir.FullName,
-                        NuGetVersion = version
-                    });
+                    versions.Add(version);
                 }
             }
 
-            return packages;
-        }
-
-        private class PackageInfo
-        {
-            public string Path { get; set; }
-
-            public NuGetVersion NuGetVersion { get; set; }
+            return versions;
         }
     }
 }

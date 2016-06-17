@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -182,6 +183,75 @@ namespace NuGet.Packaging.Test
                           <dependency id=""packageE"" version=""1.0.0"" include=""a , b ,c "" />
                         </group>
                     </dependencies>
+                  </metadata>
+                </package>";
+
+        private const string PackageTypes = @"<?xml version=""1.0""?>
+                <package xmlns=""http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd"">
+                  <metadata>
+                    <id>packageA</id>
+                    <version>1.0.1-alpha</version>
+                    <title>Package A</title>
+                    <authors>ownera, ownerb</authors>
+                    <owners>ownera, ownerb</owners>
+                    <description>package A description.</description>
+                    <packageTypes>
+                      <packageType name=""foo"" />
+                      <packageType name=""bar"" version=""2.0.0"" />
+                    </packageTypes>
+                  </metadata>
+                </package>";
+
+        private const string NoContainerPackageTypesElement = @"<?xml version=""1.0""?>
+                <package xmlns=""http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd"">
+                  <metadata>
+                    <id>packageA</id>
+                    <version>1.0.1-alpha</version>
+                    <title>Package A</title>
+                    <authors>ownera, ownerb</authors>
+                    <owners>ownera, ownerb</owners>
+                    <description>package A description.</description>
+                    <packageType name=""foo"" />
+                    <packageType name=""bar"" version=""2.0.0"" />
+                  </metadata>
+                </package>";
+
+        private const string EmptyPackageTypesElement = @"<?xml version=""1.0""?>
+                <package xmlns=""http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd"">
+                  <metadata>
+                    <id>packageA</id>
+                    <version>1.0.1-alpha</version>
+                    <title>Package A</title>
+                    <authors>ownera, ownerb</authors>
+                    <owners>ownera, ownerb</owners>
+                    <description>package A description.</description>
+                    <packageTypes>
+                    </packageTypes>
+                  </metadata>
+                </package>";
+
+        private const string NoPackageTypesElement = @"<?xml version=""1.0""?>
+                <package xmlns=""http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd"">
+                  <metadata>
+                    <id>packageA</id>
+                    <version>1.0.1-alpha</version>
+                    <title>Package A</title>
+                    <authors>ownera, ownerb</authors>
+                    <owners>ownera, ownerb</owners>
+                    <description>package A description.</description>
+                  </metadata>
+                </package>";
+
+        private const string ServiceablePackageTypesElement = @"<?xml version=""1.0""?>
+                <package xmlns=""http://schemas.microsoft.com/packaging/2016/06/nuspec.xsd"">
+                  <metadata>
+                    <id>packageA</id>
+                    <version>1.0.1-alpha</version>
+                    <title>Package A</title>
+                    <authors>ownera, ownerb</authors>
+                    <owners>ownera, ownerb</owners>
+                    <description>package A description.</description>
+                    <serviceable>true</serviceable>
                   </metadata>
                 </package>";
 
@@ -389,6 +459,52 @@ namespace NuGet.Packaging.Test
             // Assert
             Assert.Equal(0, dependency.Include.Count);
             Assert.Equal(0, dependency.Exclude.Count);
+        }
+
+        [Fact]
+        public void NuspecReaderTests_PackageTypes()
+        {
+            // Arrange
+            var reader = GetReader(PackageTypes);
+
+            // Act
+            var actual = reader.GetPackageTypes();
+
+            // Assert
+            Assert.Equal(2, actual.Count);
+            Assert.Equal("foo", actual[0].Name);
+            Assert.Equal(new Version(0, 0), actual[0].Version);
+            Assert.Equal("bar", actual[1].Name);
+            Assert.Equal(new Version(2, 0, 0), actual[1].Version);
+        }
+
+        [Theory]
+        [InlineData(NoContainerPackageTypesElement)]
+        [InlineData(EmptyPackageTypesElement)]
+        [InlineData(NoPackageTypesElement)]
+        public void NuspecReaderTests_NoPackageTypes(string nuspec)
+        {
+            // Arrange
+            var reader = GetReader(nuspec);
+
+            // Act
+            var actual = reader.GetPackageTypes();
+
+            // Assert
+            Assert.Equal(0, actual.Count);
+        }
+
+        [Fact]
+        public void NuspecReaderTests_ServiceablePackage()
+        {
+            // Arrange
+            var reader = GetReader(ServiceablePackageTypesElement);
+
+            // Act
+            var actual = reader.IsServiceable();
+
+            // Assert
+            Assert.True(actual);
         }
 
         private static NuspecReader GetReader(string nuspec)

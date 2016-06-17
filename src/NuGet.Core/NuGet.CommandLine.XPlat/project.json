@@ -1,41 +1,67 @@
 ﻿{
-  "version": "3.4.0-*",
+  "version": "3.5.0-*",
+  "copyright": "Copyright .NET Foundation. All rights reserved.",
+  "packOptions": {
+    "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
+    "projectUrl": "https://github.com/NuGet/NuGet.Client"
+  },
   "description": "NuGet 3 restore for dotnet CLI, DNX, and UWP",
-  "compilationOptions": {
+  "buildOptions": {
     "emitEntryPoint": true,
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "allowUnsafe": true,
+    "xmlDoc": true,
+    "nowarn": [
+      "CS1591"
+    ],
+    "compile": {
+      "include": [
+        "../../../Shared/*.cs"
+      ]
+    }
   },
   "dependencies": {
-    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-rc2-16530",
-    "Microsoft.NETCore.Platforms": "1.0.1-beta-*",
-    "NuGet.Commands": "3.4.0-*",
-    "NuGet.Shared": {
-      "version": "3.4.0-*",
-      "type": "build"
-    },
-    "System.Runtime.Serialization.Primitives": "4.0.0",
+    "System.Runtime.InteropServices.RuntimeInformation": "4.0.0-rc3-24128-00",
     "Microsoft.Extensions.CommandLineUtils.Sources": {
       "version": "1.0.0-*",
       "type": "build"
-    }
+    },
+    "NuGet.Commands": {
+      "target": "project"
+    },
+    "System.Runtime.Serialization.Primitives": "4.1.1-rc3-24128-00"
   },
   "commands": {
     "NuGet.CommandLine.XPlat": "NuGet.CommandLine.XPlat"
   },
   "frameworks": {
-    "dnx451": {
-      "frameworkAssemblies": {
-        "Microsoft.Build.Framework": "14.0.0",
-        "Microsoft.Build": "14.0.0",
-        "System.Collections": ""
-      }
-    },
-    "dnxcore50": {
-      "imports": [ "portable-net45+win8" ],
+    "net46": {
       "dependencies": {
-        "System.Threading.Tasks": "4.0.11-beta-23516",
-        "System.Console": "4.0.0-beta-23409"
+        "System.Runtime": "4.1.0-rc3-24128-00"
+      },
+        "buildOptions": {
+          "define": [
+            "IS_DESKTOP"
+          ]
+        }
+      },
+      "netcoreapp1.0": {
+        "imports": [
+          "netstandardapp1.5",
+          "dnxcore50",
+          "portable-net45+win8"
+        ],
+        "dependencies": {
+          "Microsoft.NETCore.App": {
+            "type": "platform",
+            "version": "1.0.0-rc3-004338"
+          }
+        },
+        "buildOptions": {
+          "define": [
+            "IS_CORECLR"
+          ]
+        }
       }
     }
-  }
 }

@@ -25,13 +25,31 @@ namespace NuGet.Test
                 .ToArray();
 
             // Assert
-            Assert.Equal(6, versions.Length);
+            Assert.Equal(7, versions.Length);
             Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard10, versions[0]);
             Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard11, versions[1]);
             Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard12, versions[2]);
             Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard13, versions[3]);
             Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard14, versions[4]);
             Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard15, versions[5]);
+            Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard16, versions[6]);
+        }
+
+        [Fact]
+        public void FrameworkNameProvider_OrderNetCore50BeforePackagesBasedFrameworks()
+        {
+            // Arrange
+            var provider = DefaultFrameworkNameProvider.Instance;
+
+            // Act
+            var a = provider.CompareFrameworks(FrameworkConstants.CommonFrameworks.NetCore50, FrameworkConstants.CommonFrameworks.WPA81);
+            var b = provider.CompareFrameworks(FrameworkConstants.CommonFrameworks.NetCore50, FrameworkConstants.CommonFrameworks.NetStandard12);
+            var c = provider.CompareFrameworks(FrameworkConstants.CommonFrameworks.NetCore50, FrameworkConstants.CommonFrameworks.Win81);
+
+            // Assert
+            Assert.True(a < 0);
+            Assert.True(b < 0);
+            Assert.True(c < 0);
         }
 
         [Fact]

@@ -2,7 +2,7 @@
 using NuGet.Versioning;
 using System;
 
-namespace NuGet.Protocol.Core.v3
+namespace NuGet.Protocol
 {
     public class NuGetVersionConverter : JsonConverter
     {

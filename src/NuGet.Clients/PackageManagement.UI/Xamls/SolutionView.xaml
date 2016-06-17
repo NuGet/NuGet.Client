@@ -9,14 +9,13 @@
   <UserControl.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary
-          Source="Resources.xaml" />
+        <local:SharedResources />
       </ResourceDictionary.MergedDictionaries>
 
       <local:InstalledVersionsCountConverter
         x:Key="InstalledVersionsCountConverter" />
 
-      <!-- style of the list view headers -->      
+      <!-- style of the list view headers -->
       <Style x:Uid="Style_1" x:Key="GridViewColumnHeaderGripper" TargetType="{x:Type Thumb}">
         <Setter x:Uid="Setter_1" Property="Canvas.Right" Value="-8.5" />
         <Setter x:Uid="Setter_2" Property="Width" Value="18" />
@@ -275,6 +274,7 @@
         VerticalAlignment="Center">
         <TextBlock
           VerticalAlignment="Center"
+          AutomationProperties.AutomationId="InstalledVersion"
           Margin="4,0,0,0"
           Text="{Binding InstalledVersions}" />
       </Border>

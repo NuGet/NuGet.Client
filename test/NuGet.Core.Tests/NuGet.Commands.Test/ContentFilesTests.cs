@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
@@ -73,7 +74,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
 
@@ -142,7 +143,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
 
@@ -218,7 +219,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
 
@@ -314,7 +315,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
 
@@ -413,7 +414,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
 
@@ -509,7 +510,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
 
@@ -598,7 +599,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var fromDisk = format.Read(request.LockFilePath);
 
@@ -673,7 +674,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var fromDisk = format.Read(request.LockFilePath);
 
@@ -743,7 +744,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
                 var count = target.Libraries.Single().ContentFiles.Count;
@@ -813,7 +814,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
                 var contentFile = target.Libraries.Single().ContentFiles.Single();
@@ -961,7 +962,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
                 var files = target.Libraries.Single().ContentFiles;
@@ -1036,7 +1037,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
 
@@ -1114,7 +1115,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
 
@@ -1193,7 +1194,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
 
@@ -1273,7 +1274,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
 
@@ -1354,7 +1355,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
 
@@ -1437,7 +1438,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
 
@@ -1520,7 +1521,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
 
@@ -1597,7 +1598,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
 
@@ -1669,7 +1670,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
 
@@ -1724,7 +1725,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
 
@@ -1836,7 +1837,7 @@ namespace NuGet.Commands.Test
             Assert.Equal("False", helperCsItem.Properties["copyToOutput"]);
         }
 
-        private async Task<RestoreResult> SetupWithRuntimes(string framework, NuGet.Logging.ILogger logger)
+        private async Task<RestoreResult> SetupWithRuntimes(string framework, NuGet.Common.ILogger logger)
         {
             // Arrange
             using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
@@ -1881,7 +1882,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 return result;
             }
@@ -1889,14 +1890,14 @@ namespace NuGet.Commands.Test
 
         private async Task<RestoreResult> StandardSetup(
             string framework,
-            NuGet.Logging.ILogger logger)
+            NuGet.Common.ILogger logger)
         {
             return await StandardSetup(framework, logger, null);
         }
 
         private async Task<RestoreResult> StandardSetup(
             string framework,
-            NuGet.Logging.ILogger logger,
+            NuGet.Common.ILogger logger,
             JObject configJson)
         {
             // Arrange
@@ -1938,7 +1939,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 return result;
             }

@@ -1,20 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using NuGet.Protocol.Core.v3;
-using System.Globalization;
-
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -28,6 +25,7 @@ namespace NuGet.Protocol.Core.Types
 
         private HttpSource _httpSource;
         private string _source;
+        private bool _disableBuffering;
 
         public PackageUpdateResource(string source,
             HttpSource httpSource)
@@ -36,25 +34,35 @@ namespace NuGet.Protocol.Core.Types
             _httpSource = httpSource;
         }
 
-        public async Task Push(string packagePath,
+        public Uri SourceUri
+        {
+            get { return UriUtility.CreateSourceUri(_source); }
+        }
+
+        public async Task Push(
+            string packagePath,
+            string symbolsSource, // empty to not push symbols
             int timeoutInSecond,
+            bool disableBuffering,
             Func<string, string> getApiKey,
             ILogger log)
         {
+            // TODO: Figure out how to hook this up with the HTTP request
+            _disableBuffering = disableBuffering;
+
             using (var tokenSource = new CancellationTokenSource())
             {
-                if (timeoutInSecond > 0)
-                {
-                    tokenSource.CancelAfter(TimeSpan.FromSeconds(timeoutInSecond));
-                }
+                var requestTimeout = TimeSpan.FromSeconds(timeoutInSecond);
+                tokenSource.CancelAfter(requestTimeout);
 
                 var apiKey = getApiKey(_source);
 
-                await PushPackage(packagePath, _source, apiKey, log, tokenSource.Token);
+                await PushPackage(packagePath, _source, apiKey, requestTimeout, log, tokenSource.Token);
 
-                if (!IsFileSource())
+                if (!string.IsNullOrEmpty(symbolsSource) && !IsFileSource())
                 {
-                    await PushSymbols(packagePath, apiKey, log, tokenSource.Token);
+                    string symbolsApiKey = getApiKey(symbolsSource);
+                    await PushSymbols(packagePath, symbolsSource, symbolsApiKey, requestTimeout, log, tokenSource.Token);
                 }
             }
         }
@@ -62,7 +70,7 @@ namespace NuGet.Protocol.Core.Types
         public async Task Delete(string packageId,
             string packageVersion,
             Func<string, string> getApiKey,
-            Func<string, bool> confirm, 
+            Func<string, bool> confirm,
             ILogger log)
         {
             var sourceDisplayName = GetSourceDisplayName(_source);
@@ -70,7 +78,7 @@ namespace NuGet.Protocol.Core.Types
             if (String.IsNullOrEmpty(apiKey))
             {
                 log.LogWarning(string.Format(CultureInfo.CurrentCulture,
-                    Strings.NoApiKeyFound, 
+                    Strings.NoApiKeyFound,
                     sourceDisplayName));
             }
 
@@ -84,8 +92,8 @@ namespace NuGet.Protocol.Core.Types
                     ));
                 await DeletePackage(_source, apiKey, packageId, packageVersion, log, CancellationToken.None);
                 log.LogInformation(string.Format(CultureInfo.CurrentCulture,
-                    Strings.DeleteCommandDeletedPackage, 
-                    packageId, 
+                    Strings.DeleteCommandDeletedPackage,
+                    packageId,
                     packageVersion));
             }
             else
@@ -94,9 +102,11 @@ namespace NuGet.Protocol.Core.Types
             }
         }
 
-        private async Task PushSymbols(string packagePath, 
-            string apiKey, 
-            ILogger log, 
+        private async Task PushSymbols(string packagePath,
+            string source,
+            string apiKey,
+            TimeSpan requestTimeout,
+            ILogger log,
             CancellationToken token)
         {
             // Get the symbol package for this package
@@ -113,8 +123,8 @@ namespace NuGet.Protocol.Core.Types
                         Path.GetFileName(symbolPackagePath),
                         Strings.DefaultSymbolServer));
                 }
-                var source = NuGetConstants.DefaultSymbolServerUrl;
-                await PushPackage(symbolPackagePath, source, apiKey, log, token);
+
+                await PushPackage(symbolPackagePath, source, apiKey, requestTimeout, log, token);
             }
         }
 
@@ -128,10 +138,11 @@ namespace NuGet.Protocol.Core.Types
             return Path.Combine(packageDir, symbolPath);
         }
 
-        private async Task PushPackage(string packagePath, 
-            string source, 
-            string apiKey, 
-            ILogger log, 
+        private async Task PushPackage(string packagePath,
+            string source,
+            string apiKey,
+            TimeSpan requestTimeout,
+            ILogger log,
             CancellationToken token)
         {
             if (string.IsNullOrEmpty(apiKey) && !IsFileSource())
@@ -144,19 +155,21 @@ namespace NuGet.Protocol.Core.Types
             var packagesToPush = GetPackagesToPush(packagePath);
 
             EnsurePackageFileExists(packagePath, packagesToPush);
+
             foreach (string packageToPush in packagesToPush)
             {
-                await PushPackageCore(source, apiKey, packageToPush, log, token);
+                await PushPackageCore(source, apiKey, packageToPush, requestTimeout, log, token);
             }
         }
 
         private async Task PushPackageCore(string source,
             string apiKey,
             string packageToPush,
+            TimeSpan requestTimeout,
             ILogger log,
             CancellationToken token)
         {
-            var sourceUri = new Uri(source);
+            var sourceUri = UriUtility.CreateSourceUri(source);
             var sourceName = GetSourceDisplayName(source);
 
             log.LogInformation(string.Format(CultureInfo.CurrentCulture,
@@ -166,12 +179,12 @@ namespace NuGet.Protocol.Core.Types
 
             if (IsFileSource())
             {
-                PushPackageToFileSystem(sourceUri, packageToPush);
+                await PushPackageToFileSystem(sourceUri, packageToPush, log, token);
             }
             else
             {
                 var length = new FileInfo(packageToPush).Length;
-                await PushPackageToServer(source, apiKey, packageToPush, length, log, token);
+                await PushPackageToServer(source, apiKey, packageToPush, length, requestTimeout, log, token);
             }
 
             log.LogInformation(Strings.PushCommandPackagePushed);
@@ -194,7 +207,7 @@ namespace NuGet.Protocol.Core.Types
         {
             // Ensure packagePath ends with *.nupkg
             packagePath = EnsurePackageExtension(packagePath);
-            return PerformWildcardSearch(Directory.GetCurrentDirectory(), packagePath);
+            return PathResolver.PerformWildcardSearch(Directory.GetCurrentDirectory(), packagePath);
         }
 
         private static string EnsurePackageExtension(string packagePath)
@@ -233,8 +246,8 @@ namespace NuGet.Protocol.Core.Types
         // Indicates whether the specified source is a file source, such as: \\a\b, c:\temp, etc.
         private bool IsFileSource()
         {
-            //we leverage the detection already done at resource provider level. 
-            //that for file system, the "httpSource" is null. 
+            //we leverage the detection already done at resource provider level.
+            //that for file system, the "httpSource" is null.
             return _httpSource == null;
         }
 
@@ -243,53 +256,86 @@ namespace NuGet.Protocol.Core.Types
             string apiKey,
             string pathToPackage,
             long packageSize,
+            TimeSpan requestTimeout,
             ILogger logger,
             CancellationToken token)
         {
-            var response = await _httpSource.SendAsync(
-                () => CreateRequest(source, pathToPackage, apiKey),
+            var serviceEndpointUrl = GetServiceEndpointUrl(source, string.Empty);
+            await _httpSource.ProcessResponseAsync(
+                new HttpSourceRequest(() => CreateRequest(serviceEndpointUrl, pathToPackage, apiKey, logger)),
+                response =>
+                {
+                    response.EnsureSuccessStatusCode();
+                    return Task.FromResult(0);
+                },
+                logger,
                 token);
-
-            using (response)
-            {
-                response.EnsureSuccessStatusCode();
-            }
         }
 
-        private HttpRequestMessage CreateRequest(string source,
+        private HttpRequestMessage CreateRequest(
+            Uri serviceEndpointUrl,
             string pathToPackage,
-            string apiKey)
+            string apiKey,
+            ILogger log)
         {
             var fileStream = new FileStream(pathToPackage, FileMode.Open, FileAccess.Read, FileShare.Read);
-            var request = new HttpRequestMessage(HttpMethod.Put, GetServiceEndpointUrl(source, string.Empty));
+            var hasApiKey = !string.IsNullOrEmpty(apiKey);
+            var request = HttpRequestMessageFactory.Create(
+                HttpMethod.Put,
+                serviceEndpointUrl,
+                new HttpRequestMessageConfiguration(
+                    logger: log,
+                    promptOn403: !hasApiKey)); // Receiving an HTTP 403 when providing an API key typically indicates
+                                               // an invalid API key, so prompting for credentials does not help.
             var content = new MultipartFormDataContent();
 
             var packageContent = new StreamContent(fileStream);
             packageContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
             //"package" and "package.nupkg" are random names for content deserializing
-            //not tied to actual package name.  
+            //not tied to actual package name.
             content.Add(packageContent, "package", "package.nupkg");
             request.Content = content;
 
-            if (!string.IsNullOrEmpty(apiKey))
+            // Send the data in chunks so that it can be canceled if auth fails.
+            // Otherwise the whole package needs to be sent to the server before the PUT fails.
+            request.Headers.TransferEncodingChunked = true;
+
+            if (hasApiKey)
             {
                 request.Headers.Add(ApiKeyHeader, apiKey);
             }
+
             return request;
         }
 
-        private void PushPackageToFileSystem(Uri sourceUri, string pathToPackage)
+        private async Task PushPackageToFileSystem(Uri sourceUri,
+            string pathToPackage,
+            ILogger log,
+            CancellationToken token)
         {
             string root = sourceUri.LocalPath;
             var reader = new PackageArchiveReader(pathToPackage);
             var packageIdentity = reader.GetIdentity();
 
-            //TODD: support V3 repo style if detect it is
-            var pathResolver = new PackagePathResolver(root, useSideBySidePaths: true);
-            var packageFileName = pathResolver.GetPackageFileName(packageIdentity);
+            if (IsV2LocalRepository(root))
+            {
+                var pathResolver = new PackagePathResolver(root, useSideBySidePaths: true);
+                var packageFileName = pathResolver.GetPackageFileName(packageIdentity);
 
-            var fullPath = Path.Combine(root, packageFileName);
-            File.Copy(pathToPackage, fullPath, overwrite: true);
+                var fullPath = Path.Combine(root, packageFileName);
+                File.Copy(pathToPackage, fullPath, overwrite: true);
+            }
+            else
+            {
+                var context = new OfflineFeedAddContext(pathToPackage,
+                    root,
+                    log,
+                    throwIfSourcePackageIsInvalid: true,
+                    throwIfPackageExistsAndInvalid: false,
+                    throwIfPackageExists: false,
+                    expand: true);
+                await OfflineFeedUtility.AddPackageToSource(context, token);
+            }
         }
 
         // Deletes a package from a Http server or file system
@@ -319,48 +365,91 @@ namespace NuGet.Protocol.Core.Types
             ILogger logger,
             CancellationToken token)
         {
-            var response = await _httpSource.SendAsync(
-                ()=> {
-                    // Review: Do these values need to be encoded in any way?
-                    var url = String.Join("/", packageId, packageVersion);
-                    var request = new HttpRequestMessage(HttpMethod.Delete, GetServiceEndpointUrl(source, url));
-                    if (!string.IsNullOrEmpty(apiKey))
-                    {
-                        request.Headers.Add(ApiKeyHeader, apiKey);
-                    }
-                    return request;
-                }, 
-                token);
+            var url = string.Join("/", packageId, packageVersion);
+            var serviceEndpointUrl = GetServiceEndpointUrl(source, url);
 
-            using (response)
-            {
-                response.EnsureSuccessStatusCode();
-            }
+            await _httpSource.ProcessResponseAsync(
+                new HttpSourceRequest(
+                    () =>
+                    {
+                        // Review: Do these values need to be encoded in any way?
+                        var hasApiKey = !string.IsNullOrEmpty(apiKey);
+                        var request = HttpRequestMessageFactory.Create(
+                            HttpMethod.Delete,
+                            serviceEndpointUrl,
+                            new HttpRequestMessageConfiguration(
+                                logger: logger,
+                                promptOn403: !hasApiKey)); // Receiving an HTTP 403 when providing an API key typically
+                                                           // indicates an invalid API key, so prompting for credentials
+                                                           // does not help.
+
+                        if (hasApiKey)
+                        {
+                            request.Headers.Add(ApiKeyHeader, apiKey);
+                        }
+
+                        return request;
+                    }),
+                response =>
+                {
+                    response.EnsureSuccessStatusCode();
+                    return Task.FromResult(0);
+                },
+                logger,
+                token);
         }
 
         // Deletes a package from a FileSystem.
         private void DeletePackageFromFileSystem(string source, string packageId, string packageVersion, ILogger logger)
         {
-            var sourceuri = new Uri(source);
+            var sourceuri = UriUtility.CreateSourceUri(source);
             var root = sourceuri.LocalPath;
             var resolver = new PackagePathResolver(sourceuri.AbsolutePath, useSideBySidePaths: true);
             resolver.GetPackageFileName(new Packaging.Core.PackageIdentity(packageId, new NuGetVersion(packageVersion)));
             var packageIdentity = new PackageIdentity(packageId, new NuGetVersion(packageVersion));
-            var packageFileName = resolver.GetPackageFileName(packageIdentity);
-
-            var fullPath = Path.Combine(root, packageFileName);
-            MakeFileWritable(fullPath);
-            File.Delete(fullPath);
+            if (IsV2LocalRepository(root))
+            {
+                var packageFileName = resolver.GetPackageFileName(packageIdentity);
+                var nupkgFilePath = Path.Combine(root, packageFileName);
+                if (!File.Exists(nupkgFilePath))
+                {
+                    throw new ArgumentException(Strings.DeletePackage_NotFound);
+                }
+                ForceDeleteFile(nupkgFilePath);
+            }
+            else
+            {
+                string packageDirectory = OfflineFeedUtility.GetPackageDirectory(packageIdentity, root);
+                if (!Directory.Exists(packageDirectory))
+                {
+                    throw new ArgumentException(Strings.DeletePackage_NotFound);
+                }
+                ForceDeleteDirectory(packageDirectory);
+            }
         }
 
-        // Remove the read-only flag.
-        private void MakeFileWritable(string fullPath)
+        // Remove the read-only flag and delete
+        private void ForceDeleteFile(string fullPath)
         {
             var attributes = File.GetAttributes(fullPath);
             if (attributes.HasFlag(FileAttributes.ReadOnly))
             {
                 File.SetAttributes(fullPath, attributes & ~FileAttributes.ReadOnly);
             }
+            File.Delete(fullPath);
+        }
+
+        //Remove read-only flags from all files under a folder and delete
+        public static void ForceDeleteDirectory(string path)
+        {
+            var directory = new DirectoryInfo(path) { Attributes = FileAttributes.Normal };
+
+            foreach (var info in directory.GetFileSystemInfos("*", SearchOption.AllDirectories))
+            {
+                info.Attributes = FileAttributes.Normal;
+            }
+
+            directory.Delete(true);
         }
 
         // Calculates the URL to the package to.
@@ -388,186 +477,39 @@ namespace NuGet.Protocol.Core.Types
                 value += "/";
             }
 
-            return new Uri(value);
+            return UriUtility.CreateSourceUri(value);
         }
 
-        //Following util functions were ported from NuGet2\src\Core\Authoring\PathResolver.cs
-
-        private static Regex WildcardToRegex(string wildcard)
+        private bool IsV2LocalRepository(string root)
         {
-            var pattern = Regex.Escape(wildcard);
-            if (Path.DirectorySeparatorChar == '/')
+            if (!Directory.Exists(root) ||
+                Directory.GetFiles(root, "*.nupkg").Any())
             {
-                // regex wildcard adjustments for *nix-style file systems
-                pattern = pattern
-                    .Replace(@"\*\*/", ".*") //For recursive wildcards /**/, include the current directory.
-                    .Replace(@"\*\*", ".*") // For recursive wildcards that don't end in a slash e.g. **.txt would be treated as a .txt file at any depth
-                    .Replace(@"\*", @"[^/]*(/)?") // For non recursive searches, limit it any character that is not a directory separator
-                    .Replace(@"\?", "."); // ? translates to a single any character
-            }
-            else
-            {
-                // regex wildcard adjustments for Windows-style file systems
-                pattern = pattern
-                    .Replace("/", @"\\") // On Windows, / is treated the same as \.
-                    .Replace(@"\*\*\\", ".*") //For recursive wildcards \**\, include the current directory.
-                    .Replace(@"\*\*", ".*") // For recursive wildcards that don't end in a slash e.g. **.txt would be treated as a .txt file at any depth
-                    .Replace(@"\*", @"[^\\]*(\\)?") // For non recursive searches, limit it any character that is not a directory separator
-                    .Replace(@"\?", "."); // ? translates to a single any character
+                // If the repository does not exist or if there are .nupkg in the path, this is a v2-style repository.
+                return true;
             }
 
-            return new Regex('^' + pattern + '$', RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
-        }
-
-        private static IEnumerable<string> PerformWildcardSearch(string basePath, string searchPath)
-        {
-            string normalizedBasePath;
-            var searchResults = PerformWildcardSearchInternal(basePath, searchPath, includeEmptyDirectories: false, normalizedBasePath: out normalizedBasePath);
-            return searchResults.Select(s => s.Path);
-        }
-
-        private static IEnumerable<SearchPathResult> PerformWildcardSearchInternal(string basePath, string searchPath, bool includeEmptyDirectories, out string normalizedBasePath)
-        {
-            var searchDirectory = false;
-
-            // If the searchPath ends with \ or /, we treat searchPath as a directory,
-            // and will include everything under it, recursively
-            if (IsDirectoryPath(searchPath))
+            foreach (var idDirectory in Directory.GetDirectories(root))
             {
-                searchPath = searchPath + "**" + Path.DirectorySeparatorChar + "*";
-                searchDirectory = true;
-            }
-
-            basePath = NormalizeBasePath(basePath, ref searchPath);
-            normalizedBasePath = GetPathToEnumerateFrom(basePath, searchPath);
-
-            // Append the basePath to searchPattern and get the search regex. We need to do this because the search regex is matched from line start.
-            var searchRegex = WildcardToRegex(Path.Combine(basePath, searchPath));
-
-            // This is a hack to prevent enumerating over the entire directory tree if the only wildcard characters are the ones in the file name. 
-            // If the path portion of the search path does not contain any wildcard characters only iterate over the TopDirectory.
-            var searchOption = SearchOption.AllDirectories;
-            // (a) Path is not recursive search
-            var isRecursiveSearch = searchPath.IndexOf("**", StringComparison.OrdinalIgnoreCase) != -1;
-            // (b) Path does not have any wildcards.
-            var isWildcardPath = Path.GetDirectoryName(searchPath).Contains('*');
-            if (!isRecursiveSearch && !isWildcardPath)
-            {
-                searchOption = SearchOption.TopDirectoryOnly;
-            }
-
-            // Starting from the base path, enumerate over all files and match it using the wildcard expression provided by the user.
-            // Note: We use Directory.GetFiles() instead of Directory.EnumerateFiles() here to support Mono
-            var matchedFiles = from file in Directory.GetFiles(normalizedBasePath, "*.*", searchOption)
-                               where searchRegex.IsMatch(file)
-                               select new SearchPathResult(file, isFile: true);
-
-            if (!includeEmptyDirectories)
-            {
-                return matchedFiles;
-            }
-
-            // retrieve empty directories
-            // Note: We use Directory.GetDirectories() instead of Directory.EnumerateDirectories() here to support Mono
-            var matchedDirectories = from directory in Directory.GetDirectories(normalizedBasePath, "*.*", searchOption)
-                                     where searchRegex.IsMatch(directory) && IsEmptyDirectory(directory)
-                                     select new SearchPathResult(directory, isFile: false);
-
-            if (searchDirectory && IsEmptyDirectory(normalizedBasePath))
-            {
-                matchedDirectories = matchedDirectories.Concat(new[] { new SearchPathResult(normalizedBasePath, isFile: false) });
-            }
-
-            return matchedFiles.Concat(matchedDirectories);
-        }
-
-        private static string GetPathToEnumerateFrom(string basePath, string searchPath)
-        {
-            string basePathToEnumerate;
-            var wildcardIndex = searchPath.IndexOf('*');
-            if (wildcardIndex == -1)
-            {
-                // For paths without wildcard, we could either have base relative paths (such as lib\foo.dll) or paths outside the base path
-                // (such as basePath: C:\packages and searchPath: D:\packages\foo.dll)
-                // In this case, Path.Combine would pick up the right root to enumerate from.
-                var searchRoot = Path.GetDirectoryName(searchPath);
-                basePathToEnumerate = Path.Combine(basePath, searchRoot);
-            }
-            else
-            {
-                // If not, find the first directory separator and use the path to the left of it as the base path to enumerate from.
-                var directorySeparatoryIndex = searchPath.LastIndexOf(Path.DirectorySeparatorChar, wildcardIndex);
-                if (directorySeparatoryIndex == -1)
+                if (Directory.GetFiles(idDirectory, "*.nupkg").Any() ||
+                    Directory.GetFiles(idDirectory, "*.nuspec").Any())
                 {
-                    // We're looking at a path like "NuGet*.dll", NuGet*\bin\release\*.dll
-                    // In this case, the basePath would continue to be the path to begin enumeration from.
-                    basePathToEnumerate = basePath;
+                    // ~/Foo/Foo.1.0.0.nupkg (LocalPackageRepository with PackageSaveModes.Nupkg) or
+                    // ~/Foo/Foo.1.0.0.nuspec (LocalPackageRepository with PackageSaveMode.Nuspec)
+                    return true;
                 }
-                else
+                var idDirectoryName = Path.GetFileName(idDirectory);
+                foreach (var versionDirectoryPath in Directory.GetDirectories(idDirectory))
                 {
-                    var nonWildcardPortion = searchPath.Substring(0, directorySeparatoryIndex);
-                    basePathToEnumerate = Path.Combine(basePath, nonWildcardPortion);
-                }
-            }
-            return basePathToEnumerate;
-        }
-
-        private static string NormalizeBasePath(string basePath, ref string searchPath)
-        {
-            const string relativePath = @"..\";
-
-            // If no base path is provided, use the current directory.
-            basePath = String.IsNullOrEmpty(basePath) ? @".\" : basePath;
-
-            // If the search path is relative, transfer the ..\ portion to the base path. 
-            // This needs to be done because the base path determines the root for our enumeration.
-            while (searchPath.StartsWith(relativePath, StringComparison.OrdinalIgnoreCase))
-            {
-                basePath = Path.Combine(basePath, relativePath);
-                searchPath = searchPath.Substring(relativePath.Length);
-            }
-
-            return Path.GetFullPath(basePath);
-        }
-
-        private static bool IsDirectoryPath(string path)
-        {
-            return path != null && path.Length > 1 &&
-                (path[path.Length - 1] == Path.DirectorySeparatorChar ||
-                path[path.Length - 1] == Path.AltDirectorySeparatorChar);
-        }
-
-        private static bool IsEmptyDirectory(string directory)
-        {
-            return !Directory.EnumerateFileSystemEntries(directory).Any();
-        }
-
-        private struct SearchPathResult
-        {
-            private readonly string _path;
-            private readonly bool _isFile;
-
-            public string Path
-            {
-                get
-                {
-                    return _path;
+                    if (Directory.GetFiles(versionDirectoryPath, idDirectoryName + NuGetConstants.ManifestExtension).Any())
+                    {
+                        // If we have files in the format {packageId}/{version}/{packageId}.nuspec, assume it's an expanded package repository.
+                        return false;
+                    }
                 }
             }
 
-            public bool IsFile
-            {
-                get
-                {
-                    return _isFile;
-                }
-            }
-
-            public SearchPathResult(string path, bool isFile)
-            {
-                _path = path;
-                _isFile = isFile;
-            }
+            return true;
         }
     }
 }

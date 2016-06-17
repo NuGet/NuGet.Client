@@ -4,6 +4,7 @@
 using System;
 using System.Security.Cryptography;
 using System.Text;
+using NuGet.Common;
 
 namespace NuGet.Configuration
 {
@@ -13,7 +14,7 @@ namespace NuGet.Configuration
 
         public static string EncryptString(string value)
         {
-#if DNXCORE50
+#if IS_CORECLR
             throw new NotSupportedException();
 #else
             var decryptedByteArray = Encoding.UTF8.GetBytes(value);
@@ -25,7 +26,7 @@ namespace NuGet.Configuration
 
         public static string DecryptString(string encryptedString)
         {
-#if DNXCORE50
+#if IS_CORECLR
             throw new NotSupportedException();
 #else
             var encryptedByteArray = Convert.FromBase64String(encryptedString);

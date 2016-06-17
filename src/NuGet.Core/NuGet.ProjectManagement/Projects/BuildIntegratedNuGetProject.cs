@@ -10,13 +10,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using NuGet.Common;
 using NuGet.Frameworks;
-using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using System.Globalization;
 
 namespace NuGet.ProjectManagement.Projects
 {
@@ -27,16 +28,46 @@ namespace NuGet.ProjectManagement.Projects
     public class BuildIntegratedNuGetProject : NuGetProject, INuGetIntegratedProject
     {
         private readonly FileInfo _jsonConfig;
+        private readonly string _projectName;
 
-        public BuildIntegratedNuGetProject(string jsonConfig, IMSBuildNuGetProjectSystem msbuildProjectSystem)
+        /// <summary>
+        /// MSBuild project file path.
+        /// </summary>
+        public string MSBuildProjectPath { get; }
+
+        /// <summary>
+        /// Project.json based project system.
+        /// </summary>
+        /// <param name="jsonConfig">Path to project.json.</param>
+        /// <param name="msBuildProjectPath">Path to the msbuild project file.</param>
+        /// <param name="msbuildProjectSystem">Underlying msbuild project system.</param>
+        public BuildIntegratedNuGetProject(
+            string jsonConfig,
+            string msBuildProjectPath,
+            IMSBuildNuGetProjectSystem msbuildProjectSystem)
         {
             if (jsonConfig == null)
             {
                 throw new ArgumentNullException(nameof(jsonConfig));
             }
 
+            if (msBuildProjectPath == null)
+            {
+                throw new ArgumentNullException(nameof(msBuildProjectPath));
+            }
+
             _jsonConfig = new FileInfo(jsonConfig);
             MSBuildNuGetProjectSystem = msbuildProjectSystem;
+
+            MSBuildProjectPath = msBuildProjectPath;
+
+            _projectName = Path.GetFileNameWithoutExtension(msBuildProjectPath);
+
+            if (string.IsNullOrEmpty(_projectName))
+            {
+                throw new ArgumentException(
+                    string.Format(CultureInfo.CurrentCulture, Strings.InvalidProjectName, MSBuildProjectPath));
+            }
 
             JObject projectJson;
             IEnumerable<NuGetFramework> targetFrameworks = Enumerable.Empty<NuGetFramework>();
@@ -171,7 +202,7 @@ namespace NuGet.ProjectManagement.Projects
         {
             get
             {
-                return JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(JsonConfigPath), ProjectName, JsonConfigPath);
+                return JsonPackageSpecReader.GetPackageSpec(ProjectName, JsonConfigPath);
             }
         }
 
@@ -182,7 +213,7 @@ namespace NuGet.ProjectManagement.Projects
         {
             get
             {
-                return MSBuildNuGetProjectSystem.ProjectName;
+                return _projectName;
             }
         }
 
@@ -201,6 +232,16 @@ namespace NuGet.ProjectManagement.Projects
             bool throwOnFailure)
         {
             return Task.FromResult(false);
+        }
+
+        public virtual void BeginProcessing()
+        {
+            // Intentional no-op
+        }
+
+        public virtual void EndProcessing()
+        {
+            // Intentional no-op
         }
 
         private async Task<JObject> GetJsonAsync()

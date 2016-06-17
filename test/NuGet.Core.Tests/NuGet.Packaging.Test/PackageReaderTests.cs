@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -455,7 +456,6 @@ namespace NuGet.Packaging.Test
         public void PackageReader_SupportedFrameworks()
         {
             using (var packageFile = TestPackages.GetLegacyTestPackage())
-
             {
                 var zip = TestPackages.GetZip(packageFile);
 
@@ -472,6 +472,48 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
+        public void PackageReader_Serviceable()
+        {
+            // Arrange
+            using (var packageFile = TestPackages.GetServiceablePackage())
+            {
+                var zip = TestPackages.GetZip(packageFile);
+
+                using (PackageArchiveReader reader = new PackageArchiveReader(zip))
+                {
+                    // Act
+                    var actual = reader.IsServiceable();
+
+                    // Assert
+                    Assert.True(actual);
+                }
+            }
+        }
+
+        [Fact]
+        public void PackageReader_PackageTypes()
+        {
+            // Arrange
+            using (var packageFile = TestPackages.GetPackageWithPackageTypes())
+            {
+                var zip = TestPackages.GetZip(packageFile);
+
+                using (PackageArchiveReader reader = new PackageArchiveReader(zip))
+                {
+                    // Act
+                    var actual = reader.GetPackageTypes();
+
+                    // Assert
+                    Assert.Equal(2, actual.Count);
+                    Assert.Equal("foo", actual[0].Name);
+                    Assert.Equal(new Version(0, 0), actual[0].Version);
+                    Assert.Equal("bar", actual[1].Name);
+                    Assert.Equal(new Version(2, 0, 0), actual[1].Version);
+                }
+            }
+        }
+
+        [Fact]
         public void PackageReader_SupportedFrameworksForInvalidPortableFrameworkThrows()
         {
             using (var packageFile = TestPackages.GetLegacyTestPackageWithInvalidPortableFrameworkFolderName())
@@ -480,7 +522,7 @@ namespace NuGet.Packaging.Test
 
                 using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
-                    Assert.Throws<FrameworkException>(
+                    Assert.Throws<ArgumentException>(
                         () => reader.GetSupportedFrameworks());
                 }
             }

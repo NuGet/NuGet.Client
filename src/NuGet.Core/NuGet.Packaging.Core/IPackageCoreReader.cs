@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using NuGet.Common;
 using NuGet.Versioning;
 
 namespace NuGet.Packaging.Core
@@ -27,10 +28,9 @@ namespace NuGet.Packaging.Core
         NuGetVersion GetMinClientVersion();
 
         /// <summary>
-        /// Gets the <see cref="PackageType"/> of the package.
+        /// Gets zero or more package types from the .nuspec.
         /// </summary>
-        /// <returns>The <see cref="PackageType"/>.</returns>
-        PackageType GetPackageType();
+        IReadOnlyList<PackageType> GetPackageTypes();
 
         /// <summary>
         /// Returns a file stream from the package.
@@ -58,6 +58,7 @@ namespace NuGet.Packaging.Core
             string destination,
             IEnumerable<string> packageFiles,
             ExtractPackageFileDelegate extractFile,
+            ILogger logger,
             CancellationToken token);
     }
 }

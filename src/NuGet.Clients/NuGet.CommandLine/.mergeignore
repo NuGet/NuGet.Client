@@ -17,6 +17,7 @@ System.IdentityModel.dll
 System.IO.Compression.dll
 System.Net.Http.dll
 System.Net.Http.WebRequest.dll
+System.Runtime.dll
 System.Runtime.Serialization.dll
 System.Security.dll
 System.ServiceModel.dll

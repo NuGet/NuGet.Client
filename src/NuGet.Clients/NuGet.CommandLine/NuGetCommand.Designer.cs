@@ -360,7 +360,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A list of packages sources to use as fallbacks for this command..
+        ///   Looks up a localized string similar to A list of package sources to use as fallbacks for this command..
         /// </summary>
         internal static string CommandFallbackSourceDescription {
             get {
@@ -6086,6 +6086,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Forces the application to run using an invariant, English-based culture..
+        /// </summary>
+        internal static string Option_ForceEnglishOutput {
+            get {
+                return ResourceManager.GetString("Option_ForceEnglishOutput", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Do not prompt for user input or confirmations..
         /// </summary>
         internal static string Option_NonInteractive {
@@ -8862,6 +8871,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to If a symbols package exists, it will not be pushed to a symbols server..
+        /// </summary>
+        internal static string PushCommandNoSymbolsDescription {
+            get {
+                return ResourceManager.GetString("PushCommandNoSymbolsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Specifies the server URL. If not specified, nuget.org is used unless DefaultPushSource config value is set in the NuGet config file..
         /// </summary>
         internal static string PushCommandSourceDescription {
@@ -10590,6 +10608,15 @@ namespace NuGet.CommandLine {
         internal static string RestoreCommandUsageDescription_trk {
             get {
                 return ResourceManager.GetString("RestoreCommandUsageDescription_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget restore MySoluion.sln.
+        /// </summary>
+        internal static string RestoreCommandUsageExamples {
+            get {
+                return ResourceManager.GetString("RestoreCommandUsageExamples", resourceCulture);
             }
         }
         
@@ -14384,6 +14411,15 @@ namespace NuGet.CommandLine {
         internal static string UpdateCommandVerboseDescription_trk {
             get {
                 return ResourceManager.GetString("UpdateCommandVerboseDescription_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Updates the package in -Id to the version indicated.  Requires -Id to contain exactly one package id..
+        /// </summary>
+        internal static string UpdateCommandVersionDescription {
+            get {
+                return ResourceManager.GetString("UpdateCommandVersionDescription", resourceCulture);
             }
         }
     }

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -76,18 +75,28 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentException(ProjectManagement.Strings.PackageStreamShouldBeSeekable);
             }
 
-            nuGetProjectContext.Log(ProjectManagement.MessageLevel.Info, Strings.InstallingPackage, packageIdentity);
+            nuGetProjectContext.Log(MessageLevel.Info, Strings.InstallingPackage, packageIdentity);
 
             packageStream.Seek(0, SeekOrigin.Begin);
-            var packageSupportedFrameworks = GetSupportedFrameworks(packageStream);
-            var projectFrameworks = _project.GetSupportedFrameworksAsync(token)
-                .Result
-                .Select(f => NuGetFramework.Parse(f.FullName));
+            
+            // Get additional information from the package that the INuGetPackageManager can act on.
+            IEnumerable<NuGetFramework> supportedFrameworks;
+            IEnumerable<PackageType> packageTypes;
+            using (var packageReader = new PackageArchiveReader(packageStream, leaveStreamOpen: true))
+            {
+                supportedFrameworks = packageReader.GetSupportedFrameworks();
+                packageTypes = packageReader.GetPackageTypes();
+            }
 
             var args = new Dictionary<string, object>();
-            args["Frameworks"] = projectFrameworks.Where(
-                projectFramework =>
-                    IsCompatible(projectFramework, packageSupportedFrameworks)).ToArray();
+
+            args["Frameworks"] = supportedFrameworks
+                .Where(f => f.IsSpecificFramework)
+                .ToArray();
+
+            args["PackageTypes"] = packageTypes
+                .ToArray();
+
             await _project.InstallPackageAsync(
                 new NuGetPackageMoniker
                 {
@@ -98,20 +107,13 @@ namespace NuGet.PackageManagement.VisualStudio
                 logger: null,
                 progress: null,
                 cancellationToken: token);
-            return true;
-        }
 
-        private static IEnumerable<NuGetFramework> GetSupportedFrameworks(Stream packageStream)
-        {
-            using (var packageReader = new PackageArchiveReader(packageStream, leaveStreamOpen: true))
-            {
-                return packageReader.GetSupportedFrameworks();
-            }
+            return true;
         }
 
         public override async Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
-            nuGetProjectContext.Log(ProjectManagement.MessageLevel.Info, Strings.UninstallingPackage, packageIdentity);
+            nuGetProjectContext.Log(MessageLevel.Info, Strings.UninstallingPackage, packageIdentity);
 
             var args = new Dictionary<string, object>();
             await _project.UninstallPackageAsync(
@@ -127,9 +129,9 @@ namespace NuGet.PackageManagement.VisualStudio
             return true;
         }
 
-        public override async Task<IEnumerable<Packaging.PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
+        public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
-            var result = new List<Packaging.PackageReference>();
+            var result = new List<PackageReference>();
             foreach (object item in await _project.GetInstalledPackagesAsync(token))
             {
                 PackageIdentity identity = null;
@@ -151,7 +153,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     }
                 }
 
-                result.Add(new Packaging.PackageReference(
+                result.Add(new PackageReference(
                     identity,
                     targetFramework: null));
             }

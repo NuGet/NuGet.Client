@@ -12,13 +12,15 @@ namespace NuGet.Versioning
     /// </summary>
     public partial class SemanticVersion
     {
-        internal readonly IEnumerable<string> _releaseLabels;
+        // store as array to avoid enumerator allocations
+        internal readonly string[] _releaseLabels;
         internal readonly string _metadata;
-        internal Version _version;
+        internal readonly Version _version;
 
         /// <summary>
         /// Creates a SemanticVersion from an existing SemanticVersion
         /// </summary>
+        /// <param name="version">Version to clone.</param>
         public SemanticVersion(SemanticVersion version)
             : this(version.Major, version.Minor, version.Patch, version.ReleaseLabels, version.Metadata)
         {
@@ -73,26 +75,56 @@ namespace NuGet.Versioning
         {
         }
 
+        /// <summary>
+        /// Internal constructor.
+        /// </summary>
+        /// <param name="version">Version</param>
+        /// <param name="releaseLabel">Full release label</param>
+        /// <param name="metadata">Build metadata</param>
         protected SemanticVersion(Version version, string releaseLabel = null, string metadata = null)
             : this(version, ParseReleaseLabels(releaseLabel), metadata)
         {
         }
 
+        /// <summary>
+        /// Internal constructor.
+        /// </summary>
+        /// <param name="major">X.y.z</param>
+        /// <param name="minor">x.Y.z</param>
+        /// <param name="patch">x.y.Z</param>
+        /// <param name="revision">x.y.z.R</param>
+        /// <param name="releaseLabel">Prerelease label</param>
+        /// <param name="metadata">Build metadata</param>
         protected SemanticVersion(int major, int minor, int patch, int revision, string releaseLabel, string metadata)
             : this(major, minor, patch, revision, ParseReleaseLabels(releaseLabel), metadata)
         {
         }
 
+        /// <summary>
+        /// Internal constructor.
+        /// </summary>
+        /// <param name="major"></param>
+        /// <param name="minor"></param>
+        /// <param name="patch"></param>
+        /// <param name="revision"></param>
+        /// <param name="releaseLabels"></param>
+        /// <param name="metadata"></param>
         protected SemanticVersion(int major, int minor, int patch, int revision, IEnumerable<string> releaseLabels, string metadata)
             : this(new Version(major, minor, patch, revision), releaseLabels, metadata)
         {
         }
 
+        /// <summary>
+        /// Internal constructor.
+        /// </summary>
+        /// <param name="version">Version</param>
+        /// <param name="releaseLabels">Release labels</param>
+        /// <param name="metadata">Build metadata</param>
         protected SemanticVersion(Version version, IEnumerable<string> releaseLabels, string metadata)
         {
             if (version == null)
             {
-                throw new ArgumentNullException("version");
+                throw new ArgumentNullException(nameof(version));
             }
 
             _version = NormalizeVersionValue(version);
@@ -100,8 +132,24 @@ namespace NuGet.Versioning
 
             if (releaseLabels != null)
             {
-                // enumerate the list
-                _releaseLabels = releaseLabels.ToArray();
+                // If the labels are already an array use it
+                var asArray = releaseLabels as string[];
+
+                if (asArray != null)
+                {
+                    _releaseLabels = asArray;
+                }
+                else
+                {
+                    // enumerate the list
+                    _releaseLabels = releaseLabels.ToArray();
+                }
+
+                if (_releaseLabels.Length < 1)
+                {
+                    // Avoid storing an empty array of labels, this field is checked for null everywhere
+                    _releaseLabels = null;
+                }
             }
         }
 
@@ -134,7 +182,7 @@ namespace NuGet.Versioning
         /// </summary>
         public IEnumerable<string> ReleaseLabels
         {
-            get { return _releaseLabels ?? Enumerable.Empty<string>(); }
+            get { return _releaseLabels ?? EmptyReleaseLabels; }
         }
 
         /// <summary>
@@ -146,7 +194,7 @@ namespace NuGet.Versioning
             {
                 if (_releaseLabels != null)
                 {
-                    return String.Join(".", _releaseLabels);
+                    return string.Join(".", _releaseLabels);
                 }
 
                 return string.Empty;
@@ -160,10 +208,15 @@ namespace NuGet.Versioning
         {
             get
             {
-                if (ReleaseLabels != null)
+                if (_releaseLabels != null)
                 {
-                    var enumerator = ReleaseLabels.GetEnumerator();
-                    return (enumerator.MoveNext() && !String.IsNullOrEmpty(enumerator.Current));
+                    for (int i = 0; i < _releaseLabels.Length; i++)
+                    {
+                        if (!string.IsNullOrEmpty(_releaseLabels[i]))
+                        {
+                            return true;
+                        }
+                    }
                 }
 
                 return false;
@@ -175,7 +228,7 @@ namespace NuGet.Versioning
         /// </summary>
         public virtual bool HasMetadata
         {
-            get { return !String.IsNullOrEmpty(Metadata); }
+            get { return !string.IsNullOrEmpty(Metadata); }
         }
 
         /// <summary>

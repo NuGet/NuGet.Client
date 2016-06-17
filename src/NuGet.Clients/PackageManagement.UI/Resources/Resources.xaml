@@ -1,0 +1,181 @@
+﻿<ResourceDictionary
+  x:Class="NuGet.PackageManagement.UI.SharedResources"
+  x:ClassModifier="internal"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <nuget:StyleKeyConverter
+    x:Key="StyleKeyConverter" />
+
+  <nuget:PackageStatusToInstallImageVisibilityConverter
+    x:Key="PackageStatusToInstallImageVis" />
+  <nuget:PackageStatusToUpdateImageVisibilityConverter
+    x:Key="PackageStatusToUpdateImageConverter" />
+  <nuget:IconUrlToVisibilityConverter
+    x:Key="IconUrlToVisibilityConverter" />
+  <nuget:NuGetFrameworkToStringConverter
+    x:Key="NuGetFrameworkToStringConverter" />
+  <nuget:NuGetFrameworkToVisibilityConverter
+    x:Key="NuGetFrameworkToVisibilityConverter" />
+  <nuget:NullToVisibilityConverter
+    x:Key="NullToVisibilityConverter" />
+  <nuget:InverseNullToVisibilityConverter
+    x:Key="InverseNullToVisibilityConverter" />
+  <nuget:EnumerableToVisibilityConverter
+    Inverted="true"
+    x:Key="EmptyEnumerableToVisibilityConverter" />
+  <nuget:EnumerableToVisibilityConverter
+    x:Key="EnumerableToVisibilityConverter" />
+  <nuget:BooleanToVisibilityConverter
+    x:Key="BooleanToVisibilityConverter" />
+  <nuget:BooleanToVisibilityConverter
+    Inverted="True"
+    x:Key="InvertedBooleanToVisibilityConverter" />
+  <nuget:DownloadCountToVisibilityConverter
+    x:Key="DownloadCountToVisibilityConverter" />
+  <nuget:FontSizeConverter
+    Scale="122"
+    x:Key="Font122PercentSizeConverter" />
+  <nuget:FontSizeConverter
+    Scale="155"
+    x:Key="Font155PercentSizeConverter" />
+  <nuget:VersionToStringConverter
+    x:Key="VersionToStringConverter" />
+  <nuget:ProjectAndSolutionViewHeightConverter
+    x:Key="ProjectAndSolutionViewHeightConverter" />
+  <nuget:ProjectAndSolutionViewMinHeightConverter
+    x:Key="ProjectAndSolutionViewMinHeightConverter"/>
+  <nuget:IconUrlToImageCacheConverter
+    x:Key="IconUrlToImageCacheConverter"/>
+
+  <!-- Default styles -->
+  <Style
+    x:Key="{x:Type ComboBox}"
+    TargetType="{x:Type ComboBox}"
+    BasedOn="{StaticResource {x:Static nuget:Styles.ThemedComboStyleKey}}"/>
+
+  <Style
+    x:Key="{x:Type ScrollBar}"
+    TargetType="{x:Type ScrollBar}"
+    BasedOn="{StaticResource {x:Static nuget:Styles.ScrollBarStyleKey}}"/>
+
+  <Style
+    x:Key="{x:Type ScrollViewer}"
+    TargetType="{x:Type ScrollViewer}"
+    BasedOn="{StaticResource {x:Static nuget:Styles.ScrollViewerStyleKey}}"/>
+
+  <Style
+    x:Key="TooltipStyle"
+    TargetType="{x:Type TextBlock}">
+    <Setter
+      Property="TextWrapping"
+      Value="Wrap" />
+    <Setter
+      Property="MaxWidth"
+      Value="300" />
+  </Style>
+
+  <!-- In order to create a TextBlock like element, but with selectable text use:
+    <TextBox Style="{DynamicResource SelectableTextBlockStyle}" />
+
+    Thanks to juanjo.arana for his style, which we tweaked: http://stackoverflow.com/questions/136435/any-way-to-make-a-wpf-textblock-selectable
+  -->
+  <Style x:Key="SelectableTextBlockStyle" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+    <Setter Property="IsReadOnly" Value="True"/>
+    <Setter Property="IsTabStop" Value="False"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.UIText}}"/>
+    <Setter Property="Padding" Value="-2,0,-2,0"/>
+    <Style.Triggers>
+      <MultiTrigger>
+        <MultiTrigger.Conditions>
+          <Condition Property="IsMouseOver" Value="False" />
+          <Condition Property="IsFocused" Value="False" />
+        </MultiTrigger.Conditions>
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type TextBox}">
+              <TextBlock Text="{TemplateBinding Text}" 
+                             Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
+                             Background="{TemplateBinding Background}"
+                             FontSize="{TemplateBinding FontSize}"
+                             FontStyle="{TemplateBinding FontStyle}"
+                             FontFamily="{TemplateBinding FontFamily}"
+                             FontWeight="{TemplateBinding FontWeight}"
+                             TextWrapping="{TemplateBinding TextWrapping}"
+                             Padding="0,0,0,0"
+                             />
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </MultiTrigger>
+    </Style.Triggers>
+  </Style>
+
+  <Style
+    TargetType="{x:Type Hyperlink}"
+    x:Key="HyperlinkStyle">
+    <Setter
+      Property="Foreground"
+      Value="{DynamicResource {x:Static nuget:Brushes.ControlLinkTextKey}}" />
+
+    <Style.Triggers>
+      <Trigger
+        Property="IsMouseOver"
+        Value="True">
+        <Setter
+          Property="Foreground"
+          Value="{DynamicResource {x:Static nuget:Brushes.ControlLinkTextHoverKey}}" />
+      </Trigger>
+
+      <Trigger
+        Property="IsMouseOver"
+        Value="False">
+        <Setter
+          Property="TextBlock.TextDecorations"
+          Value="{x:Null}" />
+      </Trigger>
+
+      <Trigger
+        Property="NavigateUri"
+        Value="{x:Null}">
+        <Setter
+          Property="Foreground"
+          Value="{DynamicResource {x:Static nuget:Brushes.WindowTextKey}}" />
+        <Setter
+          Property="TextBlock.TextDecorations"
+          Value="{x:Null}" />
+        <Setter
+          Property="IsEnabled"
+          Value="False" />
+      </Trigger>
+    </Style.Triggers>
+  </Style>
+
+  <Style
+    x:Key="PackageIconImageStyle"
+    TargetType="{x:Type Image}">
+    <Setter
+      Property="HorizontalAlignment"
+      Value="Center" />
+    <Setter
+      Property="Height"
+      Value="32" />
+    <Setter
+      Property="Width"
+      Value="32" />
+    <Setter Property="Source">
+      <Setter.Value>
+        <Binding
+          Path="DataContext.IconUrl"
+          RelativeSource="{RelativeSource Self}"
+          Converter="{StaticResource IconUrlToImageCacheConverter}"
+          ConverterParameter="{x:Static nuget:Images.DefaultPackageIcon}"
+          TargetNullValue="{x:Static nuget:Images.DefaultPackageIcon}"
+          FallbackValue="{x:Static nuget:Images.DefaultPackageIcon}"/>
+      </Setter.Value>
+    </Setter>
+    <EventSetter Event="ImageFailed" Handler="PackageIconImage_ImageFailed"/>
+  </Style>
+</ResourceDictionary>

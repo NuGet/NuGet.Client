@@ -8,23 +8,27 @@ namespace NuGet.LibraryModel
 {
     public class LibraryDependencyType
     {
-        private readonly LibraryDependencyTypeFlag[] _keywords;
+        private readonly HashSet<LibraryDependencyTypeFlag> _keywords;
 
         public static LibraryDependencyType Default;
+        public static LibraryDependencyType Build;
+        public static LibraryDependencyType Platform;
 
         static LibraryDependencyType()
         {
-            Default = new LibraryDependencyType(LibraryDependencyTypeKeyword.Default.FlagsToAdd as LibraryDependencyTypeFlag[]);
+            Default = new LibraryDependencyType(LibraryDependencyTypeKeyword.Default.FlagsToAdd);
+            Build = new LibraryDependencyType(LibraryDependencyTypeKeyword.Build.FlagsToAdd);
+            Platform = new LibraryDependencyType(LibraryDependencyTypeKeyword.Platform.FlagsToAdd);
         }
 
         public LibraryDependencyType()
         {
-            _keywords = new LibraryDependencyTypeFlag[0];
+            _keywords = new HashSet<LibraryDependencyTypeFlag>();
         }
 
-        private LibraryDependencyType(LibraryDependencyTypeFlag[] flags)
+        private LibraryDependencyType(IEnumerable<LibraryDependencyTypeFlag> flags)
         {
-            _keywords = flags;
+            _keywords = new HashSet<LibraryDependencyTypeFlag>(flags);
         }
 
         public bool Contains(LibraryDependencyTypeFlag flag)
@@ -48,6 +52,19 @@ namespace NuGet.LibraryModel
         {
             return new LibraryDependencyType(
                 _keywords.Except(remove).Union(add).ToArray());
+        }
+
+        public override bool Equals(object obj)
+        {
+            LibraryDependencyType other = obj as LibraryDependencyType;
+            return other != null &&
+                _keywords.All(other.Contains) &&
+                other._keywords.All(_keywords.Contains);
+        }
+
+        public override int GetHashCode()
+        {
+            return _keywords.GetHashCode();
         }
 
         public override string ToString()

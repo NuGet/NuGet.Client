@@ -1,26 +1,55 @@
 ﻿{
-    "version": "3.4.0-*",
-    "dependencies": {
-        "Microsoft.NETCore.Platforms": "1.0.1-beta-23516",
-        "NuGet.Shared": {
-            "version": "3.4.0-*",
-            "type": "build"
-        },
-        "NuGet.Test.Utility": "3.4.0-*",
-        "SynchronizationTestApp": "1.0.0-*",
-        "xunit": "2.1.0",
-        "xunit.runner.dnx": "2.1.0-rc1-build204"
+  "version": "3.5.0-*",
+  "buildOptions": {
+    "compile": {
+      "include": [
+        "../../../Shared/*.cs"
+      ]
+    }
+  },
+  "dependencies": {
+    "NuGet.Test.Utility": {
+      "target": "project"
     },
-    "commands": {
-        "test": "xunit.runner.dnx"
+    "SynchronizationTestApp": {
+      "target": "project"
     },
-    "frameworks": {
-        "dnx451": { },
-      "dnxcore50": {
-        "imports": [ "portable-net45+win8" ],
-        "dependencies": {
-          "System.Runtime": "4.0.21-beta-23516"
+    "xunit": "2.1.0"
+  },
+  "frameworks": {
+    "netcoreapp1.0": {
+      "imports": [
+        "netstandardapp1.5",
+        "dnxcore50",
+        "portable-net45+win8"
+      ],
+      "dependencies": {
+        "dotnet-test-xunit": "1.0.0-rc2-173361-36",
+        "Microsoft.NETCore.App": {
+          "type": "platform",
+          "version": "1.0.0-rc3-004338"
         }
+      },
+      "buildOptions": {
+        "define": [
+          "IS_CORECLR"
+        ]
+      }
+    },
+    "net46": {
+      "frameworkAssemblies": {
+        "Microsoft.CSharp": "",
+        "System": "",
+        "System.Core": "",
+        "System.Runtime": "",
+        "System.Threading.Tasks": ""
+      },
+      "buildOptions": {
+        "define": [
+          "IS_DESKTOP"
+        ]
       }
     }
+  },
+  "testRunner": "xunit"
 }

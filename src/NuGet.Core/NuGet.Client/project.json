@@ -1,23 +1,62 @@
 ﻿{
-  "version": "3.4.0-*",
-  "compilationOptions": {
-    "warningsAsErrors": true
+  "version": "3.5.0-*",
+  "description": "NuGet v3 core library.",
+  "copyright": "Copyright .NET Foundation. All rights reserved.",
+  "packOptions": {
+    "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
+    "projectUrl": "https://github.com/NuGet/NuGet.Client"
+  },
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "xmlDoc": true,
+    "nowarn": [
+      "CS1591"
+    ],
+    "compile": {
+      "include": [
+        "../../../Shared/*.cs"
+      ]
+    }
   },
   "dependencies": {
-    "NuGet.Versioning": "3.4.0-*",
-    "NuGet.Packaging": "3.4.0-*",
-    "NuGet.Repositories": "3.4.0-*",
-    "NuGet.RuntimeModel": "3.4.0-*",
-    "NuGet.ContentModel": "3.4.0-*",
-    "NuGet.Shared": {
-      "version": "3.4.0-*",
-      "type": "build"
+    "NuGet.Versioning": {
+      "target": "project"
+    },
+    "NuGet.Packaging": {
+      "target": "project"
+    },
+    "NuGet.Repositories": {
+      "target": "project"
+    },
+    "NuGet.RuntimeModel": {
+      "target": "project"
+    },
+    "NuGet.ContentModel": {
+      "target": "project"
     }
   },
   "frameworks": {
-    "net45": { },
-    "dnxcore50": {
-      "imports": [ "portable-net45+win8" ]
+    "net45": {
+      "buildOptions": {
+        "define": [
+          "IS_DESKTOP"
+        ]
+      }
+    },
+    "netstandard1.3": {
+      "imports": [
+        "dotnet5.6",
+        "dnxcore50",
+        "portable-net45+win8"
+      ],
+      "dependencies": {
+        "NETStandard.Library": "1.6.0-rc3-24128-00"
+      },
+      "buildOptions": {
+        "define": [
+          "IS_CORECLR"
+        ]
+      }
     }
   }
 }

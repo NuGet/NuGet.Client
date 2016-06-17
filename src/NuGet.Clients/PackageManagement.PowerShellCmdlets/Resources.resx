@@ -249,4 +249,7 @@
   <data name="Cmdlet_RequestRestartToCompleteUninstall" xml:space="preserve">
     <value>One or more packages could not be completely uninstalled: '{0}'. Restart Visual Studio to finish uninstall.</value>
   </data>
+  <data name="Cmdlet_TotalTime" xml:space="preserve">
+    <value>Time Elapsed: {0}</value>
+  </data>
 </root>

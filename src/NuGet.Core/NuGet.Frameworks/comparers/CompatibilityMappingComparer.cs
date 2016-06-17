@@ -5,7 +5,12 @@ using System.Collections.Generic;
 
 namespace NuGet.Frameworks
 {
-    public class CompatibilityMappingComparer : IEqualityComparer<OneWayCompatibilityMappingEntry>
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    class CompatibilityMappingComparer : IEqualityComparer<OneWayCompatibilityMappingEntry>
     {
         public bool Equals(OneWayCompatibilityMappingEntry x, OneWayCompatibilityMappingEntry y)
         {

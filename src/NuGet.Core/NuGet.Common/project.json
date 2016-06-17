@@ -1,24 +1,50 @@
 ﻿{
-  "version": "3.4.0-*",
-    "frameworks": {
-        "net45": {
-            "frameworkAssemblies": {
-                "System.IO.Compression": ""
-            }
-        },
-        "dnxcore50": {
-            "dependencies": {
-                "System.Runtime.InteropServices.RuntimeInformation": "4.0.0-beta-23225",
-                "System.Collections": "4.0.0-beta-23109",
-                "System.IO.Compression": "4.0.0-beta-23109",
-                "System.IO.FileSystem": "4.0.0-beta-23109",
-                "System.IO.FileSystem.Primitives": "4.0.0-beta-23109",
-                "System.Runtime.Extensions": "4.0.10-beta-23109",
-                "System.Threading": "4.0.10-beta-23109",
-                "System.Threading.Thread": "4.0.0-beta-23109",
-              "System.Security.Cryptography.Cng": "4.0.0-beta-23516",
-              "System.Diagnostics.Process": "4.0.0-beta-23109"
-            }
-        }
+  "version": "3.5.0-*",
+  "description": "NuGet v3 core library.",
+  "copyright": "Copyright .NET Foundation. All rights reserved.",
+  "packOptions": {
+    "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
+    "projectUrl": "https://github.com/NuGet/NuGet.Client"
+  },
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "xmlDoc": true,
+    "nowarn": [
+      "CS1591",
+      "CS1574"
+    ],
+    "compile": {
+      "include": [
+        "../../../Shared/*.cs"
+      ]
     }
+  },
+  "frameworks": {
+    "net45": {
+      "frameworkAssemblies": {
+        "Microsoft.CSharp": "",
+        "System": "",
+        "System.Core": "",
+        "System.IO.Compression": ""
+      },
+      "buildOptions": {
+        "define": [
+          "IS_DESKTOP"
+        ]
+      }
+    },
+    "netstandard1.3": {
+      "dependencies": {
+        "NETStandard.Library": "1.6.0-rc3-24128-00",
+        "System.Security.Cryptography.Algorithms": "4.2.0-rc3-24128-00",
+        "System.Diagnostics.Process": "4.1.0-rc3-24128-00",
+        "System.Threading.Thread": "4.0.0-rc3-24128-00"
+      },
+      "buildOptions": {
+        "define": [
+          "IS_CORECLR"
+        ]
+      }
+    }
+  }
 }

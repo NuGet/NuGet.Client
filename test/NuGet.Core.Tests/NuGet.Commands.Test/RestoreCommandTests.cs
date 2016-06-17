@@ -1,24 +1,534 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
-using NuGet.LibraryModel;
-using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
-using NuGet.RuntimeModel;
 using NuGet.Test.Utility;
-using NuGet.Versioning;
 using Xunit;
-using System.Security.Cryptography;
 
 namespace NuGet.Commands.Test
 {
     public class RestoreCommandTests
     {
+        [Fact]
+        public async Task RestoreCommand_FindInV2FolderWithDifferentCasing()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+
+            // Both TxMs reference packageA, but they are different types.
+            // Verify that the reference does not show up under libraries.
+            var project1Json = @"
+            {
+              ""version"": ""1.0.0"",
+              ""description"": """",
+              ""authors"": [ ""author"" ],
+              ""tags"": [ """" ],
+              ""projectUrl"": """",
+              ""licenseUrl"": """",
+              ""frameworks"": {
+                ""netstandard1.3"": {
+                    ""dependencies"": {
+                        ""PACKAGEA"": ""4.0.0""
+                    }
+                }
+              }
+            }";
+
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
+                var project1 = new DirectoryInfo(Path.Combine(workingDir, "projects", "project1"));
+                packagesDir.Create();
+                packageSource.Create();
+                project1.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
+
+                var specPath1 = Path.Combine(project1.FullName, "project.json");
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
+
+                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+
+                SimpleTestPackageUtility.CreateFullPackage(packageSource.FullName, "packageA", "4.0.0");
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+                var lockFile = result.LockFile;
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                // Assert
+                Assert.True(result.Success);
+                Assert.Equal(1, lockFile.Libraries.Count);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_ReferenceWithSameNameDifferentCasing()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+
+            // Both TxMs reference packageA, but they are different types.
+            // Verify that the reference does not show up under libraries.
+            var project1Json = @"
+            {
+              ""version"": ""1.0.0"",
+              ""description"": """",
+              ""authors"": [ ""author"" ],
+              ""tags"": [ """" ],
+              ""projectUrl"": """",
+              ""licenseUrl"": """",
+              ""frameworks"": {
+                ""netstandard1.3"": {
+                    ""dependencies"": {
+                        ""packageA"": ""4.0.0""
+                    }
+                }
+              }
+            }";
+
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
+                var project1 = new DirectoryInfo(Path.Combine(workingDir, "projects", "PROJECT1"));
+                packagesDir.Create();
+                packageSource.Create();
+                project1.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
+
+                var specPath1 = Path.Combine(project1.FullName, "project.json");
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "PROJECT1", specPath1);
+
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
+
+                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+
+                var aContext = new SimpleTestPackageContext()
+                {
+                    Id = "packageA",
+                    Version = "4.0.0"
+                };
+
+                aContext.Dependencies.Add(new SimpleTestPackageContext("proJect1"));
+
+                SimpleTestPackageUtility.CreateFullPackage(packageSource.FullName, "projeCt1", "4.0.0");
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+                var lockFile = result.LockFile;
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                // Assert
+                // Verify no stack overflows from circular dependencies
+                Assert.False(result.Success);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_ImportsWithHigherVersion_NoFallback()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+
+            var project1Json = @"
+            {
+              ""version"": ""1.0.0"",
+              ""description"": """",
+              ""authors"": [ ""author"" ],
+              ""tags"": [ """" ],
+              ""projectUrl"": """",
+              ""licenseUrl"": """",
+              ""frameworks"": {
+                ""netstandard1.3"": {
+                    ""imports"": [ ""netstandard1.5"" ],
+                    ""dependencies"": {
+                        ""packageA"": ""1.0.0""
+                    }
+                }
+              }
+            }";
+
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
+                var project1 = new DirectoryInfo(Path.Combine(workingDir, "projects", "project1"));
+                packagesDir.Create();
+                packageSource.Create();
+                project1.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
+
+                var specPath1 = Path.Combine(project1.FullName, "project.json");
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
+
+                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+
+                var packageAContext = new SimpleTestPackageContext("packageA");
+                packageAContext.AddFile("lib/netstandard1.0/a.dll");
+                packageAContext.AddFile("lib/netstandard1.5/a.dll");
+                packageAContext.AddFile("lib/net46/a.dll");
+
+                SimpleTestPackageUtility.CreateFullPackage(packageSource.FullName, packageAContext);
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+                var lockFile = result.LockFile;
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                var targetLib = lockFile.GetTarget(NuGetFramework.Parse("netstandard1.3"), null)
+                    .Libraries
+                    .Single(library => library.Name == "packageA");
+
+                var compile = targetLib.CompileTimeAssemblies.Single();
+
+                // Assert
+                Assert.True(result.Success);
+                Assert.Equal("lib/netstandard1.0/a.dll", compile.Path);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_ImportsWithHigherVersion_Fallback()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+
+            var project1Json = @"
+            {
+              ""version"": ""1.0.0"",
+              ""description"": """",
+              ""authors"": [ ""author"" ],
+              ""tags"": [ """" ],
+              ""projectUrl"": """",
+              ""licenseUrl"": """",
+              ""frameworks"": {
+                ""netstandard1.3"": {
+                    ""imports"": [ ""netstandard1.5"" ],
+                    ""dependencies"": {
+                        ""packageA"": ""1.0.0""
+                    }
+                }
+              }
+            }";
+
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
+                var project1 = new DirectoryInfo(Path.Combine(workingDir, "projects", "project1"));
+                packagesDir.Create();
+                packageSource.Create();
+                project1.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
+
+                var specPath1 = Path.Combine(project1.FullName, "project.json");
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
+
+                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+
+                var packageAContext = new SimpleTestPackageContext("packageA");
+                packageAContext.AddFile("lib/netstandard1.5/a.dll");
+                packageAContext.AddFile("lib/netstandard1.6/a.dll");
+                packageAContext.AddFile("lib/net46/a.dll");
+
+                SimpleTestPackageUtility.CreateFullPackage(packageSource.FullName, packageAContext);
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+                var lockFile = result.LockFile;
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                var targetLib = lockFile.GetTarget(NuGetFramework.Parse("netstandard1.3"), null)
+                    .Libraries
+                    .Single(library => library.Name == "packageA");
+
+                var compile = targetLib.CompileTimeAssemblies.Single();
+
+                // Assert
+                Assert.True(result.Success);
+                Assert.Equal("lib/netstandard1.5/a.dll", compile.Path);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_ImportsWithHigherVersion_MultiFallback()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+
+            var project1Json = @"
+            {
+              ""version"": ""1.0.0"",
+              ""description"": """",
+              ""authors"": [ ""author"" ],
+              ""tags"": [ """" ],
+              ""projectUrl"": """",
+              ""licenseUrl"": """",
+              ""frameworks"": {
+                ""netstandard1.0"": {
+                    ""imports"": [ ""netstandard1.1"", ""netstandard1.2"", ""dnxcore50""  ],
+                    ""dependencies"": {
+                        ""packageA"": ""1.0.0""
+                    }
+                }
+              }
+            }";
+
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
+                var project1 = new DirectoryInfo(Path.Combine(workingDir, "projects", "project1"));
+                packagesDir.Create();
+                packageSource.Create();
+                project1.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
+
+                var specPath1 = Path.Combine(project1.FullName, "project.json");
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
+
+                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+
+                var packageAContext = new SimpleTestPackageContext("packageA");
+                packageAContext.AddFile("lib/netstandard1.2/a.dll");
+                packageAContext.AddFile("lib/netstandard1.5/a.dll");
+                packageAContext.AddFile("lib/net46/a.dll");
+
+                SimpleTestPackageUtility.CreateFullPackage(packageSource.FullName, packageAContext);
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+                var lockFile = result.LockFile;
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                var targetLib = lockFile.GetTarget(NuGetFramework.Parse("netstandard1.0"), null)
+                    .Libraries
+                    .Single(library => library.Name == "packageA");
+
+                var compile = targetLib.CompileTimeAssemblies.Single();
+
+                // Assert
+                Assert.True(result.Success);
+                Assert.Equal("lib/netstandard1.2/a.dll", compile.Path);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_ImportsNoMatch()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+
+            var project1Json = @"
+            {
+              ""version"": ""1.0.0"",
+              ""description"": """",
+              ""authors"": [ ""author"" ],
+              ""tags"": [ """" ],
+              ""projectUrl"": """",
+              ""licenseUrl"": """",
+              ""frameworks"": {
+                ""netstandard1.0"": {
+                    ""imports"": [ ""netstandard1.1"", ""netstandard1.2""  ],
+                    ""dependencies"": {
+                        ""packageA"": ""1.0.0""
+                    }
+                }
+              }
+            }";
+
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
+                var project1 = new DirectoryInfo(Path.Combine(workingDir, "projects", "project1"));
+                packagesDir.Create();
+                packageSource.Create();
+                project1.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
+
+                var specPath1 = Path.Combine(project1.FullName, "project.json");
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
+
+                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+
+                var packageAContext = new SimpleTestPackageContext("packageA");
+                packageAContext.AddFile("lib/netstandard1.5/a.dll");
+                packageAContext.AddFile("lib/netstandard1.6/a.dll");
+                packageAContext.AddFile("lib/net46/a.dll");
+
+                SimpleTestPackageUtility.CreateFullPackage(packageSource.FullName, packageAContext);
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+                var lockFile = result.LockFile;
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                var targetLib = lockFile.GetTarget(NuGetFramework.Parse("netstandard1.0"), null)
+                                    .Libraries
+                                    .Single(library => library.Name == "packageA");
+
+                var compileItems = targetLib.CompileTimeAssemblies;
+
+                // Assert
+                Assert.False(result.Success);
+                Assert.Equal(0, compileItems.Count);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_PathInPackageLibrary()
+        {
+            // Arrange
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
+                var project1 = new DirectoryInfo(Path.Combine(workingDir, "projects", "project1"));
+                packagesDir.Create();
+                packageSource.Create();
+                project1.Create();
+
+                var sources = new List<PackageSource>();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                var project1Json = @"
+                {
+                  ""frameworks"": {
+                    ""netstandard1.0"": {
+                      ""dependencies"": {
+                        ""packageA"": ""1.0.0""
+                      }
+                    }
+                  }
+                }";
+
+                File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
+
+                var specPath1 = Path.Combine(project1.FullName, "project.json");
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
+                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+
+                var packageAContext = new SimpleTestPackageContext("packageA");
+                packageAContext.AddFile("lib/netstandard1.0/a.dll");
+
+                SimpleTestPackageUtility.CreateFullPackage(packageSource.FullName, packageAContext);
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+                var lockFile = result.LockFile;
+
+                // Assert
+                Assert.True(result.Success);
+                var library = lockFile.Libraries.FirstOrDefault(l => l.Name == "packageA");
+                Assert.NotNull(library);
+                Assert.Equal("packagea/1.0.0", library.Path);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_PackageWithSameName()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+
+            var project1Json = @"
+            {
+              ""version"": ""1.0.0-*"",
+              ""description"": """",
+              ""authors"": [ ""author"" ],
+              ""tags"": [ """" ],
+              ""projectUrl"": """",
+              ""licenseUrl"": """",
+              ""dependencies"": {
+                ""project1"": { ""version"": ""1.0.0"", ""target"": ""package"" }
+              },
+              ""frameworks"": {
+                ""net45"": {
+                }
+              }
+            }";
+
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
+                var project1 = new DirectoryInfo(Path.Combine(workingDir, "projects", "project1"));
+                packagesDir.Create();
+                packageSource.Create();
+                project1.Create();
+
+                File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
+
+                SimpleTestPackageUtility.CreateFullPackage(packageSource.FullName, "project1", "1.0.0");
+
+                var specPath1 = Path.Combine(project1.FullName, "project.json");
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
+
+                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+                var lockFile = result.LockFile;
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                // Assert
+                Assert.False(result.Success);
+                Assert.Equal(1, result.GetAllUnresolved().Count);
+                Assert.True(logger.ErrorMessages.Contains("Unable to resolve 'project1 (>= 1.0.0)' for '.NETFramework,Version=v4.5'."));
+            }
+        }
+
         [Fact]
         public async Task RestoreCommand_PackageAndReferenceWithSameNameAndVersion()
         {
@@ -75,7 +585,7 @@ namespace NuGet.Commands.Test
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 // Assert
                 Assert.True(result.Success);
@@ -127,7 +637,7 @@ namespace NuGet.Commands.Test
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 // Assert
                 Assert.True(result.Success);
@@ -136,1495 +646,552 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreCommand_FrameworkImportRulesAreApplied()
+        public async Task RestoreCommand_RestoresTools()
         {
             // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
-
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var configJson = JObject.Parse(@"
-                {
-                    ""dependencies"": {
-                        ""Newtonsoft.Json"": ""7.0.1""
-                    },
-                    ""frameworks"": {
-                        ""dotnet"": {
-                            ""imports"": ""portable-net452+win81"",
-                            ""warn"": false
-                        }
-                    }
-                }");
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var lockFileFormat = new LockFileFormat();
-                var command = new RestoreCommand(request);
-                var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
-
-                // Act
-
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-                var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, framework, null);
-                var runtimeAssembly = runtimeAssemblies.FirstOrDefault();
-
-                // Assert
-                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
-                Assert.Equal(0, logger.Warnings);
-                Assert.Equal(1, result.GetAllInstalled().Count);
-                Assert.Equal("Newtonsoft.Json", result.GetAllInstalled().Single().Name);
-                Assert.Equal("7.0.1", result.GetAllInstalled().Single().Version.ToNormalizedString());
-                Assert.Equal(1, runtimeAssemblies.Count);
-                Assert.Equal("lib/portable-net45+wp80+win8+wpa81+dnxcore50/Newtonsoft.Json.dll", runtimeAssembly.Path);
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_FrameworkImportArray()
-        {
-            // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
-
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var configJson = JObject.Parse(@"
-                {
-                    ""dependencies"": {
-                        ""Newtonsoft.Json"": ""7.0.1""
-                    },
-                    ""frameworks"": {
-                        ""netstandard1.2"": {
-                            ""imports"": [""dotnet5.3"",""portable-net452+win81""],
-                            ""warn"": false
-                        }
-                    }
-                }");
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var lockFileFormat = new LockFileFormat();
-                var command = new RestoreCommand(request);
-                var framework = new FallbackFramework(NuGetFramework.Parse("netstandard1.2"), new List<NuGetFramework> { NuGetFramework.Parse("dotnet5.3"),
-                                                                                                                         NuGetFramework.Parse("portable-net452+win81")});
-
-                // Act
-
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-                var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, framework, null);
-                var runtimeAssembly = runtimeAssemblies.FirstOrDefault();
-
-                // Assert
-                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
-                Assert.Equal(0, logger.Warnings);
-                Assert.Equal(1, result.GetAllInstalled().Count);
-                Assert.Equal("Newtonsoft.Json", result.GetAllInstalled().Single().Name);
-                Assert.Equal("7.0.1", result.GetAllInstalled().Single().Version.ToNormalizedString());
-                Assert.Equal(1, runtimeAssemblies.Count);
-                Assert.Equal("lib/portable-net45+wp80+win8+wpa81+dnxcore50/Newtonsoft.Json.dll", runtimeAssembly.Path);
-
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_FrameworkImportRulesAreApplied_Noop()
-        {
-            // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
-
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var configJson = JObject.Parse(@"
-                {
-                    ""dependencies"": {
-                        ""Newtonsoft.Json"": ""7.0.1""
-                    },
-                    ""frameworks"": {
-                        ""dotnet"": {
-                            ""imports"": ""portable-net452+win81"",
-                            ""warn"": false
-                        }
-                    }
-                }");
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var lockFileFormat = new LockFileFormat();
-                var command = new RestoreCommand(request);
-                var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-                logger.Clear();
-
-                // Act
-                request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-                request.ExistingLockFile = result.LockFile;
-                command = new RestoreCommand(request);
-                result = await command.ExecuteAsync();
-                result.Commit(logger);
-
-                // Assert
-                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
-                Assert.Equal(0, logger.Warnings);
-                Assert.Equal(0, result.GetAllInstalled().Count);
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_LeftOverNupkg_Overwritten()
-        {
-            // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
-
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var configJson = JObject.Parse(@"
-                {
-                    ""dependencies"": {
-                        ""Newtonsoft.Json"": ""7.0.1""
-                    },
-                    ""frameworks"": {
-                        ""dotnet"": {
-                            ""imports"": ""portable-net452+win81"",
-                            ""warn"": false
-                        }
-                    }
-                }");
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-                var logger = new TestLogger();
-
-                // Create left over nupkg to simulate a corrupted install
-                var nupkgFolder = Path.Combine(packagesDir, "Newtonsoft.Json", "7.0.1");
-                var nupkgPath = Path.Combine(nupkgFolder, "Newtonsoft.Json.7.0.1.nupkg");
-
-                Directory.CreateDirectory(nupkgFolder);
-
-                using (File.Create(nupkgPath))
-                {
-                }
-
-                Assert.True(File.Exists(nupkgPath));
-
-                var fileSize = new FileInfo(nupkgPath).Length;
-
-                Assert.True(fileSize == 0, "Dummy nupkg file bigger than expected");
-
-                // create the request
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                var command = new RestoreCommand(request);
-
-                // Act
-                var result = await command.ExecuteAsync();
-
-                // Assert
-                var newFileSize = new FileInfo(nupkgPath).Length;
-
-                Assert.True(newFileSize > 0, "Downloaded file not overriding the dummy nupkg");
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_FrameworkImport_WarnOn()
-        {
-            // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
-
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var configJson = JObject.Parse(@"
-                {
-                    ""dependencies"": {
-                        ""Newtonsoft.Json"": ""7.0.1""
-                    },
-                    ""frameworks"": {
-                        ""dotnet"": {
-                            ""imports"": ""portable-net452+win81"",
-                            ""warn"": true
-                        }
-                    }
-                }");
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var lockFileFormat = new LockFileFormat();
-                var command = new RestoreCommand(request);
-                var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
-                var warning = "Package 'Newtonsoft.Json 7.0.1' was restored using '.NETPortable,Version=v0.0,Profile=net452+win81' instead the project target framework '.NETPlatform,Version=v5.0'. This may cause compatibility problems.";
-
-                // Act
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-                var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, framework, null);
-                var runtimeAssembly = runtimeAssemblies.FirstOrDefault();
-
-                // Assert
-                Assert.Equal(1, result.GetAllInstalled().Count);
-                Assert.Equal(0, logger.Errors);
-                Assert.Equal(1, logger.Warnings);
-                Assert.Equal(1, logger.Messages.Where(message => message.Equals(warning)).Count());
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_FollowFallbackDependencies()
-        {
-            // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
-
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var configJson = JObject.Parse(@"
-                {
-                    ""dependencies"": {
-                        ""WindowsAzure.Storage"": ""4.4.1-preview""
-                    },
-                    ""frameworks"": {
-                        ""dotnet"": {
-                            ""imports"": ""portable-net452+win81"",
-                            ""warn"": false
-                        }
-                    }
-                }");
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var lockFileFormat = new LockFileFormat();
-                var command = new RestoreCommand(request);
-                var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
-
-                // Act
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-                var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, framework, null);
-                var runtimeAssembly = runtimeAssemblies.FirstOrDefault();
-                var dependencies = string.Join("|", result.GetAllInstalled().Select(dependency => dependency.Name)
-                    .OrderBy(name => name, StringComparer.OrdinalIgnoreCase));
-
-                // Assert
-                Assert.Equal(4, result.GetAllInstalled().Count);
-                Assert.Equal("Microsoft.Data.Edm|Microsoft.Data.OData|System.Spatial|WindowsAzure.Storage", dependencies);
-                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
-                Assert.Equal(0, logger.Warnings);
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_FrameworkImportValidateLockFile()
-        {
-            // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
-
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var configJson = JObject.Parse(@"
-                {
-                    ""dependencies"": {
-                        ""Newtonsoft.Json"": ""7.0.1""
-                    },
-                    ""frameworks"": {
-                        ""dotnet"": {
-                            ""imports"": ""portable-net452+win81"",
-                            ""warn"": false
-                        }
-                    }
-                }");
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var lockFileFormat = new LockFileFormat();
-                var command = new RestoreCommand(request);
-                var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-
-                // Act
-                var valid = result.LockFile.IsValidForPackageSpec(spec);
-
-                // Assert
-                Assert.True(valid);
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_DependenciesDifferOnCase()
-        {
-            // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
-
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var json = new JObject();
-
-                var frameworks = new JObject();
-                frameworks["net46"] = new JObject();
-
-                json["dependencies"] = new JObject();
-
-                json["frameworks"] = frameworks;
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(json.ToString(), "TestProject", specPath);
-
-                AddDependency(spec, "nEwTonSoft.JSon", "6.0.8");
-                AddDependency(spec, "json-ld.net", "1.0.4");
-
-                var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var lockFileFormat = new LockFileFormat();
-                var command = new RestoreCommand(request);
-
-                // Act
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-                var assemblies = GetRuntimeAssemblies(result.LockFile.Targets, "net46", null);
-
-                // Build again to verify the noop works also
-                result = await command.ExecuteAsync();
-                result.Commit(logger);
-                var assemblies2 = GetRuntimeAssemblies(result.LockFile.Targets, "net46", null);
-
-                // Assert
-                Assert.Equal(2, assemblies.Count);
-                Assert.Equal("lib/net45/Newtonsoft.Json.dll", assemblies[1].Path);
-                Assert.Equal(2, assemblies2.Count);
-                Assert.Equal("lib/net45/Newtonsoft.Json.dll", assemblies2[1].Path);
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_DependenciesDifferOnCase_Downgrade()
-        {
-            // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
-
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var json = new JObject();
-
-                var frameworks = new JObject();
-                frameworks["net46"] = new JObject();
-
-                json["dependencies"] = new JObject();
-
-                json["frameworks"] = frameworks;
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(json.ToString(), "TestProject", specPath);
-
-                AddDependency(spec, "nEwTonSoft.JSon", "4.0.1");
-                AddDependency(spec, "dotNetRDF", "1.0.8.3533");
-
-                var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var lockFileFormat = new LockFileFormat();
-                var command = new RestoreCommand(request);
-
-                // Act
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-                var assemblies = GetRuntimeAssemblies(result.LockFile.Targets, "net46", null);
-
-                // Assert
-                Assert.Equal(4, assemblies.Count);
-                Assert.Equal("lib/40/Newtonsoft.Json.dll", assemblies[2].Path);
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_TestLockFileWrittenOnLockFileChange()
-        {
-            // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
-
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
-
-                AddDependency(spec, "NuGet.Versioning", "1.0.7");
-
-                var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var lockFileFormat = new LockFileFormat();
-                var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
-
-                var lockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                // Change the lock file and write it out to disk
-                var modifiedLockFile = result.LockFile;
-                modifiedLockFile.Version = 1000;
-
-                var lockFormat = new LockFileFormat();
-                lockFormat.Write(File.OpenWrite(lockFilePath), modifiedLockFile);
-
-                request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                // Act
-                request.ExistingLockFile = modifiedLockFile;
-
-                command = new RestoreCommand(request);
-                result = await command.ExecuteAsync();
-                result.Commit(logger);
-
-                var lockFileFromDisk = lockFormat.Read(lockFilePath);
-
-                // Assert
-                // The file should be written out and the version should be updated
-                Assert.Equal(LockFileFormat.Version, lockFileFromDisk.Version);
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_WriteLockFileOnForce()
-        {
-            // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
-
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
-
-                AddDependency(spec, "NuGet.Versioning", "1.0.7");
-
-                var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var lockFileFormat = new LockFileFormat();
-                var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-
-                var lockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                // Add white space to the end of the file
-                var whitespace = $"{Environment.NewLine}{Environment.NewLine}{Environment.NewLine}";
-                File.AppendAllText(lockFilePath, whitespace);
-
-                // Act
-                request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-                var previousLockFile = result.LockFile;
-                request.ExistingLockFile = result.LockFile;
-
-                command = new RestoreCommand(request);
-                result = await command.ExecuteAsync();
-                result.Commit(logger, true);
-
-                var output = File.ReadAllText(lockFilePath);
-
-                // Assert
-                // The file should committed and it should clear the whitespace
-                Assert.False(output.EndsWith(whitespace, StringComparison.OrdinalIgnoreCase));
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_NoopOnLockFileWriteIfFilesMatch()
-        {
-            // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
-
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
-
-                AddDependency(spec, "NuGet.Versioning", "1.0.7");
-
-                var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var lockFileFormat = new LockFileFormat();
-                var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-
-                var lockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                // Act
-                var lastDate = File.GetLastWriteTime(lockFilePath);
-
-                request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-                var previousLockFile = result.LockFile;
-                request.ExistingLockFile = result.LockFile;
-
-                // Act 2
-                // Read the file from disk to verify the reader
-                var fromDisk = lockFileFormat.Read(lockFilePath);
-
-                // wait half a second to make sure the time difference can be picked up
-                await Task.Delay(500);
-
-                command = new RestoreCommand(request);
-                result = await command.ExecuteAsync();
-                result.Commit(logger);
-
-                var currentDate = File.GetLastWriteTime(lockFilePath);
-
-                // Assert
-                // The file should not be written out
-                Assert.Equal(lastDate, currentDate);
-
-                // Verify the files are equal
-                Assert.True(previousLockFile.Equals(result.LockFile));
-                Assert.True(fromDisk.Equals(result.LockFile));
-
-                // Verify the hash codes are the same
-                Assert.Equal(previousLockFile.GetHashCode(), result.LockFile.GetHashCode());
-                Assert.Equal(fromDisk.GetHashCode(), result.LockFile.GetHashCode());
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_NuGetVersioning107RuntimeAssemblies()
-        {
-            // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
-
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
-
-                AddDependency(spec, "NuGet.Versioning", "1.0.7");
-
-                var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var lockFileFormat = new LockFileFormat();
-
-                // Act
-                var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
-                var installed = result.GetAllInstalled();
-                var unresolved = result.GetAllUnresolved();
-                var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, "netcore50", null);
-
-                var runtimeAssembly = runtimeAssemblies.FirstOrDefault();
-
-                // Assert
-                Assert.Equal(0, logger.Errors);
-                Assert.Equal(1, installed.Count);
-                Assert.Equal(0, unresolved.Count);
-                Assert.Equal("NuGet.Versioning", installed.Single().Name);
-                Assert.Equal("1.0.7", installed.Single().Version.ToNormalizedString());
-
-                Assert.Equal(1, runtimeAssemblies.Count);
-                Assert.Equal("lib/portable-net40+win/NuGet.Versioning.dll", runtimeAssembly.Path);
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_InstallPackageWithDependencies()
-        {
-            // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
-
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
-
-                AddDependency(spec, "WebGrease", "1.6.0");
-
-                var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var lockFileFormat = new LockFileFormat();
-
-                // Act
-                var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
-                var installed = result.GetAllInstalled();
-                var unresolved = result.GetAllUnresolved();
-                var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, "netcore50", null);
-                var jsonNetReference = runtimeAssemblies.SingleOrDefault(assembly => assembly.Path == "lib/netcore45/Newtonsoft.Json.dll");
-                var jsonNetPackage = installed.SingleOrDefault(package => package.Name == "Newtonsoft.Json");
-
-                // Assert
-                // There will be compatibility errors, but we don't care
-                Assert.Equal(3, installed.Count);
-                Assert.Equal(0, unresolved.Count);
-                Assert.Equal("5.0.4", jsonNetPackage.Version.ToNormalizedString());
-
-                Assert.Equal(1, runtimeAssemblies.Count);
-                Assert.NotNull(jsonNetReference);
-            }
-        }
-
-        [Fact] 
-        public async Task RestoreCommand_InstallPackageWithManyDependencies()
-        {
-            // Arrange
-            var sources = new List<PackageSource>();
-
-            var project1Json = @"
-            {
-              ""version"": ""1.0.0"",
-              ""description"": """",
-              ""authors"": [ ""author"" ],
-              ""tags"": [ """" ],
-              ""projectUrl"": """",
-              ""licenseUrl"": """",
-              ""dependencies"": {
-                ""packageA"": ""1.0.0""
-              },
-              ""frameworks"": {
-                ""net45"": {
-                }
-              }
-            }";
-
             using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
-                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
-                var project1 = new DirectoryInfo(Path.Combine(workingDir,  "projects", "project1"));
-                sources.Add(new PackageSource(packageSource.FullName));
-                packagesDir.Create();
-                packageSource.Create();
-                project1.Create();
-
-                File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
-
-                var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
-                var logger = new TestLogger();
-                var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
-
-                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
-
-                var packages = new List<SimpleTestPackageContext>();
-                var dependencies = new List<SimpleTestPackageContext>();
-
-                for (int i= 0;i < 500;i++ )
+                var tc = new ToolTestContext(workingDir)
                 {
-                    var package = new SimpleTestPackageContext()
+                    ProjectJson = @"
                     {
-                      Id = $"package{i}"
-                    };
-                    packages.Add(package);
-                    dependencies.Add(package);
-                }
-
-                var packageA = new SimpleTestPackageContext()
-                {
-                    Id = "packageA",
-                    Dependencies = dependencies
+                        ""frameworks"": {
+                            ""net45"": { }
+                        },
+                        ""tools"": {
+                            ""packageB"": ""*""
+                        }
+                    }"
                 };
-                packages.Add(packageA);
-                SimpleTestPackageUtility.CreatePackages(packages, packageSource.FullName);
-                 
+
+                var packageA = new SimpleTestPackageContext("packageA");
+                packageA.AddFile("lib/netstandard1.3/a.dll");
+
+                var packageB = new SimpleTestPackageContext("packageB");
+                packageB.AddFile("lib/netstandard1.4/b.dll");
+                packageB.Dependencies.Add(packageA);
+
+                SimpleTestPackageUtility.CreatePackages(tc.PackageSource.FullName, packageA, packageB);
+
+                tc.Initialize();
+
                 // Act
-                var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
-                var lockFile = result.LockFile;
-                var installed = result.GetAllInstalled();
-                var unresolved = result.GetAllUnresolved();
-                result.Commit(logger);
+                var result = await tc.Command.ExecuteAsync();
+                await result.CommitAsync(tc.Logger, CancellationToken.None);
 
                 // Assert
-                Assert.True(result.Success);
-                Assert.Equal(501, installed.Count);
-                Assert.Equal(0, unresolved.Count);
+                Assert.True(
+                    result.Success,
+                    "The command did not succeed. Error messages: "
+                    + Environment.NewLine + tc.Logger.ShowErrors());
+                Assert.Equal(1, result.ToolRestoreResults.Count());
+
+                var toolResult = result.ToolRestoreResults.First();
+                Assert.NotNull(toolResult.LockFilePath);
+                Assert.True(
+                    File.Exists(toolResult.LockFilePath),
+                    $"The tool lock file at {toolResult.LockFilePath} does not exist.");
+                Assert.NotNull(toolResult.LockFile);
+                Assert.Equal(1, toolResult.LockFile.Targets.Count);
+
+                var target = toolResult.LockFile.Targets[0];
+                Assert.Null(target.RuntimeIdentifier);
+                Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp10, target.TargetFramework);
+                Assert.Equal(2, target.Libraries.Count);
+
+                var library = target.Libraries.First(l => l.Name == "packageB");
+                Assert.NotNull(library);
+                Assert.Equal("lib/netstandard1.4/b.dll", library.RuntimeAssemblies[0].Path);
             }
         }
 
         [Fact]
-        public async Task RestoreCommand_InstallPackageWithReferenceDependencies()
+        public async Task RestoreCommand_DoesNotRedoRestoreToolsWithValidLockFile()
         {
             // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
-
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfigWithNet46.ToString(), "TestProject", specPath);
-
-                AddDependency(spec, "Moon.Owin.Localization", "1.3.1");
-
-                var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var lockFileFormat = new LockFileFormat();
-
-                // Act
-                var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
-                var installed = result.GetAllInstalled();
-                var unresolved = result.GetAllUnresolved();
-                var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, "net46", null);
-                var jsonNetReference = runtimeAssemblies.SingleOrDefault(assembly => assembly.Path == "lib/net45/Newtonsoft.Json.dll");
-                var jsonNetPackage = installed.SingleOrDefault(package => package.Name == "Newtonsoft.Json");
-
-                // Assert
-                // There will be compatibility errors, but we don't care
-                Assert.Equal(25, installed.Count);
-                Assert.Equal(0, unresolved.Count);
-                Assert.Equal("7.0.1", jsonNetPackage.Version.ToNormalizedString());
-
-                Assert.Equal(24, runtimeAssemblies.Count);
-                Assert.NotNull(jsonNetReference);
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_RestoreWithNoChanges()
-        {
-            // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
-
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
-
-                AddDependency(spec, "NuGet.Versioning", "1.0.7");
-
-                var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var command = new RestoreCommand(request);
-                var firstRun = await command.ExecuteAsync();
-
-                // Act
-                request = new RestoreRequest(spec, sources, packagesDir, logger);
-                command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
-                var installed = result.GetAllInstalled();
-                var unresolved = result.GetAllUnresolved();
-
-                // Assert
-                Assert.Equal(0, logger.Errors);
-                Assert.Equal(0, installed.Count);
-                Assert.Equal(0, unresolved.Count);
-            }
-        }
-
-        [Theory]
-        [InlineData("https://www.nuget.org/api/v2/")]
-        [InlineData("https://api.nuget.org/v3/index.json")]
-        public async Task RestoreCommand_PackageIsAddedToPackageCache(string source)
-        {
-            // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource(source));
-
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
-
-                AddDependency(spec, "NuGet.Versioning", "1.0.7");
-
-                var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                // Act
-                var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
-                var nuspecPath = Path.Combine(packagesDir, "NuGet.Versioning", "1.0.7", "NuGet.Versioning.nuspec");
-
-                // Assert
-                Assert.True(File.Exists(nuspecPath));
-            }
-        }
-
-        [Theory]
-        [InlineData("https://www.nuget.org/api/v2/")]
-        [InlineData("https://api.nuget.org/v3/index.json")]
-        public async Task RestoreCommand_PackagesAreExtractedToTheNormalizedPath(string source)
-        {
-            // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource(source));
-
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
-
-                AddDependency(spec, "owin", "1.0");
-
-                var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                // Act
-                var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
-                var nuspecPath = Path.Combine(packagesDir, "owin", "1.0.0", "owin.nuspec");
-
-                // Assert
-                Assert.True(File.Exists(nuspecPath));
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_WarnWhenWeBumpYouUp()
-        {
-            // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
-
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
-
-                AddDependency(spec, "Newtonsoft.Json", "7.0.0"); // 7.0.0 does not exist so we'll bump up to 7.0.1
-
-                var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var lockFileFormat = new LockFileFormat();
-
-                // Act
-                var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
-                var installed = result.GetAllInstalled();
-                var unresolved = result.GetAllUnresolved();
-                var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, "netcore50", null);
-
-                var runtimeAssembly = runtimeAssemblies.FirstOrDefault();
-
-                // Assert
-                Assert.Equal(3, logger.Warnings); // We'll get the warning for each runtime and for the runtime-less restore.
-                Assert.Contains("Dependency specified was Newtonsoft.Json (>= 7.0.0) but ended up with Newtonsoft.Json 7.0.1.", logger.Messages);
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_JsonNet701RuntimeAssemblies()
-        {
-            // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
-
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
-
-                AddDependency(spec, "Newtonsoft.Json", "7.0.1");
-
-                var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var lockFileFormat = new LockFileFormat();
-
-                // Act
-                var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
-                var installed = result.GetAllInstalled();
-                var unresolved = result.GetAllUnresolved();
-                var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, "netcore50", null);
-
-                var runtimeAssembly = runtimeAssemblies.FirstOrDefault();
-
-                // Assert
-                Assert.Equal(0, logger.Errors);
-                Assert.Equal(1, installed.Count);
-                Assert.Equal(0, unresolved.Count);
-                Assert.Equal("Newtonsoft.Json", installed.Single().Name);
-                Assert.Equal("7.0.1", installed.Single().Version.ToNormalizedString());
-
-                Assert.Equal(1, runtimeAssemblies.Count);
-                Assert.Equal("lib/portable-net45+wp80+win8+wpa81+dnxcore50/Newtonsoft.Json.dll", runtimeAssembly.Path);
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_NoCompatibleRuntimeAssembliesForProject()
-        {
-            // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
-
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
-
-                AddDependency(spec, "NuGet.Core", "2.8.3");
-
-                var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var lockFileFormat = new LockFileFormat();
-
-                // Act
-                var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
-                var installed = result.GetAllInstalled();
-                var unresolved = result.GetAllUnresolved();
-                var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, "netcore50", null);
-
-                var runtimeAssembly = runtimeAssemblies.FirstOrDefault();
-
-                // Assert
-                var expectedIssue = CompatibilityIssue.Incompatible(
-                    new PackageIdentity("NuGet.Core", new NuGetVersion(2, 8, 3)), FrameworkConstants.CommonFrameworks.NetCore50, null);
-                Assert.Contains(expectedIssue, result.CompatibilityCheckResults.SelectMany(c => c.Issues).ToArray());
-                Assert.False(result.CompatibilityCheckResults.Any(c => c.Success));
-                Assert.Contains(expectedIssue.Format(), logger.Messages);
-
-                Assert.Equal(9, logger.Errors);
-                Assert.Equal(2, installed.Count);
-                Assert.Equal(0, unresolved.Count);
-                Assert.Equal(0, runtimeAssemblies.Count);
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_CorrectlyIdentifiesUnresolvedPackages()
-        {
-            // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
-
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
-
-                AddDependency(spec, "NotARealPackage.ThisShouldNotExists.DontCreateIt.Seriously.JustDontDoIt.Please", "2.8.3");
-
-                var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var lockFileFormat = new LockFileFormat();
-
-                // Act
-                var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
-                var installed = result.GetAllInstalled();
-                var unresolved = result.GetAllUnresolved();
-
-                // Assert
-                Assert.False(result.Success);
-
-                Assert.Equal(1, logger.Errors);
-                Assert.Empty(result.CompatibilityCheckResults);
-                Assert.DoesNotContain("compatible with", logger.Messages);
-                Assert.Equal(1, unresolved.Count);
-                Assert.Equal(0, installed.Count);
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_PopulatesProjectFileDependencyGroupsCorrectly()
-        {
-            const string project = @"{
-    ""dependencies"": {
-        ""Newtonsoft.Json"": ""6.0.4""
-    },
-    ""frameworks"": {
-        ""net45"": {}
-    },
-    ""supports"": {
-    }
-}
-";
-            // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
-
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(project, "TestProject", specPath);
-
-                var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var lockFileFormat = new LockFileFormat();
-
-                // Act
-                var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
-                var installed = result.GetAllInstalled();
-                var unresolved = result.GetAllUnresolved();
-
-                // Assert
-                Assert.Equal(2, result.LockFile.ProjectFileDependencyGroups.Count);
-                Assert.True(string.IsNullOrEmpty(result.LockFile.ProjectFileDependencyGroups[0].FrameworkName));
-                Assert.Equal(new[] { "Newtonsoft.Json >= 6.0.4" }, result.LockFile.ProjectFileDependencyGroups[0].Dependencies.ToArray());
-                Assert.Equal(".NETFramework,Version=v4.5", result.LockFile.ProjectFileDependencyGroups[1].FrameworkName);
-                Assert.Empty(result.LockFile.ProjectFileDependencyGroups[1].Dependencies);
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_CanInstallPackageWithSatelliteAssemblies()
-        {
-            const string project = @"
-{
-    ""dependencies"": {
-        ""Microsoft.OData.Client"": ""6.12.0"",
-    },
-    ""frameworks"": {
-        ""net40"": {}
-    }
-}
-";
-
-            // Arrange
-            var sources = new List<PackageSource>();
-
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2"));
-
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(project, "TestProject", specPath);
-
-                var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var lockFileFormat = new LockFileFormat();
-
-                // Act
-                var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
-
-                // Assert
-                Assert.True(result.Success);
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_UnmatchedRefAndLibAssemblies()
-        {
-            const string project = @"
-{
-    ""dependencies"": {
-        ""System.Runtime.WindowsRuntime"": ""4.0.11-beta-*"",
-        ""Microsoft.NETCore.Targets"": ""1.0.0-beta-*""
-    },
-    ""frameworks"": {
-        ""dotnet"": {}
-    },
-    ""supports"": {
-        ""dnxcore50.app"": {}
-    }
-}
-";
-
-            // Arrange
-            var sources = new List<PackageSource>();
-
-            sources.Add(new PackageSource("https://nuget.org/api/v2/"));
-
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(project, "TestProject", specPath);
-
-                var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var lockFileFormat = new LockFileFormat();
-
-                // Act
-                var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
-                var installed = result.GetAllInstalled();
-                var unresolved = result.GetAllUnresolved();
-                var brokenPackages = result.CompatibilityCheckResults.FirstOrDefault(c =>
-                    c.Graph.Framework == FrameworkConstants.CommonFrameworks.DnxCore50 &&
-                    !string.IsNullOrEmpty(c.Graph.RuntimeIdentifier)).Issues.Where(c => c.Type == CompatibilityIssueType.ReferenceAssemblyNotImplemented).ToArray();
-
-                // Assert
-                Assert.True(brokenPackages.Length >= 1);
-                Assert.True(brokenPackages.Any(c => c.Package.Id.Equals("System.Runtime.WindowsRuntime") && c.AssemblyName.Equals("System.Runtime.WindowsRuntime")));
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_LockedLockFile()
-        {
-            const string project = @"
-{
-    ""dependencies"": {
-        ""System.Runtime"": ""4.0.10-beta-23019""
-    },
-    ""frameworks"": {
-        ""dotnet"": { }
-    }
-}";
-
-            const string lockFileContent = @"{
-  ""locked"": true,
-  ""version"": 1,
-  ""targets"": {
-    "".NETPlatform,Version=v5.0"": {
-      ""System.Runtime/4.0.10-beta-23019"": {
-        ""compile"": {
-          ""ref/dotnet/System.Runtime.dll"": {}
-        }
-      }
-    }
-  },
-  ""libraries"": {
-    ""System.Runtime/4.0.10-beta-23019"": {
-      ""sha512"": ""JkGp8sCzxxRY1GS+p1SEk8WcaT8pu++/5b94ar2i/RaUN/OzkcGP/6OLFUxUf1uar75pUvotpiMawVt1dCEUVA=="",
-      ""type"": ""Package"",
-      ""files"": [
-        ""_rels/.rels"",
-        ""System.Runtime.nuspec"",
-        ""License.rtf"",
-        ""ref/dotnet/System.Runtime.dll"",
-        ""ref/net451/_._"",
-        ""lib/net451/_._"",
-        ""ref/win81/_._"",
-        ""lib/win81/_._"",
-        ""ref/netcore50/System.Runtime.dll"",
-        ""package/services/metadata/core-properties/cdec43993f064447a2d882cbfd022539.psmdcp"",
-        ""[Content_Types].xml""
-      ]
-    }
-  },
-  ""projectFileDependencyGroups"": {
-    """": [
-      ""System.Runtime >= 4.0.10-beta-23019""
-    ],
-    "".NETPlatform,Version=v5.0"": []
-  }
-}
-";
-
-            // Arrange
-            var sources = new List<PackageSource>();
-
-            // TODO(anurse): We should be mocking this out or using a stable source...
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
-
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(project, "TestProject", specPath);
-
-                var lockFileFormat = new LockFileFormat();
-                var lockFile = lockFileFormat.Parse(lockFileContent, "In Memory");
-                Assert.True(lockFile.IsLocked); // Just to make sure no-one accidentally unlocks it :)
-
-                var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.ExistingLockFile = lockFile;
-
-                // Act
-                var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
-                var installed = result.GetAllInstalled();
-
-                // Assert
-                Assert.Equal(1, installed.Count);
-                Assert.Equal("System.Runtime", installed.Single().Name);
-                Assert.Equal(NuGetVersion.Parse("4.0.10-beta-23019"), installed.Single().Version);
-            }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_LockedLockFileWithOutOfDateProject()
-        {
-            const string project = @"
-{
-    ""dependencies"": {
-        ""System.Runtime"": ""4.0.20-beta-*""
-    },
-    ""frameworks"": {
-        ""dotnet"": { }
-    }
-}";
-
-            const string lockFileContent = @"{
-  ""locked"": true,
-  ""version"": 1,
-  ""targets"": {
-    "".NETPlatform,Version=v5.0"": {
-      ""System.Runtime/4.0.10-beta-23008"": {
-        ""compile"": {
-          ""ref/dotnet/System.Runtime.dll"": {}
-        }
-      }
-    }
-  },
-  ""libraries"": {
-    ""System.Runtime/4.0.10-beta-23008"": {
-      ""sha512"": ""JkGp8sCzxxRY1GS+p1SEk8WcaT8pu++/5b94ar2i/RaUN/OzkcGP/6OLFUxUf1uar75pUvotpiMawVt1dCEUVA=="",
-      ""type"": ""Package"",
-      ""files"": [
-        ""_rels/.rels"",
-        ""System.Runtime.nuspec"",
-        ""License.rtf"",
-        ""ref/dotnet/System.Runtime.dll"",
-        ""ref/net451/_._"",
-        ""lib/net451/_._"",
-        ""ref/win81/_._"",
-        ""lib/win81/_._"",
-        ""ref/netcore50/System.Runtime.dll"",
-        ""package/services/metadata/core-properties/cdec43993f064447a2d882cbfd022539.psmdcp"",
-        ""[Content_Types].xml""
-      ]
-    }
-  },
-  ""projectFileDependencyGroups"": {
-    """": [
-      ""System.Runtime >= 4.0.10-beta-*""
-    ],
-    "".NETPlatform,Version=v5.0"": []
-  }
-}
-";
-
-            // Arrange
-            var sources = new List<PackageSource>();
-
-            sources.Add(new PackageSource("https://nuget.org/api/v2/"));
-
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(project, "TestProject", specPath);
-
-                var lockFileFormat = new LockFileFormat();
-                var lockFile = lockFileFormat.Parse(lockFileContent, "In Memory");
-                Assert.True(lockFile.IsLocked); // Just to make sure no-one accidentally unlocks it :)
-
-                var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
-
-                request.ExistingLockFile = lockFile;
-
-                // Act
-                var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
-                var installed = result.GetAllInstalled();
-
-                // Assert
-                Assert.Equal(1, installed.Count);
-                Assert.Equal("System.Runtime", installed.Single().Name);
-                Assert.Equal(4, installed.Single().Version.Major);
-                Assert.Equal(0, installed.Single().Version.Minor);
-                Assert.Equal(20, installed.Single().Version.Patch);
-                // Don't assert the pre-release tag since it may vary
-            }
-        }
-
-        private static List<LockFileItem> GetRuntimeAssemblies(IList<LockFileTarget> targets, string framework, string runtime)
-        {
-            return GetRuntimeAssemblies(targets, NuGetFramework.Parse(framework), runtime);
-        }
-
-        private static List<LockFileItem> GetRuntimeAssemblies(IList<LockFileTarget> targets, NuGetFramework framework, string runtime)
-        {
-            return targets.Where(target => target.TargetFramework.Equals(framework))
-                .Where(target => target.RuntimeIdentifier == runtime)
-                .SelectMany(target => target.Libraries)
-                .SelectMany(library => library.RuntimeAssemblies)
-                .ToList();
-        }
-
-        private static void AddRuntime(PackageSpec spec, string rid)
-        {
-            spec.RuntimeGraph = RuntimeGraph.Merge(
-                spec.RuntimeGraph,
-                new RuntimeGraph(new[]
+                var tc = new ToolTestContext(workingDir)
                 {
-                    new RuntimeDescription(rid)
-                }));
+                    ProjectJson = @"
+                    {
+                        ""frameworks"": {
+                            ""net45"": { }
+                        },
+                        ""tools"": {
+                            ""packageA"": ""*""
+                        }
+                    }",
+                };
+
+                var packageA = new SimpleTestPackageContext("packageA");
+                packageA.AddFile("lib/netstandard1.3/a.dll");
+
+                SimpleTestPackageUtility.CreatePackages(tc.PackageSource.FullName, packageA);
+
+                tc.Initialize();
+
+                // the first restore
+                await (await tc.Command.ExecuteAsync()).CommitAsync(tc.Logger, CancellationToken.None);
+
+                // reset
+                tc.Logger = new TestLogger();
+                tc.Request.Log = tc.Logger;
+                tc.Initialize();
+                tc.Request.ExistingLockFile = LockFileUtilities.GetLockFile(tc.Request.LockFilePath, tc.Logger);
+
+                // Act
+                var result = await tc.Command.ExecuteAsync();
+                await result.CommitAsync(tc.Logger, CancellationToken.None);
+
+                // Assert
+                Assert.True(
+                    result.Success,
+                    "The command did not succeed. Error messages: "
+                    + Environment.NewLine + tc.Logger.ShowErrors());
+                Assert.Equal(1, result.ToolRestoreResults.Count());
+
+                Assert.Contains(
+                    $"Lock file has not changed. Skipping lock file write. Path: {result.LockFilePath}",
+                    tc.Logger.Messages);
+
+                var toolResult = result.ToolRestoreResults.First();
+                Assert.Contains(
+                    $"Tool lock file has not changed. Skipping lock file write. Path: {toolResult.LockFilePath}",
+                    tc.Logger.Messages);
+            }
         }
 
-        private static void AddDependency(PackageSpec spec, string id, string version)
+        [Fact]
+        public async Task RestoreCommand_ObservesLockedFilesOnlyInProject()
         {
-            var target = new LibraryDependency()
+            // Arrange
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                LibraryRange = new LibraryRange()
+                var tc = new ToolTestContext(workingDir)
                 {
-                    Name = id,
-                    VersionRange = VersionRange.Parse(version)
-                }
-            };
+                    ProjectJson = @"
+                    {
+                        ""frameworks"": {
+                            ""net45"": { }
+                        },
+                        ""tools"": {
+                            ""packageA"": ""*""
+                        }
+                    }",
+                };
 
-            if (spec.Dependencies == null)
-            {
-                spec.Dependencies = new List<LibraryDependency>();
+                var packageA = new SimpleTestPackageContext("packageA");
+                packageA.AddFile("lib/netstandard1.3/a.dll");
+
+                SimpleTestPackageUtility.CreatePackages(tc.PackageSource.FullName, packageA);
+
+                tc.Initialize();
+
+                // the first restore
+                var initialResult = await tc.Command.ExecuteAsync();
+                await initialResult.CommitAsync(tc.Logger, CancellationToken.None);
+                
+                tc.SetIsLocked(initialResult.LockFilePath, true, tc.Logger);
+                tc.SetIsLocked(initialResult.ToolRestoreResults.First().LockFilePath, true, tc.Logger);
+
+                // reset
+                tc.Logger = new TestLogger();
+                tc.Request.Log = tc.Logger;
+                tc.Initialize();
+                tc.Request.ExistingLockFile = LockFileUtilities.GetLockFile(tc.Request.LockFilePath, tc.Logger);
+
+                // Act
+                var result = await tc.Command.ExecuteAsync();
+                await result.CommitAsync(tc.Logger, CancellationToken.None);
+
+                // Assert
+                Assert.True(
+                    result.Success,
+                    "The command did not succeed. Error messages: "
+                    + Environment.NewLine + tc.Logger.ShowErrors());
+                Assert.Equal(1, result.ToolRestoreResults.Count());
+                
+                // Since the files are locked and valid, the commit is completely skipped.
+                Assert.DoesNotContain(result.LockFilePath, tc.Logger.ShowMessages());
+
+                // Locking a tool lock file is not supported.
+                var toolResult = result.ToolRestoreResults.First();                
+                Assert.Contains(
+                    $"Tool lock file has not changed. Skipping lock file write. Path: {toolResult.LockFilePath}",
+                    tc.Logger.Messages);
             }
-
-            spec.Dependencies.Add(target);
         }
 
-        private static JObject BasicConfig
+        [Fact]
+        public async Task RestoreCommand_FailsCommandWhenToolRestoreFails()
         {
-            get
+            // Arrange
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var json = new JObject();
+                var tc = new ToolTestContext(workingDir)
+                {
+                    ProjectJson = @"
+                    {
+                        ""frameworks"": {
+                            ""net45"": { }
+                        },
+                        ""tools"": {
+                            ""packageA"": ""*""
+                        }
+                    }"
+                };
 
-                var frameworks = new JObject();
-                frameworks["netcore50"] = new JObject();
+                // The tool is not available on the source.
 
-                json["dependencies"] = new JObject();
+                tc.Initialize();
 
-                json["frameworks"] = frameworks;
+                // Act
+                var result = await tc.Command.ExecuteAsync();
+                await result.CommitAsync(tc.Logger, CancellationToken.None);
 
-                json.Add("runtimes", JObject.Parse("{ \"uap10-x86\": { }, \"uap10-x86-aot\": { } }"));
+                // Assert
+                Assert.False(result.Success,
+                    "The command should not have succeeded. Messages: "
+                    + Environment.NewLine + tc.Logger.ShowMessages());
+                Assert.Equal(1, result.ToolRestoreResults.Count());
 
-                return json;
+                var toolResult = result.ToolRestoreResults.First();
+                Assert.Null(toolResult.LockFilePath);
+                Assert.NotNull(toolResult.LockFile);
+                Assert.Equal(1, toolResult.LockFile.Targets.Count);
+
+                var target = toolResult.LockFile.Targets[0];
+                Assert.Null(target.RuntimeIdentifier);
+                Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp10, target.TargetFramework);
+                Assert.Equal(0, target.Libraries.Count);
             }
         }
 
-        private static JObject BasicConfigWithNet46
+        [Fact]
+        public async Task RestoreCommand_HandlesMultipleToolRestores()
         {
-            get
+            // Arrange
+            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var json = new JObject();
+                var tc = new ToolTestContext(testDirectory)
+                {
+                    ProjectJson = @"
+                    {
+                        ""frameworks"": {
+                            ""net45"": { }
+                        },
+                        ""tools"": {
+                            ""packageA"": ""*"",
+                            ""packageB"": ""*"",
+                            ""packageC"": ""*""
+                        }
+                    }"
+                };
 
-                var frameworks = new JObject();
-                frameworks["net46"] = new JObject();
+                var packageB = new SimpleTestPackageContext("packageB");
+                packageB.AddFile("lib/netstandard1.3/a.dll");
 
-                json["dependencies"] = new JObject();
+                // packageA and packageC are not on the source
+                SimpleTestPackageUtility.CreatePackages(tc.PackageSource.FullName, packageB);
 
-                json["frameworks"] = frameworks;
+                tc.Initialize();
 
-                json.Add("runtimes", JObject.Parse("{ \"uap10-x86\": { }, \"uap10-x86-aot\": { } }"));
+                // Act
+                var result = await tc.Command.ExecuteAsync();
+                await result.CommitAsync(tc.Logger, CancellationToken.None);
 
-                return json;
+                // Assert
+                Assert.False(result.Success,
+                    "The command should not have succeeded. Messages: "
+                    + Environment.NewLine + tc.Logger.ShowMessages());
+                Assert.Equal(3, result.ToolRestoreResults.Count());
+
+                var packageAResult = result.ToolRestoreResults.ElementAt(0);
+                Assert.Null(packageAResult.LockFilePath);
+                Assert.NotNull(packageAResult.LockFile);
+                Assert.Equal(1, packageAResult.LockFile.Targets.Count);
+                Assert.False(packageAResult.Success, "packageA tool restore should not have succeeded.");
+
+                var packageBResult = result.ToolRestoreResults.ElementAt(1);
+                Assert.NotNull(packageBResult.LockFilePath);
+                Assert.NotNull(packageBResult.LockFile);
+                Assert.Equal(1, packageBResult.LockFile.Targets.Count);
+                Assert.True(packageBResult.Success, "packageB tool restore should have succeeded.");
+
+                var packageCResult = result.ToolRestoreResults.ElementAt(2);
+                Assert.Null(packageCResult.LockFilePath);
+                Assert.NotNull(packageCResult.LockFile);
+                Assert.Equal(1, packageCResult.LockFile.Targets.Count);
+                Assert.False(packageCResult.Success, "packageC tool restore should not have succeeded.");
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_MatchingToolImports()
+        {
+            // Arrange
+            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var tc = new ToolTestContext(testDirectory)
+                {
+                    ProjectJson = @"
+                    {
+                        ""frameworks"": {
+                            ""net45"": { }
+                        },
+                        ""tools"": {
+                            ""packageA"": {
+                                ""version"": ""*"",
+                                ""imports"": [ ""net40"", ""net46"" ]
+                            }
+                        }
+                    }"
+                };
+
+                var packageA = new SimpleTestPackageContext("packageA");
+                packageA.AddFile("lib/net45/a.dll");
+
+                SimpleTestPackageUtility.CreatePackages(tc.PackageSource.FullName, packageA);
+
+                tc.Initialize();
+
+                // Act
+                var result = await tc.Command.ExecuteAsync();
+                await result.CommitAsync(tc.Logger, CancellationToken.None);
+
+                // Assert
+                Assert.True(
+                    result.Success,
+                    "The command did not succeed. Error messages: "
+                    + Environment.NewLine + tc.Logger.ShowErrors());
+                Assert.Equal(1, result.ToolRestoreResults.Count());
+
+                var toolResult = result.ToolRestoreResults.First();
+                Assert.NotNull(toolResult.LockFilePath);
+                Assert.True(
+                    File.Exists(toolResult.LockFilePath),
+                    $"The tool lock file at {toolResult.LockFilePath} does not exist.");
+                Assert.NotNull(toolResult.LockFile);
+                Assert.Equal(1, toolResult.LockFile.Targets.Count);
+
+                var target = toolResult.LockFile.Targets[0];
+                Assert.Null(target.RuntimeIdentifier);
+                Assert.Equal(
+                    new FallbackFramework(
+                        FrameworkConstants.CommonFrameworks.NetCoreApp10,
+                        new[] { NuGetFramework.Parse("net40"), NuGetFramework.Parse("net46") }),
+                    (FallbackFramework) target.TargetFramework);
+                Assert.Equal(1, target.Libraries.Count);
+                
+                var library = target.Libraries.First(l => l.Name == "packageA");
+                Assert.NotNull(library);
+                Assert.Equal("lib/net45/a.dll", library.RuntimeAssemblies[0].Path);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_NoMatchingToolImportsForTool()
+        {
+            // Arrange
+            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var tc = new ToolTestContext(testDirectory)
+                {
+                    ProjectJson = @"
+                    {
+                        ""frameworks"": {
+                            ""net45"": { }
+                        },
+                        ""tools"": {
+                            ""packageA"": {
+                                ""version"": ""*"",
+                                ""imports"": [ ""net40"", ""net46"" ]
+                            }
+                        }
+                    }"
+                };
+
+                var packageA = new SimpleTestPackageContext("packageA");
+                packageA.AddFile("lib/win8/a.dll");
+
+                SimpleTestPackageUtility.CreatePackages(tc.PackageSource.FullName, packageA);
+
+                tc.Initialize();
+
+                // Act
+                var result = await tc.Command.ExecuteAsync();
+                await result.CommitAsync(tc.Logger, CancellationToken.None);
+
+                // Assert
+                Assert.False(
+                    result.Success,
+                    "The command should not have succeeded. Messages: "
+                    + Environment.NewLine + tc.Logger.ShowMessages());
+                Assert.Equal(1, result.ToolRestoreResults.Count());
+
+                Assert.Contains(
+                    "Package packageA 1.0.0 is not compatible with netcoreapp1.0 (.NETCoreApp,Version=v1.0). Package packageA 1.0.0 supports: win8 (Windows,Version=v8.0)",
+                    tc.Logger.ErrorMessages);
+                Assert.Contains(
+                    "One or more packages are incompatible with .NETCoreApp,Version=v1.0.",
+                    tc.Logger.ErrorMessages);
+
+                var toolResult = result.ToolRestoreResults.First();
+                Assert.NotNull(toolResult.LockFilePath);
+                Assert.True(
+                    File.Exists(toolResult.LockFilePath),
+                    $"The tool lock file at {toolResult.LockFilePath} does not exist.");
+                Assert.NotNull(toolResult.LockFile);
+                Assert.Equal(1, toolResult.LockFile.Targets.Count);
+
+                var target = toolResult.LockFile.Targets[0];
+                Assert.Null(target.RuntimeIdentifier);
+                Assert.Equal(
+                    new FallbackFramework(
+                        FrameworkConstants.CommonFrameworks.NetCoreApp10,
+                        new[] { NuGetFramework.Parse("net40"), NuGetFramework.Parse("net46") }),
+                    (FallbackFramework) target.TargetFramework);
+                Assert.Equal(1, target.Libraries.Count);
+                
+                var library = target.Libraries.First(l => l.Name == "packageA");
+                Assert.NotNull(library);
+                Assert.Equal(0, library.RuntimeAssemblies.Count);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_NoMatchingToolImportsForToolDependency()
+        {
+            // Arrange
+            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var tc = new ToolTestContext(testDirectory)
+                {
+                    ProjectJson = @"
+                    {
+                        ""frameworks"": {
+                            ""net45"": { }
+                        },
+                        ""tools"": {
+                            ""packageB"": {
+                                ""version"": ""*""
+                            }
+                        }
+                    }"
+                };
+
+                var packageA = new SimpleTestPackageContext("packageA");
+                packageA.AddFile("lib/win8/a.dll");
+                packageA.AddFile("lib/net40/a.dll");
+
+                var packageB = new SimpleTestPackageContext("packageB");
+                packageB.AddFile("lib/netstandard1.4/b.dll");
+                packageB.Dependencies.Add(packageA);
+
+                SimpleTestPackageUtility.CreatePackages(tc.PackageSource.FullName, packageA, packageB);
+
+                tc.Initialize();
+
+                // Act
+                var result = await tc.Command.ExecuteAsync();
+                await result.CommitAsync(tc.Logger, CancellationToken.None);
+
+                // Assert
+                Assert.False(
+                    result.Success,
+                    "The command should not have succeeded. Messages: "
+                    + Environment.NewLine + tc.Logger.ShowMessages());
+                Assert.Equal(1, result.ToolRestoreResults.Count());
+
+                Assert.Contains(
+                    "Package packageA 1.0.0 is not compatible with netcoreapp1.0 (.NETCoreApp,Version=v1.0). Package packageA 1.0.0 supports:" +
+                    Environment.NewLine + "  - net40 (.NETFramework,Version=v4.0)" +
+                    Environment.NewLine + "  - win8 (Windows,Version=v8.0)",
+                    tc.Logger.ErrorMessages);
+                Assert.Contains(
+                    "One or more packages are incompatible with .NETCoreApp,Version=v1.0.",
+                    tc.Logger.ErrorMessages);
+
+                var toolResult = result.ToolRestoreResults.First();
+                Assert.NotNull(toolResult.LockFilePath);
+                Assert.True(
+                    File.Exists(toolResult.LockFilePath),
+                    $"The tool lock file at {toolResult.LockFilePath} does not exist.");
+                Assert.NotNull(toolResult.LockFile);
+                Assert.Equal(1, toolResult.LockFile.Targets.Count);
+
+                var target = toolResult.LockFile.Targets[0];
+                Assert.Null(target.RuntimeIdentifier);
+                Assert.Equal(
+                    FrameworkConstants.CommonFrameworks.NetCoreApp10,
+                    target.TargetFramework);
+                Assert.Equal(2, target.Libraries.Count);
+
+                var libraryA = target.Libraries.First(l => l.Name == "packageA");
+                Assert.NotNull(libraryA);
+                Assert.Equal(0, libraryA.RuntimeAssemblies.Count);
+
+                var libraryB = target.Libraries.First(l => l.Name == "packageB");
+                Assert.NotNull(libraryB);
+                Assert.Equal(1, libraryB.RuntimeAssemblies.Count);
+            }
+        }
+
+        private class ToolTestContext
+        {
+            public ToolTestContext(TestDirectory testDirectory)
+            {
+                // data
+                Sources = new List<PackageSource>();
+                ProjectJson = @"
+                {
+                  ""frameworks"": {
+                    ""net45"": { }
+                  },
+                  ""tools"": {
+                    ""packageB"": ""*""
+                  }
+                }";
+
+
+                PackagesDir = new DirectoryInfo(Path.Combine(testDirectory, "globalPackages"));
+                PackageSource = new DirectoryInfo(Path.Combine(testDirectory, "packageSource"));
+                Project = new DirectoryInfo(Path.Combine(testDirectory, "projects", "project1"));
+                PackagesDir.Create();
+                PackageSource.Create();
+                Project.Create();
+                Sources.Add(new PackageSource(PackageSource.FullName));
+                Logger = new TestLogger();
+            }
+
+            public DirectoryInfo PackageSource { get; }
+            public TestLogger Logger { get; set; }
+            public string ProjectJson { private get; set; }
+            public RestoreRequest Request { get; set;  }
+            public RestoreCommand Command { get; private set;  }
+
+            private DirectoryInfo Project { get; }
+            private DirectoryInfo PackagesDir { get; }
+            private List<PackageSource> Sources { get; }
+
+            public void Initialize()
+            {
+                File.WriteAllText(Path.Combine(Project.FullName, "project.json"), ProjectJson);
+
+                var specPath1 = Path.Combine(Project.FullName, "project.json");
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(ProjectJson, "project1", specPath1);
+                Request = new RestoreRequest(spec1, Sources, PackagesDir.FullName, Logger);
+
+                Request.LockFilePath = Path.Combine(Project.FullName, "project.lock.json");
+                Command = new RestoreCommand(Request);
+            }
+
+            public void SetIsLocked(string path, bool isLocked, ILogger logger)
+            {
+                var lockFile = LockFileUtilities.GetLockFile(path, logger);
+                lockFile.IsLocked = isLocked;
+                new LockFileFormat().Write(path, lockFile);
             }
         }
     }

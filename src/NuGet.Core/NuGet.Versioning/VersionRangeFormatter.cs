@@ -17,16 +17,22 @@ namespace NuGet.Versioning
         private const string ZeroN = "{0:N}";
         private readonly VersionFormatter _versionFormatter;
 
+        /// <summary>
+        /// Custom version range format provider.
+        /// </summary>
         public VersionRangeFormatter()
         {
-            _versionFormatter = new VersionFormatter();
+            _versionFormatter = VersionFormatter.Instance;
         }
 
+        /// <summary>
+        /// Format a version range string.
+        /// </summary>
         public string Format(string format, object arg, IFormatProvider formatProvider)
         {
             if (arg == null)
             {
-                throw new ArgumentNullException("arg");
+                throw new ArgumentNullException(nameof(arg));
             }
 
             string formatted = null;
@@ -73,6 +79,9 @@ namespace NuGet.Versioning
             return formatted;
         }
 
+        /// <summary>
+        /// Format type.
+        /// </summary>
         public object GetFormat(Type formatType)
         {
             if (formatType == typeof(ICustomFormatter)
@@ -94,10 +103,10 @@ namespace NuGet.Versioning
                     s = PrettyPrint(range);
                     break;
                 case 'L':
-                    s = range.HasLowerBound ? String.Format(new VersionFormatter(), ZeroN, range.MinVersion) : string.Empty;
+                    s = range.HasLowerBound ? string.Format(VersionFormatter.Instance, ZeroN, range.MinVersion) : string.Empty;
                     break;
                 case 'U':
-                    s = range.HasUpperBound ? String.Format(new VersionFormatter(), ZeroN, range.MaxVersion) : string.Empty;
+                    s = range.HasUpperBound ? string.Format(VersionFormatter.Instance, ZeroN, range.MaxVersion) : string.Empty;
                     break;
                 case 'S':
                     s = GetToString(range);
@@ -161,7 +170,7 @@ namespace NuGet.Versioning
                 && range.IsMinInclusive
                 && !range.HasUpperBound)
             {
-                s = String.Format(_versionFormatter, ZeroN, range.MinVersion);
+                s = string.Format(_versionFormatter, ZeroN, range.MinVersion);
             }
             else if (range.HasLowerAndUpperBounds
                      && range.IsMinInclusive
@@ -171,7 +180,7 @@ namespace NuGet.Versioning
             {
                 // TODO: Does this need a specific version comparision? Does metadata matter?
 
-                s = String.Format(_versionFormatter, "[{0:N}]", range.MinVersion);
+                s = string.Format(_versionFormatter, "[{0:N}]", range.MinVersion);
             }
             else
             {

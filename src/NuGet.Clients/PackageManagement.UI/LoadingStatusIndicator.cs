@@ -1,15 +1,18 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class LoadingStatusIndicator : INotifyPropertyChanged
+    internal class LoadingStatusIndicator : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        private LoadingStatus _status;
+        private LoadingStatus _status = LoadingStatus.Unknown;
         private string _errorMessage;
         private string _loadingMessage;
 
@@ -19,7 +22,7 @@ namespace NuGet.PackageManagement.UI
             set
             {
                 _status = value;
-                OnPropertyChanged("Status");
+                OnPropertyChanged(nameof(Status));
             }
         }
 
@@ -34,7 +37,7 @@ namespace NuGet.PackageManagement.UI
                 if (_loadingMessage != value)
                 {
                     _loadingMessage = value;
-                    OnPropertyChanged("LoadingMessage");
+                    OnPropertyChanged(nameof(LoadingMessage));
                 }
             }
         }
@@ -50,7 +53,7 @@ namespace NuGet.PackageManagement.UI
                 if (_errorMessage != value)
                 {
                     _errorMessage = value;
-                    OnPropertyChanged("ErrorMessage");
+                    OnPropertyChanged(nameof(ErrorMessage));
                 }
             }
         }
@@ -62,6 +65,23 @@ namespace NuGet.PackageManagement.UI
                 PropertyChangedEventArgs e = new PropertyChangedEventArgs(propertyName);
                 PropertyChanged(this, e);
             }
+        }
+
+        public void UpdateLoadingState(IItemLoaderState loaderState)
+        {
+            Status = loaderState.LoadingStatus;
+        }
+
+        public void Reset(string loadingMessage)
+        {
+            Status = LoadingStatus.Unknown;
+            LoadingMessage = loadingMessage;
+        }
+
+        public void SetError(string message)
+        {
+            Status = LoadingStatus.ErrorOccurred;
+            ErrorMessage = message;
         }
     }
 }

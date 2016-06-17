@@ -1,22 +1,44 @@
 ﻿{
-  "version": "3.4.0-*",
-  "compilationOptions": {
-    "warningsAsErrors": true
+  "version": "3.5.0-*",
+  "copyright": "Copyright .NET Foundation. All rights reserved.",
+  "packOptions": {
+    "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
+    "projectUrl": "https://github.com/NuGet/NuGet.Client"
+  },
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "xmlDoc": true,
+    "nowarn": [
+      "CS1591"
+    ],
+    "compile": {
+      "include": [
+        "../../../Shared/*.cs"
+      ]
+    }
   },
   "dependencies": {
-    "NuGet.PackageManagement": "3.4.0-*",
-    "NuGet.ProjectManagement": "3.4.0-*",
-    "NuGet.Protocol.VisualStudio": "3.4.0-*",
-    "Microsoft.VisualStudio.ProjectSystem.Interop": "",
     "xunit": "2.1.0",
-    "NuGet.Test.Utility": "3.4.0-*"
+    "Microsoft.VisualStudio.ProjectSystem.Interop": "1.0.0-*",
+    "NuGet.PackageManagement": {
+      "target": "project"
+    },
+    "NuGet.Protocol.VisualStudio": {
+      "target": "project"
+    },
+    "NuGet.Test.Utility": {
+      "target": "project"
+    }
   },
   "frameworks": {
     "net45": {
       "frameworkAssemblies": {
-        "System.Threading.Tasks": "",
-        "System.Runtime": "",
         "System.Runtime.Serialization": ""
+      },
+      "buildOptions": {
+        "define": [
+          "IS_DESKTOP"
+        ]
       }
     }
   }

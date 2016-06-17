@@ -8,14 +8,14 @@ namespace NuGet.CommandLine
     public class SettingsCredentialProvider : ICredentialProvider
     {
         private readonly Configuration.IPackageSourceProvider _packageSourceProvider;
-        private readonly Logging.ILogger _logger;
+        private readonly Common.ILogger _logger;
 
         public SettingsCredentialProvider(Configuration.IPackageSourceProvider packageSourceProvider)
-            : this(packageSourceProvider, Logging.NullLogger.Instance)
+            : this(packageSourceProvider, Common.NullLogger.Instance)
         {
         }
 
-        public SettingsCredentialProvider(Configuration.IPackageSourceProvider packageSourceProvider, Logging.ILogger logger)
+        public SettingsCredentialProvider(Configuration.IPackageSourceProvider packageSourceProvider, Common.ILogger logger)
         {
             if (packageSourceProvider == null)
             {
@@ -47,8 +47,8 @@ namespace NuGet.CommandLine
             var source = _packageSourceProvider.LoadPackageSources().FirstOrDefault(p =>
             {
                 Uri sourceUri;
-                return !String.IsNullOrEmpty(p.UserName)
-                    && !String.IsNullOrEmpty(p.Password)
+                return p.Credentials != null
+                    && p.Credentials.IsValid()
                     && Uri.TryCreate(p.Source, UriKind.Absolute, out sourceUri)
                     && UriEquals(sourceUri, uri);
             });
@@ -58,7 +58,7 @@ namespace NuGet.CommandLine
                 configurationCredentials = null;
                 return false;
             }
-            configurationCredentials = new NetworkCredential(source.UserName, source.Password);
+            configurationCredentials = new NetworkCredential(source.Credentials.Username, source.Credentials.Password);
             return true;
         }
 

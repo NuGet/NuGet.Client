@@ -139,7 +139,7 @@
     <value>When updating multiple packages, dependency behavior has to be DependencyBehavior.Highest</value>
   </data>
   <data name="NoLatestVersionFound" xml:space="preserve">
-    <value>No latest version found for the '{0}' for the given source repositories and resolution context</value>
+    <value>No latest version found for '{0}' for the given source repositories and resolution context</value>
   </data>
   <data name="NoNuGetProjectWithSpecifiedName" xml:space="preserve">
     <value>No NuGetProject is available with specified name '{0}'</value>
@@ -201,6 +201,9 @@
   <data name="AttemptingToGatherDependencyInfoForMultiplePackages" xml:space="preserve">
     <value>Attempting to gather dependency information for multiple packages with respect to project '{0}', targeting '{1}'</value>
   </data>
+  <data name="NoPackagesInProject" xml:space="preserve">
+    <value>No packages were found in packages.config for project '{0}'.</value>
+  </data>
   <data name="AttemptingToResolveDependenciesForMultiplePackages" xml:space="preserve">
     <value>Attempting to resolve dependencies for multiple packages.</value>
   </data>
@@ -215,9 +218,6 @@
   </data>
   <data name="UnableToResolveDependencyInfoForMultiplePackages" xml:space="preserve">
     <value>Unable to resolve dependencies for multiple packages</value>
-  </data>
-  <data name="PackageMinVersionNotSatisfied" xml:space="preserve">
-    <value>The '{0}' package requires NuGet client version '{1}' or above, but the current NuGet version is '{2}'. To upgrade NuGet, please go to http://docs.nuget.org/consume/installing-nuget</value>
   </data>
   <data name="Warning_RollingBack" xml:space="preserve">
     <value>Install failed. Rolling back...</value>
@@ -275,5 +275,33 @@
   </data>
   <data name="Warning_ErrorFindingRepository" xml:space="preserve">
     <value>Error finding repository for '{0}': {1}</value>
+  </data>
+  <data name="PackageCancelledFromSource" xml:space="preserve">
+    <value>Getting package '{0}' from source '{1}' was cancelled.</value>
+  </data>
+  <data name="PackageNotFoundOnSource" xml:space="preserve">
+    <value>Package '{0}' is not found on source '{1}'.</value>
+  </data>
+  <data name="GatherTotalTime" xml:space="preserve">
+    <value>Gathering dependency information took {0}</value>
+  </data>
+  <data name="NugetActionsTotalTime" xml:space="preserve">
+    <value>Executing nuget actions took {0}</value>
+  </data>
+  <data name="RetrievingPackageStart" xml:space="preserve">
+    <value>Retrieving package '{0} {1}' from '{2}'.</value>
+  </data>
+  <data name="FoundPackageInPackagesFolder" xml:space="preserve">
+    <value>Found package '{0} {1}' in '{2}'.</value>
+  </data>
+  <data name="MultiplePackageTypesNotSupported" xml:space="preserve">
+    <value>Package '{0}' has multiple package types, which is not supported.</value>
+    <comment>{0} is replaced with the package identity.</comment>
+  </data>
+  <data name="UnsupportedPackageType" xml:space="preserve">
+    <value>Package '{0}' has a package type '{1}' that is not supported by project '{2}'.</value>
+    <comment>{0} is the package identity.
+{1} is the unsupported package type.
+{2} is the project name.</comment>
   </data>
 </root>

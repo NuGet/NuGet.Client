@@ -1,39 +1,64 @@
 ﻿{
-    "version": "1.0.0-*",
-    "description": "SynchronizationTestApp Console Application",
-    "authors": [ "yigalatz" ],
-    "tags": [ "" ],
-    "projectUrl": "",
-    "licenseUrl": "",
-
-    "compilationOptions": {
-        "emitEntryPoint": true
-    },
-
-  "dependencies": {
-    "NuGet.Common": "3.4.0-*",
-    "NuGet.Shared": {
-      "version": "3.4.0-*",
-      "type": "build"
+  "version": "1.0.0-*",
+  "description": "SynchronizationTestApp Console Application",
+  "authors": [
+    "yigalatz"
+  ],
+  "packOptions": {
+    "tags": [
+      ""
+    ],
+    "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
+    "projectUrl": "https://github.com/NuGet/NuGet.Client"
+  },
+  "copyright": "Copyright .NET Foundation. All rights reserved.",
+  "buildOptions": {
+    "emitEntryPoint": true,
+    "warningsAsErrors": true,
+    "xmlDoc": true,
+    "nowarn": [
+      "CS1591"
+    ],
+    "compile": {
+      "include": [
+        "../../../Shared/*.cs"
+      ]
     }
   },
-
-    "commands": {
-        "SynchronizationTestApp": "SynchronizationTestApp"
-    },
-
-    "frameworks": {
-        "dnx451": { },
-        "dnxcore50": {
-          "dependencies": {
-            "Microsoft.CSharp": "4.0.0-beta-23109",
-            "System.Collections": "4.0.0-beta-23109",
-            "System.Console": "4.0.0-beta-23109",
-            "System.Linq": "4.0.0-beta-23109",
-            "System.Threading": "4.0.0-beta-23109",
-            "System.Net.Sockets": "4.1.0-beta-23516",
-            "System.Diagnostics.Process": "4.0.0-beta-23109"
-          }
-        }
+  "dependencies": {
+    "NuGet.Common": {
+      "target": "project"
     }
+  },
+  "commands": {
+    "SynchronizationTestApp": "SynchronizationTestApp"
+  },
+  "frameworks": {
+    "netcoreapp1.0": {
+      "dependencies": {
+        "System.Diagnostics.Process": "4.1.0-rc3-24128-00",
+        "Microsoft.NETCore.App": {
+          "type": "platform",
+          "version": "1.0.0-rc3-004338"
+        }
+      },
+      "imports": [
+        "dotnet5.6",
+        "dnxcore50",
+        "portable-net45+win8"
+      ],
+      "buildOptions": {
+        "define": [
+          "IS_CORECLR"
+        ]
+      }
+    },
+    "net46": {
+      "buildOptions": {
+        "define": [
+          "IS_DESKTOP"
+        ]
+      }
+    }
+  }
 }

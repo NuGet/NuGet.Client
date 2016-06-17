@@ -37,6 +37,11 @@ namespace NuGet.Configuration
                 DefaultSettingsFileName  // NuGet v2 style
             };
 
+        public static readonly string[] SupportedMachineWideConfigExtension =
+            RuntimeEnvironmentHelper.IsWindows?
+            new[] { "*.config" } :
+            new[] { "*.Config", "*.config" };
+
         private XDocument ConfigXDocument { get; }
         public string FileName { get; }
         private bool IsMachineWideSettings { get; }
@@ -44,6 +49,8 @@ namespace NuGet.Configuration
         private Settings _next;
         // The priority of this setting file
         private int _priority;
+
+        private bool Cleared { get; set; }
 
         public Settings(string root /*, ILogger logger */)
             : this(root, DefaultSettingsFileName, false)
@@ -78,6 +85,7 @@ namespace NuGet.Configuration
             ExecuteSynchronized(() => config = XmlUtility.GetOrCreateDocument(CreateDefaultConfig(), ConfigFilePath));
             ConfigXDocument = config;
             IsMachineWideSettings = isMachineWideSettings;
+            CheckConfigRoot();
         }
 
         public event EventHandler SettingsChanged = delegate { };
@@ -114,6 +122,20 @@ namespace NuGet.Configuration
         public string ConfigFilePath
         {
             get { return Path.GetFullPath(Path.Combine(Root, FileName)); }
+        }
+
+        /// <summary>
+        /// Load default settings based on a directory.
+        /// This includes machine wide settings.
+        /// </summary>
+        public static ISettings LoadDefaultSettings(string root)
+        {
+            return LoadDefaultSettings(
+                root,
+                configFileName: null,
+                machineWideSettings: new XPlatMachineWideSetting(),
+                loadAppDataSettings: true,
+                useTestingGlobalPath: false);
         }
 
         /// <summary>
@@ -156,7 +178,26 @@ namespace NuGet.Configuration
                 configFileName,
                 machineWideSettings,
                 loadAppDataSettings: true,
-                useTestingGlobalPath : false);
+                useTestingGlobalPath: false);
+        }
+
+        /// <summary>
+        /// Loads Specific NuGet.Config file. The method only loads specific config file 
+        /// which is file <paramref name="configFileName"/>from <paramref name="root"/>.
+        /// </summary>
+        public static ISettings LoadSpecificSettings(string root, string configFileName)
+        {
+            if (string.IsNullOrEmpty(configFileName))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(configFileName));
+            }
+
+            return LoadDefaultSettings(
+                root,
+                configFileName,
+                machineWideSettings: null,
+                loadAppDataSettings: true,
+                useTestingGlobalPath: false);
         }
 
         /// <summary>
@@ -171,16 +212,14 @@ namespace NuGet.Configuration
         {
             {
                 // Walk up the tree to find a config file; also look in .nuget subdirectories
-                // In order to avoid duplicate settings
-                // Exclude specified configeFile from hierarchy Config files
+                // If a configFile is passed, don't walk up the tree. Only use that single config file.
                 var validSettingFiles = new List<Settings>();
-                if (root != null)
+                if (root != null && string.IsNullOrEmpty(configFileName))
                 {
                     validSettingFiles.AddRange(
                         GetSettingsFileNames(root)
                             .Select(f => ReadSettings(root, f))
-                            .Where(f => f != null
-                            && !ConfigPathComparer(f.ConfigFilePath, Path.Combine(root, configFileName ?? string.Empty))));
+                            .Where(f => f != null));
                 }
 
                 if (loadAppDataSettings)
@@ -188,7 +227,7 @@ namespace NuGet.Configuration
                     LoadUserSpecificSettings(validSettingFiles, root, configFileName, machineWideSettings, useTestingGlobalPath);
                 }
 
-                if (machineWideSettings != null)
+                if (machineWideSettings != null && string.IsNullOrEmpty(configFileName))
                 {
                     validSettingFiles.AddRange(
                         machineWideSettings.Settings.Select(
@@ -203,6 +242,8 @@ namespace NuGet.Configuration
                     // Returning a null instance prevents us from silently failing and also from picking up the wrong config
                     return NullSettings.Instance;
                 }
+
+                SetClearTagForSettings(validSettingFiles);
 
                 validSettingFiles[0]._priority = validSettingFiles.Count;
 
@@ -244,11 +285,17 @@ namespace NuGet.Configuration
                 var defaultSettingsFilePath = String.Empty;
                 if (useTestingGlobalPath)
                 {
-                    defaultSettingsFilePath = Path.Combine(root, "TestingGlobalPath");
+                    defaultSettingsFilePath = Path.Combine(root, "TestingGlobalPath", DefaultSettingsFileName);
                 }
                 else
                 {
                     var userSettingsDir = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+
+                    // If there is no user settings directory, return no appdata settings
+                    if (userSettingsDir == null)
+                    {
+                        return;
+                    }
                     defaultSettingsFilePath = Path.Combine(userSettingsDir, DefaultSettingsFileName);
                 }
 
@@ -268,7 +315,13 @@ namespace NuGet.Configuration
                         var values = setting.GetSettingValues(ConfigurationConstants.PackageSources, isPath: true);
                         foreach (var value in values)
                         {
-                            disabledSources.Add(new SettingValue(value.Key, "true", origin: setting, isMachineWide: true, priority: 0));
+                            var packageSource = new PackageSource(value.Value);
+
+                            // if the machine wide package source is http source, disable it by default
+                            if (packageSource.IsHttp)
+                            {
+                                disabledSources.Add(new SettingValue(value.Key, "true", origin: setting, isMachineWide: true, priority: 0));
+                            }
                         }
                     }
                     appDataSettings.UpdateSections(ConfigurationConstants.DisabledPackageSources, disabledSources);
@@ -276,6 +329,20 @@ namespace NuGet.Configuration
                 else
                 {
                     appDataSettings = ReadSettings(root, defaultSettingsFilePath);
+                    bool IsEmptyConfig = !appDataSettings.GetSettingValues(ConfigurationConstants.PackageSources).Any();
+
+                    if (IsEmptyConfig)
+                    {
+                        var trackFilePath = Path.Combine(Path.GetDirectoryName(defaultSettingsFilePath), NuGetConstants.AddV3TrackFile);
+
+                        if (!File.Exists(trackFilePath))
+                        {
+                            File.Create(trackFilePath).Dispose();
+                            var defaultPackageSource = new SettingValue(NuGetConstants.FeedName, NuGetConstants.V3FeedUrl, isMachineWide: false);
+                            defaultPackageSource.AdditionalData.Add(ConfigurationConstants.ProtocolVersionAttribute, "3");
+                            appDataSettings.UpdateSections(ConfigurationConstants.PackageSources, new List<SettingValue> { defaultPackageSource });
+                        }
+                    }
                 }
             }
             else
@@ -326,7 +393,7 @@ namespace NuGet.Configuration
             while (true)
             {
                 // load setting files in directory
-                foreach (var file in FileSystemUtility.GetFilesRelativeToRoot(root, combinedPath, "*.config", SearchOption.TopDirectoryOnly))
+                foreach (var file in FileSystemUtility.GetFilesRelativeToRoot(root, combinedPath, SupportedMachineWideConfigExtension, SearchOption.TopDirectoryOnly))
                 {
                     var settings = ReadSettings(root, file, true);
                     if (settings != null)
@@ -380,13 +447,13 @@ namespace NuGet.Configuration
                 curr = curr._next;
             }
 
-            return ApplyEnvironmentTransform(ret);
+            return ret;
         }
 
         private string ApplyEnvironmentTransform(string configValue)
         {
             if (string.IsNullOrEmpty(configValue))
-            { 
+            {
                 return configValue;
             }
 
@@ -407,8 +474,6 @@ namespace NuGet.Configuration
                 curr.PopulateValues(section, settingValues, isPath);
                 curr = curr._next;
             }
-
-            settingValues.ForEach(settingValue => settingValue.Value = ApplyEnvironmentTransform(settingValue.Value));
 
             return settingValues.AsReadOnly();
         }
@@ -493,7 +558,8 @@ namespace NuGet.Configuration
         public void UpdateSections(string section, IReadOnlyList<SettingValue> values)
         {
             // machine wide settings cannot be changed.
-            if (IsMachineWideSettings)
+            if (IsMachineWideSettings ||
+                ((section == ConfigurationConstants.PackageSources || section == ConfigurationConstants.DisabledPackageSources) && Cleared))
             {
                 if (_next == null)
                 {
@@ -769,6 +835,7 @@ namespace NuGet.Configuration
 
             // Return the optional value which if not there will be null;
             var value = XElementUtility.GetOptionalAttributeValue(element, ConfigurationConstants.ValueAttribute);
+            value = ApplyEnvironmentTransform(value);
             if (!isPath
                 || String.IsNullOrEmpty(value))
             {
@@ -851,7 +918,7 @@ namespace NuGet.Configuration
                 throw new InvalidDataException(String.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, ConfigFilePath));
             }
 
-            var value = valueAttribute.Value;
+            var value = ApplyEnvironmentTransform(valueAttribute.Value);
             var originalValue = valueAttribute.Value;
             Uri uri;
 
@@ -1002,7 +1069,7 @@ namespace NuGet.Configuration
             ExecuteSynchronized(() => FileSystemUtility.AddFile(ConfigFilePath, ConfigXDocument.Save));
         }
 
-#if DNXCORE50
+#if IS_CORECLR
         private static Mutex _globalMutex = new Mutex(initiallyOwned: false);
 
         /// <summary>
@@ -1024,6 +1091,29 @@ namespace NuGet.Configuration
                 {
                     owner = _globalMutex.WaitOne(TimeSpan.FromMinutes(1));
                     ioOperation();
+                }
+                catch (InvalidOperationException e)
+                {
+                    throw new NuGetConfigurationException(
+                        string.Format(CultureInfo.CurrentCulture,Resources.ShowError_ConfigInvalidOperation, ConfigFilePath, e.Message), e);
+                }
+
+                catch (UnauthorizedAccessException e)
+                {
+                    throw new NuGetConfigurationException(
+                        string.Format(CultureInfo.CurrentCulture,Resources.ShowError_ConfigUnauthorizedAccess, ConfigFilePath, e.Message), e);
+                }
+
+                catch (XmlException e)
+                {
+                    throw new NuGetConfigurationException(
+                        string.Format(CultureInfo.CurrentCulture,Resources.ShowError_ConfigInvalidXml, ConfigFilePath, e.Message), e);
+                }
+
+                catch (Exception e)
+                {
+                    throw new NuGetConfigurationException(
+                        string.Format(CultureInfo.CurrentCulture,Resources.Unknown_Config_Exception, ConfigFilePath, e.Message), e);
                 }
                 finally
                 {
@@ -1061,6 +1151,29 @@ namespace NuGet.Configuration
                     // back than hang
                     ioOperation();
                 }
+                catch (InvalidOperationException e)
+                {
+                    throw new NuGetConfigurationException(
+                        string.Format(CultureInfo.CurrentCulture, Resources.ShowError_ConfigInvalidOperation, fileName, e.Message), e);
+                }
+
+                catch (UnauthorizedAccessException e)
+                {
+                    throw new NuGetConfigurationException(
+                        string.Format(CultureInfo.CurrentCulture, Resources.ShowError_ConfigUnauthorizedAccess, fileName, e.Message), e);
+                }
+
+                catch (XmlException e)
+                {
+                    throw new NuGetConfigurationException(
+                        string.Format(CultureInfo.CurrentCulture, Resources.ShowError_ConfigInvalidXml, fileName, e.Message), e);
+                }
+
+                catch (Exception e)
+                {
+                    throw new NuGetConfigurationException(
+                        string.Format(CultureInfo.CurrentCulture, Resources.Unknown_Config_Exception, fileName, e.Message), e);
+                }
                 finally
                 {
                     if (owner)
@@ -1071,35 +1184,59 @@ namespace NuGet.Configuration
             }
         }
 
-        // Compare two config file path, return true if two path are the same.
-        private static bool ConfigPathComparer(string path1, string path2)
-        {
-            if (path1 == null && path2 == null)
-            {
-                return true;
-            }
-            else if (path1 == null || path2 == null)
-            {
-                return false;
-            }
-            else if (RuntimeEnvironmentHelper.IsWindows || RuntimeEnvironmentHelper.IsMacOSX)
-            {
-                return path1.Equals(path2, StringComparison.OrdinalIgnoreCase);
-            }
-            else
-            {
-                return path1.Equals(path2);
-            }
-        }
-
         private static XDocument CreateDefaultConfig()
         {
             return new XDocument(new XElement("configuration",
                                  new XElement(ConfigurationConstants.PackageSources,
-                                 new XElement("add", 
+                                 new XElement("add",
                                  new XAttribute(ConfigurationConstants.KeyAttribute, NuGetConstants.FeedName),
                                  new XAttribute(ConfigurationConstants.ValueAttribute, NuGetConstants.V3FeedUrl),
                                  new XAttribute(ConfigurationConstants.ProtocolVersionAttribute, "3")))));
+        }
+
+        private static void SetClearTagForSettings(List<Settings> settings)
+        {
+            var result = new List<Settings>();
+
+            bool foundClear = false;
+
+            foreach (var setting in settings)
+            {
+                if (!foundClear)
+                {
+                    foundClear = FoundClearTag(setting.ConfigXDocument);
+                }
+                else
+                {
+                    setting.Cleared = true;
+                }
+            }
+        }
+
+        private static bool FoundClearTag(XDocument config)
+        {
+            var sectionElement = GetSection(config.Root, ConfigurationConstants.PackageSources);
+            if (sectionElement != null)
+            {
+                foreach (var element in sectionElement.Elements())
+                {
+                    if (element.Name.LocalName.Equals("clear", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        // this method will check NuGet.Config file, if the root is not configuration, it will throw.
+        private void CheckConfigRoot()
+        {
+            if (ConfigXDocument.Root.Name != "configuration")
+            {
+                throw new NuGetConfigurationException(
+                         string.Format(Resources.ShowError_ConfigRootInvalid, ConfigFilePath));
+            }
         }
     }
 }

@@ -85,6 +85,53 @@ namespace NuGet.CommandLine.Test
             var packageFileName = string.Format("{0}.{1}.nupkg", packageId, version);
             var packageFileFullPath = Path.Combine(path, packageFileName);
 
+            Directory.CreateDirectory(path);
+            using (var fileStream = File.Create(packageFileFullPath))
+            {
+                packageBuilder.Save(fileStream);
+            }
+
+            return packageFileFullPath;
+        }
+        
+        public static string CreateTestPackage(
+            string packageId,
+            string version,
+            string path,
+            List<NuGetFramework> frameworks,
+            params string[] contentFiles)
+        {
+            var packageBuilder = new PackageBuilder
+            {
+                Id = packageId,
+                Version = new SemanticVersion(version)
+            };
+            packageBuilder.Description = string.Format(
+                CultureInfo.InvariantCulture,
+                "desc of {0} {1}",
+                packageId, version);
+            foreach (var framework in frameworks)
+            {
+                var libPath = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "lib/{0}/{1}.dll",
+                    framework.GetShortFolderName(),
+                    packageId);
+
+                packageBuilder.Files.Add(CreatePackageFile(libPath));
+            }
+
+            foreach (var contentFile in contentFiles)
+            {
+                var packageFilePath = Path.Combine("content", contentFile);
+                var packageFile = CreatePackageFile(packageFilePath);
+                packageBuilder.Files.Add(packageFile);
+            }
+
+            packageBuilder.Authors.Add("test author");
+
+            var packageFileName = string.Format("{0}.{1}.nupkg", packageId, version);
+            var packageFileFullPath = Path.Combine(path, packageFileName);
             using (var fileStream = File.Create(packageFileFullPath))
             {
                 packageBuilder.Save(fileStream);
@@ -140,6 +187,7 @@ namespace NuGet.CommandLine.Test
 
             var packageFileName = string.Format("{0}.{1}.nupkg", packageId, version);
             var packageFileFullPath = Path.Combine(path, packageFileName);
+            Directory.CreateDirectory(path);
             using (var fileStream = File.Create(packageFileFullPath))
             {
                 packageBuilder.Save(fileStream);
@@ -279,7 +327,24 @@ namespace NuGet.CommandLine.Test
                     }));
             }
 
-            server.Get.Add("/nuget", r => "OK");
+            // fall through to "package not found"
+            server.Get.Add("/nuget/Packages(Id='", r =>
+                new Action<HttpListenerResponse>(response =>
+                {
+                    response.StatusCode = 404;
+                    MockServer.SetResponseContent(response, @"<?xml version=""1.0"" encoding=""utf-8""?>
+<m:error xmlns:m=""http://schemas.microsoft.com/ado/2007/08/dataservices/metadata"">
+  <m:code />
+  <m:message xml:lang=""en-US"">Resource not found for the segment 'Packages'.</m:message>
+</m:error>");
+                }));
+
+            server.Get.Add("/nuget", r =>
+                new Action<HttpListenerResponse>(response =>
+                {
+                    response.StatusCode = 404;
+                }));
+
             return server;
         }
 
@@ -456,8 +521,6 @@ namespace NuGet.CommandLine.Test
             var path = Util.CreateTestPackage(package, repositoryPath);
 
             ZipPackage zipPackage = new ZipPackage(path);
-
-            MachineCache.Default.RemovePackage(zipPackage);
 
             return zipPackage;
         }
@@ -680,7 +743,7 @@ EndProject";
             string packagesDirectory)
         {
             var versionFolderPathResolver
-                = new VersionFolderPathResolver(packagesDirectory, normalizePackageId: true);
+                = new VersionFolderPathResolver(packagesDirectory);
 
             var packageFiles = new[]
             {
@@ -742,6 +805,25 @@ EndProject";
             NativeMethods.CreateReparsePoint(junctionPoint, targetDirectoryPath);
         }
 
+        public static string GetXProjXML()
+        {
+            return @"<?xml version=""1.0"" encoding=""utf-8""?>
+                <Project ToolsVersion=""14.0"" DefaultTargets=""Build"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+                  <PropertyGroup>
+                    <VisualStudioVersion Condition=""'$(VisualStudioVersion)' == ''"">14.0</VisualStudioVersion>
+                    <VSToolsPath Condition=""'$(VSToolsPath)' == ''"">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+                  </PropertyGroup>
+                  <Import Project=""$(VSToolsPath)\DNX\Microsoft.DNX.Props"" Condition=""'$(VSToolsPath)' != ''"" />
+                  <PropertyGroup Label=""Globals"">
+                    <ProjectGuid>82ff10c5-8724-4187-953e-5096ad90184f</ProjectGuid>
+                  </PropertyGroup>
+                  <ItemGroup>
+                    <Service Include=""{82a7f48d-3b50-4b1e-b82e-3ada8210c358}"" />
+                  </ItemGroup>
+                  <Import Project=""$(VSToolsPath)\DNX\Microsoft.DNX.targets"" Condition=""'$(VSToolsPath)' != ''"" />
+                </Project>";
+        }
+
         /// <summary>
         /// Create a basic csproj file for net45.
         /// </summary>
@@ -793,6 +875,126 @@ EndProject";
             waitForExit: true);
 
             Assert.Equal(0, r.Item1);
+        }
+
+        public static string CreateBasicTwoProjectSolution(TestDirectory workingPath, string proj1ConfigFileName, string proj2ConfigFileName)
+        {
+            var repositoryPath = Path.Combine(workingPath, "Repository");
+            var proj1Directory = Path.Combine(workingPath, "proj1");
+            var proj2Directory = Path.Combine(workingPath, "proj2");
+
+            Directory.CreateDirectory(repositoryPath);
+            Directory.CreateDirectory(proj1Directory);
+            Directory.CreateDirectory(proj2Directory);
+
+            CreateTestPackage("packageA", "1.1.0", repositoryPath);
+            CreateTestPackage("packageB", "2.2.0", repositoryPath);
+
+            CreateFile(workingPath, "a.sln",
+                @"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj1"", ""proj1\proj1.csproj"", ""{A04C59CC-7622-4223-B16B-CDF2ECAD438D}""
+EndProject
+Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj2"", ""proj2\proj2.csproj"", ""{42641DAE-D6C4-49D4-92EA-749D2573554A}""
+EndProject");
+
+            CreateFile(proj1Directory, "proj1.csproj",
+                $@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include='{proj1ConfigFileName}' />
+  </ItemGroup>
+  <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
+</Project>");
+
+            if (!string.IsNullOrEmpty(proj1ConfigFileName))
+            {
+                CreateConfigFile(proj1Directory, proj1ConfigFileName, "net45", new List<PackageIdentity>
+                {
+                    new PackageIdentity("packageA", new NuGetVersion("1.1.0"))
+                });
+            }
+
+            CreateFile(proj2Directory, "proj2.csproj",
+                $@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include='{proj2ConfigFileName}' />
+  </ItemGroup>
+  <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
+</Project>");
+
+            if (!string.IsNullOrEmpty(proj2ConfigFileName))
+            {
+                CreateConfigFile(proj2Directory, proj2ConfigFileName, "net45", new List<PackageIdentity>
+                {
+                    new PackageIdentity("packageB", new NuGetVersion("2.2.0"))
+                });
+            }
+
+            // If either project uses project.json, then define "globalPackagesFolder" so the package doesn't get
+            // installed in the usual global packages folder.
+            if (IsProjectJson(proj1ConfigFileName) || IsProjectJson(proj2ConfigFileName))
+            {
+                CreateFile(workingPath, "nuget.config",
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <config>
+    <add key=""globalPackagesFolder"" value=""GlobalPackages"" />
+  </config>
+</configuration>");
+            }
+
+            return repositoryPath;
+        }
+
+        public static void CreateConfigFile(string path, string configFileName, string targetFramework, IEnumerable<PackageIdentity> packages)
+        {
+            var fileContent = IsProjectJson(configFileName)
+                ? GetProjectJsonFileContents(targetFramework, packages)
+                : GetPackagesConfigFileContents(targetFramework, packages);
+
+            CreateFile(path, configFileName, fileContent);
+        }
+
+        public static string GetProjectJsonFileContents(string targetFramework, IEnumerable<PackageIdentity> packages)
+        {
+            var dependencies = string.Join(", ", packages.Select(package => $"'{package.Id}': '{package.Version}'"));
+            return $@"
+{{
+  'dependencies': {{
+    {dependencies}
+  }},
+  'frameworks': {{
+    '{targetFramework}': {{ }}
+  }}
+}}";
+        }
+
+        public static string GetPackagesConfigFileContents(string targetFramework, IEnumerable<PackageIdentity> packages)
+        {
+            var dependencies = string.Join("\n", packages.Select(package => $@"<package id=""{package.Id}"" version=""{package.Version}"" targetFramework=""{targetFramework}"" />"));
+            return $@"
+<packages>
+  {dependencies}
+</packages>";
+        }
+
+        private static bool IsProjectJson(string configFileName)
+        {
+            // Simply test the extension as that is all we care about
+            return string.Equals(Path.GetExtension(configFileName), ".json", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

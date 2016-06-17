@@ -2,17 +2,22 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Globalization;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using NuGet.Common;
+using NuGet.Packaging.Core;
 using Mvs = Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
 using Resx = NuGet.PackageManagement.UI;
 
 namespace NuGet.PackageManagement.UI
@@ -28,12 +33,12 @@ namespace NuGet.PackageManagement.UI
 
         public event SelectionChangedEventHandler SelectionChanged;
 
-        public event EventHandler UpdateButtonClicked;
+        public delegate void UpdateButtonCllickEventHandler(PackageItemListViewModel[] selectedPackages);
+        public event UpdateButtonCllickEventHandler UpdateButtonClicked;
 
-        private CancellationTokenSource _cts;
-        private ILoader _loader;
-
-        private int _startIndex;
+        private CancellationTokenSource _loadCts;
+        private IItemLoader<PackageItemListViewModel> _loader;
+        private INuGetUILogger _logger;
 
         private const string LogEntrySource = "NuGet Package Manager";
 
@@ -44,9 +49,8 @@ namespace NuGet.PackageManagement.UI
         {
             InitializeComponent();
 
+            DataContext = Items;
             CheckBoxesEnabled = false;
-            _list.ItemsSource = Items;
-            _startIndex = 0;
         }
 
         // Indicates wether check boxes are enabled on packages
@@ -71,174 +75,274 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public bool IsSolution
+        public bool IsSolution { get; set; }
+
+        private readonly ObservableCollection<object> _items = new ObservableCollection<object>(); 
+
+        public ObservableCollection<object> Items
         {
-            get; set;
+            get
+            {
+                Debug.Assert(Mvs.ThreadHelper.CheckAccess());
+                return _items;
+            }
         }
 
-        public ObservableCollection<object> Items { get; } = new ObservableCollection<object>();
+        public IEnumerable<PackageItemListViewModel> PackageItems => Items.OfType<PackageItemListViewModel>().ToArray();
+
+        public PackageItemListViewModel SelectedPackageItem => _list.SelectedItem as PackageItemListViewModel;
 
         // Load items using the specified loader
-        public async Task LoadAsync(ILoader loader)
+        internal void LoadItems(IItemLoader<PackageItemListViewModel> loader, string loadingMessage, INuGetUILogger logger)
         {
             _loader = loader;
-            _loadingStatusIndicator.LoadingMessage = _loader.LoadingMessage;
+            _logger = logger;
+            _loadingStatusIndicator.Reset(loadingMessage);
+            _loadingStatusBar.Visibility = Visibility.Hidden;
+            _loadingStatusBar.Reset(loadingMessage, loader.IsMultiSource);
 
-            var selectedItem = _list.SelectedItem as PackageItemListViewModel;
+            var selectedPackageItem = SelectedPackageItem;
+            ClearPackageList();
 
-            foreach (var item in Items)
-            {
-                var package = item as PackageItemListViewModel;
-                if (package != null)
-                {
-                    package.PropertyChanged -= Package_PropertyChanged;
-                }
-            }
-            Items.Clear();
-
-            Items.Add(_loadingStatusIndicator);
-            _startIndex = 0;
             _selectedCount = 0;
 
-            // now the package list
-            await LoadAsync();
+            // triggers the package list loader
+            LoadItems(selectedPackageItem);
+        }
 
+        private void UpdateSelectedItem(PackageItemListViewModel selectedItem)
+        {
             if (selectedItem != null)
             {
                 // select the the previously selected item if it still exists.
-                foreach (var item in _list.Items)
-                {
-                    var package = item as PackageItemListViewModel;
-                    if (package == null)
-                    {
-                        continue;
-                    }
-
-                    if (package.Id.Equals(selectedItem.Id, StringComparison.OrdinalIgnoreCase))
-                    {
-                        _list.SelectedItem = item;
-                        break;
-                    }
-                }
+                selectedItem = PackageItems
+                    .FirstOrDefault(item => item.Id.Equals(selectedItem.Id, StringComparison.OrdinalIgnoreCase));
             }
 
-            UpdateCheckBoxStatus();
+            // select the first item if none was selected before
+            _list.SelectedItem = selectedItem ?? PackageItems.FirstOrDefault();
         }
 
-        private Task LoadAsync()
+        private void LoadItems(PackageItemListViewModel selectedPackageItem)
         {
-            if (_cts != null)
-            {
-                // There is another async loading process. Cancel it.
-                _cts.Cancel();
-            }
+            var loadCts = new CancellationTokenSource();
+            // If there is another async loading process - cancel it.
+            Interlocked.Exchange(ref _loadCts, loadCts)?.Cancel();
 
-            _cts = new CancellationTokenSource();
-            return LoadWorkAsync(_cts.Token);
-        }
-
-        private async Task LoadWorkAsync(CancellationToken token)
-        {
-            if (token.IsCancellationRequested)
-            {
-                return;
-            }
-
-            _loadingStatusIndicator.Status = LoadingStatus.Loading;
             var currentLoader = _loader;
-            try
+
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                // run Loader.LoadItems in background thread. Otherwise if the
-                // source if V2, the UI can get blocked.
-                var loadResult = await Task.Run(async () => await _loader.LoadItemsAsync(_startIndex, token));
+                await TaskScheduler.Default;
 
-                // multiple loads may occur at the same time
-                if (!token.IsCancellationRequested
-                    && currentLoader == _loader)
+                try
                 {
-                    UpdatePackageList(loadResult);
+                    await LoadItemsCoreAsync(currentLoader, loadCts.Token);
 
-                    // select the first item if none was selected before
-                    if (_list.SelectedIndex == -1 &&
-                        Items.Count > 0 &&
-                        Items[0] != _loadingStatusIndicator)
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    if (selectedPackageItem != null)
                     {
-                        _list.SelectedIndex = 0;
+                        UpdateSelectedItem(selectedPackageItem);
                     }
                 }
-            }
-            catch (OperationCanceledException)
-            {
-                if (!token.IsCancellationRequested)
+                catch (OperationCanceledException) when (!loadCts.IsCancellationRequested)
                 {
+                    loadCts.Cancel();
+                    currentLoader.Reset();
+
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
                     // The user cancelled the login, but treat as a load error in UI
                     // So the retry button and message is displayed
                     // Do not log to the activity log, since it is not a NuGet error
-                    _loadingStatusIndicator.Status = LoadingStatus.ErrorOccured;
-                    _loadingStatusIndicator.ErrorMessage = Resx.Resources.Text_UserCanceled;
-                }
-            }
-            catch (Exception ex)
-            {
-                if (!token.IsCancellationRequested)
-                {
-                    // only display errors if this is still relevant
-                    var message = string.Format(
-                            CultureInfo.CurrentCulture,
-                            Resx.Resources.Text_ErrorOccurred,
-                            Environment.NewLine,
-                            ExceptionUtilities.DisplayMessage(ex));
+                    _logger.Log(ProjectManagement.MessageLevel.Error, Resx.Resources.Text_UserCanceled);
 
-                    _loadingStatusIndicator.Status = LoadingStatus.ErrorOccured;
-                    _loadingStatusIndicator.ErrorMessage = message;
+                    _loadingStatusIndicator.SetError(Resx.Resources.Text_UserCanceled);
+
+                    _loadingStatusBar.SetCancelled();
+                    _loadingStatusBar.Visibility = Visibility.Visible;
+                }
+                catch (Exception ex) when (!loadCts.IsCancellationRequested)
+                {
+                    loadCts.Cancel();
+                    currentLoader.Reset();
 
                     // Write stack to activity log
                     Mvs.ActivityLog.LogError(LogEntrySource, ex.ToString());
+
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    var errorMessage = ExceptionUtilities.DisplayMessage(ex);
+                    _logger.Log(ProjectManagement.MessageLevel.Error, errorMessage);
+
+                    _loadingStatusIndicator.SetError(errorMessage);
+
+                    _loadingStatusBar.SetError();
+                    _loadingStatusBar.Visibility = Visibility.Visible;
                 }
+
+                UpdateCheckBoxStatus();
+            });
+        }
+
+        private async Task LoadItemsCoreAsync(IItemLoader<PackageItemListViewModel> currentLoader, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+
+            var loadedItems = await LoadNextPageAsync(currentLoader, token);
+            token.ThrowIfCancellationRequested();
+
+            await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+               // multiple loads may occur at the same time as a result of multiple instances,
+               // makes sure we update using the relevant one.
+                if (currentLoader == _loader)
+                {
+                    _loadingStatusBar.ItemsLoaded = currentLoader.State.ItemsCount;
+                    UpdatePackageList(loadedItems, refresh: false);
+                }
+                
+            });
+
+            token.ThrowIfCancellationRequested();
+
+            // keep waiting till completion
+            await WaitForCompletionAsync(currentLoader, token);
+
+            token.ThrowIfCancellationRequested();
+        }
+
+        private async Task<IEnumerable<PackageItemListViewModel>> LoadNextPageAsync(IItemLoader<PackageItemListViewModel> currentLoader, CancellationToken token)
+        {
+            var progress = new Progress<IItemLoaderState>(
+                s => HandleItemLoaderStateChange(currentLoader, s));
+
+            // trigger loading
+            await currentLoader.LoadNextAsync(progress, token);
+
+            // run till first results are ready
+            for (var state = currentLoader.State;
+                state.LoadingStatus == LoadingStatus.Loading && state.ItemsCount == 0;
+                state = currentLoader.State)
+            {
+                token.ThrowIfCancellationRequested();
+                await currentLoader.UpdateStateAsync(progress, token);
+            }
+
+            return currentLoader.GetCurrent();
+        }
+
+        private async Task WaitForCompletionAsync(IItemLoader<PackageItemListViewModel> currentLoader, CancellationToken token)
+        {
+            var progress = new Progress<IItemLoaderState>(
+                s => HandleItemLoaderStateChange(currentLoader, s));
+
+            // run to completion
+            while (currentLoader.State.LoadingStatus == LoadingStatus.Loading)
+            {
+                token.ThrowIfCancellationRequested();
+                await currentLoader.UpdateStateAsync(progress, token);
             }
         }
 
-        private void UpdatePackageList(LoadResult loadResult)
+        private void HandleItemLoaderStateChange(IItemLoader<PackageItemListViewModel> loader, IItemLoaderState state)
+        {
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                if (loader == _loader)
+                {
+                    _loadingStatusBar.UpdateLoadingState(state);
+
+                    // decide when to show status bar
+                    var desiredVisibility = EvaluateStatusBarVisibility(loader, state);
+
+                    if (_loadingStatusBar.Visibility != Visibility.Visible 
+                        && desiredVisibility == Visibility.Visible)
+                    {
+                        _loadingStatusBar.Visibility = desiredVisibility;
+                    }
+
+                    _loadingStatusIndicator.Status = state.LoadingStatus;
+
+                    if (!Items.Contains(_loadingStatusIndicator))
+                    {
+                        Items.Add(_loadingStatusIndicator);
+                    }
+                }
+            });
+        }
+
+        private Visibility EvaluateStatusBarVisibility(IItemLoader<PackageItemListViewModel> loader, IItemLoaderState state)
+        {
+            var statusBarVisibility = Visibility.Hidden;
+
+            if (state.LoadingStatus == LoadingStatus.Cancelled
+                || state.LoadingStatus == LoadingStatus.ErrorOccurred)
+            {
+                statusBarVisibility = Visibility.Visible;
+            }
+
+            if (loader.IsMultiSource)
+            {
+                bool hasMore = _loadingStatusBar.ItemsLoaded != 0 && state.ItemsCount > _loadingStatusBar.ItemsLoaded;
+                if (hasMore)
+                {
+                    statusBarVisibility = Visibility.Visible;
+                }
+
+                if (state.LoadingStatus == LoadingStatus.Loading && state.ItemsCount > 0)
+                {
+                    statusBarVisibility = Visibility.Visible;
+                }
+            }
+
+            return statusBarVisibility;
+        }
+
+        private void UpdatePackageList(IEnumerable<PackageItemListViewModel> packages, bool refresh)
         {
             // remove the loading status indicator if it's in the list
-            if (Items.Count > 0 && Items[Items.Count - 1] == _loadingStatusIndicator)
+            Items.Remove(_loadingStatusIndicator);
+
+            if (refresh)
             {
-                Items.RemoveAt(Items.Count - 1);
+                ClearPackageList();
             }
 
             // add newly loaded items
-            foreach (var package in loadResult.Items)
+            foreach (var package in packages)
             {
                 package.PropertyChanged += Package_PropertyChanged;
-                if (package.Selected)
-                {
-                    _selectedCount++;
-                }
-
                 Items.Add(package);
+                _selectedCount = package.Selected ? _selectedCount + 1 : _selectedCount;
             }
 
-            // update loading status indicator
-            if (!loadResult.HasMoreItems)
+            Items.Add(_loadingStatusIndicator);
+        }
+
+        private void ClearPackageList()
+        {
+            foreach (var package in PackageItems)
             {
-                if (Items.Count == 0)
-                {
-                    _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
-                }
-                else
-                {
-                    _loadingStatusIndicator.Status = LoadingStatus.NoMoreItems;
-                }
-            }
-            else
-            {
-                _startIndex = loadResult.NextStartIndex;
-                _loadingStatusIndicator.Status = LoadingStatus.Ready;
+                package.PropertyChanged -= Package_PropertyChanged;
             }
 
-            if (_loadingStatusIndicator.Status != LoadingStatus.NoMoreItems)
+            Items.Clear();
+            _loadingStatusBar.ItemsLoaded = 0;
+        }
+
+        public void UpdatePackageStatus(PackageIdentity[] installedPackages)
+        {
+            // in this case, we only need to update PackageStatus of
+            // existing items in the package list
+            foreach (var package in PackageItems)
             {
-                Items.Add(_loadingStatusIndicator);
+                package.UpdatePackageStatus(installedPackages);
             }
         }
 
@@ -310,10 +414,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public object SelectedItem
-        {
-            get { return _list.SelectedItem; }
-        }
+        public PackageItemListViewModel SelectedItem => _list.SelectedItem as PackageItemListViewModel;
 
         private void List_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -362,25 +463,15 @@ namespace NuGet.PackageManagement.UI
 
         private void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            if (_loader?.State.LoadingStatus == LoadingStatus.Ready)
+            {
+                var first = _scrollViewer.VerticalOffset;
+                var last = _scrollViewer.ViewportHeight + first;
+                if (_scrollViewer.ViewportHeight > 0 && last >= Items.Count)
                 {
-                    if (_loadingStatusIndicator.Status != LoadingStatus.Ready)
-                    {
-                        return;
-                    }
-
-                    var first = _scrollViewer.VerticalOffset;
-                    var last = _scrollViewer.ViewportHeight + first;
-                    if (last >= Items.Count)
-                    {
-                        await LoadAsync();
-                    }
-                });
-        }
-
-        private void RetryButtonClicked(object sender, RoutedEventArgs e)
-        {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => { return LoadAsync(); });
+                    LoadItems(selectedPackageItem: null);
+                }
+            }
         }
 
         private void SelectAllPackagesCheckBox_Checked(object sender, RoutedEventArgs e)
@@ -410,27 +501,10 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        // Returns true if there are any selected packages
-        private bool AnySelected()
-        {
-            foreach (var item in _list.Items)
-            {
-                var package = item as PackageItemListViewModel;
-                if (package != null && package.Selected)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         private void _updateButton_Click(object sender, RoutedEventArgs e)
         {
-            if (UpdateButtonClicked != null && AnySelected())
-            {
-                UpdateButtonClicked(this, EventArgs.Empty);
-            }
+            var selectedPackages = PackageItems.Where(p => p.Selected).ToArray();
+            UpdateButtonClicked(selectedPackages);
         }
 
         private void List_PreviewKeyUp(object sender, System.Windows.Input.KeyEventArgs e)
@@ -442,6 +516,24 @@ namespace NuGet.PackageManagement.UI
                 package.Selected = !package.Selected;
                 e.Handled = true;
             }
+        }
+
+        private void _loadingStatusBar_ShowMoreResultsClick(object sender, RoutedEventArgs e)
+        {
+            var packageItems = _loader?.GetCurrent() ?? Enumerable.Empty<PackageItemListViewModel>();
+            UpdatePackageList(packageItems, refresh: true);
+            _loadingStatusBar.ItemsLoaded = _loader?.State.ItemsCount ?? 0;
+
+            var desiredVisibility = EvaluateStatusBarVisibility(_loader, _loader.State);
+            if (_loadingStatusBar.Visibility != desiredVisibility)
+            {
+                _loadingStatusBar.Visibility = desiredVisibility;
+            }
+        }
+
+        private void _loadingStatusBar_DismissClick(object sender, RoutedEventArgs e)
+        {
+            _loadingStatusBar.Visibility = Visibility.Hidden;
         }
     }
 }

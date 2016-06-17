@@ -3,15 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
              x:Name="_self"
-             xmlns:local="clr-namespace:NuGet.PackageManagement.UI"
              mc:Ignorable="d"
-             d:DesignHeight="100" d:DesignWidth="300">
+             d:DesignHeight="25" d:DesignWidth="100">
   <UserControl.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary
-          Source="Resources.xaml" />
+        <nuget:SharedResources/>
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </UserControl.Resources>
@@ -20,7 +19,7 @@
       <RowDefinition Height="auto" />
       <RowDefinition Height="auto" />
     </Grid.RowDefinitions>
-    <Button
+    <Button x:Name="_labelButton"
       Grid.Row="0"
       Click="ButtonClicked">
       <Button.Template>
@@ -30,13 +29,14 @@
       </Button.Template>
       <StackPanel Orientation="Horizontal">
         <TextBlock
-        x:Name="_labelText"
-        Padding="0"
-        Margin="0"
-        MouseEnter="_labelText_MouseEnter"
-        MouseLeave="_labelText_MouseLeave"
-        FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font122PercentSizeConverter}}"
-        Foreground="{DynamicResource {x:Static local:Brushes.UIText}}" />
+          x:Name="_labelText"
+          Padding="0"
+          Margin="0"
+          MouseEnter="_labelText_MouseEnter"
+          MouseLeave="_labelText_MouseLeave"
+          FontSize="{Binding FontSize,ElementName=_self,Converter={StaticResource Font122PercentSizeConverter}}"
+          Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
+          Text="Sample"/>
 
         <!-- the texblock that displays the count -->
         <Border
@@ -44,16 +44,15 @@
           CornerRadius="2"
           Margin="3,0"
           Padding="3,0"
-          Visibility="Collapsed"
+          Visibility="{Binding Source={x:Static nuget:Domain.CollapsedWhenNotInDesignMode}}"
           HorizontalAlignment="Center"
           VerticalAlignment="Center"
-          Background="{DynamicResource {x:Static local:Brushes.ContentSelectedBrushKey}}">
+          Background="{DynamicResource {x:Static nuget:Brushes.ContentSelectedBrushKey}}">
           <TextBlock
             x:Name="_textBlockCount"
-            Foreground="{DynamicResource {x:Static local:Brushes.ContentSelectedTextBrushKey}}"
             HorizontalAlignment="Right"
-            VerticalAlignment="Top">
-          </TextBlock>
+            VerticalAlignment="Top"
+            Foreground="{DynamicResource {x:Static nuget:Brushes.ContentSelectedTextBrushKey}}"/>
         </Border>
       </StackPanel>
     </Button>
@@ -64,7 +63,7 @@
       Grid.Row="1"
       Margin="0"
       Height="3"
-      Fill="{DynamicResource {x:Static local:Brushes.ContentSelectedBrushKey}}"
-      Visibility="Hidden" />
+      Visibility="{Binding Source={x:Static nuget:Domain.HiddenWhenNotInDesignMode}}"
+      Fill="{DynamicResource {x:Static nuget:Brushes.ContentSelectedBrushKey}}"/>
   </Grid>
 </UserControl>

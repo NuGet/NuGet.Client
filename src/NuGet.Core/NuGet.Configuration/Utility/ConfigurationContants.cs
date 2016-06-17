@@ -3,45 +3,51 @@
 
 namespace NuGet.Configuration
 {
-    internal static class ConfigurationConstants
+    public static class ConfigurationConstants
     {
-        internal static string DisabledPackageSources = "disabledPackageSources";
+        public static readonly string ApiKeys = "apikeys";
 
-        internal static string PackageSources = "packageSources";
+        public static readonly string DisabledPackageSources = "disabledPackageSources";
 
-        internal static string DefaultPushSource = "DefaultPushSource";
+        public static readonly string PackageSources = "packageSources";
 
-        internal static string PackageRestore = "packageRestore";
+        public static readonly string DefaultPushSource = "DefaultPushSource";
 
-        internal static string Config = "config";
+        public static readonly string PackageRestore = "packageRestore";
 
-        internal static string enabled = "enabled";
+        public static readonly string Config = "config";
 
-        internal static string ConfigurationDefaultsFile = "NuGetDefaults.config";
+        public static readonly string Enabled = "enabled";
 
-        internal static string CredentialsSectionName = "packageSourceCredentials";
+        public static readonly string ConfigurationDefaultsFile = "NuGetDefaults.config";
 
-        internal static string UsernameToken = "Username";
+        public static readonly string CredentialsSectionName = "packageSourceCredentials";
 
-        internal static string PasswordToken = "Password";
+        public static readonly string UsernameToken = "Username";
 
-        internal static string ClearTextPasswordToken = "ClearTextPassword";
+        public static readonly string PasswordToken = "Password";
 
-        internal static string ActivePackageSourceSectionName = "activePackageSource";
+        public static readonly string ClearTextPasswordToken = "ClearTextPassword";
 
-        internal static string HostKey = "http_proxy";
+        public static readonly string ActivePackageSourceSectionName = "activePackageSource";
 
-        internal static string UserKey = "http_proxy.user";
+        public static readonly string HostKey = "http_proxy";
 
-        internal static string PasswordKey = "http_proxy.password";
+        public static readonly string UserKey = "http_proxy.user";
+
+        public static readonly string PasswordKey = "http_proxy.password";
         
-        internal static string NoProxy     = "no_proxy";
+        public static readonly string NoProxy     = "no_proxy";
 
-        internal static string KeyAttribute = "key";
+        public static readonly string KeyAttribute = "key";
 
-        internal static string ValueAttribute = "value";
+        public static readonly string ValueAttribute = "value";
 
-        internal static string ProtocolVersionAttribute = "protocolVersion";
+        public static readonly string ProtocolVersionAttribute = "protocolVersion";
 
+        public static readonly string BeginIgnoreMarker = "NUGET: BEGIN LICENSE TEXT";
+        public static readonly string EndIgnoreMarker = "NUGET: END LICENSE TEXT";
+
+        public static readonly string FallbackPackageFolders = "fallbackPackageFolders";
     }
 }

@@ -424,6 +424,9 @@ nuget spec -a MyAssembly.dll</value>
   <data name="UpdateCommandSourceDescription" xml:space="preserve">
     <value>A list of package sources to search for updates.</value>
   </data>
+  <data name="UpdateCommandVersionDescription" xml:space="preserve">
+    <value>Updates the package in -Id to the version indicated.  Requires -Id to contain exactly one package id.</value>
+  </data>
   <data name="UpdateCommandUsageExamples" xml:space="preserve">
     <value>nuget update
     
@@ -5239,8 +5242,11 @@ nuget update -Self</value>
   <data name="PushCommandDisableBufferingDescription" xml:space="preserve">
     <value>Disable buffering when pushing to an HTTP(S) server to decrease memory usage. Note that when this option is enabled, integrated windows authentication might not work.</value>
   </data>
+  <data name="PushCommandNoSymbolsDescription" xml:space="preserve">
+    <value>If a symbols package exists, it will not be pushed to a symbols server.</value>
+  </data>
   <data name="CommandFallbackSourceDescription" xml:space="preserve">
-    <value>A list of packages sources to use as fallbacks for this command.</value>
+    <value>A list of package sources to use as fallbacks for this command.</value>
   </data>
   <data name="CommandMSBuildVersion" xml:space="preserve">
     <value>Specifies the version of MSBuild to be used with this command. Supported values are 4, 12, 14. By default the MSBuild in your path is picked, otherwise it defaults to the highest installed version of MSBuild.</value>
@@ -5307,5 +5313,12 @@ nuget locals global-packages -list</value>
   </data>
   <data name="PackageCommandSuffixDescription" xml:space="preserve">
     <value>Appends a pre-release suffix to the internally generated version number.</value>
+  </data>
+  <data name="Option_ForceEnglishOutput" xml:space="preserve">
+    <value>Forces the application to run using an invariant, English-based culture.</value>
+  </data>
+  <data name="RestoreCommandUsageExamples" xml:space="preserve">
+    <value>nuget restore MySoluion.sln</value>
+    <comment>command line example, do not localize</comment>
   </data>
 </root>

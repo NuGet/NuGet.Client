@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Frameworks;
-using NuGet.Logging;
 using NuGet.Packaging.Core;
 
 namespace NuGet.Protocol.Core.Types
@@ -53,7 +53,7 @@ namespace NuGet.Protocol.Core.Types
         /// <param name="token">cancellation token</param>
         /// <returns>available packages and their dependencies</returns>
         public virtual Task<IEnumerable<RemoteSourceDependencyInfo>> ResolvePackages(string packageId,
-            Logging.ILogger log,
+            Common.ILogger log,
             CancellationToken token)
         {
             throw new NotSupportedException();

@@ -13,11 +13,11 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
-using NuGet.Logging;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
-namespace NuGet.Protocol.Core.v3.RemoteRepositories
+namespace NuGet.Protocol
 {
     /// <summary>
     /// A <see cref="FindPackageByIdResource" /> for a Http-based file system where files are laid out in the
@@ -35,6 +35,8 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         private readonly HttpSource _httpSource;
         private readonly ConcurrentDictionary<string, Task<SortedDictionary<NuGetVersion, PackageInfo>>> _packageInfoCache =
             new ConcurrentDictionary<string, Task<SortedDictionary<NuGetVersion, PackageInfo>>>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<PackageIdentity, Task<PackageIdentity>> _packageIdentityCache
+            = new ConcurrentDictionary<PackageIdentity, Task<PackageIdentity>>();
         private readonly Dictionary<string, Task<NupkgEntry>> _nupkgCache = new Dictionary<string, Task<NupkgEntry>>();
         private readonly IReadOnlyList<Uri> _baseUris;
 
@@ -75,6 +77,29 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             return packageInfos.Keys;
         }
 
+        public override async Task<PackageIdentity> GetOriginalIdentityAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
+        {
+            var packageInfos = await EnsurePackagesAsync(id, cancellationToken);
+
+            PackageInfo packageInfo;
+            if (!packageInfos.TryGetValue(version, out packageInfo))
+            {
+                return null;
+            }
+
+            return await _packageIdentityCache.GetOrAdd(
+                new PackageIdentity(id, version),
+                async identity =>
+                {
+                    var reader = await PackageUtilities.OpenNuspecFromNupkgAsync(
+                        packageInfo.Id,
+                        OpenNupkgStreamAsync(packageInfo, cancellationToken),
+                        Logger);
+
+                    return reader.GetIdentity();
+                });
+        }
+
         public override async Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
         {
             var packageInfos = await EnsurePackagesAsync(id, cancellationToken);
@@ -83,10 +108,14 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             if (packageInfos.TryGetValue(version, out packageInfo))
             {
                 var reader = await PackageUtilities.OpenNuspecFromNupkgAsync(
-                packageInfo.Id,
-                OpenNupkgStreamAsync(packageInfo, cancellationToken),
-                Logger);
+                    packageInfo.Id,
+                    OpenNupkgStreamAsync(packageInfo, cancellationToken),
+                    Logger);
 
+                // Populate the package identity cache while we have the .nuspec open.
+                var identity = reader.GetIdentity();
+                _packageIdentityCache.TryAdd(identity, Task.FromResult(identity));
+                
                 return GetDependencyInfo(reader);
             }
 
@@ -113,57 +142,41 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
         private async Task<SortedDictionary<NuGetVersion, PackageInfo>> FindPackagesByIdAsync(string id, CancellationToken cancellationToken)
         {
-            var result = new SortedDictionary<NuGetVersion, PackageInfo>();
-
             for (var retry = 0; retry != 3; ++retry)
             {
                 var baseUri = _baseUris[retry % _baseUris.Count].OriginalString;
                 var uri = baseUri + id.ToLowerInvariant() + "/index.json";
-                var results = new List<PackageInfo>();
 
                 try
                 {
-
-                    using (var data = await _httpSource.GetAsync(uri,
-                        $"list_{id}",
-                        CreateCacheContext(retry),
-                        Logger,
-                        ignoreNotFounds: true,
-                        cancellationToken: cancellationToken))
-                    {
-                        if (data.Stream == null)
+                    using (var result = await _httpSource.GetAsync(
+                        new HttpSourceCachedRequest(
+                            uri,
+                            $"list_{id}",
+                            CreateCacheContext(retry))
                         {
-                            return result;
+                            IgnoreNotFounds = true,
+                            EnsureValidContents = stream => HttpStreamValidation.ValidateJObject(uri, stream)
+                        },
+                        Logger,
+                        cancellationToken))
+                    {
+                        if (result.Status == HttpSourceResultStatus.NotFound)
+                        {
+                            return new SortedDictionary<NuGetVersion, PackageInfo>();
                         }
 
                         try
                         {
-                            JObject doc;
-                            using (var reader = new StreamReader(data.Stream))
-                            {
-                                doc = JObject.Load(new JsonTextReader(reader));
-                            }
-
-                            foreach (var packageInfo in doc["versions"]
-                                .Select(x => BuildModel(baseUri, id, x.ToString()))
-                                .Where(x => x != null))
-                            {
-                                Debug.Assert(!result.ContainsKey(packageInfo.Version), $"{id} has duplicate versions");
-
-                                if (!result.ContainsKey(packageInfo.Version))
-                                {
-                                    result.Add(packageInfo.Version, packageInfo);
-                                }
-                            }
+                            return ConsumeFlatContainerIndex(result.Stream, id, baseUri);
                         }
                         catch
                         {
-                            Logger.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_FileIsCorrupt, data.CacheFileName));
+                            Logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Log_FileIsCorrupt, result.CacheFileName));
+
                             throw;
                         }
                     }
-
-                    return result;
                 }
                 catch (Exception ex) when (retry < 2)
                 {
@@ -174,7 +187,6 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 }
                 catch (Exception ex) when (retry == 2)
                 {
-                    // Fail silently by returning empty result list
                     var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToRetrievePackage, uri);
                     Logger.LogError(message + Environment.NewLine + ExceptionUtilities.DisplayMessage(ex));
 
@@ -185,15 +197,41 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             return null;
         }
 
+        private SortedDictionary<NuGetVersion, PackageInfo> ConsumeFlatContainerIndex(Stream stream, string id, string baseUri)
+        {
+            JObject doc;
+            using (var reader = new StreamReader(stream))
+            {
+                doc = JObject.Load(new JsonTextReader(reader));
+            }
+
+            var streamResults = new SortedDictionary<NuGetVersion, PackageInfo>();
+
+            var versions = doc["versions"];
+            if (versions == null)
+            {
+                return streamResults;
+            }
+
+            foreach (var packageInfo in versions
+                .Select(x => BuildModel(baseUri, id, x.ToString()))
+                .Where(x => x != null))
+            {
+                if (!streamResults.ContainsKey(packageInfo.Version))
+                {
+                    streamResults.Add(packageInfo.Version, packageInfo);
+                }
+            }
+
+            return streamResults;
+        }
+
         private PackageInfo BuildModel(string baseUri, string id, string version)
         {
             var parsedVersion = NuGetVersion.Parse(version);
             var normalizedVersionString = parsedVersion.ToNormalizedString();
             return new PackageInfo
             {
-                // If 'Id' element exist, use its value as accurate package Id
-                // Otherwise, use the value of 'title' if it exist
-                // Use the given Id as final fallback if all elements above don't exist
                 Id = id,
                 Version = parsedVersion,
                 ContentUri = baseUri + id.ToLowerInvariant() + "/" + normalizedVersionString + "/" + id.ToLowerInvariant() + "." + normalizedVersionString + ".nupkg",
@@ -238,9 +276,13 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 try
                 {
                     using (var data = await _httpSource.GetAsync(
-                        package.ContentUri,
-                        "nupkg_" + package.Id + "." + package.Version.ToNormalizedString(),
-                        CreateCacheContext(retry),
+                        new HttpSourceCachedRequest(
+                            package.ContentUri,
+                            "nupkg_" + package.Id + "." + package.Version.ToNormalizedString(),
+                            CreateCacheContext(retry))
+                        { 
+                            EnsureValidContents = stream => HttpStreamValidation.ValidateNupkg(package.ContentUri, stream)
+                        },
                         Logger,
                         cancellationToken))
                     {

@@ -4,18 +4,16 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-  xmlns:resx="clr-namespace:NuGet.PackageManagement.UI"
-  xmlns:Tools="clr-namespace:NuGet.PackageManagement.UI"
-  Background="{DynamicResource {x:Static resx:Brushes.DetailPaneBackground}}"
-  Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
+  xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+  Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
+  Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
   mc:Ignorable="d"
   d:DesignHeight="300"
   d:DesignWidth="300">
   <UserControl.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary
-          Source="Resources.xaml" />
+        <nuget:SharedResources />
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </UserControl.Resources>
@@ -34,9 +32,10 @@
     <!-- descriptions -->
     <TextBlock
       Grid.Row="0"
-      Text="{x:Static resx:Resources.Label_Description}"
+      Text="{x:Static nuget:Resources.Label_Description}"
       FontWeight="Bold" />
-    <TextBlock
+    <TextBox
+      Style="{DynamicResource SelectableTextBlockStyle}" 
       Grid.Row="1"
       x:Name="_description"
       Margin="0,8,0,0"
@@ -57,6 +56,7 @@
         <RowDefinition />
         <RowDefinition />
         <RowDefinition />
+        <RowDefinition />
       </Grid.RowDefinitions>
       <Grid.ColumnDefinitions>
         <ColumnDefinition
@@ -66,13 +66,14 @@
 
       <!-- version -->
       <TextBlock
-        Visibility="{Binding Path=Authors,Converter={StaticResource NullToVisibilityConverter}}"
+        Visibility="{Binding Path=Version,Converter={StaticResource NullToVisibilityConverter}}"
         Grid.Row="0"
         Grid.Column="0"
         Margin="0,8,0,0"
         FontWeight="Bold"
-        Text="{x:Static resx:Resources.Label_Version}" />
-      <TextBlock
+        Text="{x:Static nuget:Resources.Label_Version}" />
+      <TextBox
+        Style="{DynamicResource SelectableTextBlockStyle}" 
         Grid.Row="0"
         Grid.Column="1"
         Visibility="{Binding Path=Version,Converter={StaticResource NullToVisibilityConverter}}"
@@ -80,40 +81,58 @@
         Margin="8,8,0,0"
         TextWrapping="Wrap" />
 
-      <!-- Author(s) -->
+      <!-- Owner(s) -->
       <TextBlock
-        Visibility="{Binding Path=Authors,Converter={StaticResource NullToVisibilityConverter}}"
+        Visibility="{Binding Path=Owners,Converter={StaticResource NullToVisibilityConverter}}"
         Grid.Row="1"
         Grid.Column="0"
         Margin="0,8,0,0"
         FontWeight="Bold"
-        Text="{x:Static resx:Resources.Label_Authors}" />
-      <TextBlock
-        Visibility="{Binding Path=Authors,Converter={StaticResource NullToVisibilityConverter}}"
-        Text="{Binding Path=Authors}"
+        Text="{x:Static nuget:Resources.Label_Owners}" />
+      <TextBox
+        Style="{DynamicResource SelectableTextBlockStyle}" 
+        Visibility="{Binding Path=Owners,Converter={StaticResource NullToVisibilityConverter}}"
+        Text="{Binding Path=Owners}"
         Margin="8,8,0,0"
         TextWrapping="Wrap"
         Grid.Row="1"
         Grid.Column="1" />
 
+      <!-- Author(s) -->
+      <TextBlock
+        Visibility="{Binding Path=Authors,Converter={StaticResource NullToVisibilityConverter}}"
+        Grid.Row="2"
+        Grid.Column="0"
+        Margin="0,8,0,0"
+        FontWeight="Bold"
+        Text="{x:Static nuget:Resources.Label_Authors}" />
+      <TextBox
+        Style="{DynamicResource SelectableTextBlockStyle}" 
+        Visibility="{Binding Path=Authors,Converter={StaticResource NullToVisibilityConverter}}"
+        Text="{Binding Path=Authors}"
+        Margin="8,8,0,0"
+        TextWrapping="Wrap"
+        Grid.Row="2"
+        Grid.Column="1" />
+
       <!-- License -->
       <TextBlock
         Visibility="{Binding Path=LicenseUrl,Converter={StaticResource NullToVisibilityConverter}}"
-        Grid.Row="2"
+        Grid.Row="3"
         Grid.Column="0"
         FontWeight="Bold"
         Margin="0,8,0,0"
-        Text="{x:Static resx:Resources.Label_License}" />
+        Text="{x:Static nuget:Resources.Label_License}" />
       <TextBlock
         Visibility="{Binding Path=LicenseUrl,Converter={StaticResource NullToVisibilityConverter}}"
         TextWrapping="Wrap"
         Margin="8,8,0,0"
-        Grid.Row="2"
+        Grid.Row="3"
         Grid.Column="1">
         <Hyperlink
           NavigateUri="{Binding Path=LicenseUrl}"
           Style="{StaticResource HyperlinkStyle}"
-          Command="{x:Static Tools:PackageManagerControlCommands.OpenExternalLink}">
+          Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
           <Run Text="{Binding Path=LicenseUrl}" />
         </Hyperlink>
       </TextBlock>
@@ -121,54 +140,56 @@
       <!-- downloads -->
       <TextBlock
         Visibility="{Binding Path=DownloadCount,Converter={StaticResource  DownloadCountToVisibilityConverter}}"
-        Grid.Row="3"
+        Grid.Row="4"
         Grid.Column="0"
         FontWeight="Bold"
         Margin="0,8,0,0"
-        Text="{x:Static resx:Resources.Label_Downloads}" />
-      <TextBlock
+        Text="{x:Static nuget:Resources.Label_Downloads}" />
+      <TextBox
+        Style="{DynamicResource SelectableTextBlockStyle}" 
         Visibility="{Binding Path=DownloadCount,Converter={StaticResource DownloadCountToVisibilityConverter}}"
         Text="{Binding Path=DownloadCount,StringFormat={}{0:N0}}"
         Margin="8,8,0,0"
         TextWrapping="Wrap"
-        Grid.Row="3"
-        Grid.Column="1"></TextBlock>
+        Grid.Row="4"
+        Grid.Column="1" />
 
       <!--Date Published -->
       <TextBlock
         Visibility="{Binding Path=Published,Converter={StaticResource NullToVisibilityConverter}}"
-        Grid.Row="4"
+        Grid.Row="5"
         Grid.Column="0"
         FontWeight="Bold"
         Margin="0,8,0,0"
-        Text="{x:Static resx:Resources.Label_DatePublished}" />
-      <TextBlock
+        Text="{x:Static nuget:Resources.Label_DatePublished}" />
+      <TextBox
+        Style="{DynamicResource SelectableTextBlockStyle}" 
         Visibility="{Binding Path=Published,Converter={StaticResource NullToVisibilityConverter}}"
         Text="{Binding Path=Published,StringFormat={}{0:D} ({0:d})}"
         Margin="8,8,0,0"
         TextWrapping="Wrap"
-        Grid.Row="4"
-        Grid.Column="1"></TextBlock>
+        Grid.Row="5"
+        Grid.Column="1" />
 
       <!-- Project Url -->
       <TextBlock
         Visibility="{Binding Path=ProjectUrl,Converter={StaticResource NullToVisibilityConverter}}"
-        Grid.Row="5"
+        Grid.Row="6"
         Grid.Column="0"
         FontWeight="Bold"
         Margin="0,8,0,0"
-        Text="{x:Static resx:Resources.Label_ProjectUrl}" />
+        Text="{x:Static nuget:Resources.Label_ProjectUrl}" />
 
       <TextBlock
         Visibility="{Binding Path=ProjectUrl,Converter={StaticResource NullToVisibilityConverter}}"
         TextWrapping="Wrap"
         Margin="8,8,0,0"
-        Grid.Row="5"
+        Grid.Row="6"
         Grid.Column="1">
         <Hyperlink
           NavigateUri="{Binding Path=ProjectUrl}"
           Style="{StaticResource HyperlinkStyle}"
-          Command="{x:Static Tools:PackageManagerControlCommands.OpenExternalLink}">
+          Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
           <Run Text="{Binding Path=ProjectUrl}" />
         </Hyperlink>
       </TextBlock>
@@ -176,22 +197,22 @@
       <!-- Report abuse Url -->
       <TextBlock
         Visibility="{Binding Path=ReportAbuseUrl,Converter={StaticResource NullToVisibilityConverter}}"
-        Grid.Row="6"
+        Grid.Row="7"
         Grid.Column="0"
         FontWeight="Bold"
         Margin="0,8,0,0"
-        Text="{x:Static resx:Resources.Label_ReportAbuse}" />
+        Text="{x:Static nuget:Resources.Label_ReportAbuse}" />
 
       <TextBlock
         Visibility="{Binding Path=ReportAbuseUrl,Converter={StaticResource NullToVisibilityConverter}}"
         TextWrapping="Wrap"
         Margin="8,8,0,0"
-        Grid.Row="6"
+        Grid.Row="7"
         Grid.Column="1">
         <Hyperlink
           NavigateUri="{Binding Path=ReportAbuseUrl}"
           Style="{StaticResource HyperlinkStyle}"
-          Command="{x:Static Tools:PackageManagerControlCommands.OpenExternalLink}">
+          Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
           <Run Text="{Binding Path=ReportAbuseUrl}" />
         </Hyperlink>
       </TextBlock>
@@ -199,17 +220,18 @@
       <!-- Tags -->
       <TextBlock
         Visibility="{Binding Path=Tags,Converter={StaticResource NullToVisibilityConverter}}"
-        Grid.Row="7"
+        Grid.Row="8"
         Grid.Column="0"
         FontWeight="Bold"
         Margin="0,8,0,0"
-        Text="{x:Static resx:Resources.Label_Tags}" />
-      <TextBlock
+        Text="{x:Static nuget:Resources.Label_Tags}" />
+      <TextBox
+        Style="{DynamicResource SelectableTextBlockStyle}" 
         Visibility="{Binding Path=Tags,Converter={StaticResource NullToVisibilityConverter}}"
         Text="{Binding Path=Tags}"
         Margin="8,8,0,0"
         TextWrapping="Wrap"
-        Grid.Row="7"
+        Grid.Row="8"
         Grid.Column="1" />
     </Grid>
 
@@ -220,7 +242,7 @@
       <TextBlock
         FontWeight="Bold"
         Margin="0,8,0,0"
-        Text="{x:Static resx:Resources.Label_Dependencies}" />
+        Text="{x:Static nuget:Resources.Label_Dependencies}" />
 
       <ItemsControl
         ItemsSource="{Binding Path=DependencySets}"
@@ -241,14 +263,15 @@
                 IsTabStop="False">
                 <ItemsControl.ItemTemplate>
                   <DataTemplate>
-                    <TextBlock
-                      Text="{Binding}"></TextBlock>
+                    <TextBox 
+                      Style="{DynamicResource SelectableTextBlockStyle}"
+                      Text="{Binding Mode=OneWay}"/>
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
               <TextBlock
                 FontStyle="Italic"
-                Text="{x:Static resx:Resources.Text_NoDependencies}"
+                Text="{x:Static nuget:Resources.Text_NoDependencies}"
                 Visibility="{Binding Dependencies,Converter={StaticResource EmptyEnumerableToVisibilityConverter}}" />
             </StackPanel>
           </DataTemplate>
@@ -259,7 +282,7 @@
         Margin="0,8,0,0"
         Visibility="{Binding Path=HasDependencies,Converter={StaticResource InvertedBooleanToVisibilityConverter}}"
         FontStyle="Italic"
-        Text="{x:Static resx:Resources.Text_NoDependencies}" />
+        Text="{x:Static nuget:Resources.Text_NoDependencies}" />
     </StackPanel>
   </Grid>
 </UserControl>

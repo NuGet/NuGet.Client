@@ -111,7 +111,7 @@ namespace NuGet.Resolver.Test
             solution.Add(CreateAbsentPackage("y"));
 
             // Act
-            var result = ResolverUtility.FindCircularDependency(solution);
+            var result = ResolverUtility.FindFirstCircularDependency(solution);
 
             // Assert
             Assert.False(result.Any());
@@ -137,11 +137,11 @@ namespace NuGet.Resolver.Test
              new NuGet.Packaging.Core.PackageDependency("a", VersionRange.Parse("[1.0.0]"))));
 
             // Act
-            var result = ResolverUtility.FindCircularDependency(solution);
+            var result = ResolverUtility.FindFirstCircularDependency(solution);
 
             // Assert
             var message = String.Join(" => ", result);
-            Assert.Equal("c 1.0.0 => d 2.0.0 => z 1.0.0 => y 1.0.0 => c 1.0.0", message);
+            Assert.Equal("z 1.0.0 => y 1.0.0 => c 1.0.0 => d 2.0.0 => z 1.0.0", message);
         }
 
         [Fact]
@@ -159,7 +159,7 @@ namespace NuGet.Resolver.Test
                 new NuGet.Packaging.Core.PackageDependency("a", VersionRange.Parse("[1.0.0]"))));
 
             // Act
-            var result = ResolverUtility.FindCircularDependency(solution);
+            var result = ResolverUtility.FindFirstCircularDependency(solution);
 
             // Assert
             Assert.Equal("a 1.0.0 => b 1.0.0 => c 1.0.0 => d 1.0.0 => a 1.0.0", String.Join(" => ", result));
@@ -176,12 +176,72 @@ namespace NuGet.Resolver.Test
                 new NuGet.Packaging.Core.PackageDependency("a", VersionRange.Parse("[1.0.0]"))));
 
             // Act
-            var result = ResolverUtility.FindCircularDependency(solution);
+            var result = ResolverUtility.FindFirstCircularDependency(solution);
 
             // Assert
             Assert.Equal("a 1.0.0 => b 1.0.0 => a 1.0.0", String.Join(" => ", result));
         }
 
+        [Fact]
+        public void ResolverUtility_MultipleCircularDependencyCheck()
+        {
+            // Arrange
+            var solution = new List<ResolverPackage>();
+            solution.Add(CreatePackage("x", "1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("a", VersionRange.Parse("[1.0.0]"))));
+            solution.Add(CreatePackage("a", "1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("b", VersionRange.Parse("[1.0.0]")),
+                new NuGet.Packaging.Core.PackageDependency("e", VersionRange.Parse("[1.0.0]")),
+                new NuGet.Packaging.Core.PackageDependency("f", VersionRange.Parse("[1.0.0]"))));
+            solution.Add(CreatePackage("b", "1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("c", VersionRange.Parse("[1.0.0]"))));
+            solution.Add(CreatePackage("c", "1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("d", VersionRange.Parse("[1.0.0]"))));
+            solution.Add(CreatePackage("d", "1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("a", VersionRange.Parse("[1.0.0]"))));
+            solution.Add(CreatePackage("e", "1.0.0",null));
+
+            solution.Add(CreatePackage("f", "1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("g", VersionRange.Parse("[1.0.0]"))));
+            solution.Add(CreatePackage("g", "1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("h", VersionRange.Parse("[1.0.0]"))));
+            solution.Add(CreatePackage("h", "1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("i", VersionRange.Parse("[1.0.0]"))));
+            solution.Add(CreatePackage("i", "1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("f", VersionRange.Parse("[1.0.0]"))));
+
+            // Act
+            var result = ResolverUtility.FindFirstCircularDependency(solution);
+
+            // Assert
+            Assert.Equal("x 1.0.0 => a 1.0.0 => b 1.0.0 => c 1.0.0 => d 1.0.0 => a 1.0.0", String.Join(" => ", result));
+        }
+
+        [Fact]
+        public void ResolverUtility_NoCircularDependencyCheck()
+        {
+            // Arrange
+            var solution = new List<ResolverPackage>();
+            solution.Add(CreatePackage("a", "1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("b", VersionRange.Parse("[1.0.0]"))));
+            solution.Add(CreatePackage("b", "1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("c", VersionRange.Parse("[1.0.0]")),
+                new NuGet.Packaging.Core.PackageDependency("g", VersionRange.Parse("[1.0.0]")),
+                new NuGet.Packaging.Core.PackageDependency("j", VersionRange.Parse("[1.0.0]"))));
+            solution.Add(CreatePackage("c", "1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("d", VersionRange.Parse("[1.0.0]"))));
+            solution.Add(CreatePackage("d", "1.0.0",null));
+            solution.Add(CreatePackage("g", "1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("h", VersionRange.Parse("[1.0.0]"))));
+            solution.Add(CreatePackage("h", "1.0.0", null));
+            solution.Add(CreatePackage("j", "1.0.0", null));
+
+            // Act
+            var result = ResolverUtility.FindFirstCircularDependency(solution);
+
+            // Assert
+            Assert.False(result.Any());
+        }        
 
         [Fact]
         public void ResolverUtility_GetDiagnosticMessageVerifyDiamondDependencySortsById()
@@ -252,6 +312,62 @@ namespace NuGet.Resolver.Test
 
             // Assert
             Assert.Equal("Unable to find a version of 'b' that is compatible with 'a 1.0.0 constraint: b (= 1.0.0)'. 'b' has an additional constraint (= 2.0.0) defined in packages.config.", message);
+        }
+
+        public void ResolverUtility_GetDiagnosticMessageForIncompatibleDependencyWithAllowedVersion()
+        {
+            // Install a 1.0.0 - which requires d 1.0.0 but d 2.0.0 is already installed.
+
+            // Arrange
+            var solution = new List<ResolverPackage>();
+            solution.Add(CreatePackage("a", "1.0.0-1111", "b", "[1.0.0]"));
+            solution.Add(CreatePackage("b", "1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("c", VersionRange.Parse("[1.0.0]")),
+                new NuGet.Packaging.Core.PackageDependency("d", VersionRange.Parse("[1.0.0-1234]")),
+                new NuGet.Packaging.Core.PackageDependency("e", VersionRange.Parse("[1.0.0]"))));
+            solution.Add(CreatePackage("c", "2.0.0"));
+            solution.Add(CreatePackage("d", "2.0.0"));
+            solution.Add(CreatePackage("e", "1.0.0"));
+            solution.Add(CreatePackage("f", "1.0.0", "d", "[2.0.0]"));
+
+            var installed = new List<PackageReference>();
+            installed.Add(CreateInstalledPackage("d", "2.0.0"));
+
+            var available = solution.ToList();
+            available.Add(CreatePackage("c", "1.0.0"));
+
+            // Act
+            var message = ResolverUtility.GetDiagnosticMessage(solution, available, installed, new string[] { "a" }, Enumerable.Empty<PackageSource>());
+
+            // Assert
+            Assert.Equal("Unable to resolve dependencies. 'd 2.0.0' is not compatible with 'a 1.0.0 constraint: d (= 1.0.0)'.", message);
+        }
+
+        public void ResolverUtility_GetDiagnosticMessageForMissingTargetDependency()
+        {
+            // Install b 1.1.0 - which requires d 1.0.0 which is missing from any source.
+
+            // Arrange
+            var solution = new List<ResolverPackage>();
+            solution.Add(CreatePackage("b", "1.1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("c", VersionRange.Parse("[2.0.0]")),
+                new NuGet.Packaging.Core.PackageDependency("d", VersionRange.Parse("[1.0.0.0]")),
+                new NuGet.Packaging.Core.PackageDependency("e", VersionRange.Parse("[1.0.0]"))));
+            solution.Add(CreatePackage("c", "3.0.0"));
+            solution.Add(CreatePackage("e", "1.0.0"));
+
+            var installed = new List<PackageReference>();
+            installed.Add(CreateInstalledPackage("c", "1.0.0"));
+
+            var available = solution.ToList();
+            available.Add(CreatePackage("c", "1.0.0"));
+            available.Add(CreatePackage("c", "2.0.0"));
+
+            // Act
+            var message = ResolverUtility.GetDiagnosticMessage(solution, available, installed, new string[] { "b" }, Enumerable.Empty<PackageSource>());
+
+            // Assert
+            Assert.Equal("Unable to find a version of 'd' that is compatible with 'b 1.1.0 constraint: d (= 1.0.0)'.", message);
         }
 
         [Fact]

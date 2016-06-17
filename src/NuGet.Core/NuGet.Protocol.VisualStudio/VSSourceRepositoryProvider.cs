@@ -16,7 +16,7 @@ namespace NuGet.Protocol.VisualStudio
     [Export(typeof(ISourceRepositoryProvider))]
     public sealed class ExtensibleSourceRepositoryProvider : ISourceRepositoryProvider
     {
-     
+
         // TODO: add support for reloading sources when changes occur
         private readonly Configuration.IPackageSourceProvider _packageSourceProvider;
         private IEnumerable<Lazy<INuGetResourceProvider>> _resourceProviders;
@@ -66,9 +66,17 @@ namespace NuGet.Protocol.VisualStudio
         /// <summary>
         /// Create a repository for one time use.
         /// </summary>
-        public SourceRepository CreateRepository(Configuration.PackageSource source)
+        public SourceRepository CreateRepository(PackageSource source)
         {
-            return new SourceRepository(source, _resourceProviders);
+            return CreateRepository(source, FeedType.Undefined);
+        }
+
+        /// <summary>
+        /// Create a repository for one time use.
+        /// </summary>
+        public SourceRepository CreateRepository(PackageSource source, FeedType type)
+        {
+            return new SourceRepository(source, _resourceProviders, type);
         }
 
         public Configuration.IPackageSourceProvider PackageSourceProvider

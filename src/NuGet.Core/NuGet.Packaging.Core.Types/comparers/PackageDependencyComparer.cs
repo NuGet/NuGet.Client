@@ -56,14 +56,12 @@ namespace NuGet.Packaging.Core
 
             if (result)
             {
-                result = x.Include.OrderBy(s => s, StringComparer.OrdinalIgnoreCase)
-                    .SequenceEqual(y.Include.OrderBy(s => s, StringComparer.OrdinalIgnoreCase));
+                result = x.Include.OrderedEquals(y.Include, s => s, StringComparer.OrdinalIgnoreCase, StringComparer.OrdinalIgnoreCase);
             }
 
             if (result)
             {
-                result = x.Exclude.OrderBy(s => s, StringComparer.OrdinalIgnoreCase)
-                    .SequenceEqual(y.Exclude.OrderBy(s => s, StringComparer.OrdinalIgnoreCase));
+                result = x.Exclude.OrderedEquals(y.Exclude, s => s, StringComparer.OrdinalIgnoreCase, StringComparer.OrdinalIgnoreCase);
             }
 
             return result;

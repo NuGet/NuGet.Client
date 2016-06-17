@@ -6,15 +6,18 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+
+#if !IS_CORECLR
 using NuGet.Common;
+#endif
 
 namespace NuGet.Configuration
 {
     public class PackageSourceProvider : IPackageSourceProvider
     {
-        private const int MaxSupportedProtocolVersion = 3;
+        public ISettings Settings { get; private set; }
 
-        private ISettings Settings { get; set; }
+        private const int MaxSupportedProtocolVersion = 3;
         private readonly IDictionary<PackageSource, PackageSource> _migratePackageSources;
         private readonly IEnumerable<PackageSource> _configurationDefaultSources;
 
@@ -42,6 +45,7 @@ namespace NuGet.Configuration
             {
                 throw new ArgumentNullException(nameof(settings));
             }
+
             Settings = settings;
             Settings.SettingsChanged += (_, __) => { OnPackageSourcesChanged(); };
             _migratePackageSources = migratePackageSources;
@@ -50,7 +54,7 @@ namespace NuGet.Configuration
 
         private IEnumerable<PackageSource> LoadConfigurationDefaultSources(IEnumerable<PackageSource> configurationDefaultSources)
         {
-#if !DNXCORE50
+#if !IS_CORECLR
             // Global default NuGet source doesn't make sense on Mono
             if (RuntimeEnvironmentHelper.IsMono)
             {
@@ -108,9 +112,7 @@ namespace NuGet.Configuration
 
                 var isEnabled = true;
                 SettingValue disabledSource;
-                if (disabledSources.TryGetValue(name, out disabledSource)
-                    &&
-                    disabledSource.Priority >= setting.Priority)
+                if (disabledSources.TryGetValue(name, out disabledSource))
                 {
                     isEnabled = false;
                 }
@@ -124,12 +126,42 @@ namespace NuGet.Configuration
                 .Select(source => source.PackageSource)
                 .ToList();
 
+            if (_configurationDefaultSources != null && _configurationDefaultSources.Any())
+            {
+                SetDefaultPackageSources(loadedPackageSources);
+            }
+
             if (_migratePackageSources != null)
             {
                 MigrateSources(loadedPackageSources);
             }
 
             return loadedPackageSources;
+        }
+
+        private void SetDefaultPackageSources(List<PackageSource> loadedPackageSources)
+        {
+            var defaultPackageSourcesToBeAdded = new List<PackageSource>();
+
+            foreach (var packageSource in _configurationDefaultSources)
+            {
+                bool sourceMatching = loadedPackageSources.Any(p => p.Source.Equals(packageSource.Source, StringComparison.CurrentCultureIgnoreCase));
+                bool feedNameMatching = loadedPackageSources.Any(p => p.Name.Equals(packageSource.Name, StringComparison.CurrentCultureIgnoreCase));
+
+                if (!sourceMatching && !feedNameMatching)
+                {
+                    defaultPackageSourcesToBeAdded.Add(packageSource);
+                }
+            }
+
+            var defaultSourcesInsertIndex = loadedPackageSources.FindIndex(source => source.IsMachineWide);
+
+            if (defaultSourcesInsertIndex == -1)
+            {
+                defaultSourcesInsertIndex = loadedPackageSources.Count;
+            }
+
+            loadedPackageSources.InsertRange(defaultSourcesInsertIndex, defaultPackageSourcesToBeAdded);
         }
 
         private PackageSource ReadPackageSource(SettingValue setting, bool isEnabled)
@@ -143,9 +175,7 @@ namespace NuGet.Configuration
             var credentials = ReadCredential(name);
             if (credentials != null)
             {
-                packageSource.UserName = credentials.Username;
-                packageSource.Password = credentials.Password;
-                packageSource.IsPasswordClearText = credentials.IsPasswordClearText;
+                packageSource.Credentials = credentials;
             }
 
             packageSource.ProtocolVersion = ReadProtocolVersion(setting);
@@ -213,16 +243,17 @@ namespace NuGet.Configuration
                     var encryptedPassword = values.FirstOrDefault(k => k.Key.Equals(ConfigurationConstants.PasswordToken, StringComparison.OrdinalIgnoreCase)).Value;
                     if (!String.IsNullOrEmpty(encryptedPassword))
                     {
-                        return new PackageSourceCredential(userName, EncryptionUtility.DecryptString(encryptedPassword), isPasswordClearText: false);
+                        return new PackageSourceCredential(sourceName, userName, encryptedPassword, isPasswordClearText: false);
                     }
 
                     var clearTextPassword = values.FirstOrDefault(k => k.Key.Equals(ConfigurationConstants.ClearTextPasswordToken, StringComparison.Ordinal)).Value;
                     if (!String.IsNullOrEmpty(clearTextPassword))
                     {
-                        return new PackageSourceCredential(userName, clearTextPassword, isPasswordClearText: true);
+                        return new PackageSourceCredential(sourceName, userName, clearTextPassword, isPasswordClearText: true);
                     }
                 }
             }
+
             return null;
         }
 
@@ -240,7 +271,11 @@ namespace NuGet.Configuration
                 return null;
             }
 
-            return new PackageSourceCredential(match.Groups["user"].Value, match.Groups["pass"].Value, true);
+            return new PackageSourceCredential(
+                sourceName,
+                match.Groups["user"].Value,
+                match.Groups["pass"].Value,
+                isPasswordClearText: true);
         }
 
         private void MigrateSources(List<PackageSource> loadedPackageSources)
@@ -395,14 +430,12 @@ namespace NuGet.Configuration
             // Overwrite the <packageSourceCredentials> section
             Settings.DeleteSection(ConfigurationConstants.CredentialsSectionName);
 
-            var sourceWithCredentials = sources.Where(s => !String.IsNullOrEmpty(s.UserName) && !String.IsNullOrEmpty(s.Password));
-            foreach (var source in sourceWithCredentials)
+            foreach (var source in sources.Where(s => s.Credentials != null && s.Credentials.IsValid()))
             {
-                Settings.SetNestedValues(ConfigurationConstants.CredentialsSectionName, source.Name, new[]
-                    {
-                        new KeyValuePair<string, string>(ConfigurationConstants.UsernameToken, source.UserName),
-                        ReadPasswordValues(source)
-                    });
+                Settings.SetNestedValues(
+                    ConfigurationConstants.CredentialsSectionName,
+                    source.Name,
+                    GetCredentialValues(source.Credentials));
             }
 
             OnPackageSourcesChanged();
@@ -419,12 +452,32 @@ namespace NuGet.Configuration
             }
         }
 
-        private static KeyValuePair<string, string> ReadPasswordValues(PackageSource source)
+        private static KeyValuePair<string, string>[] GetCredentialValues(PackageSourceCredential credentials)
         {
-            var passwordToken = source.IsPasswordClearText ? ConfigurationConstants.ClearTextPasswordToken : ConfigurationConstants.PasswordToken;
-            var passwordValue = source.IsPasswordClearText ? source.Password : EncryptionUtility.EncryptString(source.Password);
+            var passwordToken = credentials.IsPasswordClearText
+                ? ConfigurationConstants.ClearTextPasswordToken
+                : ConfigurationConstants.PasswordToken;
 
-            return new KeyValuePair<string, string>(passwordToken, passwordValue);
+            return new[]
+            {
+                new KeyValuePair<string, string>(ConfigurationConstants.UsernameToken, credentials.Username),
+                new KeyValuePair<string, string>(passwordToken, credentials.PasswordText)
+            };
+        }
+
+        public string DefaultPushSource
+        {
+            get
+            {
+                string source = SettingsUtility.GetDefaultPushSource(Settings);
+
+                if (string.IsNullOrEmpty(source))
+                {
+                    source = ConfigurationDefaults.Instance.DefaultPushSource;
+                }
+
+                return source;
+            }
         }
 
         public void DisablePackageSource(PackageSource source)
@@ -482,22 +535,6 @@ namespace NuGet.Configuration
             catch (Exception)
             {
                 // we want to ignore all errors here.
-            }
-        }
-
-        private class PackageSourceCredential
-        {
-            public string Username { get; private set; }
-
-            public string Password { get; private set; }
-
-            public bool IsPasswordClearText { get; private set; }
-
-            public PackageSourceCredential(string username, string password, bool isPasswordClearText)
-            {
-                Username = username;
-                Password = password;
-                IsPasswordClearText = isPasswordClearText;
             }
         }
 

@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
@@ -66,6 +67,7 @@ namespace NuGet.Packaging
             string destination,
             IEnumerable<string> packageFiles,
             ExtractPackageFileDelegate extractFile,
+            ILogger logger,
             CancellationToken token);
 
         public virtual PackageIdentity GetIdentity()
@@ -78,7 +80,10 @@ namespace NuGet.Packaging
             return NuspecReader.GetMinClientVersion();
         }
 
-        public virtual PackageType GetPackageType() => NuspecReader.GetPackageType();
+        public virtual IReadOnlyList<PackageType> GetPackageTypes()
+        {
+            return NuspecReader.GetPackageTypes();
+        }
 
         public virtual Stream GetNuspec()
         {
@@ -86,8 +91,8 @@ namespace NuGet.Packaging
             // PackageArchiveReader and PackageFolderReader.
 
             // Find all nuspecs in the root folder.
-            var nuspecPaths = GetFiles().Where(entryPath => IsRoot(entryPath)
-                && entryPath.EndsWith(PackagingCoreConstants.NuspecExtension, StringComparison.OrdinalIgnoreCase))
+            var nuspecPaths = GetFiles()
+                .Where(entryPath => PackageHelper.IsManifest(entryPath))
                 .ToList();
 
             if (nuspecPaths.Count == 0)
@@ -103,9 +108,9 @@ namespace NuGet.Packaging
         }
 
         /// <summary>
-        /// Internal low level nuspec reader
+        /// Nuspec reader
         /// </summary>
-        private NuspecReader NuspecReader
+        public virtual NuspecReader NuspecReader
         {
             get
             {
@@ -116,13 +121,6 @@ namespace NuGet.Packaging
 
                 return _nuspecReader;
             }
-        }
-
-        private static readonly char[] Slashes = new char[] { '/', '\\' };
-        private static bool IsRoot(string path)
-        {
-            // True if the path contains no directory slashes.
-            return path.IndexOfAny(Slashes) == -1;
         }
 
         #endregion
@@ -164,6 +162,11 @@ namespace NuGet.Packaging
         public IEnumerable<FrameworkSpecificGroup> GetFrameworkItems()
         {
             return NuspecReader.GetFrameworkReferenceGroups();
+        }
+
+        public bool IsServiceable()
+        {
+            return NuspecReader.IsServiceable();
         }
 
         public IEnumerable<FrameworkSpecificGroup> GetBuildItems()

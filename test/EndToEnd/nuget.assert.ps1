@@ -347,7 +347,9 @@ function Get-PackageConfigName {
     param(
         [parameter(Mandatory = $true)]
         $Project)
+
     $projectName = Get-ProjectName $Project
+
 
     $configName = "packages." + $projectName + ".config"
 
@@ -356,7 +358,6 @@ function Get-PackageConfigName {
 
     if (-not (Test-Path $configPath))
     {
-
         # Check for existence on disk of packages.config
         #Assert-PathExists (Join-Path (Get-ProjectDir $Project) "packages.config")
 
@@ -469,7 +470,9 @@ function Assert-Package {
     $configName = Get-PackageConfigName $Project
 	
 	# Check for existence on disk of packages.config
+    Write-Host 'Checking if packages.config exists'
 	if($configName -eq "packages.config") {Assert-PathExists (Join-Path (Get-ProjectDir $Project) "packages.config")}
+    Write-Host 'packages.config exists. No Problem!'
 
     # Check for the project item
     Assert-NotNull (Get-ProjectItem $Project $configName) "$configName does not exist in $projectName"

@@ -1,24 +1,54 @@
 ﻿{
-  "version": "3.4.0-*",
-  "compilationOptions": {
-    "warningsAsErrors": true
+  "version": "3.5.0-*",
+  "copyright": "Copyright .NET Foundation. All rights reserved.",
+  "packOptions": {
+    "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
+    "projectUrl": "https://github.com/NuGet/NuGet.Client"
+  },
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "xmlDoc": true,
+    "nowarn": [
+      "CS1591"
+    ],
+    "compile": {
+      "include": [
+        "../../../Shared/*.cs"
+      ]
+    }
   },
   "dependencies": {
     "xunit": "2.1.0",
-    "NuGet.Packaging": "3.4.0-*"
+    "NuGet.Packaging": {
+      "target": "project"
+    }
   },
   "frameworks": {
     "net45": {
       "frameworkAssemblies": {
         "System.IO.Compression": ""
+      },
+      "buildOptions": {
+        "define": [
+          "IS_DESKTOP"
+        ]
       }
     },
-    "dnxcore50": {
-      "imports": [ "portable-net45+win8" ],
+    "netstandard1.3": {
+      "imports": [
+        "dotnet5.6",
+        "dnxcore50",
+        "portable-net45+win8"
+      ],
       "dependencies": {
-        "System.IO.Compression.ZipFile": "4.0.0-beta-23109",
-        "System.IO.FileSystem": "4.0.0-beta-23109",
-        "System.Diagnostics.Process": "4.0.0-beta-23109"
+        "NETStandard.Library": "1.6.0-rc3-24128-00",
+        "System.IO.Compression.ZipFile": "4.0.1-rc3-24128-00",
+        "System.Diagnostics.Process": "4.1.0-rc3-24128-00"
+      },
+      "buildOptions": {
+        "define": [
+          "IS_CORECLR"
+        ]
       }
     }
   }

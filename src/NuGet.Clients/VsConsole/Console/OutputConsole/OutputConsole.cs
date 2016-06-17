@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Windows.Media;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGetConsole.Implementation;
 
 namespace NuGetConsole
 {
@@ -15,9 +16,6 @@ namespace NuGetConsole
     /// </summary>
     internal class OutputConsole : IConsole, IConsoleDispatcher
     {
-        // guid for our Output window pane
-        private static Guid _outputWindowPaneGuid = new Guid("CEC55EC8-CC51-40E7-9243-57B87A6F6BEB");
-
         private readonly IVsOutputWindow _outputWindow;
         private IVsOutputWindowPane _outputWindowPane;
 
@@ -123,10 +121,10 @@ namespace NuGetConsole
             if (_outputWindowPane == null)
             {
                 // create the Package Manager pane within the Output window
-                int result = _outputWindow.CreatePane(ref _outputWindowPaneGuid, Resources.OutputConsolePaneName, fInitVisible: 1, fClearWithSolution: 0);
+                int result = _outputWindow.CreatePane(ref GuidList.guidNuGetOutputWindowPaneGuid, Resources.OutputConsolePaneName, fInitVisible: 1, fClearWithSolution: 0);
                 if (result == VSConstants.S_OK)
                 {
-                    result = _outputWindow.GetPane(ref _outputWindowPaneGuid, out _outputWindowPane);
+                    result = _outputWindow.GetPane(ref GuidList.guidNuGetOutputWindowPaneGuid, out _outputWindowPane);
 
                     Debug.Assert(result == VSConstants.S_OK);
                     Debug.Assert(_outputWindowPane != null);

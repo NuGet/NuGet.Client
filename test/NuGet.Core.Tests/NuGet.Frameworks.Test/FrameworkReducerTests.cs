@@ -19,14 +19,16 @@ namespace NuGet.Test
         // 4. then lib/netstandard1.2, 
         // 5. then lib/dotnet5.3, 
         // 6. then portable-win81+*, etc
+        [InlineData("uap10.0", "netcore50,win81,wpa81,dotnet5.4,portable-win81+net45", "netcore50")]
         [InlineData("uap10.0", "uap10.0,win81,wpa81,dotnet5.4,portable-win81+net45", "uap10.0")]
         [InlineData("uap10.0", "win81,wpa81,dotnet5.4,portable-win81+net45", "win81")]
         [InlineData("uap10.0", "wpa81,dotnet5.4,portable-win81+net45", "wpa81")]
         [InlineData("uap10.0", "dotnet5.4,portable-win81+net45", "dotnet5.4")]
         [InlineData("uap10.0", "portable-win81+net45", "portable-win81+net45")]
-        [InlineData("uap10.0", "dotnet5.6,dotnet5.5,dotnet5.4,portable-win81+net45", "dotnet5.6")]
-        [InlineData("uap10.0", "netstandard1.5,dotnet5.6,dotnet5.5,dotnet5.4,portable-win81+net45", "netstandard1.5")]
+        [InlineData("uap10.0", "dotnet5.6,dotnet5.5,dotnet5.4,portable-win81+net45", "dotnet5.5")]
+        [InlineData("uap10.0", "netstandard1.5,dotnet5.6,dotnet5.5,dotnet5.4,portable-win81+net45", "dotnet5.5")]
         [InlineData("uap10.0", "netstandard1.4,dotnet5.6,dotnet5.5,dotnet5.4,portable-win81+net45", "netstandard1.4")]
+        [InlineData("uap10.0", "netstandard1.3,dotnet5.6,dotnet5.5,dotnet5.4,portable-win81+net45", "netstandard1.3")]
         [InlineData("uap10.0", "dotnet5.4,dotnet,portable-win81+net45", "dotnet5.4")]
         [InlineData("uap10.0", "dotnet,portable-win81+net45", "dotnet")]
         [InlineData("uap10.0", "wpa81,dotnet5.3,portable-win81+net45", "wpa81")]
@@ -914,6 +916,19 @@ namespace NuGet.Test
             var result = reducer.GetNearest(net451, all);
 
             Assert.Equal(net451, result);
+        }
+
+        [Fact]
+        public void FrameworkReducer_GetNearestWithEmptyList()
+        {
+            // Arrange
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            // Act
+            var result = reducer.GetNearest(NuGetFramework.Parse("net35"), new NuGetFramework[0]);
+
+            // Assert
+            Assert.Null(result);
         }
 
         [Fact]

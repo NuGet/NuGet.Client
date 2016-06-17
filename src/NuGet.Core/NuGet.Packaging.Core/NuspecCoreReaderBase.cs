@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -16,17 +17,15 @@ namespace NuGet.Packaging.Core
     /// </summary>
     public abstract class NuspecCoreReaderBase : INuspecCoreReader
     {
-        private static readonly Version _emptyVersion = new Version(0, 0);
         private readonly XDocument _xml;
         private XElement _metadataNode;
+        private Dictionary<string, string> _metadataValues;
 
         protected const string Metadata = "metadata";
         protected const string Id = "id";
         protected const string Version = "version";
         protected const string MinClientVersion = "minClientVersion";
         protected const string DevelopmentDependency = "developmentDependency";
-        protected const string PackageType = "packageType";
-        protected const string PackageTypeVersion = "version";
 
         /// <summary>
         /// Read a nuspec from a path.
@@ -78,7 +77,7 @@ namespace NuGet.Packaging.Core
         /// <summary>
         /// Id of the package
         /// </summary>
-        public string GetId()
+        public virtual string GetId()
         {
             var node = MetadataNode.Elements(XName.Get(Id, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
             return node == null ? null : node.Value;
@@ -87,7 +86,7 @@ namespace NuGet.Packaging.Core
         /// <summary>
         /// Version of the package
         /// </summary>
-        public NuGetVersion GetVersion()
+        public virtual NuGetVersion GetVersion()
         {
             var node = MetadataNode.Elements(XName.Get(Version, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
             return node == null ? null : NuGetVersion.Parse(node.Value);
@@ -96,29 +95,32 @@ namespace NuGet.Packaging.Core
         /// <summary>
         /// The minimum client version this package supports.
         /// </summary>
-        public NuGetVersion GetMinClientVersion()
+        public virtual NuGetVersion GetMinClientVersion()
         {
             var node = MetadataNode.Attribute(XName.Get(MinClientVersion));
             return node == null ? null : NuGetVersion.Parse(node.Value);
         }
 
-        public PackageType GetPackageType()
+        /// <summary>
+        /// Gets zero or more package types from the .nuspec.
+        /// </summary>
+        public virtual IReadOnlyList<PackageType> GetPackageTypes()
         {
-            var node = MetadataNode.Element(XName.Get(PackageType, MetadataNode.GetDefaultNamespace().NamespaceName));
-            if (node != null)
-            {
-                var versionAttribute = node.Attribute(XName.Get(PackageTypeVersion));
-                var packageTypeVersion = versionAttribute == null ? _emptyVersion : System.Version.Parse(versionAttribute.Value);
-                return new PackageType(node.Value, packageTypeVersion);
-            }
+            return NuspecUtility.GetPackageTypes(MetadataNode, useMetadataNamespace: true);
+        }
 
-            return Core.PackageType.Default;
+        /// <summary>
+        /// Returns if the package is serviceable.
+        /// </summary>
+        public virtual bool IsServiceable()
+        {
+            return NuspecUtility.IsServiceable(MetadataNode);
         }
 
         /// <summary>
         /// The developmentDependency attribute
         /// </summary>
-        public bool GetDevelopmentDependency()
+        public virtual bool GetDevelopmentDependency()
         {
             var node = MetadataNode.Elements(XName.Get(DevelopmentDependency, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
             return node == null ? false : bool.Parse(node.Value);
@@ -127,17 +129,49 @@ namespace NuGet.Packaging.Core
         /// <summary>
         /// Nuspec Metadata
         /// </summary>
-        public IEnumerable<KeyValuePair<string, string>> GetMetadata()
+        public virtual IEnumerable<KeyValuePair<string, string>> GetMetadata()
         {
-            // Remove the PackageType element prior to returning the resulting metadata.
-            var filteredMetadataElements = MetadataNode.Elements().Where(
-                element => !element.HasElements &&
-                !String.IsNullOrEmpty(element.Value) &&
-                !element.Name.LocalName.Equals(PackageType, StringComparison.OrdinalIgnoreCase));
+            return MetadataNode
+                .Elements()
+                .Where(e => !e.HasElements && !string.IsNullOrEmpty(e.Value))
+                .Select(e => new KeyValuePair<string, string>(e.Name.LocalName, e.Value));
+        }
 
+        /// <summary>
+        /// Returns a nuspec metadata value or string.Empty.
+        /// </summary>
+        public virtual string GetMetadataValue(string name)
+        {
+            string metadataValue;
+            MetadataValues.TryGetValue(name, out metadataValue);
+            return metadataValue ?? string.Empty;
+        }
 
-            return filteredMetadataElements
-                .Select(element => new KeyValuePair<string, string>(element.Name.LocalName, element.Value));
+        /// <summary>
+        /// Indexed metadata values of the XML elements in the nuspec.
+        /// If duplicate keys exist only the first is used.
+        /// </summary>
+        protected Dictionary<string, string> MetadataValues
+        {
+            get
+            {
+                if (_metadataValues == null)
+                {
+                    var metadataValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+                    foreach (var pair in GetMetadata())
+                    {
+                        if (!metadataValues.ContainsKey(pair.Key))
+                        {
+                            metadataValues.Add(pair.Key, pair.Value);
+                        }
+                    }
+
+                    _metadataValues = metadataValues;
+                }
+
+                return _metadataValues;
+            }
         }
 
         protected XElement MetadataNode
@@ -151,7 +185,10 @@ namespace NuGet.Packaging.Core
 
                     if (_metadataNode == null)
                     {
-                        throw new PackagingException(Strings.FormatMissingMetadataNode(Metadata));
+                        throw new PackagingException(string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.MissingMetadataNode,
+                            Metadata));
                     }
                 }
 
@@ -167,22 +204,23 @@ namespace NuGet.Packaging.Core
             get { return _xml; }
         }
 
-        public PackageIdentity GetIdentity()
+        public virtual PackageIdentity GetIdentity()
         {
             return new PackageIdentity(GetId(), GetVersion());
         }
 
         private static XDocument LoadXml(Stream stream, bool leaveStreamOpen)
         {
-            var xmlReader = XmlReader.Create(stream, new XmlReaderSettings()
+            using (var xmlReader = XmlReader.Create(stream, new XmlReaderSettings
             {
                 CloseInput = !leaveStreamOpen,
                 IgnoreWhitespace = true,
                 IgnoreComments = true,
                 IgnoreProcessingInstructions = true
-            });
-
-            return XDocument.Load(xmlReader, LoadOptions.None);
+            }))
+            {
+                return XDocument.Load(xmlReader, LoadOptions.None);
+            }
         }
     }
 }

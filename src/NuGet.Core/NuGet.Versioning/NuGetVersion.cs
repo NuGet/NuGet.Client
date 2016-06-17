@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace NuGet.Versioning
 {
@@ -51,7 +50,7 @@ namespace NuGet.Versioning
         /// <param name="minor">x.Y.z</param>
         /// <param name="patch">x.y.Z</param>
         public NuGetVersion(int major, int minor, int patch)
-            : this(major, minor, patch, Enumerable.Empty<string>(), null)
+            : this(major, minor, patch, EmptyReleaseLabels, null)
         {
         }
 
@@ -101,7 +100,7 @@ namespace NuGet.Versioning
         /// <param name="patch">w.x.Y.z</param>
         /// <param name="revision">w.x.y.Z</param>
         public NuGetVersion(int major, int minor, int patch, int revision)
-            : this(major, minor, patch, revision, Enumerable.Empty<string>(), null)
+            : this(major, minor, patch, revision, EmptyReleaseLabels, null)
         {
         }
 
@@ -151,9 +150,13 @@ namespace NuGet.Versioning
         /// Returns the version string.
         /// </summary>
         /// <remarks>This method includes legacy behavior. Use ToNormalizedString() instead.</remarks>
+        /// <remarks>Versions with SemVer 2.0.0 components are automatically normalized.</remarks>
         public override string ToString()
         {
-            if (String.IsNullOrEmpty(_originalString))
+            // Versions with SemVer 2.0.0 components are automatically normalized,
+            // non-normalized strings are only allowed for backcompat with older versions
+            // of nuget, and those did not support SemVer 2.0.0.
+            if (string.IsNullOrEmpty(_originalString) || IsSemVer2)
             {
                 return ToNormalizedString();
             }
@@ -183,6 +186,14 @@ namespace NuGet.Versioning
         public int Revision
         {
             get { return _version.Revision; }
+        }
+
+        /// <summary>
+        /// Returns true if version is a SemVer 2.0.0 version
+        /// </summary>
+        public bool IsSemVer2
+        {
+            get { return (_releaseLabels != null && _releaseLabels.Length > 1) || HasMetadata; }
         }
     }
 }

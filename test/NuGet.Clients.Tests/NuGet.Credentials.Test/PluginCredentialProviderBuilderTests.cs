@@ -1,11 +1,8 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
-using System.Configuration;
-using System.IO;
 using System.Linq;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 using Moq;
 using Xunit;
 
@@ -17,19 +14,19 @@ namespace NuGet.Credentials.Test
         {
             public readonly Mock<Configuration.IExtensionLocator> _mockExtensionLocator;
             public readonly Mock<Configuration.ISettings> _mockSettings;
-            public readonly Mock<Configuration.IEnvironmentVariableReader> _mockEnvarReader;
+            public readonly Mock<Common.IEnvironmentVariableReader> _mockEnvarReader;
 
             public TestablePluginCredentialProviderBuilder() : this(
                 new Mock<Configuration.IExtensionLocator>(),
                 new Mock<Configuration.ISettings>(),
-                new Mock<Configuration.IEnvironmentVariableReader>())
+                new Mock<Common.IEnvironmentVariableReader>())
             {
             }
 
             public TestablePluginCredentialProviderBuilder(
                 Mock<Configuration.IExtensionLocator> mockExtensionLocator,
                 Mock<Configuration.ISettings> mockSettings,
-                Mock<Configuration.IEnvironmentVariableReader> mockEnvarReader)
+                Mock<Common.IEnvironmentVariableReader> mockEnvarReader)
                 : base(mockExtensionLocator.Object, mockSettings.Object, mockEnvarReader.Object)
             {
                 _mockExtensionLocator = mockExtensionLocator;

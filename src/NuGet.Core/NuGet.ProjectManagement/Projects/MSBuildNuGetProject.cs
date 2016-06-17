@@ -305,7 +305,7 @@ namespace NuGet.ProjectManagement
                 {
                     if (!MSBuildNuGetProjectSystem.ReferenceExists(frameworkReference))
                     {
-                        MSBuildNuGetProjectSystem.AddFrameworkReference(frameworkReference);
+                        MSBuildNuGetProjectSystem.AddFrameworkReference(frameworkReference, packageIdentity.Id);
                     }
                 }
             }

@@ -12,14 +12,15 @@ using NuGet.VisualStudio.Implementation.Resources;
 namespace NuGet.VisualStudio
 {
     [Export(typeof(IVsFrameworkCompatibility))]
-    public class VsFrameworkCompatibility : IVsFrameworkCompatibility
+    [Export(typeof(IVsFrameworkCompatibility2))]
+    public class VsFrameworkCompatibility : IVsFrameworkCompatibility2
     {
         public IEnumerable<FrameworkName> GetNetStandardFrameworks()
         {
             return DefaultFrameworkNameProvider
                 .Instance
                 .GetNetStandardVersions()
-                .Select(GetFrameworkName);
+                .Select(framework => new FrameworkName(framework.DotNetFrameworkName));
         }
 
         public IEnumerable<FrameworkName> GetFrameworksSupportingNetStandard(FrameworkName frameworkName)
@@ -29,7 +30,7 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException(nameof(frameworkName));
             }
 
-            var nuGetFramework = GetNuGetFramework(frameworkName);
+            var nuGetFramework = NuGetFramework.ParseFrameworkName(frameworkName.ToString(), DefaultFrameworkNameProvider.Instance);
 
             if (!StringComparer.OrdinalIgnoreCase.Equals(
                 nuGetFramework.Framework,
@@ -43,17 +44,54 @@ namespace NuGet.VisualStudio
             return CompatibilityListProvider
                 .Default
                 .GetFrameworksSupporting(nuGetFramework)
-                .Select(GetFrameworkName);
+                .Select(framework => new FrameworkName(framework.DotNetFrameworkName));
         }
 
-        private NuGetFramework GetNuGetFramework(FrameworkName frameworkName)
+        public FrameworkName GetNearest(FrameworkName targetFramework, IEnumerable<FrameworkName> frameworks)
         {
-            return NuGetFramework.ParseFrameworkName(frameworkName.ToString(), DefaultFrameworkNameProvider.Instance);
+            return GetNearest(targetFramework, Enumerable.Empty<FrameworkName>(), frameworks);
         }
 
-        private FrameworkName GetFrameworkName(NuGetFramework nuGetFramework)
+        public FrameworkName GetNearest(FrameworkName targetFramework, IEnumerable<FrameworkName> fallbackTargetFrameworks, IEnumerable<FrameworkName> frameworks)
         {
-            return new FrameworkName(nuGetFramework.DotNetFrameworkName);
+            if (targetFramework == null)
+            {
+                throw new ArgumentNullException(nameof(targetFramework));
+            }
+
+            if (fallbackTargetFrameworks == null)
+            {
+                throw new ArgumentNullException(nameof(fallbackTargetFrameworks));
+            }
+
+            if (frameworks == null)
+            {
+                throw new ArgumentNullException(nameof(frameworks));
+            }
+
+            var nuGetTargetFramework = NuGetFramework.ParseFrameworkName(targetFramework.ToString(), DefaultFrameworkNameProvider.Instance);
+
+            var nuGetFallbackTargetFrameworks = fallbackTargetFrameworks
+                .Select(framework => NuGetFramework.ParseFrameworkName(framework.ToString(), DefaultFrameworkNameProvider.Instance))
+                .ToList();
+
+            if (nuGetFallbackTargetFrameworks.Any())
+            {
+                nuGetTargetFramework = new FallbackFramework(nuGetTargetFramework, nuGetFallbackTargetFrameworks);
+            }
+
+            var nuGetFrameworks = frameworks
+                .Select(framework => NuGetFramework.ParseFrameworkName(framework.ToString(), DefaultFrameworkNameProvider.Instance));
+
+            var reducer = new FrameworkReducer();
+            var nearest = reducer.GetNearest(nuGetTargetFramework, nuGetFrameworks);
+
+            if (nearest == null)
+            {
+                return null;
+            }
+
+            return new FrameworkName(nearest.DotNetFrameworkName);
         }
     }
 }

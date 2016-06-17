@@ -1,15 +1,16 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if !DNXCORE50
 using System;
 using System.Collections.Concurrent;
 using System.Net;
+using NuGet.Common;
 
 namespace NuGet.Configuration
 {
-    public class ProxyCache : IProxyCache
+    public class ProxyCache : IProxyCache, IProxyCredentialCache
     {
+#if !IS_CORECLR
         /// <summary>
         /// Capture the default System Proxy so that it can be re-used by the IProxyFinder
         /// because we can't rely on WebRequest.DefaultWebProxy since someone can modify the DefaultWebProxy
@@ -18,136 +19,162 @@ namespace NuGet.Configuration
         /// settings.
         /// </summary>
         private static readonly IWebProxy _originalSystemProxy = WebRequest.GetSystemWebProxy();
-
-        private readonly ConcurrentDictionary<Uri, WebProxy> _cache = new ConcurrentDictionary<Uri, WebProxy>();
-
-#if BOOTSTRAPPER
-    // Temporarily commenting these out until we can figure out a nicer way of doing this in the bootstrapper.
-
-        private static readonly Lazy<ProxyCache> _instance = new Lazy<ProxyCache>(() => new ProxyCache());
-                public ProxyCache()
-        {
-
-        }
-#else
-        // It's not likely that http proxy settings are set in machine wide settings,
-        // so not passing machine wide settings to Settings.LoadDefaultSettings() should be fine.
-        private static readonly Lazy<ProxyCache> _instance = new Lazy<ProxyCache>(() => new ProxyCache(Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null), new EnvironmentVariableWrapper()));
+#endif
+        private readonly ConcurrentDictionary<Uri, ICredentials> _cachedCredentials = new ConcurrentDictionary<Uri, ICredentials>();
 
         private readonly ISettings _settings;
         private readonly IEnvironmentVariableReader _environment;
 
-        public ProxyCache(ISettings settings, IEnvironmentVariableReader environment)
+        // It's not likely that http proxy settings are set in machine wide settings,
+        // so not passing machine wide settings to Settings.LoadDefaultSettings() should be fine.
+        private static readonly Lazy<ProxyCache> _instance = new Lazy<ProxyCache>(() => FromDefaultSettings());
+
+        private static ProxyCache FromDefaultSettings()
         {
-            _settings = settings;
-            _environment = environment;
+            return new ProxyCache(
+                Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null),
+                new EnvironmentVariableWrapper());
         }
-#endif
 
         public static ProxyCache Instance
         {
             get { return _instance.Value; }
         }
 
-        public IWebProxy GetProxy(Uri uri)
+        public Guid Version { get; private set; } = Guid.NewGuid();
+
+        public ProxyCache(ISettings settings, IEnvironmentVariableReader environment)
         {
-#if !BOOTSTRAPPER
+            _settings = settings;
+            _environment = environment;
+        }
+
+        public IWebProxy GetProxy(Uri sourceUri)
+        {
             // Check if the user has configured proxy details in settings or in the environment.
             var configuredProxy = GetUserConfiguredProxy();
             if (configuredProxy != null)
             {
-                // If a proxy was cached, it means the stored credentials are incorrect. Use the cached one in this case.
-                WebProxy actualProxy;
-                if (_cache.TryGetValue(configuredProxy.Address, out actualProxy))
-                {
-                    return actualProxy;
-                }
+                TryAddProxyCredentialsToCache(configuredProxy);
+                configuredProxy.Credentials = this;
                 return configuredProxy;
             }
+
+#if !IS_CORECLR
+            if (IsSystemProxySet(sourceUri))
+            {
+                var systemProxy = GetSystemProxy(sourceUri);
+                TryAddProxyCredentialsToCache(systemProxy);
+                systemProxy.Credentials = this;
+                return systemProxy;
+            }
 #endif
-            if (!IsSystemProxySet(uri))
-            {
-                return null;
-            }
-
-            var systemProxy = GetSystemProxy(uri);
-
-            WebProxy effectiveProxy;
-            // See if we have a proxy instance cached for this proxy address
-            if (_cache.TryGetValue(systemProxy.Address, out effectiveProxy))
-            {
-                return effectiveProxy;
-            }
-
-            return systemProxy;
+            return null;
         }
 
-#if !BOOTSTRAPPER
+        // Adds new proxy credentials to cache if there's not any in there yet
+        private bool TryAddProxyCredentialsToCache(WebProxy configuredProxy)
+        {
+            // If a proxy was cached, it means the stored credentials are incorrect. Use the cached one in this case.
+            var proxyCredentials = configuredProxy.Credentials ?? CredentialCache.DefaultCredentials;
+            return _cachedCredentials.TryAdd(configuredProxy.ProxyAddress, proxyCredentials);
+        }
+
         public WebProxy GetUserConfiguredProxy()
         {
             // Try reading from the settings. The values are stored as 3 config values http_proxy, http_proxy_user, http_proxy_password
             var host = _settings.GetValue(SettingsUtility.ConfigSection, ConfigurationConstants.HostKey);
-            if (!String.IsNullOrEmpty(host))
+            if (!string.IsNullOrEmpty(host))
             {
                 // The host is the minimal value we need to assume a user configured proxy.
                 var webProxy = new WebProxy(host);
+
+#if !IS_CORECLR
                 var userName = _settings.GetValue(SettingsUtility.ConfigSection, ConfigurationConstants.UserKey);
                 var password = SettingsUtility.GetDecryptedValue(_settings, SettingsUtility.ConfigSection, ConfigurationConstants.PasswordKey);
 
-                if (!String.IsNullOrEmpty(userName)
-                    && !String.IsNullOrEmpty(password))
+                if (!string.IsNullOrEmpty(userName)
+                    && !string.IsNullOrEmpty(password))
                 {
                     webProxy.Credentials = new NetworkCredential(userName, password);
                 }
-                
+#endif
+
                 var noProxy = _settings.GetValue(SettingsUtility.ConfigSection, ConfigurationConstants.NoProxy);
-                if (!String.IsNullOrEmpty(noProxy))
+                if (!string.IsNullOrEmpty(noProxy))
                 {
                     // split comma-separated list of domains
-                    webProxy.BypassList = noProxy.Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries);
+                    webProxy.BypassList = noProxy.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                 }
-                
+
                 return webProxy;
             }
 
             // Next try reading from the environment variable http_proxy. This would be specified as http://<username>:<password>@proxy.com
             host = _environment.GetEnvironmentVariable(ConfigurationConstants.HostKey);
             Uri uri;
-            if (!String.IsNullOrEmpty(host)
+            if (!string.IsNullOrEmpty(host)
                 && Uri.TryCreate(host, UriKind.Absolute, out uri))
             {
-                var webProxy = new WebProxy(uri.GetComponents(UriComponents.HttpRequestUrl, UriFormat.SafeUnescaped));
-                if (!String.IsNullOrEmpty(uri.UserInfo))
+                var webProxy = new WebProxy(uri.GetComponents(
+                    UriComponents.HttpRequestUrl, UriFormat.SafeUnescaped));
+                if (!string.IsNullOrEmpty(uri.UserInfo))
                 {
                     var credentials = uri.UserInfo.Split(':');
                     if (credentials.Length > 1)
                     {
-                        webProxy.Credentials = new NetworkCredential(userName: credentials[0], password: credentials[1]);
+                        webProxy.Credentials = new NetworkCredential(
+                            userName: credentials[0], password: credentials[1]);
                     }
                 }
-                
+
                 var noProxy = _environment.GetEnvironmentVariable(ConfigurationConstants.NoProxy);
-                if (!String.IsNullOrEmpty(noProxy))
+                if (!string.IsNullOrEmpty(noProxy))
                 {
                     // split comma-separated list of domains
-                    webProxy.BypassList = noProxy.Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries);
+                    webProxy.BypassList = noProxy.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                 }
-                
+
                 return webProxy;
             }
             return null;
         }
-#endif
 
+        public void UpdateCredential(Uri proxyAddress, NetworkCredential credentials)
+        {
+            if (credentials == null)
+            {
+                throw new ArgumentNullException(nameof(credentials));
+            }
+
+            _cachedCredentials.AddOrUpdate(
+                proxyAddress,
+                addValueFactory: _ => { Version = Guid.NewGuid(); return credentials; },
+                updateValueFactory: (_, __) => { Version = Guid.NewGuid(); return credentials; });
+        }
+
+        public NetworkCredential GetCredential(Uri proxyAddress, string authType)
+        {
+            ICredentials cachedCredentials;
+            if (_cachedCredentials.TryGetValue(proxyAddress, out cachedCredentials))
+            {
+                return cachedCredentials.GetCredential(proxyAddress, authType);
+            }
+
+            return null;
+        }
+
+        [Obsolete("Retained for backcompat only. Use UpdateCredential instead")]
         public void Add(IWebProxy proxy)
         {
             var webProxy = proxy as WebProxy;
             if (webProxy != null)
             {
-                _cache.TryAdd(webProxy.Address, webProxy);
+                _cachedCredentials.TryAdd(webProxy.ProxyAddress, webProxy.Credentials);
             }
         }
 
+#if !IS_CORECLR
         private static WebProxy GetSystemProxy(Uri uri)
         {
             // WebRequest.DefaultWebProxy seems to be more capable in terms of getting the default
@@ -178,22 +205,16 @@ namespace NuGet.Configuration
                 if (proxyUri != null)
                 {
                     var proxyAddress = new Uri(proxyUri.AbsoluteUri);
-                    if (String.Equals(proxyAddress.AbsoluteUri, uri.AbsoluteUri))
+                    if (string.Equals(proxyAddress.AbsoluteUri, uri.AbsoluteUri))
                     {
                         return false;
                     }
-                    var bypassUri = proxy.IsBypassed(uri);
-                    if (bypassUri)
-                    {
-                        return false;
-                    }
-                    proxy = new WebProxy(proxyAddress);
+                    return !proxy.IsBypassed(uri);
                 }
             }
 
-            return proxy != null;
+            return false;
         }
+#endif
     }
 }
-
-#endif

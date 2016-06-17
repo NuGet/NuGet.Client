@@ -88,15 +88,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Successfully added package &apos;{0}&apos; to feed &apos;{1}&apos;..
-        /// </summary>
-        public static string AddCommand_SuccessfullyAdded {
-            get {
-                return ResourceManager.GetString("AddCommand_SuccessfullyAdded", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Add file &apos;{0}&apos; to package as &apos;{1}&apos;.
         /// </summary>
         public static string AddFileToPackage {
@@ -1101,6 +1092,15 @@ namespace NuGet.CommandLine {
         public static string ConsoleConfirmMessageAccept_trk {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessageAccept_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The remote server indicated that the previous request was forbidden. Please provide credentials for: {0}.
+        /// </summary>
+        public static string Credentials_ForbiddenCredentials {
+            get {
+                return ResourceManager.GetString("Credentials_ForbiddenCredentials", resourceCulture);
             }
         }
         
@@ -2329,6 +2329,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid AssemblyInformationalVersion {0} on assembly {1}..
+        /// </summary>
+        public static string Error_AssemblyInformationalVersion {
+            get {
+                return ResourceManager.GetString("Error_AssemblyInformationalVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot find the specified version of msbuild: &apos;{0}&apos;.
         /// </summary>
         public static string Error_CannotFindMsbuild {
@@ -2770,7 +2779,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Source parameter was not specified.
+        ///   Looks up a localized string similar to Source parameter was not specified..
         /// </summary>
         public static string Error_MissingSourceParameter {
             get {
@@ -2919,132 +2928,6 @@ namespace NuGet.CommandLine {
         public static string Error_MultipleSolutions_trk {
             get {
                 return ResourceManager.GetString("Error_MultipleSolutions_trk", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to This folder contains no solution files, nor packages.config files..
-        /// </summary>
-        public static string Error_NoSolutionFileNorePackagesConfigFile {
-            get {
-                return ResourceManager.GetString("Error_NoSolutionFileNorePackagesConfigFile", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to 此文件夹既不包含解决方案文件，也不包含 packages.config 文件。.
-        /// </summary>
-        public static string Error_NoSolutionFileNorePackagesConfigFile_chs {
-            get {
-                return ResourceManager.GetString("Error_NoSolutionFileNorePackagesConfigFile_chs", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to 此資料夾不包含方案檔案，也沒有 packages.config 檔案。.
-        /// </summary>
-        public static string Error_NoSolutionFileNorePackagesConfigFile_cht {
-            get {
-                return ResourceManager.GetString("Error_NoSolutionFileNorePackagesConfigFile_cht", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Tato složka neobsahuje žádné soubory řešení ani soubory packages.config..
-        /// </summary>
-        public static string Error_NoSolutionFileNorePackagesConfigFile_csy {
-            get {
-                return ResourceManager.GetString("Error_NoSolutionFileNorePackagesConfigFile_csy", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Dieser Ordner enthält keine Projektdateien und keine packages.config-Dateien..
-        /// </summary>
-        public static string Error_NoSolutionFileNorePackagesConfigFile_deu {
-            get {
-                return ResourceManager.GetString("Error_NoSolutionFileNorePackagesConfigFile_deu", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Esta carpeta no contiene ningún archivo de la solución ni archivos packages.config..
-        /// </summary>
-        public static string Error_NoSolutionFileNorePackagesConfigFile_esp {
-            get {
-                return ResourceManager.GetString("Error_NoSolutionFileNorePackagesConfigFile_esp", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Ce dossier ne contient ni fichier solution ni fichier packages.config..
-        /// </summary>
-        public static string Error_NoSolutionFileNorePackagesConfigFile_fra {
-            get {
-                return ResourceManager.GetString("Error_NoSolutionFileNorePackagesConfigFile_fra", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to La cartella non contiene solution file né pacchetti. Config..
-        /// </summary>
-        public static string Error_NoSolutionFileNorePackagesConfigFile_ita {
-            get {
-                return ResourceManager.GetString("Error_NoSolutionFileNorePackagesConfigFile_ita", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to このフォルダーには、ソリューション ファイルと packages.config ファイルが含まれていません。.
-        /// </summary>
-        public static string Error_NoSolutionFileNorePackagesConfigFile_jpn {
-            get {
-                return ResourceManager.GetString("Error_NoSolutionFileNorePackagesConfigFile_jpn", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to 이 폴더에는 솔루션 파일과 packages.config 파일이 모두 없습니다..
-        /// </summary>
-        public static string Error_NoSolutionFileNorePackagesConfigFile_kor {
-            get {
-                return ResourceManager.GetString("Error_NoSolutionFileNorePackagesConfigFile_kor", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Ten folder nie zawiera ani plików rozwiązań, ani plików packages.config..
-        /// </summary>
-        public static string Error_NoSolutionFileNorePackagesConfigFile_plk {
-            get {
-                return ResourceManager.GetString("Error_NoSolutionFileNorePackagesConfigFile_plk", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Esta pasta não contém arquivos de solução, nem arquivos packages.config..
-        /// </summary>
-        public static string Error_NoSolutionFileNorePackagesConfigFile_ptb {
-            get {
-                return ResourceManager.GetString("Error_NoSolutionFileNorePackagesConfigFile_ptb", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Эта папка не содержит ни файлы решений, ни файлы packages.config..
-        /// </summary>
-        public static string Error_NoSolutionFileNorePackagesConfigFile_rus {
-            get {
-                return ResourceManager.GetString("Error_NoSolutionFileNorePackagesConfigFile_rus", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Bu klasör herhangi çözüm dosyası veya packages.config dosyası içermiyor..
-        /// </summary>
-        public static string Error_NoSolutionFileNorePackagesConfigFile_trk {
-            get {
-                return ResourceManager.GetString("Error_NoSolutionFileNorePackagesConfigFile_trk", resourceCulture);
             }
         }
         
@@ -3441,6 +3324,15 @@ namespace NuGet.CommandLine {
         public static string Error_SourceProviderIsNull_trk {
             get {
                 return ResourceManager.GetString("Error_SourceProviderIsNull_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The folder &apos;{0}&apos; does not contain an msbuild solution, packages.config, or project.json file to restore..
+        /// </summary>
+        public static string Error_UnableToLocateRestoreTarget {
+            get {
+                return ResourceManager.GetString("Error_UnableToLocateRestoreTarget", resourceCulture);
             }
         }
         
@@ -6379,6 +6271,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to update. The project does not contain a packages.config file..
+        /// </summary>
+        public static string NoPackagesConfig {
+            get {
+                return ResourceManager.GetString("NoPackagesConfig", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No projects found with packages.config..
         /// </summary>
         public static string NoProjectsFound {
@@ -6897,6 +6798,15 @@ namespace NuGet.CommandLine {
         public static string OptionInvalidWithoutSetter_trk {
             get {
                 return ResourceManager.GetString("OptionInvalidWithoutSetter_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} Version: {1}.
+        /// </summary>
+        public static string OutputNuGetVersion {
+            get {
+                return ResourceManager.GetString("OutputNuGetVersion", resourceCulture);
             }
         }
         
@@ -8935,6 +8845,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Nothing to do. This project does not specify any packages for NuGet to restore..
+        /// </summary>
+        public static string ProjectRestoreCommandNoPackagesConfigOrProjectJson {
+            get {
+                return ResourceManager.GetString("ProjectRestoreCommandNoPackagesConfigOrProjectJson", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to There is no default source, please specify a source..
         /// </summary>
         public static string PushCommandNoSourceError {
@@ -9291,6 +9210,15 @@ namespace NuGet.CommandLine {
         public static string PushCommandPushingPackage_trk {
             get {
                 return ResourceManager.GetString("PushCommandPushingPackage_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pushing took too long. You can change the default timeout of 300 seconds by using the -Timeout &lt;seconds&gt; option with the push command..
+        /// </summary>
+        public static string PushCommandTimeoutError {
+            get {
+                return ResourceManager.GetString("PushCommandTimeoutError", resourceCulture);
             }
         }
         
@@ -11086,6 +11014,15 @@ namespace NuGet.CommandLine {
         public static string SettingsCredentials_UsingSavedCredentials {
             get {
                 return ResourceManager.GetString("SettingsCredentials_UsingSavedCredentials", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nothing to do. None of the projects in this solution specify any packages for NuGet to restore..
+        /// </summary>
+        public static string SolutionRestoreCommandNoPackagesConfigOrProjectJson {
+            get {
+                return ResourceManager.GetString("SolutionRestoreCommandNoPackagesConfigOrProjectJson", resourceCulture);
             }
         }
         

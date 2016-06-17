@@ -46,7 +46,11 @@ namespace NuGet.Resolver
                 {
                     if (_dependencyIds.ContainsKey(dependency.Id))
                     {
-                        throw new InvalidOperationException(Strings.FormatDuplicateDependencyIdsError(id, version, dependency.Id));
+                        throw new InvalidOperationException(string.Format(
+                            Strings.DuplicateDependencyIdsError,
+                            id,
+                            version,
+                            dependency.Id));
                     }
 
                     _dependencyIds.Add(dependency.Id, dependency.VersionRange == null ? VersionRange.All : dependency.VersionRange);

@@ -21,6 +21,7 @@ namespace NuGet.ProjectModel
         public PackageSpec(JObject rawProperties)
         {
             Scripts = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
+            PackInclude = new Dictionary<string, string>();
             TargetFrameworks = new List<TargetFrameworkInformation>();
             Properties = rawProperties;
         }
@@ -34,9 +35,30 @@ namespace NuGet.ProjectModel
 
         public string Name { get; set; }
 
-        public NuGetVersion Version { get; set; }
+        public string Title { get; set; }
+
+        private NuGetVersion _version;
+        public NuGetVersion Version
+        {
+            get
+            {
+                return _version;
+            }
+            set
+            {
+                _version = value;
+                this.IsDefaultVersion = false;
+            }
+        }
+        public bool IsDefaultVersion { get; set; }
+
+        public bool HasVersionSnapshot { get; set; }
 
         public string Description { get; set; }
+
+        public string Summary { get; set; }
+
+        public string ReleaseNotes { get; set; }
 
         public string[] Authors { get; set; }
 
@@ -54,11 +76,21 @@ namespace NuGet.ProjectModel
 
         public string Language { get; set; }
 
+        public BuildOptions BuildOptions { get; set; }
+
         public string[] Tags { get; set; }
+
+        public IList<string> ContentFiles { get; set; }
 
         public IList<LibraryDependency> Dependencies { get; set; }
 
+        public IList<ToolDependency> Tools { get; set; }
+
         public IDictionary<string, IEnumerable<string>> Scripts { get; private set; }
+
+        public IDictionary<string, string> PackInclude { get; private set; }
+
+        public PackOptions PackOptions { get; set; }
 
         public IList<TargetFrameworkInformation> TargetFrameworks { get; private set; }
 

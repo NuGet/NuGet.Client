@@ -9,7 +9,12 @@ namespace NuGet.Frameworks
     /// <summary>
     /// An inclusive range of frameworks
     /// </summary>
-    public class FrameworkRange : IEquatable<FrameworkRange>
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    class FrameworkRange : IEquatable<FrameworkRange>
     {
         private readonly NuGetFramework _minFramework;
         private readonly NuGetFramework _maxFramework;
@@ -26,12 +31,12 @@ namespace NuGet.Frameworks
         {
             if (min == null)
             {
-                throw new ArgumentNullException(nameof(min));
+                throw new ArgumentNullException("min");
             }
 
             if (max == null)
             {
-                throw new ArgumentNullException(nameof(max));
+                throw new ArgumentNullException("max");
             }
 
             if (!SameExceptForVersion(min, max))

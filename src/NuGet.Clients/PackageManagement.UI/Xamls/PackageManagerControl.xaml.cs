@@ -11,13 +11,15 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.VisualStudio;
 using NuGet.Resolver;
 using Resx = NuGet.PackageManagement.UI;
+using Microsoft.VisualStudio.Threading;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -45,15 +47,37 @@ namespace NuGet.PackageManagement.UI
 
         private bool _missingPackageStatus;
 
+        private readonly INuGetUILogger _uiLogger;
+
         public PackageManagerModel Model { get; }
+
+        private PackageSourceMoniker SelectedSource
+        {
+            get
+            {
+                return _topPanel.SourceRepoList.SelectedItem as PackageSourceMoniker;
+            }
+            set
+            {
+                _topPanel.SourceRepoList.SelectedItem = value;
+            }
+        }
+
+        private IEnumerable<PackageSourceMoniker> PackageSources => _topPanel.SourceRepoList.Items.OfType<PackageSourceMoniker>();
+
+        internal IEnumerable<SourceRepository> ActiveSources => SelectedSource?.SourceRepositories ?? Enumerable.Empty<SourceRepository>();
+
+        public bool IncludePrerelease => _topPanel.CheckboxPrerelease.IsChecked == true;
 
         public PackageManagerControl(
             PackageManagerModel model,
             Configuration.ISettings nugetSettings,
             IVsWindowSearchHostFactory searchFactory,
-            IVsShell4 vsShell)
+            IVsShell4 vsShell,
+            INuGetUILogger uiLogger = null)
         {
             _uiDispatcher = Dispatcher.CurrentDispatcher;
+            _uiLogger = uiLogger;
             Model = model;
             if (!Model.IsSolution)
             {
@@ -95,11 +119,15 @@ namespace NuGet.PackageManagement.UI
             _initialized = true;
 
             // UI is initialized. Start the first search
-            _packageList.CheckBoxesEnabled = _topPanel.Filter == Filter.UpdatesAvailable;
+            _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
             _packageList.IsSolution = this.Model.IsSolution;
-            SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
-            RefreshAvailableUpdatesCount();
-            RefreshConsolidatablePackagesCount();
+
+            Loaded += (_, __) =>
+            {
+                SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString, useCache: false);
+                RefreshAvailableUpdatesCount();
+                RefreshConsolidatablePackagesCount();
+            };
 
             // register with the UI controller
             var controller = model.UIController as NuGetUI;
@@ -111,7 +139,7 @@ namespace NuGet.PackageManagement.UI
             var solutionManager = Model.Context.SolutionManager;
             solutionManager.NuGetProjectAdded += SolutionManager_ProjectsChanged;
             solutionManager.NuGetProjectRemoved += SolutionManager_ProjectsChanged;
-            solutionManager.NuGetProjectRenamed += SolutionManager_ProjectsChanged;
+            solutionManager.NuGetProjectRenamed += SolutionManager_ProjectRenamed;
             solutionManager.ActionsExecuted += SolutionManager_ActionsExecuted;
 
             Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged += Sources_PackageSourcesChanged;
@@ -122,6 +150,25 @@ namespace NuGet.PackageManagement.UI
             }
 
             _missingPackageStatus = false;
+        }
+
+        private void SolutionManager_ProjectRenamed(object sender, NuGetProjectEventArgs e)
+        {
+            SolutionManager_ProjectsChanged(sender, e);
+            if (!Model.IsSolution)
+            {
+                var currentNugetProject = Model.Context.Projects.First();
+                var newNugetProject = e.NuGetProject;
+                string currentFullPath, newFullPath;
+                currentNugetProject.TryGetMetadata(NuGetProjectMetadataKeys.FullPath, out currentFullPath);
+                e.NuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.FullPath, out newFullPath);
+                if (currentFullPath == newFullPath)
+                {
+                    Model.Context.Projects = new[] {e.NuGetProject};
+                    SetTitle();
+                }
+            }
+
         }
 
         private void SolutionManager_ProjectsChanged(object sender, NuGetProjectEventArgs e)
@@ -240,11 +287,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private IEnumerable<SourceRepository> GetEnabledSources()
-        {
-            return Model.Context.SourceProvider.GetRepositories().Where(s => s.PackageSource.IsEnabled);
-        }
-
         private void Sources_PackageSourcesChanged(object sender, EventArgs e)
         {
             // Set _dontStartNewSearch to true to prevent a new search started in
@@ -253,28 +295,14 @@ namespace NuGet.PackageManagement.UI
             _dontStartNewSearch = true;
             try
             {
-                var oldActiveSource = _topPanel.SourceRepoList.SelectedItem as SourceRepository;
-                var newSources = GetEnabledSources();
-
-                // Update the source repo list with the new value.
-                _topPanel.SourceRepoList.Items.Clear();
-                foreach (var source in newSources)
-                {
-                    _topPanel.SourceRepoList.Items.Add(source);
-                }
-
-                SetNewActiveSource(newSources, oldActiveSource);
+                var prevSelectedItem = SelectedSource;
+                PopulateSourceRepoList();
 
                 // force a new search explicitly if active source has changed
-                if ((oldActiveSource == null && ActiveSource != null)
-                    || (oldActiveSource != null && ActiveSource == null)
-                    || (oldActiveSource != null && ActiveSource != null &&
-                        !StringComparer.OrdinalIgnoreCase.Equals(
-                            oldActiveSource.PackageSource.Source,
-                            ActiveSource.PackageSource.Source)))
+                if (prevSelectedItem != SelectedSource)
                 {
                     SaveSettings();
-                    SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
+                    SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString, useCache: false);
                     RefreshAvailableUpdatesCount();
                 }
             }
@@ -310,22 +338,19 @@ namespace NuGet.PackageManagement.UI
         // to persist the settings.
         public void SaveSettings()
         {
-            var settings = new UserSettings();
-            if (ActiveSource != null)
+            var settings = new UserSettings
             {
-                settings.SourceRepository = ActiveSource.PackageSource.Name;
-            }
-
-            settings.ShowPreviewWindow = _detailModel.Options.ShowPreviewWindow;
-            settings.RemoveDependencies = _detailModel.Options.RemoveDependencies;
-            settings.ForceRemove = _detailModel.Options.ForceRemove;
-            settings.DependencyBehavior = _detailModel.Options.SelectedDependencyBehavior.Behavior;
-            settings.FileConflictAction = _detailModel.Options.SelectedFileConflictAction.Action;
-            settings.IncludePrerelease = _topPanel.CheckboxPrerelease.IsChecked == true;
-            settings.SelectedFilter = _topPanel.Filter;
-            settings.OptionsExpanded = _packageDetail._optionsControl.IsExpanded;
+                SourceRepository = SelectedSource?.SourceName,
+                ShowPreviewWindow = _detailModel.Options.ShowPreviewWindow,
+                RemoveDependencies = _detailModel.Options.RemoveDependencies,
+                ForceRemove = _detailModel.Options.ForceRemove,
+                DependencyBehavior = _detailModel.Options.SelectedDependencyBehavior.Behavior,
+                FileConflictAction = _detailModel.Options.SelectedFileConflictAction.Action,
+                IncludePrerelease = _topPanel.CheckboxPrerelease.IsChecked == true,
+                SelectedFilter = _topPanel.Filter,
+                OptionsExpanded = _packageDetail._optionsControl.IsExpanded
+            };
             _packageDetail._solutionView.SaveSettings(settings);
-
             Model.Context.AddSettings(GetSettingsKey(), settings);
         }
 
@@ -340,57 +365,14 @@ namespace NuGet.PackageManagement.UI
             return settings;
         }
 
-        /// <summary>
-        /// Calculate the active source after the list of sources have been changed.
-        /// </summary>
-        /// <param name="newSources">The current list of sources.</param>
-        /// <param name="oldActiveSource">The old active source.</param>
-        private void SetNewActiveSource(IEnumerable<SourceRepository> newSources, SourceRepository oldActiveSource)
-        {
-            if (!newSources.Any())
-            {
-                ActiveSource = null;
-            }
-            else
-            {
-                if (oldActiveSource == null)
-                {
-                    // use the first enabled source as the active source
-                    ActiveSource = newSources.FirstOrDefault();
-                }
-                else
-                {
-                    var s = newSources.FirstOrDefault(repo => StringComparer.CurrentCultureIgnoreCase.Equals(
-                        repo.PackageSource.Name, oldActiveSource.PackageSource.Name));
-                    if (s == null)
-                    {
-                        // the old active source does not exist any more. In this case,
-                        // use the first eneabled source as the active source.
-                        ActiveSource = newSources.FirstOrDefault();
-                    }
-                    else
-                    {
-                        // the old active source still exists. Keep it as the active source.
-                        ActiveSource = s;
-                    }
-                }
-            }
-
-            _topPanel.SourceRepoList.SelectedItem = ActiveSource;
-            if (ActiveSource != null)
-            {
-                Model.Context.SourceProvider.PackageSourceProvider.SaveActivePackageSource(ActiveSource.PackageSource);
-            }
-        }
-
         private void AddRestoreBar()
         {
             if (Model.Context.PackageRestoreManager != null)
             {
                 _restoreBar = new PackageRestoreBar(Model.Context.SolutionManager, Model.Context.PackageRestoreManager);
-                _restoreBar.SetValue(Grid.RowProperty, 0);
+                DockPanel.SetDock(_restoreBar, Dock.Top);
 
-                _root.Children.Add(_restoreBar);
+                _root.Children.Insert(0, _restoreBar);
 
                 Model.Context.PackageRestoreManager.PackagesMissingStatusChanged += packageRestoreManager_PackagesMissingStatusChanged;
             }
@@ -412,9 +394,9 @@ namespace NuGet.PackageManagement.UI
             if (Model.Context.PackageManager.DeleteOnRestartManager != null && vsRestarter != null)
             {
                 _restartBar = new RestartRequestBar(Model.Context.PackageManager.DeleteOnRestartManager, vsRestarter);
-                _restartBar.SetValue(Grid.RowProperty, 1);
+                DockPanel.SetDock(_restartBar, Dock.Top);
 
-                _root.Children.Add(_restartBar);
+                _root.Children.Insert(0, _restartBar);
             }
         }
 
@@ -463,7 +445,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (Model.IsSolution)
             {
-                _label.Text = Resx.Resources.Label_SolutionPackageManager;
+                _topPanel.Title = Resx.Resources.Label_SolutionPackageManager;
             }
             else
             {
@@ -474,7 +456,7 @@ namespace NuGet.PackageManagement.UI
                     projectName = "unknown";
                 }
 
-                _label.Text = string.Format(
+                _topPanel.Title = string.Format(
                     CultureInfo.CurrentCulture,
                     Resx.Resources.Label_PackageManager,
                     projectName);
@@ -483,20 +465,11 @@ namespace NuGet.PackageManagement.UI
 
         private void InitSourceRepoList(UserSettings settings)
         {
-            // init source repo list
-            _topPanel.SourceRepoList.Items.Clear();
-            var enabledSources = GetEnabledSources();
-            foreach (var source in enabledSources)
-            {
-                _topPanel.SourceRepoList.Items.Add(source);
-            }
-
             // get active source name.
             string activeSourceName = null;
 
             // try saved user settings first.
-            if (settings != null
-                && !string.IsNullOrEmpty(settings.SourceRepository))
+            if (!string.IsNullOrEmpty(settings?.SourceRepository))
             {
                 activeSourceName = settings.SourceRepository;
             }
@@ -506,92 +479,103 @@ namespace NuGet.PackageManagement.UI
                 activeSourceName = Model.Context.SourceProvider.PackageSourceProvider.ActivePackageSourceName;
             }
 
-            if (activeSourceName != null)
-            {
-                ActiveSource = enabledSources
-                    .FirstOrDefault(s => activeSourceName.Equals(s.PackageSource.Name, StringComparison.CurrentCultureIgnoreCase));
-            }
-
-            if (ActiveSource == null)
-            {
-                ActiveSource = enabledSources.FirstOrDefault();
-            }
-
-            if (ActiveSource != null)
-            {
-                _topPanel.SourceRepoList.SelectedItem = ActiveSource;
-            }
+            PopulateSourceRepoList(activeSourceName);
         }
 
-        public bool IncludePrerelease
+        private IEnumerable<SourceRepository> GetEnabledSources()
         {
-            get { return _topPanel.CheckboxPrerelease.IsChecked == true; }
+            return Model.Context.SourceProvider.GetRepositories().Where(s => s.PackageSource.IsEnabled);
         }
 
-        internal SourceRepository ActiveSource { get; private set; }
+        private void PopulateSourceRepoList(string optionalSelectSourceName = null)
+        {
+            var selectedSourceName = optionalSelectSourceName ?? SelectedSource?.SourceName;
+
+            // init source repo list
+            _topPanel.SourceRepoList.Items.Clear();
+
+            PackageSourceMoniker
+                .PopulateList(Model.Context.SourceProvider)
+                .ForEach(s => _topPanel.SourceRepoList.Items.Add(s));
+
+            if (selectedSourceName != null)
+            {
+                SelectedSource = PackageSources
+                    // if the old active source still exists. Keep it as the active source.
+                    .FirstOrDefault(i => StringComparer.CurrentCultureIgnoreCase.Equals(i.SourceName, selectedSourceName))
+                    // If the old active source does not exist any more. In this case,
+                    // use the first (non-aggregate) enabled source as the active source.
+                    ?? PackageSources.FirstOrDefault(psm => !psm.IsAggregateSource);
+            }
+            else
+            {
+                // use the first enabled source as the active source by default, but do not choose "All sources"!
+                SelectedSource = PackageSources.FirstOrDefault(psm => !psm.IsAggregateSource);
+            }
+        }
 
         /// <summary>
         /// This method is called from several event handlers. So, consolidating the use of JTF.Run in this method
         /// </summary>
-        private void SearchPackageInActivePackageSource(string searchText)
+        private void SearchPackageInActivePackageSource(string searchText, bool useCache)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    var option = new PackageLoaderOption(_topPanel.Filter, IncludePrerelease);
-                    var loader = new PackageLoader(
-                        option,
-                        Model.IsSolution,
-                        Model.Context.PackageManager,
-                        Model.Context.Projects,
-                        Model.Context.PackageManagerProviders,
-                        ActiveSource,
-                        searchText);
-                    await loader.InitializeAsync();
-                    await _packageList.LoadAsync(loader);
-                });
+                var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
+
+                if (useCache)
+                {
+                    loadContext.CachedPackages = Model.CachedUpdates;
+                };
+
+                var packageFeed = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger);
+
+                var loader = new PackageItemLoader(
+                    loadContext, packageFeed, searchText, IncludePrerelease);
+                var loadingMessage = string.IsNullOrWhiteSpace(searchText)
+                    ? Resx.Resources.Text_Loading
+                    : string.Format(CultureInfo.CurrentCulture, Resx.Resources.Text_Searching, searchText);
+
+                _packageList.LoadItems(loader, loadingMessage, _uiLogger);
+            });
         }
 
         private void RefreshAvailableUpdatesCount()
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 _topPanel._labelUpgradeAvailable.Count = 0;
-                var updatesLoader = new PackageLoader(
-                    new PackageLoaderOption(Filter.UpdatesAvailable, IncludePrerelease),
-                    Model.IsSolution,
-                    Model.Context.PackageManager,
-                    Model.Context.Projects,
-                    Model.Context.PackageManagerProviders,
-                    ActiveSource,
-                    String.Empty);
-                await updatesLoader.InitializeAsync();
-                var packagesWithUpdates = await updatesLoader.GetPackagesWithUpdatesAsync(CancellationToken.None);
-                _topPanel._labelUpgradeAvailable.Count = packagesWithUpdates.Count;
+                var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
+                var packageFeed = await CreatePackageFeedAsync(loadContext, ItemFilter.UpdatesAvailable, _uiLogger);
+                var loader = new PackageItemLoader(
+                    loadContext, packageFeed, includePrerelease: IncludePrerelease);
+
+                Model.CachedUpdates = new PackageSearchMetadataCache
+                {
+                    Packages = await loader.GetAllPackagesAsync(CancellationToken.None),
+                    IncludePrerelease = IncludePrerelease
+                };
+
+                _topPanel._labelUpgradeAvailable.Count = Model.CachedUpdates.Packages.Count;
             });
         }
 
         private void RefreshConsolidatablePackagesCount()
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
                 _topPanel._labelConsolidate.Count = 0;
-                var updatesLoader = new PackageLoader(
-                    new PackageLoaderOption(Filter.Consolidate, IncludePrerelease),
-                    Model.IsSolution,
-                    Model.Context.PackageManager,
-                    Model.Context.Projects,
-                    Model.Context.PackageManagerProviders,
-                    ActiveSource,
-                    String.Empty);
-                await updatesLoader.InitializeAsync();
-                var consolidatablePackages = await updatesLoader.GetConsolidatablePackagesAsync(CancellationToken.None);
-                _topPanel._labelConsolidate.Count = consolidatablePackages.Count;
+                var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
+                var packageFeed = await CreatePackageFeedAsync(loadContext, ItemFilter.Consolidate, _uiLogger);
+                var loader = new PackageItemLoader(
+                    loadContext, packageFeed, includePrerelease: IncludePrerelease);
+
+                _topPanel._labelConsolidate.Count = await loader.GetTotalCountAsync(100, CancellationToken.None);
             });
         }
 
@@ -610,7 +594,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         private async Task UpdateDetailPaneAsync()
         {
-            var selectedPackage = _packageList.SelectedItem as PackageItemListViewModel;
+            var selectedPackage = _packageList.SelectedItem;
             if (selectedPackage == null)
             {
                 _packageDetail.Visibility = Visibility.Hidden;
@@ -621,34 +605,64 @@ namespace NuGet.PackageManagement.UI
                 _packageDetail.Visibility = Visibility.Visible;
                 _packageDetail.DataContext = _detailModel;
 
-                await _detailModel.SetCurrentPackage(
-                    selectedPackage,
-                    _topPanel.Filter);
+                await _detailModel.SetCurrentPackage(selectedPackage, _topPanel.Filter);
 
                 _packageDetail.ScrollToHome();
 
-                var uiMetadataResource = await ActiveSource.GetResourceAsync<PackageMetadataResource>();
-                await _detailModel.LoadPackageMetadaAsync(uiMetadataResource, CancellationToken.None);
+                var context = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
+                var metadataProvider = CreatePackageMetadataProvider(context);
+                await _detailModel.LoadPackageMetadaAsync(metadataProvider, CancellationToken.None);
             }
         }
 
-        private static string GetPackageSourceTooltip(Configuration.PackageSource packageSource)
+        private static async Task<IPackageFeed> CreatePackageFeedAsync(PackageLoadContext context, ItemFilter filter, INuGetUILogger uiLogger)
         {
-            if (string.IsNullOrEmpty(packageSource.Description))
+            // Go off the UI thread to perform non-UI operations
+            await TaskScheduler.Default;
+
+            var logger = new VisualStudioActivityLogger();
+
+            if (filter == ItemFilter.All)
             {
-                return string.Format(
-                    CultureInfo.CurrentCulture,
-                    "{0} - {1}",
-                    packageSource.Name,
-                    packageSource.Source);
+                return new MultiSourcePackageFeed(context.SourceRepositories, uiLogger);
             }
 
-            return string.Format(
-                CultureInfo.CurrentCulture,
-                "{0} - {1} - {2}",
-                packageSource.Name,
-                packageSource.Description,
-                packageSource.Source);
+            var metadataProvider = CreatePackageMetadataProvider(context);
+            var installedPackages = await context.GetInstalledPackagesAsync();
+
+            if (filter == ItemFilter.Installed)
+            {
+                return new InstalledPackageFeed(installedPackages, metadataProvider, logger);
+            }
+
+            if (filter == ItemFilter.Consolidate)
+            {
+                return new ConsolidatePackageFeed(installedPackages, metadataProvider, logger);
+            }
+
+            // Search all / updates available cannot work without a source repo
+            if (context.SourceRepositories == null)
+            {
+                return null;
+            }
+
+            if (filter == ItemFilter.UpdatesAvailable)
+            {
+                return new UpdatePackageFeed(installedPackages, metadataProvider, context.CachedPackages, logger);
+            }
+
+            throw new InvalidOperationException("Unsupported feed type");
+        }
+
+        private static IPackageMetadataProvider CreatePackageMetadataProvider(PackageLoadContext context)
+        {
+            var logger = new VisualStudioActivityLogger();
+
+            return new MultiSourcePackageMetadataProvider(
+                context.SourceRepositories,
+                context.PackageManager?.PackagesFolderSourceRepository,
+                context.PackageManager?.GlobalPackageFolderRepositories,
+                logger);
         }
 
         private void SourceRepoList_SelectionChanged(object sender, EventArgs e)
@@ -658,15 +672,14 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            ActiveSource = _topPanel.SourceRepoList.SelectedItem as SourceRepository;
-            if (ActiveSource != null)
+            if (SelectedSource != null)
             {
                 _topPanel.SourceToolTip.Visibility = Visibility.Visible;
-                _topPanel.SourceToolTip.DataContext = GetPackageSourceTooltip(ActiveSource.PackageSource);
+                _topPanel.SourceToolTip.DataContext = SelectedSource.GetTooltip();
 
-                Model.Context.SourceProvider.PackageSourceProvider.SaveActivePackageSource(ActiveSource.PackageSource);
+                //Model.Context.SourceProvider.PackageSourceProvider.SaveActivePackageSource(ActiveSource.PackageSource);
                 SaveSettings();
-                SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
+                SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString, useCache: false);
                 RefreshAvailableUpdatesCount();
             }
         }
@@ -675,8 +688,8 @@ namespace NuGet.PackageManagement.UI
         {
             if (_initialized)
             {
-                _packageList.CheckBoxesEnabled = _topPanel.Filter == Filter.UpdatesAvailable;
-                SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
+                _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
+                SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString, useCache: true);
 
                 _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
             }
@@ -687,30 +700,20 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         private void Refresh()
         {
-            if (_topPanel.Filter != Filter.All)
+            if (_topPanel.Filter != ItemFilter.All)
             {
                 // refresh the whole package list
-                SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
+                SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString, useCache: false);
             }
             else
             {
-                var installedPackages = GetInstalledPackages(Model.Context.Projects);
-
-                // in this case, we only need to update PackageStatus of
-                // existing items in the package list
-                foreach (var item in _packageList.Items)
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
-                    var package = item as PackageItemListViewModel;
-                    if (package == null)
-                    {
-                        continue;
-                    }
-
-                    package.BackgroundLoader = new Lazy<Task<BackgroundLoaderResult>>(async () => await GetPackageInfo(
-                       package.Id,
-                       installedPackages,
-                       package.Versions));
-                }
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    var installedPackages = await PackageCollection.FromProjectsAsync(Model.Context.Projects,
+                        CancellationToken.None);
+                    _packageList.UpdatePackageStatus(installedPackages.ToArray());
+                });
             }
 
             RefreshAvailableUpdatesCount();
@@ -719,77 +722,12 @@ namespace NuGet.PackageManagement.UI
             _packageDetail?.Refresh();
         }
 
-        private static IReadOnlyList<Packaging.PackageReference> GetInstalledPackages(IEnumerable<NuGetProject> projects)
+        private static PackageIdentity[] GetInstalledPackages(IEnumerable<NuGetProject> projects)
         {
-            var installedPackages = new List<Packaging.PackageReference>();
+            var installedPackages = NuGetUIThreadHelper.JoinableTaskFactory.Run(
+                () => PackageCollection.FromProjectsAsync(projects, CancellationToken.None));
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                foreach (var project in projects)
-                {
-                    var projectInstalledPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
-                    installedPackages.AddRange(projectInstalledPackages);
-                }
-            });
-
-            return installedPackages;
-        }
-
-        /// <summary>
-        /// Gets the background result of the package specified by <paramref name="packageId" /> in
-        /// the specified installation target.
-        /// </summary>
-        /// <param name="packageId">package id.</param>
-        /// <param name="installedPackages">All installed pacakges.</param>
-        /// <param name="allVersions">List of all versions of the package.</param>
-        /// <returns>The background result of the package in the installation target.</returns>
-        private static async Task<BackgroundLoaderResult> GetPackageInfo(
-            string packageId,
-            IReadOnlyList<Packaging.PackageReference> installedPackages,
-            Lazy<Task<IEnumerable<VersionInfo>>> allVersions)
-        {
-            var versions = await allVersions.Value;
-
-            var latestAvailableVersion = versions.Max(p => p.Version);
-
-            // Get the minimum version installed in any target project/solution
-            var minimumInstalledPackage = installedPackages
-                .Where(p => p != null)
-                .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.PackageIdentity.Id, packageId))
-                .OrderBy(r => r.PackageIdentity.Version)
-                .FirstOrDefault();
-
-            BackgroundLoaderResult result;
-            if (minimumInstalledPackage != null)
-            {
-                if (minimumInstalledPackage.PackageIdentity.Version < latestAvailableVersion)
-                {
-                    result = new BackgroundLoaderResult()
-                    {
-                        LatestVersion = latestAvailableVersion,
-                        InstalledVersion = minimumInstalledPackage.PackageIdentity.Version,
-                        Status = PackageStatus.UpdateAvailable
-                    };
-                }
-                else
-                {
-                    result = new BackgroundLoaderResult()
-                    {
-                        InstalledVersion = minimumInstalledPackage.PackageIdentity.Version,
-                        Status = PackageStatus.Installed
-                    };
-                }
-            }
-            else
-            {
-                result = new BackgroundLoaderResult()
-                {
-                    LatestVersion = latestAvailableVersion,
-                    Status = PackageStatus.NotInstalled
-                };
-            }
-
-            return result;
+            return installedPackages.ToArray();
         }
 
         private void SearchControl_SearchStart(object sender, EventArgs e)
@@ -799,7 +737,7 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
+            SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString, useCache: true);
         }
 
         private void CheckboxPrerelease_CheckChanged(object sender, EventArgs e)
@@ -812,7 +750,7 @@ namespace NuGet.PackageManagement.UI
             RegistrySettingUtility.SetBooleanSetting(
                 Constants.IncludePrereleaseRegistryName,
                 _topPanel.CheckboxPrerelease.IsChecked == true);
-            SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
+            SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString, useCache: false);
             RefreshAvailableUpdatesCount();
         }
 
@@ -838,12 +776,12 @@ namespace NuGet.PackageManagement.UI
 
         public void ClearSearch()
         {
-            SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
+            SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString, useCache: true);
         }
 
         public IVsSearchTask CreateSearch(uint dwCookie, IVsSearchQuery pSearchQuery, IVsSearchCallback pSearchCallback)
         {
-            SearchPackageInActivePackageSource(pSearchQuery.SearchString);
+            SearchPackageInActivePackageSource(pSearchQuery.SearchString, useCache: true);
             return null;
         }
 
@@ -914,7 +852,7 @@ namespace NuGet.PackageManagement.UI
             var solutionManager = Model.Context.SolutionManager;
             solutionManager.NuGetProjectAdded -= SolutionManager_ProjectsChanged;
             solutionManager.NuGetProjectRemoved -= SolutionManager_ProjectsChanged;
-            solutionManager.NuGetProjectRenamed -= SolutionManager_ProjectsChanged;
+            solutionManager.NuGetProjectRenamed -= SolutionManager_ProjectRenamed;
             solutionManager.ActionsExecuted -= SolutionManager_ActionsExecuted;
 
             Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged -= Sources_PackageSourcesChanged;
@@ -970,7 +908,9 @@ namespace NuGet.PackageManagement.UI
         private void ExecuteUninstallPackageCommand(object sender, ExecutedRoutedEventArgs e)
         {
             var package = e.Parameter as PackageItemListViewModel;
-            if (package == null || Model.IsSolution || package.InstalledVersion == null)
+            if (Model.IsSolution
+                || package == null
+                || package.Status == PackageStatus.NotInstalled)
             {
                 return;
             }
@@ -1028,17 +968,11 @@ namespace NuGet.PackageManagement.UI
                 nugetUi => SetOptions(nugetUi, NuGetActionType.Install));
         }
 
-        private void PackageList_UpdateButtonClicked(object sender, EventArgs e)
+        private void PackageList_UpdateButtonClicked(PackageItemListViewModel[] selectedPackages)
         {
-            var packagesToUpdate = new List<PackageIdentity>();
-            foreach (var item in _packageList.Items)
-            {
-                var package = item as PackageItemListViewModel;
-                if (package?.Selected == true)
-                {
-                    packagesToUpdate.Add(new PackageIdentity(package.Id, package.Version));
-                }
-            }
+            var packagesToUpdate = selectedPackages
+                .Select(package => new PackageIdentity(package.Id, package.Version))
+                .ToList();
 
             if (packagesToUpdate.Count == 0)
             {
@@ -1055,6 +989,13 @@ namespace NuGet.PackageManagement.UI
                         CancellationToken.None);
                 },
                nugetUi => SetOptions(nugetUi, NuGetActionType.Update));
+        }
+
+        private void ExecuteRestartSearchCommand(object sender, ExecutedRoutedEventArgs e)
+        {
+            SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString, useCache: false);
+            RefreshAvailableUpdatesCount();
+            RefreshConsolidatablePackagesCount();
         }
     }
 }

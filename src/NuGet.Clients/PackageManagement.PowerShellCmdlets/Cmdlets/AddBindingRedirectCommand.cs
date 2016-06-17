@@ -8,6 +8,7 @@ using System.Management.Automation;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
@@ -28,9 +29,20 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays", Justification = "PowerShell API requirement")]
         public string[] ProjectName { get; set; }
 
+        /// <summary>
+        /// logging time disabled for tab command
+        /// </summary>
+        protected override bool IsLoggingTimeDisabled
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         protected override void ProcessRecordCore()
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
                     CheckSolutionState();
 

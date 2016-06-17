@@ -41,10 +41,4 @@ namespace NuGet.Credentials
         public ICredentials Credentials { get; }
         public CredentialStatus Status { get; }
     }
-
-    public enum CredentialStatus
-    {
-        Success,
-        ProviderNotApplicable
-    }
 }

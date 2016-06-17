@@ -123,6 +123,9 @@
   <data name="InvalidFrameworkIdentifier" xml:space="preserve">
     <value>Invalid framework identifier.</value>
   </data>
+  <data name="InvalidFrameworkVersion" xml:space="preserve">
+    <value>Invalid framework version '{0}'.</value>
+  </data>
   <data name="InvalidPortableFrameworks" xml:space="preserve">
     <value>Invalid portable frameworks.</value>
   </data>

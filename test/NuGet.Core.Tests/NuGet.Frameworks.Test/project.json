@@ -1,25 +1,53 @@
-{
-  "version": "3.4.0-*",
+﻿{
+  "version": "3.5.0-*",
   "dependencies": {
-    "NuGet.Frameworks": "3.4.0-*",
-    "NuGet.Packaging": "3.4.0-*",
-    "xunit": "2.1.0",
-    "xunit.runner.dnx": "2.1.0-rc1-build204"
-  },
-  "commands": {
-    "test": "xunit.runner.dnx"
+    "NuGet.Frameworks": {
+      "target": "project"
+    },
+    "NuGet.Packaging": {
+      "target": "project"
+    },
+    "xunit": "2.1.0"
   },
   "frameworks": {
-    "dnx451": {
+    "netcoreapp1.0": {
+      "imports": [
+        "dotnet5.6",
+        "dnxcore50",
+        "portable-net45+win8"
+      ],
       "dependencies": {
-        "Moq": "4.2.1510.2205"
+        "moq.netcore": "4.4.0-beta8",
+        "dotnet-test-xunit": "1.0.0-rc2-173361-36",
+        "System.Diagnostics.TraceSource": "4.0.0-rc3-24128-00",
+        "Microsoft.NETCore.App": {
+          "type": "platform",
+          "version": "1.0.0-rc3-004338"
+        }
+      },
+      "buildOptions": {
+        "define": [
+          "IS_CORECLR"
+        ]
       }
     },
-    "dnxcore50": {
-      "imports": [ "portable-net45+win8" ],
+    "net46": {
+      "frameworkAssemblies": {
+        "Microsoft.CSharp": "",
+        "System": "",
+        "System.Core": "",
+        "System.Runtime": "",
+        "System.Threading.Tasks": ""
+      },
       "dependencies": {
-        "moq.netcore": "4.4.0-beta8"
+        "Moq": "4.2.1510.2205"
+      },
+      "buildOptions": {
+        "define": [
+          "IS_DESKTOP"
+        ]
       }
     }
-  }
+  },
+  "testRunner": "xunit"
 }

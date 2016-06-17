@@ -1,47 +1,70 @@
 ﻿{
-  "version": "3.4.0-*",
+  "version": "3.5.0-*",
   "authors": [
     "NuGet"
   ],
   "description": "NuGet Protocol for 3.1.0 servers",
   "copyright": "Copyright .NET Foundation. All rights reserved.",
-  "projectUrl": "https://github.com/NuGet/NuGet.Protocol/",
-  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Protocol/master/LICENSE",
-  "tags": [
-    "nuget protocol"
-  ],
-  "compilationOptions": {
-    "warningsAsErrors": true
+  "packOptions": {
+    "tags": [
+      "nuget protocol"
+    ],
+    "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
+    "projectUrl": "https://github.com/NuGet/NuGet.Client"
+  },
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "xmlDoc": true,
+    "nowarn": [
+      "CS1591",
+      "CS1573"
+    ],
+    "compile": {
+      "include": [
+        "../../../Shared/*.cs"
+      ]
+    }
   },
   "dependencies": {
-    "NuGet.Shared": {
-      "type": "build",
-      "version": "3.4.0-*"
+    "NuGet.Common": {
+      "target": "project"
     },
-    "NuGet.Logging": "3.4.0-*",
-    "NuGet.Packaging": "3.4.0-*",
-    "NuGet.Protocol.Core.Types": "3.4.0-*",
+    "NuGet.Packaging": {
+      "target": "project"
+    },
+    "NuGet.Protocol.Core.Types": {
+      "target": "project"
+    },
     "Newtonsoft.Json": "6.0.4"
   },
   "frameworks": {
     "net45": {
       "frameworkAssemblies": {
-        "System.Collections.Concurrent": "",
         "System.IdentityModel": "",
         "System.Net.Http": "",
         "System.Net.Http.WebRequest": "",
         "System.ServiceModel": ""
+      },
+      "buildOptions": {
+        "define": [
+          "IS_DESKTOP"
+        ]
       }
     },
-    "dnxcore50": {
-      "imports": [ "portable-net45+win8" ],
+    "netstandard1.3": {
+      "imports": [
+        "dotnet5.6",
+        "dnxcore50",
+        "portable-net45+win8"
+      ],
       "dependencies": {
-        "System.Dynamic.Runtime": "4.0.10-beta-23109",
-        "System.Net.Http.WinHttpHandler": "4.0.0-beta-23409",
-        "System.ObjectModel": "4.0.10-beta-23109",
-        "System.Runtime.InteropServices": "4.0.20-beta-23109",
-        "System.Threading": "4.0.10-beta-23109",
-        "System.Threading.Thread": "4.0.0-beta-23109"
+        "NETStandard.Library": "1.6.0-rc3-24128-00",
+        "System.Dynamic.Runtime": "4.0.11-rc3-24128-00"
+      },
+      "buildOptions": {
+        "define": [
+          "IS_CORECLR"
+        ]
       }
     }
   }

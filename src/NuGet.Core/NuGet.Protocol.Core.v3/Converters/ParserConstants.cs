@@ -3,7 +3,7 @@
 
 using System;
 
-namespace NuGet.Protocol.Core.v3
+namespace NuGet.Protocol
 {
     internal static class Types
     {

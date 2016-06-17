@@ -6,14 +6,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
 
-namespace NuGet.Protocol.Core.v3
+namespace NuGet.Protocol
 {
     public class MetadataResourceV3Provider : ResourceProvider
     {
         public MetadataResourceV3Provider()
             : base(typeof(MetadataResource),
                   nameof(MetadataResourceV3Provider),
-                  "MetadataResourceV2Provider")
+                  "MetadataResourceV2FeedProvider")
         {
         }
 

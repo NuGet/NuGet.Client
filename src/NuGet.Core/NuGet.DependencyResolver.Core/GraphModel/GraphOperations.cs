@@ -79,7 +79,7 @@ namespace NuGet.DependencyResolver
                 {
                     foreach (var sideNode in n.InnerNodes)
                     {
-                        if (sideNode != node && sideNode.Key.Name == node.Key.Name)
+                        if (sideNode != node && StringComparer.OrdinalIgnoreCase.Equals(sideNode.Key.Name, node.Key.Name))
                         {
                             // Nodes that have no version range should be ignored as potential downgrades e.g. framework reference
                             if (sideNode.Key.VersionRange != null &&
@@ -127,7 +127,8 @@ namespace NuGet.DependencyResolver
         {
             foreach (var item in path)
             {
-                var childNode = node.InnerNodes.FirstOrDefault(n => n.Key.Name == item);
+                var childNode = node.InnerNodes.FirstOrDefault(n => 
+                    StringComparer.OrdinalIgnoreCase.Equals(n.Key.Name, item));
 
                 if (childNode == null)
                 {
@@ -170,15 +171,7 @@ namespace NuGet.DependencyResolver
                             return false;
                         }
 
-                        // HACK(anurse): Reference nodes win all battles.
-                        if (node.Item.Key.Type == LibraryTypes.Reference)
-                        {
-                            tracker.Lock(node.Item);
-                        }
-                        else
-                        {
-                            tracker.Track(node.Item);
-                        }
+                        tracker.Track(node.Item);
                         return true;
                     });
 
@@ -275,16 +268,6 @@ namespace NuGet.DependencyResolver
                         {
                             var versionRange = childNode.Key.VersionRange;
                             var checkVersion = acceptedNode.Item.Key.Version;
-
-                            // Allow prerelease versions if the selected library is prerelease and the range is
-                            // using the default behavior of filtering to stable versions.
-                            // Ex: [4.0.0, ) should allow 4.0.10-beta if that library was selected during the graph walk
-                            // The decision on if a prerelease version should be allowed should happen previous to this
-                            // check during the walk.
-                            if (checkVersion.IsPrerelease && !versionRange.IncludePrerelease)
-                            {
-                                versionRange = VersionRange.SetIncludePrerelease(versionRange, includePrerelease: true);
-                            }
 
                             if (!versionRange.Satisfies(checkVersion))
                             {

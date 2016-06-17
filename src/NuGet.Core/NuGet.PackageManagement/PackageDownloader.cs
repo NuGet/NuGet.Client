@@ -28,7 +28,7 @@ namespace NuGet.PackageManagement
         public static async Task<DownloadResourceResult> GetDownloadResourceResultAsync(IEnumerable<SourceRepository> sources,
             PackageIdentity packageIdentity,
             Configuration.ISettings settings,
-            Logging.ILogger logger,
+            Common.ILogger logger,
             CancellationToken token)
         {
             if (sources == null)
@@ -149,7 +149,7 @@ namespace NuGet.PackageManagement
                 {
                     var message = ExceptionUtilities.DisplayMessage(task.Exception);
 
-                    errors.AppendLine($"{tasksLookup[task].PackageSource.Source}: {message}");
+                    errors.AppendLine($"  {tasksLookup[task].PackageSource.Source}: {message}");
                 }
 
                 throw new FatalProtocolException(errors.ToString());
@@ -168,7 +168,7 @@ namespace NuGet.PackageManagement
         public static async Task<DownloadResourceResult> GetDownloadResourceResultAsync(SourceRepository sourceRepository,
             PackageIdentity packageIdentity,
             Configuration.ISettings settings,
-            Logging.ILogger logger,
+            Common.ILogger logger,
             CancellationToken token)
         {
             if (sourceRepository == null)
@@ -193,18 +193,45 @@ namespace NuGet.PackageManagement
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.DownloadResourceNotFound, sourceRepository.PackageSource.Source));
             }
 
-            DownloadResourceResult result = null;
-
             token.ThrowIfCancellationRequested();
 
-            result
-                = await downloadResource.GetDownloadResourceResultAsync(packageIdentity, settings, logger, token);
+            DownloadResourceResult result;
+            try
+            {
+                result = await downloadResource.GetDownloadResourceResultAsync(
+                   packageIdentity,
+                   settings,
+                   logger,
+                   token);
+            }
+            catch (OperationCanceledException)
+            {
+                result = new DownloadResourceResult(DownloadResourceResultStatus.Cancelled);
+            }
 
             if (result == null)
             {
                 throw new FatalProtocolException(string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.DownloadStreamNotAvailable,
+                    packageIdentity,
+                    sourceRepository.PackageSource.Source));
+            }
+
+            if (result.Status == DownloadResourceResultStatus.Cancelled)
+            {
+                throw new RetriableProtocolException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.PackageCancelledFromSource,
+                    packageIdentity,
+                    sourceRepository.PackageSource.Source));
+            }
+
+            if (result.Status == DownloadResourceResultStatus.NotFound)
+            {
+                throw new FatalProtocolException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.PackageNotFoundOnSource,
                     packageIdentity,
                     sourceRepository.PackageSource.Source));
             }

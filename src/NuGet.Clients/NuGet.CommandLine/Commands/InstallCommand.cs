@@ -14,6 +14,7 @@ using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
@@ -26,8 +27,6 @@ namespace NuGet.CommandLine
         UsageExampleResourceName = "InstallCommandUsageExamples")]
     public class InstallCommand : DownloadCommandBase
     {
-        private static readonly object _satelliteLock = new object();
-
         [Option(typeof(NuGetCommand), "InstallCommandOutputDirDescription")]
         public string OutputDirectory { get; set; }
 
@@ -46,11 +45,6 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "InstallCommandSolutionDirectory")]
         public string SolutionDirectory { get; set; }
 
-        private bool AllowMultipleVersions
-        {
-            get { return !ExcludeVersion; }
-        }
-
         [ImportingConstructor]
         public InstallCommand()
             : this(MachineCache.Default)
@@ -67,6 +61,11 @@ namespace NuGet.CommandLine
 
         public override Task ExecuteCommandAsync()
         {
+            if (DisableParallelProcessing)
+            {
+                HttpSourceResourceProvider.Throttle = SemaphoreSlimThrottle.CreateBinarySemaphore();
+            }
+
             CalculateEffectivePackageSaveMode();
             CalculateEffectiveSettings();
             string installPath = ResolveInstallPath();
@@ -219,9 +218,11 @@ namespace NuGet.CommandLine
 
             var primaryRepositories = packageSources.Select(sourceRepositoryProvider.CreateRepository);
 
+            var allowPrerelease = Prerelease || (version != null && version.IsPrerelease);
+
             var resolutionContext = new ResolutionContext(
                 DependencyBehavior.Lowest,
-                includePrelease: Prerelease,
+                includePrelease: allowPrerelease,
                 includeUnlisted: true,
                 versionConstraints: VersionConstraints.None);
 
@@ -262,7 +263,7 @@ namespace NuGet.CommandLine
             {
                 var projectContext = new ConsoleProjectContext(Console)
                 {
-                    PackageExtractionContext = new PackageExtractionContext()
+                    PackageExtractionContext = new PackageExtractionContext(Console)
                 };
 
                 if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)

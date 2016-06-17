@@ -1,16 +1,19 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.Protocol.Core.Types;
 
-namespace NuGet.Protocol.Core.v3
+namespace NuGet.Protocol
 {
     public static class GlobalPackagesFolderUtility
     {
@@ -27,9 +30,7 @@ namespace NuGet.Protocol.Core.v3
             }
 
             var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
-            var defaultPackagePathResolver = new VersionFolderPathResolver(
-                globalPackagesFolder,
-                normalizePackageId: false);
+            var defaultPackagePathResolver = new VersionFolderPathResolver(globalPackagesFolder);
 
             var hashPath = defaultPackagePathResolver.GetHashPath(packageIdentity.Id, packageIdentity.Version);
 
@@ -101,9 +102,7 @@ namespace NuGet.Protocol.Core.v3
                 packageIdentity,
                 globalPackagesFolder,
                 logger,
-                fixNuspecIdCasing: false,
                 packageSaveMode: PackageSaveMode.Defaultv3,
-                normalizeFileNames: false,
                 xmlDocFileSaveMode: PackageExtractionBehavior.XmlDocFileSaveMode);
 
             await PackageExtractor.InstallFromSourceAsync(

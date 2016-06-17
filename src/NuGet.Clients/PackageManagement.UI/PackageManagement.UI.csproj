@@ -21,9 +21,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NuGet.PackageManagement.UI</RootNamespace>
     <AssemblyName>NuGet.PackageManagement.UI</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>3b445626</NuGetPackageImportStamp>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -42,26 +42,18 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.VisualStudio.CoreUtility, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
-    <Reference Include="System.Collections.Concurrent" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Diagnostics.Tracing" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Dynamic.Runtime" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Net.Http.WebRequest" />
-    <Reference Include="System.Reflection" />
-    <Reference Include="System.Resources.ResourceManager" />
+    <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
-    <Reference Include="System.Threading" />
-    <Reference Include="System.Threading.Tasks" />
-    <Reference Include="System.Threading.Tasks.Parallel" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
@@ -69,26 +61,43 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="UIAutomationProvider" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Actions\UIActionEngine.cs" />
     <Compile Include="Actions\ProjectContext.cs" />
     <Compile Include="Actions\UpdatePreviewResult.cs" />
+    <Compile Include="Automation\FilterLabelAutomationPeer.cs" />
+    <Compile Include="Common\ErrorFloodGate.cs" />
     <Compile Include="Common\IOptionsPageActivator.cs" />
     <Compile Include="Common\NuGetEvent.cs" />
     <Compile Include="Common\NuGetEventTrigger.cs" />
     <Compile Include="Common\OptionsPage.cs" />
-    <Compile Include="Common\RestartRequestBar.xaml.cs">
+    <Compile Include="Converters\CollectionToStringConverter.cs" />
+    <Compile Include="Converters\EnumDescriptionValueConverter.cs" />
+    <Compile Include="Models\LoadingStatusViewModel.cs" />
+    <Compile Include="Models\PackageSearchMetadataCache.cs" />
+    <Compile Include="Models\PackageSearchStatus.cs" />
+    <Compile Include="Resources\Domain.cs" />
+    <Compile Include="Resources\Resources.xaml.cs">
+      <DependentUpon>Resources.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Xamls\RestartRequestBar.xaml.cs">
       <DependentUpon>RestartRequestBar.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Common\PackageRestoreBar.xaml.cs">
+    <Compile Include="Xamls\PackageRestoreBar.xaml.cs">
       <DependentUpon>PackageRestoreBar.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Common\ProductUpdateBar.xaml.cs">
+    <Compile Include="Xamls\ProductUpdateBar.xaml.cs">
       <DependentUpon>ProductUpdateBar.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Common\VisualStudioActivityLogger.cs" />
     <Compile Include="Common\TriggerEventMethod.cs" />
+    <Compile Include="Converters\MessageLevelToBrushConverter.cs" />
+    <Compile Include="Converters\LoadingStatusToIconConverter.cs" />
+    <Compile Include="Converters\NotEqualConverter.cs" />
+    <Compile Include="Feeds\ConsolidatePackageFeed.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\DownloadCountToVisibilityConverter.cs" />
@@ -106,48 +115,59 @@
     <Compile Include="Converters\StyleKeyConverter.cs" />
     <Compile Include="Converters\SummaryToFontStyleConverter.cs" />
     <Compile Include="Converters\SummaryToStringConverter.cs" />
+    <Compile Include="Converters\IconUrlToImageCacheConverter.cs" />
     <Compile Include="Converters\VersionToStringConverter.cs" />
-    <Compile Include="DependencyBehaviorItem.cs" />
-    <Compile Include="DetailControlModel.cs" />
-    <Compile Include="FileConflictActionOptionItem.cs" />
-    <Compile Include="Filter.cs" />
-    <Compile Include="FilterItem.cs" />
-    <Compile Include="ILoader.cs" />
+    <Compile Include="Feeds\IAutoCompleteProvider.cs" />
+    <Compile Include="Feeds\MultiSourceAutoCompleteProvider.cs" />
+    <Compile Include="Feeds\PackageFeedEnumerator.cs" />
+    <Compile Include="Models\DependencyBehaviorItem.cs" />
+    <Compile Include="Models\DetailControlModel.cs" />
+    <Compile Include="Feeds\MultiSourcePackageFeed.cs" />
+    <Compile Include="Feeds\SourceRepositoryExtensions.cs" />
+    <Compile Include="Models\FileConflictActionOptionItem.cs" />
+    <Compile Include="Models\ItemFilter.cs" />
+    <Compile Include="Models\FilterItem.cs" />
+    <Compile Include="IItemLoader.cs" />
     <Compile Include="InfiniteScrollListItemStyleSelector.cs" />
-    <Compile Include="LoadingStatus.cs" />
+    <Compile Include="Feeds\InstalledPackageFeed.cs" />
+    <Compile Include="Feeds\IPackageFeed.cs" />
+    <Compile Include="Common\PackageCollection.cs" />
+    <Compile Include="Feeds\IPackageMetadataProvider.cs" />
+    <Compile Include="Models\LoadingStatus.cs" />
     <Compile Include="LoadingStatusIndicator.cs" />
-    <Compile Include="LoadResult.cs" />
-    <Compile Include="Models\BackgroundLoaderResult.cs" />
     <Compile Include="Models\AlternativePackageManagerProviders.cs" />
     <Compile Include="Models\PackageItemListViewModel.cs" />
+    <Compile Include="Models\PackageSourceMoniker.cs" />
     <Compile Include="Models\PackageStatus.cs" />
     <Compile Include="Models\SearchResult.cs" />
-    <Compile Include="NotNullToBooleanConverter.cs" />
+    <Compile Include="Feeds\MultiSourcePackageMetadataProvider.cs" />
+    <Compile Include="Converters\NotNullToBooleanConverter.cs" />
+    <Compile Include="Feeds\PlainPackageFeedBase.cs" />
     <Compile Include="PackageInstallationInfo.cs" />
-    <Compile Include="PackageLoaderOptions.cs" />
-    <Compile Include="PackageSolutionDetailControlModel.cs" />
+    <Compile Include="PackageLoadContext.cs" />
+    <Compile Include="PackageItemLoader.cs" />
+    <Compile Include="Models\PackageSolutionDetailControlModel.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Resources\ResourceKeys.cs" />
+    <Compile Include="Resources\Images.cs" />
     <Compile Include="Resources\Styles.cs" />
+    <Compile Include="Feeds\UpdatePackageFeed.cs" />
     <Compile Include="UserInterfaceService\INuGetUI.cs" />
     <Compile Include="Models\PackageLicenseInfo.cs" />
     <Compile Include="Models\DetailedPackageMetadata.cs" />
     <Compile Include="Models\PackageDependencyMetadata.cs" />
     <Compile Include="Options.cs" />
-    <Compile Include="PackageDetailControlModel.cs" />
-    <Compile Include="PackageLoader.cs" />
+    <Compile Include="Models\PackageDetailControlModel.cs" />
     <Compile Include="PackageManagerControlCommands.cs" />
-    <Compile Include="PackageManagerModel.cs" />
+    <Compile Include="Models\PackageManagerModel.cs" />
     <Compile Include="Actions\PreviewResult.cs" />
-    <Compile Include="PreviewWindowModel.cs" />
+    <Compile Include="Models\PreviewWindowModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Models\PackageDependencySetMetadata.cs" />
     <Compile Include="Resources\Brushes.cs" />
-    <Compile Include="Resources\IUIBrushes.cs" />
     <Compile Include="Resources\Commands.cs" />
     <Compile Include="StandaloneSwitch.cs" />
     <Compile Include="UserAction.cs" />
@@ -162,6 +182,7 @@
     <Compile Include="Utility\NuGetUIThreadHelper.cs" />
     <Compile Include="Utility\PackageManagerProviderUtility.cs" />
     <Compile Include="Utility\RegistrySettingUtility.cs" />
+    <Compile Include="Utility\TaskCombinators.cs" />
     <Compile Include="Utility\UIUtility.cs" />
     <Compile Include="VersionForDisplay.cs" />
     <Compile Include="VsDialogWindow.cs" />
@@ -170,6 +191,9 @@
     </Compile>
     <Compile Include="Xamls\AuthorAndDownloadCount.xaml.cs">
       <DependentUpon>AuthorAndDownloadCount.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Xamls\LoadingStatusBar.xaml.cs">
+      <DependentUpon>LoadingStatusBar.xaml</DependentUpon>
     </Compile>
     <Compile Include="Xamls\PackageManagerProvidersLabel.xaml.cs">
       <DependentUpon>PackageManagerProvidersLabel.xaml</DependentUpon>
@@ -182,6 +206,9 @@
     </Compile>
     <Compile Include="Xamls\SortableColumnHeader.xaml.cs">
       <DependentUpon>SortableColumnHeader.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Xamls\Spinner.xaml.cs">
+      <DependentUpon>Spinner.xaml</DependentUpon>
     </Compile>
     <Compile Include="Xamls\UninstallButton.xaml.cs">
       <DependentUpon>UninstallButton.xaml</DependentUpon>
@@ -230,23 +257,30 @@
     <Compile Include="Xamls\UpdateAvailableIndicator.xaml.cs">
       <DependentUpon>UpdateAvailableIndicator.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Xamls\Resources.xaml.cs">
-      <DependentUpon>Resources.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Xamls\UpdateButton.xaml.cs">
       <DependentUpon>UpdateButton.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Page Include="Common\RestartRequestBar.xaml">
+    <DesignDataWithDesignTimeCreatableTypes Include="Design\LoadingStatusViewModelSampleData.xaml">
+      <SubType>Designer</SubType>
+    </DesignDataWithDesignTimeCreatableTypes>
+    <DesignDataWithDesignTimeCreatableTypes Include="Design\PackageItemListViewSampleData.xaml">
+      <SubType>Designer</SubType>
+    </DesignDataWithDesignTimeCreatableTypes>
+    <Page Include="Themes\generic.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Xamls\RestartRequestBar.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Common\PackageRestoreBar.xaml">
+    <Page Include="Xamls\PackageRestoreBar.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Common\ProductUpdateBar.xaml">
+    <Page Include="Xamls\ProductUpdateBar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -255,6 +289,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Xamls\AuthorAndDownloadCount.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Xamls\LoadingStatusBar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -273,6 +311,10 @@
     <Page Include="Xamls\SortableColumnHeader.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Xamls\Spinner.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Xamls\UninstallButton.xaml">
       <SubType>Designer</SubType>
@@ -326,7 +368,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Xamls\Resources.xaml">
+    <Page Include="Resources\Resources.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -362,6 +404,17 @@
       <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
       <Name>VisualStudio</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\StatusOK_32x.png" />
+    <Resource Include="Resources\StatusStop_32x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Refresh_grey_16x.png" />
+    <Resource Include="Resources\Refresh_inverse_16x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Refresh.16.16.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\..\build\common.targets" />

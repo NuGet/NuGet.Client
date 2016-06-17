@@ -15,9 +15,6 @@ namespace NuGetVSExtension
 {
     internal class OutputConsoleLogger : INuGetUILogger
     {
-        // Copied from EnvDTE interop
-        private const string vsWindowKindOutput = "{34E76E81-EE4A-11D0-AE2E-00A0C90FFFC3}";
-
         // keeps a reference to BuildEvents so that our event handler
         // won't get disconnected because of GC.
         private BuildEvents _buildEvents;
@@ -25,6 +22,18 @@ namespace NuGetVSExtension
         private SolutionEvents _solutionEvents;
 
         private const string LogEntrySource = "NuGet Package Manager";
+
+        private int _verbosityLevel;
+
+        private readonly DTE _dte;
+
+        private const string DTEProjectPage = "ProjectsAndSolution";
+
+        private const string DTEEnvironmentCategory = "Environment";
+
+        private const string MSBuildVerbosityKey = "MSBuildOutputVerbosity";
+
+        private const int DefaultVerbosityLevel = 2;
 
         public IConsole OutputConsole { get; private set; }
 
@@ -35,10 +44,11 @@ namespace NuGetVSExtension
             ErrorListProvider = new ErrorListProvider(serviceProvider);
             var outputConsoleProvider = ServiceLocator.GetInstance<IOutputConsoleProvider>();
 
-            var dte = ServiceLocator.GetInstance<DTE>();
-            _buildEvents = dte.Events.BuildEvents;
+            _dte = ServiceLocator.GetInstance<DTE>();
+
+            _buildEvents = _dte.Events.BuildEvents;
             _buildEvents.OnBuildBegin += (obj, ev) => { ErrorListProvider.Tasks.Clear(); };
-            _solutionEvents = dte.Events.SolutionEvents;
+            _solutionEvents = _dte.Events.SolutionEvents;
             _solutionEvents.AfterClosing += () => { ErrorListProvider.Tasks.Clear(); };
 
             OutputConsole = outputConsoleProvider.CreateOutputConsole(requirePowerShellHost: false);
@@ -59,35 +69,45 @@ namespace NuGetVSExtension
         {
             if (level == MessageLevel.Info
                 || level == MessageLevel.Error
-                || level == MessageLevel.Warning)
+                || level == MessageLevel.Warning
+                || _verbosityLevel > DefaultVerbosityLevel)
             {
-                var s = string.Format(CultureInfo.CurrentCulture, message, args);
-                OutputConsole.WriteLine(s);
+                if (args.Length > 0)
+                {
+                    message = string.Format(CultureInfo.CurrentCulture, message, args);
+                }
+                
+                OutputConsole.WriteLine(message);
             }
         }
 
         private void ActivateOutputWindow()
         {
             var uiShell = ServiceLocator.GetGlobalService<SVsUIShell, IVsUIShell>();
-            if (uiShell == null)
+            if (uiShell != null)
             {
-                return;
+                IVsWindowFrame toolWindow = null;
+                uiShell.FindToolWindow(0, ref GuidList.guidVsWindowKindOutput, out toolWindow);
+                toolWindow?.Show();
+            }
+        }
+
+        private int GetMSBuildVerbosityLevel()
+        {
+            var properties = _dte.get_Properties(DTEEnvironmentCategory, DTEProjectPage);
+            var value = properties.Item(MSBuildVerbosityKey).Value;
+            if (value is int)
+            {
+                return (int)value;
             }
 
-            var guid = new Guid(vsWindowKindOutput);
-            IVsWindowFrame f = null;
-            uiShell.FindToolWindow(0, ref guid, out f);
-            if (f == null)
-            {
-                return;
-            }
-
-            f.Show();
+            return DefaultVerbosityLevel;
         }
 
         public void Start()
         {
             ActivateOutputWindow();
+            _verbosityLevel = GetMSBuildVerbosityLevel();
             ErrorListProvider.Tasks.Clear();
             OutputConsole.Clear();
         }

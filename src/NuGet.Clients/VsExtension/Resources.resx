@@ -204,6 +204,9 @@ To prevent NuGet from restoring packages during build, open the Visual Studio Op
   <data name="ProjectUpgradeAndRetargetErrorMessage" xml:space="preserve">
     <value>Some NuGet packages were installed using a target framework different from the current target framework and may need to be reinstalled. Visit http://docs.nuget.org/docs/workflows/reinstalling-packages for more information.  Packages affected: {0}</value>
   </data>
+  <data name="ProviderException_MalformedResponse" xml:space="preserve">
+    <value>Credential provider gave an invalid response.</value>
+  </data>
   <data name="RestoredPackage" xml:space="preserve">
     <value>Restored NuGet package {0}.</value>
   </data>
@@ -215,5 +218,11 @@ To prevent NuGet from restoring packages during build, open the Visual Studio Op
   </data>
   <data name="SolutionIsNotSavedPromptReopen" xml:space="preserve">
     <value>Solution is not saved. Please save your solution and re-open solution before managing NuGet packages.</value>
+  </data>
+  <data name="VsCredentialProviderImporter_LoadErrorFormat" xml:space="preserve">
+    <value>Error loading VisualStudioAcountProvider. {0}</value>
+  </data>
+  <data name="VsCredentialProviderImport_GenericError" xml:space="preserve">
+    <value>Error getting the credential provider.  {0}</value>
   </data>
 </root>

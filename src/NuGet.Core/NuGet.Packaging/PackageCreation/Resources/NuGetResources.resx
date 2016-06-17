@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Manifest_RequireLicenseAcceptanceRequiresLicenseUrl" xml:space="preserve">
+    <value>Enabling license acceptance requires a license url.</value>
+  </data>
+  <data name="Manifest_UriCannotBeEmpty" xml:space="preserve">
+    <value>{0} cannot be empty.</value>
+  </data>
+  <data name="CannotCreateEmptyPackage" xml:space="preserve">
+    <value>Cannot create a package that has no dependencies nor content.</value>
+  </data>
+  <data name="DependencyHasInvalidVersion" xml:space="preserve">
+    <value>Dependency '{0}' has an invalid version.</value>
+  </data>
+  <data name="DuplicateDependenciesDefined" xml:space="preserve">
+    <value>'{0}' already has a dependency defined for '{1}'.</value>
+  </data>
+  <data name="PackageAuthoring_FileNotFound" xml:space="preserve">
+    <value>File not found: '{0}'.</value>
+  </data>
+  <data name="InvalidPackageId" xml:space="preserve">
+    <value>The package ID '{0}' contains invalid characters. Examples of valid package IDs include 'MyPackage' and 'MyPackage.Sample'.</value>
+  </data>
+  <data name="IncompatibleSchema" xml:space="preserve">
+    <value>The schema version of '{0}' is incompatible with version {1} of NuGet. Please upgrade NuGet to the latest version from http://go.microsoft.com/fwlink/?LinkId=213942.</value>
+  </data>
+  <data name="Manifest_SourceContainsInvalidCharacters" xml:space="preserve">
+    <value>Source path '{0}' contains invalid characters.</value>
+  </data>
+  <data name="Manifest_ExcludeContainsInvalidCharacters" xml:space="preserve">
+    <value>Exclude path '{0}' contains invalid characters.</value>
+  </data>
+  <data name="Manifest_TargetContainsInvalidCharacters" xml:space="preserve">
+    <value>Target path '{0}' contains invalid characters.</value>
+  </data>
+  <data name="Manifest_InvalidReference" xml:space="preserve">
+    <value>Invalid assembly reference '{0}'. Ensure that a file named '{0}' exists in the lib directory.</value>
+  </data>
+  <data name="Manifest_InvalidReferenceFile" xml:space="preserve">
+    <value>Assembly reference '{0}' contains invalid characters.</value>
+  </data>
+  <data name="Manifest_InvalidPrereleaseDependency" xml:space="preserve">
+    <value>A stable release of a package should not have on a prerelease dependency. Either modify the version spec of dependency "{0}" or update the version field.</value>
+  </data>
+  <data name="UnknownSchemaVersion" xml:space="preserve">
+    <value>Unknown schema version '{0}'.</value>
+  </data>
+  <data name="SemVerSpecialVersionTooLong" xml:space="preserve">
+    <value>The special version part cannot exceed 20 characters.</value>
+  </data>
+  <data name="Manifest_IdMaxLengthExceeded" xml:space="preserve">
+    <value>Id must not exceed 100 characters.</value>
+  </data>
+  <data name="Manifest_DependenciesHasMixedElements" xml:space="preserve">
+    <value>&lt;dependencies&gt; element must not contain both &lt;group&gt; and &lt;dependency&gt; child elements.</value>
+  </data>
+  <data name="Manifest_ReferencesHasMixedElements" xml:space="preserve">
+    <value>&lt;references&gt; element must not contain both &lt;group&gt; and &lt;reference&gt; child elements.</value>
+  </data>
+  <data name="Manifest_RequiredElementMissing" xml:space="preserve">
+    <value>The required element '{0}' is missing from the manifest.</value>
+  </data>
+  <data name="Manifest_InvalidMinClientVersion" xml:space="preserve">
+    <value>The 'minClientVersion' attribute in the package manifest has invalid value. It must be a valid version string.</value>
+  </data>
+  <data name="Manifest_RequiredMetadataMissing" xml:space="preserve">
+    <value>{0} is required.</value>
+  </data>
+  <data name="Manifest_ReferencesIsEmpty" xml:space="preserve">
+    <value>The element package\metadata\references\group must contain at least one &lt;reference&gt; child element.</value>
+  </data>
+  <data name="SemVer2VersionsNotSupported" xml:space="preserve">
+    <value>Versions using SemVer 2.0.0 are not supported: {0}.</value>
+  </data>
+</root>

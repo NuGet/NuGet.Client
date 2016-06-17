@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -23,6 +25,7 @@ namespace NuGet.Resolver
         /// </summary>
         public IEnumerable<PackageIdentity> Resolve(PackageResolverContext context, CancellationToken token)
         {
+            var stopWatch = new Stopwatch();
             token.ThrowIfCancellationRequested();
 
             if (context == null)
@@ -37,6 +40,39 @@ namespace NuGet.Resolver
                 {
                     throw new NuGetResolverInputException(String.Format(CultureInfo.CurrentCulture, Strings.MissingDependencyInfo, requiredId));
                 }
+            }
+            
+            var invalidExistingPackages = new List<string>();
+
+            var installedPackages = context.PackagesConfig.Select(p => p.PackageIdentity).ToArray();
+
+            // validate existing package.config for any invalid dependency
+            foreach (var package in installedPackages)
+            {
+                var existingPackage = context.AvailablePackages.FirstOrDefault(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, package.Id) && p.Version.Equals(package.Version));
+
+                if (existingPackage != null)
+                {
+                    // check if each dependency can be satisfied with existing packages
+                    var brokenDependencies = GetBrokenDependencies(existingPackage, installedPackages);
+
+                    if (brokenDependencies != null && brokenDependencies.Any())
+                    {
+                        invalidExistingPackages.AddRange(brokenDependencies.Select(dependency => FormatDependencyConstraint(existingPackage, dependency)));
+                    }
+                }
+                else
+                {
+                    var packageString = $"'{package.Id} {package.Version.ToNormalizedString()}'";
+                    invalidExistingPackages.Add(packageString);
+                }
+            }
+            // log warning message for all the invalid package dependencies
+            if (invalidExistingPackages.Count > 0)
+            {
+                context.Log.LogWarning(
+                    string.Format(
+                        CultureInfo.CurrentCulture, Strings.InvalidPackageConfig, string.Join(", ", invalidExistingPackages)));
             }
 
             // convert the available packages into ResolverPackages
@@ -131,7 +167,12 @@ namespace NuGet.Resolver
 
                 if (nonAbsentCandidates.Any())
                 {
-                    var circularReferences = ResolverUtility.FindCircularDependency(solution);
+                    // topologically sort non absent packages
+                    var sortedSolution = ResolverUtility.TopologicalSort(nonAbsentCandidates);
+
+                    // Find circular dependency for topologically sorted non absent packages since it will help maintain cache of 
+                    // already processed packages
+                    var circularReferences = ResolverUtility.FindFirstCircularDependency(sortedSolution);
 
                     if (circularReferences.Any())
                     {
@@ -142,8 +183,9 @@ namespace NuGet.Resolver
                     }
 
                     // solution found!
-                    var sortedSolution = ResolverUtility.TopologicalSort(nonAbsentCandidates);
-
+                    stopWatch.Stop();
+                    context.Log.LogMinimal(
+                        string.Format(Strings.ResolverTotalTime, DatetimeUtility.ToReadableTimeFormat(stopWatch.Elapsed)));
                     return sortedSolution.ToArray();
                 }
             }
@@ -151,6 +193,30 @@ namespace NuGet.Resolver
             // no solution was found, throw an error with a diagnostic message
             var message = ResolverUtility.GetDiagnosticMessage(bestSolution, context.AvailablePackages, context.PackagesConfig, context.TargetIds, context.PackageSources);
             throw new NuGetResolverConstraintException(message);
+        }
+
+        private static IEnumerable<PackageDependency> GetBrokenDependencies(SourcePackageDependencyInfo package, IEnumerable<PackageIdentity> packages)
+        {
+            foreach (var dependency in package.Dependencies)
+            {
+                var target = packages.FirstOrDefault(targetPackage => StringComparer.OrdinalIgnoreCase.Equals(targetPackage.Id, dependency.Id));
+
+                if (!ResolverUtility.IsDependencySatisfied(dependency, target))
+                {
+                    yield return dependency;
+                }
+            }
+
+            yield break;
+        }
+
+        private static string FormatDependencyConstraint(SourcePackageDependencyInfo package, PackageDependency dependency)
+        {
+            var range = dependency.VersionRange;
+            var dependencyString = $"{dependency.Id} {range?.ToNonSnapshotRange().PrettyPrint() ?? string.Empty}";
+
+            // A 1.0.0 dependency: B (= 1.5)
+            return $"'{package.Id} {package.Version.ToNormalizedString()} {Strings.DependencyConstraint}: {dependencyString}'";
         }
 
         /// <summary>

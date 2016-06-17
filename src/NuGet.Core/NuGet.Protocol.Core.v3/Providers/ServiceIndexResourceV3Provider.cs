@@ -9,10 +9,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
-namespace NuGet.Protocol.Core.v3
+namespace NuGet.Protocol
 {
     /// <summary>
     /// Retrieves and caches service index.json files
@@ -36,32 +37,6 @@ namespace NuGet.Protocol.Core.v3
         {
             _cache = new ConcurrentDictionary<string, ServiceIndexCacheInfo>(StringComparer.OrdinalIgnoreCase);
             MaxCacheDuration = _defaultCacheDuration;
-        }
-
-        // Read the source's end point to get the index json.
-        // An exception will be thrown on failure.
-        private async Task<JObject> GetIndexJson(SourceRepository source, Logging.ILogger log, CancellationToken token)
-        {
-            var url = source.PackageSource.Source;
-            var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
-            var client = httpSourceResource.HttpSource;
-
-            // Use default caching
-            var cacheContext = new HttpSourceCacheContext();
-
-            using (var sourceResponse = await client.GetAsync(url, "service_index", cacheContext, log, token))
-            {
-                if (sourceResponse.Stream != null)
-                {
-                    using (var reader = new StreamReader(sourceResponse.Stream))
-                    using (var jsonReader = new JsonTextReader(reader))
-                    {
-                        return JObject.Load(jsonReader);
-                    }
-                }
-            }
-
-            return null;
         }
 
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
@@ -95,33 +70,7 @@ namespace NuGet.Protocol.Core.v3
                         if (!_cache.TryGetValue(url, out cacheInfo) ||
                             entryValidCutoff > cacheInfo.CachedTime)
                         {
-                            var json = await GetIndexJson(source, Logging.NullLogger.Instance, token);
-
-                            // Use SemVer instead of NuGetVersion, the service index should always be
-                            // in strict SemVer format
-                            JToken versionToken;
-                            if (json.TryGetValue("version", out versionToken) &&
-                                versionToken.Type == JTokenType.String)
-                            {
-                                SemanticVersion version;
-                                if (SemanticVersion.TryParse((string)versionToken, out version) &&
-                                    version.Major == 3)
-                                {
-                                    index = new ServiceIndexResourceV3(json, utcNow);
-                                }
-                                else
-                                {
-                                    string errorMessage = string.Format(
-                                        CultureInfo.CurrentCulture,
-                                        Strings.Protocol_UnsupportedVersion,
-                                        (string)versionToken);
-                                    throw new FatalProtocolException(errorMessage);
-                                }
-                            }
-                            else
-                            {
-                                throw new FatalProtocolException(Strings.Protocol_MissingVersion);
-                            }
+                            index = await GetServiceIndexResourceV3(source, utcNow, NullLogger.Instance, token);
 
                             // cache the value even if it is null to avoid checking it again later
                             var cacheEntry = new ServiceIndexCacheInfo
@@ -150,6 +99,94 @@ namespace NuGet.Protocol.Core.v3
             }
 
             return new Tuple<bool, INuGetResource>(index != null, index);
+        }
+
+        // Read the source's end point to get the index json.
+        // An exception will be thrown on failure.
+        private async Task<ServiceIndexResourceV3> GetServiceIndexResourceV3(
+            SourceRepository source,
+            DateTime utcNow,
+            ILogger log,
+            CancellationToken token)
+        {
+            var url = source.PackageSource.Source;
+            var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
+            var client = httpSourceResource.HttpSource;
+            
+            for (var retry = 0; retry < 3; retry++)
+            {
+                var cacheContext = HttpSourceCacheContext.CreateCacheContext(new SourceCacheContext(), retry);
+
+                try
+                {
+                    using (var sourceResponse = await client.GetAsync(
+                        new HttpSourceCachedRequest(
+                            url,
+                            "service_index",
+                            cacheContext)
+                        {
+                            EnsureValidContents = stream => HttpStreamValidation.ValidateJObject(url, stream)
+                        },
+                        log,
+                        token))
+                    {
+                        return ConsumeServiceIndexStream(sourceResponse.Stream, utcNow);
+                    }
+                }
+                catch (Exception ex) when (retry < 2)
+                {
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingServiceIndex, url)
+                        + Environment.NewLine
+                        + ExceptionUtilities.DisplayMessage(ex);
+                    log.LogMinimal(message);
+                }
+                catch (Exception ex) when (retry == 2)
+                {
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToReadServiceIndex, url);
+                    log.LogError(message + Environment.NewLine + ExceptionUtilities.DisplayMessage(ex));
+
+                    throw new FatalProtocolException(message, ex);
+                }
+            }
+
+            return null;
+        }
+
+        private ServiceIndexResourceV3 ConsumeServiceIndexStream(Stream stream, DateTime utcNow)
+        {
+            // Parse the JSON
+            JObject json;
+            using (var reader = new StreamReader(stream))
+            using (var jsonReader = new JsonTextReader(reader))
+            {
+                json = JObject.Load(jsonReader);
+            }
+
+            // Use SemVer instead of NuGetVersion, the service index should always be
+            // in strict SemVer format
+            JToken versionToken;
+            if (json.TryGetValue("version", out versionToken) &&
+                versionToken.Type == JTokenType.String)
+            {
+                SemanticVersion version;
+                if (SemanticVersion.TryParse((string)versionToken, out version) &&
+                    version.Major == 3)
+                {
+                    return new ServiceIndexResourceV3(json, utcNow);
+                }
+                else
+                {
+                    string errorMessage = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.Protocol_UnsupportedVersion,
+                        (string)versionToken);
+                    throw new InvalidDataException(errorMessage);
+                }
+            }
+            else
+            {
+                throw new InvalidDataException(Strings.Protocol_MissingVersion);
+            }
         }
 
         protected class ServiceIndexCacheInfo

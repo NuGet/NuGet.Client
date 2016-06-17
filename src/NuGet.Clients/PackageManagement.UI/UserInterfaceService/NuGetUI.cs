@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Threading;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Frameworks;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
@@ -168,18 +169,18 @@ namespace NuGet.PackageManagement.UI
             this._context.SolutionManager.OnActionsExecuted(actions);
         }
 
-        public SourceRepository ActiveSource
+        public IEnumerable<SourceRepository> ActiveSources
         {
             get
             {
-                SourceRepository source = null;
+                IEnumerable<SourceRepository> sources = null;
 
                 if (PackageManagerControl != null)
                 {
-                    UIDispatcher.Invoke(() => { source = PackageManagerControl.ActiveSource; });
+                    UIDispatcher.Invoke(() => { sources = PackageManagerControl.ActiveSources; });
                 }
 
-                return source;
+                return sources;
             }
         }
 
@@ -218,8 +219,9 @@ namespace NuGet.PackageManagement.UI
         {
             if (ex is NuGetResolverConstraintException ||
                 ex is PackageAlreadyInstalledException ||
-                ex is NuGetVersionNotSatisfiedException ||
+                ex is MinClientVersionException ||
                 ex is FrameworkException ||
+                ex is NuGetProtocolException ||
                 ex is PackagingException ||
                 ex is InvalidOperationException)
             {

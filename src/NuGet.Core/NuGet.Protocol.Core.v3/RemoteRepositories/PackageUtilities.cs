@@ -5,12 +5,12 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
-using NuGet.Logging;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 
-namespace NuGet.Protocol.Core.v3.RemoteRepositories
+namespace NuGet.Protocol
 {
     internal static class PackageUtilities
     {

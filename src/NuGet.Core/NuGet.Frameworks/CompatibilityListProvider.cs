@@ -7,7 +7,12 @@ using System.Linq;
 
 namespace NuGet.Frameworks
 {
-    public sealed class CompatibilityListProvider : IFrameworkCompatibilityListProvider
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    sealed class CompatibilityListProvider : IFrameworkCompatibilityListProvider
     {
         private readonly IFrameworkNameProvider _nameProvider;
         private readonly IFrameworkCompatibilityProvider _compatibilityProvider;

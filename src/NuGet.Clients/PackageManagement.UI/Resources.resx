@@ -177,6 +177,9 @@
   <data name="Label_Options" xml:space="preserve">
     <value>Options</value>
   </data>
+  <data name="Label_Owners" xml:space="preserve">
+    <value>Owner(s):</value>
+  </data>
   <data name="Label_LegalDisclaimer" xml:space="preserve">
     <value>Legal Disclaimer</value>
   </data>
@@ -231,11 +234,11 @@
   <data name="Text_LicenseText" xml:space="preserve">
     <value>By clicking "I Accept," you agree to the license terms for the package(s) listed above. If you do not agree to the license terms, click "I Decline."</value>
   </data>
-  <data name="Button_Retry" xml:space="preserve">
-    <value>Error occurred. Retry</value>
+  <data name="Button_RestartSearch" xml:space="preserve">
+    <value>Restart search</value>
   </data>
   <data name="Text_ErrorOccurred" xml:space="preserve">
-    <value>Error occured:{0}{1}</value>
+    <value>Error occurred</value>
   </data>
   <data name="Label_Solution" xml:space="preserve">
     <value>Solution '{0}'</value>
@@ -279,8 +282,8 @@
   <data name="Text_Loading" xml:space="preserve">
     <value>Loading...</value>
   </data>
-  <data name="Text_NoItemsFound" xml:space="preserve">
-    <value>No items found</value>
+  <data name="Text_NoPackagesFound" xml:space="preserve">
+    <value>No packages found</value>
   </data>
   <data name="Text_Ready" xml:space="preserve">
     <value>Ready</value>
@@ -512,6 +515,46 @@ Packages installed into Website projects will not be restored during build. Cons
     <comment>In the solution package manager, if the select package is not installed, then this message is shown.</comment>
   </data>
   <data name="Text_UserCanceled" xml:space="preserve">
-    <value>Operation canceled by user.</value>
+    <value>Operation canceled by user</value>
+  </data>
+  <data name="AggregateSourceName" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="Button_ShowErrors" xml:space="preserve">
+    <value>Show errors in output</value>
+  </data>
+  <data name="Button_ShowMoreResults" xml:space="preserve">
+    <value>Show {0} more results</value>
+    <comment>The string format has a single parameter "{0}", which is an integer number of how many more results will be displayed to the user when they click a button.</comment>
+  </data>
+  <data name="Text_SearchCompleted" xml:space="preserve">
+    <value>Search completed</value>
+  </data>
+  <data name="Text_SearchIncomplete" xml:space="preserve">
+    <value>Retrieving results from one or more sources</value>
+  </data>
+  <data name="Text_SearchStopped" xml:space="preserve">
+    <value>Unable to retrieve results from one or more sources</value>
+  </data>
+  <data name="Text_NoMorePackages" xml:space="preserve">
+    <value>No more packages</value>
+  </data>
+  <data name="Text_PackageSources" xml:space="preserve">
+    <value>Package sources:</value>
+  </data>
+  <data name="Button_Dismiss" xml:space="preserve">
+    <value>Dismiss</value>
+  </data>
+  <data name="Text_PackagesFound" xml:space="preserve">
+    <value>Packages found</value>
+  </data>
+  <data name="Operation_TotalTime" xml:space="preserve">
+    <value>Time Elapsed: {0}</value>
+  </data>
+  <data name="ToolTip_Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="ToolTip_Settings" xml:space="preserve">
+    <value>Settings</value>
   </data>
 </root>

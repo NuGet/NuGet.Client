@@ -23,6 +23,8 @@ namespace NuGet.PackageManagement
 
         event EventHandler<NuGetProjectEventArgs> NuGetProjectRenamed;
 
+        event EventHandler<NuGetProjectEventArgs> AfterNuGetProjectRenamed;
+
         /// <summary>
         /// Event raised after user actions are executed.
         /// </summary>
@@ -88,6 +90,12 @@ namespace NuGet.PackageManagement
         /// </summary>
         /// <param name="actions"></param>
         void OnActionsExecuted(IEnumerable<ResolvedAction> actions);
+
+        /// <summary>
+        /// Saves the specified project
+        /// </summary>
+        /// <param name="nuGetProject"></param>
+        void SaveProject(NuGetProject nuGetProject);
     }
 
     public class NuGetProjectEventArgs : EventArgs

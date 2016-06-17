@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using NuGet.Common;
 using NuGet.Configuration;
 
 namespace NuGet.Credentials
@@ -15,7 +16,7 @@ namespace NuGet.Credentials
     public class PluginCredentialProviderBuilder
     {
         private readonly Configuration.ISettings _settings;
-        private readonly Configuration.IEnvironmentVariableReader _envarReader;
+        private readonly Common.IEnvironmentVariableReader _envarReader;
         private readonly IExtensionLocator _extensionLocator;
 
         public PluginCredentialProviderBuilder(IExtensionLocator extensionLocator, Configuration.ISettings settings) 
@@ -26,7 +27,7 @@ namespace NuGet.Credentials
         public PluginCredentialProviderBuilder(
             IExtensionLocator extensionLocator,
             Configuration.ISettings settings,
-            Configuration.IEnvironmentVariableReader envarReader)
+            Common.IEnvironmentVariableReader envarReader)
         {
             if (extensionLocator == null)
             {

@@ -97,6 +97,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to All.
+        /// </summary>
+        public static string AggregateSourceName {
+            get {
+                return ResourceManager.GetString("AggregateSourceName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Some NuGet packages are missing from this solution. Click to restore from your online package sources..
         /// </summary>
         public static string AskForRestoreMessage {
@@ -120,6 +129,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Button_Cancel {
             get {
                 return ResourceManager.GetString("Button_Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Dismiss.
+        /// </summary>
+        public static string Button_Dismiss {
+            get {
+                return ResourceManager.GetString("Button_Dismiss", resourceCulture);
             }
         }
         
@@ -187,11 +205,29 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error occurred. Retry.
+        ///   Looks up a localized string similar to Restart search.
         /// </summary>
-        public static string Button_Retry {
+        public static string Button_RestartSearch {
             get {
-                return ResourceManager.GetString("Button_Retry", resourceCulture);
+                return ResourceManager.GetString("Button_RestartSearch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show errors in output.
+        /// </summary>
+        public static string Button_ShowErrors {
+            get {
+                return ResourceManager.GetString("Button_ShowErrors", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show {0} more results.
+        /// </summary>
+        public static string Button_ShowMoreResults {
+            get {
+                return ResourceManager.GetString("Button_ShowMoreResults", resourceCulture);
             }
         }
         
@@ -592,6 +628,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Owner(s):.
+        /// </summary>
+        public static string Label_Owners {
+            get {
+                return ResourceManager.GetString("Label_Owners", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to NuGet Package Manager: {0}.
         /// </summary>
         public static string Label_PackageManager {
@@ -763,6 +808,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Time Elapsed: {0}.
+        /// </summary>
+        public static string Operation_TotalTime {
+            get {
+                return ResourceManager.GetString("Operation_TotalTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Finished configuring this solution to restore NuGet packages on build..
         /// </summary>
         public static string PackageRestoreCompleted {
@@ -909,7 +963,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error occured:{0}{1}.
+        ///   Looks up a localized string similar to Error occurred.
         /// </summary>
         public static string Text_ErrorOccurred {
             get {
@@ -990,11 +1044,20 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No items found.
+        ///   Looks up a localized string similar to No more packages.
         /// </summary>
-        public static string Text_NoItemsFound {
+        public static string Text_NoMorePackages {
             get {
-                return ResourceManager.GetString("Text_NoItemsFound", resourceCulture);
+                return ResourceManager.GetString("Text_NoMorePackages", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No packages found.
+        /// </summary>
+        public static string Text_NoPackagesFound {
+            get {
+                return ResourceManager.GetString("Text_NoPackagesFound", resourceCulture);
             }
         }
         
@@ -1013,6 +1076,24 @@ namespace NuGet.PackageManagement.UI {
         public static string Text_NotInstalled {
             get {
                 return ResourceManager.GetString("Text_NotInstalled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Packages found.
+        /// </summary>
+        public static string Text_PackagesFound {
+            get {
+                return ResourceManager.GetString("Text_PackagesFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package sources:.
+        /// </summary>
+        public static string Text_PackageSources {
+            get {
+                return ResourceManager.GetString("Text_PackageSources", resourceCulture);
             }
         }
         
@@ -1053,11 +1134,38 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Search completed.
+        /// </summary>
+        public static string Text_SearchCompleted {
+            get {
+                return ResourceManager.GetString("Text_SearchCompleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Retrieving results from one or more sources.
+        /// </summary>
+        public static string Text_SearchIncomplete {
+            get {
+                return ResourceManager.GetString("Text_SearchIncomplete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Searching &apos;{0}&apos;.
         /// </summary>
         public static string Text_Searching {
             get {
                 return ResourceManager.GetString("Text_Searching", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to retrieve results from one or more sources.
+        /// </summary>
+        public static string Text_SearchStopped {
+            get {
+                return ResourceManager.GetString("Text_SearchStopped", resourceCulture);
             }
         }
         
@@ -1071,7 +1179,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Operation canceled by user..
+        ///   Looks up a localized string similar to Operation canceled by user.
         /// </summary>
         public static string Text_UserCanceled {
             get {
@@ -1130,6 +1238,24 @@ namespace NuGet.PackageManagement.UI {
         public static string ToolTip_PackageInstalled {
             get {
                 return ResourceManager.GetString("ToolTip_PackageInstalled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Refresh.
+        /// </summary>
+        public static string ToolTip_Refresh {
+            get {
+                return ResourceManager.GetString("ToolTip_Refresh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Settings.
+        /// </summary>
+        public static string ToolTip_Settings {
+            get {
+                return ResourceManager.GetString("ToolTip_Settings", resourceCulture);
             }
         }
         

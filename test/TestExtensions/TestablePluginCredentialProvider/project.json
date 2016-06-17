@@ -1,9 +1,9 @@
 ﻿{
   "dependencies": {
-    "Newtonsoft.Json": "6.0.4"
+    "Newtonsoft.Json": "6.0.8"
   },
   "frameworks": {
-    "net45": {}
+    "net46": {}
   },
   "runtimes": {
     "win-anycpu": {},

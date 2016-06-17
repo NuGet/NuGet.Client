@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using NuGet.Shared;
 
 namespace NuGet.RuntimeModel
 {
@@ -167,13 +168,8 @@ namespace NuGet.RuntimeModel
                 return false;
             }
 
-            var runtimesEqual = Runtimes
-               .OrderBy(pair => pair.Key, StringComparer.Ordinal)
-               .SequenceEqual(other.Runtimes.OrderBy(pair => pair.Key, StringComparer.Ordinal));
-            var supportsEqual = Supports
-               .OrderBy(pair => pair.Key, StringComparer.Ordinal)
-               .SequenceEqual(other.Supports.OrderBy(pair => pair.Key, StringComparer.Ordinal));
-            return runtimesEqual && supportsEqual;
+            return Runtimes.OrderedEquals(other.Runtimes, pair => pair.Key, StringComparer.Ordinal)
+                && Supports.OrderedEquals(other.Supports, pair => pair.Key, StringComparer.Ordinal);
         }
 
         public override bool Equals(object obj)

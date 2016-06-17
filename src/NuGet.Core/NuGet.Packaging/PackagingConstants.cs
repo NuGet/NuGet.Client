@@ -23,6 +23,27 @@ namespace NuGet.Packaging
             public static readonly string Runtimes = "runtimes";
             public static readonly string Ref = "ref";
             public static readonly string Analyzers = "analyzers";
+
+            public static string[] Known { get; } = new string[]
+            {
+                Content,
+                Build,
+                Tools,
+                ContentFiles,
+                Lib,
+                Native,
+                Runtimes,
+                Ref,
+                Analyzers
+            };
         }
+
+        /// <summary>
+        /// Represents the ".nuspec" extension.
+        /// </summary>
+        public static readonly string ManifestExtension = ".nuspec";
+
+        // Starting from nuget 2.0, we use a file with the special name '_._' to represent an empty folder.
+        internal const string PackageEmptyFileName = "_._";
     }
 }

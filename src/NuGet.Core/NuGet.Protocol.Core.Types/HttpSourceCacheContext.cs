@@ -60,5 +60,17 @@ namespace NuGet.Protocol.Core.Types
                 return _rootTempFolder;
             }
         }
+
+        public static HttpSourceCacheContext CreateCacheContext(SourceCacheContext cacheContext, int retryCount)
+        {
+            if (retryCount == 0)
+            {
+                return new HttpSourceCacheContext(cacheContext);
+            }
+            else
+            {
+                return new HttpSourceCacheContext(cacheContext, TimeSpan.Zero);
+            }
+        }
     }
 }

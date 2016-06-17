@@ -9,7 +9,12 @@ namespace NuGet.Frameworks
     /// <summary>
     /// Contains the standard portable framework mappings
     /// </summary>
-    public class DefaultPortableFrameworkMappings : IPortableFrameworkMappings
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    class DefaultPortableFrameworkMappings : IPortableFrameworkMappings
     {
 
         private KeyValuePair<int, NuGetFramework[]>[] _profileFrameworks;

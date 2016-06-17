@@ -1,9 +1,9 @@
 ﻿{
   "dependencies": {
-    "NuGet.PackageManagement": "3.4.0-*"
+    "NuGet.PackageManagement": "3.5.0-*"
   },
   "frameworks": {
-    "net45": {}
+    "net46": {}
   },
   "runtimes": {
     "win-anycpu": {},

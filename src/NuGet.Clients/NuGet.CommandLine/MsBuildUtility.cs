@@ -10,6 +10,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using Microsoft.Build.Evaluation;
+using NuGet.Commands;
 using NuGet.Common;
 
 namespace NuGet.CommandLine
@@ -29,7 +30,8 @@ namespace NuGet.CommandLine
             ".csproj",
             ".vbproj",
             ".fsproj",
-            ".xproj"
+            ".xproj",
+            ".nuproj"
         };
 
         public static bool IsMsBuildBasedProject(string projectFullPath)
@@ -37,10 +39,41 @@ namespace NuGet.CommandLine
             return _msbuildExtensions.Contains(Path.GetExtension(projectFullPath));
         }
 
+        public static int Build(string msbuildDirectory,
+                                    string args)
+        {
+            string msbuildPath = Path.Combine(msbuildDirectory, "msbuild.exe");
+
+            if (!File.Exists(msbuildPath))
+            {
+                throw new CommandLineException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        LocalizedResourceManager.GetString(nameof(NuGetResources.MsBuildDoesNotExistAtPath)),
+                        msbuildPath));
+            }
+
+            var processStartInfo = new ProcessStartInfo
+            {
+                UseShellExecute = false,
+                FileName = msbuildPath,
+                Arguments = args,
+                RedirectStandardOutput = false,
+                RedirectStandardError = false
+            };
+
+            using (var process = Process.Start(processStartInfo))
+            {
+                process.WaitForExit();
+
+                return process.ExitCode;
+            }
+        }
+
         /// <summary>
         /// Returns the closure of project references for projects specified in <paramref name="projectPaths"/>.
         /// </summary>
-        public static ProjectReferenceCache GetProjectReferences(
+        public static MSBuildProjectReferenceProvider GetProjectReferences(
             string msbuildDirectory,
             string[] projectPaths,
             int timeOut)
@@ -132,7 +165,7 @@ namespace NuGet.CommandLine
                     lines = File.ReadAllLines(resultsPath);
                 }
 
-                return new ProjectReferenceCache(lines);
+                return new MSBuildProjectReferenceProvider(lines);
             }
         }
 

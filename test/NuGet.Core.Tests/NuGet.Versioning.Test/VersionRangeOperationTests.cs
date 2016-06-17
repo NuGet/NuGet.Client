@@ -95,7 +95,6 @@ namespace NuGet.Versioning.Test
 
             // Assert
             Assert.Equal(a.ToNormalizedString(), combined.ToNormalizedString());
-            Assert.False(combined.IncludePrerelease);
         }
 
         [Fact]
@@ -109,7 +108,6 @@ namespace NuGet.Versioning.Test
 
             // Assert
             Assert.Equal(VersionRange.None.ToNormalizedString(), combined.ToNormalizedString());
-            Assert.False(combined.IncludePrerelease);
         }
 
         [Fact]
@@ -123,7 +121,6 @@ namespace NuGet.Versioning.Test
 
             // Assert
             Assert.Equal(VersionRange.None.ToNormalizedString(), combined.ToNormalizedString());
-            Assert.False(combined.IncludePrerelease);
         }
 
         [Fact]
@@ -137,7 +134,6 @@ namespace NuGet.Versioning.Test
 
             // Assert
             Assert.Equal(VersionRange.All.ToNormalizedString(), combined.ToNormalizedString());
-            Assert.True(combined.IncludePrerelease);
         }
 
         [Fact]
@@ -170,7 +166,6 @@ namespace NuGet.Versioning.Test
 
             // Assert
             Assert.Equal("[1.0.0, 2.0.0]", combined.ToNormalizedString());
-            Assert.False(combined.IncludePrerelease);
         }
 
         [Fact]
@@ -188,14 +183,13 @@ namespace NuGet.Versioning.Test
 
             // Assert
             Assert.Equal(VersionRange.All.ToNormalizedString(), combined.ToNormalizedString());
-            Assert.True(combined.IncludePrerelease);
         }
 
         [Fact]
         public void VersionRangeSet_SpecialCaseRangeCombine_AllStablePlusPre()
         {
             // Arrange
-            var pre = new VersionRange(new NuGetVersion("1.0.0"), true, new NuGetVersion("2.0.0"), true, includePrerelease: true);
+            var pre = new VersionRange(new NuGetVersion("1.0.0"), true, new NuGetVersion("2.0.0"), true);
             var ranges = new List<VersionRange>() { VersionRange.AllStable, pre };
 
             // Act
@@ -203,7 +197,6 @@ namespace NuGet.Versioning.Test
 
             // Assert
             Assert.Equal(VersionRange.All.ToNormalizedString(), combined.ToNormalizedString());
-            Assert.True(combined.IncludePrerelease);
         }
 
         [Fact]
@@ -218,7 +211,6 @@ namespace NuGet.Versioning.Test
 
             // Assert
             Assert.Equal(VersionRange.AllStable.ToNormalizedString(), combined.ToNormalizedString());
-            Assert.False(combined.IncludePrerelease);
         }
 
         [Fact]
@@ -242,7 +234,6 @@ namespace NuGet.Versioning.Test
 
             // Assert
             Assert.Equal("[1.0.0, 5.0.1-rc4]", combined.ToNormalizedString());
-            Assert.True(combined.IncludePrerelease);
         }
     }
 }

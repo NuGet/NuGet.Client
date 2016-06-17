@@ -2,14 +2,15 @@
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using NuGet.Common;
-using NuGet.Configuration;
-using NuGet.Protocol.Core.Types;
 using NuGet.Credentials;
-using System.Net;
+using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine
 {
@@ -51,7 +52,10 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "Option_ConfigFile")]
         public string ConfigFile { get; set; }
 
-        // Used to check if credential has been requested for a uri. 
+        [Option(typeof(NuGetCommand), "Option_ForceEnglishOutput")]
+        public bool ForceEnglishOutput { get; set; }
+
+        // Used to check if credential has been requested for a uri.
         private readonly HashSet<Uri> _credentialRequested;
 
         public string CurrentDirectory
@@ -118,10 +122,34 @@ namespace NuGet.CommandLine
                 SourceProvider = PackageSourceBuilder.CreateSourceProvider(Settings);
                 SetDefaultCredentialProvider();
                 RepositoryFactory = new CommandLineRepositoryFactory(Console);
-                UserAgent.UserAgentString = UserAgent.CreateUserAgentString(CommandLineConstants.UserAgent);
 
+                UserAgent.SetUserAgentString(new UserAgentStringBuilder(CommandLineConstants.UserAgent));
+
+                OutputNuGetVersion();
                 ExecuteCommandAsync().Wait();
             }
+        }
+
+        /// <summary>
+        /// Outputs the current NuGet version (by default, only when vebosity is detailed).
+        /// </summary>
+        private void OutputNuGetVersion()
+        {
+            if (ShouldOutputNuGetVersion)
+            {
+                var assemblyName = Assembly.GetExecutingAssembly().GetName();
+                var message = string.Format(
+                    CultureInfo.CurrentCulture,
+                    LocalizedResourceManager.GetString("OutputNuGetVersion"),
+                    assemblyName.Name,
+                    assemblyName.Version);
+                Console.WriteLine(message);
+            }
+        }
+
+        protected virtual bool ShouldOutputNuGetVersion
+        {
+            get { return Console.Verbosity == Verbosity.Detailed; }
         }
 
         /// <summary>
@@ -129,6 +157,21 @@ namespace NuGet.CommandLine
         /// Also set up authenticated proxy handling for V3 sources.
         /// </summary>
         protected void SetDefaultCredentialProvider()
+        {
+            var credentialService = new CredentialService(GetCredentialProviders(), Console.WriteError, NonInteractive);
+
+            HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(credentialService);
+
+            HttpHandlerResourceV3.CredentialService = credentialService;
+
+            HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>
+            {
+                // v2 stack credentials update
+                NuGet.CredentialStore.Instance.Add(uri, credentials);
+            };
+        }
+
+        private IEnumerable<NuGet.Credentials.ICredentialProvider> GetCredentialProviders()
         {
             var extensionLocator = new ExtensionLocator();
             var providers = new List<Credentials.ICredentialProvider>();
@@ -138,43 +181,7 @@ namespace NuGet.CommandLine
             providers.AddRange(pluginProviders);
             providers.Add(new ConsoleCredentialProvider(Console));
 
-            var credentialService = new CredentialService(providers, Console.WriteError, NonInteractive);
-
-            HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(credentialService);
-
-            // Set up proxy handling for v3 sources.
-            // We need to sync the v2 proxy cache and v3 proxy cache so that the user will not
-            // get prompted twice for the same authenticated proxy.
-            var v2ProxyCache = NuGet.ProxyCache.Instance as IProxyCache;
-            NuGet.Protocol.Core.v3.HttpHandlerResourceV3.PromptForProxyCredentials =
-                async (uri, proxy, cancellationToken) =>
-            {
-                var v2Credentials = v2ProxyCache?.GetProxy(uri)?.Credentials;
-                if (v2Credentials != null && proxy.Credentials != v2Credentials)
-                {
-                    // if cached v2 credentials have not been used, try using it first.
-                    return v2Credentials;
-                }
-
-                return await credentialService.GetCredentials(
-                    uri, proxy, isProxy: true, cancellationToken: cancellationToken);
-            };
-
-            NuGet.Protocol.Core.v3.HttpHandlerResourceV3.ProxyPassed = proxy =>
-            {
-                // add the proxy to v2 proxy cache.
-                v2ProxyCache?.Add(proxy);
-            };
-            
-            NuGet.Protocol.Core.v3.HttpHandlerResourceV3.PromptForCredentials =
-                async (uri, cancellationToken) => await credentialService.GetCredentials(
-                    uri, proxy: null, isProxy: false, cancellationToken: cancellationToken);
-
-            NuGet.Protocol.Core.v3.HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>
-            {
-                NuGet.CredentialStore.Instance.Add(uri, credentials);
-                NuGet.Configuration.CredentialStore.Instance.Add(uri, credentials);
-            };
+            return providers;
         }
 
         public virtual Task ExecuteCommandAsync()

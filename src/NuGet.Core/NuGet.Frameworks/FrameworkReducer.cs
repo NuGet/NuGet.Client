@@ -11,7 +11,12 @@ namespace NuGet.Frameworks
     /// <summary>
     /// Reduces a list of frameworks into the smallest set of frameworks required.
     /// </summary>
-    public class FrameworkReducer
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    class FrameworkReducer
     {
         private readonly IFrameworkNameProvider _mappings;
         private readonly IFrameworkCompatibilityProvider _compat;
@@ -125,8 +130,9 @@ namespace NuGet.Frameworks
                     }
                 }
 
-                // Packages based framework reduce
+                // Packages based framework reduce, only if the project is not packages based
                 if (reduced.Count() > 1
+                    && !framework.IsPackageBased
                     && reduced.Any(f => f.IsPackageBased)
                     && reduced.Any(f => !f.IsPackageBased))
                 {
@@ -196,7 +202,7 @@ namespace NuGet.Frameworks
                 .ThenByDescending(f => f, new NuGetFrameworkSorter())
                 .ToArray();
 
-            var duplicates = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
+            var duplicates = new HashSet<NuGetFramework>();
             foreach (var framework in input)
             {
                 if (duplicates.Contains(framework))
@@ -316,7 +322,7 @@ namespace NuGet.Frameworks
 
             // Reduce to only PCLs that include the nearest match
             reduced = pclToFrameworks.Where(pair =>
-                pair.Value.Contains(nearestProfileFramework, NuGetFramework.Comparer))
+                pair.Value.Contains(nearestProfileFramework))
                 .Select(pair => pair.Key);
 
             return reduced;
@@ -337,7 +343,7 @@ namespace NuGet.Frameworks
             var pclToFrameworks = ExplodePortableFrameworks(reduced);
             var allPclFrameworks = pclToFrameworks.Values.SelectMany(f => f).Distinct(_fullComparer);
 
-            var scores = new Dictionary<NuGetFramework, int>(NuGetFramework.Comparer);
+            var scores = new Dictionary<NuGetFramework, int>();
 
             // find the nearest PCL for each framework
             foreach (var sub in subFrameworks)
@@ -375,7 +381,7 @@ namespace NuGet.Frameworks
         /// </summary>
         private Dictionary<NuGetFramework, IEnumerable<NuGetFramework>> ExplodePortableFrameworks(IEnumerable<NuGetFramework> pcls, bool includeOptional = true)
         {
-            var result = new Dictionary<NuGetFramework, IEnumerable<NuGetFramework>>(NuGetFramework.Comparer);
+            var result = new Dictionary<NuGetFramework, IEnumerable<NuGetFramework>>();
 
             foreach (var pcl in pcls)
             {

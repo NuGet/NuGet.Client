@@ -12,6 +12,7 @@ using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Packaging.Core;
+using NuGet.Versioning;
 
 namespace NuGet.CommandLine
 {
@@ -24,6 +25,9 @@ namespace NuGet.CommandLine
 
         [Option(typeof(NuGetCommand), "UpdateCommandIdDescription")]
         public ICollection<string> Id { get; } = new List<string>();
+
+        [Option(typeof(NuGetCommand), "UpdateCommandVersionDescription")]
+        public string Version { get; set; }
 
         [Option(typeof(NuGetCommand), "UpdateCommandRepositoryPathDescription")]
         public string RepositoryPath { get; set; }
@@ -47,7 +51,7 @@ namespace NuGet.CommandLine
         public string MSBuildVersion { get; set; }
 
         // The directory that contains msbuild
-        private string _msbuildDirectory;
+        private Lazy<string> _msbuildDirectory;
 
         public override async Task ExecuteCommandAsync()
         {
@@ -66,7 +70,7 @@ namespace NuGet.CommandLine
                 throw new CommandLineException(NuGetResources.InvalidFile);
             }
 
-            _msbuildDirectory = MsBuildUtility.GetMsbuildDirectory(MSBuildVersion, Console);
+            _msbuildDirectory = new Lazy<string>(() => MsBuildUtility.GetMsbuildDirectory(MSBuildVersion, Console));
             var context = new UpdateConsoleProjectContext(Console, FileConflictAction);
 
             string inputFileName = Path.GetFileName(inputFile);
@@ -86,7 +90,7 @@ namespace NuGet.CommandLine
                 }
 
                 var projectSystem = new MSBuildProjectSystem(
-                    _msbuildDirectory,
+                    _msbuildDirectory.Value,
                     inputFile,
                     context);
                 await UpdatePackagesAsync(projectSystem, GetRepositoryPath(projectSystem.ProjectFullPath));
@@ -147,13 +151,13 @@ namespace NuGet.CommandLine
                 }
                 catch (Exception e)
                 {
-                    if (Console.Verbosity == NuGet.Verbosity.Detailed)
+                    if (Console.Verbosity == Verbosity.Detailed || ExceptionLogger.Instance.ShowStack)
                     {
                         Console.WriteWarning(e.ToString());
                     }
                     else
                     {
-                        Console.WriteWarning(e.Message);
+                        Console.WriteWarning(ExceptionUtilities.DisplayMessage(e));
                     }
                 }
             }
@@ -165,9 +169,16 @@ namespace NuGet.CommandLine
             {
                 return GetMSBuildProject(path, projectContext);
             }
-            catch (CommandLineException)
+            catch (CommandLineException e)
             {
-
+                if (Console.Verbosity == Verbosity.Detailed || ExceptionLogger.Instance.ShowStack)
+                {
+                    Console.WriteWarning(e.ToString());
+                }
+                else
+                {
+                    Console.WriteWarning(ExceptionUtilities.DisplayMessage(e));
+                }
             }
 
             return null;
@@ -238,6 +249,11 @@ namespace NuGet.CommandLine
             var sourceRepositoryProvider = GetSourceRepositoryProvider();
             var packageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, packagesDirectory);
             var nugetProject = new MSBuildNuGetProject(project, packagesDirectory, project.ProjectFullPath);
+            if (!nugetProject.PackagesConfigNuGetProject.PackagesConfigExists())
+            {
+                throw new CommandLineException(LocalizedResourceManager.GetString("NoPackagesConfig"));
+            }
+
             var versionConstraints = Safe ?
                 VersionConstraints.ExactMajor | VersionConstraints.ExactMinor :
                 VersionConstraints.None;
@@ -260,10 +276,13 @@ namespace NuGet.CommandLine
 
                 var installed = await nugetProject.GetInstalledPackagesAsync(CancellationToken.None);
 
+                // If -Id has been specified and has exactly one package, use the explicit version requested
+                var targetVersion = Version != null && Id != null && Id.Count == 1 ? new NuGetVersion(Version) : null;
+
                 var targetIdentities = installed
                     .Select(pr => pr.PackageIdentity.Id)
                     .Where(id => targetIds.Contains(id))
-                    .Select(id => new PackageIdentity(id, null))
+                    .Select(id => new PackageIdentity(id, targetVersion))
                     .ToList();
 
                 if (targetIdentities.Any())
@@ -384,7 +403,7 @@ namespace NuGet.CommandLine
                 throw new CommandLineException(LocalizedResourceManager.GetString("MultipleProjectFilesFound"), packageReferenceFilePath);
             }
 
-            return new MSBuildProjectSystem(_msbuildDirectory, projectFiles[0], projectContext);
+            return new MSBuildProjectSystem(_msbuildDirectory.Value, projectFiles[0], projectContext);
         }
 
 

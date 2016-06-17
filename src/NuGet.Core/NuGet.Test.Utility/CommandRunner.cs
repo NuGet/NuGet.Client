@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
@@ -15,7 +16,8 @@ namespace NuGet.Test.Utility
             bool waitForExit,
             int timeOutInMilliseconds = 60000,
             Action<StreamWriter> inputAction = null,
-            bool shareProcessObject = false)
+            bool shareProcessObject = false,
+            IDictionary<string, string> environmentVariables = null)
         {
             var psi = new ProcessStartInfo(Path.GetFullPath(process), arguments)
             {
@@ -27,11 +29,23 @@ namespace NuGet.Test.Utility
                 RedirectStandardInput = inputAction != null
             };
 
-#if !DNXCORE50
+#if !IS_CORECLR
             psi.EnvironmentVariables["NuGetTestModeEnabled"] = "True";
 #else
             psi.Environment["NuGetTestModeEnabled"] = "True";
 #endif
+            
+            if (environmentVariables != null)
+            {
+                foreach (var pair in environmentVariables)
+                {
+#if !IS_CORECLR
+                    psi.EnvironmentVariables[pair.Key] = pair.Value;
+#else
+                    psi.Environment[pair.Key] = pair.Value;
+#endif
+                }
+            }
 
             int exitCode = 1;
 

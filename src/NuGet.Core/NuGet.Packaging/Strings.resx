@@ -166,12 +166,35 @@
     <value>The nuspec contains an invalid entry '{0}' in package '{1}' .</value>
   </data>
   <data name="FailToWritePackagesConfig" xml:space="preserve">
-    <value>Fail to write packages.config as XML file while accessing {0}: {1}</value>
+    <value>Failed to write packages.config as XML file '{0}'. Error: '{1}'.</value>
   </data>
   <data name="PackagesNodeNotExist" xml:space="preserve">
     <value>Packages node does not exists in packages.config at {0}.</value>
   </data>
   <data name="ErrorUnableToDeleteFile" xml:space="preserve">
     <value>Unable to delete temporary file '{0}'. Error: '{1}'.</value>
+  </data>
+  <data name="FailedFileTime" xml:space="preserve">
+    <value>Failed to update file time for {0}: {1}</value>
+  </data>
+  <data name="Error_InvalidTargetFramework" xml:space="preserve">
+    <value>Unsupported targetFramework value '{0}'.</value>
+  </data>
+  <data name="PackageMinVersionNotSatisfied" xml:space="preserve">
+    <value>The '{0}' package requires NuGet client version '{1}' or above, but the current NuGet version is '{2}'. To upgrade NuGet, please go to http://docs.nuget.org/consume/installing-nuget</value>
+  </data>
+  <data name="UnableToParseClientVersion" xml:space="preserve">
+    <value>Unable to parse the current NuGet client version.</value>
+  </data>
+  <data name="InvalidNuspecElement" xml:space="preserve">
+    <value>{0} This validation error occurred in a '{1}' element.</value>
+    <comment>{0} is the validation error message.
+{1} is the local name of the XML element that causes the validation error.</comment>
+  </data>
+  <data name="MustContainAbsolutePath" xml:space="preserve">
+    <value>'{0}' must contain an absolute path '{1}'.</value>
+  </data>
+  <data name="FallbackFolderNotFound" xml:space="preserve">
+    <value>Unable to find fallback package folder '{0}'.</value>
   </data>
 </root>

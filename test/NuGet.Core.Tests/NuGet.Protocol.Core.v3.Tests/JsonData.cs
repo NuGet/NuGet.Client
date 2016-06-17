@@ -1,13 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace NuGet.Protocol.Core.v3.Tests
+namespace NuGet.Protocol.Tests
 {
     public static class JsonData
     {
-        #region Index
+        #region IndexWithoutFlatContainer
 
-        public const string Index = @"{
+        public const string IndexWithoutFlatContainer = @"{
  ""version"": ""3.0.0-beta.1"",
  ""resources"": [
   {
@@ -126,6 +126,164 @@ namespace NuGet.Protocol.Core.v3.Tests
  ""@context"": {
   ""@vocab"": ""https://schema.nuget.org/services#""
  }
+}";
+
+        #endregion
+
+        #region IndexWithFlatContainer
+
+        public const string IndexWithFlatContainer = @"{
+ ""version"": ""3.0.0-beta.1"",
+ ""resources"": [
+  {
+   ""@id"": ""https://api-v3search-0.nuget.org/query"",
+   ""@type"": ""SearchQueryService""
+  },
+  {
+   ""@id"": ""https://api-v3search-1.nuget.org/query"",
+   ""@type"": ""SearchQueryService""
+  },
+  {
+   ""@id"": ""https://api-v3search-0.nuget.org/autocomplete"",
+   ""@type"": ""SearchAutocompleteService""
+  },
+  {
+   ""@id"": ""https://api-v3search-1.nuget.org/autocomplete"",
+   ""@type"": ""SearchAutocompleteService""
+  },
+  {
+   ""@id"": ""https://api-search.nuget.org/"",
+   ""@type"": ""SearchGalleryQueryService""
+  },  
+  {
+   ""@id"": ""https://api-metrics.nuget.org/DownloadEvent"",
+   ""@type"": ""MetricsService""
+  },
+  {
+   ""@id"": ""https://api.nuget.org/v3/registration0/"",
+   ""@type"": ""RegistrationsBaseUrl""
+  },
+  {
+    ""@id"": ""https://api.nuget.org/v3-flatcontainer/"",
+    ""@type"": ""PackageBaseAddress/3.0.0"",
+    ""comment"": ""Base URL of Azure storage where NuGet package registration info for DNX is stored, in the format https://api.nuget.org/v3-flatcontainer/{id-lower}/{version-lower}.{version-lower}.nupkg""
+  },
+  {
+   ""@id"": ""https://api.nuget.org/v2"",
+   ""@type"": ""LegacyGallery""
+  },
+  {
+   ""@id"": ""https://api.nuget.org/v2"",
+   ""@type"": ""LegacyGallery/2.0.0""
+  },
+  {
+   ""@id"": ""https://api-v3search-0.nuget.org/query"",
+   ""@type"": ""SearchQueryService/3.0.0-rc""
+  },
+  {
+   ""@id"": ""https://api-v3search-1.nuget.org/query"",
+   ""@type"": ""SearchQueryService/3.0.0-rc""
+  },
+  {
+   ""@id"": ""https://api-v3search-0.nuget.org/autocomplete"",
+   ""@type"": ""SearchAutocompleteService/3.0.0-rc""
+  },
+  {
+   ""@id"": ""https://api-v3search-1.nuget.org/autocomplete"",
+   ""@type"": ""SearchAutocompleteService/3.0.0-rc""
+  },
+  {
+   ""@id"": ""https://api-search.nuget.org/"",
+   ""@type"": ""SearchGalleryQueryService/3.0.0-rc""
+  },  
+  {
+   ""@id"": ""https://api-metrics.nuget.org/DownloadEvent"",
+   ""@type"": ""MetricsService/3.0.0-rc""
+  },
+  {
+   ""@id"": ""https://api.nuget.org/v3/registration0/"",
+   ""@type"": ""RegistrationsBaseUrl/3.0.0-rc""
+  },
+  {
+   ""@id"": ""https://www.nuget.org/packages/{id}/{version}/ReportAbuse"",
+   ""@type"": ""ReportAbuseUriTemplate/3.0.0-rc""
+  },
+  {
+   ""@id"": ""https://api.nuget.org/v3/registration0/{id-lower}/index.json"",
+   ""@type"": ""PackageDisplayMetadataUriTemplate/3.0.0-rc""
+  },
+  {
+   ""@id"": ""https://api.nuget.org/v3/registration0/{id-lower}/{version-lower}.json"",
+   ""@type"": ""PackageVersionDisplayMetadataUriTemplate/3.0.0-rc""
+  },
+  {
+   ""@id"": ""https://api-v3search-0.nuget.org/query"",
+   ""@type"": ""SearchQueryService/3.0.0-beta""
+  },
+  {
+   ""@id"": ""https://api-v3search-1.nuget.org/query"",
+   ""@type"": ""SearchQueryService/3.0.0-beta""
+  },
+  {
+   ""@id"": ""https://api-v3search-0.nuget.org/autocomplete"",
+   ""@type"": ""SearchAutocompleteService/3.0.0-beta""
+  },
+  {
+   ""@id"": ""https://api-v3search-1.nuget.org/autocomplete"",
+   ""@type"": ""SearchAutocompleteService/3.0.0-beta""
+  },
+  {
+   ""@id"": ""https://api-search.nuget.org/"",
+   ""@type"": ""SearchGalleryQueryService/3.0.0-beta""
+  },  
+  {
+   ""@id"": ""https://api-metrics.nuget.org/DownloadEvent"",
+   ""@type"": ""MetricsService/3.0.0-beta""
+  },
+  {
+   ""@id"": ""https://api.nuget.org/v3/registration0/"",
+   ""@type"": ""RegistrationsBaseUrl/3.0.0-beta""
+  },
+  {
+   ""@id"": ""https://www.nuget.org/packages/{id}/{version}/ReportAbuse"",
+   ""@type"": ""ReportAbuseUriTemplate/3.0.0-beta""
+  },
+  {
+    ""@id"": ""https://api.nuget.org/v3/stats0/totals.json"",
+    ""@type"": ""TotalStats/3.0.0-rc""
+  }
+ ],
+ ""@context"": {
+  ""@vocab"": ""https://schema.nuget.org/services#""
+ }
+}";
+
+        #endregion
+
+        #region DeepEqual flatcontainer index
+
+        public const string DeepEqualFlatContainerIndex = @"{
+  ""versions"": [
+    ""0.1.0"",
+    ""0.2.0"",
+    ""0.3.0"",
+    ""0.4.0"",
+    ""0.5.0"",
+    ""0.6.0"",
+    ""0.7.0"",
+    ""0.8.0"",
+    ""0.9.0"",
+    ""0.10.0"",
+    ""0.11.0"",
+    ""0.12.0"",
+    ""1.0.0"",
+    ""1.1.0"",
+    ""1.1.1"",
+    ""1.2.0"",
+    ""1.3.0"",
+    ""1.4.0"",
+    ""1.4.0.1-rc""
+  ]
 }";
 
         #endregion

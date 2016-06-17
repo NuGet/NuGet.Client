@@ -183,22 +183,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private async Task PreviewAndExecuteUpdateActionsforAllPackages(NuGetProject project)
         {
             // if the source is explicitly specified we will use exclusively that source otherwise use ALL enabled sources
-            var allSources = new List<SourceRepository>();
-            if (!string.IsNullOrEmpty(Source))
-            {
-                allSources.Add(ActiveSourceRepository);
-            }
-            else
-            {
-                allSources.AddRange(EnabledSourceRepositories);
-            }
-
             var actions = await PackageManager.PreviewUpdatePackagesAsync(
                 project,
                 ResolutionContext,
                 this,
-                allSources,
-                allSources,
+                PrimarySourceRepositories,
+                PrimarySourceRepositories,
                 Token);
 
             await ExecuteActions(project, actions);
@@ -229,7 +219,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         project,
                         ResolutionContext,
                         this,
-                        new[] { ActiveSourceRepository },
+                        PrimarySourceRepositories,
                         EnabledSourceRepositories,
                         Token);
                 }
@@ -240,7 +230,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         project,
                         ResolutionContext,
                         this,
-                        new[] { ActiveSourceRepository },
+                        PrimarySourceRepositories,
                         EnabledSourceRepositories,
                         Token);
                 }
@@ -299,7 +289,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             get
             {
-                _context = new ResolutionContext(GetDependencyBehavior(), _allowPrerelease, false, DetermineVersionConstraints());
+                // ResolutionContext contains a cache, this should only be created once per command
+                if (_context == null)
+                {
+                    _context = new ResolutionContext(GetDependencyBehavior(), _allowPrerelease, false, DetermineVersionConstraints());
+                }
+
                 return _context;
             }
         }

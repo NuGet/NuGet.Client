@@ -30,7 +30,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private const string BinDir = "bin";
         private const string NuGetImportStamp = "NuGetPackageImportStamp";
         private IVsProjectBuildSystem _buildSystem;
-        private bool _buildSystemFetched;
 
         public VSMSBuildNuGetProjectSystem(EnvDTEProject envDTEProject, INuGetProjectContext nuGetProjectContext)
         {
@@ -71,10 +70,9 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                if (!_buildSystemFetched)
+                if (_buildSystem == null)
                 {
                     _buildSystem = EnvDTEProjectUtility.GetVsProjectBuildSystem(EnvDTEProject);
-                    _buildSystemFetched = true;
                 }
 
                 return _buildSystem;
@@ -285,7 +283,7 @@ namespace NuGet.PackageManagement.VisualStudio
             container.AddFromFileCopy(fullPath);
         }
 
-        public void AddFrameworkReference(string name)
+        public void AddFrameworkReference(string name, string packageId)
         {
             ThreadHelper.JoinableTaskFactory.Run(async delegate
             {
@@ -300,7 +298,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
                 catch (Exception e)
                 {
-                    throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Strings.FailedToAddGacReference, name), e);
+                    throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Strings.FailedToAddGacReference, packageId, name), e);
                 }
             });
         }
@@ -339,24 +337,36 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (referencePath == null)
             {
-                throw new ArgumentNullException("referencePath");
+                throw new ArgumentNullException(nameof(referencePath));
             }
 
-            string name = Path.GetFileNameWithoutExtension(referencePath);
+            var name = Path.GetFileNameWithoutExtension(referencePath);
+            var projectName = string.Empty;
+            var projectFullPath = string.Empty;
+            var assemblyFullPath = string.Empty;
+            var dteProjectFullName = string.Empty;
 
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            var resolvedToGac = false;
+
+            try
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                try
+                // Perform all DTE operations on the UI thread
+                ThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    // Read DTE properties from the UI thread
+                    projectFullPath = ProjectFullPath;
+                    projectName = ProjectName;
+                    dteProjectFullName = EnvDTEProject.FullName;
+
                     // Get the full path to the reference
-                    string fullPath = Path.Combine(ProjectFullPath, referencePath);
+                    assemblyFullPath = Path.Combine(projectFullPath, referencePath);
 
                     // Add a reference to the project
                     var references = EnvDTEProjectUtility.GetReferences(EnvDTEProject);
 
-                    dynamic reference = references.Add(fullPath);
+                    dynamic reference = references.Add(assemblyFullPath);
 
                     if (reference != null)
                     {
@@ -367,53 +377,80 @@ namespace NuGet.PackageManagement.VisualStudio
                         // This happens if the assembly appears in any of the search paths that VS uses to
                         // locate assembly references.
                         // Most commonly, it happens if this assembly is in the GAC or in the output path.
-                        if (path != null
-                            && !path.Equals(fullPath, StringComparison.OrdinalIgnoreCase))
+                        // The path may be null or for some project system it can be "".
+                        resolvedToGac = (!string.IsNullOrWhiteSpace(path)
+                            && !StringComparer.OrdinalIgnoreCase.Equals(path, assemblyFullPath));
+
+                        if (!resolvedToGac)
                         {
-                            // Get the msbuild project for this project
-                            MicrosoftBuildEvaluationProject buildProject = EnvDTEProjectUtility.AsMicrosoftBuildEvaluationProject(EnvDTEProject);
-
-                            if (buildProject != null)
-                            {
-                                // Get the assembly name of the reference we are trying to add
-                                AssemblyName assemblyName = AssemblyName.GetAssemblyName(fullPath);
-
-                                // Try to find the item for the assembly name
-                                MicrosoftBuildEvaluationProjectItem item = (from assemblyReferenceNode in buildProject.GetAssemblyReferences()
-                                    where AssemblyNamesMatch(assemblyName, assemblyReferenceNode.Item2)
-                                    select assemblyReferenceNode.Item1).FirstOrDefault();
-
-                                if (item != null)
-                                {
-                                    // Add the <HintPath> metadata item as a relative path
-                                    string projectPath = PathUtility.EnsureTrailingSlash(ProjectFullPath);
-                                    string relativePath = PathUtility.GetRelativePath(projectPath, referencePath);
-
-                                    item.SetMetadataValue("HintPath", relativePath);
-
-                                    // Set <Private> to true
-                                    item.SetMetadataValue("Private", "True");
-
-                                    // Save the project after we've modified it.
-                                    FileSystemUtility.MakeWritable(EnvDTEProject.FullName);
-                                    EnvDTEProject.Save();
-                                }
-                            }
-                        }
-                        else
-                        {
+                            // Set reference properties
                             TrySetCopyLocal(reference);
                             TrySetSpecificVersion(reference);
                         }
                     }
+                });
 
-                    NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, Strings.Debug_AddReference, name, ProjectName);
-                }
-                catch (Exception e)
+                if (resolvedToGac)
                 {
-                    throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Strings.FailedToAddReference, name), e);
+                    // This should be done off the UI thread
+
+                    // Get the msbuild project for this project
+                    var buildProject = EnvDTEProjectUtility.AsMicrosoftBuildEvaluationProject(dteProjectFullName);
+
+                    if (buildProject != null)
+                    {
+                        // Get the assembly name of the reference we are trying to add
+                        var assemblyName = AssemblyName.GetAssemblyName(assemblyFullPath);
+
+                        // Try to find the item for the assembly name
+                        var item = (from assemblyReferenceNode in buildProject.GetAssemblyReferences()
+                                                                    where AssemblyNamesMatch(assemblyName, assemblyReferenceNode.Item2)
+                                                                    select assemblyReferenceNode.Item1).FirstOrDefault();
+
+                        if (item != null)
+                        {
+                            // Add the <HintPath> metadata item as a relative path
+                            var projectPath = PathUtility.EnsureTrailingSlash(projectFullPath);
+                            var relativePath = PathUtility.GetRelativePath(projectPath, referencePath);
+
+                            item.SetMetadataValue("HintPath", relativePath);
+
+                            // Set <Private> to true
+                            item.SetMetadataValue("Private", "True");
+
+                            FileSystemUtility.MakeWritable(dteProjectFullName);
+
+                            // Change to the UI thread to save
+                            ThreadHelper.JoinableTaskFactory.Run(async delegate
+                            {
+                                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                                // Save the project after we've modified it.
+                                EnvDTEProject.Save();
+                            });
+                        }
+                    }
+                    else
+                    {
+                        // The reference cannot be changed by modifying the project file.
+                        // This could be a failure, however that could be a breaking
+                        // change if there is a non-msbuild project system relying on this
+                        // to skip references.
+                        // Log a warning to let the user know that their reference may have failed.
+                        NuGetProjectContext.Log(
+                            ProjectManagement.MessageLevel.Warning,
+                            Strings.FailedToAddReference,
+                            name);
+                    }
                 }
-            });
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException(
+                    string.Format(CultureInfo.CurrentCulture, Strings.FailedToAddReference, name), e);
+            }
+
+            NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, Strings.Debug_AddReference, name, projectName);
         }
 
         private static bool AssemblyNamesMatch(AssemblyName name1, AssemblyName name2)
@@ -837,7 +874,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 var childItems = await EnvDTEProjectUtility.GetChildItems(EnvDTEProject, path, filter, NuGetVSConstants.VsProjectItemKindPhysicalFile);
                 // Get all physical files
                 return from p in childItems
-                    select p.Name;
+                       select p.Name;
             });
         }
 
@@ -889,7 +926,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 var childItems = await EnvDTEProjectUtility.GetChildItems(EnvDTEProject, path, "*.*", NuGetVSConstants.VsProjectItemKindPhysicalFolder);
                 // Get all physical folders
                 return from p in childItems
-                    select p.Name;
+                       select p.Name;
             });
         }
     }

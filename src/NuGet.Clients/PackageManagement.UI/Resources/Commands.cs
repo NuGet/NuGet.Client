@@ -7,12 +7,18 @@ namespace NuGet.PackageManagement.UI
 {
     public static class Commands
     {
-        public static readonly RoutedCommand FocusOnSearchBox = new RoutedCommand();
+        public static ICommand FocusOnSearchBox { get; } = new RoutedCommand();
 
         // The parameter of this command is PackageItemListViewModel
-        public static readonly RoutedCommand UninstallPackageCommand = new RoutedCommand();
+        public static ICommand UninstallPackageCommand { get; } = new RoutedCommand();
 
         // The parameter of this command is PackageItemListViewModel
-        public static readonly RoutedCommand InstallPackageCommand = new RoutedCommand();
+        public static ICommand InstallPackageCommand { get; } = new RoutedCommand();
+
+        // no parameters
+        public static ICommand RestartSearchCommand { get; } = new RoutedCommand();
+
+        // no parameters. Overridable by hosting app.
+        public static ICommand ShowErrorsCommand { get; set; } = new RoutedCommand();
     }
 }

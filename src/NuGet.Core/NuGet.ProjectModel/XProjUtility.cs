@@ -62,7 +62,7 @@ namespace NuGet.ProjectModel
                         .Where(d => IsProjectReference(d)));
 
                     // Attempt to look up each dependency
-                    foreach (var dependency in spec.Dependencies)
+                    foreach (var dependency in dependencies)
                     {
                         PackageSpec childSpec;
                         if (resolver.TryResolvePackageSpec(dependency.Name, out childSpec))

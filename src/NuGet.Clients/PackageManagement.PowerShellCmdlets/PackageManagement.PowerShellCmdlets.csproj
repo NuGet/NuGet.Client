@@ -10,12 +10,12 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NuGet.PackageManagement.PowerShellCmdlets</RootNamespace>
     <AssemblyName>NuGet.PackageManagement.PowerShellCmdlets</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>44966557</NuGetPackageImportStamp>
     <CodeAnalysisRuleSet>..\..\..\NuGet.ruleset</CodeAnalysisRuleSet>
     <PackagesDirectory>$(UserProfile)\.nuget\packages</PackagesDirectory>
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -32,67 +32,21 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <Choose>
-    <When Condition="$(VisualStudioVersion)=='11.0'">
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-        <Reference Include="Microsoft.VisualStudio.Shell.11.0, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-      </ItemGroup>
-    </When>
-    <When Condition="$(VisualStudioVersion)=='12.0'">
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.Shell.12.0, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-        <Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-        <ProjectReference Include="..\VisualStudio12\VisualStudio12.csproj">
-          <Project>{3dd213f7-999b-4c15-9560-bf9c96cb8c52}</Project>
-          <Name>VisualStudio12</Name>
-        </ProjectReference>
-      </ItemGroup>
-    </When>
-    <When Condition="$(VisualStudioVersion)=='14.0'">
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.Shell.14.0, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-        <Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-        <ProjectReference Include="..\VisualStudio14\VisualStudio14.csproj">
-          <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
-          <Name>VisualStudio14</Name>
-        </ProjectReference>
-      </ItemGroup>
-    </When>
-  </Choose>
   <ItemGroup>
+    <Reference Include="Microsoft.VisualStudio.ComponentModelHost">
+      <HintPath>$(ProgramFiles)\Microsoft Visual Studio $(VisualStudioVersion)\Common7\IDE\PublicAssemblies\Microsoft.VisualStudio.ComponentModelHost.dll</HintPath>
+    </Reference>
     <Reference Include="envdte, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
-    <Reference Include="Microsoft.VisualStudio.OLE.Interop, Version=7.1.40304.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-    <Reference Include="Microsoft.VisualStudio.Shell.Interop, Version=7.1.40304.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-    <Reference Include="Microsoft.VisualStudio.Shell.Interop.10.0, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.Shell.Interop.11.0, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.Shell.Interop.12.0, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.Shell.Interop.8.0, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-    <Reference Include="Microsoft.VisualStudio.Threading, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System" />
-    <Reference Include="System.Collections.Concurrent" />
     <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.Diagnostics.Tracing" />
-    <Reference Include="System.Dynamic.Runtime" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Management.Automation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Net.Http.WebRequest" />
-    <Reference Include="System.Reflection" />
-    <Reference Include="System.Resources.ResourceManager" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
-    <Reference Include="System.Threading" />
-    <Reference Include="System.Threading.Tasks" />
-    <Reference Include="System.Threading.Tasks.Parallel" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -103,20 +57,20 @@
     <Compile Include="Cmdlets\AddBindingRedirectCommand.cs" />
     <Compile Include="Cmdlets\TabExpansionCommand.cs" />
     <Compile Include="PackageActionBaseCommand.cs" />
-    <Compile Include="PowerShellExecutionMessage.cs" />
+    <Compile Include="Model\PowerShellExecutionMessage.cs" />
     <Compile Include="Cmdlets\FindPackageCommand.cs" />
     <Compile Include="Cmdlets\GetPackageCommand.cs" />
     <Compile Include="Cmdlets\GetProjectCommand.cs" />
-    <Compile Include="PowerShellInstalledPackage.cs" />
-    <Compile Include="PowerShellRemotePackage.cs" />
-    <Compile Include="PowerShellUpdatePackage.cs" />
+    <Compile Include="Model\PowerShellInstalledPackage.cs" />
+    <Compile Include="Model\PowerShellRemotePackage.cs" />
+    <Compile Include="Model\PowerShellUpdatePackage.cs" />
     <Compile Include="Utility\IErrorHandler.cs" />
     <Compile Include="Utility\IHttpClientEvents.cs" />
     <Compile Include="Cmdlets\InstallPackageCommand.cs" />
     <Compile Include="Utility\NuGetErrorId.cs" />
     <Compile Include="NuGetPowerShellBaseCommand.cs" />
     <Compile Include="Cmdlets\OpenPackagePageCommand.cs" />
-    <Compile Include="PowerShellPackage.cs" />
+    <Compile Include="Model\PowerShellPackage.cs" />
     <Compile Include="Utility\PowerShellCmdletsUtility.cs" />
     <Compile Include="Utility\ProgressActivityIds.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -130,10 +84,9 @@
     <Compile Include="Cmdlets\UpdatePackageCommand.cs" />
     <Compile Include="Utility\PSPathUtility.cs" />
     <Compile Include="Utility\WebRequestEventArgs.cs" />
-    <Compile Include="VersionType.cs" />
+    <Compile Include="Model\VersionType.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="PackageManagement.PowerShellCmdlets.nuspec" />
     <None Include="project.json" />
   </ItemGroup>
@@ -144,9 +97,21 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\VisualStudio.Facade\VisualStudio.Facade.csproj">
+      <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
+      <Name>VisualStudio.Facade</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PackageManagement.UI\PackageManagement.UI.csproj">
+      <Project>{538adefd-2170-40a9-a2c5-ec8369cfe490}</Project>
+      <Name>PackageManagement.UI</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PackageManagement.VisualStudio\PackageManagement.VisualStudio.csproj">
       <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
       <Name>PackageManagement.VisualStudio</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\VisualStudio\VisualStudio.csproj">
+      <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
+      <Name>VisualStudio</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

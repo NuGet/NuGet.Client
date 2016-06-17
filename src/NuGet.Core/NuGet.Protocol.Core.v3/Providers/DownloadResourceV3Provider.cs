@@ -7,12 +7,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
 
-namespace NuGet.Protocol.Core.v3
+namespace NuGet.Protocol
 {
     public class DownloadResourceV3Provider : ResourceProvider
     {
         public DownloadResourceV3Provider()
-            : base(typeof(DownloadResource), nameof(DownloadResourceV3Provider), "DownloadResourceV2Provider")
+            : base(typeof(DownloadResource), nameof(DownloadResourceV3Provider), "DownloadResourceV2FeedProvider")
         {
         }
 

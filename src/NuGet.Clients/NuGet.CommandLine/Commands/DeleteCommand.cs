@@ -1,10 +1,5 @@
-﻿using System;
-using System.Globalization;
-using System.Threading;
-using System.Threading.Tasks;
-using NuGet.Common;
-using NuGet.Configuration;
-using NuGet.Protocol.Core.Types;
+﻿using System.Threading.Tasks;
+using NuGet.Commands;
 
 namespace NuGet.CommandLine
 {
@@ -30,54 +25,25 @@ namespace NuGet.CommandLine
                 NonInteractive = true;
             }
 
-            //First argument should be the package ID
-            var packageId = Arguments[0];
-            //Second argument should be the package Version
-            var packageVersion = Arguments[1];
+            string packageId = Arguments[0];
+            string packageVersion = Arguments[1];
+            string apiKeyValue = null;
 
-            //verify source
-            var source = SourceProvider.ResolveAndValidateSource(Source);
-            if (string.IsNullOrEmpty(source))
-            {
-                throw new CommandLineException(
-                    LocalizedResourceManager.GetString(nameof(NuGetResources.Error_MissingSourceParameter)));
-            }
-
-            //Setup repository
-            var packageSource = new Configuration.PackageSource(source);
-            var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(SourceProvider);
-            var sourceRepository = sourceRepositoryProvider.CreateRepository(packageSource);
-            var packageUpdateResource = await sourceRepository.GetResourceAsync<PackageUpdateResource>();
-
-            await packageUpdateResource.Delete(packageId, 
-                packageVersion,
-                (s) => GetApiKey(s),
-                desc => Console.Confirm(desc),
-                Console);
-        }
-
-        internal string GetApiKey(string source)
-        {
-            string apiKey = null;
-
-            if (!String.IsNullOrEmpty(ApiKey))
-            {
-                return ApiKey;
-            }
-
-            // Second argument, if present, should be the API Key
             if (Arguments.Count > 2)
             {
-                apiKey = Arguments[2];
+                apiKeyValue = Arguments[2];
             }
 
-            // If the user did not pass an API Key look in the config file
-            if (String.IsNullOrEmpty(apiKey))
-            {
-                apiKey = SettingsUtility.GetDecryptedValue(Settings, "apikeys", source);
-            }
-
-            return apiKey;
+            await DeleteRunner.Run(
+                Settings,
+                SourceProvider,
+                packageId,
+                packageVersion,
+                Source,
+                apiKeyValue,
+                NonInteractive,
+                Console.Confirm,
+                Console);
         }
     }
 }

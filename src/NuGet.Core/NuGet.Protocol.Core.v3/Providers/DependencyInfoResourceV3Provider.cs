@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
 
-namespace NuGet.Protocol.Core.v3
+namespace NuGet.Protocol
 {
     /// <summary>
     /// Retrieves all dependency info for the package resolver.
@@ -14,7 +14,7 @@ namespace NuGet.Protocol.Core.v3
     public class DependencyInfoResourceV3Provider : ResourceProvider
     {
         public DependencyInfoResourceV3Provider()
-            : base(typeof(DependencyInfoResource), nameof(DependencyInfoResourceV3Provider), "DependencyInfoResourceV2Provider")
+            : base(typeof(DependencyInfoResource), nameof(DependencyInfoResourceV3Provider), "DependencyInfoResourceV2FeedProvider")
         {
         }
 

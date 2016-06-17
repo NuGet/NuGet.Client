@@ -31,11 +31,11 @@
     <Ticks2>$([System.DateTime]::Now.Ticks)</Ticks2>
     <SpanTicks>$([MSBuild]::Subtract($(Ticks2), $(Ticks1)))</SpanTicks>
     <SpanMinutes>$([System.TimeSpan]::FromTicks($(SpanTicks)).TotalMinutes)</SpanMinutes>
-    <BuildNumber>$([System.String]::Format('{0:F0}', $([MSBuild]::Divide($(SpanMinutes), 5))))</BuildNumber>
+    <BuildNumber>$([System.String]::Format('{0:F0}', $([MSBuild]::Divide($([System.Convert]::ToDouble($(SpanMinutes))), 5))))</BuildNumber>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(ReleaseLabel)' == ''">
-    <ReleaseLabel>local</ReleaseLabel>
+    <ReleaseLabel>zlocal</ReleaseLabel>
   </PropertyGroup>
 
   <PropertyGroup>

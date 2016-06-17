@@ -8,12 +8,22 @@ using NuGet.Packaging;
 namespace NuGet.Protocol.Core.Types
 {
     /// <summary>
-    /// The result of <see cref="DownloadResource.DownloadResource"/>.
+    /// The result of <see cref="DownloadResource"/>.
     /// </summary>
     public class DownloadResourceResult : IDisposable
     {
         private readonly Stream _stream;
         private readonly PackageReaderBase _packageReader;
+
+        public DownloadResourceResult(DownloadResourceResultStatus status)
+        {
+            if (status == DownloadResourceResultStatus.Available)
+            {
+                throw new ArgumentException("A stream should be provided when the result is available.");
+            }
+
+            Status = status;
+        }
 
         public DownloadResourceResult(Stream stream)
         {
@@ -22,6 +32,7 @@ namespace NuGet.Protocol.Core.Types
                 throw new ArgumentNullException(nameof(stream));
             }
 
+            Status = DownloadResourceResultStatus.Available;
             _stream = stream;
         }
 
@@ -30,6 +41,8 @@ namespace NuGet.Protocol.Core.Types
         {
             _packageReader = packageReader;
         }
+
+        public DownloadResourceResultStatus Status { get; }
 
         /// <summary>
         /// Gets the package <see cref="PackageStream"/>.
@@ -44,7 +57,7 @@ namespace NuGet.Protocol.Core.Types
 
         public void Dispose()
         {
-            _stream.Dispose();
+            _stream?.Dispose();
             _packageReader?.Dispose();
         }
     }

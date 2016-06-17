@@ -6,9 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -22,15 +22,48 @@ namespace NuGet.DependencyResolver
         private readonly ILogger _logger;
         private readonly SourceCacheContext _cacheContext;
         private FindPackageByIdResource _findPackagesByIdResource;
+        private bool _ignoreFailedSources;
+        private bool _ignoreWarning;
+
+        // Limiting concurrent requests to limit the amount of files open at a time on Mac OSX
+        // the default is 256 which is easy to hit if we don't limit concurrency
+        private readonly static SemaphoreSlim _throttle =
+            RuntimeEnvironmentHelper.IsMacOSX
+                ? new SemaphoreSlim(ConcurrencyLimit, ConcurrencyLimit)
+                : null;
+
+        // In order to avoid too many open files error, set concurrent requests number to 16 on Mac
+        private const int ConcurrencyLimit = 16;
 
         public SourceRepositoryDependencyProvider(
             SourceRepository sourceRepository,
             ILogger logger,
             SourceCacheContext cacheContext)
+            : this(sourceRepository, logger, cacheContext, cacheContext.IgnoreFailedSources)
+        {
+        }
+
+        public SourceRepositoryDependencyProvider(
+           SourceRepository sourceRepository,
+           ILogger logger,
+           SourceCacheContext cacheContext,
+           bool ignoreFailedSources)
+           : this(sourceRepository, logger, cacheContext, ignoreFailedSources, false)
+        {
+        }
+
+        public SourceRepositoryDependencyProvider(
+            SourceRepository sourceRepository,
+            ILogger logger,
+            SourceCacheContext cacheContext,
+            bool ignoreFailedSources,
+            bool ignoreWarning)
         {
             _sourceRepository = sourceRepository;
             _logger = logger;
             _cacheContext = cacheContext;
+            _ignoreFailedSources = ignoreFailedSources;
+            _ignoreWarning = ignoreWarning;
         }
 
         public bool IsHttp => _sourceRepository.PackageSource.IsHttp;
@@ -39,17 +72,43 @@ namespace NuGet.DependencyResolver
         {
             await EnsureResource();
 
-            var packageVersions = await _findPackagesByIdResource.GetAllVersionsAsync(libraryRange.Name, cancellationToken);
+            IEnumerable<NuGetVersion> packageVersions = null;
+            try
+            {
+                if (_throttle != null)
+                {
+                    await _throttle.WaitAsync();
+                }
+                packageVersions = await _findPackagesByIdResource.GetAllVersionsAsync(libraryRange.Name, cancellationToken);
+            }
+            catch (FatalProtocolException e) when (_ignoreFailedSources)
+            {
+                if (!_ignoreWarning)
+                {
+                    _logger.LogWarning(e.Message);
+                }
+                return null;
+            }
+            finally
+            {
+                _throttle?.Release();
+            }
 
-            var packageVersion = packageVersions.FindBestMatch(libraryRange.VersionRange, version => version);
+            var packageVersion = packageVersions?.FindBestMatch(libraryRange.VersionRange, version => version);
 
             if (packageVersion != null)
             {
+                // Use the original package identity for the library identity
+                var packageIdentity = await _findPackagesByIdResource.GetOriginalIdentityAsync(
+                    libraryRange.Name,
+                    packageVersion,
+                    cancellationToken);
+
                 return new LibraryIdentity
                 {
-                    Name = libraryRange.Name,
-                    Version = packageVersion,
-                    Type = LibraryTypes.Package
+                    Name = packageIdentity.Id,
+                    Version = packageIdentity.Version,
+                    Type = LibraryType.Package
                 };
             }
 
@@ -60,7 +119,27 @@ namespace NuGet.DependencyResolver
         {
             await EnsureResource();
 
-            var packageInfo = await _findPackagesByIdResource.GetDependencyInfoAsync(match.Name, match.Version, cancellationToken);
+            FindPackageByIdDependencyInfo packageInfo = null;
+            try
+            {
+                if (_throttle != null)
+                {
+                    await _throttle.WaitAsync();
+                }
+                packageInfo = await _findPackagesByIdResource.GetDependencyInfoAsync(match.Name, match.Version, cancellationToken);
+            }
+            catch (FatalProtocolException e) when (_ignoreFailedSources)
+            {
+                if (!_ignoreWarning)
+                {
+                    _logger.LogWarning(e.Message);
+                }
+                return new List<LibraryDependency>();
+            }
+            finally
+            {
+                _throttle?.Release();
+            }
 
             return GetDependencies(packageInfo, targetFramework);
         }
@@ -69,32 +148,50 @@ namespace NuGet.DependencyResolver
         {
             await EnsureResource();
 
-            using (var nupkgStream = await _findPackagesByIdResource.GetNupkgStreamAsync(identity.Name, identity.Version, cancellationToken))
+            try
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                if (_throttle != null)
+                {
+                    await _throttle.WaitAsync();
+                }
 
-                // If the stream is already available, do not stop in the middle of copying the stream
-                // Pass in CancellationToken.None
-                await nupkgStream.CopyToAsync(stream, bufferSize: 8192, cancellationToken: CancellationToken.None);
+                using (var nupkgStream = await _findPackagesByIdResource.GetNupkgStreamAsync(identity.Name, identity.Version, cancellationToken))
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    // If the stream is already available, do not stop in the middle of copying the stream
+                    // Pass in CancellationToken.None
+                    await nupkgStream.CopyToAsync(stream, bufferSize: 8192, cancellationToken: CancellationToken.None);
+                }
+            }
+            catch (FatalProtocolException e) when (_ignoreFailedSources)
+            {
+                if (!_ignoreWarning)
+                {
+                    _logger.LogWarning(e.Message);
+                }
+            }
+            finally
+            {
+                _throttle?.Release();
             }
         }
 
         private IEnumerable<LibraryDependency> GetDependencies(FindPackageByIdDependencyInfo packageInfo, NuGetFramework targetFramework)
         {
+            if (packageInfo == null)
+            {
+                return new List<LibraryDependency>();
+            }
             var dependencies = NuGetFrameworkUtility.GetNearest(packageInfo.DependencyGroups,
                 targetFramework,
                 item => item.TargetFramework);
 
-            var frameworkAssemblies = NuGetFrameworkUtility.GetNearest(packageInfo.FrameworkReferenceGroups,
-                targetFramework,
-                item => item.TargetFramework);
-
-            return GetDependencies(targetFramework, dependencies, frameworkAssemblies);
+            return GetDependencies(targetFramework, dependencies);
         }
 
         private static IList<LibraryDependency> GetDependencies(NuGetFramework targetFramework,
-            PackageDependencyGroup dependencies,
-            FrameworkSpecificGroup frameworkAssemblies)
+            PackageDependencyGroup dependencies)
         {
             var libraryDependencies = new List<LibraryDependency>();
 
@@ -102,35 +199,6 @@ namespace NuGet.DependencyResolver
             {
                 libraryDependencies.AddRange(
                     dependencies.Packages.Select(PackagingUtility.GetLibraryDependencyFromNuspec));
-            }
-
-            if (frameworkAssemblies == null)
-            {
-                return libraryDependencies;
-            }
-
-            if (!targetFramework.IsDesktop())
-            {
-                // REVIEW: This isn't 100% correct since none *can* mean
-                // any in theory, but in practice it means .NET full reference assembly
-                // If there's no supported target frameworks and we're not targeting
-                // the desktop framework then skip it.
-
-                // To do this properly we'll need all reference assemblies supported
-                // by each supported target framework which isn't always available.
-                return libraryDependencies;
-            }
-
-            foreach (var name in frameworkAssemblies.Items)
-            {
-                libraryDependencies.Add(new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange
-                    {
-                        Name = name,
-                        TypeConstraint = LibraryDependencyTarget.Reference
-                    }
-                });
             }
 
             return libraryDependencies;

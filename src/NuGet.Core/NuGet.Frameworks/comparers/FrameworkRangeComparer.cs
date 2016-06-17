@@ -6,7 +6,12 @@ using System.Collections.Generic;
 
 namespace NuGet.Frameworks
 {
-    public class FrameworkRangeComparer : IEqualityComparer<FrameworkRange>
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    class FrameworkRangeComparer : IEqualityComparer<FrameworkRange>
     {
         public FrameworkRangeComparer()
         {

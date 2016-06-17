@@ -6,8 +6,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Logging;
+using NuGet.Common;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.Types
@@ -35,8 +36,28 @@ namespace NuGet.Protocol.Core.Types
 
         public abstract Task<Stream> GetNupkgStreamAsync(string id, NuGetVersion version, CancellationToken token);
 
+        /// <summary>
+        /// Gets the original ID and version for a package. This is useful when finding the
+        /// canonical casing for a package ID. Note that the casing of a package ID can vary from
+        /// version to version.
+        /// </summary>
+        /// <param name="id">The package ID. This value is case insensitive.</param>
+        /// <param name="version">The version.</param>
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>The package identity, with the ID having the case provided by the package author.</returns>
+        public abstract Task<PackageIdentity> GetOriginalIdentityAsync(string id, NuGetVersion version, CancellationToken token);
+
+        /// <summary>
+        /// Read dependency info from a nuspec.
+        /// </summary>
+        /// <remarks>This also verifies minClientVersion.</remarks>
         protected static FindPackageByIdDependencyInfo GetDependencyInfo(NuspecReader reader)
         {
+            // Since this is the first place a package is read after selecting it as the best version
+            // check the minClientVersion here to verify we are okay to read this package.
+            MinClientVersionUtility.VerifyMinClientVersion(reader);
+
+            // Create dependency info
             return new FindPackageByIdDependencyInfo(
                 reader.GetDependencyGroups(),
                 reader.GetFrameworkReferenceGroups());
@@ -50,14 +71,7 @@ namespace NuGet.Protocol.Core.Types
                     $"Must set cache context on {this.GetType().FullName} before consuming.");
             }
 
-            if (retryCount == 0)
-            {
-                return new HttpSourceCacheContext(CacheContext);
-            }
-            else
-            {
-                return new HttpSourceCacheContext(CacheContext, TimeSpan.Zero);
-            }
+            return HttpSourceCacheContext.CreateCacheContext(CacheContext, retryCount);
         }
     }
 }

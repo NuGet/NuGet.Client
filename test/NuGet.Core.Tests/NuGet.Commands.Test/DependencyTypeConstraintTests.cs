@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -66,7 +67,7 @@ namespace NuGet.Commands.Test
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 // Assert
                 Assert.True(result.Success);
@@ -74,10 +75,8 @@ namespace NuGet.Commands.Test
             }
         }
 
-        // Project -> PackageA -> PackageB 
-        // PackageB must be a package, Project not allowed
         [Fact]
-        public async Task DependencyTypeConstraint_PackagesDependOnOtherPackages()
+        public async Task DependencyTypeConstraint_PackagesDependOnProject()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -161,12 +160,13 @@ namespace NuGet.Commands.Test
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 // Assert
-                Assert.False(result.Success);
-                Assert.Equal("packageB", result.GetAllUnresolved().Single().Name);
-                Assert.Equal(LibraryDependencyTarget.Package, result.GetAllUnresolved().Single().TypeConstraint);
+                Assert.True(result.Success);
+                var packageBLib = lockFile.GetLibrary("packageB", NuGetVersion.Parse("1.0.0"));
+                Assert.NotNull(packageBLib);
+                Assert.Equal(LibraryType.Project, packageBLib.Type);
             }
         }
 
@@ -271,7 +271,7 @@ namespace NuGet.Commands.Test
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var packageALib = lockFile.GetLibrary("packageA", NuGetVersion.Parse("1.0.0"));
 
@@ -284,8 +284,8 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.True(result.Success);
 
-                Assert.Equal(LibraryTypes.Project, packageALib.Type);
-                Assert.Equal(LibraryTypes.Project, packageATarget.Type);
+                Assert.Equal(LibraryType.Project, packageALib.Type);
+                Assert.Equal(LibraryType.Project, packageATarget.Type);
             }
         }
 
@@ -380,7 +380,7 @@ namespace NuGet.Commands.Test
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var packageALib = lockFile.GetLibrary("packageA", NuGetVersion.Parse("1.0.0"));
 
@@ -393,8 +393,8 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.True(result.Success);
 
-                Assert.Equal(LibraryTypes.Package, packageALib.Type);
-                Assert.Equal(LibraryTypes.Package, packageATarget.Type);
+                Assert.Equal(LibraryType.Package, packageALib.Type);
+                Assert.Equal(LibraryType.Package, packageATarget.Type);
             }
         }
 
@@ -483,7 +483,7 @@ namespace NuGet.Commands.Test
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var packageALib = lockFile.GetLibrary("packageA", NuGetVersion.Parse("1.0.0"));
 
@@ -496,8 +496,8 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.True(result.Success);
 
-                Assert.Equal(LibraryTypes.Project, packageALib.Type);
-                Assert.Equal(LibraryTypes.Project, packageATarget.Type);
+                Assert.Equal(LibraryType.Project, packageALib.Type);
+                Assert.Equal(LibraryType.Project, packageATarget.Type);
             }
         }
     }

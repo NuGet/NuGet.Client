@@ -11,28 +11,32 @@ namespace NuGet.Frameworks
     /// mirrored so that the IFrameworkMappings implementation only needs to provide the minimum amount of
     /// mappings.
     /// </summary>
-    public interface IFrameworkMappings
+#if NUGET_FRAMEWORKS_INTERNAL
+    internal
+#else
+    public
+#endif
+    interface IFrameworkMappings
     {
         /// <summary>
-        /// Synonym -> Identifier
-        /// Ex: NET Framework -> .NET Framework
+        /// Synonym &#8210;&gt; Identifier
+        /// Ex: NET Framework &#8210;&gt; .NET Framework
         /// </summary>
         IEnumerable<KeyValuePair<string, string>> IdentifierSynonyms { get; }
 
         /// <summary>
-        /// Ex: .NET Framework -> net
+        /// Ex: .NET Framework &#8210;&gt; net
         /// </summary>
         IEnumerable<KeyValuePair<string, string>> IdentifierShortNames { get; }
 
         /// <summary>
-        /// Ex: WindowsPhone -> wp
+        /// Ex: WindowsPhone &#8210;&gt; wp
         /// </summary>
-        /// ;
         IEnumerable<FrameworkSpecificMapping> ProfileShortNames { get; }
 
         /// <summary>
         /// Equal frameworks. Used for legacy conversions.
-        /// ex: Framework: Win8 <-> Framework: NetCore45 Platform: Win8
+        /// ex: Framework: Win8 &lt;&#8210;&gt; Framework: NetCore45 Platform: Win8
         /// </summary>
         IEnumerable<KeyValuePair<NuGetFramework, NuGetFramework>> EquivalentFrameworks { get; }
 
@@ -44,14 +48,14 @@ namespace NuGet.Frameworks
 
         /// <summary>
         /// Frameworks which are subsets of others.
-        /// Ex: .NETCore -> .NET
+        /// Ex: .NETCore &#8210;&gt; .NET
         /// Everything in .NETCore maps to .NET and is one way compatible. Version numbers follow the same format.
         /// </summary>
         IEnumerable<KeyValuePair<string, string>> SubSetFrameworks { get; }
 
         /// <summary>
         /// Additional framework compatibility rules beyond name and version matching.
-        /// Ex: .NETFramework -supports-> Native
+        /// Ex: .NETFramework supports &#8210;&gt; Native
         /// </summary>
         IEnumerable<OneWayCompatibilityMappingEntry> CompatibilityMappings { get; }
 
@@ -59,7 +63,7 @@ namespace NuGet.Frameworks
         /// Ordered list of framework identifiers. The first framework in the list will be preferred over other 
         /// framework identifiers. This is enable better tie breaking in scenarios where legacy frameworks are 
         /// equivalently compatible to a new framework.
-        /// Example: UAP10.0 -> win81, wpa81
+        /// Example: UAP10.0 &#8210;&gt; win81, wpa81
         /// </summary>
         IEnumerable<string> NonPackageBasedFrameworkPrecedence { get; }
 
@@ -77,13 +81,13 @@ namespace NuGet.Frameworks
 
         /// <summary>
         /// Rewrite folder short names to the given value.
-        /// Ex: dotnet50 -> dotnet
+        /// Ex: dotnet50 &#8210;&gt; dotnet
         /// </summary>
         IEnumerable<KeyValuePair<NuGetFramework, NuGetFramework>> ShortNameReplacements { get; }
 
         /// <summary>
         /// Rewrite full framework names to the given value.
-        /// Ex: .NETPlatform,Version=v0.0 -> .NETPlatform,Version=v5.0
+        /// Ex: .NETPlatform,Version=v0.0 &#8210;&gt; .NETPlatform,Version=v5.0
         /// </summary>
         IEnumerable<KeyValuePair<NuGetFramework, NuGetFramework>> FullNameReplacements { get; }
     }

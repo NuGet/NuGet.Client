@@ -852,7 +852,7 @@ namespace NuGet.DependencyResolver.Tests
 
             public TestPackage Package(string id, NuGetVersion version)
             {
-                var libraryIdentity = new LibraryIdentity { Name = id, Version = version, Type = LibraryTypes.Package };
+                var libraryIdentity = new LibraryIdentity { Name = id, Version = version, Type = LibraryType.Package };
 
                 List<LibraryDependency> dependencies;
                 if (!_graph.TryGetValue(libraryIdentity, out dependencies))
@@ -873,27 +873,29 @@ namespace NuGet.DependencyResolver.Tests
                     _dependencies = dependencies;
                 }
 
-                public TestPackage DependsOn(string id)
-                {
-                    _dependencies.Add(new LibraryDependency
-                    {
-                        LibraryRange = new LibraryRange
-                        {
-                            Name = id
-                        }
-                    });
-
-                    return this;
-                }
-
-                public TestPackage DependsOn(string id, string version)
+                public TestPackage DependsOn(string id, LibraryDependencyTarget target = LibraryDependencyTarget.All)
                 {
                     _dependencies.Add(new LibraryDependency
                     {
                         LibraryRange = new LibraryRange
                         {
                             Name = id,
-                            VersionRange = VersionRange.Parse(version)
+                            TypeConstraint = target
+                        }
+                    });
+
+                    return this;
+                }
+
+                public TestPackage DependsOn(string id, string version, LibraryDependencyTarget target = LibraryDependencyTarget.All)
+                {
+                    _dependencies.Add(new LibraryDependency
+                    {
+                        LibraryRange = new LibraryRange
+                        {
+                            Name = id,
+                            VersionRange = VersionRange.Parse(version),
+                            TypeConstraint = target
                         }
                     });
 

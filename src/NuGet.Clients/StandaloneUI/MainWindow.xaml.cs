@@ -42,7 +42,6 @@ namespace StandaloneUI
 
         public MainWindow()
         {
-            Brushes.Initialize();
             InitializeComponent();
             _commonOperations = new StandAloneUICommonOperations();
             CreatePackageManagerControl();
@@ -90,7 +89,7 @@ namespace StandaloneUI
                 context,
                 new NuGetUIProjectContext(new StandaloneUILogger(_textBox, _scrollViewer), _sourceControlManagerProvider, _commonOperations));
 
-            var model = new PackageManagerModel(uiController, context, isSolution: false);
+            var model = new PackageManagerModel(uiController, context, isSolution: false, editorFactoryGuid: Guid.Empty);
             model.SolutionName = "test solution";
             _packageManagerControl =
                 new PackageManagerControl(model, _settings, new SimpleSearchBoxFactory(), vsShell: null);
@@ -159,6 +158,11 @@ namespace StandaloneUI
         }
 
         public string ActivePackageSourceName
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public string DefaultPushSource
         {
             get { throw new NotImplementedException(); }
         }

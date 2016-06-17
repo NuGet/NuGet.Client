@@ -3,10 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using System.IO.Compression;
-using System.Text;
+using NuGet.Configuration;
 
 namespace NuGet.ProjectManagement
 {
@@ -30,51 +28,7 @@ namespace NuGet.ProjectManagement
 
         internal static string Process(Func<Stream> fileStreamFactory, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
         {
-            using (var stream = fileStreamFactory())
-            {
-                return Process(stream, msBuildNuGetProjectSystem, throwIfNotFound: false);
-            }
-        }
-
-        public static string Process(Stream stream, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, bool throwIfNotFound = true)
-        {
-            string text;
-            using (var streamReader = new StreamReader(stream))
-            {
-                text = streamReader.ReadToEnd();
-            }
-            var tokenizer = new Tokenizer(text);
-            var result = new StringBuilder();
-            for (;;)
-            {
-                var token = tokenizer.Read();
-                if (token == null)
-                {
-                    break;
-                }
-
-                if (token.Category == TokenCategory.Variable)
-                {
-                    var replaced = ReplaceToken(token.Value, msBuildNuGetProjectSystem, throwIfNotFound);
-                    result.Append(replaced);
-                }
-                else
-                {
-                    result.Append(token.Value);
-                }
-            }
-
-            return result.ToString();
-        }
-
-        private static string ReplaceToken(string propertyName, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, bool throwIfNotFound)
-        {
-            var value = msBuildNuGetProjectSystem.GetPropertyValue(propertyName);
-            if (value == null && throwIfNotFound)
-            {
-                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.TokenHasNoValue, propertyName));
-            }
-            return value;
+            return NuGet.Common.Preprocessor.Process(fileStreamFactory, propName => msBuildNuGetProjectSystem.GetPropertyValue(propName));
         }
     }
 }

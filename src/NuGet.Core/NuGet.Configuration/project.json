@@ -1,54 +1,58 @@
 ﻿{
-  "version": "3.4.0-*",
+  "version": "3.5.0-*",
   "authors": [
     "NuGet"
   ],
   "description": "NuGet's client configuration settings implementation.",
   "copyright": "Copyright .NET Foundation. All rights reserved.",
-  "projectUrl": "https://github.com/NuGet/NuGet.Configuration/",
-  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Configuration/master/LICENSE",
-  "tags": [
-    "nuget",
-    "configuration",
-    "nuget.config"
-  ],
-  "compilationOptions": {
-    "warningsAsErrors": true
+  "packOptions": {
+    "tags": [
+      "nuget",
+      "configuration",
+      "nuget.config"
+    ],
+    "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
+    "projectUrl": "https://github.com/NuGet/NuGet.Client"
+  },
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "xmlDoc": true,
+    "nowarn": [
+      "CS1591"
+    ],
+    "compile": {
+      "include": [
+        "../../../Shared/*.cs"
+      ]
+    }
   },
   "dependencies": {
-    "NuGet.Common": "3.4.0-*",
-    "NuGet.Shared": {
-      "type": "build",
-      "version": "3.4.0-*"
+    "NuGet.Common": {
+      "target": "project"
     }
   },
   "frameworks": {
     "net45": {
       "frameworkAssemblies": {
-        "System.Globalization": "",
         "System.Security": "",
         "System.Xml": "",
         "System.Xml.Linq": ""
+      },
+      "buildOptions": {
+        "define": [
+          "IS_DESKTOP"
+        ]
       }
     },
-    "dnxcore50": {
+    "netstandard1.3": {
       "dependencies": {
-        "System.Runtime.Extensions": "4.0.10-beta-23109",
-        "System.Collections": "4.0.10-beta-23109",
-        "System.Collections.Concurrent": "4.0.10-beta-23109",
-        "System.Diagnostics.Debug": "4.0.10-beta-23109",
-        "System.Diagnostics.Tools": "4.0.0-beta-23109",
-        "System.Globalization": "4.0.10-beta-23109",
-        "System.IO": "4.0.10-beta-23109",
-        "System.IO.FileSystem": "4.0.0-beta-23109",
-        "System.Linq": "4.0.0-beta-23109",
-        "System.Net.Primitives": "4.0.10-beta-23109",
-        "System.Resources.ResourceManager": "4.0.0-beta-23109",
-        "System.Text.RegularExpressions": "4.0.10-beta-23109",
-        "System.Threading": "4.0.10-beta-23109",
-        "System.Xml.XDocument": "4.0.10-beta-23109",
-        "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-23225",
-        "System.Security.Cryptography.Hashing": "4.0.0-beta-23225"
+        "NETStandard.Library": "1.6.0-rc3-24128-00",
+        "System.Xml.XDocument": "4.0.11-rc3-24128-00"
+      },
+      "buildOptions": {
+        "define": [
+          "IS_CORECLR"
+        ]
       }
     }
   }

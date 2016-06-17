@@ -2,21 +2,23 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Logging;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
-namespace NuGet.Protocol.Core.v3.RemoteRepositories
+namespace NuGet.Protocol
 {
     public class RemoteV2FindPackageByIdResource : FindPackageByIdResource
     {
@@ -35,6 +37,8 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         private readonly HttpSource _httpSource;
         private readonly Dictionary<string, Task<IEnumerable<PackageInfo>>> _packageVersionsCache = new Dictionary<string, Task<IEnumerable<PackageInfo>>>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, Task<NupkgEntry>> _nupkgCache = new Dictionary<string, Task<NupkgEntry>>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<PackageIdentity, Task<PackageIdentity>> _packageIdentityCache
+            = new ConcurrentDictionary<PackageIdentity, Task<PackageIdentity>>();
 
         public RemoteV2FindPackageByIdResource(PackageSource packageSource, HttpSource httpSource)
         {
@@ -58,13 +62,33 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         public override async Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, CancellationToken cancellationToken)
         {
             var result = await EnsurePackagesAsync(id, cancellationToken);
-            return result.Select(item => item.Version);
+            return result.Select(item => item.Identity.Version);
+        }
+
+        public override async Task<PackageIdentity> GetOriginalIdentityAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
+        {
+            return await _packageIdentityCache.GetOrAdd(
+                new PackageIdentity(id, version),
+                async original =>
+                {
+                    var packageInfo = await GetPackageInfoAsync(original.Id, original.Version, cancellationToken);
+                    if (packageInfo == null)
+                    {
+                        return null;
+                    }
+
+                    var reader = await PackageUtilities.OpenNuspecFromNupkgAsync(
+                        packageInfo.Identity.Id,
+                        OpenNupkgStreamAsync(packageInfo, cancellationToken),
+                        Logger);
+
+                    return reader.GetIdentity();
+                });
         }
 
         public override async Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
         {
-            var packageInfos = await EnsurePackagesAsync(id, cancellationToken);
-            var packageInfo = packageInfos.FirstOrDefault(p => p.Version == version);
+            var packageInfo = await GetPackageInfoAsync(id, version, cancellationToken);
             if (packageInfo == null)
             {
                 Logger.LogWarning($"Unable to find package {id}{version}");
@@ -72,23 +96,33 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             }
 
             var reader = await PackageUtilities.OpenNuspecFromNupkgAsync(
-                packageInfo.Id,
+                packageInfo.Identity.Id,
                 OpenNupkgStreamAsync(packageInfo, cancellationToken),
                 Logger);
+
+            // Populate the package identity cache while we have the .nuspec open.
+            _packageIdentityCache.TryAdd(
+                new PackageIdentity(id, version),
+                Task.FromResult(reader.GetIdentity()));
 
             return GetDependencyInfo(reader);
         }
 
         public override async Task<Stream> GetNupkgStreamAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
         {
-            var packageInfos = await EnsurePackagesAsync(id, cancellationToken);
-            var packageInfo = packageInfos.FirstOrDefault(p => p.Version == version);
+            var packageInfo = await GetPackageInfoAsync(id, version, cancellationToken);
             if (packageInfo == null)
             {
                 return null;
             }
 
             return await OpenNupkgStreamAsync(packageInfo, cancellationToken);
+        }
+
+        private async Task<PackageInfo> GetPackageInfoAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
+        {
+            var packageInfos = await EnsurePackagesAsync(id, cancellationToken);
+            return packageInfos.FirstOrDefault(p => p.Identity.Version == version);
         }
 
         private Task<IEnumerable<PackageInfo>> EnsurePackagesAsync(string id, CancellationToken cancellationToken)
@@ -125,47 +159,49 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         // (2) cache for pages is valid for only 30 min.
                         // So we decide to leave current logic and observe.
                         using (var data = await _httpSource.GetAsync(
-                            uri,
-                            $"list_{id}_page{page}",
-                            CreateCacheContext(retry),
+                            new HttpSourceCachedRequest(
+                                uri,
+                                $"list_{id}_page{page}",
+                                CreateCacheContext(retry))
+                            {
+                                AcceptHeaderValues =
+                                {
+                                    new MediaTypeWithQualityHeaderValue("application/atom+xml"),
+                                    new MediaTypeWithQualityHeaderValue("application/xml")
+                                },
+                                EnsureValidContents = stream => HttpStreamValidation.ValidateXml(uri, stream)
+                            },
                             Logger,
                             cancellationToken))
                         {
-                            try
+                            if (data.Status == HttpSourceResultStatus.NoContent)
                             {
-                                var doc = XDocument.Load(data.Stream);
-
-                                var result = doc.Root
-                                    .Elements(_xnameEntry)
-                                    .Select(x => BuildModel(id, x))
-                                    .Where(x => x != null);
-
-                                results.AddRange(result);
-
-                                // Example of what this looks like in the odata feed:
-                                // <link rel="next" href="{nextLink}" />
-                                var nextUri = (from e in doc.Root.Elements(_xnameLink)
-                                               let attr = e.Attribute("rel")
-                                               where attr != null && string.Equals(attr.Value, "next", StringComparison.OrdinalIgnoreCase)
-                                               select e.Attribute("href")
-                                    into nextLink
-                                               where nextLink != null
-                                               select nextLink.Value).FirstOrDefault();
-
-                                // Stop if there's nothing else to GET
-                                if (string.IsNullOrEmpty(nextUri))
-                                {
-                                    break;
-                                }
-
-                                uri = nextUri;
-                                page++;
+                                // Team city returns 204 when no versions of the package exist
+                                // This should result in an empty list and we should not try to
+                                // read the stream as xml.
+                                break;
                             }
-                            catch (XmlException)
+
+                            var doc = V2FeedParser.LoadXml(data.Stream);
+
+                            var result = doc.Root
+                                .Elements(_xnameEntry)
+                                .Select(x => BuildModel(id, x))
+                                .Where(x => x != null);
+
+                            results.AddRange(result);
+
+                            // Find the next url for continuation
+                            var nextUri = V2FeedParser.GetNextUrl(doc);
+
+                            // Stop if there's nothing else to GET
+                            if (string.IsNullOrEmpty(nextUri))
                             {
-                                Logger.LogMinimal($"The XML file {data.CacheFileName} is corrupt.");
-                                throw;
+                                break;
                             }
+
+                            uri = nextUri;
+                            page++;
                         }
                     }
 
@@ -198,9 +234,9 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
             return new PackageInfo
             {
-                // Use the given Id as final fallback if all elements above don't exist
-                Id = idElement?.Value ?? id,
-                Version = NuGetVersion.Parse(properties.Element(_xnameVersion).Value),
+                Identity = new PackageIdentity(
+                     idElement?.Value ?? id, // Use the given Id as final fallback if all elements above don't exist
+                     NuGetVersion.Parse(properties.Element(_xnameVersion).Value)),
                 ContentUri = element.Element(_xnameContent).Attribute("src").Value,
             };
         }
@@ -241,9 +277,13 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 try
                 {
                     using (var data = await _httpSource.GetAsync(
-                        package.ContentUri,
-                        "nupkg_" + package.Id + "." + package.Version,
-                        CreateCacheContext(retry),
+                        new HttpSourceCachedRequest(
+                            package.ContentUri,
+                            "nupkg_" + package.Identity.Id + "." + package.Identity.Version,
+                            CreateCacheContext(retry))
+                        {
+                            EnsureValidContents = stream => HttpStreamValidation.ValidateNupkg(package.ContentUri, stream)
+                        },
                         Logger,
                         cancellationToken))
                     {
@@ -285,13 +325,11 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
         private class PackageInfo
         {
-            public string Id { get; set; }
+            public PackageIdentity Identity { get; set; }
 
             public string Path { get; set; }
 
             public string ContentUri { get; set; }
-
-            public NuGetVersion Version { get; set; }
         }
     }
 }

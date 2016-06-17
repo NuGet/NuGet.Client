@@ -10,35 +10,39 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NuGet.Logging;
+using NuGet.Common;
 using NuGet.Versioning;
 
-namespace NuGet.Protocol.Core.v3.DependencyInfo
+namespace NuGet.Protocol
 {
     internal static class Utils
     {
-        public static VersionRange CreateVersionRange(string stringToParse, bool includePrerelease)
+        public static VersionRange CreateVersionRange(string stringToParse)
         {
             var range = VersionRange.Parse(string.IsNullOrEmpty(stringToParse) ? "[0.0.0-alpha,)" : stringToParse);
-            return new VersionRange(range.MinVersion, range.IsMinInclusive, range.MaxVersion, range.IsMaxInclusive, includePrerelease);
+            return new VersionRange(range.MinVersion, range.IsMinInclusive, range.MaxVersion, range.IsMaxInclusive);
         }
 
         public async static Task<IEnumerable<JObject>> LoadRanges(
-            HttpSource httpClient,
+            HttpSource httpSource,
             Uri registrationUri,
             VersionRange range,
             ILogger log,
             CancellationToken token)
         {
-            var index = await httpClient.GetJObjectAsync(registrationUri, ignoreNotFounds: true, log: log, token: token);
+            var index = await httpSource.GetJObjectAsync(
+                new HttpSourceRequest(registrationUri, log)
+                {
+                    IgnoreNotFounds = true
+                },
+                log,
+                token);
 
             if (index == null)
             {
                 // The server returned a 404, the package does not exist
                 return Enumerable.Empty<JObject>();
             }
-
-            var preFilterRange = VersionRange.SetIncludePrerelease(range, includePrerelease: true);
 
             IList<Task<JObject>> rangeTasks = new List<Task<JObject>>();
 
@@ -47,18 +51,20 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
                 var lower = NuGetVersion.Parse(item["lower"].ToString());
                 var upper = NuGetVersion.Parse(item["upper"].ToString());
 
-                if (IsItemRangeRequired(preFilterRange, lower, upper))
+                if (IsItemRangeRequired(range, lower, upper))
                 {
                     JToken items;
                     if (!item.TryGetValue("items", out items))
                     {
                         var rangeUri = item["@id"].ToObject<Uri>();
 
-                        rangeTasks.Add(httpClient.GetJObjectAsync(
-                            rangeUri,
-                            ignoreNotFounds: true,
-                            log: log,
-                            token: token));
+                        rangeTasks.Add(httpSource.GetJObjectAsync(
+                            new HttpSourceRequest(rangeUri, log)
+                            {
+                                IgnoreNotFounds = true
+                            },
+                            log,
+                            token));
                     }
                     else
                     {
@@ -75,7 +81,7 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
         private static bool IsItemRangeRequired(VersionRange dependencyRange, NuGetVersion catalogItemLower, NuGetVersion catalogItemUpper)
         {
             var catalogItemVersionRange = new VersionRange(minVersion: catalogItemLower, includeMinVersion: true,
-                maxVersion: catalogItemUpper, includeMaxVersion: true, includePrerelease: true);
+                maxVersion: catalogItemUpper, includeMaxVersion: true);
 
             if (dependencyRange.HasLowerAndUpperBounds) // Mainly to cover the '!dependencyRange.IsMaxInclusive && !dependencyRange.IsMinInclusive' case
             {

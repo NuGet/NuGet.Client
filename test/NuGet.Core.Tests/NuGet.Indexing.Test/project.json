@@ -1,0 +1,30 @@
+﻿{
+  "version": "3.5.0-*",
+  "dependencies": {
+    "Moq": "4.2.1507.118",
+    "NuGet.Indexing": {
+      "target": "project"
+    },
+    "NuGet.Protocol.VisualStudio": {
+      "target": "project"
+    },
+    "xunit": "2.1.0"
+  },
+  "frameworks": {
+    "net46": {
+      "frameworkAssemblies": {
+        "Microsoft.CSharp": "",
+        "System": "",
+        "System.Core": "",
+        "System.Runtime": "",
+        "System.Threading.Tasks": ""
+      },
+      "buildOptions": {
+        "define": [
+          "IS_DESKTOP"
+        ]
+      }
+    }
+  },
+  "testRunner": "xunit"
+}

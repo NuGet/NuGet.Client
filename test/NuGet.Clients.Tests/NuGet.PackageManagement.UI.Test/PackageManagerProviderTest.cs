@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using Xunit;
 using NuGet.VisualStudio;
@@ -6,9 +9,8 @@ using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.Utilities;
 using System.ComponentModel.Composition.Hosting;
 using System.Reflection;
-using NuGet.PackageManagement.UI;
 
-namespace NuGet.CommandLine.Test
+namespace NuGet.PackageManagement.UI.Test
 {
     public class PackageManagerProviderTest
     {

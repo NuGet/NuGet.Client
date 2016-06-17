@@ -9,11 +9,9 @@ function Test-PackageRestore-SimpleTest {
     $p2 = New-ClassLibrary
     $p2 | Install-Package elmah -Version 1.1
 
-    #$f = New-SolutionFolder 'Folder1'
     $p3 = New-ClassLibrary
     $p3 | Install-Package Newtonsoft.Json -Version 5.0.6
 
-    #$f2 = $f | New-SolutionFolder 'Folder2'
     $p4 = New-ClassLibrary
     $p4 | Install-Package Ninject
 
@@ -94,7 +92,7 @@ function Test-PackageRestore-Website {
 function Test-PackageRestore-JavaScriptMetroProject {
     param($context)
 
-    if ($dte.Version -eq '10.0') {
+    if ((Get-VSVersion) -eq '10.0') {
         return
     }
 
@@ -126,9 +124,9 @@ function Test-PackageRestore-UnloadedProjects{
     
     $p2 = New-ClassLibrary
 
-    $solutionDir = $dte.Solution.FullName
+    $solutionFile = Get-SolutionFullName
     $packagesDir = Get-PackagesDir
-    $dte.Solution.SaveAs($solutionDir)
+    SaveAs-Solution($solutionFile)
     Close-Solution
 
     # delete the packages folder
@@ -137,7 +135,7 @@ function Test-PackageRestore-UnloadedProjects{
 
     # reopen the solution. Now the project that references Microsoft.Bcl.Build
     # will not be loaded because of missing targets file
-    Open-Solution $solutionDir
+    Open-Solution $solutionFile
 
     # Act
     Build-Solution
@@ -170,9 +168,9 @@ function Test-PackageRestore-ErrorMessage {
     Assert-AreEqual 1 $errorlist.Count
 
     $error = $errorlist[$errorlist.Count-1]
-    Assert-True ($error.Description.Contains('NuGet Package restore failed for project'))
+    Assert-True ($error.Contains('NuGet Package restore failed for project'))
 
-    $output = GetBuildOutput
+    $output = Get-BuildOutput
     Assert-True ($output.Contains('NuGet package restore failed.'))
 }
 
@@ -190,7 +188,7 @@ function Test-PackageRestore-PackageAlreadyInstalled {
     Build-Solution
 
     # Assert
-    $output = GetBuildOutput
+    $output = Get-BuildOutput
     Assert-True ($output.Contains('All packages are already installed and there is nothing to restore.'))
 	Assert-False ($output.Contains('NuGet package restore finished.'))
 }
@@ -204,12 +202,12 @@ function Test-PackageRestore-CheckForMissingPackages {
     $p1 = New-ClassLibrary	
     $p1 | Install-Package Newtonsoft.Json -Version 5.0.6
     
-    $f = New-SolutionFolder 'Folder1'
-    $p2 = $f | New-ClassLibrary
+    New-SolutionFolder 'Folder1'
+    $p2 = New-ClassLibrary 'Folder1'
     $p2 | Install-Package elmah -Version 1.1
 
-    $f2 = $f | New-SolutionFolder 'Folder2'
-    $p3 = $f2 | New-ClassLibrary
+    New-SolutionFolder 'Folder1\Folder2'
+    $p3 = New-ClassLibrary 'Folder1\Folder2'
     $p3 | Install-Package Ninject
 
     # delete the packages folder
@@ -229,10 +227,10 @@ function Test-PackageRestore-CheckForMissingPackages {
         Assert-AreEqual 1 $errorlist.Count
 
         $error = $errorlist[$errorlist.Count-1]
-        Assert-True ($error.Description.Contains('One or more NuGet packages need to be restored but couldn''t be because consent has not been granted.'))
-        Assert-True ($error.Description.Contains('Newtonsoft.Json 5.0.6'))
-        Assert-True ($error.Description.Contains('elmah 1.1'))
-        Assert-True ($error.Description.Contains('Ninject'))
+        Assert-True ($error.Contains('One or more NuGet packages need to be restored but couldn''t be because consent has not been granted.'))
+        Assert-True ($error.Contains('Newtonsoft.Json 5.0.6'))
+        Assert-True ($error.Contains('elmah 1.1'))
+        Assert-True ($error.Contains('Ninject'))
     }
     finally {
         [NuGet.PackageManagement.VisualStudio.SettingsHelper]::Set('PackageRestoreConsentGranted', 'true')
@@ -251,8 +249,8 @@ function Test-PackageRestore-IsAutomaticIsFalse {
     $p2 = New-ClassLibrary
     $p2 | Install-Package elmah -Version 1.1
 
-    $f = New-SolutionFolder 'Folder1'
-    $p3 = $f | New-ClassLibrary
+    New-SolutionFolder 'Folder1'
+    $p3 = New-ClassLibrary 'Folder1'
     $p3 | Install-Package Newtonsoft.Json -Version 5.0.6
 
     # delete the packages folder
@@ -363,16 +361,6 @@ function CreateTestPackage {
         $outputStream.Dispose()
         Remove-Item $tempFile
     }
-}
-
-function GetBuildOutput { 
-    $dte2 = Get-Interface $dte ([EnvDTE80.DTE2])
-    $buildPane = $dte2.ToolWindows.OutputWindow.OutputWindowPanes.Item("Build")
-    $doc = $buildPane.TextDocument
-    $sel = $doc.Selection
-    $sel.StartOfDocument($FALSE)
-    $sel.EndOfDocument($TRUE)
-    $sel.Text
 }
 
 function RemoveDirectory {

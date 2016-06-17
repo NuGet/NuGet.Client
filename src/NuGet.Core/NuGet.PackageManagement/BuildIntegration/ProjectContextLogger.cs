@@ -5,7 +5,7 @@ using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement
 {
-    public class ProjectContextLogger : NuGet.Logging.ILogger
+    public class ProjectContextLogger : NuGet.Common.ILogger
     {
         private readonly INuGetProjectContext _projectContext;
 
@@ -46,7 +46,13 @@ namespace NuGet.PackageManagement
             _projectContext.Log(ProjectManagement.MessageLevel.Warning, data);
         }
 
-        public void LogSummary(string data)
+        public void LogInformationSummary(string data)
+        {
+            // Treat Summary as Debug
+            LogDebug(data);
+        }
+
+        public void LogErrorSummary(string data)
         {
             // Treat Summary as Debug
             LogDebug(data);

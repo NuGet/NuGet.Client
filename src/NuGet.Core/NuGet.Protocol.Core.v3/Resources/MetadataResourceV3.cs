@@ -12,7 +12,7 @@ using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
-namespace NuGet.Protocol.Core.v3
+namespace NuGet.Protocol
 {
     /// <summary>
     /// Returns the full package metadata
@@ -44,7 +44,7 @@ namespace NuGet.Protocol.Core.v3
         /// </summary>
         /// <param name="includePrerelease">include versions with prerelease labels</param>
         /// <param name="includeUnlisted">not implemented yet</param>
-        public override async Task<IEnumerable<KeyValuePair<string, NuGetVersion>>> GetLatestVersions(IEnumerable<string> packageIds, bool includePrerelease, bool includeUnlisted, Logging.ILogger log, CancellationToken token)
+        public override async Task<IEnumerable<KeyValuePair<string, NuGetVersion>>> GetLatestVersions(IEnumerable<string> packageIds, bool includePrerelease, bool includeUnlisted, Common.ILogger log, CancellationToken token)
         {
             var results = new List<KeyValuePair<string, NuGetVersion>>();
 
@@ -70,7 +70,7 @@ namespace NuGet.Protocol.Core.v3
             return results;
         }
 
-        public override async Task<bool> Exists(PackageIdentity identity, bool includeUnlisted, Logging.ILogger log, CancellationToken token)
+        public override async Task<bool> Exists(PackageIdentity identity, bool includeUnlisted, Common.ILogger log, CancellationToken token)
         {
             // TODO: get the url and just check the headers?
             var metadata = await _regResource.GetPackageMetadata(identity, log, token);
@@ -79,14 +79,14 @@ namespace NuGet.Protocol.Core.v3
             return metadata != null;
         }
 
-        public override async Task<bool> Exists(string packageId, bool includePrerelease, bool includeUnlisted, Logging.ILogger log, CancellationToken token)
+        public override async Task<bool> Exists(string packageId, bool includePrerelease, bool includeUnlisted, Common.ILogger log, CancellationToken token)
         {
             var entries = await GetVersions(packageId, includePrerelease, includeUnlisted, log, token);
 
             return entries != null && entries.Any();
         }
 
-        public override async Task<IEnumerable<NuGetVersion>> GetVersions(string packageId, bool includePrerelease, bool includeUnlisted, Logging.ILogger log, CancellationToken token)
+        public override async Task<IEnumerable<NuGetVersion>> GetVersions(string packageId, bool includePrerelease, bool includeUnlisted, Common.ILogger log, CancellationToken token)
         {
             var results = new List<NuGetVersion>();
 

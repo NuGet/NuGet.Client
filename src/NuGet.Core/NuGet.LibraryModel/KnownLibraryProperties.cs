@@ -13,5 +13,7 @@ namespace NuGet.LibraryModel
         public static readonly string MSBuildProjectPath = "NuGet.ProjectModel.MSBuildProjectPath";
         public static readonly string CompileAsset = "NuGet.ProjectModel.CompileAsset";
         public static readonly string RuntimeAsset = "NuGet.ProjectModel.RuntimeAsset";
+        public static readonly string FrameworkAssemblies = "NuGet.ProjectModel.FrameworkAssemblies";
+        public static readonly string ProjectFrameworks = "NuGet.ProjectModel.ProjectFrameworks";
     }
 }

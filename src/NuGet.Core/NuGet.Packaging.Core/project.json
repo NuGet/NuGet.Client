@@ -1,20 +1,32 @@
 ﻿{
-  "version": "3.4.0-*",
+  "version": "3.5.0-*",
   "description": "The core data structures for NuGet.Packaging",
   "authors": [
     "NuGet"
   ],
   "copyright": "Copyright .NET Foundation. All rights reserved.",
-  "projectUrl": "https://github.com/NuGet/NuGet.Packaging/",
-  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Packaging/master/LICENSE",
-  "compilationOptions": {
-    "warningsAsErrors": true
+  "packOptions": {
+    "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
+    "projectUrl": "https://github.com/NuGet/NuGet.Client"
+  },
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "xmlDoc": true,
+    "nowarn": [
+      "CS1591"
+    ],
+    "compile": {
+      "include": [
+        "../../../Shared/*.cs"
+      ]
+    }
   },
   "dependencies": {
-    "NuGet.Packaging.Core.Types": "3.4.0-*",
-    "NuGet.Shared": {
-      "type": "build",
-      "version": "3.4.0-*"
+    "NuGet.Common": {
+      "target": "project"
+    },
+    "NuGet.Packaging.Core.Types": {
+      "target": "project"
     }
   },
   "frameworks": {
@@ -23,13 +35,27 @@
         "System.Xml": "",
         "System.Xml.Linq": "",
         "System.IO.Compression": ""
+      },
+      "buildOptions": {
+        "define": [
+          "IS_DESKTOP"
+        ]
       }
     },
-    "dnxcore50": {
+    "netstandard1.3": {
       "dependencies": {
-        "System.IO": "4.0.10-beta-23109",
-        "System.IO.Compression": "4.0.0-beta-23109",
-        "System.Xml.XDocument": "4.0.10-beta-23109"
+        "NETStandard.Library": "1.6.0-rc3-24128-00",
+        "System.Xml.XDocument": "4.0.11-rc3-24128-00"
+      },
+      "imports": [
+        "dotnet5.6",
+        "dnxcore50",
+        "portable-net45+win8"
+      ],
+      "buildOptions": {
+        "define": [
+          "IS_CORECLR"
+        ]
       }
     }
   }

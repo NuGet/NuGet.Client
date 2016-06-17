@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using NuGet.Common;
 using NuGet.Configuration;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -17,7 +18,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private const string PackageRestoreAutomaticKey = "automatic";
 
         private readonly Configuration.ISettings _settings;
-        private readonly Configuration.IEnvironmentVariableReader _environmentReader;
+        private readonly Common.IEnvironmentVariableReader _environmentReader;
         private readonly ConfigurationDefaults _configurationDefaults;
 
         public PackageRestoreConsent(Configuration.ISettings settings)
@@ -25,12 +26,12 @@ namespace NuGet.PackageManagement.VisualStudio
         {
         }
 
-        public PackageRestoreConsent(Configuration.ISettings settings, Configuration.IEnvironmentVariableReader environmentReader)
+        public PackageRestoreConsent(Configuration.ISettings settings, Common.IEnvironmentVariableReader environmentReader)
             : this(settings, environmentReader, ConfigurationDefaults.Instance)
         {
         }
 
-        public PackageRestoreConsent(Configuration.ISettings settings, Configuration.IEnvironmentVariableReader environmentReader, ConfigurationDefaults configurationDefaults)
+        public PackageRestoreConsent(Configuration.ISettings settings, Common.IEnvironmentVariableReader environmentReader, ConfigurationDefaults configurationDefaults)
         {
             if (settings == null)
             {
