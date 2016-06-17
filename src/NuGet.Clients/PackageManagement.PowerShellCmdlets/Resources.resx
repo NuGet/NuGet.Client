@@ -252,4 +252,10 @@
   <data name="Cmdlet_TotalTime" xml:space="preserve">
     <value>Time Elapsed: {0}</value>
   </data>
+  <data name="Cmdlet_FailedToSearchSource" xml:space="preserve">
+    <value>The following source failed to search for packages: '{0}'{1}{2}</value>
+    <comment>{0} is the source that failed.
+{1} is a line separator.
+{2} is the exception message.</comment>
+  </data>
 </root>

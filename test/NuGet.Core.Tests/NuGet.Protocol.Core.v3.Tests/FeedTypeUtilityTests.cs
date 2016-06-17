@@ -46,6 +46,19 @@ namespace NuGet.Protocol.Core.v3.Tests
             Assert.Equal(FeedType.FileSystemUnknown, type);
         }
 
+        [Theory]
+        [InlineData("../foo/packages")]
+        [InlineData(@"..\foo\packages")]
+        [InlineData(@"packages")]
+        public void FeedTypeUtility_VerifyRelativePathIsUnknown(string source)
+        {
+            // Arrange & Act
+            var type = FeedTypeUtility.GetFeedType(new PackageSource(source));
+
+            // Assert
+            Assert.Equal(FeedType.FileSystemUnknown, type);
+        }
+
         [Fact]
         public void FeedTypeUtility_VerifyBadSourceIsUnknown2()
         {

@@ -106,6 +106,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The following source failed to search for packages: &apos;{0}&apos;{1}{2}.
+        /// </summary>
+        internal static string Cmdlet_FailedToSearchSource {
+            get {
+                return ResourceManager.GetString("Cmdlet_FailedToSearchSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to parse package identities from file {0} with exception: {1}.
         /// </summary>
         internal static string Cmdlet_FailToParsePackages {

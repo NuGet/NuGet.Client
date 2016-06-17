@@ -143,7 +143,7 @@ namespace NuGet.Protocol
 
         private static bool IsLocalOrUNC(string currentSource)
         {
-            Uri currentURI = UriUtility.TryCreateSourceUri(currentSource, UriKind.RelativeOrAbsolute);
+            Uri currentURI = UriUtility.TryCreateSourceUri(currentSource, UriKind.Absolute);
             if (currentURI != null)
             {
                 if (currentURI.IsFile || currentURI.IsUnc)

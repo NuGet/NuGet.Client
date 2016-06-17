@@ -320,39 +320,32 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 throw new ArgumentNullException("source");
             }
 
-            var packageSource = new Configuration.PackageSource(source);
-            var repository = _sourceRepositoryProvider.CreateRepository(packageSource);
-            var resource = repository.GetResource<PackageSearchResource>();
-
-            // resource can be null here for relative path package source.
-            if (resource == null)
+            // Translate a relative path to an absolute path.
+            Uri sourceUri;
+            if (Uri.TryCreate(source, UriKind.Relative, out sourceUri))
             {
-                Uri uri;
-                // if it's not an absolute path, treat it as relative path
-                if (Uri.TryCreate(source, UriKind.Relative, out uri))
+                string outputPath;
+                bool? exists;
+                string errorMessage;
+                if (TryTranslatePSPath(source, out outputPath, out exists, out errorMessage)
+                    && exists == true)
                 {
-                    string outputPath;
-                    bool? exists;
-                    string errorMessage;
-                    // translate relative path to absolute path
-                    if (TryTranslatePSPath(source, out outputPath, out exists, out errorMessage)
-                        && exists == true)
-                    {
-                        source = outputPath;
-                        packageSource = new Configuration.PackageSource(outputPath);
-                    }
+                    source = outputPath;
                 }
             }
 
-            var sourceRepo = _sourceRepositoryProvider.CreateRepository(packageSource);
+            var packageSource = new Configuration.PackageSource(source);
+            var repository = _sourceRepositoryProvider.CreateRepository(packageSource);
+            var resource = repository.GetResource<PackageSearchResource>();
+            
             // Right now if packageSource is invalid, CreateRepository will not throw. Instead, resource returned is null.
-            var newResource = repository.GetResource<PackageSearchResource>();
-            if (newResource == null)
+            if (resource == null)
             {
                 // Try to create Uri again to throw UriFormat exception for invalid source input.
                 new Uri(source);
             }
-            return sourceRepo;
+
+            return repository;
         }
 
         /// <summary>
@@ -566,7 +559,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Get list of packages from the remote package source. Used for Get-Package -ListAvailable.
         /// </summary>
-        protected IEnumerable<IPackageSearchMetadata> GetPackagesFromRemoteSource(string searchString, bool includePrerelease)
+        /// <param name="searchString">The search string to use for filtering.</param>
+        /// <param name="includePrerelease">Whether or not to include prerelease packages in the results.</param>
+        /// <param name="handleError">
+        /// An action for handling errors during the enumeration of the returned results. The
+        /// parameter is the error message. This action is never called by multiple threads at once.
+        /// </param>
+        /// <returns>The lazy sequence of package search metadata.</returns>
+        protected IEnumerable<IPackageSearchMetadata> GetPackagesFromRemoteSource(
+            string searchString,
+            bool includePrerelease,
+            Action<string> handleError)
         {
             var searchFilter = new SearchFilter
             {
@@ -575,9 +578,24 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 IncludeDelisted = false
             };
 
-            var packageFeed = new MultiSourcePackageFeed(PrimarySourceRepositories, logger: null);
+            var packageFeed = new MultiSourcePackageFeed(PrimarySourceRepositories, logger: null); 
             var searchTask = packageFeed.SearchAsync(searchString, searchFilter, Token);
-            return PackageFeedEnumerator.Enumerate(packageFeed, searchTask, Token);
+
+            return PackageFeedEnumerator.Enumerate(
+                packageFeed,
+                searchTask,
+                (source, exception) =>
+                {
+                    var message = string.Format(
+                          CultureInfo.CurrentCulture,
+                          Resources.Cmdlet_FailedToSearchSource,
+                          source,
+                          Environment.NewLine,
+                          ExceptionUtilities.DisplayMessage(exception));
+
+                    handleError(message);
+                },
+                Token);
         }
 
         protected async Task<IEnumerable<IPackageSearchMetadata>> GetPackagesFromRemoteSourceAsync(string packageId, bool includePrerelease)
