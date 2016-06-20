@@ -117,7 +117,7 @@ namespace NuGet.Protocol
 
                         return requestMessage;
                     };
-                    
+
                     Func<Task<ThrottledResponse>> throttledResponseFactory = () => GetThrottledResponse(
                         requestFactory,
                         request.RequestTimeout,
@@ -518,7 +518,6 @@ namespace NuGet.Protocol
         private class ThrottledResponse : IDisposable
         {
             private IThrottle _throttle;
-            private readonly object _throttleLock = new object();
 
             public ThrottledResponse(IThrottle throttle, HttpResponseMessage response)
             {
@@ -535,7 +534,7 @@ namespace NuGet.Protocol
                 _throttle = throttle;
                 Response = response;
             }
-            
+
             public HttpResponseMessage Response { get; }
 
             public void Dispose()
@@ -546,14 +545,7 @@ namespace NuGet.Protocol
                 }
                 finally
                 {
-                    lock (_throttleLock)
-                    {
-                        if (_throttle != null)
-                        {
-                            _throttle.Release();
-                            _throttle = null;
-                        }
-                    }
+                    Interlocked.Exchange(ref _throttle, null)?.Release();
                 }
             }
         }
