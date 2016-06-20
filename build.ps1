@@ -36,21 +36,13 @@ $env:DOTNET_INSTALL_DIR=$CLIRoot
 
 . "$PSScriptRoot\build\common.ps1"
 
-
 $RunTests = (-not $SkipTests) -and (-not $Fast)
 
-# Test for erroneous targeting input
-$Dev14Installed = Test-MSBuildVersionPresent -MSBuildVersion "14"
-$Dev15Installed = Test-MSBuildVersionPresent -MSBuildVersion "15"
-if ($SkipDev15 -and -not $Dev14Installed) {
-    Error-Log "Dev14 targeted but not installed" -Fatal
-}
-if ($SkipDev14 -and -not $Dev15Installed) {
-    Error-Log "Dev15 targeted but not installed" -Fatal
-}
-
 # Adjust version skipping if only one version installed - if Dev15 is not installed, no need to specify SkipDev15
+$Dev14Installed = Test-MSBuildVersionPresent -MSBuildVersion "14"
 $SkipDev14 = $SkipDev14 -or -not $Dev14Installed
+
+$Dev15Installed = Test-MSBuildVersionPresent -MSBuildVersion "15"
 $SkipDev15 = $SkipDev15 -or -not $Dev15Installed
 
 Write-Host ("`r`n" * 3)
