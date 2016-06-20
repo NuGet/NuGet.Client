@@ -8,7 +8,6 @@ using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using NuGet.PackageManagement.UI.Automation;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -125,11 +124,6 @@ namespace NuGet.PackageManagement.UI
                     TextBlock.ForegroundProperty,
                     Brushes.UIText);
             }
-        }
-
-        protected override AutomationPeer OnCreateAutomationPeer()
-        {
-            return new FilterLabelAutomationPeer(_labelButton, this);
         }
     }
 }
