@@ -519,6 +519,15 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to &apos;{0}&apos; is a duplicate url which has already been downloaded and will lead to a cyclic dependency. Please correct from server..
+        /// </summary>
+        public static string Protocol_duplicateUri {
+            get {
+                return ResourceManager.GetString("Protocol_duplicateUri", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to The &apos;versions&apos; property at &apos;{0}&apos; must be an array..
         /// </summary>
         public static string Protocol_FlatContainerIndexVersionsNotArray {

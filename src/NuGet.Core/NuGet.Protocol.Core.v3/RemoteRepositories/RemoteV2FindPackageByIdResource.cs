@@ -150,6 +150,9 @@ namespace NuGet.Protocol
                 try
                 {
                     var results = new List<PackageInfo>();
+                    var uris = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                    uris.Add(uri);
                     var page = 1;
                     while (true)
                     {
@@ -198,6 +201,15 @@ namespace NuGet.Protocol
                             if (string.IsNullOrEmpty(nextUri))
                             {
                                 break;
+                            }
+
+                            // check for any duplicate url and error out
+                            if (!uris.Add(nextUri))
+                            {
+                                throw new FatalProtocolException(string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.Protocol_duplicateUri,
+                                    nextUri));
                             }
 
                             uri = nextUri;
