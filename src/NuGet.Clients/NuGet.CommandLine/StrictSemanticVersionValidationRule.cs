@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace NuGet
+namespace NuGet.CommandLine
 {
     public class StrictSemanticVersionValidationRule : IPackageRule
     {

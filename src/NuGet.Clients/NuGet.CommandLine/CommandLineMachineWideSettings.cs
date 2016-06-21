@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using NuGet.Common;
 
-namespace NuGet
+namespace NuGet.CommandLine
 {
     [Export(typeof(Configuration.IMachineWideSettings))]
     public class CommandLineMachineWideSettings : Configuration.IMachineWideSettings

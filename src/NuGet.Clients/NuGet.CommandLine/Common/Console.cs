@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security;
 
-namespace NuGet.Common
+namespace NuGet.CommandLine
 {
     public class Console : IConsole
     {

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 
-namespace NuGet
+namespace NuGet.CommandLine
 {
     [InheritedExport]
     public interface ICommand

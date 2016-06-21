@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using NuGet.Configuration;
 
-namespace NuGet
+namespace NuGet.CommandLine
 {
     internal static class PackageSourceBuilder
     {

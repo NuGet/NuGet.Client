@@ -12,16 +12,16 @@ using System.Xml.Linq;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Frameworks;
+using NuGet.PackageManagement;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
 namespace NuGet.CommandLine
 {
-    using NuGet.Frameworks;
-    using NuGet.Packaging;
-    using NuGet.PackageManagement;
-    using NuGet.Packaging.Core;
-    using NuGet.Protocol;
-    using NuGet.Protocol.Core.Types;
 
     [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
     public class ProjectFactory : MSBuildUser, IProjectFactory, IPropertyProvider
@@ -34,7 +34,7 @@ namespace NuGet.CommandLine
 
         // Files we want to always exclude from the resulting package
         private static readonly HashSet<string> _excludeFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
-            Constants.PackageReferenceFile,
+            NuGetConstants.PackageReferenceFile,
             "Web.Debug.config",
             "Web.Release.config"
         };
@@ -184,7 +184,7 @@ namespace NuGet.CommandLine
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to continue regardless of any error we encounter extracting metadata.")]
-        public PackageBuilder CreateBuilder(string basePath, NuGetVersion version, string suffix, bool buildIfNeeded)
+        public Packaging.PackageBuilder CreateBuilder(string basePath, NuGetVersion version, string suffix, bool buildIfNeeded)
         {
             if (buildIfNeeded)
             {
@@ -200,7 +200,7 @@ namespace NuGet.CommandLine
                         Path.GetFullPath(Path.GetDirectoryName(TargetPath))));
             }
 
-            var builder = new PackageBuilder();
+            var builder = new Packaging.PackageBuilder();
 
             try
             {
@@ -249,7 +249,7 @@ namespace NuGet.CommandLine
                 }
             }
 
-            Manifest manifest = null;
+            Packaging.Manifest manifest = null;
 
             // If there is a project.json file, load that and skip any nuspec that may exist
             if (!PackCommandRunner.ProcessProjectJsonFile(builder, basePath, builder.Id, version, suffix, GetPropertyValue))
@@ -308,7 +308,7 @@ namespace NuGet.CommandLine
             return builder;
         }
 
-        public string InitializeProperties(IPackageMetadata metadata)
+        public string InitializeProperties(Packaging.IPackageMetadata metadata)
         {
             // Set the properties that were resolved from the assembly/project so they can be
             // resolved by name if the nuspec contains tokens
@@ -471,7 +471,7 @@ namespace NuGet.CommandLine
             return false;
         }
 
-        private void ExtractMetadataFromProject(PackageBuilder builder)
+        private void ExtractMetadataFromProject(Packaging.PackageBuilder builder)
         {
             builder.Id = builder.Id ??
                         _project.GetPropertyValue("AssemblyName") ??
@@ -610,7 +610,7 @@ namespace NuGet.CommandLine
         /// </summary>
         /// <param name="dependencies">The dependencies collection where the new dependencies
         /// are added into.</param>
-        private void AddProjectReferenceDependencies(Dictionary<string, PackageDependency> dependencies)
+        private void AddProjectReferenceDependencies(Dictionary<string, Packaging.Core.PackageDependency> dependencies)
         {
             var processedProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var projectsToProcess = new Queue<object>();
@@ -661,7 +661,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        private bool ProcessJsonFile(PackageBuilder builder, string basePath, string id)
+        private bool ProcessJsonFile(Packaging.PackageBuilder builder, string basePath, string id)
         {
             return PackCommandRunner.ProcessProjectJsonFile(builder, basePath, id, null, null, GetPropertyValue);
         }
@@ -669,7 +669,7 @@ namespace NuGet.CommandLine
         // Creates a package dependency from the given project, which has a corresponding
         // nuspec file.
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to continue regardless of any error we encounter extracting metadata.")]
-        private PackageDependency CreateDependencyFromProject(dynamic project, Dictionary<string, PackageDependency> dependencies)
+        private Packaging.Core.PackageDependency CreateDependencyFromProject(dynamic project, Dictionary<string, Packaging.Core.PackageDependency> dependencies)
         {
             try
             {
@@ -677,7 +677,7 @@ namespace NuGet.CommandLine
                 projectFactory.Build = Build;
                 projectFactory.ProjectProperties = ProjectProperties;
                 projectFactory.BuildProject();
-                var builder = new PackageBuilder();
+                var builder = new Packaging.PackageBuilder();
 
                 // If building an xproj, then TargetPath points to the folder where the framework folders will be
                 // instead of to a single dll. Skip trying to ExtractMetadata from the dll and instead
@@ -720,7 +720,7 @@ namespace NuGet.CommandLine
                     versionRange = VersionRange.Parse(builder.Version.ToString());
                 }
 
-                return new PackageDependency(
+                return new Packaging.Core.PackageDependency(
                     builder.Id,
                     versionRange);
             }
@@ -735,7 +735,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        private void AddOutputFiles(PackageBuilder builder)
+        private void AddOutputFiles(Packaging.PackageBuilder builder)
         {
             // Get the target framework of the project
             FrameworkName targetFramework = TargetFramework;
@@ -803,7 +803,7 @@ namespace NuGet.CommandLine
                         targetFolder = Path.Combine(ReferenceFolder, shortFolderName);
                     }
                 }
-                var packageFile = new PhysicalPackageFile
+                var packageFile = new Packaging.PhysicalPackageFile
                 {
                     SourcePath = file,
                     TargetPath = Path.Combine(targetFolder, Path.GetFileName(file))
@@ -812,10 +812,10 @@ namespace NuGet.CommandLine
             }
         }
 
-        private void ProcessDependencies(PackageBuilder builder)
+        private void ProcessDependencies(Packaging.PackageBuilder builder)
         {
             // get all packages and dependencies, including the ones in project references
-            var packagesAndDependencies = new Dictionary<String, Tuple<PackageReaderBase, PackageDependency>>();
+            var packagesAndDependencies = new Dictionary<String, Tuple<PackageReaderBase, Packaging.Core.PackageDependency>>();
             ApplyAction(p => p.AddDependencies(packagesAndDependencies));
 
             // list of all dependency packages
@@ -824,7 +824,7 @@ namespace NuGet.CommandLine
             // Add the transform file to the package builder
             ProcessTransformFiles(builder, packages.SelectMany(GetTransformFiles));
 
-            var dependencies = new Dictionary<string, PackageDependency>();
+            var dependencies = new Dictionary<string, Packaging.Core.PackageDependency>();
             if (!_usingJsonFile)
             {
                 dependencies = builder.DependencyGroups.SelectMany(d => d.Packages)
@@ -862,7 +862,7 @@ namespace NuGet.CommandLine
                         var i = 0;
                         foreach (var group in builder.DependencyGroups.ToList())
                         {
-                            List<PackageDependency> newPackagesList = new List<PackageDependency>(group.Packages);
+                            List<Packaging.Core.PackageDependency> newPackagesList = new List<Packaging.Core.PackageDependency>(group.Packages);
                             foreach (var dependency in dependencies)
                             {
                                 if (!newPackagesList.Contains(dependency.Value))
@@ -896,7 +896,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        private bool FindDependency(PackageIdentity projectPackage, IEnumerable<Tuple<PackageReaderBase, PackageDependency>> packagesAndDependencies)
+        private bool FindDependency(PackageIdentity projectPackage, IEnumerable<Tuple<PackageReaderBase, Packaging.Core.PackageDependency>> packagesAndDependencies)
         {
             // returns true if the dependency should be added to the package
             // This happens if the dependency is not a dependency of a dependecy
@@ -926,7 +926,7 @@ namespace NuGet.CommandLine
             return !found;
         }
 
-        private void AddDependencies(Dictionary<String, Tuple<PackageReaderBase, PackageDependency>> packagesAndDependencies)
+        private void AddDependencies(Dictionary<String, Tuple<PackageReaderBase, Packaging.Core.PackageDependency>> packagesAndDependencies)
         {
             Dictionary<string, object> props = new Dictionary<string, object>();
 
@@ -967,12 +967,12 @@ namespace NuGet.CommandLine
             var sourceRepository = Repository.Factory.GetCoreV3(packagesFolderPath).GetResource<FindPackageByIdResource>();
 
             // Collect all packages
-            IDictionary<PackageIdentity, PackageReference> packageReferences =
+            IDictionary<PackageIdentity, Packaging.PackageReference> packageReferences =
                 references
                 .Where(r => !r.IsDevelopmentDependency)
                 .ToDictionary(r => r.PackageIdentity);
             // add all packages and create an associated dependency to the dictionary
-            foreach (PackageReference reference in packageReferences.Values)
+            foreach (Packaging.PackageReference reference in packageReferences.Values)
             {
                 var packageReference = references.FirstOrDefault(r => r.PackageIdentity == reference.PackageIdentity);
                 if (packageReference != null && !packagesAndDependencies.ContainsKey(packageReference.PackageIdentity.Id))
@@ -993,8 +993,8 @@ namespace NuGet.CommandLine
                         try
                         {
                             var reader = new PackageArchiveReader(stream);
-                            var dependency = new PackageDependency(packageReference.PackageIdentity.Id, range);
-                            packagesAndDependencies.Add(packageReference.PackageIdentity.Id, Tuple.Create<PackageReaderBase, PackageDependency>(reader, dependency));
+                            var dependency = new Packaging.Core.PackageDependency(packageReference.PackageIdentity.Id, range);
+                            packagesAndDependencies.Add(packageReference.PackageIdentity.Id, Tuple.Create<PackageReaderBase, Packaging.Core.PackageDependency>(reader, dependency));
                         }
                         catch (Exception)
                         {
@@ -1015,7 +1015,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        private static void DisposePackageReaders(Dictionary<String, Tuple<PackageReaderBase, PackageDependency>> packagesAndDependencies)
+        private static void DisposePackageReaders(Dictionary<String, Tuple<PackageReaderBase, Packaging.Core.PackageDependency>> packagesAndDependencies)
         {
             // Release the open file handles
             foreach (var package in packagesAndDependencies)
@@ -1037,7 +1037,7 @@ namespace NuGet.CommandLine
                     machineWideSettings: MachineWideSettings);
         }
 
-        private static void ProcessTransformFiles(PackageBuilder builder, IEnumerable<IPackageFile> transformFiles)
+        private static void ProcessTransformFiles(Packaging.PackageBuilder builder, IEnumerable<Packaging.IPackageFile> transformFiles)
         {
             // Group transform by target file
             var transformGroups = transformFiles.GroupBy(file => RemoveExtension(file.Path), StringComparer.OrdinalIgnoreCase);
@@ -1045,7 +1045,7 @@ namespace NuGet.CommandLine
 
             foreach (var transformGroup in transformGroups)
             {
-                IPackageFile file;
+                Packaging.IPackageFile file;
                 if (fileLookup.TryGetValue(transformGroup.Key, out file))
                 {
                     // Replace the original file with a file that removes the transforms
@@ -1063,10 +1063,10 @@ namespace NuGet.CommandLine
             return Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path));
         }
 
-        private IEnumerable<IPackageFile> GetTransformFiles(PackageReaderBase package)
+        private IEnumerable<Packaging.IPackageFile> GetTransformFiles(PackageReaderBase package)
         {
             var groups = package.GetContentItems();
-            return groups.SelectMany(g => g.Items).Where(IsTransformFile).Select(f => new PhysicalPackageFile() { TargetPath = f });
+            return groups.SelectMany(g => g.Items).Where(IsTransformFile).Select(f => new Packaging.PhysicalPackageFile() { TargetPath = f });
         }
 
         private static bool IsTransformFile(string file)
@@ -1102,7 +1102,7 @@ namespace NuGet.CommandLine
             return ProjectHelper.GetSolutionDir(_project.DirectoryPath);
         }
 
-        private Manifest ProcessNuspec(PackageBuilder builder, string basePath)
+        private Packaging.Manifest ProcessNuspec(Packaging.PackageBuilder builder, string basePath)
         {
             string nuspecFile = GetNuspec();
 
@@ -1121,7 +1121,7 @@ namespace NuGet.CommandLine
             {
                 // Don't validate the manifest since this might be a partial manifest
                 // The bulk of the metadata might be coming from the project.
-                Manifest manifest = Manifest.ReadFrom(stream, GetPropertyValue, validateSchema: true);
+                Packaging.Manifest manifest = Packaging.Manifest.ReadFrom(stream, GetPropertyValue, validateSchema: true);
                 builder.Populate(manifest.Metadata);
 
                 if (manifest.Files != null)
@@ -1162,7 +1162,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        private void AddFiles(PackageBuilder builder, string itemType, string targetFolder)
+        private void AddFiles(Packaging.PackageBuilder builder, string itemType, string targetFolder)
         {
             // Skip files that are added by dependency packages
             ProjectManagement.FolderNuGetProject project = new ProjectManagement.FolderNuGetProject(_project.FullPath);
@@ -1243,7 +1243,7 @@ namespace NuGet.CommandLine
                             targetFilePath));
                 }
 
-                var packageFile = new PhysicalPackageFile
+                var packageFile = new Packaging.PhysicalPackageFile
                 {
                     SourcePath = fullPath,
                     TargetPath = targetPath
@@ -1252,7 +1252,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        private void AddFileToBuilder(PackageBuilder builder, PhysicalPackageFile packageFile)
+        private void AddFileToBuilder(Packaging.PackageBuilder builder, Packaging.PhysicalPackageFile packageFile)
         {
             if (!builder.Files.Any(p => packageFile.Path.Equals(p.Path, StringComparison.OrdinalIgnoreCase)))
             {
@@ -1272,7 +1272,7 @@ namespace NuGet.CommandLine
 
         private void WriteDetail(string format, params object[] args)
         {
-            var console = _logger as NuGet.Common.Console;
+            var console = _logger as Console;
             if (console != null && console.Verbosity == Verbosity.Detailed)
             {
                 console.WriteLine(format, args);
@@ -1315,12 +1315,12 @@ namespace NuGet.CommandLine
             return Path.GetFileName(fullPath);
         }
 
-        private class ReverseTransformFormFile : IPackageFile
+        private class ReverseTransformFormFile : Packaging.IPackageFile
         {
             private readonly Lazy<Func<Stream>> _streamFactory;
             private readonly string _effectivePath;
 
-            public ReverseTransformFormFile(IPackageFile file, IEnumerable<IPackageFile> transforms)
+            public ReverseTransformFormFile(Packaging.IPackageFile file, IEnumerable<Packaging.IPackageFile> transforms)
             {
                 Path = file.Path + ".transform";
                 _streamFactory = new Lazy<Func<Stream>>(() => ReverseTransform(file, transforms), isThreadSafe: false);
@@ -1347,7 +1347,7 @@ namespace NuGet.CommandLine
             }
 
             [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "We need to return the MemoryStream for use.")]
-            private static Func<Stream> ReverseTransform(IPackageFile file, IEnumerable<IPackageFile> transforms)
+            private static Func<Stream> ReverseTransform(Packaging.IPackageFile file, IEnumerable<Packaging.IPackageFile> transforms)
             {
                 // Get the original
                 XElement element = GetElement(file);
@@ -1366,7 +1366,7 @@ namespace NuGet.CommandLine
                 return () => new MemoryStream(buffer);
             }
 
-            private static XElement GetElement(IPackageFile file)
+            private static XElement GetElement(Packaging.IPackageFile file)
             {
                 using (Stream stream = file.GetStream())
                 {
