@@ -24,7 +24,7 @@ namespace NuGet.CommandLine
     using NuGet.Protocol.Core.Types;
 
     [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
-    public class ProjectFactory : MSBuildUser, IProjectFactory
+    public class ProjectFactory : MSBuildUser, IProjectFactory, IPropertyProvider
     {
         // Its type is Microsoft.Build.Evaluation.Project
         private dynamic _project;
@@ -236,6 +236,19 @@ namespace NuGet.CommandLine
             }
 
             var projectAuthor = InitializeProperties(builder);
+
+            // Only override properties from assembly extracted metadata if they haven't 
+            // been specified also at construction time for the factory (that is, 
+            // console properties always take precedence.
+            foreach (var key in builder.Properties.Keys)
+            {
+                if (!_properties.ContainsKey(key) &&
+                    !ProjectProperties.ContainsKey(key))
+                {
+                    _properties.Add(key, builder.Properties[key]);
+                }
+            }
+
             Manifest manifest = null;
 
             // If there is a project.json file, load that and skip any nuspec that may exist
@@ -300,7 +313,17 @@ namespace NuGet.CommandLine
             // Set the properties that were resolved from the assembly/project so they can be
             // resolved by name if the nuspec contains tokens
             _properties.Clear();
-            _properties.Add("Id", metadata.Id);
+
+            // Allow Id to be overriden by cmd line properties
+            if (ProjectProperties.ContainsKey("Id"))
+            {
+                _properties.Add("Id", ProjectProperties["Id"]);
+            }
+            else
+            {
+                _properties.Add("Id", metadata.Id);
+            }
+
             _properties.Add("Version", metadata.Version.ToString());
 
             if (!String.IsNullOrEmpty(metadata.Title))
@@ -329,7 +352,8 @@ namespace NuGet.CommandLine
         public string GetPropertyValue(string propertyName)
         {
             string value;
-            if (!_properties.TryGetValue(propertyName, out value))
+            if (!_properties.TryGetValue(propertyName, out value) &&
+                !ProjectProperties.TryGetValue(propertyName, out value))
             {
                 dynamic property = _project.GetProperty(propertyName);
                 if (property != null)
@@ -339,6 +363,11 @@ namespace NuGet.CommandLine
             }
 
             return value;
+        }
+
+        dynamic IPropertyProvider.GetPropertyValue(string propertyName)
+        {
+            return GetPropertyValue(propertyName);
         }
 
         private void BuildProject()
@@ -514,7 +543,7 @@ namespace NuGet.CommandLine
 
                 string fullPath = item.GetMetadataValue("FullPath");
                 if (!string.IsNullOrEmpty(fullPath) &&
-                    !NuspecFileExists(fullPath) && 
+                    !NuspecFileExists(fullPath) &&
                     !File.Exists(ProjectJsonPathUtilities.GetProjectConfigPath(Path.GetDirectoryName(fullPath), Path.GetFileName(fullPath))) &&
                     alreadyAppliedProjects.GetLoadedProjects(fullPath).Count == 0)
                 {
@@ -900,12 +929,12 @@ namespace NuGet.CommandLine
         private void AddDependencies(Dictionary<String, Tuple<PackageReaderBase, PackageDependency>> packagesAndDependencies)
         {
             Dictionary<string, object> props = new Dictionary<string, object>();
-            
+
             foreach (var property in _project.Properties)
             {
                 props.Add(property.Name, property.EvaluatedValue);
             }
-            
+
             if (!props.ContainsKey(ProjectManagement.NuGetProjectMetadataKeys.TargetFramework))
             {
                 props.Add(ProjectManagement.NuGetProjectMetadataKeys.TargetFramework, new NuGetFramework(TargetFramework.Identifier, TargetFramework.Version, TargetFramework.Profile));

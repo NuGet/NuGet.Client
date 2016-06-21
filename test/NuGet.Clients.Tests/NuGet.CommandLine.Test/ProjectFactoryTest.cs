@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
+using System.Xml.XPath;
 using Microsoft.Build.Evaluation;
 using Moq;
 using NuGet.CommandLine.Test;
@@ -13,10 +14,266 @@ using Xunit;
 
 namespace NuGet.CommandLine
 {
+    using System.Xml;
     using NuGet.Packaging;
 
     public class ProjectFactoryTest
     {
+        [Fact]
+        public void ProjectFactoryInitializesPropertiesForPreprocessorFromAssemblyMetadata()
+        {
+            // Arrange
+            var testAssembly = Assembly.GetExecutingAssembly();
+            const string inputSpec = @"<?xml version=""1.0""?>
+	<package>
+	    <metadata>
+	        <id>$id$</id>
+	        <version>$version$</version>
+	        <description>$description$</description>
+	        <authors>$owner$</authors>
+	        <copyright>$copyright$</copyright>
+	        <licenseUrl>https://github.com/NuGet/NuGet.Client/blob/master/LICENSE.txt</licenseUrl>
+	        <projectUrl>https://github.com/NuGet/NuGet.Client</projectUrl>
+	        <tags>nuget</tags>
+	    </metadata>
+	</package>";
+            var projectXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+	<Project ToolsVersion=""4.0"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+	    <PropertyGroup>
+	        <ProjectGuid>{F879F274-EFA0-4157-8404-33A19B4E6AEC}</ProjectGuid>
+	        <OutputType>Library</OutputType>
+	        <RootNamespace>NuGet.Test</RootNamespace>
+	        <AssemblyName>" + testAssembly.GetName().Name + @"</AssemblyName>
+	        <TargetFrameworkProfile Condition="" '$(TargetFrameworkVersion)' == 'v4.0' "">Client</TargetFrameworkProfile>    
+	        <OutputPath>.</OutputPath> <!-- Force it to look for the assembly in the base path -->
+	        <TargetPath>" + testAssembly.ManifestModule.FullyQualifiedName + @"</TargetPath>
+	    </PropertyGroup>
+	    
+	    <ItemGroup>
+	        <Compile Include=""..\..\Dummy.cs"">
+	          <Link>Dummy.cs</Link>
+	        </Compile>
+	    </ItemGroup>
+	 
+	    <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
+	</Project>";
+
+            // Set base path to the currently assembly's folder so that it will find the test assembly
+            var basePath = Path.GetDirectoryName(testAssembly.CodeBase);
+
+            var project = new Project(XmlReader.Create(new StringReader(projectXml)));
+            project.FullPath = Path.Combine(project.DirectoryPath, "test.csproj");
+
+            // Act
+            var factory = new ProjectFactory(@"C:\Program Files (x86)\MSBuild\14.0\Bin", project) { Build = false };
+            var packageBuilder = factory.CreateBuilder(basePath, new NuGetVersion("3.0.0"), "", true);
+            var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
+
+            var xdoc = XDocument.Load(new StringReader(actual));
+            Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);
+            Assert.Equal(testAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion, xdoc.XPathSelectElement("/package/metadata/version").Value);
+            Assert.Equal("", xdoc.XPathSelectElement("/package/metadata/description").Value);
+            Assert.Equal(testAssembly.GetCustomAttribute<AssemblyCopyrightAttribute>().Copyright, xdoc.XPathSelectElement("/package/metadata/copyright").Value);
+            Assert.Equal(
+                testAssembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                    .Where(attr => attr.Key == "owner")
+                    .Select(attr => attr.Value)
+                    .FirstOrDefault(), 
+                xdoc.XPathSelectElement("/package/metadata/authors").Value);
+        }
+
+        [Fact]
+        public void CommandLinePropertiesOverrideAssemblyMetadataForPreprocessor()
+        {
+            // Arrange
+            var testAssembly = Assembly.GetExecutingAssembly();
+            const string inputSpec = @"<?xml version=""1.0""?>
+	<package>
+	    <metadata>
+	        <id>$id$</id>
+	        <version>$version$</version>
+	        <description>$description$</description>
+	        <authors>$owner$</authors>
+	        <copyright>$copyright$</copyright>
+	        <licenseUrl>https://github.com/NuGet/NuGet.Client/blob/master/LICENSE.txt</licenseUrl>
+	        <projectUrl>https://github.com/NuGet/NuGet.Client</projectUrl>
+	        <tags>nuget</tags>
+	    </metadata>
+	</package>";
+            var projectXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+	<Project ToolsVersion=""4.0"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+	    <PropertyGroup>
+	        <ProjectGuid>{F879F274-EFA0-4157-8404-33A19B4E6AEC}</ProjectGuid>
+	        <OutputType>Library</OutputType>
+	        <RootNamespace>NuGet.Test</RootNamespace>
+	        <AssemblyName>" + testAssembly.GetName().Name + @"</AssemblyName>
+	        <TargetFrameworkProfile Condition="" '$(TargetFrameworkVersion)' == 'v4.0' "">Client</TargetFrameworkProfile>    
+	        <OutputPath>.</OutputPath> <!-- Force it to look for the assembly in the base path -->
+	        <TargetPath>" + testAssembly.ManifestModule.FullyQualifiedName + @"</TargetPath>
+	    </PropertyGroup>
+	    
+	    <ItemGroup>
+	        <Compile Include=""..\..\Dummy.cs"">
+	          <Link>Dummy.cs</Link>
+	        </Compile>
+	    </ItemGroup>
+	 
+	    <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
+	</Project>";
+
+            // Set base path to the currently assembly's folder so that it will find the test assembly
+            var basePath = Path.GetDirectoryName(testAssembly.CodeBase);
+            var cmdLineProperties = new Dictionary<string, string>
+                    {
+                        { "owner", "overriden" }
+                    };
+            var project = new Project(XmlReader.Create(new StringReader(projectXml)), cmdLineProperties, null);
+            project.FullPath = Path.Combine(project.DirectoryPath, "test.csproj");
+
+            var factory = new ProjectFactory(@"C:\Program Files (x86)\MSBuild\14.0\Bin", project) { Build = false };
+            // Cmdline properties are added to the factory, see PackCommand.cs(351)
+            factory.ProjectProperties["owner"] = "overriden";
+
+            // Act
+            var packageBuilder = factory.CreateBuilder(basePath, new NuGetVersion("3.0.0"), null, true);
+            var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
+
+            var xdoc = XDocument.Load(new StringReader(actual));
+            Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);
+            Assert.Equal(testAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion, xdoc.XPathSelectElement("/package/metadata/version").Value);
+            Assert.Equal("", xdoc.XPathSelectElement("/package/metadata/description").Value);
+            Assert.Equal(testAssembly.GetCustomAttribute<AssemblyCopyrightAttribute>().Copyright, xdoc.XPathSelectElement("/package/metadata/copyright").Value);
+            Assert.Equal(
+                cmdLineProperties["owner"],
+                xdoc.XPathSelectElement("/package/metadata/authors").Value);
+        }
+
+        [Fact]
+        public void CommandLinePropertiesApplyForPreprocessor()
+        {
+            // Arrange
+            var testAssembly = Assembly.GetExecutingAssembly();
+            const string inputSpec = @"<?xml version=""1.0""?>
+	<package>
+	    <metadata>
+	        <id>$id$</id>
+	        <version>$version$</version>
+	        <description>$description$</description>
+	        <authors>$overriden$</authors>
+	        <copyright>$copyright$</copyright>
+	        <licenseUrl>https://github.com/NuGet/NuGet.Client/blob/master/LICENSE.txt</licenseUrl>
+	        <projectUrl>https://github.com/NuGet/NuGet.Client</projectUrl>
+	        <tags>nuget</tags>
+	    </metadata>
+	</package>";
+            var projectXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+	<Project ToolsVersion=""4.0"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+	    <PropertyGroup>
+	        <ProjectGuid>{F879F274-EFA0-4157-8404-33A19B4E6AEC}</ProjectGuid>
+	        <OutputType>Library</OutputType>
+	        <RootNamespace>NuGet.Test</RootNamespace>
+	        <AssemblyName>" + testAssembly.GetName().Name + @"</AssemblyName>
+	        <TargetFrameworkProfile Condition="" '$(TargetFrameworkVersion)' == 'v4.0' "">Client</TargetFrameworkProfile>    
+	        <OutputPath>.</OutputPath> <!-- Force it to look for the assembly in the base path -->
+	        <TargetPath>" + testAssembly.ManifestModule.FullyQualifiedName + @"</TargetPath>
+	    </PropertyGroup>
+	    
+	    <ItemGroup>
+	        <Compile Include=""..\..\Dummy.cs"">
+	          <Link>Dummy.cs</Link>
+	        </Compile>
+	    </ItemGroup>
+	 
+	    <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
+	</Project>";
+
+            // Set base path to the currently assembly's folder so that it will find the test assembly
+            var basePath = Path.GetDirectoryName(testAssembly.CodeBase);
+            var cmdLineProperties = new Dictionary<string, string>
+                    {
+                        { "overriden", "Outercurve" }
+                    };
+            var project = new Project(XmlReader.Create(new StringReader(projectXml)), cmdLineProperties, null);
+            project.FullPath = Path.Combine(project.DirectoryPath, "test.csproj");
+
+            var factory = new ProjectFactory(@"C:\Program Files (x86)\MSBuild\14.0\Bin", project) { Build = false };
+            // Cmdline properties are added to the factory, see PackCommand.cs
+            factory.ProjectProperties.AddRange(cmdLineProperties);
+
+            // Act
+            var packageBuilder = factory.CreateBuilder(basePath, new NuGetVersion("3.0.0"), "", true);
+            var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
+
+            var xdoc = XDocument.Load(new StringReader(actual));
+            Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);
+            Assert.Equal(testAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion, xdoc.XPathSelectElement("/package/metadata/version").Value);
+            Assert.Equal("", xdoc.XPathSelectElement("/package/metadata/description").Value);
+            Assert.Equal(testAssembly.GetCustomAttribute<AssemblyCopyrightAttribute>().Copyright, xdoc.XPathSelectElement("/package/metadata/copyright").Value);
+            Assert.Equal(
+                cmdLineProperties["overriden"],
+                xdoc.XPathSelectElement("/package/metadata/authors").Value);
+        }
+
+        [Fact]
+        public void CommandLineIdPropertyOverridesAssemblyNameForPreprocessor()
+        {
+            // Arrange
+            var testAssembly = Assembly.GetExecutingAssembly();
+            const string inputSpec = @"<?xml version=""1.0""?>
+	<package>
+	    <metadata>
+	        <id>$id$</id>
+	        <version>$version$</version>
+	        <description>$description$</description>
+	        <authors>Outercurve</authors>
+	        <copyright>$copyright$</copyright>
+	        <licenseUrl>https://github.com/NuGet/NuGet.Client/blob/master/LICENSE.txt</licenseUrl>
+	        <projectUrl>https://github.com/NuGet/NuGet.Client</projectUrl>
+	        <tags>nuget</tags>
+	    </metadata>
+	</package>";
+            var projectXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+	<Project ToolsVersion=""4.0"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+	    <PropertyGroup>
+	        <ProjectGuid>{F879F274-EFA0-4157-8404-33A19B4E6AEC}</ProjectGuid>
+	        <OutputType>Library</OutputType>
+	        <RootNamespace>NuGet.Test</RootNamespace>
+	        <AssemblyName>" + testAssembly.GetName().Name + @"</AssemblyName>
+	        <TargetFrameworkProfile Condition="" '$(TargetFrameworkVersion)' == 'v4.0' "">Client</TargetFrameworkProfile>    
+	        <OutputPath>.</OutputPath> <!-- Force it to look for the assembly in the base path -->
+	        <TargetPath>" + testAssembly.ManifestModule.FullyQualifiedName + @"</TargetPath>
+	    </PropertyGroup>
+	    
+	    <ItemGroup>
+	        <Compile Include=""..\..\Dummy.cs"">
+	          <Link>Dummy.cs</Link>
+	        </Compile>
+	    </ItemGroup>
+	 
+	    <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
+	</Project>";
+
+            // Set base path to the currently assembly's folder so that it will find the test assembly
+            var basePath = Path.GetDirectoryName(testAssembly.CodeBase);
+            var cmdLineProperties = new Dictionary<string, string>
+                    {
+                        { "id", "Outercurve" }
+                    };
+            var project = new Project(XmlReader.Create(new StringReader(projectXml)), cmdLineProperties, null);
+            project.FullPath = Path.Combine(project.DirectoryPath, "test.csproj");
+
+            var factory = new ProjectFactory(@"C:\Program Files (x86)\MSBuild\14.0\Bin", project) { Build = false };
+            // Cmdline properties are added to the factory, see PackCommand.cs
+            factory.ProjectProperties.AddRange(cmdLineProperties);
+
+            // Act
+            var packageBuilder = factory.CreateBuilder(basePath, new NuGetVersion("3.0.0"), "", true);
+            var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
+
+            var xdoc = XDocument.Load(new StringReader(actual));
+            Assert.Equal(cmdLineProperties["id"], xdoc.XPathSelectElement("/package/metadata/id").Value);
+        }
+
         [Fact]
         public void ProjectFactoryInitializesPropertiesForPreprocessor()
         {
@@ -29,8 +286,8 @@ namespace NuGet.CommandLine
         <description>$description$</description>
         <authors>$author$</authors>
         <copyright>$copyright$</copyright>
-        <licenseUrl>http://nuget.codeplex.com/license</licenseUrl>
-        <projectUrl>http://nuget.codeplex.com</projectUrl>
+        <licenseUrl>https://github.com/NuGet/NuGet.Client/blob/master/LICENSE.txt</licenseUrl>
+        <projectUrl>https://github.com/NuGet/NuGet.Client</projectUrl>
         <tags>nuget</tags>
     </metadata>
 </package>";
@@ -53,20 +310,13 @@ namespace NuGet.CommandLine
 
             // assert
             Assert.Equal("Outercurve Foundation", author);
-            const string expected = @"<?xml version=""1.0""?>
-<package>
-    <metadata>
-        <id>ProjectFactoryTest</id>
-        <version>2.0.30619.9000</version>
-        <description></description>
-        <authors>Outercurve Foundation</authors>
-        <copyright>© Outercurve. All rights reserved.</copyright>
-        <licenseUrl>http://nuget.codeplex.com/license</licenseUrl>
-        <projectUrl>http://nuget.codeplex.com</projectUrl>
-        <tags>nuget</tags>
-    </metadata>
-</package>";
-            Assert.Equal(expected, actual);
+
+            var xdoc = XDocument.Load(new StringReader(actual));
+            Assert.Equal(metadata.Id, xdoc.XPathSelectElement("/package/metadata/id").Value);
+            Assert.Equal(metadata.Version.ToString(), xdoc.XPathSelectElement("/package/metadata/version").Value);
+            Assert.Equal(metadata.Description, xdoc.XPathSelectElement("/package/metadata/description").Value);
+            Assert.Equal(string.Join(",", metadata.Authors), xdoc.XPathSelectElement("/package/metadata/authors").Value);
+            Assert.Equal(metadata.Copyright, xdoc.XPathSelectElement("/package/metadata/copyright").Value);
         }
 
         [Fact]
