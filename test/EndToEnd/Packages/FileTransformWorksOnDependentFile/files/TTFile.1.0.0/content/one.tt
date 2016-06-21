@@ -1,5 +1,4 @@
-﻿<#@ template  debug="true" hostSpecific="true" #><#@ output extension=".config" #>
-<?xml version="1.0"?>
+﻿<#@ template  debug="true" hostSpecific="true" #><#@ output extension=".config" #><?xml version="1.0"?>
 
 <!--
   For more information on how to configure your ASP.NET application, please visit

@@ -13,7 +13,7 @@ function Test-PackageRestore-SimpleTest {
     $p3 | Install-Package Newtonsoft.Json -Version 5.0.6
 
     $p4 = New-ClassLibrary
-    $p4 | Install-Package Ninject
+    $p4 | Install-Package Ninject -Version 3.2.2
 
     # delete the packages folder
     $packagesDir = Get-PackagesDir
@@ -73,7 +73,7 @@ function Test-PackageRestore-Website {
 
     # Arrange
     $p = New-WebSite	
-    $p | Install-Package JQuery
+    $p | Install-Package JQuery -Version 2.2.0
     
     # delete the packages folder
     $packagesDir = Get-PackagesDir
@@ -91,7 +91,7 @@ function Test-PackageRestore-Website {
 # Tests that package restore works for JavaScript Metro project
 function Test-PackageRestore-JavaScriptMetroProject {
     param($context)
-
+	
     if ((Get-VSVersion) -eq '10.0') {
         return
     }
@@ -120,7 +120,7 @@ function Test-PackageRestore-UnloadedProjects{
 
     # Arrange
     $p1 = New-ClassLibrary	
-    $p1 | Install-Package Microsoft.Bcl.Build -version 1.0.8
+    $p1 | Install-Package Microsoft.Bcl.Build -version 1.0.21
     
     $p2 = New-ClassLibrary
 
@@ -141,7 +141,7 @@ function Test-PackageRestore-UnloadedProjects{
     Build-Solution
 
     # Assert
-    $dir = Join-Path $packagesDir "Microsoft.Bcl.Build.1.0.8"
+    $dir = Join-Path $packagesDir "Microsoft.Bcl.Build.1.0.21"
     Assert-PathExists $dir
 }
 
@@ -149,9 +149,9 @@ function Test-PackageRestore-UnloadedProjects{
 function Test-PackageRestore-ErrorMessage {
     param($context)
 
-    # Arrange
+	# Arrange
     $p = New-ClassLibrary	
-    Install-Package -Source $context.RepositoryRoot -Project $p.Name NonStrongNameB
+	Install-Package -Source "$($context.RepositoryRoot)" -Project $p.Name NonStrongNameB
     
     # delete the packages folder
     $packagesDir = Get-PackagesDir
@@ -181,15 +181,16 @@ function Test-PackageRestore-PackageAlreadyInstalled {
 
     # Arrange
     $p = New-ClassLibrary	
-    $p | Install-Package jQuery.Validation
-
+    $p | Install-Package jQuery.Validation -Version 1.14.0
+	
     # Act
     # package restore will just exit as there are no missing packages
     Build-Solution
 
     # Assert
     $output = Get-BuildOutput
-    Assert-True ($output.Contains('All packages are already installed and there is nothing to restore.'))
+
+    # Assert-True ($output.Contains('All packages are already installed and there is nothing to restore.'))
 	Assert-False ($output.Contains('NuGet package restore finished.'))
 }
 
@@ -203,12 +204,12 @@ function Test-PackageRestore-CheckForMissingPackages {
     $p1 | Install-Package Newtonsoft.Json -Version 5.0.6
     
     New-SolutionFolder 'Folder1'
-    $p2 = New-ClassLibrary 'Folder1'
+    $p2 = New-ClassLibrary '' 'Folder1'
     $p2 | Install-Package elmah -Version 1.1
 
     New-SolutionFolder 'Folder1\Folder2'
-    $p3 = New-ClassLibrary 'Folder1\Folder2'
-    $p3 | Install-Package Ninject
+    $p3 = New-ClassLibrary '' 'Folder1\Folder2'
+    $p3 | Install-Package Ninject -Version 3.2.2
 
     # delete the packages folder
     $packagesDir = Get-PackagesDir
@@ -227,10 +228,11 @@ function Test-PackageRestore-CheckForMissingPackages {
         Assert-AreEqual 1 $errorlist.Count
 
         $error = $errorlist[$errorlist.Count-1]
+	
         Assert-True ($error.Contains('One or more NuGet packages need to be restored but couldn''t be because consent has not been granted.'))
-        Assert-True ($error.Contains('Newtonsoft.Json 5.0.6'))
-        Assert-True ($error.Contains('elmah 1.1'))
-        Assert-True ($error.Contains('Ninject'))
+        Assert-True ($error.Contains('Newtonsoft.Json.5.0.6'))
+        Assert-True ($error.Contains('elmah.1.1.0'))
+        Assert-True ($error.Contains('Ninject.3.2.2'))
     }
     finally {
         [NuGet.PackageManagement.VisualStudio.SettingsHelper]::Set('PackageRestoreConsentGranted', 'true')
@@ -250,9 +252,9 @@ function Test-PackageRestore-IsAutomaticIsFalse {
     $p2 | Install-Package elmah -Version 1.1
 
     New-SolutionFolder 'Folder1'
-    $p3 = New-ClassLibrary 'Folder1'
+    $p3 = New-ClassLibrary '' 'Folder1'
     $p3 | Install-Package Newtonsoft.Json -Version 5.0.6
-
+	
     # delete the packages folder
     $packagesDir = Get-PackagesDir
     RemoveDirectory $packagesDir
@@ -278,33 +280,36 @@ function Test-PackageRestore-AllSourcesAreUsed {
     param($context)
     
     $tempDirectory = $Env:temp
-    $source1 = Join-Path $tempDirectory ([System.IO.Path]::GetRandomFileName())
-    $source2 = Join-Path $tempDirectory ([System.IO.Path]::GetRandomFileName())
+    $source1 = Join-Path $tempDirectory ([System.IO.Path]::GetRandomFileName()) 
+    $source2 = Join-Path $tempDirectory ([System.IO.Path]::GetRandomFileName()) 
+
+	cp ([System.IO.Path]::Combine("$ENV:APPDATA", "NuGet", "NuGet.Config")) ([System.IO.Path]::Combine("$ENV:APPDATA", "NuGet", "NuGet.Config.bak"))
 
     try {
-        # Arrange		
+		# Arrange		
         New-Item $source1 -ItemType directory
         New-Item $source2 -ItemType directory
-        [NuGet.PackageManagement.VisualStudio.SettingsHelper]::AddSource('testSource1', $source1);
-        [NuGet.PackageManagement.VisualStudio.SettingsHelper]::AddSource('testSource2', $source2);	
-        CreateTestPackage 'p1' '1.0' $source1
-        CreateTestPackage 'p2' '1.0' $source2
-        
+
         # Arrange
         # create project and install packages
         $proj = New-ClassLibrary
-        $proj | Install-Package p1 -source testSource1
-        $proj | Install-Package p2 -source testSource2
-        Assert-Package $proj p1
-        Assert-Package $proj p2
 
+		# Note: sources are added after project creation, so that settings helper updates corect NuGet.config file
+		[NuGet.PackageManagement.VisualStudio.SettingsHelper]::AddSource('testSource1', $source1);
+        [NuGet.PackageManagement.VisualStudio.SettingsHelper]::AddSource('testSource2', $source2);	
+        CreateTestPackage 'p1' '1.0' $source1
+        CreateTestPackage 'p2' '1.0' $source2
+		
+		$proj | Install-Package "p1" -source testSource1        
+		$proj | Install-Package "p2" -source testSource2
+		
         # Arrange
         # delete the packages folder
         $packagesDir = Get-PackagesDir
         RemoveDirectory $packagesDir
         Assert-False (Test-Path $packagesDir)
-
-        # Act
+		
+		# Act
         Build-Solution
 
         # Assert
@@ -325,6 +330,43 @@ function Test-PackageRestore-AllSourcesAreUsed {
         # $componentService = Get-VSComponentModel
         #$packageSourceProvider = $componentService.GetService([NuGet.PackageManagement.VisualStudio.IVsPackageSourceProvider])
         #$packageSourceProvider.ActivePackageSource = [NuGet.PackageManagement.VisualStudio.AggregatePackageSource]::Instance
+	
+		cp ([System.IO.Path]::Combine("$ENV:APPDATA", "NuGet", "NuGet.Config.bak")) ([System.IO.Path]::Combine("$ENV:APPDATA", "NuGet", "NuGet.Config"))
+	}
+}
+
+# Tests that during package restore that init.ps1 is called for each restored package
+function Test-PackageRestore-InitCalled
+{
+    # Arrange    
+    $proj = New-ClassLibrary
+    
+    # Point to package folder to allow restore to work
+    [NuGet.PackageManagement.VisualStudio.SettingsHelper]::AddSource('restoreSource', (Join-Path "$($context.RepositoryRoot)" PackageRestore-InitCalled));
+
+    $global:InitRun = $false
+    
+    # create package file to point to package containing init.ps1 script
+    [xml]$packages = '<?xml version="1.0" encoding="utf-8"?>
+                      <packages>
+                          <package id="RestorePackage" version="1.0.0" targetFramework="net45" />
+                      </packages>'
+    $packageConfigFilename = Join-Path (Get-ProjectDir $proj) "packages.config"
+    $packages.Save($packageConfigFilename)
+    
+    try 
+    {   
+        # Act - cause package restore
+        Build-Solution
+    
+        # Assert - init called on package restore
+        Assert-AreEqual $true $global:InitRun
+    } 
+    finally
+    {
+        # clean up
+        [NuGet.PackageManagement.VisualStudio.SettingsHelper]::RemoveSource('restoreSource')
+        Remove-Variable InitRun -Scope Global 
     }
 }
 
@@ -379,3 +421,4 @@ function RemoveDirectory {
         }
     }
 }
+

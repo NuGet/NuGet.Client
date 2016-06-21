@@ -767,7 +767,7 @@ namespace NuGetVSExtension
             {
                 var errorText = string.Format(CultureInfo.CurrentCulture,
                     Resources.PackageNotRestoredBecauseOfNoConsent,
-                    string.Join(", ", missingPackages.Select(p => p.ToString())));
+                    string.Join(", ", missingPackages.Select(p => p.PackageReference.ToString())));
                 MessageHelper.ShowError(_errorListProvider,
                     TaskErrorCategory.Error,
                     TaskPriority.High,
