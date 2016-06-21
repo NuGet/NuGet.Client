@@ -770,8 +770,8 @@ namespace NuGet.Commands
             }
 
             // Remove tools
-            lockFile.Tools = null;
-            lockFile.ProjectFileToolGroups = null;
+            lockFile.Tools.Clear();
+            lockFile.ProjectFileToolGroups.Clear();
         }
     }
 }

@@ -184,15 +184,19 @@ namespace NuGet.ProjectModel
             json[TargetsProperty] = WriteObject(lockFile.Targets, WriteTarget);
             json[LibrariesProperty] = WriteObject(lockFile.Libraries, WriteLibrary);
             json[ProjectFileDependencyGroupsProperty] = WriteObject(lockFile.ProjectFileDependencyGroups, WriteProjectFileDependencyGroup);
-            
-            if (lockFile.Tools != null)
+
+            // Avoid writing out the tools section for v1 lock files
+            if (lockFile.Version >= 2)
             {
-                json[ToolsProperty] = WriteObject(lockFile.Tools, WriteTarget);
-            }
-            
-            if (lockFile.ProjectFileToolGroups != null)
-            {
-                json[ProjectFileToolGroupsProperty] = WriteObject(lockFile.ProjectFileToolGroups, WriteProjectFileDependencyGroup);
+                if (lockFile.Tools != null)
+                {
+                    json[ToolsProperty] = WriteObject(lockFile.Tools, WriteTarget);
+                }
+
+                if (lockFile.ProjectFileToolGroups != null)
+                {
+                    json[ProjectFileToolGroupsProperty] = WriteObject(lockFile.ProjectFileToolGroups, WriteProjectFileDependencyGroup);
+                }
             }
 
             if (lockFile.PackageFolders?.Any() == true)

@@ -912,6 +912,9 @@ namespace NuGet.Commands.Test
                 Assert.True(result.Success);
                 Assert.Equal(0, lockFile.Libraries.Count);
                 Assert.Equal(0, lockFile.Targets[0].Libraries.Count);
+
+                // Verify round tripping for v1 with p2ps
+                Assert.Equal(result.LockFile, lockFile);
             }
         }
     }
