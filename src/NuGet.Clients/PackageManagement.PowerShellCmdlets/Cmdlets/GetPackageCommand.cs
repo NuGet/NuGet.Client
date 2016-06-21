@@ -9,8 +9,6 @@ using System.Globalization;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Host;
-using Microsoft.VisualStudio.Shell;
-using NuGet.Packaging;
 using NuGet.PackageManagement.UI;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
@@ -239,7 +237,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             if (!projectHasUpdates)
             {
-                LogCore(ProjectManagement.MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_NoPackageUpdates, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
+                LogCore(MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_NoPackageUpdates, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name)));
             }
         }
 
@@ -256,7 +254,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             else
             {
-                LogCore(ProjectManagement.MessageLevel.Info, Resources.Cmdlet_NoPackagesInstalled);
+                LogCore(MessageLevel.Info, Resources.Cmdlet_NoPackagesInstalled);
             }
         }
 
@@ -283,7 +281,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             // Output list of PowerShellPackages
             if (outputWarning && !string.IsNullOrEmpty(Filter))
             {
-                LogCore(ProjectManagement.MessageLevel.Warning, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_CommandObsolete, message));
+                LogCore(MessageLevel.Warning, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_CommandObsolete, message));
             }
 
             WritePackages(packages, versionType, outputOnEmpty);
@@ -341,7 +339,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             else
             {
-                LogCore(ProjectManagement.MessageLevel.Info, Resources.Cmdlet_GetPackageNoPackageFound);
+                LogCore(MessageLevel.Info, Resources.Cmdlet_GetPackageNoPackageFound);
             }
         }
 

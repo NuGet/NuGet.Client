@@ -3279,8 +3279,14 @@ namespace NuGet.Test
                 Assert.Equal(0, packagesInPackagesConfig.Count);
                 Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
 
+                var resolutionContext = new ResolutionContext(
+                    DependencyBehavior.Lowest,
+                    includePrelease: false,
+                    includeUnlisted: false,
+                    versionConstraints: VersionConstraints.None);
+
                 // Act
-                await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageId, new ResolutionContext(DependencyBehavior.Lowest, includePrelease: false, includeUnlisted: false, versionConstraints: VersionConstraints.None),
+                await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageId, resolutionContext,
                     testNuGetProjectContext, primarySourceRepository, null, token);
 
                 // Check that the packages.config file does not exist
@@ -3295,7 +3301,7 @@ namespace NuGet.Test
                 try
                 {
                     var packageActions = (await nuGetPackageManager.PreviewInstallPackageAsync(msBuildNuGetProject, packageId,
-                        new ResolutionContext(), testNuGetProjectContext, primarySourceRepository, null, token)).ToList();
+                        resolutionContext, testNuGetProjectContext, primarySourceRepository, null, token)).ToList();
                 }
                 catch (Exception ex)
                 {
@@ -3400,7 +3406,7 @@ namespace NuGet.Test
                 var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
                 var dotnetrdfPackageIdentity = new PackageIdentity("dotnetrdf", new NuGetVersion("1.0.8-prerelease1"));
-                var resolutionContext = new ResolutionContext(DependencyBehavior.Highest, includePrelease: true, includeUnlisted: true, versionConstraints: VersionConstraints.None);
+                var resolutionContext = new ResolutionContext(DependencyBehavior.Highest, includePrelease: true, includeUnlisted: false, versionConstraints: VersionConstraints.None);
 
                 var newtonsoftJsonPackageId = "newtonsoft.json";
 

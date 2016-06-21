@@ -568,7 +568,7 @@ function Test-InstallPackageWithNonExistentFrameworkReferences {
     $p = New-ClassLibrary
 
     # Arrange
-    Assert-Throws { $p | Install-Package PackageWithNonExistentGacReferences -Source $context.RepositoryRoot } "Failed to add reference. The package 'PackageWithNonExistentGacReferences' tried to add a framework reference to 'System.Awesome' which was not found in the GAC. This is possibly a bug in the package. Please contact the package owners for assistance."
+    Assert-Throws { $p | Install-Package PackageWithNonExistentGacReferences -Source $context.RepositoryRoot } "Failed to add reference. The package 'PackageWithNonExistentGacReferences' tried to add a framework reference to 'System.Awesome' which was not found in the GAC. This is possibly a bug in the package. Please contact the package owners for assistance.`r`n  Reference unavailable."
 }
 
 function Test-InstallPackageWorksWithProjectsHavingSameNames {
@@ -1445,7 +1445,7 @@ function Test-InstallPackageThrowsWhenSourceIsInvalid {
     $p = New-WebApplication 
 
     # Act & Assert
-    Assert-Throws { Install-Package jQuery -source "d:package" } "Invalid URI: A Dos path must be rooted, for example, 'c:\'."
+    Assert-Throws { Install-Package jQuery -source "d:package" } "Failed to retrieve information from remote source 'd:package'.`r`n  Invalid URI: A Dos path must be rooted, for example, 'c:\'."
 }
 
 function Test-InstallPackageInvokeInstallScriptWhenProjectNameHasApostrophe {

@@ -230,7 +230,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             // Log total time elapsed except for Tab command
             if (!IsLoggingTimeDisabled)
             {
-                LogCore(ProjectManagement.MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_TotalTime, stopWatch.Elapsed));
+                LogCore(MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_TotalTime, stopWatch.Elapsed));
             }
         }
 
@@ -633,13 +633,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             if (actions == null
                 || !actions.Any())
             {
-                Log(ProjectManagement.MessageLevel.Info, Resources.Cmdlet_NoPackageActions);
+                Log(MessageLevel.Info, Resources.Cmdlet_NoPackageActions);
             }
             else
             {
                 foreach (NuGetProjectAction action in actions)
                 {
-                    Log(ProjectManagement.MessageLevel.Info, action.NuGetProjectActionType + " " + action.PackageIdentity);
+                    Log(MessageLevel.Info, action.NuGetProjectActionType + " " + action.PackageIdentity);
                 }
             }
         }
@@ -907,7 +907,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <param name="level"></param>
         /// <param name="message"></param>
         /// <param name="args"></param>
-        public void Log(ProjectManagement.MessageLevel level, string message, params object[] args)
+        public void Log(MessageLevel level, string message, params object[] args)
         {
             if (args.Length > 0)
             {
@@ -922,23 +922,23 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         /// <param name="level"></param>
         /// <param name="formattedMessage"></param>
-        protected virtual void LogCore(ProjectManagement.MessageLevel level, string formattedMessage)
+        protected virtual void LogCore(MessageLevel level, string formattedMessage)
         {
             switch (level)
             {
-                case ProjectManagement.MessageLevel.Debug:
+                case MessageLevel.Debug:
                     WriteVerbose(formattedMessage);
                     break;
 
-                case ProjectManagement.MessageLevel.Warning:
+                case MessageLevel.Warning:
                     WriteWarning(formattedMessage);
                     break;
 
-                case ProjectManagement.MessageLevel.Info:
+                case MessageLevel.Info:
                     WriteLine(formattedMessage);
                     break;
 
-                case ProjectManagement.MessageLevel.Error:
+                case MessageLevel.Error:
                     WriteError(formattedMessage);
                     break;
             }
@@ -976,7 +976,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch (InvalidOperationException ex)
             {
-                LogCore(ProjectManagement.MessageLevel.Error, ex.Message);
+                LogCore(MessageLevel.Error, ExceptionUtilities.DisplayMessage(ex));
             }
         }
 
@@ -992,7 +992,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 if (path != null)
                 {
                     string command = "& " + ProjectManagement.PathUtility.EscapePSPath(path) + " $__rootPath $__toolsPath $__package $__project";
-                    LogCore(ProjectManagement.MessageLevel.Info, String.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_ExecutingScript, path));
+                    LogCore(MessageLevel.Info, String.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_ExecutingScript, path));
 
                     InvokeCommand.InvokeScript(command, false, PipelineResultTypes.Error, null, null);
                 }
@@ -1041,7 +1041,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     throw _scriptException;
                 }
-                Log(ProjectManagement.MessageLevel.Warning, _scriptException.Message);
+
+                Log(MessageLevel.Warning, _scriptException.Message);
             }
         }
 

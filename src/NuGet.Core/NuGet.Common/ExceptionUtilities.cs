@@ -100,10 +100,13 @@ namespace NuGet.Common
         private static IEnumerable<string> GetMessages(Exception exception)
         {
             Exception current = exception;
+            string previous = null;
             while (current != null)
             {
-                if (current.Message != null)
+                if (current.Message != null &&
+                    current.Message != previous) // Ignore duplicate adjacent messages.
                 {
+                    previous = current.Message;
                     yield return current.Message;
                 }
 

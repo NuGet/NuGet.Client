@@ -5,11 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
-using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
-using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.VisualStudio;
 using NuGet.PackageManagement.UI;
+using NuGet.ProjectManagement;
 using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
@@ -138,7 +136,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             foreach (var error in errors)
             {
-                LogCore(ProjectManagement.MessageLevel.Error, error);
+                LogCore(MessageLevel.Error, error);
             }
         }
 

@@ -14,6 +14,71 @@ namespace NuGet.Protocol.Core.v3.Tests
     public class LocalFolderUtilityTests
     {
         [Fact]
+        public void LocalFolderUtility_GetAndVerifyRootDirectory_WithAbsolute()
+        {
+            // Arrange
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Act
+                var actual = LocalFolderUtility.GetAndVerifyRootDirectory(root);
+
+                // Assert
+                Assert.Equal(root.ToString(), actual.FullName);
+                Assert.True(actual.Exists, "The root directory should exist.");
+            }
+        }
+
+        [Fact]
+        public void LocalFolderUtility_GetAndVerifyRootDirectory_WithNonexistentAbsolute()
+        {
+            // Arrange
+            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var root = Path.Combine(testFolder, "not-real");
+
+                // Act
+                var actual = LocalFolderUtility.GetAndVerifyRootDirectory(root);
+
+                // Assert
+                Assert.Equal(root.ToString(), actual.FullName);
+                Assert.False(actual.Exists, "The root directory should not exist.");
+            }
+        }
+
+        [Fact]
+        public void LocalFolderUtility_GetAndVerifyRootDirectory_WithNonexistentRelative()
+        {
+            // Arrange
+            var workingDirectory = Directory.GetCurrentDirectory();
+            var subdirectory = Guid.NewGuid().ToString();
+            var root = Path.Combine("..", subdirectory);
+            var expected = Path.Combine(Path.GetDirectoryName(workingDirectory), subdirectory);
+
+            // Act
+            var actual = LocalFolderUtility.GetAndVerifyRootDirectory(root);
+
+            // Assert
+            Assert.Equal(expected, actual.FullName);
+            Assert.False(actual.Exists, "The root directory should not exist.");
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("X:Windows")]
+        [InlineData(" ")]
+        [InlineData(":")]
+        public void LocalFolderUtility_GetAndVerifyRootDirectory_RejectsInvalid(string source)
+        {
+            // Arrange & Act & Assert
+            var ex = Assert.Throws<FatalProtocolException>(() =>
+                LocalFolderUtility.GetAndVerifyRootDirectory(source));
+            Assert.Equal(
+                $"Failed to retrieve information from remote source '{source}'.",
+                ex.Message);
+        }
+
+        [Fact]
         public void LocalFolderUtility_GetPackagesConfigFolderPackages_All()
         {
             using (var root = TestFileSystemUtility.CreateRandomTestFolder())

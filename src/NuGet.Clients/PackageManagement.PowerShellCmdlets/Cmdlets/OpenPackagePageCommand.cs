@@ -6,10 +6,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Management.Automation;
-using System.Threading;
-using Microsoft.VisualStudio.Shell;
-using NuGet.ProjectManagement;
 using NuGet.PackageManagement.UI;
+using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
@@ -44,7 +42,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private void Preprocess()
         {
             UpdateActiveSourceRepository(Source);
-            LogCore(ProjectManagement.MessageLevel.Warning, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_CommandRemoved, "Open-PackagePage"));
+            LogCore(MessageLevel.Warning, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_CommandRemoved, "Open-PackagePage"));
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031")]

@@ -22,7 +22,7 @@ namespace NuGet.Protocol
 
             if (localResource != null)
             {
-                resource = new LocalMetadataResource(localResource);
+                resource = new LocalAutoCompleteResource(localResource);
             }
 
             return new Tuple<bool, INuGetResource>(resource != null, resource);

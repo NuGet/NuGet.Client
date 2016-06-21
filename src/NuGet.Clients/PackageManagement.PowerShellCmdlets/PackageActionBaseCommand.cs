@@ -6,13 +6,11 @@ using System.Globalization;
 using System.Linq;
 using System.Management.Automation;
 using System.Threading;
-using Microsoft.VisualStudio.Shell;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
-using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using Task = System.Threading.Tasks.Task;
 
@@ -103,7 +101,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 if (ex.InnerException is PackageAlreadyInstalledException)
                 {
-                    Log(ProjectManagement.MessageLevel.Info, ex.Message);
+                    Log(MessageLevel.Info, ex.Message);
                 }
                 else
                 {
@@ -145,7 +143,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 if (ex.InnerException is PackageAlreadyInstalledException)
                 {
-                    Log(ProjectManagement.MessageLevel.Info, ex.Message);
+                    Log(MessageLevel.Info, ex.Message);
                 }
                 else
                 {

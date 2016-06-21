@@ -8,13 +8,12 @@ using System.Linq;
 using System.Management.Automation;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.Shell;
+using NuGet.Common;
+using NuGet.PackageManagement.UI;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Versioning;
 using Task = System.Threading.Tasks.Task;
-using NuGet.PackageManagement.VisualStudio;
-using NuGet.PackageManagement.UI;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -55,11 +54,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             SubscribeToProgressEvents();
             if (_projects.Count == 0)
             {
-                LogCore(ProjectManagement.MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_NoProjectsToSyncPackage, Id));
+                LogCore(MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_NoProjectsToSyncPackage, Id));
             }
             else if (identity == null)
             {
-                LogCore(ProjectManagement.MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_PackageNotInstalled, Id));
+                LogCore(MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_PackageNotInstalled, Id));
             }
             else
             {
@@ -86,7 +85,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch (Exception ex)
             {
-                Log(ProjectManagement.MessageLevel.Error, ex.Message);
+                Log(MessageLevel.Error, ExceptionUtilities.DisplayMessage(ex));
             }
             finally
             {

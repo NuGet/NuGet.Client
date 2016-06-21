@@ -10,16 +10,14 @@ using System.Linq;
 using System.Management.Automation;
 using System.Net;
 using System.Text;
-using Microsoft.VisualStudio.Shell;
-using NuGet.PackageManagement.VisualStudio;
+using NuGet.Common;
+using NuGet.Configuration;
+using NuGet.PackageManagement.UI;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.Resolver;
 using NuGet.ProjectManagement;
 using NuGet.Versioning;
 using Task = System.Threading.Tasks.Task;
-using NuGet.PackageManagement.UI;
-using NuGet.Configuration;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -83,7 +81,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch (Exception ex)
             {
-                Log(ProjectManagement.MessageLevel.Error, ex.Message);
+                Log(MessageLevel.Error, ExceptionUtilities.DisplayMessage(ex));
             }
             finally
             {
@@ -103,7 +101,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch (Exception ex)
             {
-                Log(ProjectManagement.MessageLevel.Error, ex.Message);
+                Log(MessageLevel.Error, ExceptionUtilities.DisplayMessage(ex));
             }
             finally
             {
@@ -232,7 +230,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch (Exception ex)
             {
-                LogCore(ProjectManagement.MessageLevel.Error, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_FailToParsePackages, Id, ex.Message));
+                LogCore(MessageLevel.Error, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_FailToParsePackages, Id, ex.Message));
             }
 
             return identities;
@@ -289,7 +287,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch (Exception ex)
             {
-                Log(ProjectManagement.MessageLevel.Error, Resources.Cmdlet_FailToParsePackages, Id, ex.Message);
+                Log(MessageLevel.Error, Resources.Cmdlet_FailToParsePackages, Id, ex.Message);
             }
 
             return new List<PackageIdentity> { identity };

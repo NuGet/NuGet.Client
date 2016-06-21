@@ -206,6 +206,36 @@ namespace NuGet.Common.Test
             Assert.Equal(expected, actual);
         }
 
+        [Fact]
+        public void ExceptionUtilities_IgnoresDuplicateAdjacent()
+        {
+            /* Arrange
+             * Exceptions:
+             *  A -> A -> B -> B -> C -> B
+             */
+            var b3 = new Exception("B");
+            var c0 = new Exception("C", b3);
+            var b2 = new Exception("B", c0);
+            var b1 = new Exception("B", b2);
+            var b0 = new Exception("B", b1);
+            var a1 = new Exception("A", b0);
+            var a0 = new Exception("A", a1);
+
+            // Act
+            var message = ExceptionUtilities.DisplayMessage(a1);
+
+            // Assert
+            var actual = GetLines(message);
+            var expected = new[]
+            {
+                "A",
+                "  B",
+                "  C",
+                "  B"
+            };
+            Assert.Equal(expected, actual);
+        }
+
         private static string[] GetLines(string input)
         {
             var output = new List<string>();

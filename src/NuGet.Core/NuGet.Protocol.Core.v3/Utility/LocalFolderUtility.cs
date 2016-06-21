@@ -670,17 +670,27 @@ namespace NuGet.Protocol
         /// <summary>
         /// Verify that a path could be a valid directory. Throw a FatalProtocolException otherwise.
         /// </summary>
-        private static DirectoryInfo GetAndVerifyRootDirectory(string root)
+        public static DirectoryInfo GetAndVerifyRootDirectory(string root)
         {
             // Check for package files one level deep.
             DirectoryInfo rootDirectoryInfo = null;
 
             try
             {
-                // Verify that the directory is a valid path
+                // Verify that the directory is a valid path.
                 rootDirectoryInfo = new DirectoryInfo(root);
+
+                // The root must also be parsable as a URI (relative or absolute). This rejects
+                // sources that have the weird "C:Source" format. For more information about this 
+                // format, see:
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx#paths
+                new Uri(root, UriKind.RelativeOrAbsolute);
             }
-            catch (Exception ex) when (ex is ArgumentException || ex is IOException || ex is SecurityException)
+            catch (Exception ex) when (ex is ArgumentException ||
+                                       ex is IOException ||
+                                       ex is SecurityException ||
+                                       ex is UriFormatException ||
+                                       ex is NotSupportedException)
             {
                 var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToRetrievePackage, root);
 

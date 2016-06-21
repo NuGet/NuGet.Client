@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
 using System.Threading.Tasks;
-using NuGet.PackageManagement.VisualStudio;using NuGet.Packaging.Core;
+using NuGet.Common;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
-using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
 
@@ -138,7 +138,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch (Exception ex)
             {
-                Log(ProjectManagement.MessageLevel.Error, ex.Message);
+                Log(MessageLevel.Error, ExceptionUtilities.DisplayMessage(ex));
             }
             finally
             {
@@ -162,12 +162,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                 if (!_isPackageInstalled)
                 {
-                    Log(ProjectManagement.MessageLevel.Error, Resources.Cmdlet_PackageNotInstalledInAnyProject, Id);
+                    Log(MessageLevel.Error, Resources.Cmdlet_PackageNotInstalledInAnyProject, Id);
                 }
             }
             catch (Exception ex)
             {
-                Log(ProjectManagement.MessageLevel.Error, ex.Message);
+                Log(MessageLevel.Error, ExceptionUtilities.DisplayMessage(ex));
             }
             finally
             {
@@ -261,7 +261,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             else
             {
-                Log(NuGet.ProjectManagement.MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+                Log(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
             }
         }
 
