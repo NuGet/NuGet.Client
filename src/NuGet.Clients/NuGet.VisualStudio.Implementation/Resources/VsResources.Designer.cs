@@ -79,20 +79,20 @@ namespace NuGet.VisualStudio.Implementation.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The provided version string is not a valid nuget version..
+        /// </summary>
+        internal static string InvalidNuGetVersionString {
+            get {
+                return ResourceManager.GetString("InvalidNuGetVersionString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package list contains invalid or duplicate entries..
         /// </summary>
         internal static string InvalidPackageList {
             get {
                 return ResourceManager.GetString("InvalidPackageList", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The provided version string is not a valid semantic version..
-        /// </summary>
-        internal static string InvalidSemanticVersionString {
-            get {
-                return ResourceManager.GetString("InvalidSemanticVersionString", resourceCulture);
             }
         }
         

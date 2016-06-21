@@ -191,4 +191,10 @@
     <comment>{0} is the validation error message.
 {1} is the local name of the XML element that causes the validation error.</comment>
   </data>
+  <data name="MustContainAbsolutePath" xml:space="preserve">
+    <value>'{0}' must contain an absolute path '{1}'.</value>
+  </data>
+  <data name="FallbackFolderNotFound" xml:space="preserve">
+    <value>Unable to find fallback package folder '{0}'.</value>
+  </data>
 </root>

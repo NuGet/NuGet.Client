@@ -31,6 +31,11 @@ namespace NuGetVSExtension
                 throw new ArgumentNullException("supportedManagePackageCommand");
             }
 
+            if (searchText.StartsWith(provider.Shortcut + " "))
+            {
+                searchText = searchText.Substring(provider.Shortcut.Length);
+            }
+
             _searchText = searchText;
             _supportedManagePackageCommand = supportedManagePackageCommand;
 

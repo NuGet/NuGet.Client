@@ -24,13 +24,12 @@ namespace NuGet.CommandLine
 {
 
     [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
-    public class ProjectFactory : MSBuildUser, IProjectFactory
+    public class ProjectFactory : MSBuildUser, IProjectFactory, IPropertyProvider
     {
         // Its type is Microsoft.Build.Evaluation.Project
         private dynamic _project;
 
         private Common.ILogger _logger;
-        private Configuration.ISettings _settings;
         private bool _usingJsonFile;
 
         // Files we want to always exclude from the resulting package
@@ -111,7 +110,6 @@ namespace NuGet.CommandLine
             _project = project;
             ProjectProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             AddSolutionDir();
-            _settings = null;
 
             // Get the target framework of the project
             string targetFrameworkMoniker = _project.GetPropertyValue("TargetFrameworkMoniker");
@@ -139,21 +137,6 @@ namespace NuGet.CommandLine
                     break;
                 }
             }                
-        }
-
-        private Configuration.ISettings DefaultSettings
-        {
-            get
-            {
-                if (null == _settings)
-                {
-                    _settings = Configuration.Settings.LoadDefaultSettings(
-                        _project.DirectoryPath,
-                        null,
-                        MachineWideSettings);
-                }
-                return _settings;
-            }
         }
 
         private string TargetPath
@@ -253,6 +236,19 @@ namespace NuGet.CommandLine
             }
 
             var projectAuthor = InitializeProperties(builder);
+
+            // Only override properties from assembly extracted metadata if they haven't 
+            // been specified also at construction time for the factory (that is, 
+            // console properties always take precedence.
+            foreach (var key in builder.Properties.Keys)
+            {
+                if (!_properties.ContainsKey(key) &&
+                    !ProjectProperties.ContainsKey(key))
+                {
+                    _properties.Add(key, builder.Properties[key]);
+                }
+            }
+
             Packaging.Manifest manifest = null;
 
             // If there is a project.json file, load that and skip any nuspec that may exist
@@ -317,7 +313,17 @@ namespace NuGet.CommandLine
             // Set the properties that were resolved from the assembly/project so they can be
             // resolved by name if the nuspec contains tokens
             _properties.Clear();
-            _properties.Add("Id", metadata.Id);
+
+            // Allow Id to be overriden by cmd line properties
+            if (ProjectProperties.ContainsKey("Id"))
+            {
+                _properties.Add("Id", ProjectProperties["Id"]);
+            }
+            else
+            {
+                _properties.Add("Id", metadata.Id);
+            }
+
             _properties.Add("Version", metadata.Version.ToString());
 
             if (!String.IsNullOrEmpty(metadata.Title))
@@ -346,7 +352,8 @@ namespace NuGet.CommandLine
         public string GetPropertyValue(string propertyName)
         {
             string value;
-            if (!_properties.TryGetValue(propertyName, out value))
+            if (!_properties.TryGetValue(propertyName, out value) &&
+                !ProjectProperties.TryGetValue(propertyName, out value))
             {
                 dynamic property = _project.GetProperty(propertyName);
                 if (property != null)
@@ -356,6 +363,11 @@ namespace NuGet.CommandLine
             }
 
             return value;
+        }
+
+        dynamic IPropertyProvider.GetPropertyValue(string propertyName)
+        {
+            return GetPropertyValue(propertyName);
         }
 
         private void BuildProject()
@@ -410,29 +422,6 @@ namespace NuGet.CommandLine
             }
 
             TargetPath = ResolveTargetPath();
-        }
-
-        private object CreateLoggers()
-        {
-            var consoleLoggerType = _msbuildAssembly.GetType(
-                "Microsoft.Build.Logging.ConsoleLogger",
-                throwOnError: true);
-            var consoleLogger = Activator.CreateInstance(
-                consoleLoggerType);
-            var verbosityProperty = consoleLoggerType.GetProperty("Verbosity");
-            verbosityProperty.SetMethod.Invoke(consoleLogger, new object[] { Microsoft.Build.Framework.LoggerVerbosity.Quiet });
-
-            var iloggerType = _frameworkAssembly.GetType(
-                "Microsoft.Build.Framework.ILogger",
-                throwOnError: true);
-            var loggerList = typeof(List<>)
-                .MakeGenericType(iloggerType)
-                .GetConstructor(Type.EmptyTypes)
-                .Invoke(null);
-            var addMethod = loggerList.GetType().GetMethod("Add");
-            addMethod.Invoke(loggerList, new[] { consoleLogger });
-
-            return loggerList;
         }
 
         private string ResolveTargetPath()
@@ -554,7 +543,7 @@ namespace NuGet.CommandLine
 
                 string fullPath = item.GetMetadataValue("FullPath");
                 if (!string.IsNullOrEmpty(fullPath) &&
-                    !NuspecFileExists(fullPath) && 
+                    !NuspecFileExists(fullPath) &&
                     !File.Exists(ProjectJsonPathUtilities.GetProjectConfigPath(Path.GetDirectoryName(fullPath), Path.GetFileName(fullPath))) &&
                     alreadyAppliedProjects.GetLoadedProjects(fullPath).Count == 0)
                 {
@@ -940,12 +929,12 @@ namespace NuGet.CommandLine
         private void AddDependencies(Dictionary<String, Tuple<PackageReaderBase, Packaging.Core.PackageDependency>> packagesAndDependencies)
         {
             Dictionary<string, object> props = new Dictionary<string, object>();
-            
+
             foreach (var property in _project.Properties)
             {
                 props.Add(property.Name, property.EvaluatedValue);
             }
-            
+
             if (!props.ContainsKey(ProjectManagement.NuGetProjectMetadataKeys.TargetFramework))
             {
                 props.Add(ProjectManagement.NuGetProjectMetadataKeys.TargetFramework, new NuGetFramework(TargetFramework.Identifier, TargetFramework.Version, TargetFramework.Profile));
@@ -966,7 +955,15 @@ namespace NuGet.CommandLine
             var references = packagesProject.GetInstalledPackagesAsync(CancellationToken.None).Result;
 
             var solutionDir = GetSolutionDir();
-            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(solutionDir, ReadSettings(solutionDir));
+            string packagesFolderPath;
+            if (solutionDir == null)
+            {
+                packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(_project.DirectoryPath, ReadSettings(_project.DirectoryPath));
+            }
+            else
+            {
+                packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(solutionDir, ReadSettings(solutionDir));
+            }
             var sourceRepository = Repository.Factory.GetCoreV3(packagesFolderPath).GetResource<FindPackageByIdResource>();
 
             // Collect all packages

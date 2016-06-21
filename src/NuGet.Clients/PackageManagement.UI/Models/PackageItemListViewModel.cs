@@ -25,6 +25,8 @@ namespace NuGet.PackageManagement.UI
 
         public NuGetVersion Version { get; set; }
 
+        public VersionRange AllowedVersions { get; set; }
+
         private string _author;
         public string Author
         {
@@ -260,6 +262,9 @@ namespace NuGet.PackageManagement.UI
                 async () =>
                 {
                     var packageVersions = await GetVersionsAsync();
+
+                    // filter package versions based on allowed versions in pacakge.config
+                    packageVersions = packageVersions.Where(v => AllowedVersions.Satisfies(v.Version));
                     var latestAvailableVersion = packageVersions
                         .Select(p => p.Version)
                         .MaxOrDefault();

@@ -20,12 +20,12 @@ namespace NuGet.ProjectModel
         // Set the version to the current default for new files.
         public int Version { get; set; } = LockFileFormat.Version;
         public string Path { get; set; }
-        public bool IsLocked { get; set; }
         public IList<ProjectFileDependencyGroup> ProjectFileDependencyGroups { get; set; } = new List<ProjectFileDependencyGroup>();
         public IList<LockFileLibrary> Libraries { get; set; } = new List<LockFileLibrary>();
         public IList<LockFileTarget> Targets { get; set; } = new List<LockFileTarget>();
         public IList<LockFileTarget> Tools { get; set; } = new List<LockFileTarget>();
         public IList<ProjectFileDependencyGroup> ProjectFileToolGroups { get; set; } = new List<ProjectFileDependencyGroup>();
+        public IList<LockFileItem> PackageFolders { get; set; } = new List<LockFileItem>();
 
         public bool IsValidForPackageSpec(PackageSpec spec)
         {
@@ -165,13 +165,13 @@ namespace NuGet.ProjectModel
                 return true;
             }
 
-            return IsLocked == other.IsLocked
-                && Version == other.Version
+            return Version == other.Version
                 && ProjectFileDependencyGroups.OrderedEquals(other.ProjectFileDependencyGroups, group => group.FrameworkName, StringComparer.OrdinalIgnoreCase)
                 && Libraries.OrderedEquals(other.Libraries, library => library.Name, StringComparer.OrdinalIgnoreCase)
                 && Targets.OrderedEquals(other.Targets, target => target.Name, StringComparer.Ordinal)
                 && ProjectFileToolGroups.OrderedEquals(other.ProjectFileToolGroups, group => group.FrameworkName, StringComparer.OrdinalIgnoreCase)
-                && Tools.OrderedEquals(other.Tools, target => target.Name, StringComparer.Ordinal);
+                && Tools.OrderedEquals(other.Tools, target => target.Name, StringComparer.Ordinal)
+                && PackageFolders.SequenceEqual<LockFileItem>(other.PackageFolders);
         }
 
         public override bool Equals(object obj)
@@ -183,7 +183,6 @@ namespace NuGet.ProjectModel
         {
             var combiner = new HashCodeCombiner();
 
-            combiner.AddObject(IsLocked);
             combiner.AddObject(Version);
 
             HashProjectFileDependencyGroups(combiner, ProjectFileDependencyGroups);
@@ -196,6 +195,11 @@ namespace NuGet.ProjectModel
             HashLockFileTargets(combiner, Targets);
             HashProjectFileDependencyGroups(combiner, ProjectFileToolGroups);
             HashLockFileTargets(combiner, Tools);
+
+            foreach (var item in PackageFolders)
+            {
+                combiner.AddObject(item);
+            }
 
             return combiner.CombinedHash;
         }

@@ -61,17 +61,20 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="UIAutomationProvider" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Actions\UIActionEngine.cs" />
     <Compile Include="Actions\ProjectContext.cs" />
     <Compile Include="Actions\UpdatePreviewResult.cs" />
+    <Compile Include="Automation\FilterLabelAutomationPeer.cs" />
     <Compile Include="Common\ErrorFloodGate.cs" />
     <Compile Include="Common\IOptionsPageActivator.cs" />
     <Compile Include="Common\NuGetEvent.cs" />
     <Compile Include="Common\NuGetEventTrigger.cs" />
     <Compile Include="Common\OptionsPage.cs" />
+    <Compile Include="Converters\TooltipConverter.cs" />
     <Compile Include="Converters\CollectionToStringConverter.cs" />
     <Compile Include="Converters\EnumDescriptionValueConverter.cs" />
     <Compile Include="Models\LoadingStatusViewModel.cs" />

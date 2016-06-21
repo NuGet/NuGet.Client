@@ -3,9 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Linq;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -221,6 +225,95 @@ namespace NuGet.CommandLine.Test
 
                 Assert.True(test1Lock.Exists);
                 Assert.False(test2Lock.Exists);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreProjectJson_RestoreWithFallbackFolder()
+        {
+            // Arrange
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var globalPath = Path.Combine(workingPath, "global");
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var fallbackFolder = Path.Combine(workingPath, "fallback");
+                var projectDir1 = Path.Combine(workingPath, "test1");
+                var projectDir2 = Path.Combine(workingPath, "test2");
+                var nugetexe = Util.GetNuGetExePath();
+
+                Directory.CreateDirectory(projectDir1);
+                Directory.CreateDirectory(projectDir2);
+                Directory.CreateDirectory(fallbackFolder);
+                Directory.CreateDirectory(globalPath);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
+                var config = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <config>
+        <add key=""globalPackagesFolder"" value=""{globalPath}"" />
+    </config>
+    <fallbackPackageFolders>
+        <clear />
+        <add key=""a"" value=""{fallbackFolder}"" />
+    </fallbackPackageFolders>
+    <packageSources>
+        <clear />
+        <add key=""a"" value=""{repositoryPath}"" />
+    </packageSources>
+</configuration>";
+
+                File.WriteAllText(Path.Combine(workingPath, "NuGet.Config"), config);
+
+                Util.CreateFile(projectDir1, "project.json",
+                                                @"{
+                                                    'dependencies': {
+                                                    },
+                                                    'frameworks': {
+                                                                'uap10.0': { }
+                                                            }
+                                                    }");
+
+                var project1Path = Path.Combine(projectDir1, "test1.csproj");
+                Util.CreateFile(projectDir1, "test1.csproj", Util.GetCSProjXML("test1"));
+
+                Util.CreateFile(projectDir2, "project.json",
+                                    @"{
+                                        'version': '1.0.0-*',
+                                        'dependencies': {
+                                            'packageA': '1.0.0',
+                                            'packageB': '1.0.0'
+                                        },
+                                        'frameworks': {
+                                                    'uap10.0': { }
+                                                }
+                                        }");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    fallbackFolder,
+                    new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0")),
+                    new PackageIdentity("packageB", NuGetVersion.Parse("1.0.0")));
+
+                string[] args = new string[] {
+                    "restore",
+                    project1Path
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
+
+                Assert.True(test1Lock.Exists);
+                Assert.Equal(0, Directory.GetDirectories(globalPath).Length);
+                Assert.Equal(2, Directory.GetDirectories(fallbackFolder).Length);
             }
         }
 
@@ -1808,6 +1901,114 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public async Task RestoreProjectJson_GenerateTargetsForFallbackFolder()
+        {
+            // Arrange
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var globalPath = Path.Combine(workingPath, "global");
+                var fallback1 = Path.Combine(workingPath, "fallback1");
+                var fallback2 = Path.Combine(workingPath, "fallback2");
+                var projectDir = Path.Combine(workingPath, "project");
+                var nugetexe = Util.GetNuGetExePath();
+
+                Directory.CreateDirectory(projectDir);
+                Directory.CreateDirectory(globalPath);
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(fallback1);
+                Directory.CreateDirectory(fallback2);
+
+                var config = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <config>
+        <add key=""globalPackagesFolder"" value=""{globalPath}"" />
+    </config>
+    <fallbackPackageFolders>
+        <clear />
+        <add key=""a"" value=""{fallback1}"" />
+        <add key=""b"" value=""{fallback2}"" />
+    </fallbackPackageFolders>
+    <packageSources>
+        <clear />
+        <add key=""a"" value=""{repositoryPath}"" />
+    </packageSources>
+</configuration>";
+
+                File.WriteAllText(Path.Combine(workingPath, "NuGet.Config"), config);
+
+                var packageA = Util.CreateTestPackageBuilder("packageA", "1.1.0-beta-01");
+                var packageB = Util.CreateTestPackageBuilder("packageB", "2.2.0-beta-02");
+
+                var targetContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"12.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"></Project>";
+
+                var targetB = Util.CreatePackageFile("build/uap/packageB.targets", targetContent);
+                var libB = Util.CreatePackageFile("lib/uap/b.dll", "b");
+
+                packageB.Files.Add(targetB);
+                packageB.Files.Add(libB);
+
+                var targetA = Util.CreatePackageFile("build/uap/packageA.targets", targetContent);
+                var libA = Util.CreatePackageFile("lib/uap/a.dll", "a");
+
+                packageA.Files.Add(targetA);
+                packageA.Files.Add(libA);
+
+                Util.CreateTestPackage(packageA, repositoryPath);
+
+                var saveMode = PackageSaveMode.Defaultv3;
+                await SimpleTestPackageUtility.CreateFolderFeedV3(fallback2, saveMode, Directory.GetFiles(repositoryPath));
+
+                Util.CreateTestPackage(packageB, repositoryPath);
+
+                Util.CreateFile(projectDir, "project.json",
+                                                @"{
+                                                    'dependencies': {
+                                                    'packageA': '1.1.0-beta-*',
+                                                    'packageB': '2.2.0-beta-*'
+                                                    },
+                                                    'frameworks': {
+                                                                'uap10.0': { }
+                                                            }
+                                                }");
+
+                Util.CreateFile(projectDir, "test.csproj", Util.GetCSProjXML("test"));
+
+                var csprojPath = Path.Combine(projectDir, "test.csproj");
+
+                string[] args = new string[] {
+                    "restore",
+                    csprojPath
+                };
+
+                var targetFilePath = Path.Combine(projectDir, "test.nuget.targets");
+
+                // A comes from the fallback folder
+                var packageAPath = Path.Combine("fallback2", "packagea", "1.1.0-beta-01", "build", "uap", "packageA.targets");
+
+                // B is installed to the user folder
+                var packageBPath = "$(NuGetPackageRoot)" 
+                    + Path.DirectorySeparatorChar
+                    + Path.Combine("packageb", "2.2.0-beta-02", "build", "uap", "packageB.targets");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(File.Exists(targetFilePath));
+
+                var targetsFile = File.OpenText(targetFilePath).ReadToEnd();
+                Assert.True(targetsFile.IndexOf(packageAPath) > -1);
+                Assert.True(targetsFile.IndexOf(packageBPath) > -1);
+            }
+        }
+
+        [Fact]
         public void RestoreProjectJson_GenerateTargetsFileFromNuProj()
         {
             // Arrange
@@ -2278,71 +2479,6 @@ namespace NuGet.CommandLine.Test
                     Assert.True(targetsFile.IndexOf(@"build\uap\packageA.targets") > -1);
                     Assert.True(targetsFile.IndexOf(@"build\uap\packageB.targets") > -1);
                 }
-            }
-        }
-
-        [Fact]
-        public void RestoreProjectJson_IsLockedTrueAfterRestore()
-        {
-            // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var repositoryPath = Path.Combine(workingPath, "Repository");
-                var nugetexe = Util.GetNuGetExePath();
-
-                Directory.CreateDirectory(repositoryPath);
-                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
-                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
-                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
-                Util.CreateFile(workingPath, "project.json",
-                                                @"{
-                                                    'dependencies': {
-                                                    'packageA': '1.1.0',
-                                                    'packageB': '2.2.0'
-                                                    },
-                                                    'frameworks': {
-                                                                'uap10.0': { }
-                                                            }
-                                                  }");
-
-                string[] args = new string[] {
-                    "restore",
-                    "-Source",
-                    repositoryPath,
-                    "-solutionDir",
-                    workingPath,
-                    "project.json"
-                };
-
-                // Restore once to get a lock file
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
-
-                // Set IsLocked=true
-                var lockFilePath = Path.Combine(workingPath, "project.lock.json");
-                var lockFileFormat = new LockFileFormat();
-                var lockFile = lockFileFormat.Read(lockFilePath);
-                lockFile.IsLocked = true;
-                lockFileFormat.Write(lockFilePath, lockFile);
-
-                // Act
-                // Restore using the locked lock file
-                r = CommandRunner.Run(
-                    nugetexe,
-                    workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
-
-                var lockFileAfter = lockFileFormat.Read(lockFilePath);
-
-                // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
-                Assert.True(lockFileAfter.IsLocked);
-                Assert.True(lockFile.Equals(lockFileAfter));
             }
         }
 

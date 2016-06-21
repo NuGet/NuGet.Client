@@ -151,6 +151,11 @@ namespace NuGet.Commands
                 properties += $" -b \"{basePath}\"";
             }
 
+            if (!string.IsNullOrEmpty(_packArgs.Suffix))
+            {
+                properties += $" --version-suffix {_packArgs.Suffix}";
+            }
+
             string dotnetLocation = NuGetEnvironment.GetDotNetLocation();
 
             var processStartInfo = new ProcessStartInfo
@@ -697,6 +702,11 @@ namespace NuGet.Commands
             {
                 string version = VersionFormatter.Instance.Format("V", builder.Version, VersionFormatter.Instance);
                 builder.Version = new NuGetVersion($"{version}-{_packArgs.Suffix}");
+            }
+
+            if (_packArgs.Serviceable)
+            {
+                builder.Serviceable = true;
             }
 
             if (_packArgs.MinClientVersion != null)

@@ -40,9 +40,11 @@ namespace NuGet.Protocol
                 try
                 {
                     return await client.ProcessStreamAsync(
-                        uri: uri,
-                        ignoreNotFounds: true,
-                        processAsync: async packageStream =>
+                        new HttpSourceRequest(uri, logger)
+                        {
+                            IgnoreNotFounds = true
+                        },
+                        async packageStream =>
                         {
                             if (packageStream == null)
                             {
@@ -56,8 +58,8 @@ namespace NuGet.Protocol
                                 logger,
                                 token);
                         },
-                        log: logger,
-                        token: token);
+                        logger,
+                        token);
                 }
                 catch (OperationCanceledException)
                 {

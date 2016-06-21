@@ -6,6 +6,7 @@ using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test
@@ -86,13 +87,21 @@ namespace NuGet.PackageManagement.UI.Test
                 var packageSource = new Configuration.PackageSource("http://fake-source");
                 var source = new SourceRepository(packageSource, new[] { provider.Object });
                 PackageIdentity = new PackageIdentity("FakePackage", new NuGetVersion("1.0.0"));
-                
-                // target
-                Target = new MultiSourcePackageMetadataProvider(
+
+                // project
+                using (var testSolutionManager = new TestSolutionManager(true))
+                {
+                    var project = testSolutionManager.AddNewMSBuildProject();
+
+                    // target
+                    Target = new MultiSourcePackageMetadataProvider(
                     new[] { source },
                     null,
                     null,
+                    new[] { project },
+                    false,
                     logger);
+                }
             }
 
             public MultiSourcePackageMetadataProvider Target { get; }

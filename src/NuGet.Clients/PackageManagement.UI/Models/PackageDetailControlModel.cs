@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.Resolver;
 using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
@@ -77,9 +77,17 @@ namespace NuGet.PackageManagement.UI
             // installVersion is null if the package is not installed
             var installedVersion = installedDependency?.VersionRange?.MinVersion;
 
-            var allVersions = _allPackageVersions.OrderByDescending(v => v);
-            var latestPrerelease = allVersions.FirstOrDefault(v => v.IsPrerelease);
-            var latestStableVersion = allVersions.FirstOrDefault(v => !v.IsPrerelease);
+            var allVersions = _allPackageVersions.OrderByDescending(v => v).ToArray();
+
+            // null, if no version constraint defined in package.config
+            var allowedVersions = _projectVersionRangeDict.Select(kvp => kvp.Value).FirstOrDefault() ?? VersionRange.All;
+            var allVersionsAllowed = allVersions.Where(v => allowedVersions.Satisfies(v)).ToArray();
+
+            // null, if all versions are allowed to be install or update
+            var blockedVersions = allVersions.Where(v => !allVersionsAllowed.Any(allowed => allowed.Version.Equals(v.Version))).ToArray();
+
+            var latestPrerelease = allVersionsAllowed.FirstOrDefault(v => v.IsPrerelease);
+            var latestStableVersion = allVersionsAllowed.FirstOrDefault(v => !v.IsPrerelease);
 
             // Add lastest prerelease if neeeded
             if (latestPrerelease != null
@@ -90,7 +98,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             // Add latest stable if needed
-            if (latestStableVersion != null && 
+            if (latestStableVersion != null &&
                 !latestStableVersion.Equals(installedVersion))
             {
                 _versions.Add(new DisplayVersion(latestStableVersion, Resources.Version_LatestStable));
@@ -102,12 +110,32 @@ namespace NuGet.PackageManagement.UI
                 _versions.Add(null);
             }
 
-            foreach (var version in allVersions)
+            // first add all the available versions to be updated
+            foreach (var version in allVersionsAllowed)
             {
                 if (!version.Equals(installedVersion))
                 {
                     _versions.Add(new DisplayVersion(version, string.Empty));
                 }
+            }
+
+            // add a separator
+            if (blockedVersions.Any())
+            {
+                if (_versions.Count > 0)
+                {
+                    _versions.Add(null);
+                }
+
+                _versions.Add(new DisplayVersion(new VersionRange(new NuGetVersion("0.0.0")), Resources.Version_Blocked, false));
+            }
+
+            // add all the versions blocked because of version constraint in package.config
+            bool isBlockedVersionEnabled = Options.SelectedDependencyBehavior.Behavior == DependencyBehavior.Ignore;
+
+            foreach (var version in blockedVersions)
+            {
+                _versions.Add(new DisplayVersion(version, string.Empty, isBlockedVersionEnabled));
             }
 
             SelectVersion();

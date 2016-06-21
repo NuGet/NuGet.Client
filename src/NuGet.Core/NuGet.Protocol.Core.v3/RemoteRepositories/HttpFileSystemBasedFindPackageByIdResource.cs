@@ -150,13 +150,16 @@ namespace NuGet.Protocol
                 try
                 {
                     using (var result = await _httpSource.GetAsync(
-                        uri,
-                        $"list_{id}",
-                        CreateCacheContext(retry),
+                        new HttpSourceCachedRequest(
+                            uri,
+                            $"list_{id}",
+                            CreateCacheContext(retry))
+                        {
+                            IgnoreNotFounds = true,
+                            EnsureValidContents = stream => HttpStreamValidation.ValidateJObject(uri, stream)
+                        },
                         Logger,
-                        ignoreNotFounds: true,
-                        ensureValidContents: stream => HttpStreamValidation.ValidateJObject(uri, stream),
-                        cancellationToken: cancellationToken))
+                        cancellationToken))
                     {
                         if (result.Status == HttpSourceResultStatus.NotFound)
                         {
@@ -273,13 +276,15 @@ namespace NuGet.Protocol
                 try
                 {
                     using (var data = await _httpSource.GetAsync(
-                        package.ContentUri,
-                        "nupkg_" + package.Id + "." + package.Version.ToNormalizedString(),
-                        CreateCacheContext(retry),
+                        new HttpSourceCachedRequest(
+                            package.ContentUri,
+                            "nupkg_" + package.Id + "." + package.Version.ToNormalizedString(),
+                            CreateCacheContext(retry))
+                        { 
+                            EnsureValidContents = stream => HttpStreamValidation.ValidateNupkg(package.ContentUri, stream)
+                        },
                         Logger,
-                        ignoreNotFounds: false,
-                        ensureValidContents: stream => HttpStreamValidation.ValidateNupkg(package.ContentUri, stream),
-                        cancellationToken: cancellationToken))
+                        cancellationToken))
                     {
                         return new NupkgEntry
                         {

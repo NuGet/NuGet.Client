@@ -11,11 +11,156 @@ namespace NuGet.ProjectModel.Test
     // To enable this option, right-click on the project and select the Properties menu item. In the Build tab select "Produce outputs on build".
     public class LockFileFormatTests
     {
+        // Verify the value of locked has no impact on the parsed lock file
+        [Fact]
+        public void LockFileFormat_LockedPropertyIsIgnored()
+        {
+            // Arrange
+            var lockFileContentTrue = @"{
+  ""locked"": true,
+  ""version"": 1,
+  ""targets"": {
+    "".NETPlatform,Version=v5.0"": {
+      ""System.Runtime/4.0.20-beta-22927"": {
+        ""dependencies"": {
+          ""Frob"": ""[4.0.20, )""
+        },
+        ""compile"": {
+          ""ref/dotnet/System.Runtime.dll"": {}
+        }
+      }
+    }
+  },
+  ""libraries"": {
+    ""System.Runtime/4.0.20-beta-22927"": {
+      ""sha512"": ""WFRsJnfRzXYIiDJRbTXGctncx6Hw1F/uS2c5a5CzUwHuA3D/CM152F2HjWt12dLgH0BOcGvcRjKl2AfJ6MnHVg=="",
+      ""type"": ""package"",
+      ""files"": [
+        ""_rels/.rels"",
+        ""System.Runtime.nuspec"",
+        ""lib/DNXCore50/System.Runtime.dll"",
+        ""lib/netcore50/System.Runtime.dll"",
+        ""lib/net46/_._"",
+        ""ref/dotnet/System.Runtime.dll"",
+        ""runtimes/win8-aot/lib/netcore50/System.Runtime.dll"",
+        ""ref/net46/_._"",
+        ""package/services/metadata/core-properties/b7eb2b260f1846d69b1ccf1a4e614180.psmdcp"",
+        ""[Content_Types].xml""
+      ]
+    }
+  },
+  ""projectFileDependencyGroups"": {
+    """": [
+      ""System.Runtime [4.0.10-beta-*, )""
+    ],
+    "".NETPlatform,Version=v5.0"": []
+  }
+}";
+
+            var lockFileContentMissing = @"{
+  ""version"": 1,
+  ""targets"": {
+    "".NETPlatform,Version=v5.0"": {
+      ""System.Runtime/4.0.20-beta-22927"": {
+        ""dependencies"": {
+          ""Frob"": ""[4.0.20, )""
+        },
+        ""compile"": {
+          ""ref/dotnet/System.Runtime.dll"": {}
+        }
+      }
+    }
+  },
+  ""libraries"": {
+    ""System.Runtime/4.0.20-beta-22927"": {
+      ""sha512"": ""WFRsJnfRzXYIiDJRbTXGctncx6Hw1F/uS2c5a5CzUwHuA3D/CM152F2HjWt12dLgH0BOcGvcRjKl2AfJ6MnHVg=="",
+      ""type"": ""package"",
+      ""files"": [
+        ""_rels/.rels"",
+        ""System.Runtime.nuspec"",
+        ""lib/DNXCore50/System.Runtime.dll"",
+        ""lib/netcore50/System.Runtime.dll"",
+        ""lib/net46/_._"",
+        ""ref/dotnet/System.Runtime.dll"",
+        ""runtimes/win8-aot/lib/netcore50/System.Runtime.dll"",
+        ""ref/net46/_._"",
+        ""package/services/metadata/core-properties/b7eb2b260f1846d69b1ccf1a4e614180.psmdcp"",
+        ""[Content_Types].xml""
+      ]
+    }
+  },
+  ""projectFileDependencyGroups"": {
+    """": [
+      ""System.Runtime [4.0.10-beta-*, )""
+    ],
+    "".NETPlatform,Version=v5.0"": []
+  }
+}";
+
+            var lockFileContentFalse = @"{
+  ""locked"": false,
+  ""version"": 1,
+  ""targets"": {
+    "".NETPlatform,Version=v5.0"": {
+      ""System.Runtime/4.0.20-beta-22927"": {
+        ""dependencies"": {
+          ""Frob"": ""[4.0.20, )""
+        },
+        ""compile"": {
+          ""ref/dotnet/System.Runtime.dll"": {}
+        }
+      }
+    }
+  },
+  ""libraries"": {
+    ""System.Runtime/4.0.20-beta-22927"": {
+      ""sha512"": ""WFRsJnfRzXYIiDJRbTXGctncx6Hw1F/uS2c5a5CzUwHuA3D/CM152F2HjWt12dLgH0BOcGvcRjKl2AfJ6MnHVg=="",
+      ""type"": ""package"",
+      ""files"": [
+        ""_rels/.rels"",
+        ""System.Runtime.nuspec"",
+        ""lib/DNXCore50/System.Runtime.dll"",
+        ""lib/netcore50/System.Runtime.dll"",
+        ""lib/net46/_._"",
+        ""ref/dotnet/System.Runtime.dll"",
+        ""runtimes/win8-aot/lib/netcore50/System.Runtime.dll"",
+        ""ref/net46/_._"",
+        ""package/services/metadata/core-properties/b7eb2b260f1846d69b1ccf1a4e614180.psmdcp"",
+        ""[Content_Types].xml""
+      ]
+    }
+  },
+  ""projectFileDependencyGroups"": {
+    """": [
+      ""System.Runtime [4.0.10-beta-*, )""
+    ],
+    "".NETPlatform,Version=v5.0"": []
+  }
+}";
+
+            var lockFileFormat = new LockFileFormat();
+
+            // Act
+            var lockFileTrue = lockFileFormat.Parse(lockFileContentTrue, "In Memory");
+            var lockFileFalse = lockFileFormat.Parse(lockFileContentFalse, "In Memory");
+            var lockFileMissing = lockFileFormat.Parse(lockFileContentMissing, "In Memory");
+
+            var lockFileTrueString = lockFileFormat.Render(lockFileTrue);
+            var lockFileFalseString = lockFileFormat.Render(lockFileFalse);
+            var lockFileMissingString = lockFileFormat.Render(lockFileMissing);
+
+            // Assert
+            Assert.Equal(lockFileTrue, lockFileFalse);
+            Assert.Equal(lockFileTrue, lockFileMissing);
+
+            Assert.Equal(lockFileTrueString, lockFileFalseString);
+            Assert.Equal(lockFileTrueString, lockFileMissingString);
+        }
+
         [Fact]
         public void LockFileFormat_ReadsLockFileWithNoTools()
         {
             string lockFileContent = @"{
-  ""locked"": true,
   ""version"": 1,
   ""targets"": {
     "".NETPlatform,Version=v5.0"": {
@@ -57,7 +202,6 @@ namespace NuGet.ProjectModel.Test
             var lockFileFormat = new LockFileFormat();
             var lockFile = lockFileFormat.Parse(lockFileContent, "In Memory");
 
-            Assert.True(lockFile.IsLocked);
             Assert.Equal(1, lockFile.Version);
 
             var target = lockFile.Targets.Single();
@@ -145,7 +289,6 @@ namespace NuGet.ProjectModel.Test
         {
             // Arrange
             string lockFileContent = @"{
-  ""locked"": true,
   ""version"": 2,
   ""targets"": {
     "".NETPlatform,Version=v5.0"": {
@@ -179,7 +322,6 @@ namespace NuGet.ProjectModel.Test
   ""projectFileToolGroups"": {}
 }";
             var lockFile = new LockFile();
-            lockFile.IsLocked = true;
             lockFile.Version = 2;
 
             var target = new LockFileTarget()
@@ -227,7 +369,6 @@ namespace NuGet.ProjectModel.Test
         {
             // Arrange
             string lockFileContent = @"{
-  ""locked"": true,
   ""version"": 2,
   ""targets"": {},
   ""libraries"": {},
@@ -253,7 +394,6 @@ namespace NuGet.ProjectModel.Test
   }
 }";
             var lockFile = new LockFile();
-            lockFile.IsLocked = true;
             lockFile.Version = 2;
 
             var target = new LockFileTarget()

@@ -24,13 +24,19 @@ namespace NuGet.Protocol
         }
 
         public async static Task<IEnumerable<JObject>> LoadRanges(
-            HttpSource httpClient,
+            HttpSource httpSource,
             Uri registrationUri,
             VersionRange range,
             ILogger log,
             CancellationToken token)
         {
-            var index = await httpClient.GetJObjectAsync(registrationUri, ignoreNotFounds: true, log: log, token: token);
+            var index = await httpSource.GetJObjectAsync(
+                new HttpSourceRequest(registrationUri, log)
+                {
+                    IgnoreNotFounds = true
+                },
+                log,
+                token);
 
             if (index == null)
             {
@@ -52,11 +58,13 @@ namespace NuGet.Protocol
                     {
                         var rangeUri = item["@id"].ToObject<Uri>();
 
-                        rangeTasks.Add(httpClient.GetJObjectAsync(
-                            rangeUri,
-                            ignoreNotFounds: true,
-                            log: log,
-                            token: token));
+                        rangeTasks.Add(httpSource.GetJObjectAsync(
+                            new HttpSourceRequest(rangeUri, log)
+                            {
+                                IgnoreNotFounds = true
+                            },
+                            log,
+                            token));
                     }
                     else
                     {

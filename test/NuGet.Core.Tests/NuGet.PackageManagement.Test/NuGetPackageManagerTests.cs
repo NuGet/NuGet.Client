@@ -1,15 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Moq;
-using NuGet.Frameworks;
-using NuGet.PackageManagement;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using NuGet.Protocol.Core.Types;
-using NuGet.Resolver;
-using NuGet.Test.Utility;
-using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -18,6 +9,18 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Moq;
+using NuGet.Commands;
+using NuGet.Common;
+using NuGet.Frameworks;
+using NuGet.PackageManagement;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
+using NuGet.Resolver;
+using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
 using Strings = NuGet.ProjectManagement.Strings;
@@ -161,6 +164,9 @@ namespace NuGet.Test
                     deleteOnRestartManager);
                 var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
+                var installationCompatibility = new Mock<IInstallationCompatibility>();
+                nuGetPackageManager.InstallationCompatibility = installationCompatibility.Object;
+
                 var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
                 var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
                 var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
@@ -181,11 +187,27 @@ namespace NuGet.Test
                 // Assert
                 // Check that the packages.config file exists after the installation
                 Assert.True(File.Exists(packagesConfigPath));
+
                 // Check the number of packages and packages returned by PackagesConfigProject after the installation
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(1, packagesInPackagesConfig.Count);
                 Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
                 Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
+
+                // Ensure that installation compatibility was checked.
+                installationCompatibility.Verify(
+                    x => x.EnsurePackageCompatibility(
+                        msBuildNuGetProject,
+                        packageIdentity,
+                        It.IsAny<DownloadResourceResult>()),
+                    Times.Once);
+                installationCompatibility.Verify(
+                    x => x.EnsurePackageCompatibility(
+                        It.IsAny<NuGetProject>(),
+                        It.IsAny<INuGetPathContext>(),
+                        It.IsAny<IEnumerable<NuGetProjectAction>>(),
+                        It.IsAny<RestoreResult>()),
+                    Times.Never);
             }
         }
 
@@ -3617,6 +3639,93 @@ namespace NuGet.Test
         }
 
         [Fact]
+        public async Task TestPacManPreviewUpdate_AllowedVersionsConstraint_RestrictHighestVersion()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
+            using (var testSolutionManager = new TestSolutionManager(true))
+            {
+                var testSettings = new Configuration.NullSettings();
+                var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                var token = CancellationToken.None;
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    testSettings,
+                    testSolutionManager,
+                    deleteOnRestartManager);
+                var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+
+                var msBuildNuGetProject = testSolutionManager.AddNewMSBuildProject();
+                var msBuildNuGetProjectSystem = msBuildNuGetProject.MSBuildNuGetProjectSystem as TestMSBuildNuGetProjectSystem;
+                var packagesConfigPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
+                var newtonsoftJsonPackageId = "newtonsoft.json";
+                var newtonsoftJsonPackageIdentity = new PackageIdentity(newtonsoftJsonPackageId, NuGetVersion.Parse("4.5.11"));
+                var primarySourceRepository = sourceRepositoryProvider.GetRepositories().Single();
+                var resolutionContext = new ResolutionContext(DependencyBehavior.Lowest, false, true, VersionConstraints.None);
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+
+                // Act
+                await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, newtonsoftJsonPackageIdentity,
+                    resolutionContext, testNuGetProjectContext, primarySourceRepository, null, token);
+
+                await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, new PackageIdentity("Microsoft.Web.Infrastructure", new NuGetVersion("1.0.0.0")),
+                    resolutionContext, testNuGetProjectContext, primarySourceRepository, null, token);
+
+                // Assert
+                // Check that the packages.config file exists after the installation
+                Assert.True(File.Exists(packagesConfigPath));
+                // Check the number of packages and packages returned by PackagesConfigProject after the installation
+                var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+                Assert.Equal(2, packagesInPackagesConfig.Count);
+                Assert.Equal(newtonsoftJsonPackageIdentity, packagesInPackagesConfig[1].PackageIdentity);
+                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
+                var installedPackages = await msBuildNuGetProject.GetInstalledPackagesAsync(token);
+                var newtonsoftJsonPackageReference = installedPackages.Where(pr => pr.PackageIdentity.Equals(newtonsoftJsonPackageIdentity)).FirstOrDefault();
+
+                Assert.Null(newtonsoftJsonPackageReference.AllowedVersions);
+
+                const string newPackagesConfig = @"<?xml version='1.0' encoding='utf-8'?>
+  <packages>
+    <package id='Microsoft.Web.Infrastructure' version='1.0.0.0' targetFramework='net45' />
+    <package id='Newtonsoft.Json' version='4.5.11' allowedVersions='[4.0,6.0)' targetFramework='net45' />
+  </packages> ";
+
+                File.WriteAllText(packagesConfigPath, newPackagesConfig);
+
+                // Check that the packages.config file exists after the installation
+                Assert.True(File.Exists(packagesConfigPath));
+                // Check the number of packages and packages returned by PackagesConfigProject after the installation
+                packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+                Assert.Equal(2, packagesInPackagesConfig.Count);
+                Assert.Equal(newtonsoftJsonPackageIdentity, packagesInPackagesConfig[1].PackageIdentity);
+                Assert.Equal(msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework, packagesInPackagesConfig[1].TargetFramework);
+                installedPackages = await msBuildNuGetProject.GetInstalledPackagesAsync(token);
+                newtonsoftJsonPackageReference = installedPackages.Where(pr => pr.PackageIdentity.Equals(newtonsoftJsonPackageIdentity)).FirstOrDefault();
+
+                Assert.NotNull(newtonsoftJsonPackageReference.AllowedVersions);
+
+                var newtonsoftJsonPackageIdentityAfterUpdate = new PackageIdentity(newtonsoftJsonPackageId, NuGetVersion.Parse("5.0.8"));
+
+                // Main Act
+                var nuGetProjectActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
+                    msBuildNuGetProject,
+                    resolutionContext,
+                    testNuGetProjectContext,
+                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    token)).ToList();
+
+                // Microsoft.Web.Infrastructure has no updates. However, newtonsoft.json has updates but should pick it as per the version constraint
+                // Hence, 4.5.11 will be uninstalled and 5.0.8 will be installed
+                Assert.Equal(2, nuGetProjectActions.Count);
+
+                var newtonsoftJsonAction = nuGetProjectActions.Where(a => a.PackageIdentity.Equals(newtonsoftJsonPackageIdentityAfterUpdate)).FirstOrDefault();
+
+                Assert.NotNull(newtonsoftJsonAction);
+            }
+        }
+
+        [Fact]
         public async Task TestPacManPreviewUpdateWithNoSource()
         {
             // Arrange
@@ -4441,42 +4550,6 @@ namespace NuGet.Test
             }
         }
 
-        [Fact]
-        public async Task ExecuteNuGetProjectActionsAsync_FailsIfThePackageTypeIsManaged()
-        {
-            await VerifyFailureForPackageTypes(new[] { new PackageType("Managed", new Version(2, 0)) });
-        }
-
-        [Fact]
-        public async Task ExecuteNuGetProjectActionsAsync_FailsIfThePackageTypeIsUnexpected()
-        {
-            await VerifyFailureForPackageTypes(new[] { new PackageType("Fake", new Version(1, 2)) });
-        }
-
-        [Fact]
-        public async Task ExecuteNuGetProjectActionsAsync_FailsIfThePackageTypeIsDotnetCliTool()
-        {
-            await VerifyFailureForPackageTypes(new[] { PackageType.DotnetCliTool });
-        }
-
-        [Fact]
-        public async Task ExecuteNuGetProjectActionsAsync_FailsIfThePackageTypeIsDependency()
-        {
-            await VerifyFailureForPackageTypes(new[] { PackageType.Dependency });
-        }
-
-        [Fact]
-        public async Task ExecuteNuGetProjectActionsAsync_FailsIfMultiplePackageTypes()
-        {
-            await VerifyFailureForPackageTypes(new[] { PackageType.Legacy, PackageType.Legacy });
-        }
-
-        [Fact]
-        public async Task ExecuteNuGetProjectActionsAsync_SucceedsIfThePackageTypeIsLegacy()
-        {
-            await VerifySuccessForPackageTypes(new[] { PackageType.Legacy });
-        }
-
         // [Fact]
         public async Task TestPacManUpdatePackagePreservePackagesConfigAttributes()
         {
@@ -4687,141 +4760,6 @@ namespace NuGet.Test
             var packageDependency = packageInfo.Dependencies.Single();
             Assert.Equal("b", packageDependency.Id);
             Assert.Equal(bVersionRange.ToString(), packageDependency.VersionRange.ToString());
-        }
-
-        private static async Task VerifyFailureForPackageTypes(IReadOnlyList<PackageType> packageTypes)
-        {
-            // Arrange
-            var packageSource = new Configuration.PackageSource("some source");
-            var packageSourceProvider = new TestPackageSourceProvider(new[] { packageSource });
-            var sourceRepositoryProvider = new SourceRepositoryProvider(
-                packageSourceProvider,
-                new[] { new Lazy<INuGetResourceProvider>(() => new TestDownloadResourceProvider(packageTypes)) });
-            var testSettings = Configuration.NullSettings.Instance;
-            using (var testSolutionManager = new TestSolutionManager(true))
-            {
-                var deleteOnRestartManager = new TestDeleteOnRestartManager();
-                var nugetProject = new TestNuGetProject(new Packaging.PackageReference[0]);
-
-                var nuGetPackageManager = new NuGetPackageManager(
-                    sourceRepositoryProvider,
-                    testSettings,
-                    testSolutionManager,
-                    deleteOnRestartManager);
-                var identity = new PackageIdentity("ManagedCodeConventions", NuGetVersion.Parse("1.0.0"));
-                var actions = new[] { NuGetProjectAction.CreateInstallProjectAction(identity, sourceRepositoryProvider.CreateRepository(packageSource)) };
-
-                // Act and Assert
-                var ex = await Assert.ThrowsAsync<MinClientVersionException>(() =>
-                    nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
-                        nugetProject,
-                        actions,
-                        new TestNuGetProjectContext(),
-                        default(CancellationToken)));
-                Assert.Equal("Package 'ManagedCodeConventions 1.0.0' uses features that are not supported by the current version of NuGet. " +
-                    "To upgrade NuGet, see http://docs.nuget.org/consume/installing-nuget.", ex.Message);
-            }
-        }
-
-        private static async Task VerifySuccessForPackageTypes(IReadOnlyList<PackageType> packageTypes)
-        {
-            // Arrange
-            var packageSource = new Configuration.PackageSource("some source");
-            var packageSourceProvider = new TestPackageSourceProvider(new[] { packageSource });
-            var sourceRepositoryProvider = new SourceRepositoryProvider(
-                packageSourceProvider,
-                new[] { new Lazy<INuGetResourceProvider>(() => new TestDownloadResourceProvider(packageTypes)) });
-            var testSettings = Configuration.NullSettings.Instance;
-            using (var testSolutionManager = new TestSolutionManager(true))
-            {
-                var deleteOnRestartManager = new TestDeleteOnRestartManager();
-                var nugetProject = new TestNuGetProject(new Packaging.PackageReference[0]);
-
-                var nuGetPackageManager = new NuGetPackageManager(
-                    sourceRepositoryProvider,
-                    testSettings,
-                    testSolutionManager,
-                    deleteOnRestartManager);
-                var identity = new PackageIdentity("ManagedCodeConventions", NuGetVersion.Parse("1.0.0"));
-                var actions = new[] { NuGetProjectAction.CreateInstallProjectAction(identity, sourceRepositoryProvider.CreateRepository(packageSource)) };
-
-                // Act
-                await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
-                        nugetProject,
-                        actions,
-                        new TestNuGetProjectContext(),
-                        default(CancellationToken));
-
-                // No exception should be thrown.
-            }
-        }
-
-        private class TestDownloadResourceProvider : ResourceProvider
-        {
-            private readonly IReadOnlyList<PackageType> _packageTypes;
-
-            public TestDownloadResourceProvider(IReadOnlyList<PackageType> packageTypes)
-                : base(typeof(DownloadResource))
-            {
-                _packageTypes = packageTypes;
-            }
-
-            public override Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
-            {
-                INuGetResource resource = new TestDownloadResource(_packageTypes);
-                return Task.FromResult(Tuple.Create(true, resource));
-            }
-        }
-
-        private class TestDownloadResource : DownloadResource
-        {
-            private readonly IReadOnlyList<PackageType> _packageTypes;
-
-            public TestDownloadResource(IReadOnlyList<PackageType> _packageTypes)
-            {
-                this._packageTypes = _packageTypes;
-            }
-
-            public override Task<DownloadResourceResult> GetDownloadResourceResultAsync(
-                PackageIdentity identity,
-                Configuration.ISettings settings,
-                Common.ILogger logger,
-                CancellationToken token)
-            {
-                var nuspecReader = new Mock<NuspecReader>(new XDocument());
-                var packageReader = new Mock<PackageReaderBase>(
-                    new FrameworkNameProvider(new[] { DefaultFrameworkMappings.Instance },
-                    new[] { DefaultPortableFrameworkMappings.Instance }))
-                {
-                    CallBase = true
-                };
-
-                packageReader
-                    .Setup(p => p.GetIdentity())
-                    .Returns(new PackageIdentity("ManagedCodeConventions", NuGetVersion.Parse("1.0.0")));
-                packageReader
-                    .Setup(p => p.GetMinClientVersion())
-                    .Returns(new NuGetVersion(2, 0, 0));
-                packageReader
-                    .Setup(p => p.GetPackageTypes())
-                    .Returns(_packageTypes);
-
-                nuspecReader
-                    .Setup(p => p.GetIdentity())
-                    .Returns(new PackageIdentity("ManagedCodeConventions", NuGetVersion.Parse("1.0.0")));
-                nuspecReader
-                    .Setup(p => p.GetMinClientVersion())
-                    .Returns(new NuGetVersion(2, 0, 0));
-                nuspecReader
-                    .Setup(p => p.GetPackageTypes())
-                    .Returns(_packageTypes);
-
-                packageReader
-                    .Setup(p => p.NuspecReader)
-                    .Returns(nuspecReader.Object);
-
-                return Task.FromResult(new DownloadResourceResult(Stream.Null, packageReader.Object));
-            }
         }
 
         private SourceRepositoryProvider CreateSource(List<SourcePackageDependencyInfo> packages)

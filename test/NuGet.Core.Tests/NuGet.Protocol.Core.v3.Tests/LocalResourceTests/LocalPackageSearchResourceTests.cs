@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -87,6 +88,37 @@ namespace NuGet.Protocol.Core.v3.Tests
                 Assert.Equal(1, packages.Count);
                 Assert.Equal("myPackage", package.Identity.Id);
                 Assert.Equal("1.0.0-alpha.1.2+5", package.Identity.Version.ToFullString());
+            }
+        }
+
+        [Fact]
+        public async Task LocalPackageSearchResource_RelativePathIsRejected()
+        {
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var testLogger = new TestLogger();
+                var source = Path.Combine("..", "packages");
+                var localResource = new FindLocalPackagesResourceV2(source);
+                var resource = new LocalPackageSearchResource(localResource);
+
+                var filter = new SearchFilter()
+                {
+                    IncludePrerelease = true
+                };
+
+                // Act & Assert
+                var actual = await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => resource.SearchAsync(
+                        "mypackage",
+                        filter,
+                        skip: 0,
+                        take: 30,
+                        log: testLogger,
+                        token: CancellationToken.None));
+                Assert.Equal(
+                    $"The path '{source}' for the selected source could not be resolved.",
+                    actual.Message);
             }
         }
 

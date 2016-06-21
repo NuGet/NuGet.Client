@@ -67,11 +67,13 @@ namespace NuGet.Commands
             var settings = restoreContext.GetSettings(file.DirectoryName);
 
             var sources = restoreContext.GetEffectiveSources(settings);
+            var FallbackPackageFolders = restoreContext.GetEffectiveFallbackPackageFolders(settings);
 
             var globalPath = restoreContext.GetEffectiveGlobalPackagesFolder(file.DirectoryName, settings);
 
             var sharedCache = _providerCache.GetOrCreate(
                 globalPath,
+                FallbackPackageFolders,
                 sources,
                 restoreContext.CacheContext,
                 restoreContext.Log);

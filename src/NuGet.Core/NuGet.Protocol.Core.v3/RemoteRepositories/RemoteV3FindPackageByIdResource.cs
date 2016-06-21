@@ -175,13 +175,15 @@ namespace NuGet.Protocol
                 try
                 {
                     using (var data = await _httpSource.GetAsync(
-                        package.ContentUri,
-                        "nupkg_" + package.Identity.Id + "." + package.Identity.Version.ToNormalizedString(),
-                        CreateCacheContext(retry),
+                        new HttpSourceCachedRequest(
+                            package.ContentUri,
+                            "nupkg_" + package.Identity.Id + "." + package.Identity.Version.ToNormalizedString(),
+                            CreateCacheContext(retry))
+                        {
+                            EnsureValidContents = stream => HttpStreamValidation.ValidateNupkg(package.ContentUri, stream)
+                        },
                         Logger,
-                        ignoreNotFounds: false,
-                        ensureValidContents: stream => HttpStreamValidation.ValidateNupkg(package.ContentUri, stream),
-                        cancellationToken: cancellationToken))
+                        cancellationToken))
                     {
                         return new NupkgEntry
                         {

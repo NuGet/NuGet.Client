@@ -50,10 +50,9 @@ namespace NuGet.Protocol
 
             var queryUri = queryUrl.Uri;
             var results = await _client.GetJObjectAsync(
-                uri: queryUri,
-                ignoreNotFounds: false,
-                log: Common.NullLogger.Instance,
-                token: token);
+                new HttpSourceRequest(queryUri, Common.NullLogger.Instance),
+                Common.NullLogger.Instance,
+                token);
             token.ThrowIfCancellationRequested();
             if (results == null)
             {

@@ -27,6 +27,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [Parameter(Mandatory = true, ParameterSetName = ParameterSetAllProjects)]
         public SwitchParameter All { get; set; }
 
+        /// <summary>
+        /// logging time disabled for tab command
+        /// </summary>
+        protected override bool IsLoggingTimeDisabled
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         private void Preprocess()
         {
             CheckSolutionState();

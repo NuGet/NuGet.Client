@@ -90,7 +90,7 @@ namespace NuGet.Test.Utility
                     zip.AddEntry("lib/net45/a.dll", new byte[] { 0 });
                     zip.AddEntry("lib/netstandard1.0/a.dll", new byte[] { 0 });
                     zip.AddEntry($"build/net45/{id}.targets", @"<targets />", Encoding.UTF8);
-                    zip.AddEntry("native/net45/a.dll", new byte[] { 0 });
+                    zip.AddEntry("runtimes/any/native/a.dll", new byte[] { 0 });
                     zip.AddEntry("tools/a.exe", new byte[] { 0 });
                 }
 
@@ -161,6 +161,25 @@ namespace NuGet.Test.Utility
                         {
                             node.Add(new XAttribute(XName.Get("exclude"), string.Join(",", dependency.Exclude)));
                         }
+                    }
+                }
+
+                if (packageContext.PackageTypes.Any())
+                {
+                    var metadata = xml.Element("package").Element("metadata");
+                    var packageTypes = new XElement("packageTypes");
+                    metadata.Add(packageTypes);
+
+                    foreach (var packageType in packageContext.PackageTypes)
+                    {
+                        var packageTypeElement = new XElement("packageType");
+                        packageTypeElement.Add(new XAttribute("name", packageType.Name));
+                        if (packageType.Version != PackageType.EmptyVersion)
+                        {
+                            packageTypeElement.Add(new XAttribute("version", packageType.Version));
+                        }
+
+                        packageTypes.Add(packageTypeElement);
                     }
                 }
 
@@ -272,37 +291,94 @@ namespace NuGet.Test.Utility
         /// </summary>
         public static async Task CreateFolderFeedV3(string root, PackageSaveMode saveMode, params PackageIdentity[] packages)
         {
-            var contexts = packages.Select(package => new SimpleTestPackageContext(package)).ToList();
-            var pathResolver = new VersionFolderPathResolver(root);
+            var contexts = packages.Select(p => new SimpleTestPackageContext(p)).ToArray();
 
+            await CreateFolderFeedV3(root, saveMode, contexts);
+        }
+
+        /// <summary>
+        /// Create a v3 folder of nupkgs
+        /// </summary>
+        public static async Task CreateFolderFeedV3(string root, PackageSaveMode saveMode, params SimpleTestPackageContext[] contexts)
+        {
             using (var tempRoot = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                CreatePackages(contexts, tempRoot);
+                CreatePackages(tempRoot, contexts);
 
-                foreach (var file in Directory.GetFiles(tempRoot))
+                await CreateFolderFeedV3(root, saveMode, Directory.GetFiles(tempRoot));
+            }
+        }
+
+        /// <summary>
+        /// Create a v3 folder of nupkgs
+        /// </summary>
+        public static async Task CreateFolderFeedV3(string root, PackageSaveMode saveMode, params string[] nupkgPaths)
+        {
+            var pathResolver = new VersionFolderPathResolver(root);
+
+            foreach (var file in nupkgPaths)
+            {
+                PackageIdentity identity = null;
+
+                using (var reader = new PackageArchiveReader(File.OpenRead(file)))
                 {
-                    PackageIdentity identity = null;
+                    identity = reader.GetIdentity();
+                }
 
-                    using (var reader = new PackageArchiveReader(File.OpenRead(file)))
+                if (!File.Exists(pathResolver.GetHashPath(identity.Id, identity.Version)))
+                {
+                    using (var fileStream = File.OpenRead(file))
                     {
-                        identity = reader.GetIdentity();
+                        await PackageExtractor.InstallFromSourceAsync((stream) =>
+                            fileStream.CopyToAsync(stream, 4096, CancellationToken.None),
+                            new VersionFolderPathContext(
+                                identity,
+                                root,
+                                NullLogger.Instance,
+                                saveMode,
+                                XmlDocFileSaveMode.None),
+                                CancellationToken.None);
                     }
+                }
+            }
+        }
 
-                    if (!File.Exists(pathResolver.GetHashPath(identity.Id, identity.Version)))
-                    {
-                        using (var fileStream = File.OpenRead(file))
-                        {
-                            await PackageExtractor.InstallFromSourceAsync((stream) =>
-                                fileStream.CopyToAsync(stream, 4096, CancellationToken.None),
-                                new VersionFolderPathContext(
-                                    identity,
-                                    root,
-                                    NullLogger.Instance,
-                                    saveMode,
-                                    XmlDocFileSaveMode.None),
-                                    CancellationToken.None);
-                        }
-                    }
+        /// <summary>
+        /// Create a packagets.config folder of nupkgs
+        /// </summary>
+        public static void CreateFolderFeedPackagesConfig(string root, params PackageIdentity[] packages)
+        {
+            var contexts = packages.Select(p => new SimpleTestPackageContext(p)).ToArray();
+
+            CreateFolderFeedPackagesConfig(root, contexts);
+        }
+
+        /// <summary>
+        /// Create a packagets.config folder of nupkgs
+        /// </summary>
+        public static void CreateFolderFeedPackagesConfig(string root, params SimpleTestPackageContext[] contexts)
+        {
+            using (var tempRoot = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                CreatePackages(tempRoot, contexts);
+
+                CreateFolderFeedPackagesConfig(root, Directory.GetFiles(tempRoot));
+            }
+        }
+
+        /// <summary>
+        /// Create a packagets.config folder of nupkgs
+        /// </summary>
+        public static void CreateFolderFeedPackagesConfig(string root, params string[] nupkgPaths)
+        {
+            var resolver = new PackagePathResolver(root);
+            var context = new PackageExtractionContext(NullLogger.Instance);
+
+            foreach (var path in nupkgPaths)
+            {
+                using (var stream = File.OpenRead(path))
+                {
+                    PackageExtractor.ExtractPackage(stream, resolver, context, CancellationToken.None);
                 }
             }
         }

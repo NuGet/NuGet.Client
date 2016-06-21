@@ -148,16 +148,24 @@ namespace NuGet.CommandLine
                     Console.Write(" {0, -" + (maxAltOptionWidth + 4) + "}", GetAltText(o.Key.AltName));
 
                     Console.PrintJustified((10 + maxAltOptionWidth + maxOptionWidth), o.Key.Description);
-
                 }
 
                 Console.WriteLine();
-                Console.WriteLine(string.Format(CultureInfo.InvariantCulture,
-                    LocalizedResourceManager.GetString("HelpCommandForMoreInfo"),
-                    CommandLineConstants.NuGetDocsCommandLineReference));
+            }
 
+            if (!string.IsNullOrEmpty(attribute.UsageExample))
+            {
+                Console.WriteLine("examples:");
+                Console.WriteLine();
+                Console.WriteLine(attribute.UsageExample);
                 Console.WriteLine();
             }
+            
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                LocalizedResourceManager.GetString("HelpCommandForMoreInfo"),
+                CommandLineConstants.NuGetDocsCommandLineReference));
+
+            Console.WriteLine();
         }
 
         private void ViewHelpForAllCommands()

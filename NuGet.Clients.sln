@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25402.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageManagement.VisualStudio", "src\NuGet.Clients\PackageManagement.VisualStudio\PackageManagement.VisualStudio.csproj", "{306CDDFA-FF0B-4299-930C-9EC6C9308160}"
 EndProject
@@ -103,6 +103,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StandaloneConsole", "src\NuGet.Clients\StandaloneConsole\StandaloneConsole.csproj", "{1CC223A4-B9F7-4D32-B502-6F85F1CF3218}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.PackageManagement.UI.Test", "test\NuGet.Clients.Tests\NuGet.PackageManagement.UI.Test\NuGet.PackageManagement.UI.Test.csproj", "{6157BF46-D371-4126-A7F1-ED6E23F77ACD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.PackageManagement.VisualStudio.Test", "test\NuGet.Clients.Tests\NuGet.PackageManagement.VisualStudio.Test\NuGet.PackageManagement.VisualStudio.Test.csproj", "{9EA84487-C70C-420C-9674-75CF19F43757}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -402,6 +404,16 @@ Global
 		{6157BF46-D371-4126-A7F1-ED6E23F77ACD}.Mono Release|Any CPU.Build.0 = Release|Any CPU
 		{6157BF46-D371-4126-A7F1-ED6E23F77ACD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6157BF46-D371-4126-A7F1-ED6E23F77ACD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9EA84487-C70C-420C-9674-75CF19F43757}.Coverage|Any CPU.ActiveCfg = Release|Any CPU
+		{9EA84487-C70C-420C-9674-75CF19F43757}.Coverage|Any CPU.Build.0 = Release|Any CPU
+		{9EA84487-C70C-420C-9674-75CF19F43757}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9EA84487-C70C-420C-9674-75CF19F43757}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9EA84487-C70C-420C-9674-75CF19F43757}.Mono Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9EA84487-C70C-420C-9674-75CF19F43757}.Mono Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9EA84487-C70C-420C-9674-75CF19F43757}.Mono Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9EA84487-C70C-420C-9674-75CF19F43757}.Mono Release|Any CPU.Build.0 = Release|Any CPU
+		{9EA84487-C70C-420C-9674-75CF19F43757}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9EA84487-C70C-420C-9674-75CF19F43757}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -422,5 +434,6 @@ Global
 		{114FD278-477D-4292-82AA-7F8A5FC0BA08} = {390F8FBC-5FFC-4E61-B5D2-6EB39E66E2D2}
 		{1CC223A4-B9F7-4D32-B502-6F85F1CF3218} = {390F8FBC-5FFC-4E61-B5D2-6EB39E66E2D2}
 		{6157BF46-D371-4126-A7F1-ED6E23F77ACD} = {25E91311-400E-47A6-A844-733D604E662A}
+		{9EA84487-C70C-420C-9674-75CF19F43757} = {25E91311-400E-47A6-A844-733D604E662A}
 	EndGlobalSection
 EndGlobal

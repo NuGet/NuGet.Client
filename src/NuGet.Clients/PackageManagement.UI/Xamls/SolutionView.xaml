@@ -11,11 +11,20 @@
       <ResourceDictionary.MergedDictionaries>
         <local:SharedResources />
       </ResourceDictionary.MergedDictionaries>
-
       <local:InstalledVersionsCountConverter
         x:Key="InstalledVersionsCountConverter" />
-
-      <!-- style of the list view headers -->
+      <local:TooltipConverter
+        x:Key="TooltipConverter" />
+      <local:NotNullToBooleanConverter
+        x:Key="NotNullToBooleanConverter" />  
+      <ControlTemplate
+        x:Key="SeparatorControlTemplate">
+        <Separator
+            HorizontalAlignment="Stretch"
+            IsEnabled="False" />
+      </ControlTemplate>
+      
+      <!-- style of the list view headers -->            
       <Style x:Uid="Style_1" x:Key="GridViewColumnHeaderGripper" TargetType="{x:Type Thumb}">
         <Setter x:Uid="Setter_1" Property="Canvas.Right" Value="-8.5" />
         <Setter x:Uid="Setter_2" Property="Width" Value="18" />
@@ -308,8 +317,29 @@
         MinHeight="22"
         AutomationProperties.Name="{x:Static local:Resources.Label_Version}"
         ItemsSource="{Binding Path=Versions}"
-        SelectedItem="{Binding Path=SelectedVersion}" />
-
+        SelectedItem="{Binding Path=SelectedVersion}">
+        
+          <ComboBox.ItemContainerStyle>
+            <Style TargetType="{x:Type ComboBoxItem}">
+                <Style.Triggers>
+                    <DataTrigger 
+                        Binding="{Binding Converter={StaticResource NotNullToBooleanConverter}}"
+                        Value="True" >
+                        <Setter 
+                            Property="ToolTipService.ShowOnDisabled"
+                            Value="True" />
+                        <Setter 
+                            Property="ToolTip" 
+                            Value="{Binding Converter={StaticResource TooltipConverter}}" />
+                        <Setter
+                            Property="IsEnabled"
+                            Value="{Binding IsValidVersion}" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </ComboBox.ItemContainerStyle>
+      </ComboBox>
+        
       <!-- install button -->
       <Button
         x:Name="_installButton"

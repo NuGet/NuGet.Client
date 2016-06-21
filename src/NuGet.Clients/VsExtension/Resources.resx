@@ -222,4 +222,7 @@ To prevent NuGet from restoring packages during build, open the Visual Studio Op
   <data name="VsCredentialProviderImporter_LoadErrorFormat" xml:space="preserve">
     <value>Error loading VisualStudioAcountProvider. {0}</value>
   </data>
+  <data name="VsCredentialProviderImport_GenericError" xml:space="preserve">
+    <value>Error getting the credential provider.  {0}</value>
+  </data>
 </root>

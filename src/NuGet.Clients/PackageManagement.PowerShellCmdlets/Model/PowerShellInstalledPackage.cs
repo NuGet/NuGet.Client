@@ -3,11 +3,10 @@
 
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Configuration;
 using NuGet.PackageManagement.UI;
 using NuGet.Packaging;
-using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Versioning;
@@ -25,21 +24,28 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Get the view of installed packages. Use for Get-Package command.
         /// </summary>
-        internal static List<PowerShellInstalledPackage> GetPowerShellPackageView(Dictionary<NuGetProject, IEnumerable<Packaging.PackageReference>> dictionary,
-                                                                                  ISolutionManager SolutionManager, Configuration.ISettings settings)
+        internal static List<PowerShellInstalledPackage> GetPowerShellPackageView(
+            Dictionary<NuGetProject, IEnumerable<PackageReference>> dictionary,
+            ISolutionManager SolutionManager,
+            Configuration.ISettings settings)
         {
             var views = new List<PowerShellInstalledPackage>();
 
             foreach (var entry in dictionary)
             {
                 var nugetProject = entry.Key;
+                var projectName = entry.Key.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
 
-                string packageFolder = null;
                 FolderNuGetProject packageFolderProject = null;
+                FallbackPackagePathResolver fallbackResolver = null;
 
-                if (nugetProject is BuildIntegratedNuGetProject)
+                // Build a project-specific strategy for resolving a package .nupkg path.
+                if (nugetProject is INuGetIntegratedProject) // This is technically incorrect for DNX projects,
+                                                             // however since that experience is deprecated we don't
+                                                             // care.
                 {
-                    packageFolder = BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(SolutionManager.SolutionDirectory, settings);
+                    var pathContext = NuGetPathContext.Create(settings);
+                    fallbackResolver = new FallbackPackagePathResolver(pathContext);
                 }
                 else
                 {
@@ -51,34 +57,46 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     }
                 }
 
-                // entry.Value is an empty list if no packages are installed
+                // entry.Value is an empty list if no packages are installed.
                 foreach (var package in entry.Value)
                 {
                     string installPackagePath = null;
                     string licenseUrl = null;
 
-                    if (packageFolder != null)
+                    // Try to get the path to the package .nupkg on disk.
+                    if (fallbackResolver != null)
                     {
-                        var defaultPackagePathResolver = new VersionFolderPathResolver(packageFolder);
-                        installPackagePath = defaultPackagePathResolver.GetPackageFilePath(package.PackageIdentity.Id, package.PackageIdentity.Version);
+                        var packageInfo = fallbackResolver.GetPackageInfo(
+                            package.PackageIdentity.Id,
+                            package.PackageIdentity.Version);
+
+                        installPackagePath = packageInfo?.PathResolver.GetPackageFilePath(
+                            package.PackageIdentity.Id,
+                            package.PackageIdentity.Version);
                     }
                     else if (packageFolderProject != null)
                     {
                         installPackagePath = packageFolderProject.GetInstalledPackageFilePath(package.PackageIdentity);
                     }
 
+                    // Try to read out the license URL.
                     using (var reader = GetPackageReader(installPackagePath))
+                    using (var nuspecStream = reader?.GetNuspec())
                     {
-                        var nuspecReader = new NuspecReader(reader.GetNuspec());
-                        licenseUrl = nuspecReader.GetLicenseUrl();
+                        if (nuspecStream != null)
+                        {
+                            var nuspecReader = new NuspecReader(nuspecStream);
+                            licenseUrl = nuspecReader.GetLicenseUrl();
+                        }
                     }
 
-
-                    var view = new PowerShellInstalledPackage()
+                    var view = new PowerShellInstalledPackage
                     {
                         Id = package.PackageIdentity.Id,
-                        AsyncLazyVersions = new AsyncLazy<IEnumerable<NuGetVersion>>(() => Task.FromResult<IEnumerable<NuGetVersion>>(new[] { package.PackageIdentity.Version }), NuGetUIThreadHelper.JoinableTaskFactory),
-                        ProjectName = entry.Key.GetMetadata<string>(NuGetProjectMetadataKeys.Name),
+                        AsyncLazyVersions = new AsyncLazy<IEnumerable<NuGetVersion>>(
+                            () => Task.FromResult<IEnumerable<NuGetVersion>>(new[] { package.PackageIdentity.Version }),
+                            NuGetUIThreadHelper.JoinableTaskFactory),
+                        ProjectName = projectName,
                         LicenseUrl = licenseUrl
                     };
 
@@ -91,9 +109,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         private static PackageReaderBase GetPackageReader(string installPath)
         {
+            if (installPath == null)
+            {
+                return null;
+            }
+
             var nupkg = new FileInfo(installPath);
 
-            if (nupkg?.Exists == true)
+            if (nupkg.Exists)
             {
                 return new PackageArchiveReader(nupkg.OpenRead());
             }

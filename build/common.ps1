@@ -176,7 +176,7 @@ Function Install-DotnetCLI {
 
     wget 'https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/dotnet-install.ps1' -OutFile 'cli/dotnet-install.ps1'
 
-    & cli/dotnet-install.ps1 -Channel preview -i $CLIRoot -Version 1.0.0-preview2-002911
+    & cli/dotnet-install.ps1 -Channel preview -i $CLIRoot -Version 1.0.0-preview2-003030
 
     if (-not (Test-Path $DotNetExe)) {
         Error-Log "Unable to find dotnet.exe. The CLI install may have failed." -Fatal
@@ -383,7 +383,7 @@ Function Invoke-DotnetPack {
             if($ReleaseLabel -ne 'Release') {
                 $opts += '--version-suffix', "${ReleaseLabel}-${BuildNumber}"
             }
-
+            $opts += '--serviceable'
             Trace-Log "$DotNetExe $opts"
 
             & $DotNetExe $opts
@@ -564,10 +564,13 @@ Function Test-ClientsProjects {
         [string]$Configuration = $DefaultConfiguration,
         [string]$MSBuildVersion = $DefaultMSBuildVersion
     )
+    
+    # We don't run command line tests on Dev15 as we don't build a nuget.exe for this version
     $testProjectsLocation = Join-Path $NuGetClientRoot test\NuGet.Clients.Tests
     $testProjects = Get-ChildItem $testProjectsLocation -Recurse -Filter '*.csproj' |
         %{ $_.FullName } |
-        ?{ -not $_.EndsWith('WebAppTest.csproj') }
+        ?{ -not $_.EndsWith('WebAppTest.csproj') -and 
+           -not ($_.EndsWith('NuGet.CommandLine.Test.csproj') -and ($MSBuildVersion -eq '15'))}
 
     $testProjects | Test-ClientProject -Configuration $Configuration -MSBuildVersion $MSBuildVersion
 }

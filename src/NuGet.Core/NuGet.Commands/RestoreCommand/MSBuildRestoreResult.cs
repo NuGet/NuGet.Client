@@ -165,13 +165,29 @@ namespace NuGet.Commands
                         new XElement(ns + "NuGetPackageRoot", ReplacePathsWithMacros(RepositoryRoot))),
                     new XElement(ns + "ImportGroup", imports.Select(i =>
                         new XElement(ns + "Import",
-                            new XAttribute("Project", Path.Combine("$(NuGetPackageRoot)", i)),
-                            new XAttribute("Condition", $"Exists('{Path.Combine("$(NuGetPackageRoot)", i)}')"))))));
+                            new XAttribute("Project", GetImportPath(i)),
+                            new XAttribute("Condition", $"Exists('{GetImportPath(i)}')"))))));
 
             using (var output = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
             {
                 doc.Save(output);
             }
+        }
+
+        private string GetImportPath(string importPath)
+        {
+            var path = importPath;
+
+            if (importPath.StartsWith(RepositoryRoot, StringComparison.Ordinal))
+            {
+                path = $"$(NuGetPackageRoot){importPath.Substring(RepositoryRoot.Length)}";
+            }
+            else
+            {
+                path = ReplacePathsWithMacros(importPath);
+            }
+
+            return path;
         }
     }
 }

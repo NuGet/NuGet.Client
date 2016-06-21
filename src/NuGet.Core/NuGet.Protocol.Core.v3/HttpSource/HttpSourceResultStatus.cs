@@ -7,7 +7,6 @@ namespace NuGet.Protocol
     {
         NotFound,
         NoContent,
-        OpenedFromDisk,
-        OpenedFromNetwork
+        OpenedFromDisk
     }
 }

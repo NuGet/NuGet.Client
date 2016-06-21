@@ -34,6 +34,8 @@ namespace NuGet.PackageManagement.UI
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
         protected ItemFilter _filter;
 
+        protected Dictionary<string, VersionRange> _projectVersionRangeDict;
+
         private Dictionary<NuGetVersion, DetailedPackageMetadata> _metadataDict;
 
         protected DetailControlModel(IEnumerable<NuGetProject> nugetProjects)
@@ -50,6 +52,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         public virtual void CleanUp()
         {
+            Options.SelectedChanged -= DependencyBehavior_SelectedChanged;
         }
 
         /// <summary>
@@ -75,8 +78,27 @@ namespace NuGet.PackageManagement.UI
 
             _allPackageVersions = versions.Select(v => v.Version).ToList();
 
+            _projectVersionRangeDict = new Dictionary<string, VersionRange>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var project in _nugetProjects)
+            {
+                // cache allowed version range for each nuget project for current selected package
+                var packageReference = (await project.GetInstalledPackagesAsync(CancellationToken.None))
+                    .FirstOrDefault(r => StringComparer.OrdinalIgnoreCase.Equals(r.PackageIdentity.Id, searchResultPackage.Id));
+
+                _projectVersionRangeDict.Add(project.GetMetadata<string>(NuGetProjectMetadataKeys.Name), packageReference?.AllowedVersions);
+            }
+
+            // hook event handler for dependency behavior changed
+            Options.SelectedChanged += DependencyBehavior_SelectedChanged;
+
             CreateVersions();
             OnCurrentPackageChanged();
+        }
+
+        protected virtual void DependencyBehavior_SelectedChanged(object sender, EventArgs e)
+        {
+            CreateVersions();
         }
 
         protected virtual void OnCurrentPackageChanged()
@@ -243,24 +265,16 @@ namespace NuGet.PackageManagement.UI
         // Calculate the version to select among _versions and select it
         protected void SelectVersion()
         {
-            if (_versions.Count == 0)
+            DisplayVersion versionToSelect = null;
+
+            if (_versions.Count > 0)
             {
-                // there's nothing to select
-                return;
+                // it should always select the top version from versions list to install or update
+                // which has a valid version. If find none, then just set to null.
+                versionToSelect = _versions.FirstOrDefault(v => v != null && v.IsValidVersion);
             }
 
-            DisplayVersion versionToSelect = _versions
-                .Where(v => v != null && v.Version.Equals(_searchResultPackage.Version))
-                .FirstOrDefault();
-            if (versionToSelect == null)
-            {
-                versionToSelect = _versions[0];
-            }
-
-            if (versionToSelect != null)
-            {
-                SelectedVersion = versionToSelect;
-            }
+            SelectedVersion = versionToSelect;
         }
 
         internal async Task LoadPackageMetadaAsync(IPackageMetadataProvider metadataProvider, CancellationToken token)

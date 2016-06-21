@@ -302,4 +302,7 @@
   <data name="OutputNuGetVersion" xml:space="preserve">
     <value>{0} Version: {1}</value>
   </data>
+  <data name="Serviceable_Description" xml:space="preserve">
+    <value>Sets the nuspec serviceable element to true.</value>
+  </data>
 </root>

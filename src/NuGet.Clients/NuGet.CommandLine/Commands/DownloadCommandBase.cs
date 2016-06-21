@@ -93,7 +93,7 @@ namespace NuGet.CommandLine
                 try
                 {
                     var xDocument = XDocument.Load(projectConfigFilePath);
-                    var reader = new PackagesConfigReader(XDocument.Load(projectConfigFilePath));
+                    var reader = new PackagesConfigReader(xDocument);
                     return reader.GetPackages(allowDuplicatePackageIds);
                 }
                 catch (XmlException ex)

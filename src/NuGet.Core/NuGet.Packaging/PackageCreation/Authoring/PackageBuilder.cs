@@ -67,6 +67,8 @@ namespace NuGet.Packaging
             Authors = new HashSet<string>();
             Owners = new HashSet<string>();
             Tags = new HashSet<string>();
+            // Just like parameter replacements, these are also case insensitive, for consistency.
+            Properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
         public string Id
@@ -172,6 +174,16 @@ namespace NuGet.Packaging
         }
 
         public ISet<string> Tags
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Exposes the additional properties extracted by the metadata 
+        /// extractor or received from the command line.
+        /// </summary>
+        public Dictionary<string, string> Properties
         {
             get;
             private set;
@@ -324,11 +336,12 @@ namespace NuGet.Packaging
                 WriteManifest(package, DetermineMinimumSchemaVersion(Files, DependencyGroups), psmdcpPath);
 
                 // Write the files to the package
-                var extensions = WriteFiles(package);
+                HashSet<string> filesWithoutExtensions = new HashSet<string>();
+                var extensions = WriteFiles(package, filesWithoutExtensions);
 
                 extensions.Add("nuspec");
 
-                WriteOpcContentTypes(package, extensions);
+                WriteOpcContentTypes(package, extensions, filesWithoutExtensions);
 
                 WriteOpcPackageProperties(package, psmdcpPath);
             }
@@ -563,7 +576,7 @@ namespace NuGet.Packaging
             }
         }
 
-        private HashSet<string> WriteFiles(ZipArchive package)
+        private HashSet<string> WriteFiles(ZipArchive package, HashSet<string> filesWithoutExtensions)
         {
             var extensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -581,6 +594,10 @@ namespace NuGet.Packaging
                         if (!string.IsNullOrEmpty(fileExtension))
                         {
                             extensions.Add(fileExtension.Substring(1));
+                        }
+                        else
+                        {
+                            filesWithoutExtensions.Add($"/{file.Path.Replace("\\", "/")}");
                         }
                     }
                     catch
@@ -781,7 +798,7 @@ namespace NuGet.Packaging
             }
         }
 
-        private static void WriteOpcContentTypes(ZipArchive package, HashSet<string> extensions)
+        private static void WriteOpcContentTypes(ZipArchive package, HashSet<string> extensions, HashSet<string> filesWithoutExtensions)
         {
             // OPC backwards compatibility
             ZipArchiveEntry relsEntry = package.CreateEntry("[Content_Types].xml", CompressionLevel.Optimal);
@@ -800,6 +817,15 @@ namespace NuGet.Packaging
                 element.Add(
                     new XElement(content + "Default",
                         new XAttribute("Extension", extension),
+                        new XAttribute("ContentType", "application/octet")
+                        )
+                    );
+            }
+            foreach (var file in filesWithoutExtensions)
+            {
+                element.Add(
+                    new XElement(content + "Override",
+                        new XAttribute("PartName", file),
                         new XAttribute("ContentType", "application/octet")
                         )
                     );

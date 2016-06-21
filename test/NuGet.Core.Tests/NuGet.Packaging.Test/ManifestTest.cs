@@ -368,7 +368,7 @@ namespace NuGet.Packaging.Test
         {
             // Arrange
             string content = @"<?xml version=""1.0""?>
-<package xmlns=""http://schemas.microsoft.com/packaging/2016/06/nuspec.xsd"">
+<package xmlns=""http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd"">
   <metadata hello=""world"">
     <id>A</id>
     <version>1.0</version>

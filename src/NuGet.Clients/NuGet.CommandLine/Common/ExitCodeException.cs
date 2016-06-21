@@ -6,7 +6,6 @@ namespace NuGet.CommandLine
     public class ExitCodeException : CommandLineException
     {
         public ExitCodeException(int exitCode)
-            : base()
         {
             ExitCode = exitCode;
         }

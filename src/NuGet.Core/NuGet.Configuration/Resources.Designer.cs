@@ -96,11 +96,29 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to &apos;{0}&apos; must contain an absolute path &apos;{1}&apos;..
+        /// </summary>
+        public static string MustContainAbsolutePath {
+            get {
+                return ResourceManager.GetString("MustContainAbsolutePath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to The package source does not belong to the collection of available sources..
         /// </summary>
         public static string PackageSource_Invalid {
             get {
                 return ResourceManager.GetString("PackageSource_Invalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Environment variable &apos;{0}&apos; must contain an absolute path, the full path of &apos;{1}&apos; cannot be determined..
+        /// </summary>
+        public static string RelativeEnvVarPath {
+            get {
+                return ResourceManager.GetString("RelativeEnvVarPath", resourceCulture);
             }
         }
         
@@ -159,7 +177,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Password decryption failed for source : &apos;{0}&apos; is unsupported on this platform. A clear text password may be used instead..
+        ///    Looks up a localized string similar to Password decryption is not supported on .NET Core for this platform. The following feed uses an encrypted password: &apos;{0}&apos;. You can use a clear text password as a workaround.
         /// </summary>
         public static string UnsupportedDecryptPassword {
             get {
@@ -168,7 +186,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Password encryption failed for source : &apos;{0}&apos; is unsupported on this platform. A clear text password may be used instead..
+        ///    Looks up a localized string similar to Password encryption is not supported on .NET Core for this platform. The following feed try to use an encrypted password: &apos;{0}&apos;. You can use a clear text password as a workaround.
         /// </summary>
         public static string UnsupportedEncryptPassword {
             get {

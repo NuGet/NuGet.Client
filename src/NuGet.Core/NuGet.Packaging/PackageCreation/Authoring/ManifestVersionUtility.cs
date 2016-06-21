@@ -17,7 +17,6 @@ namespace NuGet.Packaging
         public const int TargetFrameworkSupportForReferencesVersion = 5;
         public const int XdtTransformationVersion = 6;
         public const int PackageTypeVersion = 7;
-        public const int ServiceableVersion = 8;
 
         public static int GetManifestVersion(ManifestMetadata metadata)
         {
@@ -27,11 +26,7 @@ namespace NuGet.Packaging
         private static int GetMaxVersionFromMetadata(ManifestMetadata metadata)
         {
             // Important: always add newer version checks at the top
-            if (metadata.Serviceable)
-            {
-                return ServiceableVersion;
-            }
-
+            
             if (metadata.PackageTypes != null && metadata.PackageTypes.Any())
             {
                 return PackageTypeVersion;

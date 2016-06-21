@@ -21,14 +21,16 @@ namespace Test.Utility
             source,
             () => Task.FromResult<HttpHandlerResource>(
                     new TestHttpHandler(
-                        new TestMessageHandler(responses, errorContent))))
+                        new TestMessageHandler(responses, errorContent))),
+            NullThrottle.Instance)
         {
         }
 
         public TestHttpSource(PackageSource source, Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>> responses) : base(
             source,
             () => Task.FromResult<HttpHandlerResource>(
-                    new TestHttpHandler(new TestMessageHandler(responses))))
+                    new TestHttpHandler(new TestMessageHandler(responses))),
+            NullThrottle.Instance)
         {
         }
 

@@ -18,13 +18,13 @@ namespace NuGet.Commands
 {
     internal class CompatibilityChecker
     {
-        private readonly NuGetv3LocalRepository _localRepository;
+        private readonly IReadOnlyList<NuGetv3LocalRepository> _localRepositories;
         private readonly LockFile _lockFile;
         private readonly ILogger _log;
 
-        public CompatibilityChecker(NuGetv3LocalRepository localRepository, LockFile lockFile, ILogger log)
+        public CompatibilityChecker(IReadOnlyList<NuGetv3LocalRepository> localRepositories, LockFile lockFile, ILogger log)
         {
-            _localRepository = localRepository;
+            _localRepositories = localRepositories;
             _lockFile = lockFile;
             _log = log;
         }
@@ -319,9 +319,12 @@ namespace NuGet.Commands
             else
             {
                 // We need to generate some of the data. We'll need the local packge info to do that
-                var package = _localRepository.FindPackagesById(libraryId.Name)
-                    .FirstOrDefault(p => p.Version.Equals(libraryId.Version));
-                if (package == null)
+                var packageInfo = NuGetv3LocalRepositoryUtility.GetPackage(
+                    _localRepositories,
+                    libraryId.Name,
+                    libraryId.Version);
+
+                if (packageInfo == null)
                 {
                     return null;
                 }
@@ -329,7 +332,7 @@ namespace NuGet.Commands
                 // Collect the file list if necessary
                 if (files == null)
                 {
-                    using (var packageReader = new PackageFolderReader(package.ExpandedPath))
+                    using (var packageReader = new PackageFolderReader(packageInfo.Package.ExpandedPath))
                     {
                         if (Path.DirectorySeparatorChar != '/')
                         {
@@ -350,9 +353,8 @@ namespace NuGet.Commands
                 {
                     targetLibrary = LockFileUtils.CreateLockFileTargetLibrary(
                         library: null,
-                        package: package,
+                        package: packageInfo.Package,
                         targetGraph: graph,
-                        defaultPackagePathResolver: new VersionFolderPathResolver(_localRepository.RepositoryRoot),
                         dependencyType: LibraryIncludeFlags.All);
                 }
 

@@ -35,6 +35,8 @@ namespace NuGet.PackageManagement
     /// </summary>
     public class NuGetPackageManager
     {
+        private IReadOnlyList<SourceRepository> _globalPackageFolderRepositories;
+
         private ISourceRepositoryProvider SourceRepositoryProvider { get; }
 
         private ISolutionManager SolutionManager { get; }
@@ -47,12 +49,11 @@ namespace NuGet.PackageManagement
 
         public SourceRepository PackagesFolderSourceRepository { get; set; }
 
-        public SourceRepository GlobalPackagesFolderSourceRepository { get; set; }
+        public IInstallationCompatibility InstallationCompatibility { get; set; }
 
         /// <summary>
         /// To construct a NuGetPackageManager that does not need a SolutionManager like NuGet.exe
         /// </summary>
-
         public NuGetPackageManager(
                 ISourceRepositoryProvider sourceRepositoryProvider,
                 Configuration.ISettings settings,
@@ -84,10 +85,9 @@ namespace NuGet.PackageManagement
 
             SourceRepositoryProvider = sourceRepositoryProvider;
             Settings = settings;
+            InstallationCompatibility = PackageManagement.InstallationCompatibility.Instance;
 
             InitializePackagesFolderInfo(packagesFolderPath, excludeVersion);
-
-            GlobalPackagesFolderSourceRepository = null;
         }
 
         /// <summary>
@@ -132,26 +132,57 @@ namespace NuGet.PackageManagement
             SourceRepositoryProvider = sourceRepositoryProvider;
             Settings = settings;
             SolutionManager = solutionManager;
+            InstallationCompatibility = PackageManagement.InstallationCompatibility.Instance;
 
             InitializePackagesFolderInfo(PackagesFolderPathUtility.GetPackagesFolderPath(SolutionManager, Settings), excludeVersion);
             DeleteOnRestartManager = deleteOnRestartManager;
+        }
 
-            string globalPackagesFolder = BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolderOrNull(solutionManager.SolutionDirectory, settings);
-            if (globalPackagesFolder != null)
+        /// <summary>
+        /// SourceRepositories for the user global package folder and all fallback package folders.
+        /// </summary>
+        public IReadOnlyList<SourceRepository> GlobalPackageFolderRepositories
+        {
+            get
             {
-                var globalPackagesSource = new Configuration.PackageSource(globalPackagesFolder);
-                GlobalPackagesFolderSourceRepository = SourceRepositoryProvider.CreateRepository(globalPackagesSource, FeedType.FileSystemV3);
+                if (_globalPackageFolderRepositories == null)
+                {
+                    var sources = new List<SourceRepository>();
+
+                    // Read package folders from settings
+                    var pathContext = NuGetPathContext.Create(Settings);
+                    var folders = new List<string>();
+                    folders.Add(pathContext.UserPackageFolder);
+                    folders.AddRange(pathContext.FallbackPackageFolders);
+
+                    foreach (var folder in folders)
+                    {
+                        // Create a repo for each folder
+                        var source = SourceRepositoryProvider.CreateRepository(
+                            new PackageSource(folder),
+                            FeedType.FileSystemV3);
+
+                        sources.Add(source);
+                    }
+
+                    _globalPackageFolderRepositories = sources;
+                }
+
+                return _globalPackageFolderRepositories;
             }
         }
 
         private void InitializePackagesFolderInfo(string packagesFolderPath, bool excludeVersion = false)
         {
+            // FileSystemPackagesConfig supports id.version formats, if the version is excluded use the normal v2 format
+            var feedType = excludeVersion ? FeedType.FileSystemV2 : FeedType.FileSystemPackagesConfig;
+
             PackagesFolderNuGetProject = new FolderNuGetProject(packagesFolderPath, excludeVersion);
             // Capturing it locally is important since it allows for the instance to cache packages for the lifetime
             // of the closure \ NuGetPackageManager.
             PackagesFolderSourceRepository = SourceRepositoryProvider.CreateRepository(
                 new PackageSource(packagesFolderPath),
-                FeedType.FileSystemV2);
+                feedType);
         }
 
         /// <summary>
@@ -802,6 +833,12 @@ namespace NuGet.PackageManagement
                 // Remove packages that do not meet the constraints specified in the UpdateConstrainst
                 prunedAvailablePackages = PrunePackageTree.PruneByUpdateConstraints(prunedAvailablePackages, projectInstalledPackageReferences, resolutionContext.VersionConstraints);
 
+                // Verify that the target is allowed by packages.config
+                GatherExceptionHelpers.ThrowIfVersionIsDisallowedByPackagesConfig(primaryTargetIds, projectInstalledPackageReferences, prunedAvailablePackages);
+
+                // Remove versions that do not satisfy 'allowedVersions' attribute in packages.config, if any
+                prunedAvailablePackages = PrunePackageTree.PruneDisallowedVersions(prunedAvailablePackages, projectInstalledPackageReferences);
+
                 // Remove all but the highest packages that are of the same Id as a specified packageId
                 if (packageId != null)
                 {
@@ -810,12 +847,6 @@ namespace NuGet.PackageManagement
                     // And then verify that the installed package is not already of a higher version - this check here ensures the user get's the right error message
                     GatherExceptionHelpers.ThrowIfNewerVersionAlreadyReferenced(packageId, projectInstalledPackageReferences, prunedAvailablePackages);
                 }
-
-                // Verify that the target is allowed by packages.config
-                GatherExceptionHelpers.ThrowIfVersionIsDisallowedByPackagesConfig(primaryTargetIds, projectInstalledPackageReferences, prunedAvailablePackages);
-
-                // Remove versions that do not satisfy 'allowedVersions' attribute in packages.config, if any
-                prunedAvailablePackages = PrunePackageTree.PruneDisallowedVersions(prunedAvailablePackages, projectInstalledPackageReferences);
 
                 // Remove packages that are of the same Id but different version than the primartTargets
                 prunedAvailablePackages = PrunePackageTree.PruneByPrimaryTargets(prunedAvailablePackages, primaryTargets);
@@ -1668,6 +1699,11 @@ namespace NuGet.PackageManagement
                             logger);
                     }
 
+                    if (msbuildProject != null)
+                    {
+                        msbuildProject.MSBuildNuGetProjectSystem.BeginProcessing();
+                    }
+
                     foreach (var nuGetProjectAction in actionsList)
                     {
                         executedNuGetProjectActions.Push(nuGetProjectAction);
@@ -1745,6 +1781,11 @@ namespace NuGet.PackageManagement
                         }
 
                         downloadTokenSource.Dispose();
+                    }
+
+                    if (msbuildProject != null)
+                    {
+                        msbuildProject.MSBuildNuGetProjectSystem.EndProcessing();
                     }
                 }
 
@@ -1866,9 +1907,7 @@ namespace NuGet.PackageManagement
             var logger = new ProjectContextLogger(nuGetProjectContext);
             var buildIntegratedContext = new ExternalProjectReferenceContext(logger);
 
-            var effectiveGlobalPackagesFolder = BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
-                                                    SolutionManager?.SolutionDirectory,
-                                                    Settings);
+            var pathContext = NuGetPathContext.Create(Settings);
 
             // For installs only use cache entries newer than the current time.
             // This is needed for scenarios where a new package shows up in search
@@ -1880,7 +1919,8 @@ namespace NuGet.PackageManagement
                 cacheContext.ListMaxAge = DateTimeOffset.UtcNow;
 
                 var providers = RestoreCommandProviders.Create(
-                    effectiveGlobalPackagesFolder,
+                    pathContext.UserPackageFolder,
+                    pathContext.FallbackPackageFolders,
                     sources,
                     cacheContext,
                     logger);
@@ -1921,13 +1961,19 @@ namespace NuGet.PackageManagement
                     buildIntegratedProject.ProjectName,
                     buildIntegratedProject.JsonConfigPath);
 
-
                 // Restore based on the modified package spec. This operation does not write the lock file to disk.
-                var restoreResult = await BuildIntegratedRestoreUtility.RestoreAsync(buildIntegratedProject,
-                packageSpec,
-                buildIntegratedContext,
-                providers,
-                token);
+                var restoreResult = await BuildIntegratedRestoreUtility.RestoreAsync(
+                    buildIntegratedProject,
+                    packageSpec,
+                    buildIntegratedContext,
+                    providers,
+                    token);
+
+                InstallationCompatibility.EnsurePackageCompatibility(
+                    buildIntegratedProject,
+                    pathContext,
+                    nuGetProjectActions,
+                    restoreResult);
 
                 return new BuildIntegratedProjectAction(nuGetProjectActions.First().PackageIdentity,
                        nuGetProjectActions.First().NuGetProjectActionType,
@@ -2032,9 +2078,7 @@ namespace NuGet.PackageManagement
                         restoreResult.LockFile),
                     PackageIdentity.Comparer);
 
-                var effectiveGlobalPackagesFolder = BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
-                                                        SolutionManager?.SolutionDirectory,
-                                                        Settings);
+                var pathContext = NuGetPathContext.Create(Settings);
 
                 // Find all dependencies in sorted order, then using the order run init.ps1 for only the new packages.
                 foreach (var package in sortedPackages)
@@ -2043,7 +2087,7 @@ namespace NuGet.PackageManagement
                     {
                         var packageInstallPath =
                             BuildIntegratedProjectUtility.GetPackagePathFromGlobalSource(
-                                effectiveGlobalPackagesFolder,
+                                pathContext.UserPackageFolder,
                                 package);
 
                         await buildIntegratedProject.ExecuteInitScriptAsync(
@@ -2071,7 +2115,8 @@ namespace NuGet.PackageManagement
                         parent,
                         referenceContext,
                         projectAction.Sources,
-                        effectiveGlobalPackagesFolder,
+                        pathContext.UserPackageFolder,
+                        pathContext.FallbackPackageFolders,
                         cacheContextModifier,
                         token);
                 }
@@ -2217,7 +2262,7 @@ namespace NuGet.PackageManagement
             return PackagesFolderNuGetProject.PackageExists(packageIdentity);
         }
 
-        private static Task ExecuteInstallAsync(
+        private Task ExecuteInstallAsync(
             NuGetProject nuGetProject,
             PackageIdentity packageIdentity,
             DownloadResourceResult resourceResult,
@@ -2226,7 +2271,7 @@ namespace NuGet.PackageManagement
             CancellationToken token)
         {
             // TODO: EnsurePackageCompatibility check should be performed in preview. Can easily avoid a lot of rollback
-            EnsurePackageCompatibility(resourceResult, packageIdentity);
+            InstallationCompatibility.EnsurePackageCompatibility(nuGetProject, packageIdentity, resourceResult);
 
             packageWithDirectoriesToBeDeleted.Remove(packageIdentity);
             return nuGetProject.InstallPackageAsync(packageIdentity, resourceResult, nuGetProjectContext, token);
@@ -2471,51 +2516,6 @@ namespace NuGet.PackageManagement
                 {
                     ideExecutionContext.IDEDirectInstall = null;
                 }
-            }
-        }
-
-        private static void EnsurePackageCompatibility(DownloadResourceResult downloadResourceResult, PackageIdentity packageIdentity)
-        {
-            NuspecReader nuspecReader;
-
-            if (downloadResourceResult.PackageReader != null)
-            {
-                nuspecReader = downloadResourceResult.PackageReader.NuspecReader;
-            }
-            else
-            {
-                using (var packageReader = new PackageArchiveReader(downloadResourceResult.PackageStream, leaveStreamOpen: true))
-                {
-                    nuspecReader = packageReader.NuspecReader;
-                }
-            }
-
-            // validate that the current version of NuGet satisfies the minVersion attribute specified in the .nuspec
-            MinClientVersionUtility.VerifyMinClientVersion(nuspecReader);
-
-            // Validate the package type. There must be zero package types or exactly one package
-            // type that is one of the recognized package types.
-            var packageTypes = nuspecReader.GetPackageTypes();
-            var validPackageType = true;
-
-            if (packageTypes.Count > 1)
-            {
-                validPackageType = false;
-            }
-            else if (packageTypes.Count == 1)
-            {
-                var packageType = packageTypes[0];
-                if (packageType != PackageType.Legacy)
-                {
-                    validPackageType = false;
-                }
-            }
-
-            if (!validPackageType)
-            {
-                throw new MinClientVersionException(
-                    string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedPackageFeature,
-                    packageIdentity.Id + " " + packageIdentity.Version.ToNormalizedString()));
             }
         }
     }

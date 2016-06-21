@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -581,6 +582,44 @@ namespace NuGet.Protocol.Tests
             Assert.Equal(1, latest.DependencySets.Count());
             Assert.Equal(VersionRange.All, latest.DependencySets.Single().Packages.Where(p => p.Id == "PackageB").Single().VersionRange);
             Assert.Equal("any", latest.DependencySets.First().TargetFramework.GetShortFolderName());
+        }
+
+        [Fact]
+        public async Task V2FeedParser_DuplicateNextUrl()
+        {
+            // Arrange
+            var dupUrl =
+                "https://www.nuget.org/api/v2/FindPackagesById?id='ravendb.client'&$skiptoken='RavenDB.Client','1.2.2067-Unstable'";
+            var serviceAddress = TestUtility.CreateServiceAddress();
+
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "FindPackagesById()?id='ravendb.client'",
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.CyclicDependency.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+            responses.Add(dupUrl,
+               TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.CyclicDependencyPage1.xml", GetType()));
+            responses.Add("https://www.nuget.org/api/v2/FindPackagesById?id='ravendb.client'&$skiptoken='RavenDB.Client','2.0.2183-Unstable'",
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.CyclicDependencyPage2.xml", GetType()));
+
+            var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
+
+            V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
+
+            FatalProtocolException duplicateUrlException = null;
+            try
+            {
+                // Act
+                var packages =
+                    await parser.FindPackagesByIdAsync("ravendb.client", NullLogger.Instance, CancellationToken.None);
+            }
+            catch (FatalProtocolException ex)
+            {
+                duplicateUrlException = ex;
+            }
+
+            // Assert
+            Assert.NotNull(duplicateUrlException);
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture, Strings.Protocol_duplicateUri, dupUrl), duplicateUrlException.Message);
         }
     }
 }

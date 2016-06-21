@@ -39,8 +39,6 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "CommandMSBuildVersion")]
         public string MSBuildVersion { get; set; }
 
-        private static readonly int MaxDegreesOfConcurrency = Environment.ProcessorCount;
-
         [ImportingConstructor]
         public RestoreCommand()
             : base(MachineCache.Default)
@@ -52,6 +50,11 @@ namespace NuGet.CommandLine
 
         public override async Task ExecuteCommandAsync()
         {
+            if (DisableParallelProcessing)
+            {
+                HttpSourceResourceProvider.Throttle = SemaphoreSlimThrottle.CreateBinarySemaphore();
+            }
+
             CalculateEffectivePackageSaveMode();
 
             var restoreSummaries = new List<RestoreSummary>();
@@ -74,10 +77,11 @@ namespace NuGet.CommandLine
             var hasProjectJsonFiles = restoreInputs.RestoreV3Context.Inputs.Any();
             if (!hasPackagesConfigFiles && !hasProjectJsonFiles)
             {
-                var message = string.Format(
-                    CultureInfo.CurrentCulture,
-                    LocalizedResourceManager.GetString("RestoreCommandNoPackagesConfigOrProjectJson"));
-                throw new CommandLineException(message);
+
+                Console.LogMinimal(LocalizedResourceManager.GetString(restoreInputs.RestoringWithSolutionFile
+                        ? "SolutionRestoreCommandNoPackagesConfigOrProjectJson"
+                        : "ProjectRestoreCommandNoPackagesConfigOrProjectJson"));
+                return;
             }
 
             // packages.config
@@ -589,40 +593,6 @@ namespace NuGet.CommandLine
                         || string.Equals(lastFourCharacters, "proj", StringComparison.OrdinalIgnoreCase));
             }
             return false;
-        }
-
-        /// <summary>
-        /// Gets the solution file, in full path format. If <paramref name="solutionFileOrDirectory"/> is a file,
-        /// that file is returned. Otherwise, searches for a *.sln file in
-        /// directory <paramref name="solutionFileOrDirectory"/>. If exactly one sln file is found,
-        /// that file is returned. If multiple sln files are found, an exception is thrown.
-        /// If no sln files are found, returns null.
-        /// </summary>
-        /// <param name="solutionFileOrDirectory">The solution file or directory to search for solution files.</param>
-        /// <returns>The full path of the solution file. Or null if no solution file can be found.</returns>
-        private string GetSolutionFile(string solutionFileOrDirectory)
-        {
-            //Check if the string passed is a file
-            //If it is a file, then check if it a solution or project file
-            //For other file types and directories it will fall out of these checks and fail later for invalid inputs
-            if (File.Exists(solutionFileOrDirectory) && IsSolutionOrProjectFile(solutionFileOrDirectory))
-            {
-                return Path.GetFullPath(solutionFileOrDirectory);
-            }
-
-            // look for solution files
-            var slnFiles = Directory.GetFiles(solutionFileOrDirectory, "*.sln");
-            if (slnFiles.Length > 1)
-            {
-                throw new InvalidOperationException(LocalizedResourceManager.GetString("Error_MultipleSolutions"));
-            }
-
-            if (slnFiles.Length == 1)
-            {
-                return Path.GetFullPath(slnFiles[0]);
-            }
-
-            return null;
         }
 
         /// <summary>

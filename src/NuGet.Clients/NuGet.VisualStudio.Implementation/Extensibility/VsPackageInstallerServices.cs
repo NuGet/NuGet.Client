@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
+using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
@@ -55,15 +56,11 @@ namespace NuGet.VisualStudio
                     {
                         InitializePackageManagerAndPackageFolderPath();
 
-                        var effectiveGlobalPackagesFolder =
-                            BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
-                                _solutionManager.SolutionDirectory,
-                                _settings);
+                        var effectiveGlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(_settings);
 
                         foreach (var project in _solutionManager.GetNuGetProjects())
                         {
                             var installedPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
-                            var buildIntegratedProject = project as BuildIntegratedNuGetProject;
 
                             foreach (var package in installedPackages)
                             {
@@ -76,7 +73,7 @@ namespace NuGet.VisualStudio
 
                                 // find packages using the solution level packages folder
                                 string installPath;
-                                if (buildIntegratedProject != null)
+                                if (project is INuGetIntegratedProject)
                                 {
                                     installPath = BuildIntegratedProjectUtility.GetPackagePathFromGlobalSource(
                                         effectiveGlobalPackagesFolder,
@@ -188,25 +185,38 @@ namespace NuGet.VisualStudio
 
         public bool IsPackageInstalled(Project project, string packageId)
         {
-            return IsPackageInstalled(project, packageId, version: null);
+            return IsPackageInstalled(project, packageId, nugetVersion: null);
         }
 
         public bool IsPackageInstalledEx(Project project, string packageId, string versionString)
         {
-            SemanticVersion version;
+            NuGetVersion version;
             if (versionString == null)
             {
                 version = null;
             }
-            else if (!SemanticVersion.TryParse(versionString, out version))
+            else if (!NuGetVersion.TryParse(versionString, out version))
             {
-                throw new ArgumentException(VsResources.InvalidSemanticVersionString, "versionString");
+                throw new ArgumentException(VsResources.InvalidNuGetVersionString, "versionString");
             }
 
             return IsPackageInstalled(project, packageId, version);
         }
 
         public bool IsPackageInstalled(Project project, string packageId, SemanticVersion version)
+        {
+            NuGetVersion nugetVersion;
+            if (NuGetVersion.TryParse(version.ToString(), out nugetVersion))
+            {
+                return IsPackageInstalled(project, packageId, nugetVersion);
+            }
+            else
+            {
+                throw new ArgumentException(VsResources.InvalidNuGetVersionString, "versionString");
+            }
+        }
+
+        private bool IsPackageInstalled(Project project, string packageId, NuGetVersion nugetVersion)
         {
             if (project == null)
             {
@@ -229,16 +239,10 @@ namespace NuGet.VisualStudio
                     var packages = installedPackageReferences.Where(p =>
                                         StringComparer.OrdinalIgnoreCase.Equals(p.PackageIdentity.Id, packageId));
 
-                    if (version != null)
+                    if (nugetVersion != null)
                     {
-                        NuGetVersion semVer = null;
-                        if (!NuGetVersion.TryParse(version.ToString(), out semVer))
-                        {
-                            throw new ArgumentException(VsResources.InvalidSemanticVersionString, "version");
-                        }
-
                         packages = packages.Where(p =>
-                                        VersionComparer.VersionRelease.Equals(p.PackageIdentity.Version, semVer));
+                                        VersionComparer.VersionRelease.Equals(p.PackageIdentity.Version, nugetVersion));
                     }
 
                     return packages.Any();
