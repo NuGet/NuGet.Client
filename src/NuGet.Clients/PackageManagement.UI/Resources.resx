@@ -557,4 +557,10 @@ Packages installed into Website projects will not be restored during build. Cons
   <data name="ToolTip_Settings" xml:space="preserve">
     <value>Settings</value>
   </data>
+  <data name="Version_Blocked" xml:space="preserve">
+    <value>Blocked by package.config</value>
+  </data>
+  <data name="ToolTip_BlockedVersion" xml:space="preserve">
+    <value>Following versions are unavailable due to allowedVersions constraint in package.config</value>
+  </data>
 </root>
