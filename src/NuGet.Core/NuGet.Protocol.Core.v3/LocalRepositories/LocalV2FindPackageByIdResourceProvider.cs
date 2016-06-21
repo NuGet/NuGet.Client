@@ -27,7 +27,7 @@ namespace NuGet.Protocol
             INuGetResource resource = null;
 
             var feedType = await source.GetFeedType(token);
-            if (feedType == FeedType.FileSystemV2)
+            if (feedType == FeedType.FileSystemV2 || feedType == FeedType.FileSystemUnzipped)
             {
                 resource = new LocalV2FindPackageByIdResource(source.PackageSource);
             }
