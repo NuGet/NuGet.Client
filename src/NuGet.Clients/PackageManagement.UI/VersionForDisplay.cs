@@ -16,17 +16,21 @@ namespace NuGet.PackageManagement.UI
 
         public DisplayVersion(
             NuGetVersion version,
-            string additionalInfo)
-            : this(GetRange(version), additionalInfo)
+            string additionalInfo,
+            bool isValidVersion = true)
+            : this(GetRange(version), additionalInfo, isValidVersion)
         {
         }
 
         public DisplayVersion(
             VersionRange range,
-            string additionalInfo)
+            string additionalInfo,
+            bool isValidVersion = true)
         {
             Range = range;
             _additionalInfo = additionalInfo;
+
+            IsValidVersion = isValidVersion;
 
             Version = range.MinVersion;
 
@@ -49,6 +53,8 @@ namespace NuGet.PackageManagement.UI
         public NuGetVersion Version { get; }
 
         public VersionRange Range { get; }
+
+        public bool IsValidVersion { get; set; }
 
         public override string ToString()
         {

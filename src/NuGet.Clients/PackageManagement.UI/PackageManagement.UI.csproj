@@ -74,6 +74,7 @@
     <Compile Include="Common\NuGetEvent.cs" />
     <Compile Include="Common\NuGetEventTrigger.cs" />
     <Compile Include="Common\OptionsPage.cs" />
+    <Compile Include="Converters\TooltipConverter.cs" />
     <Compile Include="Converters\CollectionToStringConverter.cs" />
     <Compile Include="Converters\EnumDescriptionValueConverter.cs" />
     <Compile Include="Models\LoadingStatusViewModel.cs" />

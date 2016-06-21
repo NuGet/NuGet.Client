@@ -582,13 +582,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected async Task<IEnumerable<IPackageSearchMetadata>> GetPackagesFromRemoteSourceAsync(string packageId, bool includePrerelease)
         {
-            var metadataProvider = new MultiSourcePackageMetadataProvider(PrimarySourceRepositories, optionalLocalRepository: null, optionalGlobalLocalRepositories: null, logger: Common.NullLogger.Instance);
+            var metadataProvider = new MultiSourcePackageMetadataProvider(PrimarySourceRepositories, optionalLocalRepository: null, optionalGlobalLocalRepositories: null, projects: new NuGetProject[] { Project }, isSolution: false, logger: Common.NullLogger.Instance);
             return await metadataProvider.GetPackageMetadataListAsync(packageId, includePrerelease, false, Token);
         }
 
         protected async Task<IPackageSearchMetadata> GetLatestPackageFromRemoteSourceAsync(PackageIdentity identity, bool includePrerelease)
         {
-            var metadataProvider = new MultiSourcePackageMetadataProvider(PrimarySourceRepositories, optionalLocalRepository: null, optionalGlobalLocalRepositories: null, logger: Common.NullLogger.Instance);
+            var metadataProvider = new MultiSourcePackageMetadataProvider(PrimarySourceRepositories, optionalLocalRepository: null, optionalGlobalLocalRepositories: null, projects: new NuGetProject[] { Project }, isSolution: false, logger: Common.NullLogger.Instance);
             return await metadataProvider.GetLatestPackageMetadataAsync(identity, includePrerelease, Token);
         }
 
