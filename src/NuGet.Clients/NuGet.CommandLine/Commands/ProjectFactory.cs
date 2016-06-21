@@ -967,7 +967,15 @@ namespace NuGet.CommandLine
             var references = packagesProject.GetInstalledPackagesAsync(CancellationToken.None).Result;
 
             var solutionDir = GetSolutionDir();
-            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(solutionDir, ReadSettings(solutionDir));
+            string packagesFolderPath;
+            if (solutionDir == null)
+            {
+                packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(_project.DirectoryPath, ReadSettings(_project.DirectoryPath));
+            }
+            else
+            {
+                packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(solutionDir, ReadSettings(solutionDir));
+            }
             var sourceRepository = Repository.Factory.GetCoreV3(packagesFolderPath).GetResource<FindPackageByIdResource>();
 
             // Collect all packages
