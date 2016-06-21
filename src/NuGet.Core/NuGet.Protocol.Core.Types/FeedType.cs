@@ -33,9 +33,14 @@
         FileSystemUnzipped = 1 << 4,
 
         /// <summary>
+        /// Packages.config packages folder format
+        /// </summary>
+        FileSystemPackagesConfig = 1 << 5,
+
+        /// <summary>
         /// Undetermined folder type. Occurs when the folder is empty
         /// or does not exist yet.
         /// </summary>
-        FileSystemUnknown = 1 << 5
+        FileSystemUnknown = 1 << 10
     }
 }

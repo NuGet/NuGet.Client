@@ -12,6 +12,7 @@ using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.ProjectManagement
@@ -23,6 +24,7 @@ namespace NuGet.ProjectManagement
     {
         public string Root { get; set; }
         private PackagePathResolver PackagePathResolver { get; }
+
 
         public FolderNuGetProject(string root)
             : this(root, new PackagePathResolver(root))
@@ -187,17 +189,35 @@ namespace NuGet.ProjectManagement
 
             var installPath = Path.GetFullPath(Path.Combine(packageDirectory, packageName));
 
+            // Keep the previous optimization of just going by the existance of the file if we find it.
             if (File.Exists(installPath))
             {
                 return installPath;
             }
 
-            // Fallback to the v2 directory search
-            installPath = PackagePathResolver.GetInstalledPackageFilePath(packageIdentity);
+            // If the file was not found check for non-normalized paths and verify the id/version
+            LocalPackageInfo package = null;
 
-            if (!string.IsNullOrEmpty(installPath))
+            if (PackagePathResolver.UseSideBySidePaths)
             {
-                return installPath;
+                // Search for a folder with the id and version
+                package = LocalFolderUtility.GetPackagesConfigFolderPackage(
+                    Root,
+                    packageIdentity,
+                    NullLogger.Instance);
+            }
+            else
+            {
+                // Search for just the id
+                package = LocalFolderUtility.GetPackageV2(
+                    Root,
+                    packageIdentity,
+                    NullLogger.Instance);
+            }
+
+            if (package != null && packageIdentity.Equals(package.Identity))
+            {
+                return package.Path;
             }
 
             // Default to empty

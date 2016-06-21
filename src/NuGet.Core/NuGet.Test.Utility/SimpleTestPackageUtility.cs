@@ -344,6 +344,46 @@ namespace NuGet.Test.Utility
         }
 
         /// <summary>
+        /// Create a packagets.config folder of nupkgs
+        /// </summary>
+        public static void CreateFolderFeedPackagesConfig(string root, params PackageIdentity[] packages)
+        {
+            var contexts = packages.Select(p => new SimpleTestPackageContext(p)).ToArray();
+
+            CreateFolderFeedPackagesConfig(root, contexts);
+        }
+
+        /// <summary>
+        /// Create a packagets.config folder of nupkgs
+        /// </summary>
+        public static void CreateFolderFeedPackagesConfig(string root, params SimpleTestPackageContext[] contexts)
+        {
+            using (var tempRoot = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                CreatePackages(tempRoot, contexts);
+
+                CreateFolderFeedPackagesConfig(root, Directory.GetFiles(tempRoot));
+            }
+        }
+
+        /// <summary>
+        /// Create a packagets.config folder of nupkgs
+        /// </summary>
+        public static void CreateFolderFeedPackagesConfig(string root, params string[] nupkgPaths)
+        {
+            var resolver = new PackagePathResolver(root);
+            var context = new PackageExtractionContext(NullLogger.Instance);
+
+            foreach (var path in nupkgPaths)
+            {
+                using (var stream = File.OpenRead(path))
+                {
+                    PackageExtractor.ExtractPackage(stream, resolver, context, CancellationToken.None);
+                }
+            }
+        }
+
+        /// <summary>
         /// Create packages with PackageBuilder, this includes OPC support.
         /// </summary>
         public static void CreateOPCPackage(SimpleTestPackageContext package, string repositoryPath)
