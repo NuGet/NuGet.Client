@@ -36,6 +36,7 @@ namespace NuGet.PackageManagement
     public class NuGetPackageManager
     {
         private IReadOnlyList<SourceRepository> _globalPackageFolderRepositories;
+
         private ISourceRepositoryProvider SourceRepositoryProvider { get; }
 
         private ISolutionManager SolutionManager { get; }
@@ -173,12 +174,15 @@ namespace NuGet.PackageManagement
 
         private void InitializePackagesFolderInfo(string packagesFolderPath, bool excludeVersion = false)
         {
+            // FileSystemPackagesConfig supports id.version formats, if the version is excluded use the normal v2 format
+            var feedType = excludeVersion ? FeedType.FileSystemV2 : FeedType.FileSystemPackagesConfig;
+
             PackagesFolderNuGetProject = new FolderNuGetProject(packagesFolderPath, excludeVersion);
             // Capturing it locally is important since it allows for the instance to cache packages for the lifetime
             // of the closure \ NuGetPackageManager.
             PackagesFolderSourceRepository = SourceRepositoryProvider.CreateRepository(
                 new PackageSource(packagesFolderPath),
-                FeedType.FileSystemV2);
+                feedType);
         }
 
         /// <summary>

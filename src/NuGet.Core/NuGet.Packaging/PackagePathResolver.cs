@@ -10,8 +10,9 @@ namespace NuGet.Packaging
 {
     public class PackagePathResolver
     {
-        private readonly bool _useSideBySidePaths;
         private readonly string _rootDirectory;
+
+        public bool UseSideBySidePaths { get; }
 
         public PackagePathResolver(string rootDirectory, bool useSideBySidePaths = true)
         {
@@ -22,7 +23,7 @@ namespace NuGet.Packaging
                     nameof(rootDirectory));
             }
             _rootDirectory = rootDirectory;
-            _useSideBySidePaths = useSideBySidePaths;
+            UseSideBySidePaths = useSideBySidePaths;
         }
 
         protected internal string Root
@@ -74,7 +75,7 @@ namespace NuGet.Packaging
 
             builder.Append(packageIdentity.Id.ToLowerInvariant());
 
-            if (_useSideBySidePaths)
+            if (UseSideBySidePaths)
             {
                 builder.Append('.');
 

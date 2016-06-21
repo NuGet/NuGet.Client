@@ -194,6 +194,236 @@ namespace NuGet.Protocol
         }
 
         /// <summary>
+        /// Retrieve a package with an id and version from a packages.config packages folder.
+        /// </summary>
+        /// <param name="root">Nupkg folder directory path.</param>
+        public static IEnumerable<LocalPackageInfo> GetPackagesConfigFolderPackages(
+            string root,
+            ILogger log)
+        {
+            if (root == null)
+            {
+                throw new ArgumentNullException(nameof(root));
+            }
+
+            if (log == null)
+            {
+                throw new ArgumentNullException(nameof(log));
+            }
+
+            var rootDir = new DirectoryInfo(root);
+
+            // Find the matching nupkg for each sub directory.
+            if (rootDir.Exists)
+            {
+                foreach (var dir in rootDir.GetDirectories())
+                {
+                    var package = GetPackagesConfigFolderPackage(dir);
+
+                    // Ensure that the nupkg file exists
+                    if (package != null)
+                    {
+                        yield return package;
+                    }
+                }
+            }
+
+            yield break;
+        }
+
+        /// <summary>
+        /// Retrieve a package with an id and version from a packages.config packages folder.
+        /// </summary>
+        /// <param name="root">Nupkg folder directory path.</param>
+        public static IEnumerable<LocalPackageInfo> GetPackagesConfigFolderPackages(
+            string root,
+            string id,
+            ILogger log)
+        {
+            if (root == null)
+            {
+                throw new ArgumentNullException(nameof(root));
+            }
+
+            if (id == null)
+            {
+                throw new ArgumentNullException(nameof(id));
+            }
+
+            if (log == null)
+            {
+                throw new ArgumentNullException(nameof(log));
+            }
+
+            var rootDir = new DirectoryInfo(root);
+
+            if (rootDir.Exists)
+            {
+                var searchPattern = GetPackagesConfigFolderSearchPattern(id);
+
+                foreach (var dir in rootDir.GetDirectories(searchPattern, SearchOption.TopDirectoryOnly))
+                {
+                    // Check the id and version of the path, if the id matches and the version
+                    // is valid this will be non-null;
+                    var dirVersion = GetVersionFromIdVersionString(dir.Name, id);
+
+                    if (dirVersion != null)
+                    {
+                        var package = GetPackagesConfigFolderPackage(dir);
+
+                        if (package != null)
+                        {
+                            yield return package;
+                        }
+                    }
+                }
+            }
+
+            yield break;
+        }
+
+        /// <summary>
+        /// Retrieve a package with an id and version from a packages.config packages folder.
+        /// </summary>
+        /// <param name="root">Nupkg folder directory path.</param>
+        /// <param name="identity">Package id and version.</param>
+        public static LocalPackageInfo GetPackagesConfigFolderPackage(string root, PackageIdentity identity, ILogger log)
+        {
+            if (root == null)
+            {
+                throw new ArgumentNullException(nameof(root));
+            }
+
+            if (identity == null)
+            {
+                throw new ArgumentNullException(nameof(identity));
+            }
+
+            if (log == null)
+            {
+                throw new ArgumentNullException(nameof(log));
+            }
+
+            // Try matching the exact version format
+            var idVersion = $"{identity.Id}.{identity.Version.ToString()}";
+            var expectedPath = Path.Combine(root, idVersion, $"{idVersion}{PackagingCoreConstants.NupkgExtension}");
+            var expectedFile = new FileInfo(expectedPath);
+
+            if (expectedFile.Exists)
+            {
+                var localPackage = GetPackageFromNupkg(expectedFile);
+
+                // Verify that the nuspec matches the expected id/version.
+                if (localPackage != null && identity.Equals(localPackage.Identity))
+                {
+                    return localPackage;
+                }
+            }
+
+            // Search all sub folders
+            var rootDir = new DirectoryInfo(root);
+
+            if (rootDir.Exists)
+            {
+                var searchPattern = GetPackagesConfigFolderSearchPattern(identity.Id);
+
+                foreach (var dir in rootDir.GetDirectories(searchPattern, SearchOption.TopDirectoryOnly))
+                {
+                    // Check the id and version of the path, if the id matches and the version
+                    // is valid this will be non-null;
+                    var dirVersion = GetVersionFromIdVersionString(dir.Name, identity.Id);
+
+                    if (identity.Version == dirVersion)
+                    {
+                        var localPackage = GetPackagesConfigFolderPackage(dir);
+
+                        // Verify that the nuspec matches the expected id/version.
+                        if (localPackage != null && identity.Equals(localPackage.Identity))
+                        {
+                            return localPackage;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Returns either id.* or * depending on the OS.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        private static string GetPackagesConfigFolderSearchPattern(string id)
+        {
+            // Case insensitive searches on windows may use the id prefix.
+            // The majority of packages.config scenarios will be on windows.
+            if (!string.IsNullOrEmpty(id) && RuntimeEnvironmentHelper.IsWindows)
+            {
+                return $"{id}.*";
+            }
+
+            // For non-windows systems which may be case-sensitive search all directories
+            return $"*";
+        }
+
+        /// <summary>
+        /// Retrieve a package with an id and version from a packages.config packages folder.
+        /// </summary>
+        /// <param name="root">Nupkg folder directory path.</param>
+        public static LocalPackageInfo GetPackagesConfigFolderPackage(
+            string root,
+            string id,
+            NuGetVersion version,
+            ILogger log)
+        {
+            if (root == null)
+            {
+                throw new ArgumentNullException(nameof(root));
+            }
+
+            if (id == null)
+            {
+                throw new ArgumentNullException(nameof(id));
+            }
+
+            if (version == null)
+            {
+                throw new ArgumentNullException(nameof(version));
+            }
+
+            if (log == null)
+            {
+                throw new ArgumentNullException(nameof(log));
+            }
+
+            var identity = new PackageIdentity(id, version);
+            return GetPackagesConfigFolderPackage(root, identity, log);
+        }
+
+        /// <summary>
+        /// Return the package nupkg from a packages.config folder sub directory.
+        /// </summary>
+        /// <param name="dir">Package directory in the format id.version</param>
+        private static LocalPackageInfo GetPackagesConfigFolderPackage(DirectoryInfo dir)
+        {
+            LocalPackageInfo result = null;
+
+            var nupkgPath = Path.Combine(
+                dir.FullName,
+                $"{dir.Name}{PackagingCoreConstants.NupkgExtension}");
+
+            var nupkgFile = new FileInfo(nupkgPath);
+
+            if (nupkgFile.Exists)
+            {
+                result = GetPackageFromNupkg(nupkgFile);
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// True if the file name matches the identity. This is could be incorrect if
         /// the package name ends with numbers. The result should be checked against the nuspec.
         /// </summary>
@@ -279,27 +509,43 @@ namespace NuGet.Protocol
             }
 
             NuGetVersion result = null;
-            var prefix = $"{id}.";
 
-            if (fileName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
-                && fileName.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
+            if (fileName.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
             {
                 fileName = Path.GetFileNameWithoutExtension(fileName);
 
                 // Skip symbol packages
-                if (fileName.Length > prefix.Length && !fileName.EndsWith(".symbols", StringComparison.OrdinalIgnoreCase))
+                if (!fileName.EndsWith(".symbols", StringComparison.OrdinalIgnoreCase))
                 {
-                    var versionString = fileName.Substring(prefix.Length, fileName.Length - prefix.Length);
-
-                    NuGetVersion version;
-                    if (NuGetVersion.TryParse(versionString, out version))
-                    {
-                        result = version;
-                    }
+                    result = GetVersionFromIdVersionString(fileName, id);
                 }
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Parse a possible version from a string in the format Id.Version
+        /// Returns null if the version is invalid or the id did not match.
+        /// </summary>
+        /// <param name="idVersionString">Id.Version</param>
+        /// <param name="id">Expected id</param>
+        private static NuGetVersion GetVersionFromIdVersionString(string idVersionString, string id)
+        {
+            var prefix = $"{id}.";
+
+            if (idVersionString.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                var versionString = idVersionString.Substring(prefix.Length);
+
+                NuGetVersion version;
+                if (NuGetVersion.TryParse(versionString, out version))
+                {
+                    return version;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

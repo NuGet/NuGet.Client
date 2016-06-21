@@ -14,6 +14,337 @@ namespace NuGet.Protocol.Core.v3.Tests
     public class LocalFolderUtilityTests
     {
         [Fact]
+        public void LocalFolderUtility_GetPackagesConfigFolderPackages_All()
+        {
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var testLogger = new TestLogger();
+                var a = new PackageIdentity("a", NuGetVersion.Parse("1.0.0"));
+                var a2 = new PackageIdentity("a", NuGetVersion.Parse("1.0.0-beta"));
+                var b = new PackageIdentity("b", NuGetVersion.Parse("1.0.0"));
+                var c = new PackageIdentity("c", NuGetVersion.Parse("1.0.0"));
+
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, a);
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, a2);
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, b);
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, c);
+
+                // Act
+                var packages = LocalFolderUtility.GetPackagesConfigFolderPackages(root, testLogger)
+                    .OrderBy(package => package.Identity.Id)
+                    .ThenBy(package => package.Identity.Version)
+                    .ToList();
+
+                // Assert
+                Assert.Equal(4, packages.Count);
+                Assert.Equal("a.1.0.0-beta", packages[0].Identity.ToString());
+                Assert.Equal("a.1.0.0", packages[1].Identity.ToString());
+                Assert.Equal("b.1.0.0", packages[2].Identity.ToString());
+                Assert.Equal("c.1.0.0", packages[3].Identity.ToString());
+            }
+        }
+
+        [Fact]
+        public void LocalFolderUtility_GetPackagesConfigFolderPackages_ById()
+        {
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var testLogger = new TestLogger();
+                var a = new PackageIdentity("a", NuGetVersion.Parse("1.0.0"));
+                var a2 = new PackageIdentity("a", NuGetVersion.Parse("1.0.0-beta"));
+                var b = new PackageIdentity("b", NuGetVersion.Parse("1.0.0"));
+                var c = new PackageIdentity("c", NuGetVersion.Parse("1.0.0"));
+
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, a);
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, a2);
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, b);
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, c);
+
+                // Act
+                var packages = LocalFolderUtility.GetPackagesConfigFolderPackages(root, "a", testLogger)
+                    .OrderBy(package => package.Identity.Id)
+                    .ThenBy(package => package.Identity.Version)
+                    .ToList();
+
+                // Assert
+                Assert.Equal(2, packages.Count);
+                Assert.Equal("a.1.0.0-beta", packages[0].Identity.ToString());
+                Assert.Equal("a.1.0.0", packages[1].Identity.ToString());
+            }
+        }
+
+        [Fact]
+        public void LocalFolderUtility_GetPackagesConfigFolderPackages_ById_NotFound()
+        {
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var testLogger = new TestLogger();
+                var a = new PackageIdentity("a", NuGetVersion.Parse("1.0.0"));
+                var a2 = new PackageIdentity("a", NuGetVersion.Parse("1.0.0-beta"));
+                var b = new PackageIdentity("b", NuGetVersion.Parse("1.0.0"));
+                var c = new PackageIdentity("c", NuGetVersion.Parse("1.0.0"));
+
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, a);
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, a2);
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, b);
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, c);
+
+                // Act
+                var packages = LocalFolderUtility.GetPackagesConfigFolderPackages(root, "z", testLogger)
+                    .OrderBy(package => package.Identity.Id)
+                    .ThenBy(package => package.Identity.Version)
+                    .ToList();
+
+                // Assert
+                Assert.Equal(0, packages.Count);
+            }
+        }
+
+        [Fact]
+        public void LocalFolderUtility_GetPackagesConfigFolderPackage()
+        {
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var testLogger = new TestLogger();
+                var a = new PackageIdentity("a", NuGetVersion.Parse("1.0.0"));
+                var b = new PackageIdentity("b", NuGetVersion.Parse("1.0.0"));
+                var c = new PackageIdentity("c", NuGetVersion.Parse("1.0.0"));
+
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, a);
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, b);
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, c);
+
+                // Act
+                var foundA = LocalFolderUtility.GetPackagesConfigFolderPackage(root, a, testLogger);
+
+                // Assert
+                Assert.Equal(a, foundA.Identity);
+                Assert.Equal(a, foundA.Nuspec.GetIdentity());
+                Assert.True(foundA.IsNupkg);
+                Assert.Equal(a, foundA.GetReader().GetIdentity());
+                Assert.Contains("a.1.0.0.nupkg", foundA.Path);
+            }
+        }
+
+        [Fact]
+        public void LocalFolderUtility_GetPackagesConfigFolderPackage_Missing()
+        {
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var testLogger = new TestLogger();
+                var a = new PackageIdentity("a", NuGetVersion.Parse("1.0.0"));
+                var b = new PackageIdentity("b", NuGetVersion.Parse("1.0.0"));
+                var c = new PackageIdentity("c", NuGetVersion.Parse("1.0.0"));
+
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, b);
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, c);
+
+                // Act
+                var foundA = LocalFolderUtility.GetPackagesConfigFolderPackage(root, a, testLogger);
+
+                // Assert
+                Assert.Null(foundA);
+            }
+        }
+
+        [Fact]
+        public void LocalFolderUtility_GetPackagesConfigFolderPackage_NonNormalizedInFolder()
+        {
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var testLogger = new TestLogger();
+                var a = new PackageIdentity("a", NuGetVersion.Parse("1.0.1"));
+                var aNonNormalized = new PackageIdentity("a", NuGetVersion.Parse("1.0.01.0"));
+                var b = new PackageIdentity("b", NuGetVersion.Parse("1.0.0"));
+                var c = new PackageIdentity("c", NuGetVersion.Parse("1.0.0"));
+
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, aNonNormalized);
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, b);
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, c);
+
+                // Act
+                var foundA = LocalFolderUtility.GetPackagesConfigFolderPackage(root, a, testLogger);
+
+                // Assert
+                Assert.Equal(a, foundA.Identity);
+                Assert.Equal(a, foundA.Nuspec.GetIdentity());
+                Assert.True(foundA.IsNupkg);
+                Assert.Equal(a, foundA.GetReader().GetIdentity());
+                Assert.Contains("a.1.0.01.0.nupkg", foundA.Path);
+            }
+        }
+
+        [Fact]
+        public void LocalFolderUtility_GetPackagesConfigFolderPackage_NonNormalizedInRequest()
+        {
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var testLogger = new TestLogger();
+                var a = new PackageIdentity("a", NuGetVersion.Parse("1.0.1"));
+                var aNonNormalized = new PackageIdentity("a", NuGetVersion.Parse("1.0.01.0"));
+                var b = new PackageIdentity("b", NuGetVersion.Parse("1.0.0"));
+                var c = new PackageIdentity("c", NuGetVersion.Parse("1.0.0"));
+
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, a);
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, b);
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, c);
+
+                // Act
+                var foundA = LocalFolderUtility.GetPackagesConfigFolderPackage(root, aNonNormalized, testLogger);
+
+                // Assert
+                Assert.Equal(a, foundA.Identity);
+                Assert.Equal(a, foundA.Nuspec.GetIdentity());
+                Assert.True(foundA.IsNupkg);
+                Assert.Equal(a, foundA.GetReader().GetIdentity());
+                Assert.Contains("a.1.0.1.nupkg", foundA.Path);
+            }
+        }
+
+        [Fact]
+        public void LocalFolderUtility_GetPackagesConfigFolderPackage_ConflictAndMissing()
+        {
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var testLogger = new TestLogger();
+                var a = new PackageIdentity("a", NuGetVersion.Parse("1.0.0"));
+                var b = new PackageIdentity("b", NuGetVersion.Parse("1.0.0"));
+                var c = new PackageIdentity("c", NuGetVersion.Parse("1.0.0"));
+
+                var a2 = new PackageIdentity("a.1", NuGetVersion.Parse("0.0"));
+
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, a2);
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, b);
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, c);
+
+                // Act
+                var foundA = LocalFolderUtility.GetPackagesConfigFolderPackage(root, a, testLogger);
+
+                // Assert
+                Assert.Null(foundA);
+            }
+        }
+
+        [Fact]
+        public void LocalFolderUtility_GetPackagesConfigFolderPackage_MissingNupkgs()
+        {
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var testLogger = new TestLogger();
+                var a = new PackageIdentity("a", NuGetVersion.Parse("1.0.0"));
+                var b = new PackageIdentity("b", NuGetVersion.Parse("1.0.0"));
+                var c = new PackageIdentity("c", NuGetVersion.Parse("1.0.0"));
+
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, a);
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, b);
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, c);
+
+                foreach (var file in Directory.GetFiles(root, "*.nupkg", SearchOption.AllDirectories))
+                {
+                    File.Delete(file);
+                }
+
+                // Act
+                var foundA = LocalFolderUtility.GetPackagesConfigFolderPackage(root, a, testLogger);
+
+                // Assert
+                Assert.Null(foundA);
+            }
+        }
+
+        [Fact]
+        public void LocalFolderUtility_GetPackagesConfigFolderPackage_IgnoreNupkgInWrongFolder()
+        {
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var testLogger = new TestLogger();
+                var a = new PackageIdentity("a", NuGetVersion.Parse("1.0.0"));
+                var b = new PackageIdentity("b", NuGetVersion.Parse("1.0.0"));
+                var c = new PackageIdentity("c", NuGetVersion.Parse("1.0.0"));
+
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, a);
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, b);
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(root, c);
+
+                foreach (var file in Directory.GetFiles(root, "a.1.0.0.nupkg", SearchOption.AllDirectories))
+                {
+                    File.Delete(file);
+                }
+
+                SimpleTestPackageUtility.CreateFolderFeedV2(root, a);
+                SimpleTestPackageUtility.CreateFolderFeedV2(Path.Combine(root, "b.1.0.0"), a);
+
+                // Act
+                var foundA = LocalFolderUtility.GetPackagesConfigFolderPackage(root, a, testLogger);
+
+                // Assert
+                Assert.Null(foundA);
+            }
+        }
+
+        [Fact]
+        public void LocalFolderUtility_GetPackagesConfigFolderPackage_EmptyDir()
+        {
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var testLogger = new TestLogger();
+                var a = new PackageIdentity("a", NuGetVersion.Parse("1.0.0"));
+                Directory.Delete(root);
+
+                // Act
+                var foundA = LocalFolderUtility.GetPackagesConfigFolderPackage(root, a, testLogger);
+
+                // Assert
+                Assert.Null(foundA);
+            }
+        }
+
+        [Fact]
+        public void LocalFolderUtility_GetPackagesConfigFolderPackages_EmptyDir()
+        {
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var testLogger = new TestLogger();
+                Directory.Delete(root);
+
+                // Act
+                var packages = LocalFolderUtility.GetPackagesConfigFolderPackages(root, testLogger).ToList();
+
+                // Assert
+                Assert.Equal(0, packages.Count);
+            }
+        }
+
+        [Fact]
+        public void LocalFolderUtility_GetPackagesConfigFolderPackagesWithId_EmptyDir()
+        {
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var testLogger = new TestLogger();
+                Directory.Delete(root);
+
+                // Act
+                var packages = LocalFolderUtility.GetPackagesConfigFolderPackages(root, "a", testLogger).ToList();
+
+                // Assert
+                Assert.Equal(0, packages.Count);
+            }
+        }
+
+        [Fact]
         public void LocalFolderUtility_GetPackagesV3MaxPathTest()
         {
             using (var root = TestFileSystemUtility.CreateRandomTestFolder())
@@ -22,7 +353,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 var testLogger = new TestLogger();
                 var longString = string.Empty;
 
-                for (int i=0; i < 1000; i++)
+                for (int i = 0; i < 1000; i++)
                 {
                     longString += "abcdef";
                 }
