@@ -15,13 +15,16 @@
       </ResourceDictionary.MergedDictionaries>
       <local:NotNullToBooleanConverter
         x:Key="NotNullToBooleanConverter" />
+      <local:TooltipConverter
+        x:Key="TooltipConverter" />  
       <ControlTemplate
         x:Key="SeparatorControlTemplate">
         <Separator
           HorizontalAlignment="Stretch"
           IsEnabled="False" />
       </ControlTemplate>
-    </ResourceDictionary>
+            
+        </ResourceDictionary>
   </UserControl.Resources>
   <Grid>
     <Grid.RowDefinitions>
@@ -88,8 +91,29 @@
       MinHeight="22"
       AutomationProperties.Name="{x:Static local:Resources.Label_Version}"
       ItemsSource="{Binding Path=Versions}"
-      SelectedItem="{Binding Path=SelectedVersion}" />
-
+      SelectedItem="{Binding Path=SelectedVersion}">
+    
+        <ComboBox.ItemContainerStyle>
+            <Style TargetType="{x:Type ComboBoxItem}">
+                <Style.Triggers>
+                    <DataTrigger 
+                        Binding="{Binding Converter={StaticResource NotNullToBooleanConverter}}"
+                        Value="True" >                        
+                        <Setter
+                            Property="IsEnabled"
+                            Value="{Binding IsValidVersion}" />
+                        <Setter 
+                            Property="ToolTipService.ShowOnDisabled"
+                            Value="True" />
+                        <Setter 
+                            Property="ToolTip" 
+                            Value="{Binding Converter={StaticResource TooltipConverter}}" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </ComboBox.ItemContainerStyle>
+    </ComboBox>
+      
     <!-- install button and update button. They are in fact the same button. Which
          one is displayed depends on whether InstalledVersion is null.
     -->

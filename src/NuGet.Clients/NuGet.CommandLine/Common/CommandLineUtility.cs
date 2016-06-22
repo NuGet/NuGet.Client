@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using NuGet.Configuration;
 
-namespace NuGet
+namespace NuGet.CommandLine
 {
     public static class CommandLineUtility
     {

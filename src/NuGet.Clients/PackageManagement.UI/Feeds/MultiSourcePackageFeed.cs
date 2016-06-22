@@ -151,12 +151,24 @@ namespace NuGet.PackageManagement.UI
 
             if (notCompleted.Any())
             {
-                var items = notCompleted
-                        .ToDictionary(kv => kv.Key, kv => GetLoadingStatus(kv.Value.Status));
+                var statuses = notCompleted.ToDictionary(
+                    kv => kv.Key,
+                    kv => GetLoadingStatus(kv.Value.Status));
 
-                foreach (var item in items)
+                foreach (var item in statuses)
                 {
                     aggregated.SourceSearchStatus.Add(item);
+                }
+
+                var exceptions = notCompleted
+                    .Where(kv => kv.Value.Exception != null)
+                    .ToDictionary(
+                        kv => kv.Key,
+                        kv => (Exception) kv.Value.Exception);
+
+                foreach (var item in exceptions)
+                {
+                    aggregated.SourceSearchException.Add(item);
                 }
             }
 

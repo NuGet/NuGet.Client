@@ -294,7 +294,7 @@ namespace NuGet.CommandLine.Test
                     }
                     else
                     {
-                        Console.WriteLine("Unexpected error code: {0}. Ex: {1}", ex.ErrorCode, ex);
+                        System.Console.WriteLine("Unexpected error code: {0}. Ex: {1}", ex.ErrorCode, ex);
                         throw;
                     }
                 }

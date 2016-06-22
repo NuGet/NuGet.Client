@@ -36,6 +36,7 @@ namespace NuGet.PackageManagement
     public class NuGetPackageManager
     {
         private IReadOnlyList<SourceRepository> _globalPackageFolderRepositories;
+
         private ISourceRepositoryProvider SourceRepositoryProvider { get; }
 
         private ISolutionManager SolutionManager { get; }
@@ -173,12 +174,15 @@ namespace NuGet.PackageManagement
 
         private void InitializePackagesFolderInfo(string packagesFolderPath, bool excludeVersion = false)
         {
+            // FileSystemPackagesConfig supports id.version formats, if the version is excluded use the normal v2 format
+            var feedType = excludeVersion ? FeedType.FileSystemV2 : FeedType.FileSystemPackagesConfig;
+
             PackagesFolderNuGetProject = new FolderNuGetProject(packagesFolderPath, excludeVersion);
             // Capturing it locally is important since it allows for the instance to cache packages for the lifetime
             // of the closure \ NuGetPackageManager.
             PackagesFolderSourceRepository = SourceRepositoryProvider.CreateRepository(
                 new PackageSource(packagesFolderPath),
-                FeedType.FileSystemV2);
+                feedType);
         }
 
         /// <summary>
@@ -829,6 +833,12 @@ namespace NuGet.PackageManagement
                 // Remove packages that do not meet the constraints specified in the UpdateConstrainst
                 prunedAvailablePackages = PrunePackageTree.PruneByUpdateConstraints(prunedAvailablePackages, projectInstalledPackageReferences, resolutionContext.VersionConstraints);
 
+                // Verify that the target is allowed by packages.config
+                GatherExceptionHelpers.ThrowIfVersionIsDisallowedByPackagesConfig(primaryTargetIds, projectInstalledPackageReferences, prunedAvailablePackages);
+
+                // Remove versions that do not satisfy 'allowedVersions' attribute in packages.config, if any
+                prunedAvailablePackages = PrunePackageTree.PruneDisallowedVersions(prunedAvailablePackages, projectInstalledPackageReferences);
+
                 // Remove all but the highest packages that are of the same Id as a specified packageId
                 if (packageId != null)
                 {
@@ -837,12 +847,6 @@ namespace NuGet.PackageManagement
                     // And then verify that the installed package is not already of a higher version - this check here ensures the user get's the right error message
                     GatherExceptionHelpers.ThrowIfNewerVersionAlreadyReferenced(packageId, projectInstalledPackageReferences, prunedAvailablePackages);
                 }
-
-                // Verify that the target is allowed by packages.config
-                GatherExceptionHelpers.ThrowIfVersionIsDisallowedByPackagesConfig(primaryTargetIds, projectInstalledPackageReferences, prunedAvailablePackages);
-
-                // Remove versions that do not satisfy 'allowedVersions' attribute in packages.config, if any
-                prunedAvailablePackages = PrunePackageTree.PruneDisallowedVersions(prunedAvailablePackages, projectInstalledPackageReferences);
 
                 // Remove packages that are of the same Id but different version than the primartTargets
                 prunedAvailablePackages = PrunePackageTree.PruneByPrimaryTargets(prunedAvailablePackages, primaryTargets);

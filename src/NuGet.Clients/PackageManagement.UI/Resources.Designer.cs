@@ -1206,6 +1206,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Following versions are unavailable due to allowedVersions constraint in package.config.
+        /// </summary>
+        public static string ToolTip_BlockedVersion {
+            get {
+                return ResourceManager.GetString("ToolTip_BlockedVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Install {0} version {1}..
         /// </summary>
         public static string ToolTip_InstallButton {
@@ -1283,6 +1292,15 @@ namespace NuGet.PackageManagement.UI {
         public static string ToolTip_UpdateButton {
             get {
                 return ResourceManager.GetString("ToolTip_UpdateButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Blocked by package.config.
+        /// </summary>
+        public static string Version_Blocked {
+            get {
+                return ResourceManager.GetString("Version_Blocked", resourceCulture);
             }
         }
         

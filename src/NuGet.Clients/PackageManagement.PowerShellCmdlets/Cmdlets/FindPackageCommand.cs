@@ -103,7 +103,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         private void FindPackagesByPSSearchService()
         {
-            var remotePackages = GetPackagesFromRemoteSource(Id, IncludePrerelease.IsPresent);
+            var errors = new List<string>();
+            var remotePackages = GetPackagesFromRemoteSource(Id, IncludePrerelease.IsPresent, errors.Add);
 
             if (ExactMatch.IsPresent)
             {
@@ -133,6 +134,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             if (view.Any())
             {
                 WriteObject(view, enumerateCollection: true);
+            }
+
+            foreach (var error in errors)
+            {
+                LogCore(ProjectManagement.MessageLevel.Error, error);
             }
         }
 

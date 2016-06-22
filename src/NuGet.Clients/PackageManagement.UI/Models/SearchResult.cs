@@ -39,7 +39,9 @@ namespace NuGet.PackageManagement.UI
 
         IEnumerator IEnumerable.GetEnumerator() => Items.GetEnumerator();
 
-        public IDictionary<string, LoadingStatus> SourceSearchStatus { get; set; }
+        public IDictionary<string, LoadingStatus> SourceSearchStatus { get; set; } = new Dictionary<string, LoadingStatus>();
+
+        public IDictionary<string, Exception> SourceSearchException { get; set; } = new Dictionary<string, Exception>();
 
         // total number of unmerged items found
         public int RawItemsCount { get; set; }
@@ -64,8 +66,7 @@ namespace NuGet.PackageManagement.UI
 
         public static SearchResult<T> Empty<T>() => new SearchResult<T>
         {
-            Items = new T[] { },
-            SourceSearchStatus = new Dictionary<string, LoadingStatus> { }
+            Items = new T[] { }
         };
     }
 }

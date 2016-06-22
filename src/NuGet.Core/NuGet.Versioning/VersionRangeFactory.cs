@@ -376,6 +376,72 @@ namespace NuGet.Versioning
         }
 
         /// <summary>
+        /// Returns the greatest common range that satisfies all given ranges.
+        /// </summary>
+        public static VersionRange CommonSubSet(IEnumerable<VersionRange> ranges)
+        {
+            return CommonSubSet(ranges, VersionComparer.Default);
+        }
+
+        /// <summary>
+        /// Returns the greatest common range that satisfies all given ranges.
+        /// </summary>
+        public static VersionRange CommonSubSet(IEnumerable<VersionRange> ranges, IVersionComparer comparer)
+        {
+            if (ranges == null)
+            {
+                throw new ArgumentNullException(nameof(ranges));
+            }
+
+            if (comparer == null)
+            {
+                throw new ArgumentNullException(nameof(comparer));
+            }
+
+            // return None in case of any invalid range like (1.0.0, 1.0.0)
+            // This also includes VersionRange.None and any other ranges that satisfy zero versions
+            var versionRanges = ranges as VersionRange[] ?? ranges.ToArray();
+            if (!versionRanges.Any() || versionRanges.Any(range => !HasValidRange(range)))
+            {
+                return None;
+            }
+
+            // find out maximum lowest bound and minimum highest bound to form common subset
+            var lowest = versionRanges.Where(range => range.HasLowerBound).Max(range => range.MinVersion);
+            var highest = versionRanges.Where(range => range.HasUpperBound).Min((range => range.MaxVersion));
+
+            // exclude this lowest if any range has this lowest as excluded, else include
+            var excludeLowest = versionRanges.Any(range => range.HasLowerBound &&
+                                                    comparer.Compare(range.MinVersion, lowest) == 0 &&
+                                                    !range.IsMinInclusive);
+
+            // exclude this highest if any range has this highest excluded, else include
+            var excludeHighest = versionRanges.Any(range => range.HasUpperBound &&
+                                                    comparer.Compare(range.MaxVersion, highest) == 0 &&
+                                                    !range.IsMaxInclusive);
+
+            // finally check the final lowest n highest versions
+            if (lowest != null && highest != null)
+            {
+                var compare = comparer.Compare(lowest, highest);
+                if (compare > 0)
+                {
+                    return None;
+                }
+
+                if (compare == 0)
+                {
+                    excludeHighest = excludeLowest |= excludeHighest;
+                }
+            }
+
+            // Create the new range using the minimums found
+            var result = new VersionRange(lowest, !excludeLowest, highest, !excludeHighest);
+
+            return HasValidRange(result) ? result : None;
+        }
+
+        /// <summary>
         /// Verify the range has an actual width.
         /// Ex: no version can satisfy (3.0.0, 3.0.0)
         /// </summary>

@@ -1,6 +1,6 @@
 using System;
 
-namespace NuGet
+namespace NuGet.CommandLine
 {
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public sealed class OptionAttribute : Attribute

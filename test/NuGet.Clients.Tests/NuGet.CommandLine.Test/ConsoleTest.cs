@@ -9,7 +9,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void TestConsoleWindowWidthNotZero()
         {
-            Assert.NotEqual(0, new NuGet.Common.Console().WindowWidth);
+            Assert.NotEqual(0, new Console().WindowWidth);
         }
     }
 }

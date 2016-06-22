@@ -34,7 +34,7 @@ namespace NuGet.CommandLine
 
 #line 4 "D:\forks\nuget\src\CommandLine\Commands\HelpCommandMarkdownTemplate.cshtml"
 
-        public NuGet.CommandAttribute CommandAttribute { get; set; }
+        public CommandAttribute CommandAttribute { get; set; }
 
         public IEnumerable<dynamic> Options { get; set; }
 

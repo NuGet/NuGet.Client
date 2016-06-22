@@ -37,17 +37,19 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task FindLocalPackagesResource_GetPackagesBasic()
         {
+            using (var rootPackagesConfig = TestFileSystemUtility.CreateRandomTestFolder())
             using (var rootUnzip = TestFileSystemUtility.CreateRandomTestFolder())
             using (var rootV3 = TestFileSystemUtility.CreateRandomTestFolder())
             using (var rootV2 = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var testLogger = new TestLogger();
-                await CreateFeeds(rootV2, rootV3, rootUnzip, PackageSet1);
+                await CreateFeeds(rootV2, rootV3, rootUnzip, rootPackagesConfig, PackageSet1);
                 var expected = new HashSet<PackageIdentity>(PackageSet1);
 
                 var resources = new FindLocalPackagesResource[]
                 {
+                    new FindLocalPackagesResourcePackagesConfig(rootPackagesConfig),
                     new FindLocalPackagesResourceUnzipped(rootUnzip),
                     new FindLocalPackagesResourceV2(rootV2),
                     new FindLocalPackagesResourceV3(rootV3)
@@ -78,6 +80,8 @@ namespace NuGet.Protocol.Core.v3.Tests
 
                 var resources = new FindLocalPackagesResource[]
                 {
+                    new FindLocalPackagesResourcePackagesConfig(doesNotExist),
+                    new FindLocalPackagesResourcePackagesConfig(emptyDir),
                     new FindLocalPackagesResourceUnzipped(doesNotExist),
                     new FindLocalPackagesResourceV2(doesNotExist),
                     new FindLocalPackagesResourceV3(doesNotExist),
@@ -104,13 +108,14 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task FindLocalPackagesResource_FindPackagesByIdBasic()
         {
+            using (var rootPackagesConfig = TestFileSystemUtility.CreateRandomTestFolder())
             using (var rootUnzip = TestFileSystemUtility.CreateRandomTestFolder())
             using (var rootV3 = TestFileSystemUtility.CreateRandomTestFolder())
             using (var rootV2 = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var testLogger = new TestLogger();
-                await CreateFeeds(rootV2, rootV3, rootUnzip, PackageSet1);
+                await CreateFeeds(rootV2, rootV3, rootUnzip, rootPackagesConfig, PackageSet1);
                 var expected = new HashSet<PackageIdentity>(new[] 
                 {
                     PackageA1,
@@ -122,6 +127,7 @@ namespace NuGet.Protocol.Core.v3.Tests
 
                 var resources = new FindLocalPackagesResource[]
                 {
+                    new FindLocalPackagesResourcePackagesConfig(rootPackagesConfig),
                     new FindLocalPackagesResourceUnzipped(rootUnzip),
                     new FindLocalPackagesResourceV2(rootV2),
                     new FindLocalPackagesResourceV3(rootV3)
@@ -144,13 +150,14 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task FindLocalPackagesResource_GetPackageBasic()
         {
+            using (var rootPackagesConfig = TestFileSystemUtility.CreateRandomTestFolder())
             using (var rootUnzip = TestFileSystemUtility.CreateRandomTestFolder())
             using (var rootV3 = TestFileSystemUtility.CreateRandomTestFolder())
             using (var rootV2 = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var testLogger = new TestLogger();
-                await CreateFeeds(rootV2, rootV3, rootUnzip, PackageSet1);
+                await CreateFeeds(rootV2, rootV3, rootUnzip, rootPackagesConfig, PackageSet1);
                 var expected = new HashSet<PackageIdentity>(new[]
                 {
                     PackageA1,
@@ -162,6 +169,7 @@ namespace NuGet.Protocol.Core.v3.Tests
 
                 var resources = new FindLocalPackagesResource[]
                 {
+                    new FindLocalPackagesResourcePackagesConfig(rootPackagesConfig),
                     new FindLocalPackagesResourceUnzipped(rootUnzip),
                     new FindLocalPackagesResourceV2(rootV2),
                     new FindLocalPackagesResourceV3(rootV3)
@@ -180,13 +188,14 @@ namespace NuGet.Protocol.Core.v3.Tests
             }
         }
 
-        private async Task CreateFeeds(string rootV2, string rootV3, string rootUnzip, params PackageIdentity[] packages)
+        private async Task CreateFeeds(string rootV2, string rootV3, string rootUnzip, string rootPackagesConfig, params PackageIdentity[] packages)
         {
             foreach (var package in packages)
             {
                 SimpleTestPackageUtility.CreateFolderFeedV2(rootV2, package);
                 await SimpleTestPackageUtility.CreateFolderFeedV3(rootV3, package);
                 SimpleTestPackageUtility.CreateFolderFeedUnzip(rootUnzip, package);
+                SimpleTestPackageUtility.CreateFolderFeedPackagesConfig(rootPackagesConfig, package);
             }
         }
     }

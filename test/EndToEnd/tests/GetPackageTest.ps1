@@ -13,7 +13,7 @@ function Test-GetPackageListsInstalledPackages {
 
     # Act
     Install-Package elmah -Project $p.Name -Version 1.1
-    Install-Package jQuery -Project $p.Name
+    Install-Package jQuery -Project $p.Name -Version 2.2.4
     $packages = Get-Package
 
     # Assert
@@ -119,7 +119,7 @@ function Test-GetPackageAcceptsRelativePathSource2 {
 
 function Test-GetPackageThrowsWhenSourceIsInvalid {
     # Act & Assert
-    Assert-Throws { Get-Package -ListAvailable -source "d:package" } "Invalid URI: A Dos path must be rooted, for example, 'c:\'."
+    Assert-Throws { Get-Package -ListAvailable -source "d:package" } "The following source failed to search for packages: 'd:package'`r`nThe path 'd:package' for the selected source could not be resolved."
 }
 
 function Test-GetPackageForProjectReturnsEmptyProjectIfItHasNoInstalledPackage {

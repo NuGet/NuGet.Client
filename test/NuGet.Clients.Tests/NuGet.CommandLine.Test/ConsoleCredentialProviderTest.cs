@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using Xunit;
-using Console = NuGet.Common.Console;
 
 namespace NuGet.CommandLine.Test
 {

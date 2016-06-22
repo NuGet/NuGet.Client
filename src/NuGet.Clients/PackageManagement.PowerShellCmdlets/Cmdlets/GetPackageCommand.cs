@@ -148,14 +148,27 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 // Find avaiable packages from the current source and not taking targetframeworks into account.
                 if (UseRemoteSourceOnly)
                 {
-                    var remotePackages = GetPackagesFromRemoteSource(Filter, IncludePrerelease.IsPresent)
+                    var errors = new List<string>();
+                    var remotePackages = GetPackagesFromRemoteSource(Filter, IncludePrerelease.IsPresent, errors.Add)
                         .Skip(Skip);
 
-                    WritePackagesFromRemoteSource(remotePackages.Take(First), outputWarning: true);
+                    // If there are any errors and there is only one source, then don't mention the
+                    // fact the no packages were found.
+                    var outputOnEmpty = PrimarySourceRepositories.Count() != 1 && errors.Any();
+
+                    WritePackagesFromRemoteSource(
+                        remotePackages.Take(First),
+                        outputWarning: true,
+                        outputOnEmpty: outputOnEmpty); 
 
                     if (_enablePaging)
                     {
                         WriteMoreRemotePackagesWithPaging(remotePackages.Skip(First));
+                    }
+
+                    foreach (var error in errors)
+                    {
+                        LogCore(MessageLevel.Error, error);
                     }
                 }
                 // Get package udpates from the current source and taking targetframeworks into account.
@@ -250,7 +263,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Output packages found from the current remote source
         /// </summary>
-        private void WritePackagesFromRemoteSource(IEnumerable<IPackageSearchMetadata> packages, bool outputWarning = false)
+        private void WritePackagesFromRemoteSource(IEnumerable<IPackageSearchMetadata> packages, bool outputWarning, bool outputOnEmpty)
         {
             // Write warning message for Get-Package -ListAvaialble -Filter being obsolete
             // and will be replaced by Find-Package [-Id]
@@ -273,7 +286,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 LogCore(ProjectManagement.MessageLevel.Warning, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_CommandObsolete, message));
             }
 
-            WritePackages(packages, versionType);
+            WritePackages(packages, versionType, outputOnEmpty);
         }
 
         /// <summary>
@@ -290,7 +303,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 if (command == 0)
                 {
                     // If yes, display the next page of (PageSize) packages
-                    WritePackagesFromRemoteSource(page);
+                    WritePackagesFromRemoteSource(page, outputWarning: false, outputOnEmpty: false);
                 }
                 else
                 {
@@ -318,11 +331,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        private void WritePackages(IEnumerable<IPackageSearchMetadata> packages, VersionType versionType)
+        private void WritePackages(IEnumerable<IPackageSearchMetadata> packages, VersionType versionType, bool outputOnEmpty)
         {
             var view = PowerShellRemotePackage.GetPowerShellPackageView(packages, versionType);
 
-            if (view.Any())
+            if (view.Any() || !outputOnEmpty)
             {
                 WriteObject(view, enumerateCollection: true);
             }

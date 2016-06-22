@@ -79,7 +79,7 @@ namespace NuGet.CommandLine
 
             NetworkProtocolUtility.ConfigureSupportedSslProtocols();
 
-            var console = new Common.Console();
+            var console = new Console();
             var fileSystem = new PhysicalFileSystem(workingDirectory);
 
             Func<Exception, string> getErrorMessage = ExceptionUtilities.DisplayMessage;

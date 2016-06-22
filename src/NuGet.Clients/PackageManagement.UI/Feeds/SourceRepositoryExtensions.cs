@@ -126,7 +126,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         public static async Task<IPackageSearchMetadata> GetLatestPackageMetadataAsync(
-            this SourceRepository sourceRepository, string packageId, bool includePrerelease, CancellationToken cancellationToken)
+            this SourceRepository sourceRepository, string packageId, bool includePrerelease, CancellationToken cancellationToken, VersionRange allowedVersions)
         {
             var metadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
             var packages = await metadataResource?.GetMetadataAsync(
@@ -136,7 +136,10 @@ namespace NuGet.PackageManagement.UI
                 Common.NullLogger.Instance,
                 cancellationToken);
 
-            var highest = packages?
+            // filter packages based on allowed versions
+            var updatedPackages = packages.Where(p => allowedVersions.Satisfies(p.Identity.Version));
+
+            var highest = updatedPackages
                 .OrderByDescending(e => e.Identity.Version, VersionComparer.VersionRelease)
                 .FirstOrDefault();
 
