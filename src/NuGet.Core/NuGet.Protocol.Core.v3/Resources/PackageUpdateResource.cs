@@ -75,7 +75,7 @@ namespace NuGet.Protocol.Core.Types
         {
             var sourceDisplayName = GetSourceDisplayName(_source);
             var apiKey = getApiKey(_source);
-            if (String.IsNullOrEmpty(apiKey))
+            if (string.IsNullOrEmpty(apiKey) && !IsFileSource())
             {
                 log.LogWarning(string.Format(CultureInfo.CurrentCulture,
                     Strings.NoApiKeyFound,
