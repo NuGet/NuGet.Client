@@ -66,8 +66,6 @@ namespace NuGet.Protocol.Core.v3.Tests
         [InlineData("")]
         [InlineData(null)]
         [InlineData("X:Windows")]
-        [InlineData(" ")]
-        [InlineData(":")]
         public void LocalFolderUtility_GetAndVerifyRootDirectory_RejectsInvalid(string source)
         {
             // Arrange & Act & Assert
