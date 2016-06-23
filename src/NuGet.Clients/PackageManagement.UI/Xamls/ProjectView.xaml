@@ -52,7 +52,7 @@
       Grid.Column="0"
       FontWeight="Bold"
       VerticalAlignment="Center"
-      Visibility="{Binding InstalledVersion, Converter={StaticResource NullToVisibilityConverter}}"
+      Visibility="{Binding InstalledVersion, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}"
       Text="{x:Static local:Resources.Label_InstalledColon}" />
 
     <Border
@@ -60,7 +60,7 @@
       Grid.Column="2"
       MinHeight="22"
       BorderBrush="{DynamicResource {x:Static local:Brushes.ComboBoxBorderKey}}"
-      Visibility="{Binding InstalledVersion, Converter={StaticResource NullToVisibilityConverter}}"
+      Visibility="{Binding InstalledVersion, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}"
       BorderThickness="1"
       VerticalAlignment="Center">
       <TextBox
@@ -68,7 +68,7 @@
         VerticalAlignment="Center"
         AutomationProperties.AutomationId="InstalledVersion"
         Margin="4,0,0,0"
-        Text="{Binding InstalledVersion, Converter={StaticResource VersionToStringConverter}}" />
+        Text="{Binding InstalledVersion, Converter={StaticResource VersionToStringConverter}, Mode=OneWay}" />
     </Border>
 
     <Button
@@ -78,7 +78,7 @@
       MinHeight="24"
       AutomationProperties.AutomationId="Project_Button_Uninstall"
       HorizontalAlignment="Left"
-      Visibility="{Binding InstalledVersion, Converter={StaticResource NullToVisibilityConverter}}"
+      Visibility="{Binding InstalledVersion, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}"
       Click="UninstallButton_Clicked"
       Content="{x:Static local:Resources.Button_Uninstall}" />
 
@@ -131,7 +131,7 @@
       HorizontalAlignment="Left"
       AutomationProperties.AutomationId="Button_Install"
       Click="InstallButton_Clicked"
-      Visibility="{Binding InstalledVersion, Converter={StaticResource InverseNullToVisibilityConverter}}"
+      Visibility="{Binding InstalledVersion, Converter={StaticResource InverseNullToVisibilityConverter}, Mode=OneWay}"
       Content="{x:Static local:Resources.Button_Install}" />
 
     <Button
@@ -142,7 +142,7 @@
       HorizontalAlignment="Left"
       AutomationProperties.AutomationId="Project_Button_Update"
       Click="InstallButton_Clicked"
-      Visibility="{Binding InstalledVersion, Converter={StaticResource NullToVisibilityConverter}}"
+      Visibility="{Binding InstalledVersion, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}"
       IsEnabled="{Binding SelectedVersion.IsCurrentInstalled,Converter={StaticResource NotNullOrTrueToBooleanConverter}}"
       Content="{x:Static local:Resources.Button_Update}" />
   </Grid>
