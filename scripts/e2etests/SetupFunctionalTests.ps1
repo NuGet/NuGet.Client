@@ -14,11 +14,19 @@ function EnableWindowsDeveloperMode()
 
 function DisableTextTemplateSecurityWarning([string]$VSVersion)
 {
-    $textTemplatingSecurityWarningRegistryKey = Join-Path "HKCU:\SOFTWARE\Microsoft\VisualStudio" $VSVersion
-    $textTemplatingSecurityWarningRegistryKey = Join-Path $textTemplatingSecurityWarningRegistryKey `
-    "ApplicationPrivateSettings\Microsoft\VisualStudio\TextTemplating\VSHost\OrchestratorOptionsAutomation"
+    $registryKey = Join-Path "HKCU:\SOFTWARE\Microsoft\VisualStudio" $VSVersion
+    $registryKey = Join-Path $registryKey "ApplicationPrivateSettings\Microsoft\VisualStudio\TextTemplating\VSHost\OrchestratorOptionsAutomation"
 
-    $success = SetRegistryKey $textTemplatingSecurityWarningRegistryKey "ShowWarningDialog" 1*System.Boolean*False
+    $success = SetRegistryKey $registryKey "ShowWarningDialog" 1*System.Boolean*False
+    if (!($success))
+    {
+        exit 1
+    }
+
+    $registryKey = Join-Path "HKCU:\SOFTWARE\Microsoft\VisualStudio" $VSVersion
+    $registryKey = Join-Path $registryKey "DSLTools"
+
+    $success = SetRegistryKey $registryKey "ShowWarningDialog" 1*System.Boolean*False
     if (!($success))
     {
         exit 1
