@@ -173,7 +173,7 @@ Function Install-DotnetCLI {
     $installDotnet = Join-Path $CLIRoot "dotnet-install.ps1"
     $env:DOTNET_INSTALL_DIR=$NuGetClientRoot
 
-    wget 'https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/dotnet-install.ps1' -OutFile 'cli/dotnet-install.ps1'
+    wget 'https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0-preview2/scripts/obtain/dotnet-install.ps1' -OutFile 'cli/dotnet-install.ps1'
 
     & cli/dotnet-install.ps1 -Channel preview -i $CLIRoot -Version 1.0.0-preview2-003030
 
