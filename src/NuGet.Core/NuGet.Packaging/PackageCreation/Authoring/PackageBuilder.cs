@@ -315,11 +315,6 @@ namespace NuGet.Packaging
                 throw new InvalidOperationException(NuGetResources.CannotCreateEmptyPackage);
             }
 
-            if (!ValidateSpecialVersionLength(Version))
-            {
-                throw new InvalidOperationException(NuGetResources.SemVerSpecialVersionTooLong);
-            }
-
             if (Version != null && Version.IsSemVer2)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, NuGetResources.SemVer2VersionsNotSupported, Version));
@@ -765,11 +760,6 @@ namespace NuGet.Packaging
         {
             return dependency.VersionRange.MinVersion?.IsPrerelease == true ||
                    dependency.VersionRange.MaxVersion?.IsPrerelease == true;
-        }
-
-        private static bool ValidateSpecialVersionLength(SemanticVersion version)
-        {
-            return version == null || !version.IsPrerelease || version.Release.Length <= 20;
         }
 
         private void WriteOpcManifestRelationship(ZipArchive package, string path, string psmdcpPath)

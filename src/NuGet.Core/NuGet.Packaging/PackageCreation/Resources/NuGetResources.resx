@@ -162,9 +162,6 @@
   <data name="UnknownSchemaVersion" xml:space="preserve">
     <value>Unknown schema version '{0}'.</value>
   </data>
-  <data name="SemVerSpecialVersionTooLong" xml:space="preserve">
-    <value>The special version part cannot exceed 20 characters.</value>
-  </data>
   <data name="Manifest_IdMaxLengthExceeded" xml:space="preserve">
     <value>Id must not exceed 100 characters.</value>
   </data>
