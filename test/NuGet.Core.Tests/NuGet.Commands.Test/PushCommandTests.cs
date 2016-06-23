@@ -36,6 +36,8 @@ namespace NuGet.Commands.Test
                     packageInfo.FullName,
                     packagePushDest.FullName,
                     null, // api key
+                    null, // symbols source
+                    null, // symbols api key
                     0, // timeout
                     false, // disable buffering
                     false, // no symbols

@@ -31,6 +31,16 @@ namespace NuGet.Commands
             return source;
         }
 
+        public static string ResolveSymbolSource(IPackageSourceProvider sourceProvider, string symbolSource)
+        {
+            if (!string.IsNullOrEmpty(symbolSource))
+            {
+                symbolSource = sourceProvider.ResolveAndValidateSource(symbolSource);
+            }
+
+            return symbolSource;
+        }
+
         public static string GetApiKey(ISettings settings, string source, string apiKey)
         {
             if (string.IsNullOrEmpty(apiKey))

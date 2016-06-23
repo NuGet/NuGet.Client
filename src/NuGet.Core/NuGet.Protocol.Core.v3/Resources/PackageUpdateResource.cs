@@ -41,10 +41,11 @@ namespace NuGet.Protocol.Core.Types
 
         public async Task Push(
             string packagePath,
-            string symbolsSource, // empty to not push symbols
+            string symbolSource, // empty to not push symbols
             int timeoutInSecond,
             bool disableBuffering,
             Func<string, string> getApiKey,
+            Func<string, string> getSymbolApiKey,
             ILogger log)
         {
             // TODO: Figure out how to hook this up with the HTTP request
@@ -59,10 +60,13 @@ namespace NuGet.Protocol.Core.Types
 
                 await PushPackage(packagePath, _source, apiKey, requestTimeout, log, tokenSource.Token);
 
-                if (!string.IsNullOrEmpty(symbolsSource) && !IsFileSource())
+                // symbolSource is only set when:
+                // - The user specified it on the command line
+                // - The package source is nuget.org and the default symbol source is used
+                if (!string.IsNullOrEmpty(symbolSource))
                 {
-                    string symbolsApiKey = getApiKey(symbolsSource);
-                    await PushSymbols(packagePath, symbolsSource, symbolsApiKey, requestTimeout, log, tokenSource.Token);
+                    string symbolApiKey = getSymbolApiKey(symbolSource);
+                    await PushSymbols(packagePath, symbolSource, symbolApiKey, requestTimeout, log, tokenSource.Token);
                 }
             }
         }
@@ -115,8 +119,10 @@ namespace NuGet.Protocol.Core.Types
             // Push the symbols package if it exists
             if (File.Exists(symbolPackagePath))
             {
+                var sourceUri = UriUtility.CreateSourceUri(source);
+
                 // See if the api key exists
-                if (String.IsNullOrEmpty(apiKey))
+                if (String.IsNullOrEmpty(apiKey) && !sourceUri.IsFile)
                 {
                     log.LogWarning(string.Format(CultureInfo.CurrentCulture,
                         Strings.Warning_SymbolServerNotConfigured,
@@ -145,7 +151,9 @@ namespace NuGet.Protocol.Core.Types
             ILogger log,
             CancellationToken token)
         {
-            if (string.IsNullOrEmpty(apiKey) && !IsFileSource())
+            var sourceUri = UriUtility.CreateSourceUri(source);
+
+            if (string.IsNullOrEmpty(apiKey) && !sourceUri.IsFile)
             {
                 log.LogWarning(string.Format(CultureInfo.CurrentCulture,
                     Strings.NoApiKeyFound,
@@ -177,7 +185,7 @@ namespace NuGet.Protocol.Core.Types
                 Path.GetFileName(packageToPush),
                 sourceName));
 
-            if (IsFileSource())
+            if (sourceUri.IsFile)
             {
                 await PushPackageToFileSystem(sourceUri, packageToPush, log, token);
             }
@@ -347,7 +355,7 @@ namespace NuGet.Protocol.Core.Types
             CancellationToken token)
         {
             var sourceUri = GetServiceEndpointUrl(source, string.Empty);
-            if (IsFileSource())
+            if (sourceUri.IsFile)
             {
                 DeletePackageFromFileSystem(source, packageId, packageVersion, logger);
             }

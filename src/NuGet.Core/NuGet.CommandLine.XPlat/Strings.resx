@@ -305,4 +305,10 @@
   <data name="Serviceable_Description" xml:space="preserve">
     <value>Sets the nuspec serviceable element to true.</value>
   </data>
+  <data name="SymbolSource_Description" xml:space="preserve">
+    <value>Specifies the symbol server URL. If not specified, nuget.smbsrc.net is used when pushing to nuget.org.</value>
+  </data>
+  <data name="SymbolApiKey_Description" xml:space="preserve">
+    <value>The API key for the symbol server.</value>
+  </data>
 </root>

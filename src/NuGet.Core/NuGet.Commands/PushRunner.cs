@@ -17,12 +17,15 @@ namespace NuGet.Commands
             string packagePath,
             string source,
             string apiKey,
+            string symbolSource,
+            string symbolApiKey,
             int timeoutSeconds,
             bool disableBuffering,
             bool noSymbols,
             ILogger logger)
         {
             source = CommandRunnerUtility.ResolveSource(sourceProvider, source);
+            symbolSource = CommandRunnerUtility.ResolveSymbolSource(sourceProvider, symbolSource);
 
             if (timeoutSeconds == 0)
             {
@@ -32,24 +35,29 @@ namespace NuGet.Commands
             PackageUpdateResource packageUpdateResource = await CommandRunnerUtility.GetPackageUpdateResource(sourceProvider, source);
 
             // only push to SymbolSource when the actual package is being pushed to the official NuGet.org
-            string symbolsSource = string.Empty;
-
             Uri sourceUri = packageUpdateResource.SourceUri;
-            if (!noSymbols && !sourceUri.IsFile && sourceUri.IsAbsoluteUri)
+            if (string.IsNullOrEmpty(symbolSource) && !noSymbols && !sourceUri.IsFile && sourceUri.IsAbsoluteUri)
             {
                 if (sourceUri.Host.Equals(NuGetConstants.NuGetHostName, StringComparison.OrdinalIgnoreCase) // e.g. nuget.org
                     || sourceUri.Host.EndsWith("." + NuGetConstants.NuGetHostName, StringComparison.OrdinalIgnoreCase)) // *.nuget.org, e.g. www.nuget.org
                 {
-                    symbolsSource = NuGetConstants.DefaultSymbolServerUrl;
+                    symbolSource = NuGetConstants.DefaultSymbolServerUrl;
+
+                    if (string.IsNullOrEmpty(symbolApiKey))
+                    {
+                        // Use the nuget.org API key if it was given
+                        symbolApiKey = apiKey;
+                    }
                 }
             }
 
             await packageUpdateResource.Push(
                 packagePath,
-                symbolsSource,
+                symbolSource,
                 timeoutSeconds,
                 disableBuffering,
                 endpoint => CommandRunnerUtility.GetApiKey(settings, endpoint, apiKey),
+                symbolsEndpoint => CommandRunnerUtility.GetApiKey(settings, symbolsEndpoint, symbolApiKey),
                 logger);
         }
     }

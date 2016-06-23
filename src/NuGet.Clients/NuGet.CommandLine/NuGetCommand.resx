@@ -321,6 +321,9 @@ nuget pack foo.nuspec -Version 2.1.0</value>
     <value>Specifies the server URL. If not specified, nuget.org is used unless DefaultPushSource config value is set in the NuGet config file.</value>
     <comment>Please don't localize "DefaultPushSource"</comment>
   </data>
+  <data name="PushCommandSymbolSourceDescription" xml:space="preserve">
+    <value>Specifies the symbol server URL. If not specified, nuget.smbsrc.net is used when pushing to nuget.org.</value>
+  </data>
   <data name="PushCommandTimeoutDescription" xml:space="preserve">
     <value>Specifies the timeout for pushing to a server in seconds. Defaults to 300 seconds (5 minutes).</value>
   </data>
@@ -440,6 +443,9 @@ nuget update -Self</value>
   </data>
   <data name="CommandApiKey" xml:space="preserve">
     <value>The API key for the server.</value>
+  </data>
+  <data name="SymbolApiKey" xml:space="preserve">
+    <value>The API key for the symbol server.</value>
   </data>
   <data name="DefaultConfigDescription" xml:space="preserve">
     <value>NuGet's default configuration is obtained by loading %AppData%\NuGet\NuGet.config, then loading any nuget.config or .nuget\nuget.config starting from root of drive and ending in current directory.</value>
@@ -5243,7 +5249,7 @@ nuget update -Self</value>
     <value>Disable buffering when pushing to an HTTP(S) server to decrease memory usage. Note that when this option is enabled, integrated windows authentication might not work.</value>
   </data>
   <data name="PushCommandNoSymbolsDescription" xml:space="preserve">
-    <value>If a symbols package exists, it will not be pushed to a symbols server.</value>
+    <value>If a symbols package exists, it will not be pushed to a symbol server.</value>
   </data>
   <data name="CommandFallbackSourceDescription" xml:space="preserve">
     <value>A list of package sources to use as fallbacks for this command.</value>

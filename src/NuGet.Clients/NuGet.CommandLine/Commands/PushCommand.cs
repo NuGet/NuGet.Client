@@ -17,6 +17,12 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "CommandApiKey")]
         public string ApiKey { get; set; }
 
+        [Option(typeof(NuGetCommand), "PushCommandSymbolSourceDescription")]
+        public string SymbolSource { get; set; }
+
+        [Option(typeof(NuGetCommand), "SymbolApiKey")]
+        public string SymbolApiKey { get; set; }
+
         [Option(typeof(NuGetCommand), "PushCommandTimeoutDescription")]
         public int Timeout { get; set; }
 
@@ -44,6 +50,8 @@ namespace NuGet.CommandLine
                     packagePath,
                     Source,
                     apiKeyValue,
+                    SymbolSource,
+                    SymbolApiKey,
                     Timeout,
                     DisableBuffering,
                     NoSymbols,

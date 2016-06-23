@@ -138,10 +138,11 @@ namespace NuGet.Protocol.Tests
                 // Act
                 await resource.Push(
                     packagePath: packageInfo.FullName,
-                    symbolsSource: null,
+                    symbolSource: null,
                     timeoutInSecond: 5,
                     disableBuffering: false,
                     getApiKey: _ => apiKey,
+                    getSymbolApiKey: _ => null,
                     log: NullLogger.Instance);
 
                 // Assert
@@ -188,10 +189,11 @@ namespace NuGet.Protocol.Tests
                 // Act
                 await resource.Push(
                     packagePath: packageInfo.FullName,
-                    symbolsSource: null,
+                    symbolSource: null,
                     timeoutInSecond: 5,
                     disableBuffering: false,
                     getApiKey: _ => apiKey,
+                    getSymbolApiKey: _ => null,
                     log: NullLogger.Instance);
 
                 // Assert

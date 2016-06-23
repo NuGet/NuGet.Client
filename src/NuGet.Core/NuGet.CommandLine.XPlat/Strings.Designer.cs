@@ -591,11 +591,29 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to The API key for the symbol server..
+        /// </summary>
+        public static string SymbolApiKey_Description {
+            get {
+                return ResourceManager.GetString("SymbolApiKey_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Determines if a package containing sources and symbols should be created. When specified with a nuspec, creates a regular NuGet package file and the corresponding symbols package..
         /// </summary>
         public static string Symbols_Description {
             get {
                 return ResourceManager.GetString("Symbols_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Specifies the symbol server URL. If not specified, nuget.smbsrc.net is used when pushing to nuget.org..
+        /// </summary>
+        public static string SymbolSource_Description {
+            get {
+                return ResourceManager.GetString("SymbolSource_Description", resourceCulture);
             }
         }
         

@@ -8871,7 +8871,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to If a symbols package exists, it will not be pushed to a symbols server..
+        ///   Looks up a localized string similar to If a symbols package exists, it will not be pushed to a symbol server..
         /// </summary>
         internal static string PushCommandNoSymbolsDescription {
             get {
@@ -9002,6 +9002,15 @@ namespace NuGet.CommandLine {
         internal static string PushCommandSourceDescription_trk {
             get {
                 return ResourceManager.GetString("PushCommandSourceDescription_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specifies the symbol server URL. If not specified, nuget.smbsrc.net is used when pushing to nuget.org..
+        /// </summary>
+        internal static string PushCommandSymbolSourceDescription {
+            get {
+                return ResourceManager.GetString("PushCommandSymbolSourceDescription", resourceCulture);
             }
         }
         
@@ -13095,6 +13104,15 @@ namespace NuGet.CommandLine {
         internal static string SpecCommandUsageSummary_trk {
             get {
                 return ResourceManager.GetString("SpecCommandUsageSummary_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The API key for the symbol server..
+        /// </summary>
+        internal static string SymbolApiKey {
+            get {
+                return ResourceManager.GetString("SymbolApiKey", resourceCulture);
             }
         }
         

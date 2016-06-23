@@ -327,6 +327,126 @@ $@"<?xml version='1.0' encoding='utf-8'?>
         }
 
         [Fact]
+        public void PushCommand_PushToServerWithSymbols()
+        {
+            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var server = new MockServer())
+            {
+                // Arrange
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                var symbolFileName = packageFileName.Replace(".nupkg", ".symbols.nupkg");
+                File.Copy(packageFileName, symbolFileName);
+
+                server.Get.Add("/push", r => "OK");
+                server.Put.Add("/push", r =>
+                {
+                    return r.Headers["X-NuGet-ApiKey"] == "PushKey"
+                        ? HttpStatusCode.Created
+                        : HttpStatusCode.Unauthorized;
+                });
+
+                server.Get.Add("/symbols", r => "OK");
+                server.Put.Add("/symbols", r =>
+                {
+                    return r.Headers["X-NuGet-ApiKey"] == "PushSymbolsKey"
+                        ? HttpStatusCode.Created
+                        : HttpStatusCode.Unauthorized;
+                });
+
+                server.Start();
+
+                var pushUri = $"{server.Uri}push";
+                var pushSymbolsUri = $"{server.Uri}symbols";
+
+                // Act
+                CommandRunnerResult result = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    Directory.GetCurrentDirectory(),
+                    $"push {packageFileName} -Source {pushUri} -SymbolSource {pushSymbolsUri} -ApiKey PushKey -SymbolApiKey PushSymbolsKey",
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, result.Item1);
+                Assert.Contains($"Pushing testPackage1.1.1.0.nupkg to '{pushUri}'", result.Item2);
+                Assert.Contains($"Created {pushUri}", result.Item2);
+                Assert.Contains($"Pushing testPackage1.1.1.0.symbols.nupkg to '{pushSymbolsUri}'", result.Item2);
+                Assert.Contains($"Created {pushSymbolsUri}", result.Item2);
+                Assert.Contains("Your package was pushed.", result.Item2);
+            }
+        }
+
+        [Fact]
+        public void PushCommand_PushToDirectoryWithSymbols()
+        {
+            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                var symbolFileName = packageFileName.Replace(".nupkg", ".symbols.nupkg");
+                File.Copy(packageFileName, symbolFileName);
+
+                var pushSource = Path.Combine(packageDirectory, "source");
+                var pushSymbolsSource = Path.Combine(packageDirectory, "symbols");
+                Directory.CreateDirectory(pushSource);
+                Directory.CreateDirectory(pushSymbolsSource);
+
+                // Act
+                CommandRunnerResult result = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    Directory.GetCurrentDirectory(),
+                    $"push {packageFileName} -Source {pushSource} -SymbolSource {pushSymbolsSource}",
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, result.Item1);
+                Assert.Contains($"Pushing testPackage1.1.1.0.nupkg to '{pushSource}'", result.Item2);
+                Assert.Contains($"Pushing testPackage1.1.1.0.symbols.nupkg to '{pushSymbolsSource}'", result.Item2);
+                Assert.Contains("Your package was pushed.", result.Item2);
+            }
+        }
+
+        [Fact]
+        public void PushCommand_PushToDirectoryInConfigWithSymbols()
+        {
+            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                var symbolFileName = packageFileName.Replace(".nupkg", ".symbols.nupkg");
+                var configFileName = Path.Combine(packageDirectory, "nuget.config");
+                File.Copy(packageFileName, symbolFileName);
+
+                var pushSource = Path.Combine(packageDirectory, "source");
+                var pushSymbolsSource = Path.Combine(packageDirectory, "symbols");
+                Directory.CreateDirectory(pushSource);
+                Directory.CreateDirectory(pushSymbolsSource);
+
+                var config = string.Format($@"<?xml version='1.0' encoding='utf-8'?>
+                    <configuration>
+                        <packageSources>
+                            <clear />
+                            <add key='pushSource' value='{pushSource}' />
+                            <add key='pushSymbolsSource' value='{pushSymbolsSource}' />
+                        </packageSources>
+                    </configuration>");
+                File.WriteAllText(configFileName, config);
+
+                // Act
+                CommandRunnerResult result = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    packageDirectory,
+                    $"push {packageFileName} -Source pushSource -SymbolSource pushSymbolsSource",
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, result.Item1);
+                Assert.Contains($"Pushing testPackage1.1.1.0.nupkg to '{pushSource}'", result.Item2);
+                Assert.Contains($"Pushing testPackage1.1.1.0.symbols.nupkg to '{pushSymbolsSource}'", result.Item2);
+                Assert.Contains("Your package was pushed.", result.Item2);
+            }
+        }
+
+        [Fact]
         public void PushCommand_PushTimeoutErrorMessage()
         {
             using (TestDirectory packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())

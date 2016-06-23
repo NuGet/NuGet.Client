@@ -26,6 +26,11 @@ namespace NuGet.CommandLine.XPlat
                     Strings.Source_Description,
                     CommandOptionType.SingleValue);
 
+                var symbolSource = push.Option(
+                    "-ss|--symbol-source <source>",
+                    Strings.SymbolSource_Description,
+                    CommandOptionType.SingleValue);
+
                 var timeout = push.Option(
                     "-t|--timeout <timeout>",
                     Strings.Push_Timeout_Description,
@@ -34,6 +39,11 @@ namespace NuGet.CommandLine.XPlat
                 var apikey = push.Option(
                     "-k|--api-key <apiKey>",
                     Strings.ApiKey_Description,
+                    CommandOptionType.SingleValue);
+
+                var symbolApiKey = push.Option(
+                    "-sk|--symbol-api-key <apiKey>",
+                    Strings.SymbolApiKey_Description,
                     CommandOptionType.SingleValue);
 
                 var disableBuffering = push.Option(
@@ -61,6 +71,8 @@ namespace NuGet.CommandLine.XPlat
                     string packagePath = arguments.Values[0];
                     string sourcePath = source.Value();
                     string apiKeyValue = apikey.Value();
+                    string symbolSourcePath = symbolSource.Value();
+                    string symbolApiKeyValue = symbolApiKey.Value();
                     bool disableBufferingValue = disableBuffering.HasValue();
                     bool noSymbolsValue = noSymbols.HasValue();
                     int timeoutSeconds = 0;
@@ -80,6 +92,8 @@ namespace NuGet.CommandLine.XPlat
                             packagePath,
                             sourcePath,
                             apiKeyValue,
+                            symbolSourcePath,
+                            symbolApiKeyValue,
                             timeoutSeconds,
                             disableBufferingValue,
                             noSymbolsValue,
