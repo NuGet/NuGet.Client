@@ -26,7 +26,7 @@ function DisableTextTemplateSecurityWarning([string]$VSVersion)
     $registryKey = Join-Path "HKCU:\SOFTWARE\Microsoft\VisualStudio" $VSVersion
     $registryKey = Join-Path $registryKey "DSLTools"
 
-    $success = SetRegistryKey $registryKey "ShowWarningDialog" 1*System.Boolean*False
+    $success = SetRegistryKey $registryKey "ShowWarningDialog" False
     if (!($success))
     {
         exit 1
