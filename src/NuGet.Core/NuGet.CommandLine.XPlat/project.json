@@ -21,7 +21,7 @@
     }
   },
   "dependencies": {
-    "System.Runtime.InteropServices.RuntimeInformation": "4.0.0-rc3-24128-00",
+    "System.Runtime.InteropServices.RuntimeInformation": "4.0.0",
     "Microsoft.Extensions.CommandLineUtils.Sources": {
       "version": "1.0.0-*",
       "type": "build"
@@ -29,7 +29,7 @@
     "NuGet.Commands": {
       "target": "project"
     },
-    "System.Runtime.Serialization.Primitives": "4.1.1-rc3-24128-00"
+    "System.Runtime.Serialization.Primitives": "4.1.1"
   },
   "commands": {
     "NuGet.CommandLine.XPlat": "NuGet.CommandLine.XPlat"
@@ -37,7 +37,7 @@
   "frameworks": {
     "net46": {
       "dependencies": {
-        "System.Runtime": "4.1.0-rc3-24128-00"
+        "System.Runtime": "4.1.0"
       },
         "buildOptions": {
           "define": [
@@ -54,7 +54,7 @@
         "dependencies": {
           "Microsoft.NETCore.App": {
             "type": "platform",
-            "version": "1.0.0-rc3-004338"
+            "version": "1.0.0"
           }
         },
         "buildOptions": {

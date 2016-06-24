@@ -36,7 +36,7 @@
     },
     "netstandard1.3": {
       "dependencies": {
-        "NETStandard.Library": "1.6.0-rc3-24128-00"
+        "NETStandard.Library": "1.6.0"
       },
       "imports": [
         "dotnet5.6",
