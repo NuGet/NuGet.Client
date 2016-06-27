@@ -52,7 +52,16 @@ namespace NuGet.Protocol
             _credentialService = credentialService;
 
             // Create a new wrapper for ICredentials that can be modified
-            _credentials = new HttpSourceCredentials();
+
+            if (_credentialService == null || !_credentialService.HandlesDefaultCredentials)
+            {
+                // This is used to match the value of HttpClientHandler.UseDefaultCredentials = true
+                _credentials = new HttpSourceCredentials(CredentialCache.DefaultNetworkCredentials);
+            }
+            else
+            {
+                _credentials = new HttpSourceCredentials();
+            }
 
             if (packageSource.Credentials != null &&
                 packageSource.Credentials.IsValid())

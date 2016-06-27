@@ -40,27 +40,23 @@ namespace NuGet.Protocol
         public Guid Version { get; private set; } = Guid.NewGuid();
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="HttpSourceCredentials"/> class
+        /// </summary>
+        /// <param name="credentials">
+        /// Optional initial credentials. May be null.
+        /// </param>
+        public HttpSourceCredentials(ICredentials credentials = null)
+        {
+            _credentials = credentials;
+        }
+
+        /// <summary>
         /// Used by the HttpClientHandler to retrieve the current credentials.
         /// </summary>
         NetworkCredential ICredentials.GetCredential(Uri uri, string authType)
         {
-            // Credentials may change during this call so keep a local copy.
-            var currentCredentials = Credentials;
-
-            NetworkCredential result = null;
-
-            if (currentCredentials == null)
-            {
-                // This is used to match the value of HttpClientHandler.UseDefaultCredentials = true
-                result = CredentialCache.DefaultNetworkCredentials;
-            }
-            else
-            {
-                // Get credentials from the current credential store.
-                result = currentCredentials.GetCredential(uri, authType);
-            }
-
-            return result;
+            // Get credentials from the current credential store, if any
+            return Credentials?.GetCredential(uri, authType);
         }
     }
 }
