@@ -179,6 +179,7 @@ namespace NuGet.CommandLine
 
             providers.Add(new CredentialProviderAdapter(new SettingsCredentialProvider(SourceProvider, Console)));
             providers.AddRange(pluginProviders);
+            providers.Add(new DefaultCredentialsCredentialProvider());
             providers.Add(new ConsoleCredentialProvider(Console));
 
             return providers;

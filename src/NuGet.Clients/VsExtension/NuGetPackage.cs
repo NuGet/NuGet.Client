@@ -398,6 +398,7 @@ namespace NuGetVSExtension
 
             var webProxy = (IVsWebProxy)GetService(typeof(SVsWebProxy));
             Debug.Assert(webProxy != null);
+            credentialProviders.Add(new DefaultCredentialsCredentialProvider());
             credentialProviders.Add(new VisualStudioCredentialProvider(webProxy));
             return credentialProviders;
         }

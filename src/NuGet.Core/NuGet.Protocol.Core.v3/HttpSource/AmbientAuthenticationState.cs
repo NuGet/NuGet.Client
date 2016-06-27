@@ -8,7 +8,7 @@ namespace NuGet.Protocol
     /// </summary>
     public class AmbientAuthenticationState
     {
-        internal const int MaxAuthRetries = 3;
+        internal const int MaxAuthRetries = 4;
 
         public bool IsBlocked { get; set; } = false;
         public int AuthenticationRetriesCount { get; set; }

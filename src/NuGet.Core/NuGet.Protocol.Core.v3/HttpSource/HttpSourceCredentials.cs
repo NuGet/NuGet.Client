@@ -3,6 +3,7 @@
 
 using System;
 using System.Net;
+using NuGet.Common;
 
 namespace NuGet.Protocol
 {
@@ -46,13 +47,14 @@ namespace NuGet.Protocol
         {
             // Credentials may change during this call so keep a local copy.
             var currentCredentials = Credentials;
-
             NetworkCredential result = null;
 
             if (currentCredentials == null)
             {
                 // This is used to match the value of HttpClientHandler.UseDefaultCredentials = true
-                result = CredentialCache.DefaultNetworkCredentials;
+                result = PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders
+                    ? null
+                    : CredentialCache.DefaultNetworkCredentials;
             }
             else
             {
