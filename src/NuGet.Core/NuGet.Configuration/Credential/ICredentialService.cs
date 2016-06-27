@@ -16,5 +16,11 @@ namespace NuGet.Configuration
             CredentialRequestType type,
             string message,
             CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets a value indicating whether this credential service wants to handle "default credentials" specially,
+        /// instead of relying on DefaultNetworkCredentials
+        /// </summary>
+        bool HandlesDefaultCredentials { get; }
     }
 }

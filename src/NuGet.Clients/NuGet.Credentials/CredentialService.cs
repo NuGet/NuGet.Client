@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,6 +33,8 @@ namespace NuGet.Credentials
 
         private Action<string> ErrorDelegate { get; }
 
+        public bool HandlesDefaultCredentials { get; }
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -57,6 +60,7 @@ namespace NuGet.Credentials
             ErrorDelegate = errorDelegate;
             _nonInteractive = nonInteractive;
             Providers = new List<ICredentialProvider>(providers);
+            HandlesDefaultCredentials = Providers.Any(provider => provider is DefaultCredentialsCredentialProvider);
         }
 
         /// <summary>

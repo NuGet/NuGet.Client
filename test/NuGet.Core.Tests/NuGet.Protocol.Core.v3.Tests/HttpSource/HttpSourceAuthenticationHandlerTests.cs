@@ -43,6 +43,8 @@ namespace NuGet.Protocol.Tests
             var clientHandler = new HttpClientHandler();
 
             var credentialService = new Mock<ICredentialService>(MockBehavior.Strict);
+            credentialService.SetupGet(x => x.HandlesDefaultCredentials)
+                .Returns(false);
             var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService.Object)
             {
                 InnerHandler = GetLambdaMessageHandler(HttpStatusCode.OK)
@@ -143,6 +145,8 @@ namespace NuGet.Protocol.Tests
             var clientHandler = new HttpClientHandler();
 
             var credentialService = new Mock<ICredentialService>(MockBehavior.Strict);
+            credentialService.SetupGet(x => x.HandlesDefaultCredentials)
+                .Returns(false);
             var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService.Object)
             {
                 InnerHandler = GetLambdaMessageHandler(HttpStatusCode.Forbidden)
