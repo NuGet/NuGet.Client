@@ -394,6 +394,10 @@ namespace NuGetVSExtension
             if (vstsProvider != null)
             {
                 credentialProviders.Add(vstsProvider);
+                if (PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders)
+                {
+                    credentialProviders.Add(new DefaultCredentialsCredentialProvider());
+                }
             }
 
             var webProxy = (IVsWebProxy)GetService(typeof(SVsWebProxy));
