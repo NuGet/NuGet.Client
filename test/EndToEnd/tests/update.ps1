@@ -1489,7 +1489,7 @@ function Test-UpdatePackageThrowsIfMinClientVersionIsNotSatisfied
     param ($context)
 
     # Arrange
-    $p = New-SilverlightClassLibrary
+    $p = New-ClassLibrary
 
     $p | Install-Package kitty -version 1.0.0 -Source $context.RepositoryPath
 
