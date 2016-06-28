@@ -35,9 +35,13 @@ namespace NuGet.CommandLine
         public override async Task ExecuteCommandAsync()
         {
             string packagePath = Arguments[0];
-            string apiKeyValue = ApiKey;
+            string apiKeyValue = null;
 
-            if (string.IsNullOrEmpty(apiKeyValue) && Arguments.Count > 1)
+            if (!string.IsNullOrEmpty(ApiKey))
+            {
+                apiKeyValue = ApiKey;
+            }
+            else if (Arguments.Count > 1 && !string.IsNullOrEmpty(Arguments[1]))
             {
                 apiKeyValue = Arguments[1];
             }

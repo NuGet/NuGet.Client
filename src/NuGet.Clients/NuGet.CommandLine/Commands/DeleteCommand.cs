@@ -29,7 +29,11 @@ namespace NuGet.CommandLine
             string packageVersion = Arguments[1];
             string apiKeyValue = null;
 
-            if (Arguments.Count > 2)
+            if (!string.IsNullOrEmpty(ApiKey))
+            {
+                apiKeyValue = ApiKey;
+            }
+            else if (Arguments.Count > 2 && !string.IsNullOrEmpty(Arguments[2]))
             {
                 apiKeyValue = Arguments[2];
             }

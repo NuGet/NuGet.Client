@@ -1462,7 +1462,54 @@ $@"<?xml version='1.0' encoding='utf-8'?>
         }
 
         [Fact]
-        public void PushCommand_PushToServerV3_ApiKey()
+        public void PushCommand_PushToServer_ApiKeyAsThirdArgument()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
+                var expectedApiKey = "SOME_API_KEY";
+                string actualApiKey = null;
+
+                using (var server = new MockServer())
+                {
+                    server.Put.Add("/nuget", r =>
+                    {
+                        actualApiKey = r.Headers["X-NuGet-ApiKey"];
+
+                        byte[] buffer = MockServer.GetPushedPackage(r);
+                        using (var of = new FileStream(outputFileName, FileMode.Create))
+                        {
+                            of.Write(buffer, 0, buffer.Length);
+                        }
+
+                        return HttpStatusCode.Created;
+                    });
+                    server.Start();
+
+                    // Act
+                    string[] args = new string[] { "push", packageFileName, expectedApiKey, "-Source", server.Uri + "nuget" };
+                    var result = CommandRunner.Run(
+                        nugetexe,
+                        Directory.GetCurrentDirectory(),
+                        string.Join(" ", args),
+                        true);
+                    server.Stop();
+
+                    // Assert
+                    var output = result.Item2;
+                    Assert.Equal(0, result.Item1);
+                    Assert.Contains("Your package was pushed.", output);
+                    AssertFileEqual(packageFileName, outputFileName);
+                    Assert.Equal(expectedApiKey, actualApiKey);
+                }
+            }
+        }
+
+        [Fact]
+        public void PushCommand_PushToServer_ApiKeyAsNamedArgument()
         {
             Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
@@ -1526,6 +1573,7 @@ $@"<?xml version='1.0' encoding='utf-8'?>
                         {
                             "push",
                             packageFileName,
+                            "should-be-ignored", // The named argument is preferred over the positional argument.
                             "-Source",
                             serverV3.Uri + "index.json",
                             "-ApiKey",

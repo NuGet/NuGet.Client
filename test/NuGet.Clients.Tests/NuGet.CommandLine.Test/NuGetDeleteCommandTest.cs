@@ -46,7 +46,7 @@ namespace NuGet.CommandLine.Test
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", source);
                 Assert.True(File.Exists(packageFileName));
-                File.SetAttributes(packageFileName, 
+                File.SetAttributes(packageFileName,
                     File.GetAttributes(packageFileName) | FileAttributes.ReadOnly);
                 // Act
                 string[] args = new string[] {
@@ -193,6 +193,84 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(0, r.Item1);
                 Assert.True(deleteRequestIsCalled);
+            }
+        }
+
+        [Fact]
+        public void DeleteCommand_WithApiKeyAsThirdArgument()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+            using (var server = new MockServer())
+            {
+                server.Start();
+                var deleteRequestIsCalled = false;
+                var expectedApiKey = "SOME_API_KEY";
+                string actualApiKey = null;
+
+                server.Delete.Add("/nuget/testPackage1/1.1", request =>
+                {
+                    deleteRequestIsCalled = true;
+                    actualApiKey = request.Headers["X-NuGet-ApiKey"];
+
+                    return HttpStatusCode.OK;
+                });
+
+                // Act
+                string[] args = new string[] {
+                    "delete", "testPackage1", "1.1.0", expectedApiKey,
+                    "-Source", server.Uri + "nuget", "-NonInteractive" };
+
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+                Assert.True(deleteRequestIsCalled);
+                Assert.Equal(expectedApiKey, actualApiKey);
+            }
+        }
+
+        [Fact]
+        public void DeleteCommand_WithApiKeyAsNamedArgument()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+            using (var server = new MockServer())
+            {
+                server.Start();
+                var deleteRequestIsCalled = false;
+                var expectedApiKey = "SOME_API_KEY";
+                string actualApiKey = null;
+
+                server.Delete.Add("/nuget/testPackage1/1.1", request =>
+                {
+                    deleteRequestIsCalled = true;
+                    actualApiKey = request.Headers["X-NuGet-ApiKey"];
+
+                    return HttpStatusCode.OK;
+                });
+
+                // Act
+                string[] args = new string[] {
+                    "delete", "testPackage1", "1.1.0",
+                    "should-be-ignored",  // The named argument is preferred over the positional argument.
+                    "-ApiKey", expectedApiKey,
+                    "-Source", server.Uri + "nuget", "-NonInteractive" };
+
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+                Assert.True(deleteRequestIsCalled);
+                Assert.Equal(expectedApiKey, actualApiKey);
             }
         }
     }
