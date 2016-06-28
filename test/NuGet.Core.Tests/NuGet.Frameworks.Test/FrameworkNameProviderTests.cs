@@ -212,6 +212,20 @@ namespace NuGet.Test
             Assert.Equal(expected, identifier);
         }
 
+        [Fact]
+        public void FrameworkNameProvider_TryGetPortableFrameworks_RejectsInvalidPortableFrameworks()
+        {
+            // Arrange
+            var target = DefaultFrameworkNameProvider.Instance;
+            var input = "net45+win8+net-cf+net46";
+            IEnumerable<NuGetFramework> frameworks;
+
+            // Act & Assert
+            var actual = Assert.Throws<ArgumentException>(
+                () => target.TryGetPortableFrameworks(input, out frameworks));
+            Assert.Equal($"Invalid portable frameworks '{input}'. A hyphen may not be in any of the portable framework names.", actual.Message);
+        }
+
         [Theory]
         [InlineData("", "")]
         [InlineData("1", "1")]

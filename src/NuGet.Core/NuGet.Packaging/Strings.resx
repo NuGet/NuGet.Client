@@ -197,4 +197,9 @@
   <data name="FallbackFolderNotFound" xml:space="preserve">
     <value>Unable to find fallback package folder '{0}'.</value>
   </data>
+  <data name="InvalidPackageFrameworkFolderName" xml:space="preserve">
+    <value>The framework in the folder name of '{0}' in package '{1}' could not be parsed.</value>
+    <comment>{0} is the invalid path.
+{1} is the package ID and version.</comment>
+  </data>
 </root>

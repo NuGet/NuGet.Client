@@ -8,6 +8,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.VisualStudio.Shell;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -227,18 +228,18 @@ namespace NuGet.PackageManagement.UI
             {
                 // for exceptions that are known to be normal error cases, just
                 // display the message.
-                ProgressWindow.Log(ProjectManagement.MessageLevel.Info, ex.Message);
+                ProgressWindow.Log(MessageLevel.Info, ExceptionUtilities.DisplayMessage(ex, indent: true));
 
                 // write to activity log
-                var message = string.Format(CultureInfo.CurrentCulture, ex.ToString());
-                ActivityLog.LogError(LogEntrySource, message);
+                var activityLogMessage = string.Format(CultureInfo.CurrentCulture, ex.ToString());
+                ActivityLog.LogError(LogEntrySource, activityLogMessage);
             }
             else
             {
-                ProgressWindow.Log(ProjectManagement.MessageLevel.Error, ex.ToString());
+                ProgressWindow.Log(MessageLevel.Error, ex.ToString());
             }
 
-            ProgressWindow.ReportError(ex.Message);
+            ProgressWindow.ReportError(ExceptionUtilities.DisplayMessage(ex, indent: false));
         }
     }
 }

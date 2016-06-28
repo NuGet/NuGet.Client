@@ -177,6 +177,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to The framework in the folder name of &apos;{0}&apos; in package &apos;{1}&apos; could not be parsed..
+        /// </summary>
+        public static string InvalidPackageFrameworkFolderName {
+            get {
+                return ResourceManager.GetString("InvalidPackageFrameworkFolderName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Installing {0} {1}..
         /// </summary>
         public static string Log_InstallingPackage {

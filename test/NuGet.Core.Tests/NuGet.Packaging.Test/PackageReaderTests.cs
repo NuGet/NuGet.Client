@@ -522,8 +522,20 @@ namespace NuGet.Packaging.Test
 
                 using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
-                    Assert.Throws<ArgumentException>(
+                    var ex = Assert.Throws<PackagingException>(
                         () => reader.GetSupportedFrameworks());
+                    Assert.Equal(
+                        "The framework in the folder name of '" +
+                        "lib/portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS/test.dll" +
+                        "' in package 'packageA.2.0.3' could not be parsed.",
+                        ex.Message);
+                    Assert.NotNull(ex.InnerException);
+                    Assert.IsType<ArgumentException>(ex.InnerException);
+                    Assert.Equal(
+                        "Invalid portable frameworks '" +
+                        "net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS" +
+                        "'. A hyphen may not be in any of the portable framework names.",
+                        ex.InnerException.Message);
                 }
             }
         }

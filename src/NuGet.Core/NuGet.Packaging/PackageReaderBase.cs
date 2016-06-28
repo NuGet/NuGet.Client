@@ -359,8 +359,6 @@ namespace NuGet.Packaging
             {
                 yield return new FrameworkSpecificGroup(framework, groups[framework].OrderBy(e => e, StringComparer.OrdinalIgnoreCase));
             }
-
-            yield break;
         }
 
         private NuGetFramework GetFrameworkFromPath(string path, bool allowSubFolders = false)
@@ -375,7 +373,22 @@ namespace NuGet.Packaging
             {
                 var folderName = parts[1];
 
-                var parsedFramework = NuGetFramework.ParseFolder(folderName, _frameworkProvider);
+                NuGetFramework parsedFramework;
+                try
+                {
+                    parsedFramework = NuGetFramework.ParseFolder(folderName, _frameworkProvider);
+                }
+                catch (ArgumentException e)
+                {
+                    // Include package name context in the exception.
+                    throw new PackagingException(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.InvalidPackageFrameworkFolderName,
+                            path,
+                            GetIdentity()),
+                        e);
+                }
 
                 if (parsedFramework.IsSpecificFramework)
                 {

@@ -14,7 +14,7 @@ namespace NuGet.Common
     /// </summary>
     public static class ExceptionUtilities
     {
-        public static string DisplayMessage(Exception exception)
+        public static string DisplayMessage(Exception exception, bool indent)
         {
             if (exception == null)
             {
@@ -37,7 +37,12 @@ namespace NuGet.Common
             }
 
             // fall back to simply exploring all inner exceptions
-            return JoinMessages(GetMessages(exception));
+            return JoinMessages(GetMessages(exception), indent);
+        }
+
+        public static string DisplayMessage(Exception exception)
+        {
+            return DisplayMessage(exception, indent: true);
         }
 
         public static string DisplayMessage(AggregateException exception)
@@ -47,7 +52,7 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(exception));
             }
 
-            return JoinMessages(GetMessages(exception));
+            return JoinMessages(GetMessages(exception), indent: true);
         }
 
         public static string DisplayMessage(TargetInvocationException exception)
@@ -57,7 +62,7 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(exception));
             }
 
-            return JoinMessages(GetMessages(exception));
+            return JoinMessages(GetMessages(exception), indent: true);
         }
 
         private static IEnumerable<string> GetMessages(AggregateException exception)
@@ -126,17 +131,17 @@ namespace NuGet.Common
             }
         }
 
-        private static string JoinMessages(IEnumerable<string> messages)
+        private static string JoinMessages(IEnumerable<string> messages, bool indent)
         {
             var builder = new StringBuilder();
             foreach (var message in messages)
             {
                 // indent all but the first message
-                bool indent = builder.Length > 0;
+                bool indentNext = indent && builder.Length > 0;
 
                 foreach (var line in GetLines(message))
                 {
-                    if (indent)
+                    if (indentNext)
                     {
                         builder.Append("  ");
                     }

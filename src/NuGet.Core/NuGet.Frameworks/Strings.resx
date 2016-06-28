@@ -121,12 +121,19 @@
     <value>Frameworks must have the same identifier, profile, and platform.</value>
   </data>
   <data name="InvalidFrameworkIdentifier" xml:space="preserve">
-    <value>Invalid framework identifier.</value>
+    <value>Invalid framework identifier '{0}'.</value>
+    <comment>{0} is the invalid framework identifier.</comment>
   </data>
   <data name="InvalidFrameworkVersion" xml:space="preserve">
     <value>Invalid framework version '{0}'.</value>
+    <comment>{0} is the invalid framework version.</comment>
   </data>
-  <data name="InvalidPortableFrameworks" xml:space="preserve">
-    <value>Invalid portable frameworks.</value>
+  <data name="InvalidPortableFrameworksDueToHyphen" xml:space="preserve">
+    <value>Invalid portable frameworks '{0}'. A hyphen may not be in any of the portable framework names.</value>
+    <comment>{0} is the invalid portable framework string.</comment>
+  </data>
+  <data name="MissingPortableFrameworks" xml:space="preserve">
+    <value>Invalid portable frameworks for '{0}'. A portable framework must have at least one framework in the profile.</value>
+    <comment>{0} is the invalid portable framework string.</comment>
   </data>
 </root>

@@ -133,7 +133,10 @@ namespace NuGet.Frameworks
                 {
                     // Frameworks within the portable profile are not allowed
                     // to have profiles themselves #1869
-                    throw new ArgumentException(Strings.InvalidPortableFrameworks);
+                    throw new ArgumentException(string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.InvalidPortableFrameworksDueToHyphen,
+                        profile));
                 }
 
                 result = new NuGetFramework(platform, version, profile);

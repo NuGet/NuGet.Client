@@ -162,7 +162,10 @@ namespace NuGet.Frameworks
 
                 if (String.IsNullOrEmpty(shortFramework))
                 {
-                    throw new FrameworkException(Strings.InvalidFrameworkIdentifier);
+                    throw new FrameworkException(string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.InvalidFrameworkIdentifier,
+                        shortFramework));
                 }
 
                 // add framework
@@ -195,7 +198,10 @@ namespace NuGet.Frameworks
                     }
                     else
                     {
-                        throw new FrameworkException(Strings.InvalidPortableFrameworks);
+                        throw new FrameworkException(string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.MissingPortableFrameworks,
+                            framework.DotNetFrameworkName));
                     }
                 }
                 else

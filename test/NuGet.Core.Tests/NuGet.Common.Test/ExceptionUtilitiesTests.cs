@@ -207,6 +207,29 @@ namespace NuGet.Common.Test
         }
 
         [Fact]
+        public void ExceptionUtilities_SupportsDisablingIndentation()
+        {
+            /* Arrange
+             * Exceptions:
+             *  A -> B
+             */
+            var b = new Exception("B");
+            var a = new Exception("A", b);
+
+            // Act
+            var message = ExceptionUtilities.DisplayMessage(a, indent: false);
+
+            // Assert
+            var actual = GetLines(message);
+            var expected = new[]
+            {
+                "A",
+                "B"
+            };
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
         public void ExceptionUtilities_IgnoresDuplicateAdjacent()
         {
             /* Arrange

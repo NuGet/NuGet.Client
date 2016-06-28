@@ -170,5 +170,33 @@ namespace NuGet.Test
                 }
             }
         }
+
+        [Fact]
+        public void NuGetFramework_GetPortableShortFolderNameWithNoProfile()
+        {
+            // Arrange
+            var target = new NuGetFramework(".NETPortable", new Version(0, 0), string.Empty);
+
+            // Act & Arrange
+            var ex = Assert.Throws<FrameworkException>(() => target.GetShortFolderName());
+            Assert.Equal(
+                "Invalid portable frameworks for '.NETPortable,Version=v0.0'. " +
+                "A portable framework must have at least one framework in the profile.",
+                ex.Message);
+        }
+
+        [Fact]
+        public void NuGetFramework_GetPortableShortFolderNameWithHyphenInProfile()
+        {
+            // Arrange
+            var target = new NuGetFramework(".NETPortable", new Version(0, 0), "net45+net-cf+win8");
+
+            // Act & Arrange
+            var ex = Assert.Throws<ArgumentException>(() => target.GetShortFolderName());
+            Assert.Equal(
+                "Invalid portable frameworks 'net45+net-cf+win8'. " +
+                "A hyphen may not be in any of the portable framework names.",
+                ex.Message);
+        }
     }
 }

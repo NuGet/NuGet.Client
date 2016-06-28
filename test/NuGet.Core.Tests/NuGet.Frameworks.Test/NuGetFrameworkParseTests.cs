@@ -329,14 +329,17 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [InlineData(".NETPortable,Version=v0.0,Profile=win+net-cf")]
-        [InlineData("portable-win+net-cf")]
-        [InlineData(".NETPortable,Version=v0.0,Profile=net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS")]
-        [InlineData("portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS")]
-        public void NuGetFramework_PortableWithInnerPortableProfileFails(string framework)
+        [InlineData(".NETPortable,Version=v0.0,Profile=win+net-cf", "win+net-cf")]
+        [InlineData("portable-win+net-cf", "win+net-cf")]
+        [InlineData(".NETPortable,Version=v0.0,Profile=net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS", "net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS")]
+        [InlineData("portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS", "net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS")]
+        public void NuGetFramework_PortableWithInnerPortableProfileFails(string framework, string portableFrameworks)
         {
-            Assert.Throws<ArgumentException>(
+            var ex = Assert.Throws<ArgumentException>(
                 () => NuGetFramework.Parse(framework));
+            Assert.Equal(
+                $"Invalid portable frameworks '{portableFrameworks}'. A hyphen may not be in any of the portable framework names.",
+                ex.Message);
         }
     }
 }

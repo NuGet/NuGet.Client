@@ -22,7 +22,7 @@ namespace NuGet.Frameworks {
     // with the /str option, or rebuild your VS project.
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Strings {
+    public class Strings {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -35,7 +35,7 @@ namespace NuGet.Frameworks {
         ///    Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.Frameworks.Strings", typeof(Strings).GetTypeInfo().Assembly);
@@ -50,7 +50,7 @@ namespace NuGet.Frameworks {
         ///    resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -62,16 +62,16 @@ namespace NuGet.Frameworks {
         /// <summary>
         ///    Looks up a localized string similar to Frameworks must have the same identifier, profile, and platform..
         /// </summary>
-        internal static string FrameworkMismatch {
+        public static string FrameworkMismatch {
             get {
                 return ResourceManager.GetString("FrameworkMismatch", resourceCulture);
             }
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Invalid framework identifier..
+        ///    Looks up a localized string similar to Invalid framework identifier &apos;{0}&apos;..
         /// </summary>
-        internal static string InvalidFrameworkIdentifier {
+        public static string InvalidFrameworkIdentifier {
             get {
                 return ResourceManager.GetString("InvalidFrameworkIdentifier", resourceCulture);
             }
@@ -80,18 +80,27 @@ namespace NuGet.Frameworks {
         /// <summary>
         ///    Looks up a localized string similar to Invalid framework version &apos;{0}&apos;..
         /// </summary>
-        internal static string InvalidFrameworkVersion {
+        public static string InvalidFrameworkVersion {
             get {
                 return ResourceManager.GetString("InvalidFrameworkVersion", resourceCulture);
             }
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Invalid portable frameworks..
+        ///    Looks up a localized string similar to Invalid portable frameworks &apos;{0}&apos;. A hyphen may not be in any of the portable framework names..
         /// </summary>
-        internal static string InvalidPortableFrameworks {
+        public static string InvalidPortableFrameworksDueToHyphen {
             get {
-                return ResourceManager.GetString("InvalidPortableFrameworks", resourceCulture);
+                return ResourceManager.GetString("InvalidPortableFrameworksDueToHyphen", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Invalid portable frameworks for &apos;{0}&apos;. A portable framework must have at least one framework in the profile..
+        /// </summary>
+        public static string MissingPortableFrameworks {
+            get {
+                return ResourceManager.GetString("MissingPortableFrameworks", resourceCulture);
             }
         }
     }
