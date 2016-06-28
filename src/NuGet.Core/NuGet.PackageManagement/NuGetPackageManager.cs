@@ -2260,7 +2260,7 @@ namespace NuGet.PackageManagement
         /// packagesFolderPath from NuGetPackageManager
         /// to create a folderNuGetProject before calling into this method
         /// </summary>
-        public async Task<bool> RestorePackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext,
+        public async Task<bool> RestorePackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, SourceCacheContext cacheContext,
             IEnumerable<SourceRepository> sourceRepositories, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
@@ -2279,13 +2279,35 @@ namespace NuGet.PackageManagement
             using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(enabledSources,
                 packageIdentity,
                 Settings,
+                cacheContext,
                 new ProjectContextLogger(nuGetProjectContext),
                 token))
             {
-                packageIdentity = downloadResult.PackageReader.GetIdentity();
+                // Determine if the package was returned from the cache or a direct download
+                bool fromCache = true;
+                if (cacheContext.NoCaching)
+                {
+                    if (cacheContext.NoCache)
+                    {
+                        fromCache = false;
+                    }
+                    else
+                    {
+                        FileStream fs = downloadResult.PackageStream as FileStream;
+                        if (!fs.Name.StartsWith(SettingsUtility.GetGlobalPackagesFolder(Settings)))
+                        {
+                            fromCache = false;
+                        }
+                    }
+                }
 
-                // If you already downloaded the package, just restore it, don't cancel the operation now
-                await PackagesFolderNuGetProject.InstallPackageAsync(packageIdentity, downloadResult, nuGetProjectContext, token);
+                // If the package was returned from the cache then we still need to install it
+                if (fromCache)
+                {
+                    packageIdentity = downloadResult.PackageReader.GetIdentity();
+                    // If you already downloaded the package, just restore it, don't cancel the operation now
+                    await PackagesFolderNuGetProject.InstallPackageAsync(packageIdentity, downloadResult, nuGetProjectContext, token);
+                }
             }
 
             return true;

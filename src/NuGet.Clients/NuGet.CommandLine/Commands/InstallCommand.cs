@@ -186,7 +186,7 @@ namespace NuGet.CommandLine
                 Console.LogMinimal(message);
             }
 
-            Task<PackageRestoreResult> packageRestoreTask = PackageRestoreManager.RestoreMissingPackagesAsync(packageRestoreContext, new ConsoleProjectContext(Console));
+            Task<PackageRestoreResult> packageRestoreTask = PackageRestoreManager.RestoreMissingPackagesAsync(packageRestoreContext, new ConsoleProjectContext(Console), new SourceCacheContext());
             return packageRestoreTask;
         }
 

@@ -5327,4 +5327,46 @@ nuget locals global-packages -list</value>
     <value>nuget restore MySoluion.sln</value>
     <comment>command line example, do not localize</comment>
   </data>
+  <data name="CommandNoCaching" xml:space="preserve">
+    <value>Do not populate the machine cache or global package cache</value>
+  </data>
+  <data name="CommandNoCaching_chs" xml:space="preserve">
+    <value>Do not populate the machine cache or global package cache</value>
+  </data>
+  <data name="CommandNoCaching_cht" xml:space="preserve">
+    <value>Do not populate the machine cache or global package cache</value>
+  </data>
+  <data name="CommandNoCaching_csy" xml:space="preserve">
+    <value>Do not populate the machine cache or global package cache</value>
+  </data>
+  <data name="CommandNoCaching_deu" xml:space="preserve">
+    <value>Do not populate the machine cache or global package cache</value>
+  </data>
+  <data name="CommandNoCaching_esp" xml:space="preserve">
+    <value>Do not populate the machine cache or global package cache</value>
+  </data>
+  <data name="CommandNoCaching_fra" xml:space="preserve">
+    <value>Do not populate the machine cache or global package cache</value>
+  </data>
+  <data name="CommandNoCaching_ita" xml:space="preserve">
+    <value>Do not populate the machine cache or global package cache</value>
+  </data>
+  <data name="CommandNoCaching_jpn" xml:space="preserve">
+    <value>Do not populate the machine cache or global package cache</value>
+  </data>
+  <data name="CommandNoCaching_kor" xml:space="preserve">
+    <value>Do not populate the machine cache or global package cache</value>
+  </data>
+  <data name="CommandNoCaching_plk" xml:space="preserve">
+    <value>Do not populate the machine cache or global package cache</value>
+  </data>
+  <data name="CommandNoCaching_ptb" xml:space="preserve">
+    <value>Do not populate the machine cache or global package cache</value>
+  </data>
+  <data name="CommandNoCaching_rus" xml:space="preserve">
+    <value>Do not populate the machine cache or global package cache</value>
+  </data>
+  <data name="CommandNoCaching_trk" xml:space="preserve">
+    <value>Do not populate the machine cache or global package cache</value>
+  </data>
 </root>

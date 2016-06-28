@@ -785,6 +785,7 @@ namespace NuGetVSExtension
             await PackageRestoreManager.RestoreMissingPackagesAsync(solutionDirectory,
                 packages,
                 NuGetProjectContext,
+                new SourceCacheContext(),
                 token);
         }
 

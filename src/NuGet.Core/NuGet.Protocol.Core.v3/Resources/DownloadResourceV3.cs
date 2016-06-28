@@ -101,6 +101,7 @@ namespace NuGet.Protocol
         public override async Task<DownloadResourceResult> GetDownloadResourceResultAsync(
             PackageIdentity identity,
             ISettings settings,
+            SourceCacheContext cacheContext,
             ILogger logger,
             CancellationToken token)
         {
@@ -123,7 +124,7 @@ namespace NuGet.Protocol
 
             if (uri != null)
             {
-                return await GetDownloadResultUtility.GetDownloadResultAsync(_client, identity, uri, settings, logger, token);
+                return await GetDownloadResultUtility.GetDownloadResultAsync(_client, identity, uri, settings, cacheContext, logger, token);
             }
 
             return new DownloadResourceResult(DownloadResourceResultStatus.NotFound);

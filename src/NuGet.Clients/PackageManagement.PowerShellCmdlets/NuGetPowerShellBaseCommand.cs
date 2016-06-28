@@ -257,6 +257,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     var result = await PackageRestoreManager.RestoreMissingPackagesAsync(solutionDirectory,
                         packages,
                         this,
+                        new SourceCacheContext(),
                         Token);
 
                     if (result.Restored)

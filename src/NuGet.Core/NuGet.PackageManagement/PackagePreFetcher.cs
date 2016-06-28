@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement
 {
@@ -128,6 +129,7 @@ namespace NuGet.PackageManagement
                                         action.SourceRepository,
                                         action.PackageIdentity,
                                         settings,
+                                        new SourceCacheContext(),
                                         logger,
                                         token));
 

@@ -108,6 +108,12 @@ namespace NuGet.CommandLine
 
                     // Add restore args to the restore context
                     cacheContext.NoCache = NoCache;
+                    cacheContext.NoCaching = NoCaching;
+                    if (NoCaching)
+                    {
+                        cacheContext.NoCachingDirectory = PackagesDirectory;
+                        cacheContext.NoCachingPackageSaveMode = EffectivePackageSaveMode;
+                    }
                     restoreContext.CacheContext = cacheContext;
                     restoreContext.DisableParallel = DisableParallelProcessing;
                     restoreContext.ConfigFile = ConfigFile;
@@ -333,9 +339,19 @@ namespace NuGet.CommandLine
                 projectContext.PackageExtractionContext.PackageSaveMode = EffectivePackageSaveMode;
             }
 
+            var cacheContext = new SourceCacheContext();
+            cacheContext.NoCache = NoCache;
+            cacheContext.NoCaching = NoCaching;
+            if (NoCaching)
+            {
+                cacheContext.NoCachingDirectory = PackagesDirectory;
+                cacheContext.NoCachingPackageSaveMode = EffectivePackageSaveMode;
+            }
+
             var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
                 packageRestoreContext,
-                projectContext);
+                projectContext,
+                cacheContext);
 
             return new RestoreSummary(
                 result.Restored,

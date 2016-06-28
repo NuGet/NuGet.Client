@@ -28,6 +28,7 @@ namespace NuGet.PackageManagement
         public static async Task<DownloadResourceResult> GetDownloadResourceResultAsync(IEnumerable<SourceRepository> sources,
             PackageIdentity packageIdentity,
             Configuration.ISettings settings,
+            SourceCacheContext cacheContext,
             Common.ILogger logger,
             CancellationToken token)
         {
@@ -81,7 +82,7 @@ namespace NuGet.PackageManagement
 
                     foreach (var source in sourceGroup)
                     {
-                        var task = GetDownloadResourceResultAsync(source, packageIdentity, settings, logger, linkedTokenSource.Token);
+                        var task = GetDownloadResourceResultAsync(source, packageIdentity, settings, cacheContext, logger, linkedTokenSource.Token);
                         tasksLookup.Add(task, source);
                         tasks.Add(task);
                     }
@@ -168,6 +169,7 @@ namespace NuGet.PackageManagement
         public static async Task<DownloadResourceResult> GetDownloadResourceResultAsync(SourceRepository sourceRepository,
             PackageIdentity packageIdentity,
             Configuration.ISettings settings,
+            SourceCacheContext cacheContext,
             Common.ILogger logger,
             CancellationToken token)
         {
@@ -201,6 +203,7 @@ namespace NuGet.PackageManagement
                 result = await downloadResource.GetDownloadResourceResultAsync(
                    packageIdentity,
                    settings,
+                   cacheContext,
                    logger,
                    token);
             }
