@@ -18,6 +18,10 @@ namespace NuGetVSExtension
         // any project system that wants to load NuGet when its project opens needs to activate a UI context with this GUID
         public const string guidAutoLoadNuGetString = "65B1D035-27A5-4BBA-BAB9-5F61C1E2BC4A";
 
+        // GUID for UI Context rule that is active when a project that might be upgradeable (from packages.config to project.json)
+        // is loaded. This will autoload our package, so we can dynamically control the visibility of the appropriate menu items.
+        public const string guidUpgradeableProjectLoadedString = "1837160D-723F-43CD-8185-97758295A859";
+
         // Unique identifier of the editor factory that created an instance of the document view and document data objects.
         // Used when creating document windows of Package Manager
         private const string guidNuGetEditorTypeString = "95501c48-a850-47c1-a785-2aaa96637f81";

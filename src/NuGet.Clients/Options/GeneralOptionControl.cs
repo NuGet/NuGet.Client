@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Windows.Forms;
+using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 
 namespace NuGet.Options
@@ -36,6 +37,8 @@ namespace NuGet.Options
 
                     var bindingRedirects = new BindingRedirectBehavior(_settings);
                     skipBindingRedirects.Checked = bindingRedirects.IsSkipped;
+
+                    enableExperimentalFeaturesCheckBox.Checked = ExperimentalFeatures.IsEnabled;
                 }
                 catch(InvalidOperationException)
                 {
@@ -60,6 +63,8 @@ namespace NuGet.Options
 
                 var bindingRedirects = new BindingRedirectBehavior(_settings);
                 bindingRedirects.IsSkipped = skipBindingRedirects.Checked;
+
+                ExperimentalFeatures.IsEnabled = enableExperimentalFeaturesCheckBox.Checked;
             }
             catch (InvalidOperationException)
             {

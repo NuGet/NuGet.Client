@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
@@ -60,6 +61,25 @@ namespace NuGetVSExtension
                     packageManagerControl.ApplyShowPreviewSetting(show);
                 }
             }
+        }
+
+        public override bool IsNuGetProjectUpgradeable(NuGetProject project)
+        {
+            return NuGetProjectUpgradeHelper.IsNuGetProjectUpgradeable(project);
+        }
+
+        public override IModalProgressDialogSession StartModalProgressDialog(string caption, ProgressDialogData initialData, INuGetUI uiService)
+        {
+            var waitForDialogFactory = (IVsThreadedWaitDialogFactory)Package.GetGlobalService(typeof(SVsThreadedWaitDialogFactory));
+            var progressData = new ThreadedWaitDialogProgressData(
+                initialData.WaitMessage,
+                initialData.ProgressText,
+                null,
+                initialData.IsCancelable,
+                initialData.CurrentStep,
+                initialData.TotalSteps);
+            var session = waitForDialogFactory.StartWaitDialog(caption, progressData);
+            return new VisualStudioProgressDialogSession(session);
         }
     }
 }

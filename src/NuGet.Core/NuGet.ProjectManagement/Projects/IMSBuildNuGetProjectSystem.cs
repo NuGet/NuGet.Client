@@ -15,12 +15,15 @@ namespace NuGet.ProjectManagement
         string ProjectName { get; }
         string ProjectUniqueName { get; }
         string ProjectFullPath { get; }
+        string ProjectFileName { get; }
         INuGetProjectContext NuGetProjectContext { get; }
         void SetNuGetProjectContext(INuGetProjectContext nuGetProjectContext);
         void AddFile(string path, Stream stream);
         void AddExistingFile(string path);
         void RemoveFile(string path);
         bool FileExistsInProject(string path);
+
+        IList<string> SupportedPlatforms { get; }
 
         /// <summary>
         /// Method called when adding an assembly reference to the project.

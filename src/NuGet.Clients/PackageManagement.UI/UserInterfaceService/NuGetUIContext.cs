@@ -67,5 +67,9 @@ namespace NuGet.PackageManagement.UI
         public abstract void ApplyShowPreviewSetting(bool show);
 
         public IEnumerable<IVsPackageManagerProvider> PackageManagerProviders { get; }
+
+        public abstract bool IsNuGetProjectUpgradeable(NuGetProject project);
+
+        public abstract IModalProgressDialogSession StartModalProgressDialog(string caption, ProgressDialogData initialData, INuGetUI uiService);
     }
 }

@@ -66,8 +66,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="DataStreamFromComStream.cs" />
+    <Compile Include="VisualStudioDialogProgress.cs" />
+    <Compile Include="VisualStudioProgressDialogSession.cs" />
     <Compile Include="FontAndColorsRegistrationAttribute.cs" />
     <Compile Include="Guids.cs" />
+    <Compile Include="NuGetProjectUpgradeHelper.cs" />
     <Compile Include="VsCredentialProviderImporter.cs" />
     <Compile Include="InteractiveLoginProvider.cs" />
     <Compile Include="INuGetUIContextFactory.cs" />
@@ -281,6 +284,7 @@
     <Reference Include="System.Design">
       <Private>False</Private>
     </Reference>
+    <Reference Include="System.Xaml" />
     <Reference Include="WindowsBase">
       <Private>False</Private>
     </Reference>

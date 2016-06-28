@@ -184,6 +184,11 @@ namespace Test.Utility
             //do nothing.
         }
 
+        public void ReloadProject(NuGetProject nuGetProject)
+        {
+            //do nothing.
+        }
+
         public void Dispose()
         {
             var testDirectory = _testDirectory;

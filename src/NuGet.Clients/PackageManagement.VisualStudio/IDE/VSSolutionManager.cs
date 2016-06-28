@@ -196,6 +196,16 @@ namespace NuGet.PackageManagement.VisualStudio
             });
         }
 
+        public void ReloadProject(NuGetProject nuGetProject)
+        {
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                var safeName = GetNuGetProjectSafeName(nuGetProject);
+                EnvDTEProjectUtility.Reload(GetDTEProject(safeName));
+            });
+        }
+
         private IEnumerable<EnvDTEProject> GetEnvDTEProjects()
         {
             Debug.Assert(ThreadHelper.CheckAccess());

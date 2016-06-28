@@ -1439,5 +1439,37 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         #endregion
+
+        public static EnvDTEProject Reload(EnvDTEProject envDTEProject)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            Guid projectGuid;
+            var projectHierarchy = VsHierarchyUtility.ToVsHierarchy(envDTEProject);
+
+            // Get the unique name so we can get a reference to the newly loaded project once we're done
+            var solution = ServiceLocator.GetInstance<IVsSolution>();
+            string projectUniqueName;
+            solution.GetUniqueNameOfProject(projectHierarchy, out projectUniqueName);
+
+            // Reload the project
+            var solution4 = (IVsSolution4)solution;
+            projectHierarchy.GetGuidProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_ProjectIDGuid, out projectGuid);
+            solution4.UnloadProject(ref projectGuid, (uint) _VSProjectUnloadStatus.UNLOADSTATUS_LoadPendingIfNeeded);
+            solution4.ReloadProject(ref projectGuid);
+
+            // Return a reference to the reloaded project
+            solution.GetProjectOfUniqueName(projectUniqueName, out projectHierarchy);
+            return VsHierarchyUtility.GetProjectFromHierarchy(projectHierarchy);
+        }
+
+        public static string GetFileName(EnvDTEProject envDTEProject)
+        {
+            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                return envDTEProject.FileName;
+            });
+        }
     }
 }
