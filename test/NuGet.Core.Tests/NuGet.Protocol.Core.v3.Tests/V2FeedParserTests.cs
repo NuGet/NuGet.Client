@@ -123,6 +123,7 @@ namespace NuGet.Protocol.Tests
             using (var downloadResult = await parser.DownloadFromUrl(new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("6.2.0")),
                                                               new Uri("https://www.nuget.org/api/v2/package/WindowsAzure.Storage/6.2.0"),
                                                               Configuration.NullSettings.Instance,
+                                                              new SourceCacheContext(),
                                                               NullLogger.Instance,
                                                               CancellationToken.None))
             {
@@ -154,6 +155,7 @@ namespace NuGet.Protocol.Tests
             // Act
             var actual = await parser.DownloadFromIdentity(new PackageIdentity("xunit", new NuGetVersion("1.0.0-notfound")),
                 NullSettings.Instance,
+                new SourceCacheContext(),
                 NullLogger.Instance,
                 CancellationToken.None);
 

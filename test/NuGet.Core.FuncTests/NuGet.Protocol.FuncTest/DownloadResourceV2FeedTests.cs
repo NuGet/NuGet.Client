@@ -28,6 +28,7 @@ namespace NuGet.Protocol.FuncTest
             // Act & Assert
             using (var downloadResult = await downloadResource.GetDownloadResourceResultAsync(package,
                                                               NullSettings.Instance,
+                                                              new SourceCacheContext(),
                                                               NullLogger.Instance,
                                                               CancellationToken.None))
             {
@@ -51,6 +52,7 @@ namespace NuGet.Protocol.FuncTest
             // Act & Assert
             using (var downloadResult = await downloadResource.GetDownloadResourceResultAsync(package,
                                                               NullSettings.Instance,
+                                                              new SourceCacheContext(),
                                                               NullLogger.Instance,
                                                               CancellationToken.None))
             {
@@ -75,6 +77,7 @@ namespace NuGet.Protocol.FuncTest
             var actual = await downloadResource.GetDownloadResourceResultAsync(
                 package,
                 NullSettings.Instance,
+                new SourceCacheContext(),
                 NullLogger.Instance,
                 CancellationToken.None);
 

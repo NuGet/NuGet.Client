@@ -29,6 +29,7 @@ namespace NuGet.Protocol.FuncTest
             Exception ex = await Assert.ThrowsAsync<FatalProtocolException>(async () => await parser.DownloadFromUrl(new PackageIdentity("not-found", new NuGetVersion("6.2.0")),
                                                               new Uri($"https://www.{randomName}.org/api/v2/"),
                                                               Configuration.NullSettings.Instance,
+                                                              new SourceCacheContext(),
                                                               NullLogger.Instance,
                                                               CancellationToken.None));
 
@@ -51,6 +52,7 @@ namespace NuGet.Protocol.FuncTest
             var actual = await parser.DownloadFromUrl(new PackageIdentity("not-found", new NuGetVersion("6.2.0")),
                 new Uri($@"{TestServers.NuGetV2}/package/not-found/6.2.0"),
                 Configuration.NullSettings.Instance,
+                new SourceCacheContext(),
                 NullLogger.Instance,
                 CancellationToken.None);
 
@@ -72,6 +74,7 @@ namespace NuGet.Protocol.FuncTest
             // Act & Assert
             using (var downloadResult = await parser.DownloadFromIdentity(new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("6.2.0")),
                                                               Configuration.NullSettings.Instance,
+                                                              new SourceCacheContext(),
                                                               NullLogger.Instance,
                                                               CancellationToken.None))
             {
@@ -120,6 +123,7 @@ namespace NuGet.Protocol.FuncTest
             // Act & Assert
             using (var downloadResult = await parser.DownloadFromIdentity(new PackageIdentity("newtonsoft.json", new NuGetVersion("8.0.3")),
                                                               Configuration.NullSettings.Instance,
+                                                              new SourceCacheContext(),
                                                               NullLogger.Instance,
                                                               CancellationToken.None))
             {
@@ -256,6 +260,7 @@ namespace NuGet.Protocol.FuncTest
             // Act & Assert
             using (var downloadResult = await parser.DownloadFromIdentity(new PackageIdentity("newtonsoft.json", new NuGetVersion("8.0.3")),
                                                               Configuration.NullSettings.Instance,
+                                                              new SourceCacheContext(),
                                                               NullLogger.Instance,
                                                               CancellationToken.None))
             {

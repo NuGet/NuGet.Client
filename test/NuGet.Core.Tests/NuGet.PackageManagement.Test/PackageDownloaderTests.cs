@@ -35,6 +35,7 @@ namespace NuGet.PackageManagement
                 await PackageDownloader.GetDownloadResourceResultAsync(v2sourceRepository,
                     packageIdentity,
                     Configuration.NullSettings.Instance,
+                    new SourceCacheContext(),
                     Common.NullLogger.Instance,
                     CancellationToken.None);
             }
@@ -66,6 +67,7 @@ namespace NuGet.PackageManagement
                 await PackageDownloader.GetDownloadResourceResultAsync(v3sourceRepository,
                     packageIdentity,
                     Configuration.NullSettings.Instance,
+                    new SourceCacheContext(),
                     Common.NullLogger.Instance,
                     CancellationToken.None);
             }
@@ -90,6 +92,7 @@ namespace NuGet.PackageManagement
             using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(v2sourceRepository,
                 packageIdentity,
                 Configuration.NullSettings.Instance,
+                new SourceCacheContext(),
                 Common.NullLogger.Instance,
                 CancellationToken.None))
             {
@@ -114,6 +117,7 @@ namespace NuGet.PackageManagement
             using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(v3sourceRepository,
                 packageIdentity,
                 Configuration.NullSettings.Instance,
+                new SourceCacheContext(),
                 Common.NullLogger.Instance,
                 CancellationToken.None))
             {
@@ -143,6 +147,7 @@ namespace NuGet.PackageManagement
             using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(),
                 packageIdentity,
                 Configuration.NullSettings.Instance,
+                new SourceCacheContext(),
                 Common.NullLogger.Instance,
                 CancellationToken.None))
             {
@@ -168,6 +173,7 @@ namespace NuGet.PackageManagement
             await Assert.ThrowsAsync<FatalProtocolException>(async () => await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(),
                 packageIdentity,
                 Configuration.NullSettings.Instance,
+                new SourceCacheContext(),
                 Common.NullLogger.Instance,
                 CancellationToken.None));
         }
@@ -191,6 +197,7 @@ namespace NuGet.PackageManagement
             using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(),
                 packageIdentity,
                 Configuration.NullSettings.Instance,
+                new SourceCacheContext(),
                 Common.NullLogger.Instance,
                 CancellationToken.None))
             {

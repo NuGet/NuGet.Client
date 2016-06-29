@@ -4592,6 +4592,7 @@ namespace NuGet.Test
                 await nuGetPackageManager.RestorePackageAsync(
                     packageOld,
                     new TestNuGetProjectContext(),
+                    new SourceCacheContext(),
                     sourceRepositoryProvider.GetRepositories(),
                     token);
 
@@ -4669,12 +4670,14 @@ namespace NuGet.Test
                 await nuGetPackageManager.RestorePackageAsync(
                     packageOld,
                     new TestNuGetProjectContext(),
+                    new SourceCacheContext(),
                     sourceRepositoryProvider.GetRepositories(),
                     token);
 
                 await nuGetPackageManager.RestorePackageAsync(
                     new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.8")),
                     new TestNuGetProjectContext(),
+                    new SourceCacheContext(),
                     sourceRepositoryProvider.GetRepositories(),
                     token);
 

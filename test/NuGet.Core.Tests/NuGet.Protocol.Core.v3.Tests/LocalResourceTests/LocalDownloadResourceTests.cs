@@ -54,6 +54,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 var result = await resource.GetDownloadResourceResultAsync(
                     packageA.Identity,
                     NullSettings.Instance,
+                    new SourceCacheContext(),
                     testLogger,
                     CancellationToken.None);
 
@@ -111,18 +112,21 @@ namespace NuGet.Protocol.Core.v3.Tests
                 var result1 = await resource.GetDownloadResourceResultAsync(
                     packageA1.Identity,
                     NullSettings.Instance,
+                    new SourceCacheContext(),
                     testLogger,
                     CancellationToken.None);
 
                 var result2 = await resource.GetDownloadResourceResultAsync(
                     packageA2.Identity,
                     NullSettings.Instance,
+                    new SourceCacheContext(),
                     testLogger,
                     CancellationToken.None);
 
                 var result3 = await resource.GetDownloadResourceResultAsync(
                     packageA3.Identity,
                     NullSettings.Instance,
+                    new SourceCacheContext(),
                     testLogger,
                     CancellationToken.None);
 
@@ -174,6 +178,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 var result = await resource.GetDownloadResourceResultAsync(
                     packageA.Identity,
                     NullSettings.Instance,
+                    new SourceCacheContext(),
                     testLogger,
                     CancellationToken.None);
 
@@ -225,6 +230,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 var result = await resource.GetDownloadResourceResultAsync(
                     new PackageIdentity("a", NuGetVersion.Parse("1.0.0-beta.1.2.3+a.b")),
                     NullSettings.Instance,
+                    new SourceCacheContext(),
                     testLogger,
                     CancellationToken.None);
 
@@ -248,6 +254,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 var result = await resource.GetDownloadResourceResultAsync(
                     new PackageIdentity("a", NuGetVersion.Parse("1.0.0-beta.1.2.3+a.b")),
                     NullSettings.Instance,
+                    new SourceCacheContext(),
                     testLogger,
                     CancellationToken.None);
 
@@ -273,6 +280,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 var result = await resource.GetDownloadResourceResultAsync(
                     new PackageIdentity("a", NuGetVersion.Parse("1.0.0-beta.1.2.3+a.b")),
                     NullSettings.Instance,
+                    new SourceCacheContext(),
                     testLogger,
                     CancellationToken.None);
 
@@ -299,6 +307,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 var result = await resource.GetDownloadResourceResultAsync(
                     id,
                     NullSettings.Instance,
+                    new SourceCacheContext(),
                     testLogger,
                     CancellationToken.None);
 
