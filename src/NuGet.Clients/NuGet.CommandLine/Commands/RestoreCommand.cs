@@ -339,27 +339,29 @@ namespace NuGet.CommandLine
                 projectContext.PackageExtractionContext.PackageSaveMode = EffectivePackageSaveMode;
             }
 
-            var cacheContext = new SourceCacheContext();
-            cacheContext.NoCache = NoCache;
-            cacheContext.NoCaching = NoCaching;
-            if (NoCaching)
+            using (var cacheContext = new SourceCacheContext())
             {
-                cacheContext.NoCachingDirectory = PackagesDirectory;
-                cacheContext.NoCachingPackageSaveMode = EffectivePackageSaveMode;
+                cacheContext.NoCache = NoCache;
+                cacheContext.NoCaching = NoCaching;
+                if (NoCaching)
+                {
+                    cacheContext.NoCachingDirectory = PackagesDirectory;
+                    cacheContext.NoCachingPackageSaveMode = EffectivePackageSaveMode;
+                }
+
+                var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
+                    packageRestoreContext,
+                    projectContext,
+                    cacheContext);
+
+                return new RestoreSummary(
+                    result.Restored,
+                    "packages.config projects",
+                    Settings.Priority.Select(x => Path.Combine(x.Root, x.FileName)),
+                    packageSources.Select(x => x.Source),
+                    installCount,
+                    collectorLogger.Errors.Concat(failedEvents.Select(e => e.Exception.Message)));
             }
-
-            var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
-                packageRestoreContext,
-                projectContext,
-                cacheContext);
-
-            return new RestoreSummary(
-                result.Restored,
-                "packages.config projects",
-                Settings.Priority.Select(x => Path.Combine(x.Root, x.FileName)),
-                packageSources.Select(x => x.Source),
-                installCount,
-                collectorLogger.Errors.Concat(failedEvents.Select(e => e.Exception.Message)));
         }
 
         private void CheckRequireConsent()

@@ -2283,31 +2283,8 @@ namespace NuGet.PackageManagement
                 new ProjectContextLogger(nuGetProjectContext),
                 token))
             {
-                // Determine if the package was returned from the cache or a direct download
-                bool fromCache = true;
-                if (cacheContext.NoCaching)
-                {
-                    if (cacheContext.NoCache)
-                    {
-                        fromCache = false;
-                    }
-                    else
-                    {
-                        FileStream fs = downloadResult.PackageStream as FileStream;
-                        if (!fs.Name.StartsWith(SettingsUtility.GetGlobalPackagesFolder(Settings)))
-                        {
-                            fromCache = false;
-                        }
-                    }
-                }
-
-                // If the package was returned from the cache then we still need to install it
-                if (fromCache)
-                {
-                    packageIdentity = downloadResult.PackageReader.GetIdentity();
-                    // If you already downloaded the package, just restore it, don't cancel the operation now
-                    await PackagesFolderNuGetProject.InstallPackageAsync(packageIdentity, downloadResult, nuGetProjectContext, token);
-                }
+                // Install package whether returned from the cache or a direct download
+                await PackagesFolderNuGetProject.InstallPackageAsync(packageIdentity, downloadResult, nuGetProjectContext, token);
             }
 
             return true;
