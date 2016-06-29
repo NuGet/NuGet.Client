@@ -366,6 +366,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Applying constraint &apos;{0}&apos; defined in &apos;{1}&apos;..
+        /// </summary>
+        public static string PackagesConfigAllowedVersions {
+            get {
+                return ResourceManager.GetString("PackagesConfigAllowedVersions", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///    Looks up a localized string similar to Packages could not be installed.
         /// </summary>
         public static string PackagesCouldNotBeInstalled {

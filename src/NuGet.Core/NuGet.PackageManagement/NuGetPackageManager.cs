@@ -834,7 +834,7 @@ namespace NuGet.PackageManagement
                 prunedAvailablePackages = PrunePackageTree.PruneByUpdateConstraints(prunedAvailablePackages, projectInstalledPackageReferences, resolutionContext.VersionConstraints);
 
                 // Verify that the target is allowed by packages.config
-                GatherExceptionHelpers.ThrowIfVersionIsDisallowedByPackagesConfig(primaryTargetIds, projectInstalledPackageReferences, prunedAvailablePackages);
+                GatherExceptionHelpers.ThrowIfVersionIsDisallowedByPackagesConfig(primaryTargetIds, projectInstalledPackageReferences, prunedAvailablePackages, log);
 
                 // Remove versions that do not satisfy 'allowedVersions' attribute in packages.config, if any
                 prunedAvailablePackages = PrunePackageTree.PruneDisallowedVersions(prunedAvailablePackages, projectInstalledPackageReferences);
@@ -1265,8 +1265,10 @@ namespace NuGet.PackageManagement
                             new[] { packageIdentity });
                     }
 
+                    var log = new LoggerAdapter(nuGetProjectContext);
+
                     // Verify that the target is allowed by packages.config
-                    GatherExceptionHelpers.ThrowIfVersionIsDisallowedByPackagesConfig(packageIdentity.Id, projectInstalledPackageReferences, prunedAvailablePackages);
+                    GatherExceptionHelpers.ThrowIfVersionIsDisallowedByPackagesConfig(packageIdentity.Id, projectInstalledPackageReferences, prunedAvailablePackages, log);
 
                     // Remove versions that do not satisfy 'allowedVersions' attribute in packages.config, if any
                     prunedAvailablePackages = PrunePackageTree.PruneDisallowedVersions(prunedAvailablePackages, projectInstalledPackageReferences);
@@ -1287,7 +1289,7 @@ namespace NuGet.PackageManagement
                         preferredPackageReferences.Select(package => package.PackageIdentity),
                         prunedAvailablePackages,
                         SourceRepositoryProvider.GetRepositories().Select(s => s.PackageSource),
-                        new LoggerAdapter(nuGetProjectContext));
+                        log);
 
                     nuGetProjectContext.Log(ProjectManagement.MessageLevel.Info, Strings.AttemptingToResolveDependencies, packageIdentity, resolutionContext.DependencyBehavior);
 
