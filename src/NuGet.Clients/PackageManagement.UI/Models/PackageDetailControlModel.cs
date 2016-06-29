@@ -27,9 +27,12 @@ namespace NuGet.PackageManagement.UI
             PackageItemListViewModel searchResultPackage,
             ItemFilter filter)
         {
+
             await base.SetCurrentPackage(searchResultPackage, filter);
 
-            UpdateInstalledVersion();
+            InstalledVersion = searchResultPackage.InstalledVersion;
+            SelectedVersion.IsCurrentInstalled = InstalledVersion == SelectedVersion.Version;
+            OnPropertyChanged(nameof(SelectedVersion));
         }
 
         public override bool IsSolution
