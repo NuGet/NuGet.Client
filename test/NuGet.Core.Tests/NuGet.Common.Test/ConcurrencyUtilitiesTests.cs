@@ -12,6 +12,62 @@ namespace NuGet.Common.Test
     public class ConcurrencyUtilitiesTests
     {
         [Fact]
+        public async Task ConcurrencyUtilities_LockStressSynchronous()
+        {
+            // Arrange
+            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // This is the path that uniquely identifies the system-wide mutex.
+                var path = Path.Combine(testDirectory, "ConcurrencyUtilities_LockStress_Verification_Synchronous");
+
+                // This is a semaphore use to verify the lock.
+                var verificationSemaphore = new SemaphoreSlim(1);
+                int numResults = 0;
+                // Iterate a lot, to increase confidence.
+                const int threads = 50;
+                const int iterations = 10;
+
+                // This is the action that is execute inside of the lock.
+                Action lockedActionSync = () =>
+                {
+                    var acquired = verificationSemaphore.Wait(0);
+                    Assert.True(acquired, "Unable to acquire the lock on the semaphore within the file lock");
+
+                    // Hold the lock for a little bit.
+                    Thread.Sleep(TimeSpan.FromMilliseconds(1));
+
+                    verificationSemaphore.Release();
+                };
+
+
+                // Loop the same action, over and over.
+                Func<int, Task<List<bool>>> loopAsync = async thread =>
+                {
+                    var loopResults = new List<bool>();
+                    await Task.Run(() =>
+                    {
+                        foreach (var iteration in Enumerable.Range(0, iterations))
+                        {
+                            ConcurrencyUtilities.ExecuteWithFileLocked(
+                                path,
+                                lockedActionSync);
+                            loopResults.Add(true);
+                        }
+                    });
+
+                    return loopResults;
+                };
+
+                // Act
+                var tasks = Enumerable.Range(0, threads).Select(loopAsync);
+                var results = (await Task.WhenAll(tasks)).SelectMany(r => r).ToArray();
+
+                // Assert
+                Assert.Equal(threads * iterations, results.Length);
+            }
+        }
+
+        [Fact]
         public async Task ConcurrencyUtilities_LockStress()
         {
             // Arrange

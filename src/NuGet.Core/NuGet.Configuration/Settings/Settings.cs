@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Xml;
 using System.Xml.Linq;
 using NuGet.Common;
@@ -38,7 +37,7 @@ namespace NuGet.Configuration
             };
 
         public static readonly string[] SupportedMachineWideConfigExtension =
-            RuntimeEnvironmentHelper.IsWindows?
+            RuntimeEnvironmentHelper.IsWindows ?
             new[] { "*.config" } :
             new[] { "*.Config", "*.config" };
 
@@ -1069,119 +1068,38 @@ namespace NuGet.Configuration
             ExecuteSynchronized(() => FileSystemUtility.AddFile(ConfigFilePath, ConfigXDocument.Save));
         }
 
-#if IS_CORECLR
-        private static Mutex _globalMutex = new Mutex(initiallyOwned: false);
-
-        /// <summary>
-        /// Wrap all IO operations on setting files with this function to avoid file-in-use errors
-        /// </summary>
         private void ExecuteSynchronized(Action ioOperation)
         {
-            if (RuntimeEnvironmentHelper.IsWindows)
+            ConcurrencyUtilities.ExecuteWithFileLocked(filePath: ConfigFilePath, action: () =>
             {
-                ExecuteSynchronizedCore(ioOperation);
-                return;
-            }
-            else
-            {
-                // Cross-plat CoreCLR doesn't support named lock, so we fall back to
-                // process-local synchronization in this case
-                var owner = false;
                 try
                 {
-                    owner = _globalMutex.WaitOne(TimeSpan.FromMinutes(1));
                     ioOperation();
                 }
                 catch (InvalidOperationException e)
                 {
                     throw new NuGetConfigurationException(
-                        string.Format(CultureInfo.CurrentCulture,Resources.ShowError_ConfigInvalidOperation, ConfigFilePath, e.Message), e);
+                        string.Format(CultureInfo.CurrentCulture, Resources.ShowError_ConfigInvalidOperation, ConfigFilePath, e.Message), e);
                 }
 
                 catch (UnauthorizedAccessException e)
                 {
                     throw new NuGetConfigurationException(
-                        string.Format(CultureInfo.CurrentCulture,Resources.ShowError_ConfigUnauthorizedAccess, ConfigFilePath, e.Message), e);
+                        string.Format(CultureInfo.CurrentCulture, Resources.ShowError_ConfigUnauthorizedAccess, ConfigFilePath, e.Message), e);
                 }
 
                 catch (XmlException e)
                 {
                     throw new NuGetConfigurationException(
-                        string.Format(CultureInfo.CurrentCulture,Resources.ShowError_ConfigInvalidXml, ConfigFilePath, e.Message), e);
+                        string.Format(CultureInfo.CurrentCulture, Resources.ShowError_ConfigInvalidXml, ConfigFilePath, e.Message), e);
                 }
 
                 catch (Exception e)
                 {
                     throw new NuGetConfigurationException(
-                        string.Format(CultureInfo.CurrentCulture,Resources.Unknown_Config_Exception, ConfigFilePath, e.Message), e);
+                        string.Format(CultureInfo.CurrentCulture, Resources.Unknown_Config_Exception, ConfigFilePath, e.Message), e);
                 }
-                finally
-                {
-                    if (owner)
-                    {
-                        _globalMutex.ReleaseMutex();
-                    }
-                }
-            }
-        }
-#else
-        /// <summary>
-        /// Wrap all IO operations on setting files with this function to avoid file-in-use errors
-        /// </summary>
-        private void ExecuteSynchronized(Action ioOperation)
-        {
-            ExecuteSynchronizedCore(ioOperation);
-        }
-#endif
-        private void ExecuteSynchronizedCore(Action ioOperation)
-        {
-            var fileName = ConfigFilePath;
-
-            // Global: ensure mutex is honored across TS sessions 
-            using (var mutex = new Mutex(false, $"Global\\{EncryptionUtility.GenerateUniqueToken(fileName)}"))
-            {
-                var owner = false;
-                try
-                {
-                    // operations on NuGet.config should be very short lived
-                    owner = mutex.WaitOne(TimeSpan.FromMinutes(1));
-                    // decision here is to proceed even if we were not able to get mutex ownership
-                    // and let the potential IO errors bubble up. Reasoning is that failure to get
-                    // ownership probably means faulty hardware and in this case it's better to report
-                    // back than hang
-                    ioOperation();
-                }
-                catch (InvalidOperationException e)
-                {
-                    throw new NuGetConfigurationException(
-                        string.Format(CultureInfo.CurrentCulture, Resources.ShowError_ConfigInvalidOperation, fileName, e.Message), e);
-                }
-
-                catch (UnauthorizedAccessException e)
-                {
-                    throw new NuGetConfigurationException(
-                        string.Format(CultureInfo.CurrentCulture, Resources.ShowError_ConfigUnauthorizedAccess, fileName, e.Message), e);
-                }
-
-                catch (XmlException e)
-                {
-                    throw new NuGetConfigurationException(
-                        string.Format(CultureInfo.CurrentCulture, Resources.ShowError_ConfigInvalidXml, fileName, e.Message), e);
-                }
-
-                catch (Exception e)
-                {
-                    throw new NuGetConfigurationException(
-                        string.Format(CultureInfo.CurrentCulture, Resources.Unknown_Config_Exception, fileName, e.Message), e);
-                }
-                finally
-                {
-                    if (owner)
-                    {
-                        mutex.ReleaseMutex();
-                    }
-                }
-            }
+            });
         }
 
         private static XDocument CreateDefaultConfig()
