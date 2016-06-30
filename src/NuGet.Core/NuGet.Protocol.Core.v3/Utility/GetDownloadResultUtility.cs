@@ -28,15 +28,15 @@ namespace NuGet.Protocol
            ILogger logger,
            CancellationToken token)
         {
+            // XXXXXXXXXXX This following assumption is false we constructed a Uri but we haven't attempted to use it yet
             // Uri is not null, so the package exists in the source
             // Now, check if it is in the global packages folder, before, getting the package stream
 
             DownloadResourceResult packageFromGlobalPackages = null;
 
-            if (!cacheContext.NoCache)
-            {
-                packageFromGlobalPackages = GlobalPackagesFolderUtility.GetPackage(identity, settings);
-            }
+            //TODO: This code should respect -NoCache option and not read packages from the global packages folder
+            //Note cacheContext.NoCache indicates that packages are not written to the global packages folder
+            packageFromGlobalPackages = GlobalPackagesFolderUtility.GetPackage(identity, settings);
 
             if (packageFromGlobalPackages != null)
             {
@@ -59,14 +59,13 @@ namespace NuGet.Protocol
                                 return new DownloadResourceResult(DownloadResourceResultStatus.NotFound);
                             }
 
-                            if (cacheContext.NoCaching)
+                            if (cacheContext.NoCache)
                             {
                                 return await AddPackageDirectAsync(
                                 identity,
                                 packageStream,
                                 settings,
                                 cacheContext.GeneratedTempFolder,
-                                cacheContext.NoCachingPackageSaveMode,
                                 logger,
                                 token);
                             }
@@ -113,7 +112,6 @@ namespace NuGet.Protocol
             Stream packageStream,
             ISettings settings,
             string PackagesDirectory,
-            PackageSaveMode packageSaveMode,
             ILogger logger,
             CancellationToken token)
         {
@@ -216,8 +214,6 @@ namespace NuGet.Protocol
                 },
                 token: token);
 
-
-            //var package = GetDirectPackage(packageIdentity, settings, PackagesDirectory, packageSaveMode);
             var package = GetDirectPackage(packageIdentity, PackagesDirectory, packageName);
             Debug.Assert(package.PackageStream.CanSeek);
             Debug.Assert(package.PackageReader != null);

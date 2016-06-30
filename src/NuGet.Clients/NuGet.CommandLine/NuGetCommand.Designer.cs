@@ -234,6 +234,132 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Download directly without populating the global package cache.
+        /// </summary>
+        internal static string CommandDirectDownload {
+            get {
+                return ResourceManager.GetString("CommandDirectDownload", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Download directly without populating the global package cache.
+        /// </summary>
+        internal static string CommandDirectDownload_chs {
+            get {
+                return ResourceManager.GetString("CommandDirectDownload_chs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Download directly without populating the global package cache.
+        /// </summary>
+        internal static string CommandDirectDownload_cht {
+            get {
+                return ResourceManager.GetString("CommandDirectDownload_cht", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Download directly without populating the global package cache.
+        /// </summary>
+        internal static string CommandDirectDownload_csy {
+            get {
+                return ResourceManager.GetString("CommandDirectDownload_csy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Download directly without populating the global package cache.
+        /// </summary>
+        internal static string CommandDirectDownload_deu {
+            get {
+                return ResourceManager.GetString("CommandDirectDownload_deu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Download directly without populating the global package cache.
+        /// </summary>
+        internal static string CommandDirectDownload_esp {
+            get {
+                return ResourceManager.GetString("CommandDirectDownload_esp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Download directly without populating the global package cache.
+        /// </summary>
+        internal static string CommandDirectDownload_fra {
+            get {
+                return ResourceManager.GetString("CommandDirectDownload_fra", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Download directly without populating the global package cache.
+        /// </summary>
+        internal static string CommandDirectDownload_ita {
+            get {
+                return ResourceManager.GetString("CommandDirectDownload_ita", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Download directly without populating the global package cache.
+        /// </summary>
+        internal static string CommandDirectDownload_jpn {
+            get {
+                return ResourceManager.GetString("CommandDirectDownload_jpn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Download directly without populating the global package cache.
+        /// </summary>
+        internal static string CommandDirectDownload_kor {
+            get {
+                return ResourceManager.GetString("CommandDirectDownload_kor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Download directly without populating the global package cache.
+        /// </summary>
+        internal static string CommandDirectDownload_plk {
+            get {
+                return ResourceManager.GetString("CommandDirectDownload_plk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Download directly without populating the global package cache.
+        /// </summary>
+        internal static string CommandDirectDownload_ptb {
+            get {
+                return ResourceManager.GetString("CommandDirectDownload_ptb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Download directly without populating the global package cache.
+        /// </summary>
+        internal static string CommandDirectDownload_rus {
+            get {
+                return ResourceManager.GetString("CommandDirectDownload_rus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Download directly without populating the global package cache.
+        /// </summary>
+        internal static string CommandDirectDownload_trk {
+            get {
+                return ResourceManager.GetString("CommandDirectDownload_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Disable parallel processing of packages for this command..
         /// </summary>
         internal static string CommandDisableParallelProcessing {
@@ -500,132 +626,6 @@ namespace NuGet.CommandLine {
         internal static string CommandNoCache_trk {
             get {
                 return ResourceManager.GetString("CommandNoCache_trk", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Do not populate the machine cache or global package cache.
-        /// </summary>
-        internal static string CommandNoCaching {
-            get {
-                return ResourceManager.GetString("CommandNoCaching", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Do not populate the machine cache or global package cache.
-        /// </summary>
-        internal static string CommandNoCaching_chs {
-            get {
-                return ResourceManager.GetString("CommandNoCaching_chs", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Do not populate the machine cache or global package cache.
-        /// </summary>
-        internal static string CommandNoCaching_cht {
-            get {
-                return ResourceManager.GetString("CommandNoCaching_cht", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Do not populate the machine cache or global package cache.
-        /// </summary>
-        internal static string CommandNoCaching_csy {
-            get {
-                return ResourceManager.GetString("CommandNoCaching_csy", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Do not populate the machine cache or global package cache.
-        /// </summary>
-        internal static string CommandNoCaching_deu {
-            get {
-                return ResourceManager.GetString("CommandNoCaching_deu", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Do not populate the machine cache or global package cache.
-        /// </summary>
-        internal static string CommandNoCaching_esp {
-            get {
-                return ResourceManager.GetString("CommandNoCaching_esp", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Do not populate the machine cache or global package cache.
-        /// </summary>
-        internal static string CommandNoCaching_fra {
-            get {
-                return ResourceManager.GetString("CommandNoCaching_fra", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Do not populate the machine cache or global package cache.
-        /// </summary>
-        internal static string CommandNoCaching_ita {
-            get {
-                return ResourceManager.GetString("CommandNoCaching_ita", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Do not populate the machine cache or global package cache.
-        /// </summary>
-        internal static string CommandNoCaching_jpn {
-            get {
-                return ResourceManager.GetString("CommandNoCaching_jpn", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Do not populate the machine cache or global package cache.
-        /// </summary>
-        internal static string CommandNoCaching_kor {
-            get {
-                return ResourceManager.GetString("CommandNoCaching_kor", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Do not populate the machine cache or global package cache.
-        /// </summary>
-        internal static string CommandNoCaching_plk {
-            get {
-                return ResourceManager.GetString("CommandNoCaching_plk", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Do not populate the machine cache or global package cache.
-        /// </summary>
-        internal static string CommandNoCaching_ptb {
-            get {
-                return ResourceManager.GetString("CommandNoCaching_ptb", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Do not populate the machine cache or global package cache.
-        /// </summary>
-        internal static string CommandNoCaching_rus {
-            get {
-                return ResourceManager.GetString("CommandNoCaching_rus", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Do not populate the machine cache or global package cache.
-        /// </summary>
-        internal static string CommandNoCaching_trk {
-            get {
-                return ResourceManager.GetString("CommandNoCaching_trk", resourceCulture);
             }
         }
         

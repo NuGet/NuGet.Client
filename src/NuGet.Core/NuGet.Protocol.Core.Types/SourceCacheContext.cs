@@ -30,21 +30,6 @@ namespace NuGet.Protocol.Core.Types
         public bool NoCache { get; set; }
 
         /// <summary>
-        /// If set, do not cache download package, download directly to specified Directory with specified PackageSaveMode
-        /// </summary>
-        public bool NoCaching { get; set; } = false;
-
-        /// <summary>
-        /// Download directory to use when NoCaching mode specified
-        /// </summary>
-        public string NoCachingDirectory { get; set; }
-
-        /// <summary>
-        /// PackageSaveMode to use when NoCaching mode specified
-        /// </summary>
-        public Packaging.PackageSaveMode NoCachingPackageSaveMode { get; set; }
-
-        /// <summary>
         /// Package version lists from the server older than this date
         /// will be fetched from the server.
         /// </summary>
