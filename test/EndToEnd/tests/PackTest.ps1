@@ -36,7 +36,7 @@ function Test-PackFromProjectWithDevelopmentDependencySet {
 
     # Arrange 
 
-    $p = New-MvcApplication
+    $p = New-WebApplication
 
     # install packages from the Basic MVC app manually
 
