@@ -14,6 +14,9 @@ namespace NuGet.Common
 {
     public static class ConcurrencyUtilities
     {
+        private const int NumberOfRetries = 3000;
+        private static readonly TimeSpan SleepDuration = TimeSpan.FromMilliseconds(10);
+
         public async static Task<T> ExecuteWithFileLockedAsync<T>(string filePath,
             Func<CancellationToken, Task<T>> action,
             CancellationToken token)
@@ -24,7 +27,7 @@ namespace NuGet.Common
             }
 
             // limit the number of unauthorized, this should be around 30 seconds.
-            var unauthorizedAttemptsLeft = 3000;
+            var unauthorizedAttemptsLeft = NumberOfRetries;
 
             var lockPath = FileLockPath(filePath);
 
@@ -36,27 +39,7 @@ namespace NuGet.Common
                 {
                     try
                     {
-                        FileOptions options;
-                        if (RuntimeEnvironmentHelper.IsWindows)
-                        {
-                            
-                            // This file is deleted when the stream is closed.
-                            options = FileOptions.DeleteOnClose;
-                        }
-                        else
-                        {
-                            // FileOptions.DeleteOnClose causes concurrency issues on Mac OS X and Linux.
-                            options = FileOptions.None;
-                        }
-
-                        // Sync operations have shown much better performance than FileOptions.Asynchronous
-                        fs = new FileStream(
-                            lockPath,
-                            FileMode.OpenOrCreate,
-                            FileAccess.ReadWrite,
-                            FileShare.None,
-                            bufferSize: 32,
-                            options: options);
+                        fs = AcquireFileStream(lockPath);
                     }
                     catch (DirectoryNotFoundException)
                     {
@@ -81,14 +64,14 @@ namespace NuGet.Common
 
                         // This can occur when the file is being deleted
                         // Or when an admin user has locked the file
-                        await Task.Delay(10);
+                        await Task.Delay(SleepDuration);
                         continue;
                     }
                     catch (IOException)
                     {
                         token.ThrowIfCancellationRequested();
 
-                        await Task.Delay(10);
+                        await Task.Delay(SleepDuration);
                         continue;
                     }
 
@@ -104,6 +87,94 @@ namespace NuGet.Common
                     }
                 }
             }
+        }
+
+        public static void ExecuteWithFileLocked(string filePath,
+            Action action)
+        {
+            if (string.IsNullOrEmpty(filePath))
+            {
+                throw new ArgumentNullException(nameof(filePath));
+            }
+
+            // limit the number of unauthorized, this should be around 30 seconds.
+            var unauthorizedAttemptsLeft = NumberOfRetries;
+
+            var lockPath = FileLockPath(filePath);
+
+            while (true)
+            {
+                FileStream fs = null;
+                try
+                {
+                    try
+                    {
+                        fs = AcquireFileStream(lockPath);
+                    }
+                    catch (DirectoryNotFoundException)
+                    {
+                        throw;
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        if (unauthorizedAttemptsLeft < 1)
+                        {
+                            var message = string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.UnauthorizedLockFail,
+                                lockPath,
+                                filePath);
+
+                            throw new InvalidOperationException(message);
+                        }
+
+                        unauthorizedAttemptsLeft--;
+
+                        // This can occur when the file is being deleted
+                        // Or when an admin user has locked the file
+                        Thread.Sleep(SleepDuration);
+                        continue;
+                    }
+                    catch (IOException)
+                    {
+                        Thread.Sleep(SleepDuration);
+                        continue;
+                    }
+
+                    // Run the action within the lock
+                    action();
+                    return;
+                }
+                finally
+                {
+                    // Dispose of the stream, this will cause a delete
+                    fs?.Dispose();
+                }
+            }
+        }
+
+        private static FileStream AcquireFileStream(string lockPath)
+        {
+            FileOptions options;
+            if (RuntimeEnvironmentHelper.IsWindows)
+            {
+                // This file is deleted when the stream is closed.
+                options = FileOptions.DeleteOnClose;
+            }
+            else
+            {
+                // FileOptions.DeleteOnClose causes concurrency issues on Mac OS X and Linux.
+                options = FileOptions.None;
+            }
+
+            // Sync operations have shown much better performance than FileOptions.Asynchronous
+            return new FileStream(
+                lockPath,
+                FileMode.OpenOrCreate,
+                FileAccess.ReadWrite,
+                FileShare.None,
+                bufferSize: 32,
+                options: options);
         }
 
         private static string _basePath;
