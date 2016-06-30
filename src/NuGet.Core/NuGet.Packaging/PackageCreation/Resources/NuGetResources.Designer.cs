@@ -22,7 +22,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
     // with the /str option, or rebuild your VS project.
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class NuGetResources {
+    public class NuGetResources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -35,7 +35,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         ///    Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.Packaging.PackageCreation.Resources.NuGetResources", typeof(NuGetResources).GetTypeInfo().Assembly);
@@ -50,7 +50,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         ///    resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -62,7 +62,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         /// <summary>
         ///    Looks up a localized string similar to Cannot create a package that has no dependencies nor content..
         /// </summary>
-        internal static string CannotCreateEmptyPackage {
+        public static string CannotCreateEmptyPackage {
             get {
                 return ResourceManager.GetString("CannotCreateEmptyPackage", resourceCulture);
             }
@@ -71,7 +71,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         /// <summary>
         ///    Looks up a localized string similar to Dependency &apos;{0}&apos; has an invalid version..
         /// </summary>
-        internal static string DependencyHasInvalidVersion {
+        public static string DependencyHasInvalidVersion {
             get {
                 return ResourceManager.GetString("DependencyHasInvalidVersion", resourceCulture);
             }
@@ -80,7 +80,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         /// <summary>
         ///    Looks up a localized string similar to &apos;{0}&apos; already has a dependency defined for &apos;{1}&apos;..
         /// </summary>
-        internal static string DuplicateDependenciesDefined {
+        public static string DuplicateDependenciesDefined {
             get {
                 return ResourceManager.GetString("DuplicateDependenciesDefined", resourceCulture);
             }
@@ -89,7 +89,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         /// <summary>
         ///    Looks up a localized string similar to The schema version of &apos;{0}&apos; is incompatible with version {1} of NuGet. Please upgrade NuGet to the latest version from http://go.microsoft.com/fwlink/?LinkId=213942..
         /// </summary>
-        internal static string IncompatibleSchema {
+        public static string IncompatibleSchema {
             get {
                 return ResourceManager.GetString("IncompatibleSchema", resourceCulture);
             }
@@ -98,7 +98,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         /// <summary>
         ///    Looks up a localized string similar to The package ID &apos;{0}&apos; contains invalid characters. Examples of valid package IDs include &apos;MyPackage&apos; and &apos;MyPackage.Sample&apos;..
         /// </summary>
-        internal static string InvalidPackageId {
+        public static string InvalidPackageId {
             get {
                 return ResourceManager.GetString("InvalidPackageId", resourceCulture);
             }
@@ -107,7 +107,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         /// <summary>
         ///    Looks up a localized string similar to &lt;dependencies&gt; element must not contain both &lt;group&gt; and &lt;dependency&gt; child elements..
         /// </summary>
-        internal static string Manifest_DependenciesHasMixedElements {
+        public static string Manifest_DependenciesHasMixedElements {
             get {
                 return ResourceManager.GetString("Manifest_DependenciesHasMixedElements", resourceCulture);
             }
@@ -116,7 +116,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         /// <summary>
         ///    Looks up a localized string similar to Exclude path &apos;{0}&apos; contains invalid characters..
         /// </summary>
-        internal static string Manifest_ExcludeContainsInvalidCharacters {
+        public static string Manifest_ExcludeContainsInvalidCharacters {
             get {
                 return ResourceManager.GetString("Manifest_ExcludeContainsInvalidCharacters", resourceCulture);
             }
@@ -125,7 +125,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         /// <summary>
         ///    Looks up a localized string similar to Id must not exceed 100 characters..
         /// </summary>
-        internal static string Manifest_IdMaxLengthExceeded {
+        public static string Manifest_IdMaxLengthExceeded {
             get {
                 return ResourceManager.GetString("Manifest_IdMaxLengthExceeded", resourceCulture);
             }
@@ -134,16 +134,16 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         /// <summary>
         ///    Looks up a localized string similar to The &apos;minClientVersion&apos; attribute in the package manifest has invalid value. It must be a valid version string..
         /// </summary>
-        internal static string Manifest_InvalidMinClientVersion {
+        public static string Manifest_InvalidMinClientVersion {
             get {
                 return ResourceManager.GetString("Manifest_InvalidMinClientVersion", resourceCulture);
             }
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to A stable release of a package should not have on a prerelease dependency. Either modify the version spec of dependency &quot;{0}&quot; or update the version field..
+        ///    Looks up a localized string similar to A stable release of a package should not have a prerelease dependency. Either modify the version spec of dependency &quot;{0}&quot; or update the version field in the nuspec..
         /// </summary>
-        internal static string Manifest_InvalidPrereleaseDependency {
+        public static string Manifest_InvalidPrereleaseDependency {
             get {
                 return ResourceManager.GetString("Manifest_InvalidPrereleaseDependency", resourceCulture);
             }
@@ -152,7 +152,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         /// <summary>
         ///    Looks up a localized string similar to Invalid assembly reference &apos;{0}&apos;. Ensure that a file named &apos;{0}&apos; exists in the lib directory..
         /// </summary>
-        internal static string Manifest_InvalidReference {
+        public static string Manifest_InvalidReference {
             get {
                 return ResourceManager.GetString("Manifest_InvalidReference", resourceCulture);
             }
@@ -161,7 +161,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         /// <summary>
         ///    Looks up a localized string similar to Assembly reference &apos;{0}&apos; contains invalid characters..
         /// </summary>
-        internal static string Manifest_InvalidReferenceFile {
+        public static string Manifest_InvalidReferenceFile {
             get {
                 return ResourceManager.GetString("Manifest_InvalidReferenceFile", resourceCulture);
             }
@@ -170,7 +170,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         /// <summary>
         ///    Looks up a localized string similar to &lt;references&gt; element must not contain both &lt;group&gt; and &lt;reference&gt; child elements..
         /// </summary>
-        internal static string Manifest_ReferencesHasMixedElements {
+        public static string Manifest_ReferencesHasMixedElements {
             get {
                 return ResourceManager.GetString("Manifest_ReferencesHasMixedElements", resourceCulture);
             }
@@ -179,7 +179,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         /// <summary>
         ///    Looks up a localized string similar to The element package\metadata\references\group must contain at least one &lt;reference&gt; child element..
         /// </summary>
-        internal static string Manifest_ReferencesIsEmpty {
+        public static string Manifest_ReferencesIsEmpty {
             get {
                 return ResourceManager.GetString("Manifest_ReferencesIsEmpty", resourceCulture);
             }
@@ -188,7 +188,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         /// <summary>
         ///    Looks up a localized string similar to The required element &apos;{0}&apos; is missing from the manifest..
         /// </summary>
-        internal static string Manifest_RequiredElementMissing {
+        public static string Manifest_RequiredElementMissing {
             get {
                 return ResourceManager.GetString("Manifest_RequiredElementMissing", resourceCulture);
             }
@@ -197,7 +197,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         /// <summary>
         ///    Looks up a localized string similar to {0} is required..
         /// </summary>
-        internal static string Manifest_RequiredMetadataMissing {
+        public static string Manifest_RequiredMetadataMissing {
             get {
                 return ResourceManager.GetString("Manifest_RequiredMetadataMissing", resourceCulture);
             }
@@ -206,7 +206,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         /// <summary>
         ///    Looks up a localized string similar to Enabling license acceptance requires a license url..
         /// </summary>
-        internal static string Manifest_RequireLicenseAcceptanceRequiresLicenseUrl {
+        public static string Manifest_RequireLicenseAcceptanceRequiresLicenseUrl {
             get {
                 return ResourceManager.GetString("Manifest_RequireLicenseAcceptanceRequiresLicenseUrl", resourceCulture);
             }
@@ -215,7 +215,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         /// <summary>
         ///    Looks up a localized string similar to Source path &apos;{0}&apos; contains invalid characters..
         /// </summary>
-        internal static string Manifest_SourceContainsInvalidCharacters {
+        public static string Manifest_SourceContainsInvalidCharacters {
             get {
                 return ResourceManager.GetString("Manifest_SourceContainsInvalidCharacters", resourceCulture);
             }
@@ -224,7 +224,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         /// <summary>
         ///    Looks up a localized string similar to Target path &apos;{0}&apos; contains invalid characters..
         /// </summary>
-        internal static string Manifest_TargetContainsInvalidCharacters {
+        public static string Manifest_TargetContainsInvalidCharacters {
             get {
                 return ResourceManager.GetString("Manifest_TargetContainsInvalidCharacters", resourceCulture);
             }
@@ -233,7 +233,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         /// <summary>
         ///    Looks up a localized string similar to {0} cannot be empty..
         /// </summary>
-        internal static string Manifest_UriCannotBeEmpty {
+        public static string Manifest_UriCannotBeEmpty {
             get {
                 return ResourceManager.GetString("Manifest_UriCannotBeEmpty", resourceCulture);
             }
@@ -242,7 +242,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         /// <summary>
         ///    Looks up a localized string similar to File not found: &apos;{0}&apos;..
         /// </summary>
-        internal static string PackageAuthoring_FileNotFound {
+        public static string PackageAuthoring_FileNotFound {
             get {
                 return ResourceManager.GetString("PackageAuthoring_FileNotFound", resourceCulture);
             }
@@ -251,7 +251,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         /// <summary>
         ///    Looks up a localized string similar to Versions using SemVer 2.0.0 are not supported: {0}..
         /// </summary>
-        internal static string SemVer2VersionsNotSupported {
+        public static string SemVer2VersionsNotSupported {
             get {
                 return ResourceManager.GetString("SemVer2VersionsNotSupported", resourceCulture);
             }
@@ -260,7 +260,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         /// <summary>
         ///    Looks up a localized string similar to The special version part cannot exceed 20 characters..
         /// </summary>
-        internal static string SemVerSpecialVersionTooLong {
+        public static string SemVerSpecialVersionTooLong {
             get {
                 return ResourceManager.GetString("SemVerSpecialVersionTooLong", resourceCulture);
             }
@@ -269,7 +269,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         /// <summary>
         ///    Looks up a localized string similar to Unknown schema version &apos;{0}&apos;..
         /// </summary>
-        internal static string UnknownSchemaVersion {
+        public static string UnknownSchemaVersion {
             get {
                 return ResourceManager.GetString("UnknownSchemaVersion", resourceCulture);
             }

@@ -157,7 +157,7 @@
     <value>Assembly reference '{0}' contains invalid characters.</value>
   </data>
   <data name="Manifest_InvalidPrereleaseDependency" xml:space="preserve">
-    <value>A stable release of a package should not have on a prerelease dependency. Either modify the version spec of dependency "{0}" or update the version field.</value>
+    <value>A stable release of a package should not have a prerelease dependency. Either modify the version spec of dependency "{0}" or update the version field in the nuspec.</value>
   </data>
   <data name="UnknownSchemaVersion" xml:space="preserve">
     <value>Unknown schema version '{0}'.</value>
