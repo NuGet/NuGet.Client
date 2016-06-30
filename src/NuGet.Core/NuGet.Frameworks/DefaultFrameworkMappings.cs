@@ -333,15 +333,20 @@ namespace NuGet.Frameworks
                                 new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WinRT, FrameworkConstants.EmptyVersion),
                                 new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WinRT, new Version(4, 5, 0, 0)))),
 
-                        // NetCoreApp projects support NetStandard
+                        // NetCoreApp1.0 projects support NetStandard1.6
                         CreateStandardMapping(
                             FrameworkConstants.CommonFrameworks.NetCoreApp10,
                             FrameworkConstants.CommonFrameworks.NetStandard16),
 
-                        // net463 projects support NetStandard
+                        // NetCoreApp1.1 projects support NetStandard1.7
+                        CreateStandardMapping(
+                            FrameworkConstants.CommonFrameworks.NetCoreApp11,
+                            FrameworkConstants.CommonFrameworks.NetStandard17),
+
+                        // net463 projects support NetStandard1.7
                         CreateStandardMapping(
                             FrameworkConstants.CommonFrameworks.Net463,
-                            FrameworkConstants.CommonFrameworks.NetStandard16)
+                            FrameworkConstants.CommonFrameworks.NetStandard17)
 
                     }
                         .Concat(new[]
@@ -422,62 +427,62 @@ namespace NuGet.Frameworks
                             CreateGenerationAndStandardMappingForAllVersions(
                                 FrameworkConstants.FrameworkIdentifiers.MonoAndroid,
                                 FrameworkConstants.CommonFrameworks.DotNet56,
-                                FrameworkConstants.CommonFrameworks.NetStandard16),
+                                FrameworkConstants.CommonFrameworks.NetStandard17),
 
                             CreateGenerationAndStandardMappingForAllVersions(
                                 FrameworkConstants.FrameworkIdentifiers.MonoMac,
                                 FrameworkConstants.CommonFrameworks.DotNet56,
-                                FrameworkConstants.CommonFrameworks.NetStandard16),
+                                FrameworkConstants.CommonFrameworks.NetStandard17),
 
                             CreateGenerationAndStandardMappingForAllVersions(
                                 FrameworkConstants.FrameworkIdentifiers.MonoTouch,
                                 FrameworkConstants.CommonFrameworks.DotNet56,
-                                FrameworkConstants.CommonFrameworks.NetStandard16),
+                                FrameworkConstants.CommonFrameworks.NetStandard17),
 
                             CreateGenerationAndStandardMappingForAllVersions(
                                 FrameworkConstants.FrameworkIdentifiers.XamarinIOs,
                                 FrameworkConstants.CommonFrameworks.DotNet56,
-                                FrameworkConstants.CommonFrameworks.NetStandard16),
+                                FrameworkConstants.CommonFrameworks.NetStandard17),
 
                             CreateGenerationAndStandardMappingForAllVersions(
                                 FrameworkConstants.FrameworkIdentifiers.XamarinMac,
                                 FrameworkConstants.CommonFrameworks.DotNet56,
-                                FrameworkConstants.CommonFrameworks.NetStandard16),
+                                FrameworkConstants.CommonFrameworks.NetStandard17),
 
                             CreateGenerationAndStandardMappingForAllVersions(
                                 FrameworkConstants.FrameworkIdentifiers.XamarinPlayStation3,
                                 FrameworkConstants.CommonFrameworks.DotNet56,
-                                FrameworkConstants.CommonFrameworks.NetStandard16),
+                                FrameworkConstants.CommonFrameworks.NetStandard17),
 
                             CreateGenerationAndStandardMappingForAllVersions(
                                 FrameworkConstants.FrameworkIdentifiers.XamarinPlayStation4,
                                 FrameworkConstants.CommonFrameworks.DotNet56,
-                                FrameworkConstants.CommonFrameworks.NetStandard16),
+                                FrameworkConstants.CommonFrameworks.NetStandard17),
 
                             CreateGenerationAndStandardMappingForAllVersions(
                                 FrameworkConstants.FrameworkIdentifiers.XamarinPlayStationVita,
                                 FrameworkConstants.CommonFrameworks.DotNet56,
-                                FrameworkConstants.CommonFrameworks.NetStandard16),
+                                FrameworkConstants.CommonFrameworks.NetStandard17),
 
                             CreateGenerationAndStandardMappingForAllVersions(
                                 FrameworkConstants.FrameworkIdentifiers.XamarinXbox360,
                                 FrameworkConstants.CommonFrameworks.DotNet56,
-                                FrameworkConstants.CommonFrameworks.NetStandard16),
+                                FrameworkConstants.CommonFrameworks.NetStandard17),
 
                             CreateGenerationAndStandardMappingForAllVersions(
                                 FrameworkConstants.FrameworkIdentifiers.XamarinXboxOne,
                                 FrameworkConstants.CommonFrameworks.DotNet56,
-                                FrameworkConstants.CommonFrameworks.NetStandard16),
+                                FrameworkConstants.CommonFrameworks.NetStandard17),
 
                             CreateGenerationAndStandardMappingForAllVersions(
                                 FrameworkConstants.FrameworkIdentifiers.XamarinTVOS,
                                 FrameworkConstants.CommonFrameworks.DotNet56,
-                                FrameworkConstants.CommonFrameworks.NetStandard16),
+                                FrameworkConstants.CommonFrameworks.NetStandard17),
 
                             CreateGenerationAndStandardMappingForAllVersions(
                                 FrameworkConstants.FrameworkIdentifiers.XamarinWatchOS,
                                 FrameworkConstants.CommonFrameworks.DotNet56,
-                                FrameworkConstants.CommonFrameworks.NetStandard16)
+                                FrameworkConstants.CommonFrameworks.NetStandard17)
                         }.SelectMany(mappings => mappings))
                         .ToArray();
                 }

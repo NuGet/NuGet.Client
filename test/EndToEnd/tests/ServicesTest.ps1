@@ -485,6 +485,7 @@ function Test-GetNetStandardVersions
     Assert-AreEqual ".NETStandard,Version=v1.4" ($actual | Select-Object -Index 4)
     Assert-AreEqual ".NETStandard,Version=v1.5" ($actual | Select-Object -Index 5)
     Assert-AreEqual ".NETStandard,Version=v1.6" ($actual | Select-Object -Index 6)
+    Assert-AreEqual ".NETStandard,Version=v1.7" ($actual | Select-Object -Index 7)
 }
 
 function Test-GetFrameworksSupportingNetStandard

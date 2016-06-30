@@ -25,7 +25,6 @@ namespace NuGet.Test
                 .ToArray();
 
             // Assert
-            Assert.Equal(7, versions.Length);
             Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard10, versions[0]);
             Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard11, versions[1]);
             Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard12, versions[2]);
@@ -33,6 +32,8 @@ namespace NuGet.Test
             Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard14, versions[4]);
             Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard15, versions[5]);
             Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard16, versions[6]);
+            Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard17, versions[7]);
+            Assert.Equal(8, versions.Length);
         }
 
         [Fact]
