@@ -2040,7 +2040,7 @@ Description is required.");
             // Act and Assert
             ExceptionAssert.Throws<InvalidDataException>(() => PackageBuilder.ValidateDependencyGroups(packageVersion, dependencySets),
                 String.Format(CultureInfo.InvariantCulture,
-                    "A stable release of a package should not have on a prerelease dependency. Either modify the version spec of dependency \"{0}\" or update the version field.",
+                    "A stable release of a package should not have a prerelease dependency. Either modify the version spec of dependency \"{0}\" or update the version field in the nuspec.",
                     badDependency));
         }
 
