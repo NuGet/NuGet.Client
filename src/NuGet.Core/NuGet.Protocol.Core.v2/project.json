@@ -36,7 +36,7 @@
     "NuGet.Protocol.Core.Types": {
       "target": "project"
     },
-    "NuGet.Core": "2.12.0-rtm-*"
+    "NuGet.Core": "2.12.0-rtm-815"
   },
   "frameworks": {
     "net45": {
