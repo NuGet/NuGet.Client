@@ -37,7 +37,7 @@
   "frameworks": {
     "net46": {
       "dependencies": {
-        "System.Runtime": "4.1.0"
+        "System.Runtime": "4.0.20"
       },
         "buildOptions": {
           "define": [
