@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 
 namespace NuGet.Credentials
 {
@@ -15,6 +16,8 @@ namespace NuGet.Credentials
         public string Password { get; set; }
 
         public string Message { get; set; }
+
+        public IList<string> AuthTypeFilter { get; set; }
 
         public bool IsValid => !String.IsNullOrWhiteSpace(Username) || !String.IsNullOrWhiteSpace(Password);
     }
