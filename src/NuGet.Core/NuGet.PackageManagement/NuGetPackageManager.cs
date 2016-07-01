@@ -2262,6 +2262,11 @@ namespace NuGet.PackageManagement
             return PackagesFolderNuGetProject.PackageExists(packageIdentity);
         }
 
+        public bool PackageOrManifestExistsInPackagesFolder(PackageIdentity packageIdentity)
+        {
+            return PackagesFolderNuGetProject.PackageOrManifestExists(packageIdentity);
+        }
+
         private Task ExecuteInstallAsync(
             NuGetProject nuGetProject,
             PackageIdentity packageIdentity,

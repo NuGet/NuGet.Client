@@ -155,6 +155,11 @@ namespace NuGet.ProjectManagement
             return !string.IsNullOrEmpty(GetInstalledPackageFilePath(packageIdentity));
         }
 
+        public bool PackageOrManifestExists(PackageIdentity packageIdentity)
+        {
+            return !string.IsNullOrEmpty(GetInstalledPackageFilePath(packageIdentity)) | !string.IsNullOrEmpty(GetInstalledManifestFilePath(packageIdentity));
+        }
+
         public Task<bool> CopySatelliteFilesAsync(PackageIdentity packageIdentity,
             INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
@@ -221,6 +226,27 @@ namespace NuGet.ProjectManagement
             }
 
             // Default to empty
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Get the path to the package nuspec.
+        /// </summary>
+        public string GetInstalledManifestFilePath(PackageIdentity packageIdentity)
+        {
+            // Check the expected location before searching all directories
+            var packageDirectory = PackagePathResolver.GetInstallPath(packageIdentity);
+            var manifestName = PackagePathResolver.GetManifestFileName(packageIdentity);
+
+            var installPath = Path.GetFullPath(Path.Combine(packageDirectory, manifestName));
+
+            // Keep the previous optimization of just going by the existance of the file if we find it.
+            if (File.Exists(installPath))
+            {
+                return installPath;
+            }
+
+            // Don't look in non-normalized paths for nuspec
             return string.Empty;
         }
 
