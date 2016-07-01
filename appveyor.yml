@@ -4,9 +4,9 @@ pull_requests:
 skip_tags: true
 clone_depth: 1
 install:
-- cmd: git submodule update --init --recursive
+- cmd: git submodule update --init
 build_script:
-- ps: .\build.ps1 -Configuration Release -Fast -ErrorAction Stop -Verbose
+- ps: .\build.ps1 -Configuration Release -SkipTests -SkipDev14
 test_script:
 - ps: >-
     . .\build\common.ps1
