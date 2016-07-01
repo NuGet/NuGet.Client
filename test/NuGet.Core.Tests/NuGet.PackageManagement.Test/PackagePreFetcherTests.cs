@@ -35,6 +35,7 @@ namespace NuGet.PackageManagement.Test
                     actions,
                     packagesFolder,
                     testSettings,
+                    new SourceCacheContext(),
                     logger,
                     CancellationToken.None);
 
@@ -65,6 +66,7 @@ namespace NuGet.PackageManagement.Test
                     actions,
                     packagesFolder,
                     testSettings,
+                    new SourceCacheContext(),
                     logger,
                     CancellationToken.None);
 
@@ -98,6 +100,7 @@ namespace NuGet.PackageManagement.Test
                     actions,
                     packagesFolder,
                     testSettings,
+                    new SourceCacheContext(),
                     logger,
                     CancellationToken.None);
 
@@ -141,6 +144,7 @@ namespace NuGet.PackageManagement.Test
                     actions,
                     packagesFolder,
                     testSettings,
+                    new SourceCacheContext(),
                     logger,
                     CancellationToken.None);
 
@@ -201,6 +205,7 @@ namespace NuGet.PackageManagement.Test
                     actions,
                     packagesFolder,
                     testSettings,
+                    new SourceCacheContext(),
                     logger,
                     CancellationToken.None);
 
@@ -263,6 +268,7 @@ namespace NuGet.PackageManagement.Test
                     actions,
                     packagesFolder,
                     testSettings,
+                    new SourceCacheContext(),
                     logger,
                     CancellationToken.None);
 
@@ -305,6 +311,7 @@ namespace NuGet.PackageManagement.Test
                     actions,
                     packagesFolder,
                     testSettings,
+                    new SourceCacheContext(),
                     logger,
                     CancellationToken.None);
 
@@ -343,6 +350,7 @@ namespace NuGet.PackageManagement.Test
                     actions,
                     packagesFolder,
                     testSettings,
+                    new SourceCacheContext(),
                     logger,
                     CancellationToken.None);
 
@@ -381,6 +389,7 @@ namespace NuGet.PackageManagement.Test
                     actions,
                     packagesFolder,
                     testSettings,
+                    new SourceCacheContext(),
                     logger,
                     CancellationToken.None);
 

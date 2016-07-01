@@ -15,6 +15,7 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Test
 {
@@ -65,7 +66,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
-                    new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    new ResolutionContext(), new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation

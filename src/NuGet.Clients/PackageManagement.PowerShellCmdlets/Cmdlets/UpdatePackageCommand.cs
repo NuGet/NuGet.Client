@@ -11,6 +11,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Resolver;
 using NuGet.Versioning;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -261,7 +262,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 else
                 {
                     // Execute project actions by Package Manager
-                    await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this, Token);
+                    await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this, new SourceCacheContext(), Token);
                 }
             }
             else

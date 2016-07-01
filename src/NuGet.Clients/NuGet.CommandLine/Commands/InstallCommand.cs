@@ -271,11 +271,15 @@ namespace NuGet.CommandLine
                     projectContext.PackageExtractionContext.PackageSaveMode = EffectivePackageSaveMode;
                 }
 
+                var cacheContext = new SourceCacheContext();
+                cacheContext.NoCache = DirectDownload;
+
                 await packageManager.InstallPackageAsync(
                     folderProject,
                     packageIdentity,
                     resolutionContext,
                     projectContext,
+                    cacheContext,
                     primaryRepositories,
                     Enumerable.Empty<SourceRepository>(),
                     CancellationToken.None);

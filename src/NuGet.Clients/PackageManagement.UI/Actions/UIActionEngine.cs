@@ -115,6 +115,7 @@ namespace NuGet.PackageManagement.UI
                            projectActions.Key,
                            projectActions.Select(action => action.Action),
                            uiService.ProgressWindow,
+                           new SourceCacheContext(),
                            token);
                     }
                 },
@@ -333,7 +334,7 @@ namespace NuGet.PackageManagement.UI
                     NuGetPackageManager.SetDirectInstall(directInstall, projectContext);
                     processedDirectInstalls.Add(directInstall);
                 }
-                await _packageManager.ExecuteNuGetProjectActionsAsync(projectActions.Key, nuGetProjectActions, projectContext, token);
+                await _packageManager.ExecuteNuGetProjectActionsAsync(projectActions.Key, nuGetProjectActions, projectContext, new SourceCacheContext(), token);
                 NuGetPackageManager.ClearDirectInstall(projectContext);
             }
         }

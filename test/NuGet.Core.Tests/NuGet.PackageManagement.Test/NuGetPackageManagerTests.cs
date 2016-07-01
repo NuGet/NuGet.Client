@@ -123,7 +123,7 @@ namespace NuGet.Test
                     {
                         // Install
                         await nuGetPackageManager.InstallPackageAsync(projectA, "packageA",
-                            resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                            resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                         // Uninstall
                         await nuGetPackageManager.UninstallPackageAsync(
@@ -182,7 +182,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
-                    new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    new ResolutionContext(), new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -281,7 +281,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
-                    new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    new ResolutionContext(), new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -296,7 +296,7 @@ namespace NuGet.Test
                 try
                 {
                     await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
-                        new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                        new ResolutionContext(), new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
                 }
                 catch (InvalidOperationException ex)
                 {
@@ -342,11 +342,11 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, firstPackageIdentity,
-                    new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    new ResolutionContext(), new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 var secondPackageIdentity = NoDependencyLibPackages[3];
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, secondPackageIdentity,
-                    new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    new ResolutionContext(), new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -393,11 +393,11 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, firstPackageIdentity,
-                    new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    new ResolutionContext(), new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 var secondPackageIdentity = NoDependencyLibPackages[1];
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, secondPackageIdentity,
-                    new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    new ResolutionContext(), new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -442,7 +442,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
-                    new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    new ResolutionContext(), new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -588,7 +588,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -648,7 +648,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -719,7 +719,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -782,9 +782,9 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
                 await nuGetPackageManager.InstallPackageAsync(projectB, packageIdentity,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 var projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
@@ -832,7 +832,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity0,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 var projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
@@ -843,7 +843,7 @@ namespace NuGet.Test
 
                 // Main Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity1,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
@@ -880,7 +880,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity1,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 var projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
@@ -891,7 +891,7 @@ namespace NuGet.Test
 
                 // Main Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity0,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
@@ -937,7 +937,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity0,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 var projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
@@ -948,7 +948,7 @@ namespace NuGet.Test
 
                 // Main Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity0.Id,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
@@ -995,7 +995,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, dependentPackage,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 var projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
@@ -1008,7 +1008,7 @@ namespace NuGet.Test
 
                 // Main Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity0.Id,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
@@ -1048,7 +1048,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, dependentPackage,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 var projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
@@ -1061,7 +1061,7 @@ namespace NuGet.Test
 
                 // Main Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity1,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
@@ -1110,7 +1110,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, dependentPackage,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 var projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
@@ -1123,7 +1123,7 @@ namespace NuGet.Test
 
                 // Main Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity0,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
@@ -1169,7 +1169,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, jqueryValidation18,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 var projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
@@ -1179,7 +1179,7 @@ namespace NuGet.Test
 
                 // Main Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, jquery203,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
@@ -1217,7 +1217,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity2,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 var projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
@@ -1229,7 +1229,7 @@ namespace NuGet.Test
 
                 // Main Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity3,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
@@ -1354,7 +1354,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity3,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 var projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
@@ -1366,7 +1366,7 @@ namespace NuGet.Test
 
                 // Main Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity2,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
@@ -1419,7 +1419,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity3,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 var projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
@@ -1431,7 +1431,7 @@ namespace NuGet.Test
 
                 // Main Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity2,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
@@ -1473,7 +1473,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity2,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 var projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
@@ -1526,7 +1526,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity2,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 var projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
@@ -1538,7 +1538,7 @@ namespace NuGet.Test
 
                 // Main Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity3,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
@@ -1609,7 +1609,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
-                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -1671,7 +1671,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
-                    new ResolutionContext(DependencyBehavior.Ignore, false, true, VersionConstraints.None), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    new ResolutionContext(DependencyBehavior.Ignore, false, true, VersionConstraints.None), new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -1719,7 +1719,7 @@ namespace NuGet.Test
                 try
                 {
                     await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
-                        new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                        new ResolutionContext(), new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
                 }
                 catch (Exception ex)
                 {
@@ -1767,7 +1767,7 @@ namespace NuGet.Test
                 try
                 {
                     await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
-                        new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                        new ResolutionContext(), new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
                 }
                 catch (Exception ex)
                 {
@@ -1812,7 +1812,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
-                    new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    new ResolutionContext(), new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -1863,7 +1863,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
-                    new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    new ResolutionContext(), new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -1907,7 +1907,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
-                    new ResolutionContext(), new TestNuGetProjectContext { BindingRedirectsDisabled = true }, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    new ResolutionContext(), new TestNuGetProjectContext { BindingRedirectsDisabled = true }, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -1962,7 +1962,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
-                    new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    new ResolutionContext(), new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 if (deletePackages)
                 {
@@ -2079,7 +2079,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
-                    new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    new ResolutionContext(), new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -2145,7 +2145,7 @@ namespace NuGet.Test
                 var resolutionContext = new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true, includeUnlisted: true, versionConstraints: VersionConstraints.None);
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
-                    resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -2193,7 +2193,7 @@ namespace NuGet.Test
                 // Act
                 var exception = await Assert.ThrowsAsync<InvalidOperationException>(
                     async () => await nuGetPackageManager.InstallPackageAsync(
-                        msBuildNuGetProject, packageIdentity, resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token));
+                        msBuildNuGetProject, packageIdentity, resolutionContext, new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token));
 
                 var errorMessage = string.Format(CultureInfo.CurrentCulture,
                     Strings.UnableToFindCompatibleItems, packageIdentity.Id + " " + packageIdentity.Version.ToNormalizedString(), msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework);
@@ -2245,7 +2245,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity0,
-                    resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -2859,7 +2859,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
-                    new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    new ResolutionContext(), new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -2932,7 +2932,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
-                    new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    new ResolutionContext(), new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -3019,7 +3019,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
-                    new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    new ResolutionContext(), new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -3072,7 +3072,7 @@ namespace NuGet.Test
                 Assert.Equal(singlePackageSource, packageActions[5].SourceRepository.PackageSource.Source);
 
                 // Main Act
-                await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(msBuildNuGetProject, packageActions, new TestNuGetProjectContext(), token);
+                await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(msBuildNuGetProject, packageActions, new TestNuGetProjectContext(), new SourceCacheContext(), token);
 
                 // Check that the packages.config file exists after the installation
                 Assert.True(File.Exists(packagesConfigPath));
@@ -3231,7 +3231,7 @@ namespace NuGet.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 testNuGetProjectContext.TestExecutionContext = new TestExecutionContext(packageIdentity);
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
-                    new ResolutionContext(), testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    new ResolutionContext(), testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -3287,7 +3287,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageId, resolutionContext,
-                    testNuGetProjectContext, primarySourceRepository, null, token);
+                    testNuGetProjectContext, new SourceCacheContext(), primarySourceRepository, null, token);
 
                 // Check that the packages.config file does not exist
                 Assert.True(File.Exists(packagesConfigPath));
@@ -3351,7 +3351,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentityB2, new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true, includeUnlisted: false, versionConstraints: VersionConstraints.None),
-                    testNuGetProjectContext, primarySourceRepository, null, token);
+                    testNuGetProjectContext, new SourceCacheContext(), primarySourceRepository, null, token);
 
                 // Check that the packages.config file does not exist
                 Assert.True(File.Exists(packagesConfigPath));
@@ -3470,7 +3470,7 @@ namespace NuGet.Test
                 var newtonsoftJsonLatestPrereleasePackageIdentity = new PackageIdentity(newtonsoftJsonPackageId, latestNewtonsoftPrereleaseVersion);
 
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, webgreasePackageIdentity, resolutionContext,
-                    new TestNuGetProjectContext(), primarySourceRepository, null, CancellationToken.None);
+                    new TestNuGetProjectContext(), new SourceCacheContext(), primarySourceRepository, null, CancellationToken.None);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -3481,7 +3481,7 @@ namespace NuGet.Test
 
                 // Main Act - Update newtonsoft.json to latest pre-release
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, newtonsoftJsonLatestPrereleasePackageIdentity, resolutionContext,
-                    new TestNuGetProjectContext(), primarySourceRepository, null, CancellationToken.None);
+                    new TestNuGetProjectContext(), new SourceCacheContext(), primarySourceRepository, null, CancellationToken.None);
             }
         }
 
@@ -3513,7 +3513,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, newtonsoftJsonPackageIdentity,
-                    resolutionContext, testNuGetProjectContext, primarySourceRepository, null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), primarySourceRepository, null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -3591,10 +3591,10 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, newtonsoftJsonPackageIdentity,
-                    resolutionContext, testNuGetProjectContext, primarySourceRepository, null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), primarySourceRepository, null, token);
 
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, new PackageIdentity("Microsoft.Web.Infrastructure", new NuGetVersion("1.0.0.0")),
-                    resolutionContext, testNuGetProjectContext, primarySourceRepository, null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), primarySourceRepository, null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -3672,10 +3672,10 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, newtonsoftJsonPackageIdentity,
-                    resolutionContext, testNuGetProjectContext, primarySourceRepository, null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), primarySourceRepository, null, token);
 
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, new PackageIdentity("Microsoft.Web.Infrastructure", new NuGetVersion("1.0.0.0")),
-                    resolutionContext, testNuGetProjectContext, primarySourceRepository, null, token);
+                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), primarySourceRepository, null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -3806,7 +3806,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, aspnetrazorjaPackageIdentity,
-                    new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    new ResolutionContext(), new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -3852,7 +3852,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, microsoftWebInfrastructurePackageIdentity,
-                    new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    new ResolutionContext(), new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -3901,7 +3901,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, microsoftWebInfrastructurePackageIdentity,
-                    new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    new ResolutionContext(), new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -3950,7 +3950,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, elmahPackageIdentity,
-                    new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    new ResolutionContext(), new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -3999,7 +3999,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, elmahPackageIdentity,
-                    new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    new ResolutionContext(), new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -4048,7 +4048,7 @@ namespace NuGet.Test
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, sharpDXDXGIv263Package,
-                    new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    new ResolutionContext(), new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 // Assert
                 // Check that the packages.config file exists after the installation
@@ -4610,6 +4610,7 @@ namespace NuGet.Test
                     packageIdentity,
                     new ResolutionContext(),
                     new TestNuGetProjectContext(),
+                    new SourceCacheContext(),
                     sourceRepositoryProvider.GetRepositories(),
                     sourceRepositoryProvider.GetRepositories(),
                     token);
@@ -4695,6 +4696,7 @@ namespace NuGet.Test
                     packageIdentity,
                     new ResolutionContext(),
                     new TestNuGetProjectContext(),
+                    new SourceCacheContext(),
                     sourceRepositoryProvider.GetRepositories(),
                     sourceRepositoryProvider.GetRepositories(),
                     token);

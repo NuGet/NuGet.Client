@@ -201,10 +201,10 @@ namespace NuGet.PackageManagement
         /// <paramref name="nuGetProjectContext" /> are used in the process.
         /// </summary>
         public Task InstallPackageAsync(NuGetProject nuGetProject, string packageId, ResolutionContext resolutionContext,
-            INuGetProjectContext nuGetProjectContext, SourceRepository primarySourceRepository,
+            INuGetProjectContext nuGetProjectContext, SourceCacheContext cacheContext, SourceRepository primarySourceRepository,
             IEnumerable<SourceRepository> secondarySources, CancellationToken token)
         {
-            return InstallPackageAsync(nuGetProject, packageId, resolutionContext, nuGetProjectContext,
+            return InstallPackageAsync(nuGetProject, packageId, resolutionContext, nuGetProjectContext, cacheContext,
                 new List<SourceRepository> { primarySourceRepository }, secondarySources, token);
         }
 
@@ -214,7 +214,7 @@ namespace NuGet.PackageManagement
         /// <paramref name="resolutionContext" /> and <paramref name="nuGetProjectContext" /> are used in the process.
         /// </summary>
         public async Task InstallPackageAsync(NuGetProject nuGetProject, string packageId, ResolutionContext resolutionContext,
-            INuGetProjectContext nuGetProjectContext, IEnumerable<SourceRepository> primarySources,
+            INuGetProjectContext nuGetProjectContext, SourceCacheContext cacheContext, IEnumerable<SourceRepository> primarySources,
             IEnumerable<SourceRepository> secondarySources, CancellationToken token)
         {
             var log = new LoggerAdapter(nuGetProjectContext);
@@ -235,7 +235,7 @@ namespace NuGet.PackageManagement
 
             // Step-2 : Call InstallPackageAsync(project, packageIdentity)
             await InstallPackageAsync(nuGetProject, new PackageIdentity(packageId, latestVersion), resolutionContext,
-                nuGetProjectContext, primarySources, secondarySources, token);
+                nuGetProjectContext, cacheContext, primarySources, secondarySources, token);
         }
 
         /// <summary>
@@ -243,10 +243,10 @@ namespace NuGet.PackageManagement
         /// <paramref name="resolutionContext" /> and <paramref name="nuGetProjectContext" /> are used in the process.
         /// </summary>
         public Task InstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, ResolutionContext resolutionContext,
-            INuGetProjectContext nuGetProjectContext, SourceRepository primarySourceRepository,
+            INuGetProjectContext nuGetProjectContext, SourceCacheContext cacheContext, SourceRepository primarySourceRepository,
             IEnumerable<SourceRepository> secondarySources, CancellationToken token)
         {
-            return InstallPackageAsync(nuGetProject, packageIdentity, resolutionContext, nuGetProjectContext,
+            return InstallPackageAsync(nuGetProject, packageIdentity, resolutionContext, nuGetProjectContext, cacheContext,
                 new List<SourceRepository> { primarySourceRepository }, secondarySources, token);
         }
 
@@ -255,7 +255,7 @@ namespace NuGet.PackageManagement
         /// <paramref name="resolutionContext" /> and <paramref name="nuGetProjectContext" /> are used in the process.
         /// </summary>
         public async Task InstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, ResolutionContext resolutionContext,
-            INuGetProjectContext nuGetProjectContext, IEnumerable<SourceRepository> primarySources,
+            INuGetProjectContext nuGetProjectContext, SourceCacheContext cacheContext, IEnumerable<SourceRepository> primarySources,
             IEnumerable<SourceRepository> secondarySources, CancellationToken token)
         {
             ActivityCorrelationContext.StartNew();
@@ -267,7 +267,7 @@ namespace NuGet.PackageManagement
             SetDirectInstall(packageIdentity, nuGetProjectContext);
 
             // Step-2 : Execute all the nuGetProjectActions
-            await ExecuteNuGetProjectActionsAsync(nuGetProject, nuGetProjectActions, nuGetProjectContext, token);
+            await ExecuteNuGetProjectActionsAsync(nuGetProject, nuGetProjectActions, nuGetProjectContext, cacheContext, token);
 
             ClearDirectInstall(nuGetProjectContext);
         }
@@ -281,7 +281,7 @@ namespace NuGet.PackageManagement
             var nuGetProjectActions = await PreviewUninstallPackageAsync(nuGetProject, packageId, uninstallationContext, nuGetProjectContext, token);
 
             // Step-2 : Execute all the nuGetProjectActions
-            await ExecuteNuGetProjectActionsAsync(nuGetProject, nuGetProjectActions, nuGetProjectContext, token);
+            await ExecuteNuGetProjectActionsAsync(nuGetProject, nuGetProjectActions, nuGetProjectContext, new SourceCacheContext(), token);
         }
 
         /// <summary>
@@ -1629,6 +1629,7 @@ namespace NuGet.PackageManagement
         public async Task ExecuteNuGetProjectActionsAsync(NuGetProject nuGetProject,
             IEnumerable<NuGetProjectAction> nuGetProjectActions,
             INuGetProjectContext nuGetProjectContext,
+            SourceCacheContext cacheContext,
             CancellationToken token)
         {
             if (nuGetProject == null)
@@ -1704,6 +1705,7 @@ namespace NuGet.PackageManagement
                             actionsList,
                             PackagesFolderNuGetProject,
                             Settings,
+                            cacheContext,
                             logger,
                             downloadTokenSource.Token);
 
