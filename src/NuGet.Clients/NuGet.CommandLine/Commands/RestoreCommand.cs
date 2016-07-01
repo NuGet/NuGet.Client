@@ -272,7 +272,7 @@ namespace NuGet.CommandLine
             }
 
             var missingPackageReferences = installedPackageReferences.Where(reference =>
-                !nuGetPackageManager.PackageExistsInPackagesFolder(reference.PackageIdentity)).ToArray();
+                !nuGetPackageManager.PackageExistsInPackagesFolder(reference.PackageIdentity, EffectivePackageSaveMode)).ToArray();
 
             if (missingPackageReferences.Length == 0)
             {

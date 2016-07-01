@@ -944,6 +944,52 @@ EndProject");
             }
         }
 
+        // Tests that when -PackageSaveMode is set to nuspec, packages already restored with nuspec files
+        // instead of nupkg files will be recognised as already installed.
+        [Fact]
+        public void RestoreCommand_PackageSaveModeNuspec_AlreadyInstalled()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, "packages.config", "packages.config");
+
+                var r1 = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    "restore -Source " + repositoryPath + " -PackageSaveMode nuspec",
+                    waitForExit: true);
+
+                // Verify expected state
+                Assert.Equal(0, r1.Item1);
+                var packageFileA = Path.Combine(workingPath, @"packages\packageA.1.1.0\packageA.1.1.0.nupkg");
+                var nuspecFileA = Path.Combine(workingPath, @"packages\packageA.1.1.0\packageA.nuspec");
+                var packageFileB = Path.Combine(workingPath, @"packages\packageB.2.2.0\packageB.2.2.0.nupkg");
+                var nuspecFileB = Path.Combine(workingPath, @"packages\packageB.2.2.0\packageB.nuspec");
+                Assert.True(!File.Exists(packageFileA));
+                Assert.True(!File.Exists(packageFileB));
+                Assert.True(File.Exists(nuspecFileA));
+                Assert.True(File.Exists(nuspecFileB));
+
+                // Act
+                var r2 = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    "restore -Source " + repositoryPath + " -PackageSaveMode nuspec",
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, r2.Item1);
+                Assert.True(!File.Exists(packageFileA));
+                Assert.True(!File.Exists(packageFileB));
+                Assert.True(File.Exists(nuspecFileA));
+                Assert.True(File.Exists(nuspecFileB));
+                Assert.Contains("All packages listed in packages.config are already installed", r2.Item2); // Expected message
+            }
+        }
+
         // Tests restore from an http source.
         [Fact]
         public void RestoreCommand_FromHttpSource()
