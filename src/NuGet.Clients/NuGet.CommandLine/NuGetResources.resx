@@ -6073,4 +6073,7 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="Error_UnableToLocateRestoreTarget" xml:space="preserve">
     <value>The folder '{0}' does not contain an msbuild solution, packages.config, or project.json file to restore.</value>
   </data>
+  <data name="Warning_XmlValidation" xml:space="preserve">
+    <value>Having '&amp;gt;' or '&amp;lt;' in the text fields of a nuspec file causes problems with package validation. Because of that, some of the validation rules are being skipped. Take them out of the nuspec file to run all of the validation rules.</value>
+  </data>
 </root>

@@ -17892,5 +17892,14 @@ namespace NuGet.CommandLine {
                 return ResourceManager.GetString("Warning_UnspecifiedField_trk", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Having &apos;&amp;gt;&apos; or &apos;&amp;lt;&apos; in the text fields of a nuspec file causes problems with package validation. Because of that, some of the validation rules are being skipped. Take them out of the nuspec file to run all of the validation rules..
+        /// </summary>
+        public static string Warning_XmlValidation {
+            get {
+                return ResourceManager.GetString("Warning_XmlValidation", resourceCulture);
+            }
+        }
     }
 }
