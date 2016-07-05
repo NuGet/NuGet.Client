@@ -1339,7 +1339,7 @@ namespace NuGet.PackageManagement.UI {
                 return ResourceManager.GetString("Warning_ProjectJson", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Error.
         /// </summary>
