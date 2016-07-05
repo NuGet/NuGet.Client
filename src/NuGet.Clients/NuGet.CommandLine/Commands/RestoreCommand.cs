@@ -271,15 +271,8 @@ namespace NuGet.CommandLine
                     GetInstalledPackageReferences(packageReferenceFile, allowDuplicatePackageIds: true));
             }
 
-            // EffectivePackageSaveMode is None when -PackageSaveMode is not provided by the user. None is treated as
-            // Defaultv3 for V3 restore and should be treated as Defaultv2 for V2 restore. This is the case in the
-            // actual V2 restore flow and should match in this preliminary missing packages check.
-            var packageSaveMode = EffectivePackageSaveMode == Packaging.PackageSaveMode.None ?
-                Packaging.PackageSaveMode.Defaultv2 :
-                EffectivePackageSaveMode;
-
             var missingPackageReferences = installedPackageReferences.Where(reference =>
-                !nuGetPackageManager.PackageExistsInPackagesFolder(reference.PackageIdentity, packageSaveMode)).ToArray();
+                !nuGetPackageManager.PackageExistsInPackagesFolder(reference.PackageIdentity)).ToArray();
 
             if (missingPackageReferences.Length == 0)
             {
