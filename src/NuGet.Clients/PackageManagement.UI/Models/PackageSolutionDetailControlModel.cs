@@ -229,6 +229,7 @@ namespace NuGet.PackageManagement.UI
             };
 
             _packageManagerProviders = packageManagerProviders;
+
             CreateProjectLists();
         }
 
