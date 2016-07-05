@@ -1332,6 +1332,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to These options are not applicable to projects managing their dependencies through project.json..
+        /// </summary>
+        public static string Warning_ProjectJson {
+            get {
+                return ResourceManager.GetString("Warning_ProjectJson", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error.
         /// </summary>
         public static string WindowTitle_Error {

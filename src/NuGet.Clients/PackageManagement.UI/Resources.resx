@@ -563,4 +563,12 @@ Packages installed into Website projects will not be restored during build. Cons
   <data name="ToolTip_BlockedVersion" xml:space="preserve">
     <value>Following versions are unavailable due to allowedVersions constraint in package.config</value>
   </data>
+  <data name="Warning_ProjectJson" xml:space="preserve">
+    <value>These options are not applicable to projects managing their dependencies through project.json.</value>
+    <comment>To be displayed for the VS UI opened through a solution. bug #2665</comment>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="StatusInformation_16x" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\StatusInformation_16x.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>
