@@ -22,9 +22,10 @@ namespace NuGet.Packaging
     public class PackageBuilder : IPackageMetadata
     {
         private const string DefaultContentType = "application/octet";
+        private static readonly Uri DefaultUri = new Uri("http://defaultcontainer/");
         internal const string ManifestRelationType = "manifest";
         private readonly bool _includeEmptyDirectories;
-        
+
         public PackageBuilder(string path, Func<string, string> propertyProvider, bool includeEmptyDirectories)
             : this(path, Path.GetDirectoryName(path), propertyProvider, includeEmptyDirectories)
         {
@@ -422,17 +423,17 @@ namespace NuGet.Packaging
 
         private static bool HasIncludeExclude(IEnumerable<PackageDependencyGroup> dependencyGroups)
         {
-            return dependencyGroups.Any(dependencyGroup => 
+            return dependencyGroups.Any(dependencyGroup =>
                 dependencyGroup.Packages
                    .Any(dependency => dependency.Include != null || dependency.Exclude != null));
         }
 
         private static bool HasXdtTransformFile(ICollection<IPackageFile> contentFiles)
         {
-            return contentFiles.Any(file => 
+            return contentFiles.Any(file =>
                 file.Path != null &&
                 file.Path.StartsWith(PackagingConstants.Folders.Content + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) &&
-                (file.Path.EndsWith(".install.xdt", StringComparison.OrdinalIgnoreCase) || 
+                (file.Path.EndsWith(".install.xdt", StringComparison.OrdinalIgnoreCase) ||
                  file.Path.EndsWith(".uninstall.xdt", StringComparison.OrdinalIgnoreCase)));
         }
 
@@ -481,8 +482,8 @@ namespace NuGet.Packaging
 
             foreach (var reference in packageAssemblyReferences.SelectMany(p => p.References))
             {
-                if (!libFiles.Contains(reference) && 
-                    !libFiles.Contains(reference + ".dll") && 
+                if (!libFiles.Contains(reference) &&
+                    !libFiles.Contains(reference + ".dll") &&
                     !libFiles.Contains(reference + ".exe") &&
                     !libFiles.Contains(reference + ".winmd"))
                 {
@@ -748,9 +749,25 @@ namespace NuGet.Packaging
             // Only the segments between the path separators should be escaped
             var segments = path.Split(new[] { '/', Path.DirectorySeparatorChar }, StringSplitOptions.None)
                                .Select(Uri.EscapeDataString);
-            return String.Join("/", segments);
+
+            var escapedPath = String.Join("/", segments);
+
+            // retrieve only relative path with resolved . or ..
+            return GetStringForPartUri(escapedPath);
         }
-        
+
+        internal static string GetStringForPartUri(string escapedPath)
+        {
+            //Create an absolute URI to get the refinement on the relative path
+            var partUri = new Uri(DefaultUri, escapedPath);
+
+            // Get the safe-unescaped form of the URI first. This will unescape all the characters
+            Uri safeUnescapedUri = new Uri(partUri.GetComponents(UriComponents.Path, UriFormat.SafeUnescaped), UriKind.Relative);
+
+            //Get the escaped string for the part name as part names should have only ascii characters
+            return safeUnescapedUri.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
+        }
+
         /// <summary>
         /// Tags come in this format. tag1 tag2 tag3 etc..
         /// </summary>
@@ -851,7 +868,7 @@ namespace NuGet.Packaging
             XNamespace dcterms = dctermsText;
             var xsiText = "http://www.w3.org/2001/XMLSchema-instance";
             XNamespace xsi = xsiText;
-            XNamespace core ="http://schemas.openxmlformats.org/package/2006/metadata/core-properties";
+            XNamespace core = "http://schemas.openxmlformats.org/package/2006/metadata/core-properties";
 
             XDocument document = new XDocument(
                 new XElement(core + "coreProperties",

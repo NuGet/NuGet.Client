@@ -2518,6 +2518,39 @@ Enabling license acceptance requires a license url.");
             }
         }
 
+        [Theory]
+        [InlineData(@".\test1.txt", "test1.txt")]
+        [InlineData(@".\test\..\test1.txt", "test1.txt")]
+        [InlineData(@"./test/../test1.txt", "test1.txt")]
+        [InlineData("./test/../test1.txt", "test1.txt")]
+        [InlineData(@"..\test1.txt", "test1.txt")]
+        [InlineData(@"test1\.\.\test2\..\test1.txt", "test1/test1.txt")]
+        public void PackageBuilderWorksWithFilesHavingCurrentDirectoryAsTarget(string inputFile, string outputFile)
+        {
+            // Act
+            var builder = new PackageBuilder { Id = "test", Version = NuGetVersion.Parse("1.0"), Description = "test" };
+            builder.Authors.Add("test");
+            builder.Files.Add(CreatePackageFile(inputFile));
+
+            // Assert
+            using (MemoryStream stream = new MemoryStream())
+            {
+                builder.Save(stream);
+
+                using (var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true))
+                {
+                    var files = archive.GetFiles().OrderBy(s => s).ToArray();
+
+                    // Linux sorts the first two in different order than Windows
+                    Assert.Contains<string>(@"[Content_Types].xml", files);
+                    Assert.Contains<string>(@"_rels/.rels", files);
+                    Assert.StartsWith(@"package/services/metadata/core-properties/", files[2]);
+                    Assert.Equal(@"test.nuspec", files[3]);
+                    Assert.Equal(outputFile, files[4]);
+                }
+            }
+        }
+
         private static IPackageFile CreatePackageFile(string name)
         {
             var file = new Mock<IPackageFile>();
