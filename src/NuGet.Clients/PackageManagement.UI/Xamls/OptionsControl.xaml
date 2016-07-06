@@ -65,7 +65,7 @@
           <ColumnDefinition Width="4*"/>
           <ColumnDefinition Width="*" MinWidth="30" />
         </Grid.ColumnDefinitions>
-        <Grid Grid.Row="0" Grid.Column = "0" Grid.ColumnSpan="3" Visibility="{Binding IsSolution, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,3,2,3">
+        <Grid Grid.Row="0" Grid.Column = "0" Grid.ColumnSpan="3" Visibility="{Binding IsSolution, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="-16,3,2,3">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*"/>
