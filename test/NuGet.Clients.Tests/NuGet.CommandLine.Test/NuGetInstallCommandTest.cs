@@ -300,8 +300,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(packageFileB));
             }
         }
-
-        [Fact(Skip = "PackageSaveMode is not supported yet")]
+        
         public void InstallCommand_PackageSaveModeNuspec()
         {
             using (var source = TestFileSystemUtility.CreateRandomTestFolder())
@@ -331,8 +330,7 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(0, nupkgFiles.Length);
             }
         }
-
-        [Fact(Skip = "PackageSaveMode is not supported yet")]
+        
         public void InstallCommand_PackageSaveModeNupkg()
         {
             using (var source = TestFileSystemUtility.CreateRandomTestFolder())
@@ -362,8 +360,7 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(0, nuspecFiles.Length);
             }
         }
-
-        [Fact(Skip = "PackageSaveMode is not supported yet")]
+        
         public void InstallCommand_PackageSaveModeNuspecNupkg()
         {
             using (var source = TestFileSystemUtility.CreateRandomTestFolder())
@@ -397,7 +394,6 @@ namespace NuGet.CommandLine.Test
         // Test that after a package is installed with -PackageSaveMode nuspec, nuget.exe
         // can detect that the package is already installed when trying to install the same
         // package.
-        [Fact(Skip = "PackageSaveMode is not supported yet")]
         public void InstallCommand_PackageSaveModeNuspecReinstall()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -434,7 +430,6 @@ namespace NuGet.CommandLine.Test
         }
 
         // Test that PackageSaveMode specified in nuget.config file is used.
-        [Fact(Skip = "PackageSaveMode is not supported yet")]
         public void InstallCommand_PackageSaveModeInConfigFile()
         {
             using (var source = TestFileSystemUtility.CreateRandomTestFolder())

@@ -8,6 +8,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
+using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using Xunit;
@@ -912,10 +913,24 @@ EndProject");
             }
         }
 
-        // Tests that when -PackageSaveMode is set to nuspec, the nuspec files, instead of
-        // nupkg files, are saved.
-        [Fact(Skip = "PackageSaveMode is not implemented yet")]
-        public void RestoreCommand_PackageSaveModeNuspec()
+        /// <summary>
+        /// Tests two subsequent restores, with different combinations of -PackageSaveMode. This
+        /// test throey should test all possible combinations.
+        /// </summary>
+        [Theory]
+        [InlineData(PackageSaveMode.None, PackageSaveMode.Nupkg)]
+        [InlineData(PackageSaveMode.None, PackageSaveMode.Nuspec)]
+        [InlineData(PackageSaveMode.None, PackageSaveMode.Nupkg | PackageSaveMode.Nuspec)]
+        [InlineData(PackageSaveMode.Nupkg, PackageSaveMode.Nupkg)]
+        [InlineData(PackageSaveMode.Nupkg, PackageSaveMode.Nuspec)]
+        [InlineData(PackageSaveMode.Nupkg, PackageSaveMode.Nupkg | PackageSaveMode.Nuspec)]
+        [InlineData(PackageSaveMode.Nuspec, PackageSaveMode.Nupkg)]
+        [InlineData(PackageSaveMode.Nuspec, PackageSaveMode.Nuspec)]
+        [InlineData(PackageSaveMode.Nuspec, PackageSaveMode.Nupkg | PackageSaveMode.Nuspec)]
+        [InlineData(PackageSaveMode.Nupkg | PackageSaveMode.Nuspec, PackageSaveMode.Nupkg)]
+        [InlineData(PackageSaveMode.Nupkg | PackageSaveMode.Nuspec, PackageSaveMode.Nuspec)]
+        [InlineData(PackageSaveMode.Nupkg | PackageSaveMode.Nuspec, PackageSaveMode.Nupkg | PackageSaveMode.Nuspec)]
+        public void RestoreCommand_PackageSaveMode(PackageSaveMode firstRestore, PackageSaveMode secondRestore)
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -924,69 +939,92 @@ EndProject");
             {
                 var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, "packages.config", "packages.config");
 
-                // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    workingPath,
-                    "restore -Source " + repositoryPath + " -PackageSaveMode nuspec",
-                    waitForExit: true);
+                var expectedPackageFileAExists = false;
+                var expectedNuspecFileAExists = false;
+                var expectedContentAExists = false;
+                var expectedPackageFileBExists = false;
+                var expectedNuspecFileBExists = false;
+                var expectedContentBExists = false;
 
-                // Assert
-                Assert.Equal(0, r.Item1);
-                var packageFileA = Path.Combine(workingPath, @"packages\packageA.1.1.0\packageA.1.1.0.nupkg");
-                var nuspecFileA = Path.Combine(workingPath, @"packages\packageA.1.1.0\packageA.1.1.0.nuspec");
-                var packageFileB = Path.Combine(workingPath, @"packages\packageB.2.2.0\packageB.2.2.0.nupkg");
-                var nuspecFileB = Path.Combine(workingPath, @"packages\packageB.2.2.0\packageB.2.2.0.nuspec");
-                Assert.True(!File.Exists(packageFileA));
-                Assert.True(!File.Exists(packageFileB));
-                Assert.True(File.Exists(nuspecFileA));
-                Assert.True(File.Exists(nuspecFileB));
-            }
-        }
-
-        // Tests that when -PackageSaveMode is set to nuspec, packages already restored with nuspec files
-        // instead of nupkg files will be recognised as already installed.
-        [Fact]
-        public void RestoreCommand_PackageSaveModeNuspec_AlreadyInstalled()
-        {
-            // Arrange
-            var nugetexe = Util.GetNuGetExePath();
-
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, "packages.config", "packages.config");
-
-                var r1 = CommandRunner.Run(
-                    nugetexe,
-                    workingPath,
-                    "restore -Source " + repositoryPath + " -PackageSaveMode nuspec",
-                    waitForExit: true);
-
-                // Verify expected state
-                Assert.Equal(0, r1.Item1);
                 var packageFileA = Path.Combine(workingPath, @"packages\packageA.1.1.0\packageA.1.1.0.nupkg");
                 var nuspecFileA = Path.Combine(workingPath, @"packages\packageA.1.1.0\packageA.nuspec");
+                var contentFileA = Path.Combine(workingPath, @"packages\packageA.1.1.0\content\test1.txt");
                 var packageFileB = Path.Combine(workingPath, @"packages\packageB.2.2.0\packageB.2.2.0.nupkg");
                 var nuspecFileB = Path.Combine(workingPath, @"packages\packageB.2.2.0\packageB.nuspec");
-                Assert.True(!File.Exists(packageFileA));
-                Assert.True(!File.Exists(packageFileB));
-                Assert.True(File.Exists(nuspecFileA));
-                Assert.True(File.Exists(nuspecFileB));
+                var contentFileB = Path.Combine(workingPath, @"packages\packageB.2.2.0\content\test1.txt");
 
-                // Act
+                // Act & Assert
+                // None of the files should exist before any restore.
+                Assert.Equal(expectedPackageFileAExists, File.Exists(packageFileA));
+                Assert.Equal(expectedNuspecFileAExists, File.Exists(nuspecFileA));
+                Assert.Equal(expectedContentAExists, File.Exists(contentFileA));
+                Assert.Equal(expectedPackageFileBExists, File.Exists(packageFileB));
+                Assert.Equal(expectedNuspecFileBExists, File.Exists(nuspecFileB));
+                Assert.Equal(expectedContentBExists, File.Exists(contentFileB));
+
+                if (firstRestore != PackageSaveMode.None)
+                {
+                    if (firstRestore.HasFlag(PackageSaveMode.Nupkg))
+                    {
+                        expectedPackageFileAExists = true;
+                        expectedPackageFileBExists = true;
+                    }
+
+                    if (firstRestore.HasFlag(PackageSaveMode.Nuspec))
+                    {
+                        expectedNuspecFileAExists = true;
+                        expectedNuspecFileBExists = true;
+                    }
+
+                    expectedContentAExists = true;
+                    expectedContentBExists = true;
+
+                    // First restore
+                    var r1 = CommandRunner.Run(
+                        nugetexe,
+                        workingPath,
+                        "restore -Source " + repositoryPath + " -PackageSaveMode " + firstRestore.ToString().Replace(", ", ";"),
+                        waitForExit: true);
+
+                    Assert.Equal(0, r1.Item1);
+                }
+
+                Assert.Equal(expectedPackageFileAExists, File.Exists(packageFileA));
+                Assert.Equal(expectedNuspecFileAExists, File.Exists(nuspecFileA));
+                Assert.Equal(expectedContentAExists, File.Exists(contentFileA));
+                Assert.Equal(expectedPackageFileBExists, File.Exists(packageFileB));
+                Assert.Equal(expectedNuspecFileBExists, File.Exists(nuspecFileB));
+                Assert.Equal(expectedContentBExists, File.Exists(contentFileB));
+
+                if (secondRestore.HasFlag(PackageSaveMode.Nupkg))
+                {
+                    expectedPackageFileAExists = true;
+                    expectedPackageFileBExists = true;
+                }
+
+                if (secondRestore.HasFlag(PackageSaveMode.Nuspec))
+                {
+                    expectedNuspecFileAExists = true;
+                    expectedNuspecFileBExists = true;
+                }
+
+                expectedContentAExists = true;
+                expectedContentBExists = true;
+
+                // Second restore
                 var r2 = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    "restore -Source " + repositoryPath + " -PackageSaveMode nuspec",
+                    "restore -Source " + repositoryPath + " -PackageSaveMode " + secondRestore.ToString().Replace(", ", ";"),
                     waitForExit: true);
 
-                // Assert
                 Assert.Equal(0, r2.Item1);
-                Assert.True(!File.Exists(packageFileA));
-                Assert.True(!File.Exists(packageFileB));
-                Assert.True(File.Exists(nuspecFileA));
-                Assert.True(File.Exists(nuspecFileB));
-                Assert.Contains("All packages listed in packages.config are already installed", r2.Item2); // Expected message
+                Assert.Equal(expectedPackageFileAExists, File.Exists(packageFileA));
+                Assert.Equal(expectedNuspecFileAExists, File.Exists(nuspecFileA));
+                Assert.Equal(expectedContentAExists, File.Exists(contentFileA));
+                Assert.Equal(expectedPackageFileBExists, File.Exists(packageFileB));
+                Assert.Equal(expectedNuspecFileBExists, File.Exists(nuspecFileB));
+                Assert.Equal(expectedContentBExists, File.Exists(contentFileB));
             }
         }
 
