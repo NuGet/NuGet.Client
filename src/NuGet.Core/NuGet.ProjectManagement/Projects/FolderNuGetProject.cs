@@ -84,7 +84,7 @@ namespace NuGet.ProjectManagement
                 action: cancellationToken =>
                 {
                     // 1. Check if the Package already exists at root, if so, return false
-                    if (PackageExists(packageIdentity))
+                    if (PackageExists(packageIdentity, nuGetProjectContext.PackageExtractionContext.PackageSaveMode))
                     {
                         nuGetProjectContext.Log(MessageLevel.Info, Strings.PackageAlreadyExistsInFolder, packageIdentity, Root);
                         return Task.FromResult(false);
@@ -155,9 +155,33 @@ namespace NuGet.ProjectManagement
             return !string.IsNullOrEmpty(GetInstalledPackageFilePath(packageIdentity));
         }
 
-        public bool PackageOrManifestExists(PackageIdentity packageIdentity)
+        public bool PackageExists(PackageIdentity packageIdentity, Packaging.PackageSaveMode packageSaveMode)
         {
-            return !string.IsNullOrEmpty(GetInstalledPackageFilePath(packageIdentity)) | !string.IsNullOrEmpty(GetInstalledManifestFilePath(packageIdentity));
+            var packageExists = !string.IsNullOrEmpty(GetInstalledPackageFilePath(packageIdentity));
+            var manifestExists = !string.IsNullOrEmpty(GetInstalledManifestFilePath(packageIdentity));
+            // A package must have either a nupkg or a nuspec to be valid
+            var result = packageExists || manifestExists;
+            // Verify nupkg present if specified
+            if ((packageSaveMode & Packaging.PackageSaveMode.Nupkg) == Packaging.PackageSaveMode.Nupkg)
+            {
+                result &= packageExists;
+            }
+            // Verify nuspec present if specified
+            if ((packageSaveMode & Packaging.PackageSaveMode.Nuspec) == Packaging.PackageSaveMode.Nuspec)
+            {
+                result &= manifestExists;
+            }
+            return result;
+        }
+
+        public bool ManifestExists(PackageIdentity packageIdentity)
+        {
+            return !string.IsNullOrEmpty(GetInstalledManifestFilePath(packageIdentity));
+        }
+
+        public bool PackageAndManifestExists(PackageIdentity packageIdentity)
+        {
+            return !string.IsNullOrEmpty(GetInstalledPackageFilePath(packageIdentity)) && !string.IsNullOrEmpty(GetInstalledManifestFilePath(packageIdentity));
         }
 
         public Task<bool> CopySatelliteFilesAsync(PackageIdentity packageIdentity,

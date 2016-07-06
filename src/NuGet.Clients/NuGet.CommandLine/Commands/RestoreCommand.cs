@@ -271,18 +271,8 @@ namespace NuGet.CommandLine
                     GetInstalledPackageReferences(packageReferenceFile, allowDuplicatePackageIds: true));
             }
 
-            Func<Packaging.Core.PackageIdentity, bool> packageExistsFunc;
-            // If restoring nupkg only accept an existing package with a nupkg otherwise accept a nuspec or a nupkg
-            if ((EffectivePackageSaveMode & Packaging.PackageSaveMode.Nupkg) == Packaging.PackageSaveMode.Nupkg)
-            {
-                packageExistsFunc = nuGetPackageManager.PackageExistsInPackagesFolder;
-            }
-            else
-            {
-                packageExistsFunc = nuGetPackageManager.PackageOrManifestExistsInPackagesFolder;
-            }
             var missingPackageReferences = installedPackageReferences.Where(reference =>
-                !packageExistsFunc(reference.PackageIdentity)).ToArray();
+                !nuGetPackageManager.PackageExistsInPackagesFolder(reference.PackageIdentity, EffectivePackageSaveMode)).ToArray();
 
             if (missingPackageReferences.Length == 0)
             {
