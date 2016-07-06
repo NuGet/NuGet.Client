@@ -131,6 +131,49 @@ namespace NuGet.PackageManagement
         }
 
         [Fact]
+        public async Task TestDirectDownload_InV3()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            var v3sourceRepository = sourceRepositoryProvider.GetRepositories().First();
+            var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
+
+            // Ensure package is not already cached in the Global Packages Folder
+            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(Configuration.NullSettings.Instance);
+            var defaultPackagePathResolver = new Packaging.VersionFolderPathResolver(globalPackagesFolder);
+            var installPath = defaultPackagePathResolver.GetInstallPath(packageIdentity.Id, packageIdentity.Version);
+            if (System.IO.Directory.Exists(installPath))
+            {
+                System.IO.Directory.Delete(installPath,true);
+            }
+            var globalPackage1 = Protocol.GlobalPackagesFolderUtility.GetPackage(packageIdentity, Configuration.NullSettings.Instance);
+            Assert.Null(globalPackage1);
+            
+            // Act
+            using (var cacheContext = new SourceCacheContext())
+            {
+                cacheContext.NoCache = true; // DirectDownload flag sets NoCache to true in SourceCacheContext
+                using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(v3sourceRepository,
+                    packageIdentity,
+                    Configuration.NullSettings.Instance,
+                    cacheContext,
+                    Common.NullLogger.Instance,
+                    CancellationToken.None))
+                {
+                    var targetPackageStream = downloadResult.PackageStream;
+
+                    // Assert
+                    // jQuery.1.8.2 is of size 185476 bytes. Make sure the download is successful
+                    Assert.Equal(185476, targetPackageStream.Length);
+                    Assert.True(targetPackageStream.CanSeek);
+                }
+            }
+            // Verify that the package was not cached in the Global Packages Folder
+            var globalPackage2 = Protocol.GlobalPackagesFolderUtility.GetPackage(packageIdentity, Configuration.NullSettings.Instance);
+            Assert.Null(globalPackage2);
+        }
+
+        [Fact]
         public async Task TestDownloadPackage_MultipleSources()
         {
             // Arrange
