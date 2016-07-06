@@ -64,7 +64,7 @@
             Width="auto" />
           <ColumnDefinition
             Width="35*"
-            MinWidth="300" />
+            MinWidth="320" />
         </Grid.ColumnDefinitions>
 
         <!-- left side -->
