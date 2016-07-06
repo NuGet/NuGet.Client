@@ -27,7 +27,37 @@ namespace NuGet.PackageManagement.VisualStudio
 
     public class ProjectKNuGetProject : ProjectKNuGetProjectBase
     {
+        private const string StateKey = "PackageUpgradeState";
+
         private INuGetPackageManager _project;
+
+        /// <summary>
+        /// When performing an update operation from the UI, this action is converted to two lower
+        /// level actions: uninstall then install. Unfortunately, this means that any state removed
+        /// during the uninstall that is not included in the install operation is lost. This
+        /// dictionary is used to maintain this state between uninstall and install operations. The
+        /// state is cleared during the <see cref="PreProcessAsync"/> and
+        /// <see cref="PostProcessAsync"/> steps.
+        /// </summary>
+        private readonly Dictionary<string, object> _packageUpdateState
+            = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
+        public override Task PostProcessAsync(INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        {
+            // Technically we only need to clear state during the PreProcessAsync step, but clearing
+            // here as well means we're not holding on to information that will never be used thus
+            // using less memory.
+            _packageUpdateState.Clear();
+
+            return base.PostProcessAsync(nuGetProjectContext, token);
+        }
+
+        public override Task PreProcessAsync(INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        {
+            _packageUpdateState.Clear();
+
+            return base.PreProcessAsync(nuGetProjectContext, token);
+        }
 
         public ProjectKNuGetProject(INuGetPackageManager project, string projectName, string uniqueName)
         {
@@ -97,6 +127,12 @@ namespace NuGet.PackageManagement.VisualStudio
             args["PackageTypes"] = packageTypes
                 .ToArray();
 
+            object state;
+            if (_packageUpdateState.TryGetValue(packageIdentity.Id, out state))
+            {
+                args[StateKey] = state;
+            }
+
             await _project.InstallPackageAsync(
                 new NuGetPackageMoniker
                 {
@@ -116,6 +152,7 @@ namespace NuGet.PackageManagement.VisualStudio
             nuGetProjectContext.Log(MessageLevel.Info, Strings.UninstallingPackage, packageIdentity);
 
             var args = new Dictionary<string, object>();
+
             await _project.UninstallPackageAsync(
                 new NuGetPackageMoniker
                 {
@@ -126,6 +163,15 @@ namespace NuGet.PackageManagement.VisualStudio
                 logger: null,
                 progress: null,
                 cancellationToken: token);
+
+            // It's possible that the underlying project is trying to pass us back some state to be
+            // returned to it in a subsequent install of the same package identity.
+            object state;
+            if (args.TryGetValue(StateKey, out state))
+            {
+                _packageUpdateState[packageIdentity.Id] = state;
+            }
+
             return true;
         }
 
