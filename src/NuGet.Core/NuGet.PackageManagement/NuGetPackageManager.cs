@@ -2227,7 +2227,7 @@ namespace NuGet.PackageManagement
             IEnumerable<SourceRepository> sourceRepositories, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
-            if (PackageExistsInPackagesFolder(packageIdentity))
+            if (PackageExistsInPackagesFolder(packageIdentity, nuGetProjectContext.PackageExtractionContext.PackageSaveMode))
             {
                 return false;
             }
@@ -2257,6 +2257,14 @@ namespace NuGet.PackageManagement
         public Task<bool> CopySatelliteFilesAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             return PackagesFolderNuGetProject.CopySatelliteFilesAsync(packageIdentity, nuGetProjectContext, token);
+        }
+
+        /// <summary>
+        /// Checks whether package exists in packages folder and verifies that nupkg and nuspec are present as specified by packageSaveMode
+        /// </summary>
+        public bool PackageExistsInPackagesFolder(PackageIdentity packageIdentity, PackageSaveMode packageSaveMode)
+        {
+            return PackagesFolderNuGetProject.PackageExists(packageIdentity, packageSaveMode);
         }
 
         public bool PackageExistsInPackagesFolder(PackageIdentity packageIdentity)
