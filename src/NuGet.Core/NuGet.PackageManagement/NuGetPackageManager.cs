@@ -2260,7 +2260,7 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Checks whether package exists in packages folder and verifies that nupkg and nuspec are present as specified by packageSaveMode
         /// </summary>
-        public bool PackageExistsInPackagesFolder(PackageIdentity packageIdentity, Packaging.PackageSaveMode packageSaveMode)
+        public bool PackageExistsInPackagesFolder(PackageIdentity packageIdentity, PackageSaveMode packageSaveMode)
         {
             return PackagesFolderNuGetProject.PackageExists(packageIdentity, packageSaveMode);
         }

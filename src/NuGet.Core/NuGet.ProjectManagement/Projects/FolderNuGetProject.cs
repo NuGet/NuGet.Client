@@ -155,19 +155,19 @@ namespace NuGet.ProjectManagement
             return !string.IsNullOrEmpty(GetInstalledPackageFilePath(packageIdentity));
         }
 
-        public bool PackageExists(PackageIdentity packageIdentity, Packaging.PackageSaveMode packageSaveMode)
+        public bool PackageExists(PackageIdentity packageIdentity, PackageSaveMode packageSaveMode)
         {
             var packageExists = !string.IsNullOrEmpty(GetInstalledPackageFilePath(packageIdentity));
             var manifestExists = !string.IsNullOrEmpty(GetInstalledManifestFilePath(packageIdentity));
             // A package must have either a nupkg or a nuspec to be valid
             var result = packageExists || manifestExists;
             // Verify nupkg present if specified
-            if ((packageSaveMode & Packaging.PackageSaveMode.Nupkg) == Packaging.PackageSaveMode.Nupkg)
+            if ((packageSaveMode & PackageSaveMode.Nupkg) == PackageSaveMode.Nupkg)
             {
                 result &= packageExists;
             }
             // Verify nuspec present if specified
-            if ((packageSaveMode & Packaging.PackageSaveMode.Nuspec) == Packaging.PackageSaveMode.Nuspec)
+            if ((packageSaveMode & PackageSaveMode.Nuspec) == PackageSaveMode.Nuspec)
             {
                 result &= manifestExists;
             }
