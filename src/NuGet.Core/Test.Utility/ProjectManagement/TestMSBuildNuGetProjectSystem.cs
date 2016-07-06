@@ -96,6 +96,11 @@ namespace Test.Utility
 
         public string ProjectName { get; }
 
+        public string ProjectFileName
+        {
+            get { throw new NotImplementedException(); }
+        }
+
         public string ProjectUniqueName
         {
             get { return ProjectName; }
@@ -120,6 +125,11 @@ namespace Test.Utility
         }
 
         public NuGetFramework TargetFramework { get; }
+
+        public IList<string> SupportedPlatforms
+        {
+            get { throw new NotImplementedException(); }
+        }
 
         public void SetNuGetProjectContext(INuGetProjectContext nuGetProjectContext)
         {

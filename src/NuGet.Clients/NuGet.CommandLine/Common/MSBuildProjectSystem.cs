@@ -29,10 +29,14 @@ namespace NuGet.Common
             Project = GetProject(projectFullPath);
             ProjectName = Path.GetFileName(projectFullPath);
             ProjectUniqueName = projectFullPath;
+            ProjectFileName = projectFullPath;
             NuGetProjectContext = projectContext;
         }
 
         public INuGetProjectContext NuGetProjectContext { get; private set; }
+
+        // We could get this information from Project, but we don't currently need it in non VS scenarios.
+        public IList<string> SupportedPlatforms => new List<string>();
 
         /// <summary>
         /// This does not contain the filename, just the path to the directory where the project file exists
@@ -42,6 +46,9 @@ namespace NuGet.Common
         public string ProjectName { get; }
 
         public string ProjectUniqueName { get; }
+
+        public string ProjectFileName { get; }
+
 
         public NuGetFramework TargetFramework
         {
@@ -338,6 +345,11 @@ namespace NuGet.Common
         public void Save()
         {
             Project.Save();
+        }
+
+        public void Reload()
+        {
+            throw new NotImplementedException();
         }
 
         private IEnumerable<dynamic> GetItems(string itemType, string name)

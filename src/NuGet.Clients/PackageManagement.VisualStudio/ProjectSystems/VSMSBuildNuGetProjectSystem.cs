@@ -12,6 +12,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.CSharp.RuntimeBinder;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -19,8 +20,7 @@ using EnvDTEProject = EnvDTE.Project;
 using EnvDTEProjectItems = EnvDTE.ProjectItems;
 using EnvDTEProperty = EnvDTE.Property;
 using Constants = NuGet.ProjectManagement.Constants;
-using MicrosoftBuildEvaluationProject = Microsoft.Build.Evaluation.Project;
-using MicrosoftBuildEvaluationProjectItem = Microsoft.Build.Evaluation.ProjectItem;
+using PathUtility = NuGet.ProjectManagement.PathUtility;
 using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -50,6 +50,15 @@ namespace NuGet.PackageManagement.VisualStudio
         public EnvDTEProject EnvDTEProject { get; }
 
         public INuGetProjectContext NuGetProjectContext { get; private set; }
+
+        public IList<string> SupportedPlatforms
+        {
+            get
+            {
+                var supportedPlatforms = EnvDTEProject.ConfigurationManager.SupportedPlatforms as object[];
+                return supportedPlatforms?.Cast<string>().ToList() ?? new List<string>();
+            }
+        }
 
         private IScriptExecutor _scriptExecutor;
 
@@ -138,6 +147,10 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        private string _projectFileName;
+
+        public string ProjectFileName => _projectFileName ?? (_projectFileName = EnvDTEProjectUtility.GetFileName(EnvDTEProject));
+
         private NuGetFramework _targetFramework;
 
         public NuGetFramework TargetFramework
@@ -201,6 +214,8 @@ namespace NuGet.PackageManagement.VisualStudio
             var fileName = Path.GetFileName(path);
             if (File.Exists(Path.Combine(ProjectFullPath, path))
                 && !fileExistsInProject
+                && !fileName.Equals(ProjectJsonPathUtilities.ProjectConfigFileName)
+                && !fileName.EndsWith(ProjectJsonPathUtilities.ProjectConfigFileEnding)
                 && !fileName.Equals(Constants.PackageReferenceFile)
                 && !fileName.Equals("packages." + ProjectName + ".config")
                 && !fileName.Equals(EnvDTEProjectUtility.WebConfig)
@@ -664,6 +679,17 @@ namespace NuGet.PackageManagement.VisualStudio
             return ThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                var list = new Dictionary<string, dynamic>();
+                for (var i = 1; i <= EnvDTEProject.Properties.Count; i++)
+                {
+                    try
+                    {
+                        var property = EnvDTEProject.Properties.Item(i);
+                        list[property.Name] = property.Value;
+                    }
+                    catch (Exception) { }
+                }
 
                 try
                 {

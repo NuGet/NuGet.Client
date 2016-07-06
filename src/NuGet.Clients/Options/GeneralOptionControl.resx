@@ -123,13 +123,13 @@
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="skipBindingRedirects.Location" type="System.Drawing.Point, System.Drawing">
-    <value>19, 138</value>
+    <value>19, 166</value>
   </data>
   <data name="skipBindingRedirects.Size" type="System.Drawing.Size, System.Drawing">
     <value>169, 17</value>
   </data>
   <data name="skipBindingRedirects.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
+    <value>6</value>
   </data>
   <data name="skipBindingRedirects.Text" xml:space="preserve">
     <value>Skip applying &amp;binding redirects</value>
@@ -144,7 +144,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;skipBindingRedirects.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>5</value>
   </data>
   <data name="PackageRestoreHeader.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -153,7 +153,7 @@
     <value>Microsoft Sans Serif, 8.25pt, style=Bold</value>
   </data>
   <data name="PackageRestoreHeader.Location" type="System.Drawing.Point, System.Drawing">
-    <value>2, 12</value>
+    <value>2, 40</value>
   </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="PackageRestoreHeader.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
@@ -163,7 +163,7 @@
     <value>105, 13</value>
   </data>
   <data name="PackageRestoreHeader.TabIndex" type="System.Int32, mscorlib">
-    <value>12</value>
+    <value>2</value>
   </data>
   <data name="PackageRestoreHeader.Text" xml:space="preserve">
     <value>Package Restore</value>
@@ -178,13 +178,13 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;PackageRestoreHeader.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>1</value>
   </data>
   <data name="packageRestoreConsentCheckBox.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="packageRestoreConsentCheckBox.Location" type="System.Drawing.Point, System.Drawing">
-    <value>19, 37</value>
+    <value>19, 65</value>
   </data>
   <data name="packageRestoreConsentCheckBox.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 2, 2, 2</value>
@@ -193,7 +193,7 @@
     <value>233, 17</value>
   </data>
   <data name="packageRestoreConsentCheckBox.TabIndex" type="System.Int32, mscorlib">
-    <value>14</value>
+    <value>3</value>
   </data>
   <data name="packageRestoreConsentCheckBox.Text" xml:space="preserve">
     <value>&amp;Allow NuGet to download missing packages</value>
@@ -208,13 +208,13 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;packageRestoreConsentCheckBox.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>2</value>
   </data>
   <data name="packageRestoreAutomaticCheckBox.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
   <data name="packageRestoreAutomaticCheckBox.Location" type="System.Drawing.Point, System.Drawing">
-    <value>19, 56</value>
+    <value>19, 84</value>
   </data>
   <data name="packageRestoreAutomaticCheckBox.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 2, 2, 2</value>
@@ -223,7 +223,7 @@
     <value>355, 34</value>
   </data>
   <data name="packageRestoreAutomaticCheckBox.TabIndex" type="System.Int32, mscorlib">
-    <value>15</value>
+    <value>4</value>
   </data>
   <data name="packageRestoreAutomaticCheckBox.Text" xml:space="preserve">
     <value>Auto&amp;matically check for missing packages during build in Visual Studio</value>
@@ -238,7 +238,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;packageRestoreAutomaticCheckBox.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>3</value>
   </data>
   <data name="BindingRedirectsHeader.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -250,7 +250,7 @@
     <value>NoControl</value>
   </data>
   <data name="BindingRedirectsHeader.Location" type="System.Drawing.Point, System.Drawing">
-    <value>2, 112</value>
+    <value>2, 140</value>
   </data>
   <data name="BindingRedirectsHeader.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 0, 2, 0</value>
@@ -259,7 +259,7 @@
     <value>107, 13</value>
   </data>
   <data name="BindingRedirectsHeader.TabIndex" type="System.Int32, mscorlib">
-    <value>16</value>
+    <value>5</value>
   </data>
   <data name="BindingRedirectsHeader.Text" xml:space="preserve">
     <value>Binding Redirects</value>
@@ -274,6 +274,39 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;BindingRedirectsHeader.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="enableExperimentalFeaturesCheckBox.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="enableExperimentalFeaturesCheckBox.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="enableExperimentalFeaturesCheckBox.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 0</value>
+  </data>
+  <data name="enableExperimentalFeaturesCheckBox.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 2, 2, 2</value>
+  </data>
+  <data name="enableExperimentalFeaturesCheckBox.Size" type="System.Drawing.Size, System.Drawing">
+    <value>162, 17</value>
+  </data>
+  <data name="enableExperimentalFeaturesCheckBox.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="enableExperimentalFeaturesCheckBox.Text" xml:space="preserve">
+    <value>&amp;Enable experimental features</value>
+  </data>
+  <data name="&gt;&gt;enableExperimentalFeaturesCheckBox.Name" xml:space="preserve">
+    <value>enableExperimentalFeaturesCheckBox</value>
+  </data>
+  <data name="&gt;&gt;enableExperimentalFeaturesCheckBox.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;enableExperimentalFeaturesCheckBox.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;enableExperimentalFeaturesCheckBox.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">

@@ -65,10 +65,13 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="UserInterfaceService\ProgressDialogData.cs" />
     <Compile Include="Actions\UIActionEngine.cs" />
     <Compile Include="Actions\ProjectContext.cs" />
     <Compile Include="Actions\UpdatePreviewResult.cs" />
     <Compile Include="Automation\FilterLabelAutomationPeer.cs" />
+    <Compile Include="Actions\NuGetProjectUpgrader.cs" />
+    <Compile Include="Actions\UpgradeLogger.cs" />
     <Compile Include="Common\ErrorFloodGate.cs" />
     <Compile Include="Common\IOptionsPageActivator.cs" />
     <Compile Include="Common\NuGetEvent.cs" />
@@ -76,17 +79,23 @@
     <Compile Include="Common\OptionsPage.cs" />
     <Compile Include="Converters\TooltipConverter.cs" />
     <Compile Include="Converters\BooleanToFontWeightConverter.cs" />
+    <Compile Include="Converters\BooleanToGridRowHeightConverter.cs" />
     <Compile Include="Converters\CollectionToStringConverter.cs" />
     <Compile Include="Converters\EnumDescriptionValueConverter.cs" />
     <Compile Include="Converters\NotNullOrTrueToBooleanConverter.cs" />
     <Compile Include="DisplayVersion.cs" />
+    <Compile Include="Converters\InverseBooleanConverter.cs" />
+    <Compile Include="ExperimentalFeatures.cs" />
     <Compile Include="Models\LoadingStatusViewModel.cs" />
     <Compile Include="Models\PackageSearchMetadataCache.cs" />
     <Compile Include="Models\PackageSearchStatus.cs" />
+    <Compile Include="Models\NuGetProjectUpgradeDependencyItem.cs" />
+    <Compile Include="Models\NuGetProjectUpgradeWindowModel.cs" />
     <Compile Include="Resources\Domain.cs" />
     <Compile Include="Resources\Resources.xaml.cs">
       <DependentUpon>Resources.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserInterfaceService\IModalProgressDialogSession.cs" />
     <Compile Include="Xamls\RestartRequestBar.xaml.cs">
       <DependentUpon>RestartRequestBar.xaml</DependentUpon>
     </Compile>
@@ -263,6 +272,9 @@
     <Compile Include="Xamls\UpdateButton.xaml.cs">
       <DependentUpon>UpdateButton.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Xamls\NuGetProjectUpgradeWindow.xaml.cs">
+      <DependentUpon>NuGetProjectUpgradeWindow.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <DesignDataWithDesignTimeCreatableTypes Include="Design\LoadingStatusViewModelSampleData.xaml">
@@ -387,6 +399,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Xamls\NuGetProjectUpgradeWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\packageicon.png" />
@@ -418,6 +434,16 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Refresh.16.16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\statuserror.16.16.png" />
+    <Resource Include="Resources\statusinformation.16.16.png" />
+    <Resource Include="Resources\statuswarning.16.16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\UpgradeReport.xslt">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\..\build\common.targets" />

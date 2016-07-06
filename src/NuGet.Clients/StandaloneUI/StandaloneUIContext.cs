@@ -102,5 +102,15 @@ namespace StandaloneUI
         {
             // no-op
         }
+
+        public override bool IsNuGetProjectUpgradeable(NuGetProject project)
+        {
+            return false;
+        }
+
+        public override IModalProgressDialogSession StartModalProgressDialog(string caption, ProgressDialogData initialData, INuGetUI uiService)
+        {
+            return new StandaloneProgressDialogSession(caption, initialData, uiService);
+        }
     }
 }

@@ -64,6 +64,8 @@
     </ApplicationDefinition>
     <Compile Include="SimpleSearchBox.cs" />
     <Compile Include="SimpleSearchBoxFactory.cs" />
+    <Compile Include="StandaloneDialogProgress.cs" />
+    <Compile Include="StandaloneProgressDialogSession.cs" />
     <Compile Include="StandaloneUIContext.cs" />
     <Compile Include="StandaloneUIContextFactory.cs" />
     <Compile Include="StandaloneUILogger.cs" />

@@ -34,6 +34,7 @@
             this.packageRestoreConsentCheckBox = new System.Windows.Forms.CheckBox();
             this.packageRestoreAutomaticCheckBox = new System.Windows.Forms.CheckBox();
             this.BindingRedirectsHeader = new System.Windows.Forms.Label();
+            this.enableExperimentalFeaturesCheckBox = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // skipBindingRedirects
@@ -65,15 +66,22 @@
             resources.ApplyResources(this.BindingRedirectsHeader, "BindingRedirectsHeader");
             this.BindingRedirectsHeader.Name = "BindingRedirectsHeader";
             // 
+            // enableExperimentalFeaturesCheckBox
+            // 
+            resources.ApplyResources(this.enableExperimentalFeaturesCheckBox, "enableExperimentalFeaturesCheckBox");
+            this.enableExperimentalFeaturesCheckBox.Name = "enableExperimentalFeaturesCheckBox";
+            this.enableExperimentalFeaturesCheckBox.UseVisualStyleBackColor = true;
+            // 
             // GeneralOptionControl
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.BindingRedirectsHeader);
-            this.Controls.Add(this.skipBindingRedirects);
+            this.Controls.Add(this.enableExperimentalFeaturesCheckBox);
             this.Controls.Add(this.PackageRestoreHeader);
             this.Controls.Add(this.packageRestoreConsentCheckBox);
             this.Controls.Add(this.packageRestoreAutomaticCheckBox);
+            this.Controls.Add(this.BindingRedirectsHeader);
+            this.Controls.Add(this.skipBindingRedirects);
             this.Name = "GeneralOptionControl";
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -87,5 +95,6 @@
         private System.Windows.Forms.CheckBox packageRestoreConsentCheckBox;
         private System.Windows.Forms.CheckBox packageRestoreAutomaticCheckBox;
         private System.Windows.Forms.Label BindingRedirectsHeader;
+        private System.Windows.Forms.CheckBox enableExperimentalFeaturesCheckBox;
     }
 }

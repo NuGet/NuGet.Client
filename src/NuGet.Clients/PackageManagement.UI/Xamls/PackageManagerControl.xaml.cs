@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -11,8 +12,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
-using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -48,6 +47,11 @@ namespace NuGet.PackageManagement.UI
         private bool _missingPackageStatus;
 
         private readonly INuGetUILogger _uiLogger;
+
+        // Initial to true so change detection logic is simple (since UI defaults to shown).
+        private bool _shouldShowUpgradeProject = true;
+        private bool _experimentalFeaturesEnabled;
+        private bool _nuGetProjectUpgradeCollapseDependencies;
 
         public PackageManagerModel Model { get; }
 
@@ -144,6 +148,11 @@ namespace NuGet.PackageManagement.UI
 
             Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged += Sources_PackageSourcesChanged;
 
+            _experimentalFeaturesEnabled = ExperimentalFeatures.IsEnabled;
+            UpdateUpgradeProjectVisibility();
+            Unloaded += PackageManagerUnloaded;
+            ExperimentalFeatures.EnabledChanged += ExperimentalFeaturesEnabledChanged;
+
             if (IsUILegalDisclaimerSuppressed())
             {
                 _legalDisclaimer.Visibility = Visibility.Collapsed;
@@ -221,6 +230,57 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private void UpdateUpgradeProjectVisibility()
+        {
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                var newValue = ShouldShowUpgradeProject();
+                if (newValue != _shouldShowUpgradeProject)
+                {
+                    _shouldShowUpgradeProject = newValue;
+                    _upgradeNuGetProject.Visibility = newValue ? Visibility.Visible : Visibility.Collapsed;
+                }
+            });
+        }
+
+        private bool ShouldShowUpgradeProject()
+        {
+            if (!_experimentalFeaturesEnabled)
+            {
+                return false;
+            }
+
+            // If user has turned it off, don't show
+            if (RegistrySettingUtility.GetBooleanSetting(Constants.SuppressUpgradePackagesConfigName))
+            {
+                return false;
+            }
+
+            // We don't currently support converting an entire solution
+            if (Model.IsSolution)
+            {
+                return false;
+            }
+
+            // We only support a single project
+            var projects = Model.Context.Projects.ToList();
+            return (projects.Count == 1) && Model.Context.IsNuGetProjectUpgradeable(projects[0]);
+        }
+
+        private void ExperimentalFeaturesEnabledChanged(object sender, EnabledChangedEventArgs enabledChangedEventArgs)
+        {
+            _experimentalFeaturesEnabled = enabledChangedEventArgs.Enabled;
+            UpdateUpgradeProjectVisibility();
+        }
+
+        private void PackageManagerUnloaded(object sender, RoutedEventArgs e)
+        {
+            Unloaded -= PackageManagerUnloaded;
+            ExperimentalFeatures.EnabledChanged -= ExperimentalFeaturesEnabledChanged;
+        }
+
         private static bool IsUILegalDisclaimerSuppressed()
         {
             return RegistrySettingUtility.GetBooleanSetting(Constants.SuppressUIDisclaimerRegistryName);
@@ -270,6 +330,7 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
+            _nuGetProjectUpgradeCollapseDependencies = settings.NuGetProjectUpgradeCollapseDependencies;
             _detailModel.Options.ShowPreviewWindow = settings.ShowPreviewWindow;
             _detailModel.Options.RemoveDependencies = settings.RemoveDependencies;
             _detailModel.Options.ForceRemove = settings.ForceRemove;
@@ -334,12 +395,13 @@ namespace NuGet.PackageManagement.UI
         }
 
         // Save the settings of this doc window in the UIContext. Note that the settings
-        // are not guaranteed to be persisted. We need to call Model.Context.SaveSettings()
+        // are not guaranteed to be persisted. We need to call Model.Context.PersistSettings()
         // to persist the settings.
         public void SaveSettings()
         {
             var settings = new UserSettings
             {
+                NuGetProjectUpgradeCollapseDependencies = _nuGetProjectUpgradeCollapseDependencies,
                 SourceRepository = SelectedSource?.SourceName,
                 ShowPreviewWindow = _detailModel.Options.ShowPreviewWindow,
                 RemoveDependencies = _detailModel.Options.RemoveDependencies,
@@ -720,6 +782,7 @@ namespace NuGet.PackageManagement.UI
 
             RefreshAvailableUpdatesCount();
             RefreshConsolidatablePackagesCount();
+            UpdateUpgradeProjectVisibility();
 
             _packageDetail?.Refresh();
         }
@@ -998,6 +1061,16 @@ namespace NuGet.PackageManagement.UI
             SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString, useCache: false);
             RefreshAvailableUpdatesCount();
             RefreshConsolidatablePackagesCount();
+        }
+
+        private async void UpgradeButton_Click(object sender, RoutedEventArgs e)
+        {
+            var project = Model.Context.Projects.FirstOrDefault();
+            Debug.Assert(project != null);
+
+            _nuGetProjectUpgradeCollapseDependencies = await
+                    UIActionEngine.UpgradeNuGetProjectAsync(Model.Context, Model.UIController, project,
+                    _nuGetProjectUpgradeCollapseDependencies);
         }
     }
 }

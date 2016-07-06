@@ -96,6 +96,12 @@ namespace NuGet.PackageManagement
         /// </summary>
         /// <param name="nuGetProject"></param>
         void SaveProject(NuGetProject nuGetProject);
+
+        /// <summary>
+        /// Unloads then reloads the specified project
+        /// </summary>
+        /// <param name="nuGetProject"></param>
+        void ReloadProject(NuGetProject nuGetProject);
     }
 
     public class NuGetProjectEventArgs : EventArgs

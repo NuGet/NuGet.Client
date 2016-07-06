@@ -28,6 +28,13 @@ namespace NuGet.PackageManagement.VisualStudio
         public const string DeploymentProjectTypeGuid = "{151d2e53-a2c4-4d7d-83fe-d05416ebd58e}";
         public const string CosmosProjectTypeGuid = "{471EC4BB-E47E-4229-A789-D1F5F83B52D4}";
         public const string ManagementPackProjectTypeGuid = "{d4b43eb3-688b-4eee-86bd-088f0b28abb3}";
+        public const string WindowsPhoneSilverlightProjectTypeGuid = "{C089C8C0-30E0-4E22-80C0-CE093F111A43}";
+        public const string WindowsPhone81ProjectTypeGuid = "{76F1466A-8B6D-4E39-A767-685A06062A39}";
+        public const string SilverlightProjectTypeGuid = "{A1591282-1198-4647-A2B1-27E5FF5F6F3B}";
+        public const string LightSwitchCsharpProjectTypeGuid = "{8BB0C5E8-0616-4F60-8E55-A43933E57E9C}";
+        public const string LightSwitchLsxtProjectTypeGuid = "{581633EB-B896-402F-8E60-36F3DA191C85}";
+
+
 
         // Copied from EnvDTE.Constants since that type can't be embedded
         public const string VsProjectItemKindPhysicalFile = "{6BB5F8EE-4483-11D3-8BCF-00C04F8EC28C}";
