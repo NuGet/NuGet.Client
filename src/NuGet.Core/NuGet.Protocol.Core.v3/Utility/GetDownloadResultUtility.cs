@@ -151,11 +151,11 @@ namespace NuGet.Protocol
                         logger.LogVerbose(
                             $"Acquired lock for the installation of {packageIdentity.Id} {packageIdentity.Version}");
 
-                        //logger.LogMinimal(string.Format(
-                        //    CultureInfo.CurrentCulture,
-                        //    Strings.Log_InstallingPackage,
-                        //    packageIdentity.Id,
-                        //    packageIdentity.Version));
+                        logger.LogMinimal(string.Format(
+                            CultureInfo.CurrentCulture,
+                            Packaging.Strings.Log_InstallingPackage,
+                            packageIdentity.Id,
+                            packageIdentity.Version));
 
                         cancellationToken.ThrowIfCancellationRequested();
 
