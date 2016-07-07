@@ -24,11 +24,19 @@ param (
 
 # For TeamCity - Incase any issue comes in this script fail the build. - Be default TeamCity returns exit code of 0 for all powershell even if it fails
 trap {
+    if ($env:TEAMCITY_VERSION) {
+        Write-Host "##teamcity[buildProblem description='$(Format-TeamCityMessage($_.ToString()))']"
+    }
+
     Write-Host "BUILD FAILED: $_" -ForegroundColor Red
     Write-Host "ERROR DETAILS:" -ForegroundColor Red
     Write-Host $_.Exception -ForegroundColor Red
     Write-Host ("`r`n" * 3)
     exit 1
+}
+
+function Format-TeamCityMessage([string]$Text) {
+    $Text.Replace("|", "||").Replace("'", "|'").Replace("[", "|[").Replace("]", "|]").Replace("`n", "|n").Replace("`r", "|r")
 }
 
 $CLIRoot=$PSScriptRoot
@@ -161,7 +169,7 @@ Trace-Log ('=' * 60)
 
 if ($BuildErrors) {
     $ErrorLines = $BuildErrors | %{ ">>> $($_.Exception.Message)" }
-    Error-Log "Build's completed with $($BuildErrors.Count) error(s):`r`n$($ErrorLines -join "`r`n")" -Fatal
+    Write-Error "Build's completed with $($BuildErrors.Count) error(s):`r`n$($ErrorLines -join "`r`n")" -ErrorAction Stop
 }
 
 Write-Host ("`r`n" * 3)

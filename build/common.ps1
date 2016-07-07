@@ -13,10 +13,6 @@ if ((Split-Path -Path $PSScriptRoot -Leaf) -eq "scripts") {
 $CLIRoot = Join-Path $NuGetClientRoot 'cli'
 $Nupkgs = Join-Path $NuGetClientRoot nupkgs
 $Artifacts = Join-Path $NuGetClientRoot artifacts
-$Intermediate = Join-Path $Artifacts obj
-
-$NuGetCoreSln = Join-Path $NuGetClientRoot 'NuGet.Core.sln'
-$NuGetClientSln = Join-Path $NuGetClientRoot 'NuGet.Client.sln'
 
 $DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
 $MSBuildRoot = Join-Path ${env:ProgramFiles(x86)} 'MSBuild\'
@@ -116,16 +112,14 @@ Function Invoke-BuildStep {
         finally {
             $sw.Stop()
             Reset-Colors
-            if ($completed) {
+            if (-not $err -and $completed) {
                 Trace-Log "[DONE +$(Format-ElapsedTime $sw.Elapsed)] $BuildStep"
             }
+            elseif (-not $err) {
+                Trace-Log "[STOPPED +$(Format-ElapsedTime $sw.Elapsed)] $BuildStep"
+            }
             else {
-                if (-not $err) {
-                    Trace-Log "[STOPPED +$(Format-ElapsedTime $sw.Elapsed)] $BuildStep"
-                }
-                else {
-                    Error-Log "[FAILED +$(Format-ElapsedTime $sw.Elapsed)] $BuildStep"
-                }
+                Error-Log "[FAILED +$(Format-ElapsedTime $sw.Elapsed)] $BuildStep"
             }
 
             if ($env:TEAMCITY_VERSION) {
@@ -170,13 +164,13 @@ Function Install-DotnetCLI {
     New-Item -ItemType Directory -Force -Path $CLIRoot | Out-Null
 
     $env:DOTNET_HOME=$CLIRoot
-
-    $installDotnet = Join-Path $CLIRoot "dotnet-install.ps1"
     $env:DOTNET_INSTALL_DIR=$NuGetClientRoot
 
-    wget 'https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0-preview2/scripts/obtain/dotnet-install.ps1' -OutFile 'cli/dotnet-install.ps1'
+    $installDotnet = Join-Path $CLIRoot "dotnet-install.ps1"
 
-    & cli/dotnet-install.ps1 -Channel preview -i $CLIRoot -Version 1.0.0-preview2-003121
+    wget 'https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0-preview2/scripts/obtain/dotnet-install.ps1' -OutFile $installDotnet
+
+    & $installDotnet -Channel preview -i $CLIRoot -Version 1.0.0-preview2-003121
 
     if (-not (Test-Path $DotNetExe)) {
         Error-Log "Unable to find dotnet.exe. The CLI install may have failed." -Fatal
@@ -564,12 +558,12 @@ Function Test-ClientsProjects {
         [string]$Configuration = $DefaultConfiguration,
         [string]$MSBuildVersion = $DefaultMSBuildVersion
     )
-    
+
     # We don't run command line tests on Dev15 as we don't build a nuget.exe for this version
     $testProjectsLocation = Join-Path $NuGetClientRoot test\NuGet.Clients.Tests
     $testProjects = Get-ChildItem $testProjectsLocation -Recurse -Filter '*.csproj' |
         %{ $_.FullName } |
-        ?{ -not $_.EndsWith('WebAppTest.csproj') -and 
+        ?{ -not $_.EndsWith('WebAppTest.csproj') -and
            -not ($_.EndsWith('NuGet.CommandLine.Test.csproj') -and ($MSBuildVersion -eq '15'))}
 
     $testProjects | Test-ClientProject -Configuration $Configuration -MSBuildVersion $MSBuildVersion
@@ -629,22 +623,23 @@ Function Invoke-ILMerge {
 
     Trace-Log 'Creating the ilmerged nuget.exe'
     $opts = , 'NuGet.exe'
+    $opts += "/lib:$buildArtifactsFolder"
     $opts += $buildArtifacts
     $opts += "/out:$Artifacts\NuGet.exe"
+
     if ($KeyFile) {
         $opts += "/delaysign"
         $opts += "/keyfile:$KeyFile"
     }
+
     if ($VerbosePreference) {
         $opts += '/log'
     }
-    Trace-Log "$ILMerge $opts"
 
-    pushd $buildArtifactsFolder
-    try {
-        & $ILMerge $opts 2>&1
-    }
-    finally {
-        popd
+    Trace-Log "$ILMerge $opts"
+    & $ILMerge $opts 2>&1
+
+    if (-not $?) {
+        Error-Log "ILMerge has failed. Code: $LASTEXITCODE"
     }
 }
