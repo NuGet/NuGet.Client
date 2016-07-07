@@ -28,13 +28,12 @@ namespace NuGet.Protocol
            ILogger logger,
            CancellationToken token)
         {
-            // XXXXXXXXXXX This following assumption is false we constructed a Uri but we haven't attempted to use it yet
             // Uri is not null, so the package exists in the source
             // Now, check if it is in the global packages folder, before, getting the package stream
 
             DownloadResourceResult packageFromGlobalPackages = null;
 
-            //TODO: This code should respect -NoCache option and not read packages from the global packages folder
+            //TODO: NuGet/Home#1406 This code should respect -NoCache option and not read packages from the global packages folder
             //Note cacheContext.NoCache indicates that packages are not written to the global packages folder
             packageFromGlobalPackages = GlobalPackagesFolderUtility.GetPackage(identity, settings);
 
