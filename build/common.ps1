@@ -410,6 +410,13 @@ Function Build-CoreProjects {
         Restore-XProjects $XProjectsLocation -Fast:$Fast
     }
 
+    Trace-Log "Updating shared assembly info for xprojs"
+    cd Shared\UpdateAssemblyInfo
+    & $DotNetExe restore 
+    & $DotNetExe run
+    cd ..\..
+    Trace-Log "Finished updating shared assembly info"
+
     $xprojects = Find-XProjects $XProjectsLocation
     $xprojects | Invoke-DotnetPack -config $Configuration -label $ReleaseLabel -build $BuildNumber -out $Artifacts
 
