@@ -133,9 +133,9 @@ namespace NuGet.Test
                     deleteOnRestartManager);
 
                 await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity,
-                    resolutionContext, new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
                 await nuGetPackageManager.InstallPackageAsync(projectB, packageIdentity,
-                    resolutionContext, new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 var packageRestoreManager = new PackageRestoreManager(
                     sourceRepositoryProvider,
@@ -249,9 +249,9 @@ namespace NuGet.Test
                     deleteOnRestartManager);
 
                 await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity,
-                    resolutionContext, new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
                 await nuGetPackageManager.InstallPackageAsync(projectB, packageIdentity,
-                    resolutionContext, new TestNuGetProjectContext(), new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 var packageRestoreManager = new PackageRestoreManager(
                     sourceRepositoryProvider,
@@ -305,9 +305,9 @@ namespace NuGet.Test
                     deleteOnRestartManager);
 
                 await nuGetPackageManager.InstallPackageAsync(projectA, jQueryValidation,
-                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
                 await nuGetPackageManager.InstallPackageAsync(projectB, jQueryValidation,
-                    resolutionContext, testNuGetProjectContext, new SourceCacheContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                    resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 var testPackage1 = new PackageIdentity("package1A", new NuGetVersion("1.0.0"));
                 var testPackage2 = new PackageIdentity("package1B", new NuGetVersion("1.0.0"));

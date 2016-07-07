@@ -525,11 +525,11 @@ namespace NuGet.VisualStudio
             // install the package
             if (package.Version == null)
             {
-                await packageManager.InstallPackageAsync(nuGetProject, package.Id, resolution, projectContext, new SourceCacheContext(), sources, Enumerable.Empty<SourceRepository>(), token);
+                await packageManager.InstallPackageAsync(nuGetProject, package.Id, resolution, projectContext, sources, Enumerable.Empty<SourceRepository>(), token);
             }
             else
             {
-                await packageManager.InstallPackageAsync(nuGetProject, package, resolution, projectContext, new SourceCacheContext(), sources, Enumerable.Empty<SourceRepository>(), token);
+                await packageManager.InstallPackageAsync(nuGetProject, package, resolution, projectContext, sources, Enumerable.Empty<SourceRepository>(), token);
             }
         }
 

@@ -262,7 +262,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 else
                 {
                     // Execute project actions by Package Manager
-                    await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this, new SourceCacheContext(), Token);
+                    await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this, Token);
                 }
             }
             else

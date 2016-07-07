@@ -201,11 +201,44 @@ namespace NuGet.PackageManagement
         /// <paramref name="nuGetProjectContext" /> are used in the process.
         /// </summary>
         public Task InstallPackageAsync(NuGetProject nuGetProject, string packageId, ResolutionContext resolutionContext,
+            INuGetProjectContext nuGetProjectContext, SourceRepository primarySourceRepository,
+            IEnumerable<SourceRepository> secondarySources, CancellationToken token)
+        {
+            using (var cacheContext = new SourceCacheContext())
+            {
+                return InstallPackageAsync(nuGetProject, packageId, resolutionContext, nuGetProjectContext, cacheContext,
+                    new List<SourceRepository> { primarySourceRepository }, secondarySources, token);
+            }
+        }
+
+        /// <summary>
+        /// Installs the latest version of the given <paramref name="packageId" /> to NuGetProject
+        /// <paramref name="nuGetProject" /> <paramref name="resolutionContext" /> and
+        /// <paramref name="nuGetProjectContext" /> are used in the process.
+        /// </summary>
+        public Task InstallPackageAsync(NuGetProject nuGetProject, string packageId, ResolutionContext resolutionContext,
             INuGetProjectContext nuGetProjectContext, SourceCacheContext cacheContext, SourceRepository primarySourceRepository,
             IEnumerable<SourceRepository> secondarySources, CancellationToken token)
         {
             return InstallPackageAsync(nuGetProject, packageId, resolutionContext, nuGetProjectContext, cacheContext,
                 new List<SourceRepository> { primarySourceRepository }, secondarySources, token);
+        }
+
+        /// <summary>
+        /// Installs the latest version of the given
+        /// <paramref name="packageId" /> to NuGetProject <paramref name="nuGetProject" />
+        /// <paramref name="resolutionContext" /> and <paramref name="nuGetProjectContext" /> are used in the process.
+        /// </summary>
+        public async Task InstallPackageAsync(NuGetProject nuGetProject, string packageId, ResolutionContext resolutionContext,
+            INuGetProjectContext nuGetProjectContext, IEnumerable<SourceRepository> primarySources,
+            IEnumerable<SourceRepository> secondarySources, CancellationToken token)
+        {
+            using (var cacheContext = new SourceCacheContext())
+            {
+                await InstallPackageAsync(nuGetProject, packageId, resolutionContext,
+                    nuGetProjectContext, cacheContext, primarySources,
+                    secondarySources, token);
+            }
         }
 
         /// <summary>
@@ -243,11 +276,42 @@ namespace NuGet.PackageManagement
         /// <paramref name="resolutionContext" /> and <paramref name="nuGetProjectContext" /> are used in the process.
         /// </summary>
         public Task InstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, ResolutionContext resolutionContext,
+            INuGetProjectContext nuGetProjectContext, SourceRepository primarySourceRepository,
+            IEnumerable<SourceRepository> secondarySources, CancellationToken token)
+        {
+            using (var cacheContext = new SourceCacheContext())
+            {
+                return InstallPackageAsync(nuGetProject, packageIdentity, resolutionContext, nuGetProjectContext, cacheContext,
+                    new List<SourceRepository> { primarySourceRepository }, secondarySources, token);
+            }
+        }
+
+        /// <summary>
+        /// Installs given <paramref name="packageIdentity" /> to NuGetProject <paramref name="nuGetProject" />
+        /// <paramref name="resolutionContext" /> and <paramref name="nuGetProjectContext" /> are used in the process.
+        /// </summary>
+        public Task InstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, ResolutionContext resolutionContext,
             INuGetProjectContext nuGetProjectContext, SourceCacheContext cacheContext, SourceRepository primarySourceRepository,
             IEnumerable<SourceRepository> secondarySources, CancellationToken token)
         {
             return InstallPackageAsync(nuGetProject, packageIdentity, resolutionContext, nuGetProjectContext, cacheContext,
                 new List<SourceRepository> { primarySourceRepository }, secondarySources, token);
+        }
+
+        /// <summary>
+        /// Installs given <paramref name="packageIdentity" /> to NuGetProject <paramref name="nuGetProject" />
+        /// <paramref name="resolutionContext" /> and <paramref name="nuGetProjectContext" /> are used in the process.
+        /// </summary>
+        public async Task InstallPackageAsync(NuGetProject nuGetProject, PackageIdentity packageIdentity, ResolutionContext resolutionContext,
+            INuGetProjectContext nuGetProjectContext, IEnumerable<SourceRepository> primarySources,
+            IEnumerable<SourceRepository> secondarySources, CancellationToken token)
+        {
+            using (var cacheContext = new SourceCacheContext())
+            {
+                await InstallPackageAsync(nuGetProject, packageIdentity, resolutionContext,
+                   nuGetProjectContext, cacheContext, primarySources,
+                   secondarySources, token);
+            }
         }
 
         /// <summary>
@@ -281,7 +345,7 @@ namespace NuGet.PackageManagement
             var nuGetProjectActions = await PreviewUninstallPackageAsync(nuGetProject, packageId, uninstallationContext, nuGetProjectContext, token);
 
             // Step-2 : Execute all the nuGetProjectActions
-            await ExecuteNuGetProjectActionsAsync(nuGetProject, nuGetProjectActions, nuGetProjectContext, new SourceCacheContext(), token);
+            await ExecuteNuGetProjectActionsAsync(nuGetProject, nuGetProjectActions, nuGetProjectContext, token);
         }
 
         /// <summary>
@@ -1616,6 +1680,28 @@ namespace NuGet.PackageManagement
             catch (NuGetProtocolException)
             {
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Executes the list of <paramref name="nuGetProjectActions" /> on <paramref name="nuGetProject" /> , which is
+        /// likely obtained by calling into
+        /// <see
+        ///     cref="PreviewInstallPackageAsync(NuGetProject,string,ResolutionContext,INuGetProjectContext,SourceRepository,IEnumerable{SourceRepository},CancellationToken)" />
+        /// <paramref name="nuGetProjectContext" /> is used in the process.
+        /// </summary>
+        public async Task ExecuteNuGetProjectActionsAsync(NuGetProject nuGetProject,
+            IEnumerable<NuGetProjectAction> nuGetProjectActions,
+            INuGetProjectContext nuGetProjectContext,
+            CancellationToken token)
+        {
+            using (var cacheContext = new SourceCacheContext())
+            {
+                await ExecuteNuGetProjectActionsAsync(nuGetProject,
+                    nuGetProjectActions,
+                    nuGetProjectContext,
+                    cacheContext,
+                    token);
             }
         }
 

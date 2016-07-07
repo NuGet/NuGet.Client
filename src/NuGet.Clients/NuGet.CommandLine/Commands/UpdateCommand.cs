@@ -315,7 +315,6 @@ namespace NuGet.CommandLine
                 nugetProject,
                 projectActions,
                 project.NuGetProjectContext,
-                new SourceCacheContext(),
                 CancellationToken.None);
 
             project.Save();
