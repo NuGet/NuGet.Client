@@ -5330,43 +5330,4 @@ nuget locals global-packages -list</value>
   <data name="CommandDirectDownload" xml:space="preserve">
     <value>Download directly without populating the global package cache</value>
   </data>
-  <data name="CommandDirectDownload_chs" xml:space="preserve">
-    <value>Download directly without populating the global package cache</value>
-  </data>
-  <data name="CommandDirectDownload_cht" xml:space="preserve">
-    <value>Download directly without populating the global package cache</value>
-  </data>
-  <data name="CommandDirectDownload_csy" xml:space="preserve">
-    <value>Download directly without populating the global package cache</value>
-  </data>
-  <data name="CommandDirectDownload_deu" xml:space="preserve">
-    <value>Download directly without populating the global package cache</value>
-  </data>
-  <data name="CommandDirectDownload_esp" xml:space="preserve">
-    <value>Download directly without populating the global package cache</value>
-  </data>
-  <data name="CommandDirectDownload_fra" xml:space="preserve">
-    <value>Download directly without populating the global package cache</value>
-  </data>
-  <data name="CommandDirectDownload_ita" xml:space="preserve">
-    <value>Download directly without populating the global package cache</value>
-  </data>
-  <data name="CommandDirectDownload_jpn" xml:space="preserve">
-    <value>Download directly without populating the global package cache</value>
-  </data>
-  <data name="CommandDirectDownload_kor" xml:space="preserve">
-    <value>Download directly without populating the global package cache</value>
-  </data>
-  <data name="CommandDirectDownload_plk" xml:space="preserve">
-    <value>Download directly without populating the global package cache</value>
-  </data>
-  <data name="CommandDirectDownload_ptb" xml:space="preserve">
-    <value>Download directly without populating the global package cache</value>
-  </data>
-  <data name="CommandDirectDownload_rus" xml:space="preserve">
-    <value>Download directly without populating the global package cache</value>
-  </data>
-  <data name="CommandDirectDownload_trk" xml:space="preserve">
-    <value>Download directly without populating the global package cache</value>
-  </data>
 </root>
