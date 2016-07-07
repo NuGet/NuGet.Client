@@ -562,15 +562,23 @@ namespace NuGet.CommandLine
             }
 
             // Project.json is any directory
-            if (Directory.GetFiles(
-                directory,
-                $"*{ProjectJsonPathUtilities.ProjectConfigFileName}",
-                SearchOption.AllDirectories).Length > 0)
+            try
             {
-                // V3 recursive project.json search
-                packageRestoreInputs.RestoreV3Context.Inputs.Add(directory);
+                if (Directory.EnumerateFiles(directory, $"*{ProjectJsonPathUtilities.ProjectConfigFileName}", SearchOption.TopDirectoryOnly).Any())
+                {
+                    // V3 recursive project.json search
+                    packageRestoreInputs.RestoreV3Context.Inputs.Add(directory);
 
-                return;
+                    return;
+                }
+            }
+            catch (UnauthorizedAccessException e)
+            {
+                // Access to a subpath of the directory is denied.
+                var resourceMessage = LocalizedResourceManager.GetString("Error_UnableToLocateRestoreTarget_Because");
+                var message = string.Format(CultureInfo.CurrentCulture, resourceMessage, directory, e.Message);
+
+                throw new InvalidOperationException(message);
             }
 
             // The directory did not contain a valid target, fail!

@@ -6082,6 +6082,9 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="Error_UnableToLocateRestoreTarget" xml:space="preserve">
     <value>The folder '{0}' does not contain an msbuild solution, packages.config, or project.json file to restore.</value>
   </data>
+  <data name="Error_UnableToLocateRestoreTarget_Because" xml:space="preserve">
+    <value>Failed to find an msbuild solution, packages.config, or project.json file in the folder '{0}' because {1}</value>
+  </data>
   <data name="PushCommandTimeoutError" xml:space="preserve">
     <value>Pushing took too long. You can change the default timeout of 300 seconds by using the -Timeout &lt;seconds&gt; option with the push command.</value>
   </data>
