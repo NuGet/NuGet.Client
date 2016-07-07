@@ -607,6 +607,9 @@ Function Invoke-ILMerge {
         [string]$Configuration = $DefaultConfiguration,
         [string]$KeyFile
     )
+    $nugetIntermediateExe='NuGet.intermediate.exe'
+    $nugetIntermediatePdb='NuGet.intermediate.pdb'
+    $nugetCore='NuGet.Core.dll'
     $buildArtifactsFolder = [io.path]::combine($Artifacts, 'NuGet.CommandLine', $Configuration)
     $ignoreList = Read-FileList (Join-Path $buildArtifactsFolder '.mergeignore')
     $buildArtifacts = Get-ChildItem $buildArtifactsFolder -Exclude $ignoreList | %{ $_.Name }
@@ -621,16 +624,12 @@ Function Invoke-ILMerge {
         Error-Log "Missing build artifacts listed in include list: $($notFound -join ', ')"
     }
 
-    Trace-Log 'Creating the ilmerged nuget.exe'
+    Trace-Log 'Creating the intermediate ilmerged nuget.exe'
     $opts = , 'NuGet.exe'
     $opts += "/lib:$buildArtifactsFolder"
     $opts += $buildArtifacts
-    $opts += "/out:$Artifacts\NuGet.exe"
-
-    if ($KeyFile) {
-        $opts += "/delaysign"
-        $opts += "/keyfile:$KeyFile"
-    }
+    $opts += "/out:$buildArtifactsFolder\$nugetIntermediateExe"
+    $opts += "/internalize"
 
     if ($VerbosePreference) {
         $opts += '/log'
@@ -640,6 +639,30 @@ Function Invoke-ILMerge {
     & $ILMerge $opts 2>&1
 
     if (-not $?) {
+        Error-Log "ILMerge has failed during the intermediate stage. Code: $LASTEXITCODE"
+    }
+
+    $opts2 = , $nugetIntermediateExe
+    $opts2 += "/lib:$buildArtifactsFolder"
+    $opts2 += $nugetCore
+    if ($KeyFile) {
+        $opts2 += "/delaysign"
+        $opts2 += "/keyfile:$KeyFile"
+    }
+
+    $opts2 += "/out:$Artifacts\NuGet.exe"
+    
+    if ($VerbosePreference) {
+        $opts2 += '/log'
+    }
+    
+    Trace-Log "$ILMerge $opts2"
+    & $ILMerge $opts2 2>&1
+    
+    if (-not $?) {
         Error-Log "ILMerge has failed. Code: $LASTEXITCODE"
     }
-}
+        
+    Remove-Item $buildArtifactsFolder\$nugetIntermediateExe
+    Remove-Item $buildArtifactsFolder\$nugetIntermediatePdb
+    }
