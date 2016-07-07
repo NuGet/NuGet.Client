@@ -129,105 +129,20 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(settings));
             }
 
-            var packagesFolder = PackagesDirectory;
+            var versionFolderPathContext = new VersionFolderPathContext(
+                packageIdentity,
+                PackagesDirectory,
+                logger,
+                packageSaveMode: PackageSaveMode.Nupkg | PackageSaveMode.Nuspec,
+                xmlDocFileSaveMode: PackageExtractionBehavior.XmlDocFileSaveMode);
 
-            var targetPath = PackagesDirectory;
-            var packageName = packageIdentity.ToString();
-            var targetNupkg = Path.Combine(targetPath, packageName);
-
-            logger.LogVerbose(
-                $"Acquiring lock for the installation of {packageIdentity.Id} {packageIdentity.Version}");
-
-            // Acquire the lock on a nukpg before we extract it to prevent the race condition when multiple
-            // processes are extracting to the same destination simultaneously
-            await ConcurrencyUtilities.ExecuteWithFileLockedAsync(targetNupkg,
-                action: async cancellationToken =>
-                {
-                // If this is the first process trying to install the target nupkg, go ahead
-                // After this process successfully installs the package, all other processes
-                // waiting on this lock don't need to install it again.
-                if (!File.Exists(targetNupkg))
-                    {
-                        logger.LogVerbose(
-                            $"Acquired lock for the installation of {packageIdentity.Id} {packageIdentity.Version}");
-
-                        logger.LogMinimal(string.Format(
-                            CultureInfo.CurrentCulture,
-                            Packaging.Strings.Log_InstallingPackage,
-                            packageIdentity.Id,
-                            packageIdentity.Version));
-
-                        cancellationToken.ThrowIfCancellationRequested();
-
-                        if (Directory.Exists(targetPath))
-                        {
-                        // If we had a broken restore, clean out the files first
-                        var info = new DirectoryInfo(targetPath);
-
-                            foreach (var file in info.GetFiles())
-                            {
-                                file.Delete();
-                            }
-
-                            foreach (var dir in info.GetDirectories())
-                            {
-                                dir.Delete(true);
-                            }
-                        }
-                        else
-                        {
-                            Directory.CreateDirectory(targetPath);
-                        }
-
-                        var targetTempNupkg = Path.Combine(targetPath, Path.GetRandomFileName());
-
-                        // Extract the nupkg
-                        using (var nupkgStream = new FileStream(
-                            targetTempNupkg,
-                            FileMode.Create,
-                            FileAccess.ReadWrite,
-                            FileShare.ReadWrite | FileShare.Delete,
-                            bufferSize: 4096,
-                            useAsync: true))
-                        {
-                            await packageStream.CopyToAsync(nupkgStream, bufferSize: 8192, cancellationToken: token);
-                            nupkgStream.Seek(0, SeekOrigin.Begin);
-
-                            using (var packageReader = new PackageArchiveReader(nupkgStream))
-                            {
-                            }
-                        }
-
-                        // Now rename the tmp file
-                        File.Move(targetTempNupkg, targetNupkg);
-
-                        logger.LogVerbose($"Completed direct download of {packageIdentity.Id} {packageIdentity.Version}");
-                    }
-                    else
-                    {
-                        logger.LogVerbose("Lock not required - Package already installed "
-                                            + $"{packageIdentity.Id} {packageIdentity.Version}");
-                    }
-
-                    return 0;
-                },
+            await PackageExtractor.InstallFromSourceAsync(
+                stream => packageStream.CopyToAsync(stream, bufferSize: 8192, cancellationToken: token),
+                versionFolderPathContext,
                 token: token);
 
-            var package = GetDirectPackage(packageIdentity, PackagesDirectory, packageName);
-            Debug.Assert(package.PackageStream.CanSeek);
-            Debug.Assert(package.PackageReader != null);
-
-            return package;
-        }
-
-        private static DownloadResourceResult GetDirectPackage(PackageIdentity packageIdentity, string PackagesDirectory, string packageName)
-        {
-            if (packageIdentity == null)
-            {
-                throw new ArgumentNullException(nameof(packageIdentity));
-            }
-
-            string path = Path.Combine(PackagesDirectory, packageName);
+            var defaultPackagePathResolver = new VersionFolderPathResolver(PackagesDirectory);
+            var path = defaultPackagePathResolver.GetPackageFilePath(packageIdentity.Id, packageIdentity.Version);
 
             if (File.Exists(path))
             {
