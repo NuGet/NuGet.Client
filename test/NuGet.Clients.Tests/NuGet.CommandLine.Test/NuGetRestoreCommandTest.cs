@@ -915,22 +915,29 @@ EndProject");
 
         /// <summary>
         /// Tests two subsequent restores, with different combinations of -PackageSaveMode. This
-        /// test throey should test all possible combinations.
+        /// test should try all possible combinations.
         /// </summary>
         [Theory]
-        [InlineData(PackageSaveMode.None, PackageSaveMode.Nupkg)]
-        [InlineData(PackageSaveMode.None, PackageSaveMode.Nuspec)]
-        [InlineData(PackageSaveMode.None, PackageSaveMode.Nupkg | PackageSaveMode.Nuspec)]
+        [InlineData(PackageSaveMode.Defaultv2, PackageSaveMode.Defaultv2)]
+        [InlineData(PackageSaveMode.Defaultv2, PackageSaveMode.Nupkg)]
+        [InlineData(PackageSaveMode.Defaultv2, PackageSaveMode.Nuspec)]
+        [InlineData(PackageSaveMode.Defaultv2, PackageSaveMode.Nupkg | PackageSaveMode.Nuspec)]
+        
+        [InlineData(PackageSaveMode.Nupkg, PackageSaveMode.Defaultv2)]
         [InlineData(PackageSaveMode.Nupkg, PackageSaveMode.Nupkg)]
         [InlineData(PackageSaveMode.Nupkg, PackageSaveMode.Nuspec)]
         [InlineData(PackageSaveMode.Nupkg, PackageSaveMode.Nupkg | PackageSaveMode.Nuspec)]
+        
+        [InlineData(PackageSaveMode.Nuspec, PackageSaveMode.Defaultv2)]
         [InlineData(PackageSaveMode.Nuspec, PackageSaveMode.Nupkg)]
         [InlineData(PackageSaveMode.Nuspec, PackageSaveMode.Nuspec)]
         [InlineData(PackageSaveMode.Nuspec, PackageSaveMode.Nupkg | PackageSaveMode.Nuspec)]
+        
+        [InlineData(PackageSaveMode.Nupkg | PackageSaveMode.Nuspec, PackageSaveMode.Defaultv2)]
         [InlineData(PackageSaveMode.Nupkg | PackageSaveMode.Nuspec, PackageSaveMode.Nupkg)]
         [InlineData(PackageSaveMode.Nupkg | PackageSaveMode.Nuspec, PackageSaveMode.Nuspec)]
         [InlineData(PackageSaveMode.Nupkg | PackageSaveMode.Nuspec, PackageSaveMode.Nupkg | PackageSaveMode.Nuspec)]
-        public void RestoreCommand_PackageSaveMode(PackageSaveMode firstRestore, PackageSaveMode secondRestore)
+        public void RestoreCommand_WithSubsequentRestores_PackageSaveModeIsObserved(PackageSaveMode firstRestore, PackageSaveMode secondRestore)
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -962,33 +969,32 @@ EndProject");
                 Assert.Equal(expectedNuspecFileBExists, File.Exists(nuspecFileB));
                 Assert.Equal(expectedContentBExists, File.Exists(contentFileB));
 
-                if (firstRestore != PackageSaveMode.None)
+                // First restore.
+                if (firstRestore.HasFlag(PackageSaveMode.Nupkg))
                 {
-                    if (firstRestore.HasFlag(PackageSaveMode.Nupkg))
-                    {
-                        expectedPackageFileAExists = true;
-                        expectedPackageFileBExists = true;
-                    }
-
-                    if (firstRestore.HasFlag(PackageSaveMode.Nuspec))
-                    {
-                        expectedNuspecFileAExists = true;
-                        expectedNuspecFileBExists = true;
-                    }
-
-                    expectedContentAExists = true;
-                    expectedContentBExists = true;
-
-                    // First restore
-                    var r1 = CommandRunner.Run(
-                        nugetexe,
-                        workingPath,
-                        "restore -Source " + repositoryPath + " -PackageSaveMode " + firstRestore.ToString().Replace(", ", ";"),
-                        waitForExit: true);
-
-                    Assert.Equal(0, r1.Item1);
+                    expectedPackageFileAExists = true;
+                    expectedPackageFileBExists = true;
                 }
 
+                if (firstRestore.HasFlag(PackageSaveMode.Nuspec))
+                {
+                    expectedNuspecFileAExists = true;
+                    expectedNuspecFileBExists = true;
+                }
+
+                expectedContentAExists = true;
+                expectedContentBExists = true;
+                
+                var packageSaveMode1 = firstRestore == PackageSaveMode.Defaultv2 ?
+                    string.Empty :
+                    " -PackageSaveMode " + firstRestore.ToString().Replace(", ", ";");
+                var r1 = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    "restore -Source " + repositoryPath + packageSaveMode1,
+                    waitForExit: true);
+
+                Assert.Equal(0, r1.Item1);
                 Assert.Equal(expectedPackageFileAExists, File.Exists(packageFileA));
                 Assert.Equal(expectedNuspecFileAExists, File.Exists(nuspecFileA));
                 Assert.Equal(expectedContentAExists, File.Exists(contentFileA));
@@ -996,6 +1002,7 @@ EndProject");
                 Assert.Equal(expectedNuspecFileBExists, File.Exists(nuspecFileB));
                 Assert.Equal(expectedContentBExists, File.Exists(contentFileB));
 
+                // Second restore.
                 if (secondRestore.HasFlag(PackageSaveMode.Nupkg))
                 {
                     expectedPackageFileAExists = true;
@@ -1012,10 +1019,13 @@ EndProject");
                 expectedContentBExists = true;
 
                 // Second restore
+                var packageSaveMode2 = secondRestore == PackageSaveMode.Defaultv2 ?
+                    string.Empty :
+                    " -PackageSaveMode " + secondRestore.ToString().Replace(", ", ";");
                 var r2 = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    "restore -Source " + repositoryPath + " -PackageSaveMode " + secondRestore.ToString().Replace(", ", ";"),
+                    "restore -Source " + repositoryPath + packageSaveMode2,
                     waitForExit: true);
 
                 Assert.Equal(0, r2.Item1);
