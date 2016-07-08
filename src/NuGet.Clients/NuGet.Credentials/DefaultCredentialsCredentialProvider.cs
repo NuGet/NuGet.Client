@@ -46,7 +46,7 @@ namespace NuGet.Credentials
             bool nonInteractive,
             CancellationToken cancellationToken)
         {
-            if (isRetry || !PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders)
+            if (isRetry)
             {
                 return Task.FromResult(new CredentialResponse(CredentialStatus.ProviderNotApplicable));
             }

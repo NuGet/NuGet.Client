@@ -94,8 +94,11 @@ namespace NuGet.Credentials
 
                 if (response.IsValid)
                 {
-                    var networkCredential = new NetworkCredential(response.Username, response.Password);
-                    var result = new AuthTypeFilteredCredentials(networkCredential, response.AuthTypeFilter);
+                    ICredentials result = new NetworkCredential(response.Username, response.Password);
+                    if (response.AuthTypes != null)
+                    {
+                        result = new AuthTypeFilteredCredentials(result, response.AuthTypes);
+                    }
 
                     taskResponse = new CredentialResponse(result, CredentialStatus.Success);
                 }

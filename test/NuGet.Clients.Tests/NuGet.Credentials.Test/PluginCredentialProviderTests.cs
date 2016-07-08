@@ -217,7 +217,7 @@ namespace NuGet.Credentials.Test
             var isRetry = true;
             var nonInteractive = true;
             _mockProvider.Setup(x => x.Execute(It.IsAny<PluginCredentialRequest>(), It.IsAny<CancellationToken>()))
-                .Returns(new PluginCredentialResponse() { Password = "p", AuthTypeFilter = new[] { "basic" } });
+                .Returns(new PluginCredentialResponse() { Password = "p", AuthTypes = new[] { "basic" } });
 
             // Act
             var result = await provider.Object.GetAsync(

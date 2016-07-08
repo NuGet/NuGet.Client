@@ -394,11 +394,14 @@ namespace NuGetVSExtension
             if (vstsProvider != null)
             {
                 credentialProviders.Add(vstsProvider);
+                if (PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders)
+                {
+                    credentialProviders.Add(new DefaultCredentialsCredentialProvider());
+                }
             }
 
             var webProxy = (IVsWebProxy)GetService(typeof(SVsWebProxy));
             Debug.Assert(webProxy != null);
-            credentialProviders.Add(new DefaultCredentialsCredentialProvider());
             credentialProviders.Add(new VisualStudioCredentialProvider(webProxy));
             return credentialProviders;
         }

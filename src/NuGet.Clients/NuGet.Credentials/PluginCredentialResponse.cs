@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NuGet.Credentials
 {
@@ -17,9 +18,21 @@ namespace NuGet.Credentials
 
         public string Message { get; set; }
 
-        public IList<string> AuthTypeFilter { get; set; }
+        /// <summary>
+        /// Gets or sets the list of authentication types this credential is applicable to. Useful values include
+        /// <c>basic</c>, <c>digest</c>, <c>negotiate</c>, and <c>ntlm</c>
+        /// </summary>
+        public IList<string> AuthTypes { get; set; }
 
-        public bool IsValid => !String.IsNullOrWhiteSpace(Username) || !String.IsNullOrWhiteSpace(Password);
+        /// <summary>
+        /// Gets a value indicating whether the provider returnd a valid response.
+        /// </summary>
+        /// <remarks>
+        /// Either Username or Password (or both) must be set, and AuthTypes must either be null or contain at least
+        /// one element
+        /// </remarks>
+        public bool IsValid => (!String.IsNullOrWhiteSpace(Username) || !String.IsNullOrWhiteSpace(Password))
+                               && (AuthTypes == null || AuthTypes.Any());
     }
 
     public enum PluginCredentialResponseExitCode
