@@ -13,7 +13,6 @@ using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Packaging;
 using NuGet.Packaging.PackageExtraction;
-using System.Diagnostics;
 
 namespace NuGet.Protocol
 {

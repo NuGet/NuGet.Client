@@ -11,7 +11,6 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Resolver;
 using NuGet.Versioning;
-using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
