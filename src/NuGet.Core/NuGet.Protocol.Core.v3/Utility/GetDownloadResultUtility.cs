@@ -61,21 +61,21 @@ namespace NuGet.Protocol
                             if (cacheContext.NoCache)
                             {
                                 return await AddPackageDirectAsync(
-                                identity,
-                                packageStream,
-                                settings,
-                                cacheContext.GeneratedTempFolder,
-                                logger,
-                                token);
+                                    identity,
+                                    packageStream,
+                                    settings,
+                                    cacheContext.GeneratedTempFolder,
+                                    logger,
+                                    token);
                             }
                             else
                             {
                                 return await GlobalPackagesFolderUtility.AddPackageAsync(
-                                identity,
-                                packageStream,
-                                settings,
-                                logger,
-                                token);
+                                    identity,
+                                    packageStream,
+                                    settings,
+                                    logger,
+                                    token);
                             }
                         },
                         logger,
