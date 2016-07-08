@@ -60,15 +60,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 // Convert source into a PackageSource
                 PackageSource packageSource = new PackageSource(Source);
 
-                // Check if the source is a known source 
-                var sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
-                var packageSources = sourceRepositoryProvider?.PackageSourceProvider?.LoadPackageSources();
-
                 // Look through all available sources (including those disabled) by matching source name and url
-                var matchingSource = packageSources
-                    ?.Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, Source) ||
-                                 StringComparer.OrdinalIgnoreCase.Equals(p.Source, Source))
-                    .FirstOrDefault();
+                var matchingSource = GetMatchingSource(Source);
 
                 // Check if the source is a valid http or local source
                 if (packageSource.IsHttp && packageSource.TrySourceAsUri == null || packageSource.IsLocal && !System.IO.Directory.Exists(packageSource.Source))

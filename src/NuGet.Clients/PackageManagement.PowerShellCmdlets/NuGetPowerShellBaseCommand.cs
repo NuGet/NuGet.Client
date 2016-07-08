@@ -26,6 +26,7 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using ExecutionContext = NuGet.ProjectManagement.ExecutionContext;
+using NuGet.Configuration;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -274,25 +275,32 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         #region Cmdlets base APIs
 
+        protected PackageSource GetMatchingSource(string source)
+        {
+            var packageSources = _sourceRepositoryProvider?.PackageSourceProvider?.LoadPackageSources();
+            // Look through all available sources (including those disabled) by matching source name and url
+            var matchingSource = packageSources
+                ?.Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, source) ||
+                             StringComparer.OrdinalIgnoreCase.Equals(p.Source, source))
+                .FirstOrDefault();
+
+            return matchingSource;
+        }
+
+
         /// <summary>
         /// Initializes source repositories for PowerShell cmdlets, based on config, source string, and/or host active source property value.
         /// </summary>
         /// <param name="source">The source string specified by -Source switch.</param>
         protected void UpdateActiveSourceRepository(string source)
         {
-            var packageSources = _sourceRepositoryProvider?.PackageSourceProvider?.LoadPackageSources();
-
             // If source string is not specified, get the current active package source from the host
             source = string.IsNullOrEmpty(source) ? (string)GetPropertyValueFromHost(ActivePackageSourceKey) : source;
 
             if (!string.IsNullOrEmpty(source))
             {
-                // Look through all available sources (including those disabled) by matching source name and url
-                var matchingSource = packageSources
-                    ?.Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, source) ||
-                                 StringComparer.OrdinalIgnoreCase.Equals(p.Source, source))
-                    .FirstOrDefault();
-
+                // Check if the source is a known source
+                var matchingSource = GetMatchingSource(source);
                 if (matchingSource != null)
                 {
                     _activeSourceRepository = _sourceRepositoryProvider?.CreateRepository(matchingSource);
