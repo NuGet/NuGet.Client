@@ -21,6 +21,29 @@ namespace NuGet.PackageManagement.VisualStudio.Test
     public class ProjectKNuGetProjectTests
     {
         [Fact]
+        public async Task ProjectKNuGetProject_WithVersionRange_GetInstalledPackagesAsync()
+        {
+            // Arrange
+            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var tc = new TestContext(testDirectory);
+
+                tc.PackageManager
+                    .Setup(x => x.GetInstalledPackagesAsync(It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new[] { new NuGetPackageMoniker { Id = "foo", Version = "1.0.0-*" } });
+
+                // Act
+                var actual = await tc.Target.GetInstalledPackagesAsync(CancellationToken.None);
+
+                // Assert
+                Assert.Equal(1, actual.Count());
+                var packageReference = actual.First();
+                Assert.Equal("foo", packageReference.PackageIdentity.Id);
+                Assert.Equal(NuGetVersion.Parse("1.0.0--"), packageReference.PackageIdentity.Version);
+            }
+        }
+
+        [Fact]
         public async Task ProjectKNuGetProject_WithPackageTypes_InstallPackageAsync()
         {
             // Arrange
