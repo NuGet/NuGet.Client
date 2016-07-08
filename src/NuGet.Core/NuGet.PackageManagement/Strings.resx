@@ -309,4 +309,13 @@
     <comment>{0} is the package constraint.
 {1} is the 'packages.config'</comment>
   </data>
+  <data name="UnknownSource" xml:space="preserve">
+    <value>Unable to find package '{0}' at source '{1}'. Source not found.</value>
+    <comment>Used to fix the accuracy of the error message
+{0} is package id
+{1} is source path</comment>
+  </data>
+  <data name="UnknownSourceType" xml:space="preserve">
+    <value>Unsupported type of source  '{0}'. Please provide an http or local source.</value>
+  </data>
 </root>

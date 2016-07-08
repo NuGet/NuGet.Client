@@ -18,6 +18,8 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Versioning;
 using Task = System.Threading.Tasks.Task;
+using NuGet.PackageManagement.VisualStudio;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -37,13 +39,49 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             base.Preprocess();
             ParseUserInputForId();
             ParseUserInputForVersion();
+
+            // Check if the sourse is valid http, local or known source. Else throw an exception.
+            CheckSourceValidity();
+
             // The following update to ActiveSourceRepository may get overwritten if the 'Id' was just a path to a nupkg
             if (_readFromDirectPackagePath)
-            {
+            {            
                 UpdateActiveSourceRepository(Source);
             }
 
             ActionType = NuGetActionType.Install;
+        }
+
+        // Checks if the sourse is valid http, local or known source. Else throws an exception.
+        private void CheckSourceValidity()
+        {            
+            if (!string.IsNullOrEmpty(Source))
+            {
+                // Convert source into a PackageSource
+                PackageSource packageSource = new PackageSource(Source);
+
+                // Check if the source is a known source 
+                var sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
+                var packageSources = sourceRepositoryProvider?.PackageSourceProvider?.LoadPackageSources();
+
+                // Look through all available sources (including those disabled) by matching source name and url
+                var matchingSource = packageSources
+                    ?.Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, Source) ||
+                                 StringComparer.OrdinalIgnoreCase.Equals(p.Source, Source))
+                    .FirstOrDefault();
+
+                // Check if the source is a valid http or local source
+                if (packageSource.IsHttp && packageSource.TrySourceAsUri == null || packageSource.IsLocal && !System.IO.Directory.Exists(packageSource.Source))
+                {
+                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.UnknownSource, Id, packageSource.Source));
+                }
+                //if there was no matching known source
+                else if (!packageSource.IsHttp && !packageSource.IsLocal && matchingSource == null)
+                {
+                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.UnknownSourceType, packageSource.Source));
+                }
+
+            }
         }
 
         protected override void ProcessRecordCore()

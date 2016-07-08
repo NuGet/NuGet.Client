@@ -373,7 +373,7 @@ namespace NuGet.PackageManagement {
                 return ResourceManager.GetString("PackagesConfigAllowedVersions", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///    Looks up a localized string similar to Packages could not be installed.
         /// </summary>
@@ -578,6 +578,24 @@ namespace NuGet.PackageManagement {
         public static string UnknownPackageSpecificVersion {
             get {
                 return ResourceManager.GetString("UnknownPackageSpecificVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Unable to find package &apos;{0}&apos; at source &apos;{1}&apos;. Source not found..
+        /// </summary>
+        public static string UnknownSource {
+            get {
+                return ResourceManager.GetString("UnknownSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Unsupported type of source  &apos;{0}&apos;. Please provide an http or local source..
+        /// </summary>
+        public static string UnknownSourceType {
+            get {
+                return ResourceManager.GetString("UnknownSourceType", resourceCulture);
             }
         }
         
