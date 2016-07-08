@@ -45,7 +45,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             // The following update to ActiveSourceRepository may get overwritten if the 'Id' was just a path to a nupkg
             if (_readFromDirectPackagePath)
-            {            
+            {
                 UpdateActiveSourceRepository(Source);
             }
 

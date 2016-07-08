@@ -373,7 +373,7 @@ namespace NuGet.PackageManagement {
                 return ResourceManager.GetString("PackagesConfigAllowedVersions", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///    Looks up a localized string similar to Packages could not be installed.
         /// </summary>
