@@ -15,6 +15,7 @@ using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
@@ -159,8 +160,17 @@ namespace NuGet.VisualStudio
                 throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(packageVersions));
             }
 
-            PumpingJTF.Run(() =>
+            PumpingJTF.Run(async () =>
                 {
+                    // HACK !!! : This is a hack for PCL projects which send isPreUnzipped = true, but their package source 
+                    // (located at C:\Program Files (x86)\Microsoft SDKs\NuGetPackages) follows the V3
+                    // folder version format.
+                    if (isPreUnzipped)
+                    {
+                        var isProjectJsonProject = await EnvDTEProjectUtility.HasBuildIntegratedConfig(project);
+                        isPreUnzipped = isProjectJsonProject ? false : isPreUnzipped;
+                    }
+
                     // create a repository provider with only the registry repository
                     PreinstalledRepositoryProvider repoProvider = new PreinstalledRepositoryProvider(ErrorHandler, _sourceRepositoryProvider);
                     repoProvider.AddFromRegistry(keyName, isPreUnzipped);
