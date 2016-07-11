@@ -58,7 +58,6 @@ namespace NuGet.Protocol
             CancellationToken cancellationToken)
         {
             var logger = request.GetOrCreateConfiguration().Logger;
-
             while (true)
             {
                 // Store the auth start before sending the request
@@ -88,7 +87,7 @@ namespace NuGet.Protocol
                         return response;
                     }
                 }
-                catch (HttpRequestException ex)
+                catch (Exception ex)
                 when (ProxyAuthenticationRequired(ex) && _clientHandler.Proxy != null && _credentialService != null)
                 {
                     if (!await AcquireCredentialsAsync(request.RequestUri, cacheVersion, logger, cancellationToken))
@@ -103,6 +102,13 @@ namespace NuGet.Protocol
         // Returns true if the cause of the exception is proxy authentication failure
         private static bool ProxyAuthenticationRequired(Exception ex)
         {
+            // HACK!!! : This is a hack to workaround Xamarin Bug 19594
+            var webException = ex as WebException;
+            if (RuntimeEnvironmentHelper.IsMono && webException != null)
+            {
+                return IsMonoProxyAuthenticationRequiredError(webException);
+            }
+
             var response = ExtractResponse(ex);
             return response?.StatusCode == HttpStatusCode.ProxyAuthenticationRequired;
         }
@@ -112,6 +118,13 @@ namespace NuGet.Protocol
             var webException = ex.InnerException as WebException;
             var response = webException?.Response as HttpWebResponse;
             return response;
+        }
+
+        private static bool IsMonoProxyAuthenticationRequiredError(WebException ex)
+        {
+            return ex.Status == WebExceptionStatus.SecureChannelFailure &&
+                ex.Message != null &&
+                ex.Message.Contains("The remote server returned a 407 status code.");
         }
 #else
         private static bool ProxyAuthenticationRequired(Exception ex)
