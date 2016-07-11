@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Host;
@@ -275,6 +276,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         #region Cmdlets base APIs
 
+
         protected PackageSource GetMatchingSource(string source)
         {
             var packageSources = _sourceRepositoryProvider?.PackageSourceProvider?.LoadPackageSources();
@@ -287,20 +289,38 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             return matchingSource;
         }
 
+        // Checks if the sourse is valid http, local or known source. Else throws an exception.
+        protected void CheckSourceValidity(string source, string packageId, PackageSource matchingSource)
+        {
+            if (!string.IsNullOrEmpty(source))
+            {
+                // Convert source into a PackageSource
+                PackageSource packageSource = new PackageSource(source);
+
+                // Check if the source is a valid http or local source
+                if ((packageSource.IsHttp && packageSource.TrySourceAsUri == null) || (packageSource.IsLocal && !Directory.Exists(packageSource.Source)))
+                {
+                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.UnknownSource, packageId, packageSource.Source));
+                }
+                // If there was no matching known source
+                else if (!packageSource.IsHttp && !packageSource.IsLocal && matchingSource == null)
+                {
+                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.UnknownSourceType, packageSource.Source));
+                }
+            }
+        }
 
         /// <summary>
         /// Initializes source repositories for PowerShell cmdlets, based on config, source string, and/or host active source property value.
         /// </summary>
         /// <param name="source">The source string specified by -Source switch.</param>
-        protected void UpdateActiveSourceRepository(string source)
+        protected void UpdateActiveSourceRepository(string source, PackageSource matchingSource)
         {
             // If source string is not specified, get the current active package source from the host
             source = string.IsNullOrEmpty(source) ? (string)GetPropertyValueFromHost(ActivePackageSourceKey) : source;
 
             if (!string.IsNullOrEmpty(source))
             {
-                // Check if the source is a known source
-                var matchingSource = GetMatchingSource(source);
                 if (matchingSource != null)
                 {
                     _activeSourceRepository = _sourceRepositoryProvider?.CreateRepository(matchingSource);

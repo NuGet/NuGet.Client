@@ -59,7 +59,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected virtual void Preprocess()
         {
             CheckSolutionState();
-            UpdateActiveSourceRepository(Source);
+            // Look through all available sources (including those disabled) by matching source name and url
+            var matchingSource = GetMatchingSource(Source);
+            UpdateActiveSourceRepository(Source, matchingSource);
             GetNuGetProject(ProjectName);
             DetermineFileConflictAction();
             NuGetUIThreadHelper.JoinableTaskFactory.Run(CheckMissingPackagesAsync);

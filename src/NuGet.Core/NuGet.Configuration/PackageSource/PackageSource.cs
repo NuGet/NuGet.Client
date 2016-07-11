@@ -27,7 +27,7 @@ namespace NuGet.Configuration
         /// </summary>
         public Uri TrySourceAsUri
         {
-            get { return UriUtility.TryCreateSourceUri(Source, UriKind.Absolute); }
+            get { return UriUtility.TryCreateSourceUri(Source, UriKind.RelativeOrAbsolute); }
         }
 
         /// <summary>
