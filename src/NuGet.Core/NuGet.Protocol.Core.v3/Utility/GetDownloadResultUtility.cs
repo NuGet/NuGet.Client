@@ -109,7 +109,7 @@ namespace NuGet.Protocol
         private static async Task<DownloadResourceResult> AddPackageDirectAsync(PackageIdentity packageIdentity,
             Stream packageStream,
             ISettings settings,
-            string PackagesDirectory,
+            string packagesDirectory,
             ILogger logger,
             CancellationToken token)
         {
@@ -130,7 +130,7 @@ namespace NuGet.Protocol
 
             var versionFolderPathContext = new VersionFolderPathContext(
                 packageIdentity,
-                PackagesDirectory,
+                packagesDirectory,
                 logger,
                 packageSaveMode: PackageSaveMode.Nupkg | PackageSaveMode.Nuspec,
                 xmlDocFileSaveMode: PackageExtractionBehavior.XmlDocFileSaveMode);
@@ -140,7 +140,7 @@ namespace NuGet.Protocol
                 versionFolderPathContext,
                 token: token);
 
-            var defaultPackagePathResolver = new VersionFolderPathResolver(PackagesDirectory);
+            var defaultPackagePathResolver = new VersionFolderPathResolver(packagesDirectory);
             var path = defaultPackagePathResolver.GetPackageFilePath(packageIdentity.Id, packageIdentity.Version);
 
             if (File.Exists(path))

@@ -5328,6 +5328,6 @@ nuget locals global-packages -list</value>
     <comment>command line example, do not localize</comment>
   </data>
   <data name="CommandDirectDownload" xml:space="preserve">
-    <value>Download directly without populating the global package cache</value>
+    <value>Download directly without populating the global package cache.</value>
   </data>
 </root>
