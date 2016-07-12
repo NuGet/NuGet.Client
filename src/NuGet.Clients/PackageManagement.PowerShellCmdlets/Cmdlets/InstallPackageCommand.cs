@@ -37,7 +37,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             base.Preprocess();
             ParseUserInputForId();
             ParseUserInputForVersion();
-
             // The following update to ActiveSourceRepository may get overwritten if the 'Id' was just a path to a nupkg
             if (_readFromDirectPackagePath)
             {
