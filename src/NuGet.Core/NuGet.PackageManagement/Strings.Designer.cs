@@ -150,6 +150,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Exception Type.
+        /// </summary>
+        public static string ExceptionType {
+            get {
+                return ResourceManager.GetString("ExceptionType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Exception &apos;{0}&apos; thrown when trying to add source &apos;{1}&apos;. Please verify all your online package sources are available..
         /// </summary>
         public static string ExceptionWhenTryingToAddSource {
@@ -373,7 +382,7 @@ namespace NuGet.PackageManagement {
                 return ResourceManager.GetString("PackagesConfigAllowedVersions", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///    Looks up a localized string similar to Packages could not be installed.
         /// </summary>
@@ -609,7 +618,7 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Package &apos;{0}&apos; has a package type &apos;{1}&apos; that is not supported by project &apos;{2}&apos;. .
+        ///    Looks up a localized string similar to Package &apos;{0}&apos; has a package type &apos;{1}&apos; that is not supported by project &apos;{2}&apos;..
         /// </summary>
         public static string UnsupportedPackageType {
             get {

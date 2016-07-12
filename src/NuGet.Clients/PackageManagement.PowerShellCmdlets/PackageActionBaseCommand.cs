@@ -59,12 +59,28 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected virtual void Preprocess()
         {
             CheckSolutionState();
-            // Look through all available sources (including those disabled) by matching source name and url
-            var matchingSource = GetMatchingSource(Source);
-
-            // Check if the source is valid http, local or known source. Else throw an exception.
-            Source = CheckSourceValidity(Source, Id, matchingSource);
-            UpdateActiveSourceRepository(Source, matchingSource);
+            try
+            {
+                UpdateActiveSourceRepository(Source, validateSource: true);
+            }
+            catch(InvalidOperationException ex)
+            {
+                if (ex.Data.Contains(Strings.ExceptionType))
+                {
+                    if (Strings.UnknownSource.Equals(ex.Data[Strings.ExceptionType].ToString(), StringComparison.Ordinal))
+                    {
+                        throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.UnknownSource, Id, Source));
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.UnknownSourceType, Source));
+                    }
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
             GetNuGetProject(ProjectName);
             DetermineFileConflictAction();
             NuGetUIThreadHelper.JoinableTaskFactory.Run(CheckMissingPackagesAsync);

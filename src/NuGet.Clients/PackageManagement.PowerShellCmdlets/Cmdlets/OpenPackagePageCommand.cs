@@ -41,9 +41,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         private void Preprocess()
         {
-            // Look through all available sources (including those disabled) by matching source name and url
-            var matchingSource = GetMatchingSource(Source);
-            UpdateActiveSourceRepository(Source, matchingSource);
+            UpdateActiveSourceRepository(Source, validateSource:false);
             LogCore(MessageLevel.Warning, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_CommandRemoved, "Open-PackagePage"));
         }
 

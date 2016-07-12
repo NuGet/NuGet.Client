@@ -81,9 +81,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 Version = string.Empty;
             }
-            // Look through all available sources (including those disabled) by matching source name and url
-            var matchingSource = GetMatchingSource(Source);
-            UpdateActiveSourceRepository(Source, matchingSource);
+            UpdateActiveSourceRepository(Source, validateSource:false);
         }
 
         protected override void ProcessRecordCore()

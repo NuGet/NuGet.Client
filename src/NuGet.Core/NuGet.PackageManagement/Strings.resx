@@ -318,4 +318,8 @@
   <data name="UnknownSourceType" xml:space="preserve">
     <value>Unsupported type of source  '{0}'. Please provide an http or local source.</value>
   </data>
+  <data name="ExceptionType" xml:space="preserve">
+    <value>Exception Type</value>
+    <comment>Used to identify the type of exception thrown</comment>
+  </data>
 </root>
