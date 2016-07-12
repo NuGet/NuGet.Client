@@ -65,19 +65,23 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch(InvalidOperationException ex)
             {
+                // Check if the exception has more details on the type of exception thrown
                 if (ex.Data.Contains(Strings.ExceptionType))
                 {
                     if (Strings.UnknownSource.Equals(ex.Data[Strings.ExceptionType].ToString(), StringComparison.Ordinal))
                     {
+                        // If the exception is of unknown/invalid source then add package id and throw the exception
                         throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.UnknownSource, Id, Source));
                     }
                     else
                     {
+                        // If the exception is of unknown source type then throw the exception
                         throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.UnknownSourceType, Source));
                     }
                 }
                 else
                 {
+                    // If the exception does not have an exception type field, then throw the exception as-is
                     throw ex;
                 }
             }
