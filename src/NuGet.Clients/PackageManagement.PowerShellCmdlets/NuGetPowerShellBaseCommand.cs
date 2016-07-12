@@ -279,7 +279,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Looks through all available sources (including those disabled) by matching source name and url to get matching sources.
         /// </summary>
-        /// <param name="source"></param>
+        /// <param name="source">The source string specified by -Source switch.</param>
         /// <returns></returns>
         protected PackageSource GetMatchingSource(string source)
         {
@@ -295,16 +295,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Checks if the sourse is valid http, local or known source. Else throws an exception.
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="packageId"></param>
-        /// <param name="matchingSource"></param>
+        /// <param name="source">The source string specified by -Source switch.</param>
+        /// <param name="packageId">The package ID string specified.</param>
+        /// <param name="matchingSource">Matching Source if the specified source is a known source. Else null.</param>
         /// <returns></returns>
         protected string CheckSourceValidity(string source, string packageId, PackageSource matchingSource)
         {
-            if (!string.IsNullOrEmpty(source) && !string.IsNullOrEmpty(packageId))
+            // Check validity only if the source and package Id were specified and it is not a known source
+            if (!string.IsNullOrEmpty(source) && !string.IsNullOrEmpty(packageId) && matchingSource == null)
             {
                 // Convert a relative URI into an absolute URI
-                source = ConvertRelativeToAbsoluteURI(source, packageId);
+                source = ConvertRelativeUriToAbsolute(source, packageId);
 
                 // Convert source into a PackageSource
                 PackageSource packageSource = new PackageSource(source);
@@ -315,7 +316,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.UnknownSource, packageId, packageSource.Source));
                 }
                 // If there was no matching known source
-                else if (!packageSource.IsHttp && !packageSource.IsLocal && matchingSource == null)
+                else if (!packageSource.IsHttp && !packageSource.IsLocal)
                 {
                     throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.UnknownSourceType, packageSource.Source));
                 }
@@ -323,10 +324,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             return source;
         }
 
+
         /// <summary>
         /// Initializes source repositories for PowerShell cmdlets, based on config, source string, and/or host active source property value.
         /// </summary>
         /// <param name="source">The source string specified by -Source switch.</param>
+        /// <param name="matchingSource">Matching Source if the specified source is a known source. Else null.</param>
         protected void UpdateActiveSourceRepository(string source, PackageSource matchingSource)
         {
             // If source string is not specified, get the current active package source from the host
@@ -349,13 +352,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 .ToList();
         }
         /// <summary>
-        /// If a relative URI is passed, it converts it into an abosolute URI. 
+        /// If a relative URI is passed, it converts it into an abosolute URI.
         /// If the Relative URI does not exist, then an exception is thrown.
         /// If the URI is not relative then no action is taken.
         /// </summary>
         /// <param name="source"></param>
-        protected string ConvertRelativeToAbsoluteURI(string source, string packageId)
+        protected string ConvertRelativeUriToAbsolute(string source, string packageId)
         {
+            PackageSource packageSource = new PackageSource(source);
             Uri sourceUri;
             if (Uri.TryCreate(source, UriKind.Relative, out sourceUri))
             {
