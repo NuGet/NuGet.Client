@@ -18,8 +18,6 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Versioning;
 using Task = System.Threading.Tasks.Task;
-using NuGet.PackageManagement.VisualStudio;
-using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -42,10 +40,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             // Look through all available sources (including those disabled) by matching source name and url
             var matchingSource = GetMatchingSource(Source);
-
-            // Check if the sourse is valid http, local or known source. Else throw an exception.
-            CheckSourceValidity(Source, Id, matchingSource);
-
             // The following update to ActiveSourceRepository may get overwritten if the 'Id' was just a path to a nupkg
             if (_readFromDirectPackagePath)
             {

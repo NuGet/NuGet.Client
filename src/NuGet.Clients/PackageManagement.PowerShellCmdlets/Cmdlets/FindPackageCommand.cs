@@ -83,9 +83,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             // Look through all available sources (including those disabled) by matching source name and url
             var matchingSource = GetMatchingSource(Source);
-
-            // Check if the sourse is valid http, local or known source. Else throw an exception.
-            CheckSourceValidity(Source, Id, matchingSource);
             UpdateActiveSourceRepository(Source, matchingSource);
         }
 

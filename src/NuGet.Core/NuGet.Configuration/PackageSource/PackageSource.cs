@@ -35,7 +35,7 @@ namespace NuGet.Configuration
         /// </summary>
         public Uri SourceUri
         {
-            get { return UriUtility.CreateSourceUri(Source, UriKind.Absolute); }
+            get { return UriUtility.CreateSourceUri(Source, UriKind.RelativeOrAbsolute); }
         }
 
         /// <summary>
