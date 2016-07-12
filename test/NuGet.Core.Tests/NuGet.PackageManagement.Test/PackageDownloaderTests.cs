@@ -11,11 +11,14 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
+using NuGet.Test.Utility;
 
 namespace NuGet.PackageManagement
 {
     public class PackageDownloaderTests
     {
+        private const string GlobalPackagesFolderEnvironmentKey = "NUGET_PACKAGES";
+
         /// <summary>
         /// Verifies that download throws when package does not exist in V2
         /// </summary>
@@ -131,46 +134,50 @@ namespace NuGet.PackageManagement
         }
 
         [Fact]
-        public async Task TestDirectDownload_InV3()
+        public async Task TestDirectDownloadByPackageId_InV3()
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             var v3sourceRepository = sourceRepositoryProvider.GetRepositories().First();
             var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
 
-            // Ensure package is not already cached in the Global Packages Folder
-            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(Configuration.NullSettings.Instance);
-            var defaultPackagePathResolver = new Packaging.VersionFolderPathResolver(globalPackagesFolder);
-            var installPath = defaultPackagePathResolver.GetInstallPath(packageIdentity.Id, packageIdentity.Version);
-            if (System.IO.Directory.Exists(installPath))
+            using (var randomTestSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                System.IO.Directory.Delete(installPath,true);
-            }
-            var globalPackage1 = Protocol.GlobalPackagesFolderUtility.GetPackage(packageIdentity, Configuration.NullSettings.Instance);
-            Assert.Null(globalPackage1);
-            
-            // Act
-            using (var cacheContext = new SourceCacheContext())
-            {
-                cacheContext.NoCache = true; // DirectDownload flag sets NoCache to true in SourceCacheContext
-                using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(v3sourceRepository,
-                    packageIdentity,
-                    Configuration.NullSettings.Instance,
-                    cacheContext,
-                    Common.NullLogger.Instance,
-                    CancellationToken.None))
-                {
-                    var targetPackageStream = downloadResult.PackageStream;
+                // Create a nuget.config file with a test global packages folder
+                System.IO.File.WriteAllText(
+                    System.IO.Path.Combine(randomTestSourcePath, "nuget.config"),
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <config>
+    <add key=""globalPackagesFolder"" value=""" + randomTestSourcePath + @""" />
+  </config >
+</configuration>");
+                var settings = new Settings(randomTestSourcePath);
 
-                    // Assert
-                    // jQuery.1.8.2 is of size 185476 bytes. Make sure the download is successful
-                    Assert.Equal(185476, targetPackageStream.Length);
-                    Assert.True(targetPackageStream.CanSeek);
+                // Act
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    cacheContext.NoCache = true; // DirectDownload flag sets NoCache to true in SourceCacheContext
+                    using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(v3sourceRepository,
+                        packageIdentity,
+                        settings,
+                        cacheContext,
+                        Common.NullLogger.Instance,
+                        CancellationToken.None))
+                    {
+                        var targetPackageStream = downloadResult.PackageStream;
+
+                        // jQuery.1.8.2 is of size 185476 bytes. Make sure the download is successful
+                        Assert.Equal(185476, targetPackageStream.Length);
+                        Assert.True(targetPackageStream.CanSeek);
+                    }
                 }
+
+                // Assert
+                // Verify that the package was not cached in the Global Packages Folder
+                var globalPackage = Protocol.GlobalPackagesFolderUtility.GetPackage(packageIdentity, settings);
+                Assert.Null(globalPackage);
             }
-            // Verify that the package was not cached in the Global Packages Folder
-            var globalPackage2 = Protocol.GlobalPackagesFolderUtility.GetPackage(packageIdentity, Configuration.NullSettings.Instance);
-            Assert.Null(globalPackage2);
         }
 
         [Fact]
