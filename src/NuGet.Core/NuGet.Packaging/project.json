@@ -1,5 +1,5 @@
-﻿{
-  "version": "3.5.0-*",
+{
+  "version": "3.5.1-*",
   "description": "NuGet's implementation for reading nupkg package and nuspec package specification files.",
   "authors": [
     "NuGet"

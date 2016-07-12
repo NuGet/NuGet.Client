@@ -1,8 +1,8 @@
-﻿{
+{
   "dependencies": {
-    "NuGet.ProjectManagement": "3.5.0-*",
-    "NuGet.PackageManagement": "3.5.0-*",
-    "NuGet.Protocol.Core.v2": "3.5.0-*"
+    "NuGet.ProjectManagement": "3.5.1-*",
+    "NuGet.PackageManagement": "3.5.1-*",
+    "NuGet.Protocol.Core.v2": "3.5.1-*"
   },
   "frameworks": {
     "net46": {}
