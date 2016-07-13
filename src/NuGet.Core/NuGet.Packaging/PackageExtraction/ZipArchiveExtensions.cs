@@ -65,24 +65,24 @@ namespace NuGet.Packaging
         {
             var attr = File.GetAttributes(fileFullPath);
 
-            if (!attr.HasFlag(FileAttributes.Directory) &&
+            try
+            {
+                if (!attr.HasFlag(FileAttributes.Directory) &&
                 entry.LastWriteTime.DateTime != DateTime.MinValue && // Ignore invalid times
                 entry.LastWriteTime.UtcDateTime <= DateTime.UtcNow) // Ignore future times
-            {
-                try
                 {
                     File.SetLastWriteTimeUtc(fileFullPath, entry.LastWriteTime.UtcDateTime);
                 }
-                catch (ArgumentOutOfRangeException ex)
-                {
-                    string message = string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.FailedFileTime,
-                        fileFullPath, // {0}
-                        ex.Message); // {1}
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                string message = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.FailedFileTime,
+                    fileFullPath, // {0}
+                    ex.Message); // {1}
 
-                    logger.LogVerbose(message);
-                }
+                logger.LogVerbose(message);
             }
         }
     }
