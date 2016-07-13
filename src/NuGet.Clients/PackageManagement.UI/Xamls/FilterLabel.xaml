@@ -21,7 +21,9 @@
     </Grid.RowDefinitions>
     <Button x:Name="_labelButton"
       Grid.Row="0"
-      Click="ButtonClicked">
+      Click="ButtonClicked"
+      AutomationProperties.AutomationId="{Binding ElementName=_labelText, Path=Text}"
+      AutomationProperties.Name="{Binding ElementName=_labelText, Path=Text}">
       <Button.Template>
         <ControlTemplate TargetType="{x:Type Button}">
           <ContentPresenter />

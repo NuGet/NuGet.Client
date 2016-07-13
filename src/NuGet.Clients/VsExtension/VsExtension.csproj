@@ -30,14 +30,14 @@
       <PropertyGroup>
         <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
         <DefineConstants>$(DefineConstants);VS14</DefineConstants>
-        <CustomVsixName>NuGet.Tools.vsix</CustomVsixName>
+        <VsixOutputDirName>Dev14</VsixOutputDirName>
       </PropertyGroup>
     </When>
     <When Condition="'$(VisualStudioVersion)' == '15.0'">
       <PropertyGroup>
         <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
         <DefineConstants>$(DefineConstants);VS15</DefineConstants>
-        <CustomVsixName>NuGet.Tools.Dev15.vsix</CustomVsixName>
+        <VsixOutputDirName>Dev15</VsixOutputDirName>
       </PropertyGroup>
     </When>
   </Choose>
@@ -343,7 +343,7 @@
     </None>
   </ItemGroup>
   <PropertyGroup>
-    <PostBuildEvent>copy /y "$(TargetVsixContainer)" "$(ArtifactRoot)\$(CustomVsixName)"</PostBuildEvent>
+    <PostBuildEvent>"$(MSBuildProjectDirectory)\EnsureDirectoryAndCopy.bat" "$(TargetVsixContainer)" "$(ArtifactRoot)\$(VsixOutputDirName)"</PostBuildEvent>
   </PropertyGroup>
   <Target Name="ReadVsixIncludeListFromFile">
     <ReadLinesFromFile File="@(VsixIncludeFile)">
