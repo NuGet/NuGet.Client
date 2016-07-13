@@ -20,6 +20,7 @@ using EnvDTE;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.PackageManagement.PowerShellCmdlets.Exceptions;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
@@ -312,16 +313,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 // Check if the source is a valid http or local source
                 if ((packageSource.IsHttp && packageSource.TrySourceAsUri == null) || (packageSource.IsLocal && !Directory.Exists(packageSource.Source)))
                 {
-                    var invalidOperationException = new InvalidOperationException();
-                    invalidOperationException.Data[Strings.ExceptionType] = Strings.UnknownSource;
-                    throw invalidOperationException;
+                    throw new PackageSourceException(PackageSourceException.ExceptionType.UnknownSource);
                 }
                 // If there was no matching known source
                 else if (!packageSource.IsHttp && !packageSource.IsLocal)
                 {
-                    var invalidOperationException = new InvalidOperationException();
-                    invalidOperationException.Data[Strings.ExceptionType] = Strings.UnknownSourceType;
-                    throw invalidOperationException;
+                    throw new PackageSourceException(PackageSourceException.ExceptionType.UnknownSourceType);
                 }
             }
             return source;
@@ -387,9 +384,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }
                 else if (exists.HasValue && !exists.Value)
                 {
-                    var invalidOperationException = new InvalidOperationException();
-                    invalidOperationException.Data[Strings.ExceptionType] = Strings.UnknownSource;
-                    throw invalidOperationException;
+                    throw new PackageSourceException(PackageSourceException.ExceptionType.UnknownSource);
                 }
             }
             return source;

@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Management.Automation;
 using System.Threading;
+using NuGet.PackageManagement.PowerShellCmdlets.Exceptions;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
@@ -63,26 +64,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 UpdateActiveSourceRepository(Source, validateSource: true);
             }
-            catch(InvalidOperationException ex)
+            catch(PackageSourceException ex)
             {
-                // Check if the exception has more details on the type of exception thrown
-                if (ex.Data.Contains(Strings.ExceptionType))
+                if (ex.GetType().Equals(PackageSourceException.ExceptionType.UnknownSource))
                 {
-                    if (Strings.UnknownSource.Equals(ex.Data[Strings.ExceptionType].ToString(), StringComparison.Ordinal))
-                    {
-                        // If the exception is of unknown/invalid source then add package id and throw the exception
-                        throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.UnknownSource, Id, Source));
-                    }
-                    else
-                    {
-                        // If the exception is of unknown source type then throw the exception
-                        throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.UnknownSourceType, Source));
-                    }
+                    // If the exception is of unknown/invalid source then add package id and throw the exception
+                    throw new PackageSourceException(string.Format(CultureInfo.CurrentCulture, Strings.UnknownSource, Id, Source));
                 }
                 else
                 {
-                    // If the exception does not have an exception type field, then throw the exception as-is
-                    throw ex;
+                    // If the exception is of unknown source type then throw the exception
+                    throw new PackageSourceException(string.Format(CultureInfo.CurrentCulture, Strings.UnknownSourceType, Source));
                 }
             }
             GetNuGetProject(ProjectName);
