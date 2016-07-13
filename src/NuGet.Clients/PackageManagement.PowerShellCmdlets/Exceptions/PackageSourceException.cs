@@ -1,39 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace NuGet.PackageManagement.PowerShellCmdlets.Exceptions
+using System;
+
+namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     public class PackageSourceException : Exception
     {
-        public enum ExceptionType {UnknownSource, UnknownSourceType};
-        private ExceptionType Type;
+        public enum ExceptionType { Default, UnknownSource, UnknownSourceType };
+        private ExceptionType type;
+
+        public ExceptionType Type
+        {
+            get
+            {
+                return type;
+            }
+        }
 
         public PackageSourceException()
         {
+            type = ExceptionType.Default;
         }
 
         public PackageSourceException(ExceptionType exceptionType)
         {
-            Type = exceptionType;
+            type = exceptionType;
         }
 
         public PackageSourceException(string message)
             : base(message)
         {
-        }
-
-        public PackageSourceException(string format, params object[] args)
-            : base(String.Format(CultureInfo.CurrentCulture, format, args))
-        {
-        }
-
-        public PackageSourceException(string message, Exception exception)
-            : base(message, exception)
-        {
+            type = ExceptionType.Default;
         }
     }
 }

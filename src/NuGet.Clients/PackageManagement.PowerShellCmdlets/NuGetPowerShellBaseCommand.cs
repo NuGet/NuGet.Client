@@ -20,7 +20,6 @@ using EnvDTE;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.PackageManagement.PowerShellCmdlets.Exceptions;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;

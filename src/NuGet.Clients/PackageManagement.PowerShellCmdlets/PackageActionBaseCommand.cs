@@ -6,7 +6,6 @@ using System.Globalization;
 using System.Linq;
 using System.Management.Automation;
 using System.Threading;
-using NuGet.PackageManagement.PowerShellCmdlets.Exceptions;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
@@ -66,7 +65,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch(PackageSourceException ex)
             {
-                if (ex.GetType().Equals(PackageSourceException.ExceptionType.UnknownSource))
+                if (ex.Type == PackageSourceException.ExceptionType.UnknownSource)
                 {
                     // If the exception is of unknown/invalid source then add package id and throw the exception
                     throw new PackageSourceException(string.Format(CultureInfo.CurrentCulture, Strings.UnknownSource, Id, Source));
