@@ -13,7 +13,6 @@
     "Microsoft.VisualStudio.Shell.Interop.9.0": "9.0.30729",
     "NuGet.Commands": "3.5.0-*",
     "NuGet.Indexing": "3.5.0-*",
-    "NuGet.Logging": "3.5.0-*"
   },
   "frameworks": {
     "net46": {}

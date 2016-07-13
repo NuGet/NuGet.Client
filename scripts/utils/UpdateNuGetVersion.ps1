@@ -33,9 +33,11 @@ Write-Output "Updating NuGet version [$OldVersion => $NewVersion]"
 ls -r project.json | %{ $_.FullName } | ReplaceNuGetVersion
 
 $miscFiles = @(
-    "src\NuGet.Clients\VsExtension\source.extension.vsixmanifest",
+    "src\NuGet.Clients\VsExtension\source.extension.dev14.vsixmanifest",
+    "src\NuGet.Clients\VsExtension\source.extension.dev15.vsixmanifest",
     "src\NuGet.Clients\VsExtension\NuGetPackage.cs",
-    "build\common.props"
+    "build\common.props",
+    ".teamcity.properties"
 )
 
 $miscFiles | %{ Join-Path $NuGetRoot $_ } | ReplaceNuGetVersion
