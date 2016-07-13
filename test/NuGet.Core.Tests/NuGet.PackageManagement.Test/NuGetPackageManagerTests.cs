@@ -24,6 +24,7 @@ using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
 using Strings = NuGet.ProjectManagement.Strings;
+using NuGet.Configuration;
 
 namespace NuGet.Test
 {
@@ -4769,6 +4770,59 @@ namespace NuGet.Test
             var packageDependency = packageInfo.Dependencies.Single();
             Assert.Equal("b", packageDependency.Id);
             Assert.Equal(bVersionRange.ToString(), packageDependency.VersionRange.ToString());
+        }
+
+        [Fact]
+        public async Task TestDirectDownloadByPackagesConfig()
+        {
+            // Arrange
+            using (var testFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Create a nuget.config file with a test global packages folder
+                var globalPackageFolderPath = Path.Combine(testFolderPath, "GlobalPackagesFolder");
+                System.IO.File.WriteAllText(
+                    System.IO.Path.Combine(testFolderPath, "nuget.config"),
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <config>
+    <add key=""globalPackagesFolder"" value=""" + globalPackageFolderPath + @""" />
+  </config >
+</configuration>");
+
+                // Create a packages.config
+                var packagesConfigPath = Path.Combine(testFolderPath, "packages.config");
+                using (var writer = new StreamWriter(packagesConfigPath))
+                {
+                    writer.WriteLine(@"<packages><package id=""Newtonsoft.Json"" version=""6.0.8"" /></packages>");
+                }
+
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+                var settings = new Settings(testFolderPath);
+                var packagesFolderPath = Path.Combine(testFolderPath, "packages");
+                var token = CancellationToken.None;
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    settings,
+                    packagesFolderPath);
+                var packageIdentity = new PackageIdentity("Newtonsoft.Json", NuGetVersion.Parse("6.0.8"));
+
+                // Act
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    cacheContext.NoCache = true;
+                    await nuGetPackageManager.RestorePackageAsync(
+                        packageIdentity,
+                        new TestNuGetProjectContext(),
+                        cacheContext,
+                        sourceRepositoryProvider.GetRepositories(),
+                        token);
+                }
+
+                // Assert
+                // Verify that the package was not cached in the Global Packages Folder
+                var globalPackage = Protocol.GlobalPackagesFolderUtility.GetPackage(packageIdentity, settings);
+                Assert.Null(globalPackage);
+            }
         }
 
         [Fact]
