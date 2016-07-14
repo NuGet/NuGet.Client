@@ -10,9 +10,11 @@ namespace NuGet.ContentModel.Infrastructure
     {
         private readonly List<Segment> _segments = new List<Segment>();
         private readonly IReadOnlyDictionary<string, object> _defaults;
+        private readonly PatternTable _table;
 
         public PatternExpression(PatternDefinition pattern)
         {
+            _table = pattern.Table;
             _defaults = pattern.Defaults;
             Initialize(pattern.Pattern);
         }
@@ -37,7 +39,7 @@ namespace NuGet.ContentModel.Infrastructure
                     var endName = endToken - (matchOnly ? 1 : 0);
 
                     var tokenName = pattern.Substring(beginName, endName - beginName);
-                    _segments.Add(new TokenSegment(tokenName, delimiter, matchOnly));
+                    _segments.Add(new TokenSegment(tokenName, delimiter, matchOnly, _table));
                 }
                 scanIndex = endToken + 1;
             }
@@ -113,12 +115,14 @@ namespace NuGet.ContentModel.Infrastructure
             private readonly string _token;
             private readonly char _delimiter;
             private readonly bool _matchOnly;
+            private readonly PatternTable _table;
 
-            public TokenSegment(string token, char delimiter, bool matchOnly)
+            public TokenSegment(string token, char delimiter, bool matchOnly, PatternTable table)
             {
                 _token = token;
                 _delimiter = delimiter;
                 _matchOnly = matchOnly;
+                _table = table;
             }
 
             internal override bool TryMatch(ContentItem item, IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions, int startIndex, out int endIndex)
@@ -138,7 +142,7 @@ namespace NuGet.ContentModel.Infrastructure
                     }
                     var substring = item.Path.Substring(startIndex, delimiterIndex - startIndex);
                     object value;
-                    if (propertyDefinition.TryLookup(substring, out value))
+                    if (propertyDefinition.TryLookup(substring, _table, out value))
                     {
                         if (!_matchOnly)
                         {

@@ -49,14 +49,29 @@ namespace NuGet.ContentModel
         public string Pattern { get; }
         public IReadOnlyDictionary<string, object> Defaults { get; }
 
+        /// <summary>
+        /// Replacement token table.
+        /// </summary>
+        public PatternTable Table { get; }
+
         public PatternDefinition(string pattern)
-            : this(pattern, Enumerable.Empty<KeyValuePair<string, object>>())
+            : this(pattern, table: null, defaults: Enumerable.Empty<KeyValuePair<string, object>>())
         {
         }
 
-        public PatternDefinition(string pattern, IEnumerable<KeyValuePair<string, object>> defaults)
+        public PatternDefinition(string pattern, PatternTable table)
+            : this(pattern, table, Enumerable.Empty<KeyValuePair<string, object>>())
+        {
+        }
+
+        public PatternDefinition(
+            string pattern,
+            PatternTable table,
+            IEnumerable<KeyValuePair<string, object>> defaults)
         {
             Pattern = pattern;
+
+            Table = table;
             Defaults = new ReadOnlyDictionary<string, object>(defaults.ToDictionary(p => p.Key, p => p.Value));
         }
 

@@ -10,6 +10,56 @@ namespace NuGet.Client.Test
     public class ContentModelContentFilesTests
     {
         [Fact]
+        public void ContentFiles_NetStandardAny()
+        {
+            // Arrange
+            var conventions = new ManagedCodeConventions(
+                new RuntimeGraph(
+                    new List<CompatibilityProfile>() { new CompatibilityProfile("netstandard10.app") }));
+
+            var criteria = conventions.Criteria.ForFramework(NuGetFramework.Parse("netstandard1.0"));
+
+            var collection = new ContentItemCollection();
+            collection.Load(new string[]
+            {
+                "contentFiles/any/any/config1.xml"
+            });
+
+            // Act
+            var contentFileGroup = collection.FindBestItemGroup(criteria, conventions.Patterns.ContentFiles);
+            var file = contentFileGroup.Items.Single().Path;
+
+            // Assert
+            Assert.Equal("contentFiles/any/any/config1.xml", file);
+        }
+
+        [Fact]
+        public void ContentFiles_NetStandardFallbackToAny()
+        {
+            // Arrange
+            var conventions = new ManagedCodeConventions(
+                new RuntimeGraph(
+                    new List<CompatibilityProfile>() { new CompatibilityProfile("netstandard13.app") }));
+
+            var criteria = conventions.Criteria.ForFramework(NuGetFramework.Parse("netstandard1.3"));
+
+            var collection = new ContentItemCollection();
+            collection.Load(new string[]
+            {
+                "contentFiles/any/any/config1.xml",
+                "contentFiles/any/dotnet/config1.xml",
+                "contentFiles/any/netstandard1.4/config1.xml"
+            });
+
+            // Act
+            var contentFileGroup = collection.FindBestItemGroup(criteria, conventions.Patterns.ContentFiles);
+            var file = contentFileGroup.Items.Single().Path;
+
+            // Assert
+            Assert.Equal("contentFiles/any/any/config1.xml", file);
+        }
+
+        [Fact]
         public void ContentFiles_BasicContentModelCheck()
         {
             // Arrange
