@@ -150,6 +150,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Exception Type.
+        /// </summary>
+        public static string ExceptionType {
+            get {
+                return ResourceManager.GetString("ExceptionType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Exception &apos;{0}&apos; thrown when trying to add source &apos;{1}&apos;. Please verify all your online package sources are available..
         /// </summary>
         public static string ExceptionWhenTryingToAddSource {
@@ -373,7 +382,7 @@ namespace NuGet.PackageManagement {
                 return ResourceManager.GetString("PackagesConfigAllowedVersions", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///    Looks up a localized string similar to Packages could not be installed.
         /// </summary>
@@ -582,6 +591,24 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Unable to find package &apos;{0}&apos; at source &apos;{1}&apos;. Source not found..
+        /// </summary>
+        public static string UnknownSource {
+            get {
+                return ResourceManager.GetString("UnknownSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Unsupported type of source  &apos;{0}&apos;. Please provide an http or local source..
+        /// </summary>
+        public static string UnknownSourceType {
+            get {
+                return ResourceManager.GetString("UnknownSourceType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Package &apos;{0}&apos; uses features that are not supported by the current version of NuGet. To upgrade NuGet, see http://docs.nuget.org/consume/installing-nuget..
         /// </summary>
         public static string UnsupportedPackageFeature {
@@ -591,7 +618,7 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Package &apos;{0}&apos; has a package type &apos;{1}&apos; that is not supported by project &apos;{2}&apos;. .
+        ///    Looks up a localized string similar to Package &apos;{0}&apos; has a package type &apos;{1}&apos; that is not supported by project &apos;{2}&apos;..
         /// </summary>
         public static string UnsupportedPackageType {
             get {

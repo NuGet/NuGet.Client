@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Host;
@@ -18,6 +19,7 @@ using System.Xml.Linq;
 using EnvDTE;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
@@ -275,24 +277,71 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         #region Cmdlets base APIs
 
         /// <summary>
+        /// Looks through all available sources (including those disabled) by matching source name and url to get matching sources.
+        /// </summary>
+        /// <param name="source">The source string specified by -Source switch.</param>
+        /// <returns>Returns an object of PackageSource if the specified source string is a known source. Else returns a null.</returns>
+        protected PackageSource GetMatchingSource(string source)
+        {
+            var packageSources = _sourceRepositoryProvider.PackageSourceProvider?.LoadPackageSources();
+            var matchingSource = packageSources
+                ?.FirstOrDefault(p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, source) ||
+                          StringComparer.OrdinalIgnoreCase.Equals(p.Source, source));
+            return matchingSource;
+        }
+
+        /// <summary>
+        /// Checks if the sourse is valid http, local or known source. Else throws an exception.
+        /// </summary>
+        /// <param name="source">The source string specified by -Source switch.</param>
+        /// <param name="packageId">The package ID string specified.</param>
+        /// <param name="matchingSource">Matching Source if the specified source is a known source. Else null.</param>
+        /// <returns>Returns an absolute version of the source string if it is a relative local source. Else returns it unchanged.</returns>
+        /// <exception cref="InvalidOperationException">Throws an InvalidOperationException if the specified source is either invalid or is not http/local type.</exception>
+        protected string CheckSourceValidity(string source)
+        {
+            // Check validity only if the source and package Id were specified and it is not a known source
+            if (!string.IsNullOrEmpty(source))
+            {
+                // Convert a relative URI into an absolute URI
+                source = ConvertRelativeUriToAbsolute(source);
+
+                // Convert source into a PackageSource
+                var packageSource = new PackageSource(source);
+
+                // Check if the source is a valid http or local source
+                if ((packageSource.IsHttp && packageSource.TrySourceAsUri == null) || (packageSource.IsLocal && !Directory.Exists(packageSource.Source)))
+                {
+                    throw new PackageSourceException(PackageSourceException.ExceptionType.UnknownSource);
+                }
+                // If there was no matching known source
+                else if (!packageSource.IsHttp && !packageSource.IsLocal)
+                {
+                    throw new PackageSourceException(PackageSourceException.ExceptionType.UnknownSourceType);
+                }
+            }
+            return source;
+        }
+
+
+        /// <summary>
         /// Initializes source repositories for PowerShell cmdlets, based on config, source string, and/or host active source property value.
         /// </summary>
         /// <param name="source">The source string specified by -Source switch.</param>
-        protected void UpdateActiveSourceRepository(string source)
+        /// <param name="matchingSource">Matching Source if the specified source is a known source. Else null.</param>
+        protected void UpdateActiveSourceRepository(string source, bool validateSource)
         {
-            var packageSources = _sourceRepositoryProvider?.PackageSourceProvider?.LoadPackageSources();
-
+            // Look through all available sources (including those disabled) by matching source name and url
+            var matchingSource = GetMatchingSource(source);
+            // Check if the source is valid http, local. Else throw an exception.
+            if (validateSource && matchingSource == null)
+            {
+                source = CheckSourceValidity(source);
+            }
             // If source string is not specified, get the current active package source from the host
             source = string.IsNullOrEmpty(source) ? (string)GetPropertyValueFromHost(ActivePackageSourceKey) : source;
-
             if (!string.IsNullOrEmpty(source))
             {
-                // Look through all available sources (including those disabled) by matching source name and url
-                var matchingSource = packageSources
-                    ?.Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, source) ||
-                                 StringComparer.OrdinalIgnoreCase.Equals(p.Source, source))
-                    .FirstOrDefault();
-
                 if (matchingSource != null)
                 {
                     _activeSourceRepository = _sourceRepositoryProvider?.CreateRepository(matchingSource);
@@ -304,23 +353,23 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }
 
             }
-
             EnabledSourceRepositories = _sourceRepositoryProvider?.GetRepositories()
                 .Where(r => r.PackageSource.IsEnabled)
                 .ToList();
         }
 
         /// <summary>
-        /// Create a package repository from the source by trying to resolve relative paths.
+        /// If a relative URI is passed, it converts it into an abosolute URI.
+        /// If the Relative URI does not exist, then an exception is thrown.
+        /// If the URI is not relative then no action is taken.
         /// </summary>
-        protected SourceRepository CreateRepositoryFromSource(string source)
+        /// <param name="source">The source string specified by -Source switch.</param>
+        /// <param name="packageId">The package ID string specified.</param>
+        /// <returns>Returns an absolute version of the source string if it is a relative local source. Else returns it unchanged.</returns>
+        /// <exception cref="InvalidOperationException">Throws an InvalidOperationException if the specified source is a non-existent relative local path.</exception>
+        protected string ConvertRelativeUriToAbsolute(string source)
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException("source");
-            }
-
-            // Translate a relative path to an absolute path.
+            var packageSource = new PackageSource(source);
             Uri sourceUri;
             if (Uri.TryCreate(source, UriKind.Relative, out sourceUri))
             {
@@ -332,6 +381,22 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     source = outputPath;
                 }
+                else if (exists.HasValue && !exists.Value)
+                {
+                    throw new PackageSourceException(PackageSourceException.ExceptionType.UnknownSource);
+                }
+            }
+            return source;
+        }
+
+        /// <summary>
+        /// Create a package repository from the source by trying to resolve relative paths.
+        /// </summary>
+        protected SourceRepository CreateRepositoryFromSource(string source)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
             }
 
             var packageSource = new Configuration.PackageSource(source);
