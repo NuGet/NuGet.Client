@@ -202,7 +202,71 @@ namespace NuGet.Credentials.Test
             // Assert
             Assert.NotNull(result);
             Assert.NotNull(result.Credentials);
-            Assert.Equal("u", ((NetworkCredential)result.Credentials)?.UserName);
+            Assert.Equal("u", result.Credentials.GetCredential(uri, "basic")?.UserName);
+        }
+
+        [Fact]
+        public async Task WhenResponseContainsAuthTypeFilter_AppliesFilter()
+        {
+            // Arrange
+            var provider = _mockProvider;
+            var uri = new Uri("http://host/");
+            var proxy = null as IWebProxy;
+            var type = CredentialRequestType.Unauthorized;
+            var message = null as string;
+            var isRetry = true;
+            var nonInteractive = true;
+            _mockProvider.Setup(x => x.Execute(It.IsAny<PluginCredentialRequest>(), It.IsAny<CancellationToken>()))
+                .Returns(new PluginCredentialResponse() { Password = "p", AuthTypes = new[] { "basic" } });
+
+            // Act
+            var result = await provider.Object.GetAsync(
+                uri,
+                proxy,
+                type,
+                message,
+                isRetry,
+                nonInteractive,
+                CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotNull(result.Credentials);
+            Assert.Equal("p", result.Credentials.GetCredential(uri, "basic")?.Password);
+            Assert.Null(result.Credentials.GetCredential(uri, "negotiate")?.Password);
+        }
+
+        [Fact]
+        public async Task WhenResponseDoesNotContainAuthTypeFilter_DoesNotFilter()
+        {
+            // Arrange
+            var provider = _mockProvider;
+            var uri = new Uri("http://host/");
+            var proxy = null as IWebProxy;
+            var type = CredentialRequestType.Unauthorized;
+            var message = null as string;
+            var isRetry = true;
+            var nonInteractive = true;
+            _mockProvider.Setup(x => x.Execute(It.IsAny<PluginCredentialRequest>(), It.IsAny<CancellationToken>()))
+                .Returns(new PluginCredentialResponse() { Password = "p" });
+
+            // Act
+            var result = await provider.Object.GetAsync(
+                uri,
+                proxy,
+                type,
+                message,
+                isRetry,
+                nonInteractive,
+                CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotNull(result.Credentials);
+            Assert.Equal("p", result.Credentials.GetCredential(uri, "basic")?.Password);
+            Assert.Equal("p", result.Credentials.GetCredential(uri, "digest")?.Password);
+            Assert.Equal("p", result.Credentials.GetCredential(uri, "negotiate")?.Password);
+            Assert.Equal("p", result.Credentials.GetCredential(uri, "ntlm")?.Password);
         }
 
         [Fact]
@@ -232,7 +296,7 @@ namespace NuGet.Credentials.Test
             // Assert
             Assert.NotNull(result);
             Assert.NotNull(result.Credentials);
-            Assert.Equal("p", ((NetworkCredential)result.Credentials)?.Password);
+            Assert.Equal("p", result.Credentials.GetCredential(uri, "basic")?.Password);
         }
 
         [Fact]

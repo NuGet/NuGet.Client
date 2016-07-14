@@ -6,6 +6,7 @@ using System.Net.Http;
 using NuGet.Protocol.Core.Types;
 using NuGet.Configuration;
 using System.Net;
+using NuGet.Common;
 
 namespace NuGet.Protocol
 {
@@ -38,7 +39,7 @@ namespace NuGet.Protocol
         public override HttpMessageHandler MessageHandler => _messageHandler;
 
         public static ICredentialService CredentialService { get; set; }
-
+ 
         /// <summary>
         /// Gets or sets a delegate that is to be invoked when authenticated feed credentials are successfully
         /// used.
