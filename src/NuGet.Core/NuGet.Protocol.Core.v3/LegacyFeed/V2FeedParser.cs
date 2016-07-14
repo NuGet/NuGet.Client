@@ -211,9 +211,9 @@ namespace NuGet.Protocol
 
         public async Task<IReadOnlyList<V2FeedPackageInfo>> Search(string searchTerm, SearchFilter filters, int skip, int take, ILogger log, CancellationToken cancellationToken)
         {
-            var targetFramework = String.Join(@"/", filters.SupportedFrameworks);
-
-            var shortFormTargetFramework = NuGetFramework.Parse(targetFramework).GetShortFolderName();
+            // get target framework shortname of all the projects in a solution
+            var shortFormTargetFramework = string.Join("|", filters.SupportedFrameworks.Select(
+                targetFramework => NuGetFramework.Parse(targetFramework).GetShortFolderName()));
 
             // The search term comes in already encoded from VS
             var uri = string.Format(CultureInfo.InvariantCulture, SearchEndPointFormat,
