@@ -417,7 +417,7 @@ namespace NuGet.CommandLine.Test
         {
             foreach (var m in _mappings)
             {
-                if (r.Url.AbsolutePath.StartsWith(m.Item1, StringComparison.Ordinal))
+                if (r.Url.PathAndQuery.StartsWith(m.Item1, StringComparison.Ordinal))
                 {
                     return m.Item2;
                 }

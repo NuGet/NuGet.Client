@@ -54,6 +54,30 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Caching\CachingType.cs" />
+    <Compile Include="Caching\CachingTestContext.cs" />
+    <Compile Include="Caching\CachingTestRunner.cs" />
+    <Compile Include="Caching\CachingValidation.cs" />
+    <Compile Include="Caching\CachingTests.cs" />
+    <Compile Include="Caching\CachingValidations.cs" />
+    <Compile Include="Caching\CachingValidationType.cs" />
+    <Compile Include="Caching\Commands\ICachingCommand.cs" />
+    <Compile Include="Caching\MockResponses\MockResponse.cs" />
+    <Compile Include="Caching\MockResponses\MockResponseBuilder.cs" />
+    <Compile Include="Caching\NuGetExe\INuGetExe.cs" />
+    <Compile Include="Caching\NuGetExe\NuGetExe.cs" />
+    <Compile Include="Caching\ServerType.cs" />
+    <Compile Include="Caching\Tests\ICachingTest.cs" />
+    <Compile Include="Caching\Commands\InstallPackagesConfigCommand.cs" />
+    <Compile Include="Caching\Commands\InstallSpecificVersionCommand.cs" />
+    <Compile Include="Caching\Commands\RestorePackagesConfigCommand.cs" />
+    <Compile Include="Caching\Commands\RestoreProjectJsonCommand.cs" />
+    <Compile Include="Caching\Tests\ReadsFromHttpCacheTest.cs" />
+    <Compile Include="Caching\Tests\WritesToHttpCacheTest.cs" />
+    <Compile Include="Caching\Tests\PopulatesGlobalPackagesFolderTest.cs" />
+    <Compile Include="Caching\Tests\PopulatesDestinationFolderTest.cs" />
+    <Compile Include="Caching\Tests\UsesGlobalPackagesFolderCopyTest.cs" />
+    <Compile Include="Caching\Tests\AllowsMissingPackageOnSourceTest.cs" />
     <Compile Include="ConsoleCredentialProviderTest.cs" />
     <Compile Include="ConsoleTest.cs" />
     <Compile Include="DefaultConfigurationFilePreserver.cs" />
