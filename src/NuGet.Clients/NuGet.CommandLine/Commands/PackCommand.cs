@@ -85,7 +85,6 @@ namespace NuGet.CommandLine
             packArgs.Logger = Console;
             packArgs.Arguments = Arguments;
             packArgs.OutputDirectory = OutputDirectory;
-            packArgs.BasePath = BasePath;
 
             // The directory that contains msbuild
             packArgs.MsBuildDirectory = new Lazy<string>(() => MsBuildUtility.GetMsbuildDirectory(MSBuildVersion, Console));
@@ -97,6 +96,10 @@ namespace NuGet.CommandLine
             PackCommandRunner.SetupCurrentDirectory(packArgs);
 
             Console.WriteLine(LocalizedResourceManager.GetString("PackageCommandAttemptingToBuildPackage"), Path.GetFileName(packArgs.Path));
+
+            // If the BasePath is not specified, use the current directory
+            BasePath = String.IsNullOrEmpty(BasePath) ? packArgs.CurrentDirectory : BasePath;
+            packArgs.BasePath = BasePath;
 
             if (!String.IsNullOrEmpty(MinClientVersion))
             {
