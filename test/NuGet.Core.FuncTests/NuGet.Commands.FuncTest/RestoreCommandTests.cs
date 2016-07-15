@@ -1980,6 +1980,45 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
+        [Fact]
+        public async Task RestoreCommand_DirectDownloadByProjectJSon()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+            var packageSource = new PackageSource("https://api.nuget.org/v3/index.json");
+            sources.Add(packageSource);
+
+            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var settings = new Settings(projectDir);
+                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
+
+                AddDependency(spec, "NuGet.Versioning", "1.0.7");
+
+                var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    cacheContext.NoCache = true;
+                    var logger = new TestLogger();
+                    var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), cacheContext, logger);
+                    var request = new RestoreRequest(spec, provider, logger);
+
+                    // Act
+                    var command = new RestoreCommand(request);
+                    var result = await command.ExecuteAsync();
+
+                    // Assert
+                    var pathResolver = new VersionFolderPathResolver(packagesDir);
+                    var nuspecPath = pathResolver.GetManifestFilePath("NuGet.Versioning", new NuGetVersion("1.0.7"));
+                    Assert.True(File.Exists(nuspecPath));
+
+                    // TODO: Check that the v3-cache was not populated
+                }
+            }
+        }
+
         private static List<LockFileItem> GetRuntimeAssemblies(IList<LockFileTarget> targets, string framework, string runtime)
         {
             return GetRuntimeAssemblies(targets, NuGetFramework.Parse(framework), runtime);
