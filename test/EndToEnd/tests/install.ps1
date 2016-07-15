@@ -12,6 +12,17 @@ function Test-InstallPackageWithInvalidAbsoluteLocalSource {
 	Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
 }
 
+function Test-InstallPackageWithValidAbsoluteLocalSource {
+	# Arrange
+	$package = "Rules"
+	$project = New-ConsoleApplication
+	$source = pwd
+	$message = "Unable to find package '$package'"
+
+	# Act & Assert
+	Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
 function Test-InstallPackageWithInvalidRelativeLocalSource {
 	# Arrange
 	$package = "Rules"
@@ -46,6 +57,17 @@ function Test-InstallPackageWithInvalidHttpSource {
 	Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
 }
 
+function Test-InstallPackageWithIncompleteHttpSource {
+	# Arrange
+	$package = "Rules"
+	$project = New-ConsoleApplication
+	$source = "http://"
+	$message = "Unable to find package 'Rules' at source '$source'. Source not found."
+
+	# Act & Assert
+	Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
 function Test-InstallPackageWithInvalidKnownSource {
 	# Arrange
 	$package = "Rules"
@@ -63,6 +85,28 @@ function Test-InstallPackageWithValidKnownSource {
 	$project = New-ConsoleApplication
 	$source = "nuget.org"
 	$message = "Unable to find package '$package'"
+
+	# Act & Assert
+	Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
+function Test-InstallPackageWithFileProtocolSource {
+	# Arrange
+	$package = "Rules"
+	$project = New-ConsoleApplication
+	$source = "file://Rules"
+	$message = "Unsupported type of source  '$source'. Please provide an http or local source."
+
+	# Act & Assert
+	Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
+function Test-InstallPackageWithFtpProtocolSource {
+	# Arrange
+	$package = "Rules"
+	$project = New-ConsoleApplication
+	$source = "ftp://Rules"
+	$message = "Unsupported type of source  '$source'. Please provide an http or local source."
 
 	# Act & Assert
 	Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
