@@ -22,7 +22,7 @@ namespace NuGet.Common.Test
 
                 // This is a semaphore use to verify the lock.
                 var verificationSemaphore = new SemaphoreSlim(1);
-                int numResults = 0;
+
                 // Iterate a lot, to increase confidence.
                 const int threads = 50;
                 const int iterations = 10;
@@ -75,14 +75,14 @@ namespace NuGet.Common.Test
             {
                 // This is the path that uniquely identifies the system-wide mutex.
                 var path = Path.Combine(testDirectory, "ConcurrencyUtilities_LockStress_Verification");
-                
+
                 // This is a semaphore use to verify the lock.
                 var verificationSemaphore = new SemaphoreSlim(1);
-                
+
                 // Iterate a lot, to increase confidence.
                 const int threads = 50;
                 const int iterations = 10;
-                
+
                 // This is the action that is execute inside of the lock.
                 Func<CancellationToken, Task<bool>> lockedActionAsync = async lockedToken =>
                 {
@@ -94,11 +94,11 @@ namespace NuGet.Common.Test
 
                     // Hold the lock for a little bit.
                     await Task.Delay(TimeSpan.FromMilliseconds(1));
-                    
+
                     verificationSemaphore.Release();
                     return true;
                 };
-                
+
                 // Loop the same action, over and over.
                 Func<int, Task<List<bool>>> loopAsync = async thread =>
                 {
@@ -111,14 +111,14 @@ namespace NuGet.Common.Test
                             CancellationToken.None);
                         loopResults.Add(result);
                     }
-                    
+
                     return loopResults;
                 };
-                
+
                 // Act
                 var tasks = Enumerable.Range(0, threads).Select(loopAsync);
                 var results = (await Task.WhenAll(tasks)).SelectMany(r => r).ToArray();
-                
+
                 // Assert
                 Assert.Equal(threads * iterations, results.Length);
                 Assert.DoesNotContain(false, results);
