@@ -1977,8 +1977,17 @@ namespace NuGet.PackageManagement
                     nuGetProjectActions,
                     restoreResult);
 
+                // If this build integrated project action represents only uninstalls, mark the entire operation
+                // as an uninstall. Otherwise, mark it as an install. This is important because install operations
+                // are a bit more sensitive to errors (thus resulting in rollbacks).
+                var actionType = NuGetProjectActionType.Install;
+                if (nuGetProjectActions.All(x => x.NuGetProjectActionType == NuGetProjectActionType.Uninstall))
+                {
+                    actionType = NuGetProjectActionType.Uninstall;
+                }
+
                 return new BuildIntegratedProjectAction(nuGetProjectActions.First().PackageIdentity,
-                       nuGetProjectActions.First().NuGetProjectActionType,
+                       actionType,
                        originalLockFile,
                        rawPackageSpec,
                        restoreResult,

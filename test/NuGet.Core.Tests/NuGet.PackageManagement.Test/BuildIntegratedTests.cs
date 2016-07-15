@@ -490,7 +490,7 @@ namespace NuGet.Test
         public async Task TestPacManBuildIntegratedUpdatePackageToHighest()
         {
             // Arrange
-            var versioning105 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.5"));
+            var oldJson = new PackageIdentity("Newtonsoft.Json", NuGetVersion.Parse("6.0.4"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
             using (var testSolutionManager = new TestSolutionManager(true))
             using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
@@ -516,12 +516,12 @@ namespace NuGet.Test
 
                 string message = string.Empty;
 
-                await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, versioning105, new ResolutionContext(), new TestNuGetProjectContext(),
+                await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, oldJson, new ResolutionContext(), new TestNuGetProjectContext(),
                         sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
 
                 // Act
                 var actions = await nuGetPackageManager.PreviewUpdatePackagesAsync(
-                    "nuget.versioning",
+                    "Newtonsoft.Json",
                     buildIntegratedProject,
                     new ResolutionContext(),
                     new TestNuGetProjectContext(),
@@ -542,8 +542,90 @@ namespace NuGet.Test
                 Assert.Equal(1, actions.Count());
                 Assert.True(actions.First() is BuildIntegratedProjectAction);
                 Assert.Equal(1, installedPackages.Count());
-                Assert.True(installedPackages.Single().PackageIdentity.Version > versioning105.Version);
+                Assert.True(installedPackages.Single().PackageIdentity.Version > oldJson.Version);
                 Assert.True(File.Exists(lockFile));
+            }
+        }
+
+        [Fact]
+        public async Task TestPacManBuildIntegratedUpdateMultipleAndRollback()
+        {
+            // Arrange
+            // This package is not compatible with netcore50 and will cause the rollback.
+            var oldVersioning = new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("1.0.5")); 
+
+            // This package is compatible.
+            var oldJson = new PackageIdentity("Newtonsoft.Json", NuGetVersion.Parse("6.0.8"));
+
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
+
+            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    Configuration.NullSettings.Instance,
+                    testSolutionManager,
+                    new TestDeleteOnRestartManager());
+
+                var projectJson = Path.Combine(randomProjectFolderPath, "project.json");
+                CreateConfigJson(projectJson);
+
+                var projectTargetFramework = NuGetFramework.Parse("net45");
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
+                var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
+                var buildIntegratedProject = new BuildIntegratedNuGetProject(projectJson, projectFilePath, msBuildNuGetProjectSystem);
+
+                await nuGetPackageManager.InstallPackageAsync(
+                    buildIntegratedProject,
+                    oldVersioning,
+                    new ResolutionContext(),
+                    new TestNuGetProjectContext(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None);
+
+                await nuGetPackageManager.InstallPackageAsync(
+                    buildIntegratedProject,
+                    oldJson,
+                    new ResolutionContext(),
+                    new TestNuGetProjectContext(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None);
+
+                var actions = await nuGetPackageManager.PreviewUpdatePackagesAsync(
+                    buildIntegratedProject,
+                    new ResolutionContext(),
+                    new TestNuGetProjectContext(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None);
+
+                var originalProjectJson = File.ReadAllText(projectJson);
+
+                // Act & Assert
+                var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
+                        buildIntegratedProject,
+                        actions,
+                        new TestNuGetProjectContext(),
+                        CancellationToken.None));
+
+                var rollbackProjectJson = File.ReadAllText(projectJson);
+
+                Assert.Equal(originalProjectJson, rollbackProjectJson);
+
+                var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
+
+                var rollbackVersioning = installedPackages.FirstOrDefault(x => x.PackageIdentity.Id == "NuGet.Versioning");
+                Assert.NotNull(rollbackVersioning);
+                Assert.Equal(oldVersioning, rollbackVersioning.PackageIdentity);
+
+                var rollbackJson = installedPackages.FirstOrDefault(x => x.PackageIdentity.Id == "Newtonsoft.Json");
+                Assert.NotNull(rollbackJson);
+                Assert.Equal(oldJson, rollbackJson.PackageIdentity);
             }
         }
 
@@ -551,8 +633,8 @@ namespace NuGet.Test
         public async Task TestPacManBuildIntegratedUpdatePackageAll()
         {
             // Arrange
-            var versioning105 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.5"));
-            var jsonNet608 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.8"));
+            var oldMvvm = new PackageIdentity("MvvmLight", NuGetVersion.Parse("4.2.32.7"));
+            var oldJson = new PackageIdentity("Newtonsoft.Json", NuGetVersion.Parse("6.0.8"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
             using (var testSolutionManager = new TestSolutionManager(true))
@@ -579,10 +661,10 @@ namespace NuGet.Test
 
                 string message = string.Empty;
 
-                await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, versioning105, new ResolutionContext(), new TestNuGetProjectContext(),
+                await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, oldMvvm, new ResolutionContext(), new TestNuGetProjectContext(),
                         sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
 
-                await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, jsonNet608, new ResolutionContext(), new TestNuGetProjectContext(),
+                await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, oldJson, new ResolutionContext(), new TestNuGetProjectContext(),
                         sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
 
                 // Act
@@ -605,10 +687,18 @@ namespace NuGet.Test
 
                 // Assert
                 Assert.Equal(1, actions.Count());
-                Assert.True(actions.First() is BuildIntegratedProjectAction);
+                Assert.IsType<BuildIntegratedProjectAction>(actions.First());
+                Assert.Equal(NuGetProjectActionType.Install, actions.First().NuGetProjectActionType);
                 Assert.Equal(2, installedPackages.Count());
-                Assert.True(installedPackages.First().PackageIdentity.Version > jsonNet608.Version);
-                Assert.True(installedPackages.Skip(1).First().PackageIdentity.Version > versioning105.Version);
+
+                var newMvvm = installedPackages.FirstOrDefault(x => x.PackageIdentity.Id == "MvvmLight");
+                Assert.NotNull(newMvvm);
+                Assert.True(newMvvm.PackageIdentity.Version > oldMvvm.Version);
+
+                var newJson = installedPackages.FirstOrDefault(x => x.PackageIdentity.Id == "Newtonsoft.Json");
+                Assert.NotNull(newJson);
+                Assert.True(newJson.PackageIdentity.Version > oldJson.Version);
+
                 Assert.True(File.Exists(lockFile));
             }
         }
@@ -617,7 +707,7 @@ namespace NuGet.Test
         public async Task TestPacManBuildIntegratedUpdatePackageAllNoop()
         {
             // Arrange
-            var versioning105 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.5"));
+            var oldJson = new PackageIdentity("Newtonsoft.Json", NuGetVersion.Parse("6.0.8"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
             using (var testSolutionManager = new TestSolutionManager(true))
@@ -644,7 +734,7 @@ namespace NuGet.Test
 
                 string message = string.Empty;
 
-                await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, versioning105, new ResolutionContext(), new TestNuGetProjectContext(),
+                await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, oldJson, new ResolutionContext(), new TestNuGetProjectContext(),
                         sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
 
                 // Update to the latest
