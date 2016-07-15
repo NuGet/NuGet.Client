@@ -132,30 +132,6 @@ namespace NuGet.Client.Test
         }
 
         [Fact]
-        public void ContentModel_LibAnyMapsToDotnet()
-        {
-            // Arrange
-            var conventions = new ManagedCodeConventions(
-                new RuntimeGraph(
-                    new List<CompatibilityProfile>() { new CompatibilityProfile("net46.app") }));
-
-            var collection = new ContentItemCollection();
-            collection.Load(new string[]
-            {
-                "lib/any/a.dll",
-            });
-
-            // Act
-            var groups = collection.FindItemGroups(conventions.Patterns.RuntimeAssemblies)
-                .OrderBy(group => ((NuGetFramework)group.Properties["tfm"]).GetShortFolderName())
-                .ToList();
-
-            // Assert
-            Assert.Equal(1, groups.Count);
-            Assert.Equal(".NETPlatform,Version=v5.0", groups[0].Properties["tfm"].ToString());
-        }
-
-        [Fact]
         public void ContentModel_LibRootIgnoreSubFolder()
         {
             // Arrange
