@@ -314,11 +314,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     throw new PackageSourceException(PackageSourceException.ExceptionType.UnknownSource);
                 }
-                // If there was no matching known source
-                else if (!packageSource.IsHttp && !packageSource.IsLocal)
-                {
-                    throw new PackageSourceException(PackageSourceException.ExceptionType.UnknownSourceType);
-                }
             }
             return source;
         }
