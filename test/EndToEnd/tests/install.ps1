@@ -1,5 +1,73 @@
 # Verify Xunit 2.1.0 can be installed into a net45 project.
 # https://github.com/NuGet/Home/issues/1711
+
+function Test-InstallPackageWithInvalidAbsoluteLocalSource {
+	# Arrange
+	$package = "Rules"
+	$project = New-ConsoleApplication
+	$source = "c:\temp\data"
+	$message = "Unable to find package '$package' at source '$source'. Source not found."
+
+	# Act & Assert
+	Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
+function Test-InstallPackageWithInvalidRelativeLocalSource {
+	# Arrange
+	$package = "Rules"
+	$project = New-ConsoleApplication
+	$source = "..\invalid_folder"
+	$message = "Unable to find package '$package' at source '$source'. Source not found."
+
+	# Act & Assert
+	Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
+function Test-InstallPackageWithValidRelativeLocalSource {
+	# Arrange
+	$package = "Rules"
+	$project = New-ConsoleApplication
+	$source = "..\"
+	$message = "Unable to find package '$package'"
+
+	# Act & Assert
+	Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
+function Test-InstallPackageWithInvalidHttpSource {
+	# Arrange
+	$package = "Rules"
+	$project = New-ConsoleApplication
+	$source = "http://example.com"
+	$message = "An error occurred while retrieving package metadata for '$package' from source '$source'.
+  The V2 feed at '$source/FindPackagesById()?id='$package'' returned an unexpected status code '404 Not Found'."
+
+	# Act & Assert
+	Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
+function Test-InstallPackageWithInvalidKnownSource {
+	# Arrange
+	$package = "Rules"
+	$project = New-ConsoleApplication
+	$source = "nuget.random"
+	$message = "Unable to find package 'Rules' at source '$source'. Source not found."
+
+	# Act & Assert
+	Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
+function Test-InstallPackageWithValidKnownSource {
+	# Arrange
+	$package = "Rules"
+	$project = New-ConsoleApplication
+	$source = "nuget.org"
+	$message = "Unable to find package '$package'"
+
+	# Act & Assert
+	Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
 function Test-InstallXunit210WithEmptyBuildFolderSucceeds
 {
     param($context)
