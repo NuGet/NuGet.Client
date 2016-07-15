@@ -291,33 +291,28 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Checks if the sourse is valid http, local or known source. Else throws an exception.
+        /// Checks if the sourse is valid http or local source. Else throws an exception.
         /// </summary>
         /// <param name="source">The source string specified by -Source switch.</param>
         /// <param name="packageId">The package ID string specified.</param>
         /// <param name="matchingSource">Matching Source if the specified source is a known source. Else null.</param>
-        /// <returns>Returns an absolute version of the source string if it is a relative local source. Else returns it unchanged.</returns>
-        /// <exception cref="InvalidOperationException">Throws an InvalidOperationException if the specified source is either invalid or is not http/local type.</exception>
+        /// <returns>Returns an absolute version of the specified source if it is a relative local source. Else returns it unchanged.</returns>
+        /// <exception cref="PackageSourceException">Throws an PackageSourceException if the specified source is either invalid or is not http/local type.</exception>
         protected string CheckSourceValidity(string source)
         {
-            // Check validity only if the source and package Id were specified and it is not a known source
+            // Check validity only if the source was specified and it is not a known source
             if (!string.IsNullOrEmpty(source))
             {
-                // Convert a relative URI into an absolute URI
+                // Convert a relative local URI into an absolute URI
                 source = ConvertRelativeUriToAbsolute(source);
 
                 // Convert source into a PackageSource
                 var packageSource = new PackageSource(source);
 
-                // Check if the source is a valid http or local source
-                if ((packageSource.IsHttp && packageSource.TrySourceAsUri == null) || (packageSource.IsLocal && !Directory.Exists(packageSource.Source)))
+                // Check if the source is a valid http
+                if ((packageSource.IsHttp && packageSource.TrySourceAsUri == null))
                 {
                     throw new PackageSourceException(PackageSourceException.ExceptionType.UnknownSource);
-                }
-                // If there was no matching known source
-                else if (!packageSource.IsHttp && !packageSource.IsLocal)
-                {
-                    throw new PackageSourceException(PackageSourceException.ExceptionType.UnknownSourceType);
                 }
             }
             return source;
@@ -359,14 +354,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// If a relative URI is passed, it converts it into an abosolute URI.
-        /// If the Relative URI does not exist, then an exception is thrown.
+        /// If a relative local URI is passed, it converts it into an abosolute URI.
+        /// If the local URI does not exist or it is niether http nor local type, then an exception is thrown.
         /// If the URI is not relative then no action is taken.
         /// </summary>
         /// <param name="source">The source string specified by -Source switch.</param>
         /// <param name="packageId">The package ID string specified.</param>
         /// <returns>Returns an absolute version of the source string if it is a relative local source. Else returns it unchanged.</returns>
-        /// <exception cref="InvalidOperationException">Throws an InvalidOperationException if the specified source is a non-existent relative local path.</exception>
+        /// <exception cref="PackageSourceException">Throws an PackageSourceException if the specified source is a non-existent local source or if the source is not http or local source.</exception>
         protected string ConvertRelativeUriToAbsolute(string source)
         {
             var packageSource = new PackageSource(source);
@@ -383,8 +378,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }
                 else if (exists.HasValue && !exists.Value)
                 {
+                    // Throw an unknown source exception if the local source does not exist
                     throw new PackageSourceException(PackageSourceException.ExceptionType.UnknownSource);
                 }
+            }
+            else if (!packageSource.IsHttp)
+            {
+                // Throw and unknown source type error if the specified source is neither local nor http
+                throw new PackageSourceException(PackageSourceException.ExceptionType.UnknownSourceType);
             }
             return source;
         }
