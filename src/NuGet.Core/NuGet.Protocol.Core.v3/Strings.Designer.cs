@@ -618,6 +618,15 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Unable to find package &apos;{0}&apos; at source &apos;{1}&apos;..
+        /// </summary>
+        public static string Protocol_PackageNotFoundError {
+            get {
+                return ResourceManager.GetString("Protocol_PackageNotFoundError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to The path &apos;{0}&apos; for the selected source could not be resolved..
         /// </summary>
         public static string Protocol_Search_LocalSourceNotFound {
