@@ -83,10 +83,16 @@ namespace NuGet.Commands
             localRepositories.Add(userPackageFolder);
             localRepositories.AddRange(fallbackPackageFolders);
 
+            // Check if any non-empty RIDs exist before reading the runtime graph (runtime.json).
+            // Searching all packages for runtime.json and building the graph can be expensive.
+            var hasNonEmptyRIDs = frameworkRuntimePairs.Any(
+                tfmRidPair => !string.IsNullOrEmpty(tfmRidPair.RuntimeIdentifier));
+
             // Resolve runtime dependencies
-            var runtimeGraphs = new List<RestoreTargetGraph>();
-            if (runtimesByFramework.Count > 0)
+            if (hasNonEmptyRIDs)
             {
+                var runtimeGraphs = new List<RestoreTargetGraph>();
+
                 var runtimeTasks = new List<Task<RestoreTargetGraph[]>>();
                 foreach (var graph in graphs)
                 {
