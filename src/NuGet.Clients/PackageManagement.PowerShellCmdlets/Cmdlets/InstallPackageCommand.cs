@@ -100,11 +100,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 await InstallPackageByIdAsync(Project, Id, ResolutionContext, this, WhatIf.IsPresent);
             }
-            catch (FatalProtocolException)
+            catch (FatalProtocolException ex)
             {
                 // Wrap FatalProtocolException coming from the server with a user friendly message
                 var error = String.Format(CultureInfo.CurrentUICulture, Strings.Exception_PackageNotFound, Id, Source);
                 Log(MessageLevel.Error, error);
+
+                // Additional information about the exception can be observed by using the -verbose switch with the install-package command
+                Log(MessageLevel.Debug, ExceptionUtilities.DisplayMessage(ex));
             }
             catch (Exception ex)
             {
