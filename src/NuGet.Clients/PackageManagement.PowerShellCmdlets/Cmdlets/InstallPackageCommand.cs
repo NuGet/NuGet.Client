@@ -102,12 +102,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
             catch (FatalProtocolException ex)
             {
+                // Additional information about the exception can be observed by using the -verbose switch with the install-package command
+                Log(MessageLevel.Debug, ExceptionUtilities.DisplayMessage(ex));
+
                 // Wrap FatalProtocolException coming from the server with a user friendly message
                 var error = String.Format(CultureInfo.CurrentUICulture, Strings.Exception_PackageNotFound, Id, Source);
                 Log(MessageLevel.Error, error);
-
-                // Additional information about the exception can be observed by using the -verbose switch with the install-package command
-                Log(MessageLevel.Debug, ExceptionUtilities.DisplayMessage(ex));
             }
             catch (Exception ex)
             {
