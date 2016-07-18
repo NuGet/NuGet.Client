@@ -22,6 +22,7 @@ namespace NuGet.PackageManagement.UI
     {
         private readonly INuGetUIContext _context;
         public const string LogEntrySource = "NuGet Package Manager";
+        private const string DotnetDeprecationUrl = "https://aka.ms/rugr4c";
 
         public NuGetUI(
             INuGetUIContext context,
@@ -37,6 +38,30 @@ namespace NuGet.PackageManagement.UI
             ForceRemove = false;
             Projects = Enumerable.Empty<NuGetProject>();
             DisplayPreviewWindow = true;
+            DisplayDeprecatedFrameworkWindow = true;
+        }
+
+        public bool WarnAboutDotnetDeprecation(IEnumerable<NuGetProject> projects)
+        {
+            var result = false;
+
+            UIDispatcher.Invoke(() => { result = WarnAboutDotnetDeprecationImpl(projects); });
+
+            return result;
+        }
+
+        private bool WarnAboutDotnetDeprecationImpl(IEnumerable<NuGetProject> projects)
+        {
+            var window = new DeprecatedFrameworkWindow(_context)
+            {
+                DataContext = new DeprecatedFrameworkModel(
+                    FrameworkConstants.CommonFrameworks.DotNet,
+                    DotnetDeprecationUrl,
+                    projects)
+            };
+
+            var dialogResult = window.ShowModal();
+            return dialogResult ?? false;
         }
 
         public bool PromptForLicenseAcceptance(IEnumerable<PackageLicenseInfo> packages)
@@ -134,6 +159,12 @@ namespace NuGet.PackageManagement.UI
         }
 
         public bool DisplayPreviewWindow
+        {
+            set;
+            get;
+        }
+
+        public bool DisplayDeprecatedFrameworkWindow
         {
             set;
             get;

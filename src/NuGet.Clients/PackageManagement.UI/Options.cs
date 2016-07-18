@@ -14,6 +14,7 @@ namespace NuGet.PackageManagement.UI
         public Options()
         {
             ShowPreviewWindow = true;
+            ShowDeprecatedFrameworkWindow = true;
             CreateFileConflictActions();
             CreateDependencyBehaviors();
             ShowClassicOptions = true;
@@ -114,6 +115,24 @@ namespace NuGet.PackageManagement.UI
                 {
                     _showPreviewWindow = value;
                     OnPropertyChanged(nameof(ShowPreviewWindow));
+                }
+            }
+        }
+
+        private bool _showDeprecatedFrameworkWindow;
+
+        public bool ShowDeprecatedFrameworkWindow
+        {
+            get
+            {
+                return _showDeprecatedFrameworkWindow;
+            }
+            set
+            {
+                if (_showDeprecatedFrameworkWindow != value)
+                {
+                    _showDeprecatedFrameworkWindow = value;
+                    OnPropertyChanged(nameof(ShowDeprecatedFrameworkWindow));
                 }
             }
         }
