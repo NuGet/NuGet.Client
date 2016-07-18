@@ -20,7 +20,6 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Task = System.Threading.Tasks.Task;
 
-
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     [Cmdlet(VerbsLifecycle.Install, "Package")]
