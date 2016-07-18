@@ -50,8 +50,7 @@ function Test-InstallPackageWithInvalidHttpSource {
 	$package = "Rules"
 	$project = New-ConsoleApplication
 	$source = "http://example.com"
-	$message = "An error occurred while retrieving package metadata for '$package' from source '$source'.
-  The V2 feed at '$source/FindPackagesById()?id='$package'' returned an unexpected status code '404 Not Found'."
+	$message = "Unable to find package '$package' at source '$source'."
 
 	# Act & Assert
 	Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
