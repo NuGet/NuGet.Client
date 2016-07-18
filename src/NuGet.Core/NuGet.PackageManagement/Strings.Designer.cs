@@ -150,6 +150,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Unable to find package &apos;{0}&apos; at source &apos;{1}&apos;..
+        /// </summary>
+        public static string Exception_PackageNotFound {
+            get {
+                return ResourceManager.GetString("Exception_PackageNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Exception Type.
         /// </summary>
         public static string ExceptionType {
