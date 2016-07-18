@@ -564,7 +564,7 @@ namespace NuGet.CommandLine
             // Project.json is any directory
             try
             {
-                if (Directory.EnumerateFiles(directory, $"*{ProjectJsonPathUtilities.ProjectConfigFileName}", SearchOption.TopDirectoryOnly).Any())
+                if (Directory.EnumerateFiles(directory, $"*{ProjectJsonPathUtilities.ProjectConfigFileName}", SearchOption.AllDirectories).Any())
                 {
                     // V3 recursive project.json search
                     packageRestoreInputs.RestoreV3Context.Inputs.Add(directory);
