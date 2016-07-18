@@ -16,8 +16,10 @@ using NuGet.PackageManagement.UI;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Task = System.Threading.Tasks.Task;
+
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -98,6 +100,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             try
             {
                 await InstallPackageByIdAsync(Project, Id, ResolutionContext, this, WhatIf.IsPresent);
+            }
+            catch (FatalProtocolException)
+            {
+                // Wrap FatalProtocolException coming from the server with a user friendly message
+                var error = String.Format(CultureInfo.CurrentUICulture, Strings.Exception_PackageNotFound, Id, Source);
+                Log(MessageLevel.Error, ExceptionUtilities.DisplayMessage(new FatalProtocolException(error)));
             }
             catch (Exception ex)
             {

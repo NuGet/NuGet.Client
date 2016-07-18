@@ -77,15 +77,9 @@ namespace NuGet.Protocol
 
                 return results;
             }
-            catch (FatalProtocolException)
-            {
-                // Wrap FatalProtocolException coming from the server with a user friendly message
-                var error = String.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageNotFoundError, packageId, _source);
-
-                throw new FatalProtocolException(error);
-            }
             catch (Exception ex)
             {
+                // Wrap exceptions coming from the server with a user friendly message
                 var error = String.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageMetadataError, packageId, _source);
 
                 throw new FatalProtocolException(error, ex);

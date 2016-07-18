@@ -322,4 +322,9 @@
     <value>Exception Type</value>
     <comment>Used to identify the type of exception thrown</comment>
   </data>
+  <data name="Exception_PackageNotFound" xml:space="preserve">
+    <value>Unable to find package '{0}' at source '{1}'.</value>
+    <comment>{0} - package id
+{1} - source string specified by the user</comment>
+  </data>
 </root>
