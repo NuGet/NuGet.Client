@@ -42,6 +42,7 @@ namespace NuGet.Commands
             RemoteDependencyWalker remoteWalker,
             RemoteWalkContext context,
             bool writeToLockFile,
+            bool forceRuntimeGraphCreation,
             CancellationToken token)
         {
             var allRuntimes = RuntimeGraph.Empty;
@@ -88,8 +89,9 @@ namespace NuGet.Commands
             var hasNonEmptyRIDs = frameworkRuntimePairs.Any(
                 tfmRidPair => !string.IsNullOrEmpty(tfmRidPair.RuntimeIdentifier));
 
+            // The runtime graph needs to be created for scenarios with supports, forceRuntimeGraphCreation allows this.
             // Resolve runtime dependencies
-            if (hasNonEmptyRIDs)
+            if (hasNonEmptyRIDs || forceRuntimeGraphCreation)
             {
                 var runtimeGraphs = new List<RestoreTargetGraph>();
 
