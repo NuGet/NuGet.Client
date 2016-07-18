@@ -37,7 +37,7 @@ namespace NuGet.Configuration
             {
                 FallbackPackageFolders = SettingsUtility.GetFallbackPackageFolders(settings),
                 UserPackageFolder = SettingsUtility.GetGlobalPackagesFolder(settings),
-                HttpCacheFolder = SettingsUtility.GetHttpCacheFolder(settings)
+                HttpCacheFolder = SettingsUtility.GetHttpCacheFolder()
             };
         }
 

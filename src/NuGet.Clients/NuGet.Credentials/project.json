@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "NuGet.PackageManagement": "3.5.1-*",
-    "NuGet.Core": "2.13.0-rtm-822"
+    "NuGet.Core": "2.13.0-rtm-824"
   },
   "frameworks": {
     "net45": {}

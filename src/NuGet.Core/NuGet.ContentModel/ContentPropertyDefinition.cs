@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace NuGet.ContentModel
@@ -14,96 +13,84 @@ namespace NuGet.ContentModel
     /// </summary>
     public class ContentPropertyDefinition
     {
+        private static readonly char[] SlashChars = new char[] { '/', '\\' };
+
         public ContentPropertyDefinition(string name)
-            : this(name, null, null, null, null, null, false)
-        {
-        }
-
-        public ContentPropertyDefinition(string name, IDictionary<string, object> table)
-            : this(name, table, null, null, null, null, false)
-        {
-        }
-
-        public ContentPropertyDefinition(string name, Func<string, object> parser)
-            : this(name, null, parser, null, null, null, false)
-        {
-        }
-
-        public ContentPropertyDefinition(string name, Func<object, object, bool> compatibilityTest)
-            : this(name, null, null, compatibilityTest, null, null, false)
-        {
-        }
-
-        public ContentPropertyDefinition(string name, IDictionary<string, object> table, Func<string, object> parser)
-            : this(name, table, parser, null, null, null, false)
-        {
-        }
-
-        public ContentPropertyDefinition(string name, IDictionary<string, object> table, Func<object, object, bool> compatibilityTest)
-            : this(name, table, null, compatibilityTest, null, null, false)
-        {
-        }
-
-        public ContentPropertyDefinition(string name, Func<string, object> parser, Func<object, object, bool> compatibilityTest)
-            : this(name, null, parser, compatibilityTest, null, null, false)
-        {
-        }
-
-        public ContentPropertyDefinition(string name, IDictionary<string, object> table, Func<string, object> parser, Func<object, object, bool> compatibilityTest)
-            : this(name, table, parser, compatibilityTest, null, null, false)
-        {
-        }
-
-        public ContentPropertyDefinition(string name,
-            IDictionary<string, object> table,
-            Func<string, object> parser, 
-            Func<object, object, bool> compatibilityTest,
-            Func<object, object, object, int> compareTest)
-            : this(name, table, parser, compatibilityTest, compareTest, null, false)
-        {
-        }
-
-        public ContentPropertyDefinition(string name, IEnumerable<string> fileExtensions)
-            : this(name, null, null, null, null, fileExtensions, false)
-        {
-        }
-
-        public ContentPropertyDefinition(string name, Func<string, object> parser, IEnumerable<string> fileExtensions)
-            : this(name, null, parser, null, null, fileExtensions, false)
-        {
-        }
-
-        public ContentPropertyDefinition(string name, IEnumerable<string> fileExtensions, bool allowSubfolders)
-            : this(name, null, null, null, null, fileExtensions, allowSubfolders)
-        {
-        }
-
-        public ContentPropertyDefinition(string name, Func<string, object> parser, IEnumerable<string> fileExtensions, bool allowSubfolders)
-            : this(name, null, parser, null, null, fileExtensions, allowSubfolders)
+            : this(name, null, null, null, null, false)
         {
         }
 
         public ContentPropertyDefinition(
             string name,
-            IDictionary<string, object> table,
-            Func<string, object> parser,
+            Func<string, PatternTable, object> parser)
+            : this(name, parser, null, null, null, false)
+        {
+        }
+
+        public ContentPropertyDefinition(
+            string name,
+            Func<object, object, bool> compatibilityTest)
+            : this(name, null, compatibilityTest, null, null, false)
+        {
+        }
+
+        public ContentPropertyDefinition(
+            string name,
+            Func<string, PatternTable, object> parser,
+            Func<object, object, bool> compatibilityTest)
+            : this(name, parser, compatibilityTest, null, null, false)
+        {
+        }
+
+        public ContentPropertyDefinition(string name,
+            Func<string, PatternTable, object> parser,
+            Func<object, object, bool> compatibilityTest,
+            Func<object, object, object, int> compareTest)
+            : this(name, parser, compatibilityTest, compareTest, null, false)
+        {
+        }
+
+        public ContentPropertyDefinition(
+            string name,
+            IEnumerable<string> fileExtensions)
+            : this(name, null, null, null, fileExtensions, false)
+        {
+        }
+
+        public ContentPropertyDefinition(
+            string name,
+            Func<string, PatternTable, object> parser,
+            IEnumerable<string> fileExtensions)
+            : this(name, parser, null, null, fileExtensions, false)
+        {
+        }
+
+        public ContentPropertyDefinition(
+            string name,
+            IEnumerable<string> fileExtensions,
+            bool allowSubfolders)
+            : this(name, null, null, null, fileExtensions, allowSubfolders)
+        {
+        }
+
+        public ContentPropertyDefinition(
+            string name,
+            Func<string, PatternTable, object> parser,
+            IEnumerable<string> fileExtensions,
+            bool allowSubfolders)
+            : this(name, parser, null, null, fileExtensions, allowSubfolders)
+        {
+        }
+
+        public ContentPropertyDefinition(
+            string name,
+            Func<string, PatternTable, object> parser,
             Func<object, object, bool> compatibilityTest,
             Func<object, object, object, int> compareTest,
             IEnumerable<string> fileExtensions,
             bool allowSubfolders)
         {
             Name = name;
-
-            if (table == null)
-            {
-                table = new Dictionary<string, object>();
-            }
-            else
-            {
-                table = new Dictionary<string, object>(table); // Copies the contents of the dictionary... though we can't control the mutability of the objects :(
-            }
-            Table = new ReadOnlyDictionary<string, object>(table); // Wraps the dictionary in a read-only container. Does NOT copy!
-
             Parser = parser;
             CompatibilityTest = compatibilityTest ?? Equals;
             CompareTest = compareTest;
@@ -113,15 +100,13 @@ namespace NuGet.ContentModel
 
         public string Name { get; }
 
-        public IDictionary<string, object> Table { get; }
-
         public List<string> FileExtensions { get; }
 
         public bool FileExtensionAllowSubFolders { get; }
 
-        public Func<string, object> Parser { get; }
+        public Func<string, PatternTable, object> Parser { get; }
 
-        public virtual bool TryLookup(string name, out object value)
+        public virtual bool TryLookup(string name, PatternTable table, out object value)
         {
             if (name == null)
             {
@@ -129,17 +114,11 @@ namespace NuGet.ContentModel
                 return false;
             }
 
-            if (Table != null
-                && Table.TryGetValue(name, out value))
-            {
-                return true;
-            }
-
             if (FileExtensions != null
-                && FileExtensions.Any())
+                && FileExtensions.Count > 0)
             {
                 if (FileExtensionAllowSubFolders == true
-                    || name.IndexOfAny(new[] { '/', '\\' }) == -1)
+                    || name.IndexOfAny(SlashChars) == -1)
                 {
                     foreach (var fileExtension in FileExtensions)
                     {
@@ -154,7 +133,7 @@ namespace NuGet.ContentModel
 
             if (Parser != null)
             {
-                value = Parser.Invoke(name);
+                value = Parser.Invoke(name, table);
                 if (value != null)
                 {
                     return true;

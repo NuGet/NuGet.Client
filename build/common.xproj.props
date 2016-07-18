@@ -26,7 +26,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(BuildNumber)' == '' ">
-    <SemanticVersionDate>2015-11-30</SemanticVersionDate>
+    <SemanticVersionDate>2016-07-13</SemanticVersionDate>
     <Ticks1>$([System.DateTime]::Parse($(SemanticVersionDate)).Ticks)</Ticks1>
     <Ticks2>$([System.DateTime]::Now.Ticks)</Ticks2>
     <SpanTicks>$([MSBuild]::Subtract($(Ticks2), $(Ticks1)))</SpanTicks>

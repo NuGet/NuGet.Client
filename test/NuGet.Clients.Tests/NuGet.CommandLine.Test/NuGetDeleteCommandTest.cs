@@ -8,6 +8,9 @@ namespace NuGet.CommandLine.Test
 {
     public class NuGetDeleteCommandTest
     {
+        private const string ApiKeyHeader = "X-NuGet-ApiKey";
+        private static readonly string NuGetExePath = Util.GetNuGetExePath();
+
         // Tests deleting a package from a source that is a file system directory.
         [Fact]
         public void DeleteCommand_DeleteFromV2FileSystemSource()
@@ -200,37 +203,45 @@ namespace NuGet.CommandLine.Test
         public void DeleteCommand_WithApiKeyAsThirdArgument()
         {
             // Arrange
-            var nugetexe = Util.GetNuGetExePath();
+            var testApiKey = Guid.NewGuid().ToString();
+
             using (var server = new MockServer())
             {
-                server.Start();
-                var deleteRequestIsCalled = false;
-                var expectedApiKey = "SOME_API_KEY";
-                string actualApiKey = null;
-
-                server.Delete.Add("/nuget/testPackage1/1.1", request =>
+                server.Delete.Add("/nuget/testPackage1/1.1", r =>
                 {
-                    deleteRequestIsCalled = true;
-                    actualApiKey = request.Headers["X-NuGet-ApiKey"];
+                    var h = r.Headers[ApiKeyHeader];
+                    if (!string.Equals(h, testApiKey, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return HttpStatusCode.Unauthorized;
+                    }
 
                     return HttpStatusCode.OK;
                 });
 
-                // Act
-                string[] args = new string[] {
-                    "delete", "testPackage1", "1.1.0", expectedApiKey,
-                    "-Source", server.Uri + "nuget", "-NonInteractive" };
+                server.Start();
 
-                var r = CommandRunner.Run(
-                    nugetexe,
+                // Act
+                var args = new[] {
+                    "delete",
+                    "testPackage1",
+                    "1.1.0",
+                    testApiKey,
+                    "-Source",
+                    server.Uri + "nuget",
+                    "-NonInteractive"
+                };
+
+                var result = CommandRunner.Run(
+                    NuGetExePath,
                     Directory.GetCurrentDirectory(),
                     string.Join(" ", args),
                     waitForExit: true);
 
+                server.Stop();
+
                 // Assert
-                Assert.Equal(0, r.Item1);
-                Assert.True(deleteRequestIsCalled);
-                Assert.Equal(expectedApiKey, actualApiKey);
+                Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
+                Assert.Contains("testPackage1 1.1.0 was deleted successfully.", result.Item2);
             }
         }
 
@@ -238,39 +249,132 @@ namespace NuGet.CommandLine.Test
         public void DeleteCommand_WithApiKeyAsNamedArgument()
         {
             // Arrange
-            var nugetexe = Util.GetNuGetExePath();
+            var testApiKey = Guid.NewGuid().ToString();
+
             using (var server = new MockServer())
             {
-                server.Start();
-                var deleteRequestIsCalled = false;
-                var expectedApiKey = "SOME_API_KEY";
-                string actualApiKey = null;
-
-                server.Delete.Add("/nuget/testPackage1/1.1", request =>
+                server.Delete.Add("/nuget/testPackage1/1.1", r =>
                 {
-                    deleteRequestIsCalled = true;
-                    actualApiKey = request.Headers["X-NuGet-ApiKey"];
+                    var h = r.Headers[ApiKeyHeader];
+                    if (!string.Equals(h, testApiKey, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return HttpStatusCode.Unauthorized;
+                    }
 
                     return HttpStatusCode.OK;
                 });
 
-                // Act
-                string[] args = new string[] {
-                    "delete", "testPackage1", "1.1.0",
-                    "should-be-ignored",  // The named argument is preferred over the positional argument.
-                    "-ApiKey", expectedApiKey,
-                    "-Source", server.Uri + "nuget", "-NonInteractive" };
+                server.Start();
 
-                var r = CommandRunner.Run(
-                    nugetexe,
+                // Act
+                var args = new[]
+                {
+                    "delete",
+                    "testPackage1",
+                    "1.1.0",
+                    "should-be-ignored",  // The named argument is preferred over the positional argument.
+                    "-ApiKey",
+                    testApiKey,
+                    "-Source",
+                    server.Uri + "nuget",
+                    "-NonInteractive"
+                };
+
+                var result = CommandRunner.Run(
+                    NuGetExePath,
                     Directory.GetCurrentDirectory(),
                     string.Join(" ", args),
                     waitForExit: true);
 
+                server.Stop();
+
                 // Assert
-                Assert.Equal(0, r.Item1);
-                Assert.True(deleteRequestIsCalled);
-                Assert.Equal(expectedApiKey, actualApiKey);
+                Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
+                Assert.Contains("testPackage1 1.1.0 was deleted successfully.", result.Item2);
+            }
+        }
+
+        [Theory]
+        [InlineData("{0}index.json")] // package source url
+        [InlineData("{0}push")] // delete package endpoint
+        public void DeleteCommand_WithApiKeyFromConfig(string configKeyFormatString)
+        {
+            // Arrange
+            var testApiKey = Guid.NewGuid().ToString();
+
+            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                using (var server = new MockServer())
+                {
+                    // Server setup
+                    var indexJson = Util.CreateIndexJson();
+
+                    Util.AddFlatContainerResource(indexJson, server);
+                    Util.AddPublishResource(indexJson, server);
+
+                    server.Get.Add("/index.json", r =>
+                    {
+                        return new Action<HttpListenerResponse>(response =>
+                        {
+                            response.StatusCode = 200;
+                            response.ContentType = "text/javascript";
+                            MockServer.SetResponseContent(response, indexJson.ToString());
+                        });
+                    });
+
+                    server.Delete.Add("/push/testPackage1/1.1", r =>
+                    {
+                        var h = r.Headers[ApiKeyHeader];
+                        if (!string.Equals(h, testApiKey, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return HttpStatusCode.Unauthorized;
+                        }
+
+                        return HttpStatusCode.OK;
+                    });
+
+                    server.Start();
+
+                    var configKey = string.Format(configKeyFormatString, server.Uri);
+
+                    var config = $@"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+    <packageSources>
+        <add key='nuget.org' value='{server.Uri}index.json' protocolVersion='3' />
+    </packageSources>
+    <apikeys>
+        <add key='{configKey}' value='{Configuration.EncryptionUtility.EncryptString(testApiKey)}' />
+    </apikeys>
+</configuration>";
+
+                    var configFileName = Path.Combine(testFolder, "nuget.config");
+                    File.WriteAllText(configFileName, config);
+
+                    // Act
+                    var args = new[]
+                    {
+                        "delete",
+                        "testPackage1",
+                        "1.1.0",
+                        "-Source",
+                        "nuget.org",
+                        "-ConfigFile",
+                        configFileName,
+                        "-NonInteractive"
+                    };
+
+                    var result = CommandRunner.Run(
+                        NuGetExePath,
+                        Directory.GetCurrentDirectory(),
+                        string.Join(" ", args),
+                        waitForExit: true);
+
+                    server.Stop();
+
+                    // Assert
+                    Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
+                    Assert.Contains("testPackage1 1.1.0 was deleted successfully.", result.Item2);
+                }
             }
         }
     }

@@ -36,32 +36,32 @@
   },
   "frameworks": {
     "net46": {
+      "frameworkAssemblies": {
+        "System.Runtime": ""
+      },
+      "buildOptions": {
+        "define": [
+          "IS_DESKTOP"
+        ]
+      }
+    },
+    "netcoreapp1.0": {
+      "imports": [
+        "netstandardapp1.5",
+        "dnxcore50",
+        "portable-net45+win8"
+      ],
       "dependencies": {
-        "System.Runtime": "4.1.0"
-      },
-        "buildOptions": {
-          "define": [
-            "IS_DESKTOP"
-          ]
+        "Microsoft.NETCore.App": {
+          "type": "platform",
+          "version": "1.0.0"
         }
       },
-      "netcoreapp1.0": {
-        "imports": [
-          "netstandardapp1.5",
-          "dnxcore50",
-          "portable-net45+win8"
-        ],
-        "dependencies": {
-          "Microsoft.NETCore.App": {
-            "type": "platform",
-            "version": "1.0.0"
-          }
-        },
-        "buildOptions": {
-          "define": [
-            "IS_CORECLR"
-          ]
-        }
+      "buildOptions": {
+        "define": [
+          "IS_CORECLR"
+        ]
       }
     }
+  }
 }

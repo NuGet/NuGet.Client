@@ -10,7 +10,7 @@ namespace NuGet.Packaging.Test
     public class ManifestVersionUtilityTest
     {
         [Fact]
-        public void GetManifestVersionReturns7IfPackageTypesAreSet()
+        public void GetManifestVersionReturns1IfPackageTypesAreSet()
         {
             // Arrange
             var metadata = new ManifestMetadata
@@ -29,7 +29,7 @@ namespace NuGet.Packaging.Test
             var version = ManifestVersionUtility.GetManifestVersion(metadata);
 
             // Assert
-            Assert.Equal(7, version);
+            Assert.Equal(1, version);
         }
 
         [Fact]

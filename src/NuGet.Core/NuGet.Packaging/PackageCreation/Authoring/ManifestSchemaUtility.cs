@@ -48,11 +48,6 @@ namespace NuGet.Packaging
         /// Allows XDT transformation
         /// </summary>
         internal const string SchemaVersionV6 = "http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd";
-
-        /// <summary>
-        /// Added packageTypes element under metadata.
-        /// </summary>
-        internal const string SchemaVersionV7 = "http://schemas.microsoft.com/packaging/2016/04/nuspec.xsd";
         
         private static readonly string[] VersionToSchemaMappings = new[] {
             SchemaVersionV1,
@@ -60,8 +55,7 @@ namespace NuGet.Packaging
             SchemaVersionV3,
             SchemaVersionV4,
             SchemaVersionV5,
-            SchemaVersionV6,
-            SchemaVersionV7
+            SchemaVersionV6
         };
 
 #if !IS_CORECLR

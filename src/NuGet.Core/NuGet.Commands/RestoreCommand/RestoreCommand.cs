@@ -368,6 +368,7 @@ namespace NuGet.Commands
                     walker,
                     contextForTool,
                     writeToLockFile: true,
+                    forceRuntimeGraphCreation: false,
                     token: token);
 
                 var graphs = result.Item2;
@@ -517,6 +518,7 @@ namespace NuGet.Commands
             var allGraphs = new List<RestoreTargetGraph>();
             var runtimeIds = RequestRuntimeUtility.GetRestoreRuntimes(_request);
             var projectFrameworkRuntimePairs = CreateFrameworkRuntimePairs(_request.Project, runtimeIds);
+            var hasSupports = _request.Project.RuntimeGraph.Supports.Count > 0;
 
             var projectRestoreRequest = new ProjectRestoreRequest(
                 _request,
@@ -534,10 +536,10 @@ namespace NuGet.Commands
                 remoteWalker,
                 context,
                 writeToLockFile: true,
+                forceRuntimeGraphCreation: hasSupports,
                 token: token);
 
             var success = result.Item1;
-            var runtimes = result.Item3;
 
             allGraphs.AddRange(result.Item2);
 
@@ -546,6 +548,8 @@ namespace NuGet.Commands
             // Calculate compatibility profiles to check by merging those defined in the project with any from the command line
             foreach (var profile in _request.Project.RuntimeGraph.Supports)
             {
+                var runtimes = result.Item3;
+
                 CompatibilityProfile compatProfile;
                 if (profile.Value.RestoreContexts.Any())
                 {
@@ -577,6 +581,7 @@ namespace NuGet.Commands
                                                           remoteWalker,
                                                           context,
                                                           writeToLockFile: false,
+                                                          forceRuntimeGraphCreation: true,
                                                           token: token);
 
                 _success = compatibilityResult.Item1;

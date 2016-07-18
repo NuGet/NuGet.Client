@@ -152,7 +152,7 @@ Invoke-BuildStep 'Running NuGet.Clients tests - Dev15 dependencies' {
 
 Invoke-BuildStep 'Running NuGet.Clients tests - Dev14 dependencies' {
         param($Configuration)
-        Test-ClientsProjects -Configuration:$Configuration -MSBuildVersion "14"
+        Test-ClientsProjects -Configuration $Configuration -MSBuildVersion "14"
     } `
     -args $Configuration `
     -skip:((-not $RunTests) -or $SkipDev14) `

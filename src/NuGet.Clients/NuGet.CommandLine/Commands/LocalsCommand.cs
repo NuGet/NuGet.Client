@@ -61,7 +61,7 @@ namespace NuGet.CommandLine.Commands
             switch (localResourceName)
             {
                 case LocalResourceName.HttpCache:
-                    PrintLocalResourcePath(_httpCacheResourceName, SettingsUtility.GetHttpCacheFolder(Settings));
+                    PrintLocalResourcePath(_httpCacheResourceName, SettingsUtility.GetHttpCacheFolder());
                     break;
                 case LocalResourceName.PackagesCache:
                     PrintLocalResourcePath(_packagesCacheResourceName, MachineCache.Default?.Source);
@@ -73,7 +73,7 @@ namespace NuGet.CommandLine.Commands
                     PrintLocalResourcePath(_tempResourceName, NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp));
                     break;
                 case LocalResourceName.All:
-                    PrintLocalResourcePath(_httpCacheResourceName, SettingsUtility.GetHttpCacheFolder(Settings));
+                    PrintLocalResourcePath(_httpCacheResourceName, SettingsUtility.GetHttpCacheFolder());
                     PrintLocalResourcePath(_packagesCacheResourceName, MachineCache.Default?.Source);
                     PrintLocalResourcePath(_globalPackagesResourceName, SettingsUtility.GetGlobalPackagesFolder(Settings));
                     PrintLocalResourcePath(_tempResourceName, NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp));
@@ -185,7 +185,7 @@ namespace NuGet.CommandLine.Commands
         private bool ClearNuGetHttpCache()
         {
             var success = true;
-            var httpCacheFolderPath = SettingsUtility.GetHttpCacheFolder(Settings);
+            var httpCacheFolderPath = SettingsUtility.GetHttpCacheFolder();
 
             if (!string.IsNullOrEmpty(httpCacheFolderPath))
             {

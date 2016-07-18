@@ -621,5 +621,39 @@ namespace NuGet.Protocol.Tests
             Assert.NotNull(duplicateUrlException);
             Assert.Equal(string.Format(CultureInfo.CurrentCulture, Strings.Protocol_duplicateUri, dupUrl), duplicateUrlException.Message);
         }
+
+        [Fact]
+        public async Task V2FeedParser_Search_MultipleSupportedFramework()
+        {
+            // Arrange
+            var serviceAddress = TestUtility.CreateServiceAddress();
+
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "Search()?$filter=IsLatestVersion&searchTerm='azure%20%2B''%20b%20'&targetFramework='portable45-net45%2Bwin8%2Bwpa81%7Cwpa81%7Cmonoandroid60'&includePrerelease=false&$skip=0&$top=1",
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.AzureSearch.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
+
+            V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
+            var searchFilter = new SearchFilter()
+            {
+                IncludePrerelease = false,
+                SupportedFrameworks = new string[]
+                {
+                    ".NetPortable,Version=v4.5,Profile=Profile111",
+                    "WindowsPhoneApp,Version=v8.1",
+                    "MonoAndroid,Version=v6.0"
+                }
+            };
+
+            // Act
+            var packages = await parser.Search("azure +' b ", searchFilter, 0, 1, NullLogger.Instance, CancellationToken.None);
+            var package = packages.FirstOrDefault();
+
+            // Assert
+            Assert.NotNull((package));
+            Assert.Equal("WindowsAzure.Storage", package.Id);
+        }
     }
 }

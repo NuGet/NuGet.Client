@@ -31,7 +31,7 @@ namespace NuGet.Configuration.Test
                 ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 Settings settings = new Settings(mockBaseDirectory);
 
-                var http = SettingsUtility.GetHttpCacheFolder(settings);
+                var http = SettingsUtility.GetHttpCacheFolder();
 
                 // Act
                 var pathContext = NuGetPathContext.Create(settings);
@@ -52,7 +52,7 @@ namespace NuGet.Configuration.Test
             using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 var globalFolder = SettingsUtility.GetGlobalPackagesFolder(NullSettings.Instance);
-                var http = SettingsUtility.GetHttpCacheFolder(NullSettings.Instance);
+                var http = SettingsUtility.GetHttpCacheFolder();
 
                 // Act
                 var pathContext = NuGetPathContext.Create(NullSettings.Instance);

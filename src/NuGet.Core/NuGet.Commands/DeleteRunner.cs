@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Common;
@@ -24,13 +27,13 @@ namespace NuGet.Commands
         {
             source = CommandRunnerUtility.ResolveSource(sourceProvider, source);
 
-            PackageUpdateResource packageUpdateResource = await CommandRunnerUtility.GetPackageUpdateResource(sourceProvider, source);
+            var packageUpdateResource = await CommandRunnerUtility.GetPackageUpdateResource(sourceProvider, source);
 
             await packageUpdateResource.Delete(
                 packageId,
                 packageVersion,
-                (endpoint) => CommandRunnerUtility.GetApiKey(settings, endpoint, apiKey),
-                (desc) => nonInteractive ? true : confirmFunc(desc),
+                endpoint => apiKey ?? CommandRunnerUtility.GetApiKey(settings, endpoint, source, defaultApiKey: null, isSymbolApiKey: false),
+                desc => nonInteractive || confirmFunc(desc),
                 logger);
         }
     }

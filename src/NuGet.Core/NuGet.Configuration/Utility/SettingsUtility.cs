@@ -16,6 +16,7 @@ namespace NuGet.Configuration
         private const string GlobalPackagesFolderKey = "globalPackagesFolder";
         private const string GlobalPackagesFolderEnvironmentKey = "NUGET_PACKAGES";
         private const string FallbackPackagesFolderEnvironmentKey = "NUGET_FALLBACK_PACKAGES";
+        private const string HttpCacheEnvironmentKey = "NUGET_HTTP_CACHE_PATH";
         private const string RepositoryPathKey = "repositoryPath";
         public static readonly string DefaultGlobalPackagesFolderPath = "packages" + Path.DirectorySeparatorChar;
 
@@ -212,11 +213,23 @@ namespace NuGet.Configuration
                 .ToList();
         }
 
-        public static string GetHttpCacheFolder(ISettings settings)
+        /// <summary>
+        /// Get the HTTP cache folder from either an environment variable or a default.
+        /// </summary>
+        public static string GetHttpCacheFolder()
         {
-            if (settings == null)
+            var path = Environment.GetEnvironmentVariable(HttpCacheEnvironmentKey);
+            if (!string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException(nameof(settings));
+                // Verify the path is absolute
+                VerifyPathIsRooted(HttpCacheEnvironmentKey, path);
+            }
+
+            if (!string.IsNullOrEmpty(path))
+            {
+                path = path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+                path = Path.GetFullPath(path);
+                return path;
             }
             
             return NuGetEnvironment.GetFolderPath(NuGetFolderPath.HttpCacheDirectory);
