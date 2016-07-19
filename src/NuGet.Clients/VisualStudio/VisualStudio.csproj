@@ -74,6 +74,7 @@
     <Compile Include="Extensibility\IVsGlobalPackagesInitScriptExecutor.cs" />
     <Compile Include="Extensibility\IVsFrameworkCompatibility.cs" />
     <Compile Include="Extensibility\IVsPackageInstaller2.cs" />
+    <Compile Include="Extensibility\IVsPackageInstallerProjectEvents.cs" />
     <Compile Include="Extensibility\IVsPackageSourceProvider.cs" />
     <Compile Include="Extensibility\IVsPackageInstaller.cs" />
     <Compile Include="Extensibility\IVsPackageInstallerEvents.cs" />
@@ -81,6 +82,7 @@
     <Compile Include="Extensibility\IVsPackageMetadata.cs" />
     <Compile Include="Extensibility\IVsPackageRestorer.cs" />
     <Compile Include="Extensibility\IVsPackageUninstaller.cs" />
+    <Compile Include="Extensibility\IVsPackageProjectMetadata.cs" />
     <Compile Include="Extensibility\IVsSemanticVersionComparer.cs" />
     <Compile Include="Extensibility\VsPackageEventHandler.cs" />
     <Compile Include="IVsPackageManagerProvider.cs" />

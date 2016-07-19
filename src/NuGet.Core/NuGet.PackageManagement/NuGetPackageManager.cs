@@ -52,6 +52,16 @@ namespace NuGet.PackageManagement
         public IInstallationCompatibility InstallationCompatibility { get; set; }
 
         /// <summary>
+        /// Event to be raised when batch processing of install/ uninstall packages starts at a project level
+        /// </summary>
+        public event EventHandler<PackageProjectEventArgs> BatchStart;
+
+        /// <summary>
+        /// Event to be raised when batch processing of install/ uninstall packages ends at a project level
+        /// </summary>
+        public event EventHandler<PackageProjectEventArgs> BatchEnd;
+
+        /// <summary>
         /// To construct a NuGetPackageManager that does not need a SolutionManager like NuGet.exe
         /// </summary>
         public NuGetPackageManager(
@@ -1671,6 +1681,12 @@ namespace NuGet.PackageManagement
                 Dictionary<PackageIdentity, PackagePreFetcherResult> downloadTasks = null;
                 CancellationTokenSource downloadTokenSource = null;
 
+                // batch events argument object
+                PackageProjectEventArgs packageProjectEventArgs = null;
+
+                // to keep track of vs batch event start
+                var isVsBatchStartEventRaised = false;
+
                 try
                 {
                     // PreProcess projects
@@ -1704,6 +1720,15 @@ namespace NuGet.PackageManagement
                     if (msbuildProject != null)
                     {
                         msbuildProject.MSBuildNuGetProjectSystem.BeginProcessing();
+                        isVsBatchStartEventRaised = true;
+
+                        // raise Nuget batch start event
+                        var batchId = Guid.NewGuid().ToString();
+                        string name;
+                        nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.Name, out name);
+                        packageProjectEventArgs = new PackageProjectEventArgs(batchId, name);
+                        BatchStart?.Invoke(this, packageProjectEventArgs);
+                        PackageProjectEventsProvider.Instance.NotifyBatchStart(packageProjectEventArgs);
                     }
 
                     foreach (var nuGetProjectAction in actionsList)
@@ -1787,8 +1812,20 @@ namespace NuGet.PackageManagement
 
                     if (msbuildProject != null)
                     {
-                        msbuildProject.MSBuildNuGetProjectSystem.EndProcessing();
+                        // raise nuget batch end event
+                        if (packageProjectEventArgs != null)
+                        {
+                            BatchEnd?.Invoke(this, packageProjectEventArgs);
+                            PackageProjectEventsProvider.Instance.NotifyBatchEnd(packageProjectEventArgs);
+                        }
+
+                        if (isVsBatchStartEventRaised)
+                        {
+                            // raise batch end event only when we raised vs batch start
+                            msbuildProject.MSBuildNuGetProjectSystem.EndProcessing();
+                        }
                     }
+                    
                 }
 
                 if (exceptionInfo != null)
