@@ -48,6 +48,9 @@ namespace NuGet.Client
 
         private RuntimeGraph _runtimeGraph;
 
+        private Dictionary<string, NuGetFramework> _frameworkCache
+            = new Dictionary<string, NuGetFramework>(StringComparer.Ordinal);
+
         public ManagedCodeCriteria Criteria { get; }
         public IReadOnlyDictionary<string, ContentPropertyDefinition> Properties { get; }
         public ManagedCodePatterns Patterns { get; }
@@ -139,7 +142,7 @@ namespace NuGet.Client
             return null;
         }
 
-        private static object TargetFrameworkName_Parser(
+        private object TargetFrameworkName_Parser(
             string name,
             PatternTable table)
         {
@@ -154,6 +157,21 @@ namespace NuGet.Client
                 }
             }
 
+            // Check the cache for an exact match
+            if (!string.IsNullOrEmpty(name))
+            {
+                NuGetFramework cachedResult;
+                if (!_frameworkCache.TryGetValue(name, out cachedResult))
+                {
+                    // Parse and add the framework to the cache
+                    cachedResult = TargetFrameworkName_ParserCore(name);
+                    _frameworkCache.Add(name, cachedResult);
+                }
+
+                return cachedResult;
+            }
+
+            // Let the framework parser handle null/empty and create the error message.
             return TargetFrameworkName_ParserCore(name);
         }
 
