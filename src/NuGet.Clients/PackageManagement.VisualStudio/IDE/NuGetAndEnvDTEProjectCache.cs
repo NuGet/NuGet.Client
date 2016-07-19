@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.Telemetry;
 using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
 
@@ -137,6 +139,15 @@ namespace NuGet.PackageManagement.VisualStudio
                 return EnvDTEProjectName;
             }
 
+            // Emit project specific telemetry as we are adding the project to the cache.
+            // This ensures we do not emit the events over and over while the solution is
+            // open.
+            NuGetProjectTelemetryService.Instance.EmitNuGetProject(
+                project,
+                nuGetProject,
+                CancellationToken.None);
+
+            // Add the project to the cache.
             AddShortName(EnvDTEProjectName);
 
             _projectNamesCache[EnvDTEProjectName.CustomUniqueName] = EnvDTEProjectName;
