@@ -61,16 +61,17 @@ function Test-InstallPackageWithInvalidHttpSourceVerbose {
 	$package = "Rules"
 	$project = New-ConsoleApplication
 	$source = "http://example.com"
-	$url = $source+"/FindPackagesById()?id='$package'"
-	$errorcode = "404 Not Found"
-	$message = "  GET $url   NotFound $url ? An error occurred while retrieving package metadata for '$package' from source '$source'."+
-               "  The V2 feed at '$url' returned an unexpected status code '$errorcode'. Unable to find package 'Rules' at source '$source'."
-	
+	$escapedSource = [regex]::Escape($source)
+	$escapedUrl = [regex]::Escape($source+"/FindPackagesById()?id='$package'")
+	$message = "\ \ GET\ $escapedUrl\ \ \ NotFound\ $escapedUrl\ [\w]+\ An\ error\ occurred\ while\ retrieving\ package\ metadata\ for\ '$package'\ from\ source\ '$escapedSource'\.\r\n\ \ The\ V2\ feed\ at\ '$escapedUrl'\ returned\ an\ unexpected\ status\ code\ '404\ Not\ Found'\.\ Unable\ to\ find\ package\ '$package'\ at\ source\ '$escapedSource'\."
+
 	# Act
 	$result = Install-Package $package -ProjectName $project.Name -source $source -Verbose *>&1
+	$resultString = [string]::Join(" ", $result)
+	$compare = $resultString -Match $message
 
 	# Assert
-	Assert-True { $message -match $result }
+	Assert-True $compare
 }
 
 function Test-InstallPackageWithIncompleteHttpSource {
