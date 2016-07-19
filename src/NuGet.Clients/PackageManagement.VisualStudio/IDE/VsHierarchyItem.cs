@@ -30,6 +30,16 @@ namespace NuGet.PackageManagement.VisualStudio
         {
         }
 
+        internal bool TryGetProjectId(out Guid projectId)
+        {
+            var result = _hierarchy.GetGuidProperty(
+                VSConstants.VSITEMID_ROOT,
+                (int)__VSHPROPID.VSHPROPID_ProjectIDGuid,
+                out projectId);
+
+            return result == VSConstants.S_OK;
+        }
+
         internal uint VsItemID
         {
             get { return _vsitemid; }

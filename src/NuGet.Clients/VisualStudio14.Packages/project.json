@@ -14,7 +14,8 @@
     "Microsoft.VisualStudio.Text.UI": "14.2.25123",
     "Microsoft.VisualStudio.Text.UI.Wpf": "14.2.25123",
     "Microsoft.VisualStudio.Threading": "14.1.131",
-    "Microsoft.VSSDK.BuildTools": "14.3.25420"
+    "Microsoft.VSSDK.BuildTools": "14.3.25420",
+    "Microsoft.VisualStudio.Telemetry": "14.1.680-update09A45013"
   },
   "frameworks": {
     "net46": {}
