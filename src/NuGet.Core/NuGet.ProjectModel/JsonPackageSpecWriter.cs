@@ -41,19 +41,11 @@ namespace NuGet.ProjectModel
 
             SetValue(json, "description", packageSpec.Description);
             SetArrayValue(json, "authors", packageSpec.Authors);
-            SetArrayValue(json, "owners", packageSpec.Owners);
-            SetArrayValue(json, "tags", packageSpec.Tags);
-            SetValue(json, "projectUrl", packageSpec.ProjectUrl);
-            SetValue(json, "iconUrl", packageSpec.IconUrl);
-            SetValue(json, "licenseUrl", packageSpec.LicenseUrl);
             SetValue(json, "copyright", packageSpec.Copyright);
             SetValue(json, "language", packageSpec.Language);
-            SetValue(json, "summary", packageSpec.Summary);
-            SetValue(json, "releaseNotes", packageSpec.ReleaseNotes);
-            SetValue(json, "requireLicenseAcceptance", packageSpec.RequireLicenseAcceptance.ToString());
             SetArrayValue(json, "contentFiles", packageSpec.ContentFiles);
             SetDictionaryValue(json, "packInclude", packageSpec.PackInclude);
-            SetPackOptions(json, packageSpec.PackOptions);
+            SetPackOptions(json, packageSpec);
             SetDictionaryValues(json, "scripts", packageSpec.Scripts);
 
             if (packageSpec.Dependencies.Any())
@@ -98,14 +90,23 @@ namespace NuGet.ProjectModel
             JsonRuntimeFormat.WriteRuntimeGraph(json, packageSpec.RuntimeGraph);
         }
 
-        private static void SetPackOptions(JObject json, PackOptions packOptions)
+        private static void SetPackOptions(JObject json, PackageSpec packageSpec)
         {
+            var packOptions = packageSpec.PackOptions;
             if (packOptions == null)
             {
                 return;
             }
 
             var rawPackOptions = new JObject();
+            SetArrayValue(rawPackOptions, "owners", packageSpec.Owners);
+            SetArrayValue(rawPackOptions, "tags", packageSpec.Tags);
+            SetValue(rawPackOptions, "projectUrl", packageSpec.ProjectUrl);
+            SetValue(rawPackOptions, "iconUrl", packageSpec.IconUrl);
+            SetValue(rawPackOptions, "summary", packageSpec.Summary);
+            SetValue(rawPackOptions, "releaseNotes", packageSpec.ReleaseNotes);
+            SetValue(rawPackOptions, "licenseUrl", packageSpec.LicenseUrl);
+            SetValue(rawPackOptions, "requireLicenseAcceptance", packageSpec.RequireLicenseAcceptance.ToString());
             if (packOptions.PackageType != null)
             {
                 if (packOptions.PackageType.Count == 1)

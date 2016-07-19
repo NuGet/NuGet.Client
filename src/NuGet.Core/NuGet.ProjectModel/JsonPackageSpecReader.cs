@@ -63,8 +63,6 @@ namespace NuGet.ProjectModel
             // Parse properties we know about
             var version = rawPackageSpec["version"];
             var authors = rawPackageSpec["authors"];
-            var owners = rawPackageSpec["owners"];
-            var tags = rawPackageSpec["tags"];
             var contentFiles = rawPackageSpec["contentFiles"];
 
             packageSpec.Name = name;
@@ -104,16 +102,11 @@ namespace NuGet.ProjectModel
             packageSpec.Title = rawPackageSpec.GetValue<string>("title");
             packageSpec.Description = rawPackageSpec.GetValue<string>("description");
             packageSpec.Authors = authors == null ? new string[] { } : authors.ValueAsArray<string>();
-            packageSpec.Owners = owners == null ? new string[] { } : owners.ValueAsArray<string>();
             packageSpec.ContentFiles = contentFiles == null ? new string[] { } : contentFiles.ValueAsArray<string>();
             packageSpec.Dependencies = new List<LibraryDependency>();
-            packageSpec.ProjectUrl = rawPackageSpec.GetValue<string>("projectUrl");
-            packageSpec.IconUrl = rawPackageSpec.GetValue<string>("iconUrl");
-            packageSpec.LicenseUrl = rawPackageSpec.GetValue<string>("licenseUrl");
             packageSpec.Copyright = rawPackageSpec.GetValue<string>("copyright");
             packageSpec.Language = rawPackageSpec.GetValue<string>("language");
-            packageSpec.Summary = rawPackageSpec.GetValue<string>("summary");
-            packageSpec.ReleaseNotes = rawPackageSpec.GetValue<string>("releaseNotes");
+            
 
             var buildOptions = rawPackageSpec["buildOptions"] as JObject;
             if (buildOptions != null)
@@ -123,22 +116,6 @@ namespace NuGet.ProjectModel
                     OutputName = buildOptions.GetValue<string>("outputName")
                 };
             }
-
-            var requireLicenseAcceptance = rawPackageSpec["requireLicenseAcceptance"];
-
-            if (requireLicenseAcceptance != null)
-            {
-                try
-                {
-                    packageSpec.RequireLicenseAcceptance = rawPackageSpec.GetValue<bool?>("requireLicenseAcceptance") ?? false;
-                }
-                catch (Exception ex)
-                {
-                    throw FileFormatException.Create(ex, requireLicenseAcceptance, packageSpecPath);
-                }
-            }
-
-            packageSpec.Tags = tags == null ? new string[] { } : tags.ValueAsArray<string>();
 
             var scripts = rawPackageSpec["scripts"] as JObject;
             if (scripts != null)
@@ -211,6 +188,30 @@ namespace NuGet.ProjectModel
                 {
                     PackageType = new PackageType[0]
                 };
+            }
+            var owners = rawPackOptions["owners"];
+            var tags = rawPackOptions["tags"];
+            packageSpec.Owners = owners == null ? new string[] { } : owners.ValueAsArray<string>();
+            packageSpec.Tags = tags == null ? new string[] { } : tags.ValueAsArray<string>();
+            packageSpec.ProjectUrl = rawPackOptions.GetValue<string>("projectUrl");
+            packageSpec.IconUrl = rawPackOptions.GetValue<string>("iconUrl");
+            packageSpec.Summary = rawPackOptions.GetValue<string>("summary");
+            packageSpec.ReleaseNotes = rawPackOptions.GetValue<string>("releaseNotes");
+            packageSpec.LicenseUrl = rawPackOptions.GetValue<string>("licenseUrl");
+            
+
+            var requireLicenseAcceptance = rawPackOptions["requireLicenseAcceptance"];
+
+            if (requireLicenseAcceptance != null)
+            {
+                try
+                {
+                    packageSpec.RequireLicenseAcceptance = rawPackOptions.GetValue<bool?>("requireLicenseAcceptance") ?? false;
+                }
+                catch (Exception ex)
+                {
+                    throw FileFormatException.Create(ex, requireLicenseAcceptance, packageSpec.FilePath);
+                }
             }
 
             var rawPackageType = rawPackOptions[PackageType];
