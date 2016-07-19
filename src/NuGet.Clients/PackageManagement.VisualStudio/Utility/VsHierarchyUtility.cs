@@ -193,7 +193,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 callerObject: null);
         }
 
-        private static VsHierarchyItem GetHierarchyItemForProject(Project project)
+        public static VsHierarchyItem GetHierarchyItemForProject(Project project)
         {
             Debug.Assert(ThreadHelper.CheckAccess());
 
