@@ -689,3 +689,17 @@ function ExecuteInitPS1OnAspNetCore
     Assert-True ($global:PackageInitPS1Var -eq 1)
 }
 
+function Test-BatchEventsApi 
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+
+    # Act
+    $result = [API.Test.InternalAPITestHook]::BatchEventsApi("owin","1.0.0") 
+
+    # Assert
+    Assert-True $result
+}
+
