@@ -17,10 +17,17 @@ namespace NuGet.Packaging
         {
         }
 
+        public PhysicalPackageFile(MemoryStream stream)
+        {
+            MemoryStream = stream;
+        }
+
         internal PhysicalPackageFile(Func<Stream> streamFactory)
         {
             _streamFactory = streamFactory;
         }
+
+        private MemoryStream MemoryStream { get; set; } 
 
         /// <summary>
         /// Path on disk
@@ -69,7 +76,18 @@ namespace NuGet.Packaging
 
         public Stream GetStream()
         {
-            return _streamFactory != null ? _streamFactory() : File.OpenRead(SourcePath);
+            if (_streamFactory != null)
+            {
+                return _streamFactory();
+            }
+            else if (SourcePath != null)
+            {
+                return File.OpenRead(SourcePath);
+            }
+            else
+            {
+                return MemoryStream;
+            }
         }
 
         public override string ToString()

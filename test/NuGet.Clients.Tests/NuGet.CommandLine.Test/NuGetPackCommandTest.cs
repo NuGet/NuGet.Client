@@ -779,6 +779,89 @@ namespace Proj2
             }
         }
 
+        [Fact]
+        public void PackCommand_WithTransformFile()
+        {
+            // This bug tests issue: https://github.com/NuGet/Home/issues/3160
+            // Fixed by PR : https://github.com/NuGet/NuGet.Client/pull/768
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+                var packagesDirectory = Path.Combine(proj1Directory, "packages");
+                // create project 1
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include='proj1_file1.cs'/>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include='Web.config'/>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include='packages.config'/>
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets'/>
+</Project>");
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1_file1.cs",
+@"using System;
+
+namespace Proj1
+{
+    public class Class1
+    {
+        public int A { get; set; }
+    }
+}");
+                Util.CreateFile(
+                    proj1Directory,
+                    "Web.config",
+                    @"<?xml version='1.0' encoding='utf-8' ?>
+<configuration>
+</configuration>");
+
+                Util.CreateFile(proj1Directory,
+                    "packages.config",
+                    @"<?xml version='1.0' encoding='utf-8'?>
+<packages>
+  <package id = 'Microsoft.AspNet.WebApi' version = '5.2.3' targetFramework = 'net452'/>
+  <package id = 'Microsoft.AspNet.WebApi.Client' version = '5.2.3' targetFramework = 'net452'/>
+  <package id = 'Microsoft.AspNet.WebApi.Core' version = '5.2.3' targetFramework = 'net452'/>
+  <package id = 'Microsoft.AspNet.WebApi.WebHost' version = '5.2.3' targetFramework = 'net452'/>
+  <package id = 'Newtonsoft.Json' version = '6.0.4' targetFramework = 'net452'/>
+</packages> ");
+
+                var t = CommandRunner.Run(
+                    nugetexe,
+                    proj1Directory,
+                    "restore packages.config -PackagesDirectory " + packagesDirectory,
+                    waitForExit: true);
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj1Directory,
+                    "pack proj1.csproj -build ",
+                    waitForExit: true);
+                Assert.Equal(0, r.Item1);
+
+                // Assert
+                var nupkgName = Path.Combine(proj1Directory, "proj1.0.0.0.nupkg");
+                Assert.True(File.Exists(nupkgName));
+            }
+        }
+
         // Test creating symbol package with -IncludeReferencedProject.
         [Fact]
         public void PackCommand_WithProjectReferencesSymbols()
