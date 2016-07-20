@@ -3657,6 +3657,54 @@ stuff \n <<".Replace("\r\n", "\n");
         }
 
         [Fact]
+        public void PackCommand_BuildBareMinimumProjectJson()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+
+                CreateTestProject(workingDirectory, "proj1",
+                    new string[] {
+                    });
+                Util.CreateFile(
+                proj1Directory,
+                "project.json",
+            @"{
+  ""version"": ""1.0.0"",
+  ""title"": ""proj1"",
+  ""authors"": [ ""test"" ],
+  ""description"": ""Description"",
+  ""frameworks"": {
+    ""net46"": {
+      ""frameworkAssemblies"": {
+        ""System"": """",
+        ""System.Runtime"": """"
+      }
+    }
+  }
+}");
+
+                // Act
+                CommandRunner.Run(
+                    NuGetEnvironment.GetDotNetLocation(),
+                    proj1Directory,
+                    "restore",
+                    waitForExit: true);
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj1Directory,
+                    "pack project.json -build",
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+            }
+        }
+
+        [Fact]
         public void PackCommand_BuildProjectJson()
         {
             var nugetexe = Util.GetNuGetExePath();

@@ -184,6 +184,8 @@ namespace NuGet.ProjectModel
             var rawPackOptions = rawPackageSpec.Value<JToken>(PackOptions) as JObject;
             if (rawPackOptions == null)
             {
+                packageSpec.Owners = new string[] {};
+                packageSpec.Tags = new string[] {};
                 return new PackOptions
                 {
                     PackageType = new PackageType[0]
@@ -191,8 +193,8 @@ namespace NuGet.ProjectModel
             }
             var owners = rawPackOptions["owners"];
             var tags = rawPackOptions["tags"];
-            packageSpec.Owners = owners == null ? new string[] { } : owners.ValueAsArray<string>();
-            packageSpec.Tags = tags == null ? new string[] { } : tags.ValueAsArray<string>();
+            packageSpec.Owners = owners == null ? new string[0] { } : owners.ValueAsArray<string>();
+            packageSpec.Tags = tags == null ? new string[0] { } : tags.ValueAsArray<string>();
             packageSpec.ProjectUrl = rawPackOptions.GetValue<string>("projectUrl");
             packageSpec.IconUrl = rawPackOptions.GetValue<string>("iconUrl");
             packageSpec.Summary = rawPackOptions.GetValue<string>("summary");
