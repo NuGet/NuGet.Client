@@ -1,5 +1,134 @@
 # Verify Xunit 2.1.0 can be installed into a net45 project.
 # https://github.com/NuGet/Home/issues/1711
+
+function Test-InstallPackageWithInvalidAbsoluteLocalSource {
+	# Arrange
+	$package = "Rules"
+	$project = New-ConsoleApplication
+	$source = "c:\temp\data"
+	$message = "Unable to find package '$package' at source '$source'. Source not found."
+
+	# Act & Assert
+	Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
+function Test-InstallPackageWithValidAbsoluteLocalSource {
+	# Arrange
+	$package = "Rules"
+	$project = New-ConsoleApplication
+	$source = pwd
+	$message = "Unable to find package '$package'"
+
+	# Act & Assert
+	Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
+function Test-InstallPackageWithInvalidRelativeLocalSource {
+	# Arrange
+	$package = "Rules"
+	$project = New-ConsoleApplication
+	$source = "..\invalid_folder"
+	$message = "Unable to find package '$package' at source '$source'. Source not found."
+
+	# Act & Assert
+	Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
+function Test-InstallPackageWithValidRelativeLocalSource {
+	# Arrange
+	$package = "Rules"
+	$project = New-ConsoleApplication
+	$source = "..\"
+	$message = "Unable to find package '$package'"
+
+	# Act & Assert
+	Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
+function Test-InstallPackageWithInvalidHttpSource {
+	# Arrange
+	$package = "Rules"
+	$project = New-ConsoleApplication
+	$source = "http://example.com"
+	$message = "Unable to find package '$package' at source '$source'."
+
+	# Act & Assert
+	Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
+function Test-InstallPackageWithInvalidHttpSourceVerbose {
+	# Arrange
+	$package = "Rules"
+	$project = New-ConsoleApplication
+	$source = "http://example.com"
+	$escapedSource = [regex]::Escape($source)
+	$escapedUrl = [regex]::Escape($source+"/FindPackagesById()?id='$package'")
+	$message = "\ \ GET\ $escapedUrl\ \ \ NotFound\ $escapedUrl\ [\w]+\ An\ error\ occurred\ while\ retrieving\ package\ metadata\ for\ '$package'\ from\ source\ '$escapedSource'\.\r\n\ \ The\ V2\ feed\ at\ '$escapedUrl'\ returned\ an\ unexpected\ status\ code\ '404\ Not\ Found'\.\ Unable\ to\ find\ package\ '$package'\ at\ source\ '$escapedSource'\."
+
+	# Act
+	$result = Install-Package $package -ProjectName $project.Name -source $source -Verbose *>&1
+	$resultString = [string]::Join(" ", $result)
+	$compare = $resultString -Match $message
+
+	# Assert
+	Assert-True $compare
+}
+
+function Test-InstallPackageWithIncompleteHttpSource {
+	# Arrange
+	$package = "Rules"
+	$project = New-ConsoleApplication
+	$source = "http://"
+	$message = "Unable to find package 'Rules' at source '$source'. Source not found."
+
+	# Act & Assert
+	Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
+function Test-InstallPackageWithInvalidKnownSource {
+	# Arrange
+	$package = "Rules"
+	$project = New-ConsoleApplication
+	$source = "nuget.random"
+	$message = "Unable to find package 'Rules' at source '$source'. Source not found."
+
+	# Act & Assert
+	Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
+function Test-InstallPackageWithValidKnownSource {
+	# Arrange
+	$package = "Rules"
+	$project = New-ConsoleApplication
+	$source = "nuget.org"
+	$message = "Unable to find package '$package'"
+
+	# Act & Assert
+	Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
+function Test-InstallPackageWithFileProtocolSource {
+	# Arrange
+	$package = "Rules"
+	$project = New-ConsoleApplication
+	$source = "file://Rules"
+	$message = "Unsupported type of source  '$source'. Please provide an http or local source."
+
+	# Act & Assert
+	Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
+function Test-InstallPackageWithFtpProtocolSource {
+	# Arrange
+	$package = "Rules"
+	$project = New-ConsoleApplication
+	$source = "ftp://Rules"
+	$message = "Unsupported type of source  '$source'. Please provide an http or local source."
+
+	# Act & Assert
+	Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
+}
+
 function Test-InstallXunit210WithEmptyBuildFolderSucceeds
 {
     param($context)
