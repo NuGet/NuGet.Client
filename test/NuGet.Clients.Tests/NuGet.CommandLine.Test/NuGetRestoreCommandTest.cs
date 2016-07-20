@@ -13,6 +13,8 @@ using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using Xunit;
 using System.Text.RegularExpressions;
+using NuGet.Protocol.Core.Types;
+using NuGet.Protocol;
 
 namespace NuGet.CommandLine.Test
 {
@@ -1180,6 +1182,75 @@ EndProject");
 
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
+            }
+        }
+
+        [Fact]
+        public void RestoreCommand_FromProjectJson_DirectDownload()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+
+            using (var v3cacheDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                Util.CreateFile(projectDir, "project.json",
+@"{
+  'dependencies': {
+    'NuGet.Versioning': '1.0.7'
+  },
+  'frameworks': {
+    'netcore50': { }
+  }
+}");
+                // Redirect global packages cache to ensure it is empty
+                Util.CreateFile(projectDir, "nuget.config",
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <config>
+    <add key=""globalPackagesFolder"" value=""globalPackages"" />
+  </config>
+</configuration>");
+
+                string[] args = new string[] {
+                    "restore",
+                    "-Source",
+                    "https://api.nuget.org/v3/index.json",
+                    "-DirectDownload",
+                    "-OutputDirectory",
+                    packagesDir,
+                    "-solutionDir",
+                    projectDir,
+                    "project.json"
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    projectDir,
+                    string.Join(" ", args),
+                    waitForExit: true,
+                    environmentVariables: new Dictionary<string, string>
+                            {
+                            { "NUGET_HTTP_CACHE_PATH", v3cacheDir }
+                            });
+
+                // Assert
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Check that the redirected v3-cache was not populated
+                using (var v3cacheContext = new SourceCacheContext())
+                {
+                    var cacheResult = HttpCacheUtility.InitializeHttpCacheResult(
+                        v3cacheDir,
+                        new Uri("https://api.nuget.org/v3/index.json"),
+                        "nupkg_" + "NuGet.Versioning" + "." + "1.0.7",
+                        HttpSourceCacheContext.CreateCacheContext(v3cacheContext, 0));
+                    var newCache = HttpCacheUtility.TryReadCacheFile("https://api.nuget.org/v3/index.json", TimeSpan.MaxValue, cacheResult.CacheFile);
+                    Assert.Null(newCache);
+                }
             }
         }
 
