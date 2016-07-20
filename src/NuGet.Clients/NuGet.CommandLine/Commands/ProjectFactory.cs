@@ -1066,7 +1066,20 @@ namespace NuGet.CommandLine
         private IEnumerable<Packaging.IPackageFile> GetTransformFiles(PackageReaderBase package)
         {
             var groups = package.GetContentItems();
-            return groups.SelectMany(g => g.Items).Where(IsTransformFile).Select(f => new Packaging.PhysicalPackageFile() { TargetPath = f });
+            return groups.SelectMany(g => g.Items).Where(IsTransformFile).Select(f =>
+            {
+                var element = XElement.Load(package.GetStream(f));
+                var memStream = new MemoryStream();
+                element.Save(memStream);
+                memStream.Seek(0, SeekOrigin.Begin);
+
+                var file = new Packaging.PhysicalPackageFile(memStream)
+                {
+                    TargetPath = f
+                };
+                return file;
+            }
+        );
         }
 
         private static bool IsTransformFile(string file)
