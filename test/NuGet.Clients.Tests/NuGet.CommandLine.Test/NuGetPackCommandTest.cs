@@ -786,6 +786,93 @@ namespace Proj2
         }
 
         [Fact]
+        public void PackCommand_PclProjectWithProjectJsonAndTargetsNetStandard()
+        {
+            // This bug tests issue: https://github.com/NuGet/Home/issues/3108
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+                var packagesDirectory = Path.Combine(proj1Directory, "packages");
+                // create project 1
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>bin\Debug\</OutputPath>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include='proj1_file1.cs'/>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include='project.json'/>
+  </ItemGroup>
+  <Import Project='$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets'/>
+</Project>");
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1_file1.cs",
+@"using System;
+
+namespace Proj1
+{
+    public class Class1
+    {
+        public int A { get; set; }
+    }
+}");
+
+                Util.CreateFile(proj1Directory,
+                    "project.json",
+                    @"{
+  ""supports"": {},
+  ""dependencies"": {
+                    ""Microsoft.NETCore.Portable.Compatibility"": ""1.0.1"",
+    ""NETStandard.Library"": ""1.6.0""
+  },
+  ""frameworks"": {
+                    ""netstandard1.3"": { }
+                }
+            }
+            ");
+
+                var t = CommandRunner.Run(
+                    nugetexe,
+                    proj1Directory,
+                    "restore ",
+                    waitForExit: true);
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj1Directory,
+                    "pack proj1.csproj -build ",
+                    waitForExit: true);
+                Assert.Equal(0, r.Item1);
+
+                // Assert
+                var nupkgName = Path.Combine(proj1Directory, "proj1.0.0.0.nupkg");
+                Assert.True(File.Exists(nupkgName));
+                var package = new OptimizedZipPackage(nupkgName);
+                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                Array.Sort(files);
+                Assert.Equal(
+                    files,
+                    new string[]
+                    {
+                        @"lib\netstandard1.3\proj1.dll"
+                    });
+            }
+        }
+
+        [Fact]
         public void PackCommand_WithTransformFile()
         {
             // This bug tests issue: https://github.com/NuGet/Home/issues/3160
