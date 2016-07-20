@@ -21,7 +21,7 @@
     }
   },
   "dependencies": {
-    "Newtonsoft.Json": "6.0.4",
+    "Newtonsoft.Json": "9.0.1",
     "NuGet.Versioning": {
       "target": "project"
     },
@@ -38,11 +38,6 @@
       }
     },
     "netstandard1.3": {
-      "imports": [
-        "dotnet5.6",
-        "dnxcore50",
-        "portable-net45+win8"
-      ],
       "dependencies": {
         "NETStandard.Library": "1.6.0",
         "System.ObjectModel": "4.0.12",
