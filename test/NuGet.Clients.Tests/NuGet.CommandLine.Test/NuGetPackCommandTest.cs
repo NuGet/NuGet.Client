@@ -123,10 +123,12 @@ namespace NuGet.CommandLine.Test
   ""version"": ""1.0.0"",
   ""title"": ""packageA"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
   ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
   ""dependencies"": {
     ""packageB"": {
       ""version"": ""1.0.0"",
@@ -454,10 +456,12 @@ namespace NuGet.CommandLine.Test
   ""version"": ""1.0.0"",
   ""title"": ""packageA"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
   ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
   ""frameworks"": {
     ""native"": {
     },
@@ -567,10 +571,12 @@ namespace NuGet.CommandLine.Test
   ""version"": ""1.0.0"",
   ""title"": ""packageA"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
-  ""copyright"": ""Copyright ©  2013""
+  ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
 }");
 
                 // Act
@@ -1124,10 +1130,12 @@ namespace Proj2
   ""version"": ""1.0.0.0"",
   ""title"": ""Proj2"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
   ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
   ""dependencies"": {
     ""p1"": {
       ""version"": ""1.5.11""
@@ -1141,10 +1149,12 @@ namespace Proj2
   ""version"": ""2.0.0.0"",
   ""title"": ""Proj6"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
   ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
   ""dependencies"": {
     ""p2"": {
       ""version"": ""1.5.11""
@@ -1343,10 +1353,12 @@ namespace Proj2
   ""version"": ""1.0.0.0"",
   ""title"": ""Proj2"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
   ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
   ""dependencies"": {
     ""p1"": {
       ""version"": ""1.5.11""
@@ -1360,10 +1372,12 @@ namespace Proj2
   ""version"": ""2.0.0.0"",
   ""title"": ""Proj6"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
   ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
   ""dependencies"": {
     ""p2"": {
       ""version"": ""1.5.11""
@@ -2998,8 +3012,6 @@ namespace " + projectName + @"
   ""version"": ""1.0.0"",
   ""title"": ""packageA"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
   ""copyright"": ""Copyright ©  2013"",
   ""frameworks"": {
@@ -3012,6 +3024,10 @@ namespace " + projectName + @"
   },
   ""packInclude"": {
     ""image"": ""contentFiles/any/any/image.jpg""
+  },
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
   }
 }
 ");
@@ -3155,10 +3171,12 @@ stuff \n <<".Replace("\r\n", "\n");
   ""version"": ""1.0.0-*"",
   ""title"": ""packageA"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
   ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
   ""dependencies"": {
     ""packageB"": {
       ""version"": ""1.0.0"",
@@ -3403,10 +3421,12 @@ stuff \n <<".Replace("\r\n", "\n");
   ""version"": ""1.0.0-rc-*"",
   ""title"": ""packageA"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
   ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
   ""dependencies"": {
     ""packageB"": {
       ""version"": ""1.0.0"",
@@ -3468,10 +3488,12 @@ stuff \n <<".Replace("\r\n", "\n");
   ""version"": ""1.0.0"",
   ""title"": ""packageA"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
   ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
   ""frameworks"": {
     ""native"": {
     },
@@ -3592,12 +3614,14 @@ stuff \n <<".Replace("\r\n", "\n");
   ""version"": ""1.0.0"",
   ""title"": ""packageA"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
   ""buildOptions"": {
     ""outputName"": """ + dllName + @""",
   },
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
   ""copyright"": ""Copyright ©  2013"",
   ""frameworks"": {
     ""native"": {
@@ -3652,10 +3676,12 @@ stuff \n <<".Replace("\r\n", "\n");
   ""version"": ""1.0.0"",
   ""title"": ""proj1"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
   ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
   ""frameworks"": {
     ""net46"": {
       ""frameworkAssemblies"": {
@@ -3713,10 +3739,12 @@ stuff \n <<".Replace("\r\n", "\n");
   ""version"": ""1.0.0"",
   ""title"": ""proj1"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
   ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
   ""frameworks"": {
     ""net46"": {
       ""frameworkAssemblies"": {
@@ -3774,10 +3802,12 @@ stuff \n <<".Replace("\r\n", "\n");
   ""version"": ""1.0.0"",
   ""title"": ""proj1"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
   ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
   ""frameworks"": {
     ""net46"": {
       ""frameworkAssemblies"": {
