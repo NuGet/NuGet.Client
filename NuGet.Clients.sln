@@ -1,33 +1,33 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25402.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageManagement.VisualStudio", "src\NuGet.Clients\PackageManagement.VisualStudio\PackageManagement.VisualStudio.csproj", "{306CDDFA-FF0B-4299-930C-9EC6C9308160}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.PackageManagement.VisualStudio", "src\NuGet.Clients\PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj", "{306CDDFA-FF0B-4299-930C-9EC6C9308160}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VsExtension", "src\NuGet.Clients\VsExtension\VsExtension.csproj", "{D0F9864B-D782-4471-81A2-29555E5DC0D7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisualStudio.Interop", "src\NuGet.Clients\VisualStudio.Interop\VisualStudio.Interop.csproj", "{7DB43FE1-75E1-49F9-B2C8-06A552BA2144}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudio.Interop", "src\NuGet.Clients\VisualStudio.Interop\NuGet.VisualStudio.Interop.csproj", "{7DB43FE1-75E1-49F9-B2C8-06A552BA2144}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisualStudio.Facade", "src\NuGet.Clients\VisualStudio.Facade\VisualStudio.Facade.csproj", "{EEA49A74-6EFC-410E-9745-BAD367AC151D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudio.Facade", "src\NuGet.Clients\VisualStudio.Facade\NuGet.VisualStudio.Facade.csproj", "{EEA49A74-6EFC-410E-9745-BAD367AC151D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisualStudio14.Packages", "src\NuGet.Clients\VisualStudio14.Packages\VisualStudio14.Packages.csproj", "{A3AB10FD-0E3E-426B-B3D9-B5BF34E5D190}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudio14.Packages", "src\NuGet.Clients\VisualStudio14.Packages\NuGet.VisualStudio14.Packages.csproj", "{A3AB10FD-0E3E-426B-B3D9-B5BF34E5D190}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisualStudio15.Packages", "src\NuGet.Clients\VisualStudio15.Packages\VisualStudio15.Packages.csproj", "{868ACCBA-B981-440D-9C98-2A235E1E861A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudio15.Packages", "src\NuGet.Clients\VisualStudio15.Packages\NuGet.VisualStudio15.Packages.csproj", "{868ACCBA-B981-440D-9C98-2A235E1E861A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Console", "src\NuGet.Clients\VsConsole\Console\Console.csproj", "{50E33DA2-AF14-486D-81B8-BD8409744A38}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.Console", "src\NuGet.Clients\VsConsole\Console\NuGet.Console.csproj", "{50E33DA2-AF14-486D-81B8-BD8409744A38}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Console.Types", "src\NuGet.Clients\VsConsole\Console.Types\Console.Types.csproj", "{6FD11460-39A3-4A10-BA63-7541B0A7D053}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.Console.Types", "src\NuGet.Clients\VsConsole\Console.Types\NuGet.Console.Types.csproj", "{6FD11460-39A3-4A10-BA63-7541B0A7D053}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellHost", "src\NuGet.Clients\VsConsole\PowerShellHost\PowerShellHost.csproj", "{5A79EEF3-51C0-4A14-8D37-50EF38AD835D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGetConsole.Host.PowerShell", "src\NuGet.Clients\VsConsole\PowerShellHost\NuGetConsole.Host.PowerShell.csproj", "{5A79EEF3-51C0-4A14-8D37-50EF38AD835D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellHostProvider", "src\NuGet.Clients\VsConsole\PowerShellHostProvider\PowerShellHostProvider.csproj", "{A5E7AEB3-738F-4C39-A459-00F90483B2FE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGetConsole.Host.PowerShellProvider", "src\NuGet.Clients\VsConsole\PowerShellHostProvider\NuGetConsole.Host.PowerShellProvider.csproj", "{A5E7AEB3-738F-4C39-A459-00F90483B2FE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{3EF356B5-E2D3-45E3-B515-99F4611ACBDA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Options", "src\NuGet.Clients\Options\Options.csproj", "{53AB7187-CDF3-48B5-B90E-8919D3CB904D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.Options", "src\NuGet.Clients\Options\NuGet.Options.csproj", "{53AB7187-CDF3-48B5-B90E-8919D3CB904D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisualStudio", "src\NuGet.Clients\VisualStudio\VisualStudio.csproj", "{E5556BC6-A7FD-4D8E-8A7D-7648DF1D7471}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudio", "src\NuGet.Clients\VisualStudio\NuGet.VisualStudio.csproj", "{E5556BC6-A7FD-4D8E-8A7D-7648DF1D7471}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "functional", "functional", "{72887A16-F39B-4B21-9B76-33AE5004DE0B}"
 EndProject
@@ -61,13 +61,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{83AEE32C
 		test\EndToEnd\tests\update.ps1 = test\EndToEnd\tests\update.ps1
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TeamFoundationServer", "src\NuGet.Clients\TeamFoundationServer\TeamFoundationServer.csproj", "{E961D080-F10B-4F11-BEA0-056509C086CC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.TeamFoundationServer", "src\NuGet.Clients\TeamFoundationServer\NuGet.TeamFoundationServer.csproj", "{E961D080-F10B-4F11-BEA0-056509C086CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageManagement.PowerShellCmdlets", "src\NuGet.Clients\PackageManagement.PowerShellCmdlets\PackageManagement.PowerShellCmdlets.csproj", "{26DC17AC-A390-4515-A2C0-07A0950036C5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.PackageManagement.PowerShellCmdlets", "src\NuGet.Clients\PackageManagement.PowerShellCmdlets\NuGet.PackageManagement.PowerShellCmdlets.csproj", "{26DC17AC-A390-4515-A2C0-07A0950036C5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudio.Implementation", "src\NuGet.Clients\NuGet.VisualStudio.Implementation\NuGet.VisualStudio.Implementation.csproj", "{9623CF30-192C-4864-B419-29649169AE30}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageManagement.UI", "src\NuGet.Clients\PackageManagement.UI\PackageManagement.UI.csproj", "{538ADEFD-2170-40A9-A2C5-EC8369CFE490}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.PackageManagement.UI", "src\NuGet.Clients\PackageManagement.UI\NuGet.PackageManagement.UI.csproj", "{538ADEFD-2170-40A9-A2C5-EC8369CFE490}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.CommandLine", "src\NuGet.Clients\NuGet.CommandLine\NuGet.CommandLine.csproj", "{957C4E99-3644-47DD-8F9A-AE36F41EBE4A}"
 EndProject

@@ -62,13 +62,13 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Console.Types\Console.Types.csproj">
+    <ProjectReference Include="..\Console.Types\NuGet.Console.Types.csproj">
       <Project>{6FD11460-39A3-4A10-BA63-7541B0A7D053}</Project>
-      <Name>Console.Types</Name>
+      <Name>NuGet.Console.Types</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PowerShellHost\PowerShellHost.csproj">
+    <ProjectReference Include="..\PowerShellHost\NuGetConsole.Host.PowerShell.csproj">
       <Project>{5A79EEF3-51C0-4A14-8D37-50EF38AD835D}</Project>
-      <Name>PowerShellHost</Name>
+      <Name>NuGetConsole.Host.PowerShell</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

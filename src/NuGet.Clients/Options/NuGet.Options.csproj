@@ -26,8 +26,8 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' Or '$(Configuration)' == 'Mono Release'">
-	<DebugType>pdbonly</DebugType>
-	<Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
@@ -91,13 +91,13 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PackageManagement.UI\PackageManagement.UI.csproj">
+    <ProjectReference Include="..\PackageManagement.UI\NuGet.PackageManagement.UI.csproj">
       <Project>{538adefd-2170-40a9-a2c5-ec8369cfe490}</Project>
-      <Name>PackageManagement.UI</Name>
+      <Name>NuGet.PackageManagement.UI</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PackageManagement.VisualStudio\PackageManagement.VisualStudio.csproj">
+    <ProjectReference Include="..\PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj">
       <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
-      <Name>PackageManagement.VisualStudio</Name>
+      <Name>NuGet.PackageManagement.VisualStudio</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

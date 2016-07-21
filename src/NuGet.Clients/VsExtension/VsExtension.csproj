@@ -30,14 +30,14 @@
       <PropertyGroup>
         <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
         <DefineConstants>$(DefineConstants);VS14</DefineConstants>
-        <VsixOutputDirName>Dev14</VsixOutputDirName>
+        <VsixOutputDirName>VS14</VsixOutputDirName>
       </PropertyGroup>
     </When>
     <When Condition="'$(VisualStudioVersion)' == '15.0'">
       <PropertyGroup>
         <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
         <DefineConstants>$(DefineConstants);VS15</DefineConstants>
-        <VsixOutputDirName>Dev15</VsixOutputDirName>
+        <VsixOutputDirName>VS15</VsixOutputDirName>
       </PropertyGroup>
     </When>
   </Choose>
@@ -155,98 +155,98 @@
       <Name>NuGet.Credentials</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>False</Private>
+      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.VisualStudio.Implementation\NuGet.VisualStudio.Implementation.csproj">
       <Project>{9623cf30-192c-4864-b419-29649169ae30}</Project>
       <Name>NuGet.VisualStudio.Implementation</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>False</Private>
+      <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\Options\Options.csproj">
+    <ProjectReference Include="..\Options\NuGet.Options.csproj">
       <Project>{53ab7187-cdf3-48b5-b90e-8919d3cb904d}</Project>
-      <Name>Options</Name>
+      <Name>NuGet.Options</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>False</Private>
+      <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\PackageManagement.PowerShellCmdlets\PackageManagement.PowerShellCmdlets.csproj">
+    <ProjectReference Include="..\PackageManagement.PowerShellCmdlets\NuGet.PackageManagement.PowerShellCmdlets.csproj">
       <Project>{26dc17ac-a390-4515-a2c0-07a0950036c5}</Project>
-      <Name>PackageManagement.PowerShellCmdlets</Name>
+      <Name>NuGet.PackageManagement.PowerShellCmdlets</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>False</Private>
+      <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\PackageManagement.UI\PackageManagement.UI.csproj">
+    <ProjectReference Include="..\PackageManagement.UI\NuGet.PackageManagement.UI.csproj">
       <Project>{538adefd-2170-40a9-a2c5-ec8369cfe490}</Project>
-      <Name>PackageManagement.UI</Name>
+      <Name>NuGet.PackageManagement.UI</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>False</Private>
+      <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\PackageManagement.VisualStudio\PackageManagement.VisualStudio.csproj">
+    <ProjectReference Include="..\PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj">
       <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
-      <Name>PackageManagement.VisualStudio</Name>
+      <Name>NuGet.PackageManagement.VisualStudio</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>False</Private>
+      <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\TeamFoundationServer\TeamFoundationServer.csproj">
+    <ProjectReference Include="..\TeamFoundationServer\NuGet.TeamFoundationServer.csproj">
       <Project>{e961d080-f10b-4f11-bea0-056509c086cc}</Project>
-      <Name>TeamFoundationServer</Name>
+      <Name>NuGet.TeamFoundationServer</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>False</Private>
+      <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\VisualStudio.Interop\VisualStudio.Interop.csproj">
+    <ProjectReference Include="..\VisualStudio.Interop\NuGet.VisualStudio.Interop.csproj">
       <Project>{7DB43FE1-75E1-49F9-B2C8-06A552BA2144}</Project>
-      <Name>VisualStudio.Interop</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <Name>NuGet.VisualStudio.Interop</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>False</Private>
+      <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\VisualStudio.Facade\VisualStudio.Facade.csproj">
+    <ProjectReference Include="..\VisualStudio.Facade\NuGet.VisualStudio.Facade.csproj">
       <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
-      <Name>VisualStudio.Facade</Name>
+      <Name>NuGet.VisualStudio.Facade</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>False</Private>
+      <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\VisualStudio\VisualStudio.csproj">
+    <ProjectReference Include="..\VisualStudio\NuGet.VisualStudio.csproj">
       <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
-      <Name>VisualStudio</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <Name>NuGet.VisualStudio</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>False</Private>
+      <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\VsConsole\Console.Types\Console.Types.csproj">
+    <ProjectReference Include="..\VsConsole\Console.Types\NuGet.Console.Types.csproj">
       <Project>{6fd11460-39a3-4a10-ba63-7541b0a7d053}</Project>
-      <Name>Console.Types</Name>
+      <Name>NuGet.Console.Types</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>False</Private>
+      <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\VsConsole\Console\Console.csproj">
+    <ProjectReference Include="..\VsConsole\Console\NuGet.Console.csproj">
       <Project>{50e33da2-af14-486d-81b8-bd8409744a38}</Project>
-      <Name>Console</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <Name>NuGet.Console</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>False</Private>
+      <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\VsConsole\PowerShellHostProvider\PowerShellHostProvider.csproj">
+    <ProjectReference Include="..\VsConsole\PowerShellHostProvider\NuGetConsole.Host.PowerShellProvider.csproj">
       <Project>{a5e7aeb3-738f-4c39-a459-00f90483b2fe}</Project>
-      <Name>PowerShellHostProvider</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
+      <Name>NuGetConsole.Host.PowerShellProvider</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>False</Private>
+      <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\VsConsole\PowerShellHost\PowerShellHost.csproj">
+    <ProjectReference Include="..\VsConsole\PowerShellHost\NuGetConsole.Host.PowerShell.csproj">
       <Project>{5a79eef3-51c0-4a14-8d37-50ef38ad835d}</Project>
-      <Name>PowerShellHost</Name>
+      <Name>NuGetConsole.Host.PowerShell</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
-      <Private>False</Private>
+      <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -342,9 +342,25 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
-  <PropertyGroup>
-    <PostBuildEvent>"$(MSBuildProjectDirectory)\EnsureDirectoryAndCopy.bat" "$(TargetVsixContainer)" "$(ArtifactRoot)\$(VsixOutputDirName)"</PostBuildEvent>
-  </PropertyGroup>
+  <Target Name="AfterBuild">
+    <PropertyGroup>
+      <PublishDestination>$(ArtifactRoot)\$(VsixOutputDirName)</PublishDestination>
+    </PropertyGroup>
+    <Message Text="Publishing VSIX package files..." Importance="high" />
+    <Message Text="$(TargetVsixContainer) -> $(PublishDestination)" Importance="high" />
+    <Copy
+      SourceFiles="$(TargetVsixContainer)"
+      DestinationFolder="$(PublishDestination)"
+      OverwriteReadOnlyFiles="true" />
+    <ItemGroup>
+      <NuGetSymbolFiles Include="$(OutputPath)NuGet*.pdb" />
+    </ItemGroup>
+    <Message Text="Copying symbols file '%(NuGetSymbolFiles.Identity)'" Condition=" '@(NuGetSymbolFiles)' != '' " />
+    <Copy
+      SourceFiles="@(NuGetSymbolFiles)"
+      DestinationFolder="$(PublishDestination)\symbols"
+      OverwriteReadOnlyFiles="true" />
+  </Target>
   <Target Name="ReadVsixIncludeListFromFile">
     <ReadLinesFromFile File="@(VsixIncludeFile)">
       <Output TaskParameter="Lines" ItemName="IncludeVsixFilesList" />
