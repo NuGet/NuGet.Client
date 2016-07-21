@@ -88,7 +88,7 @@ namespace NuGet.Credentials.Test
                     It.IsAny<bool>(),
                     It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult(new CredentialResponse (new NetworkCredential(), CredentialStatus.Success)));
+                .Returns(Task.FromResult(new CredentialResponse (new NetworkCredential())));
             var uri1 = new Uri("http://uri1");
             var uri2 = new Uri("http://uri2");
 
@@ -143,7 +143,7 @@ namespace NuGet.Credentials.Test
                     It.IsAny<bool>(),
                     It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult(new CredentialResponse (new NetworkCredential(), CredentialStatus.Success)));
+                .Returns(Task.FromResult(new CredentialResponse (new NetworkCredential())));
             var uri1 = new Uri("http://uri1");
             var webProxy = new WebProxy();
 
@@ -205,7 +205,7 @@ namespace NuGet.Credentials.Test
                     _lockTestConcurrencyCount++;
                     Assert.Equal(1, _lockTestConcurrencyCount);
                     _lockTestConcurrencyCount--;
-                    return Task.FromResult(new CredentialResponse (new NetworkCredential(), CredentialStatus.Success));
+                    return Task.FromResult(new CredentialResponse (new NetworkCredential()));
                 });
             var tasks = new Task[10];
 
@@ -242,7 +242,7 @@ namespace NuGet.Credentials.Test
                     It.IsAny<bool>(),
                     It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()))
-                .Returns(() => Task.FromResult(new CredentialResponse (new NetworkCredential(), CredentialStatus.Success)));
+                .Returns(() => Task.FromResult(new CredentialResponse (new NetworkCredential())));
             var uri1 = new Uri("http://host/some/path");
             var uri2 = new Uri("http://host/some2/path2");
 
@@ -406,7 +406,7 @@ namespace NuGet.Credentials.Test
                     It.IsAny<bool>(),
                     It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()))
-                .Returns(() => Task.FromResult(new CredentialResponse(new NetworkCredential(), CredentialStatus.Success)));
+                .Returns(() => Task.FromResult(new CredentialResponse(new NetworkCredential())));
             var uri1 = new Uri("http://uri1");
 
             // Act

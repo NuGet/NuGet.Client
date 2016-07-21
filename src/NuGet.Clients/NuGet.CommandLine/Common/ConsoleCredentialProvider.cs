@@ -41,7 +41,7 @@ namespace NuGet.CommandLine
             if (nonInteractive)
             {
                 return Task.FromResult(
-                    new CredentialResponse(null, CredentialStatus.ProviderNotApplicable));
+                    new CredentialResponse(CredentialStatus.ProviderNotApplicable));
             }
             
             switch (type)
@@ -76,7 +76,7 @@ namespace NuGet.CommandLine
                     SecurePassword = password
                 };
 
-                var cred = new CredentialResponse(credentials, CredentialStatus.Success);
+                var cred = new CredentialResponse(credentials);
 
                 var task = Task.FromResult(cred);
 

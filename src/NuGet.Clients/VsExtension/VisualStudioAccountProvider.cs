@@ -224,7 +224,7 @@ namespace NuGetVSExtension
                 throw new InvalidOperationException(Resources.AccountProvider_NoValidCrededentialsFound);
             }
 
-            var response = new CredentialResponse(credentials, CredentialStatus.Success);
+            var response = new CredentialResponse(credentials);
 
             return response;
         }

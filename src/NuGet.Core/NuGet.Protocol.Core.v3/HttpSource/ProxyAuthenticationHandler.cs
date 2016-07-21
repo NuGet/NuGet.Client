@@ -198,14 +198,9 @@ namespace NuGet.Protocol
                     message: message,
                     cancellationToken: cancellationToken);
             }
-            catch (TaskCanceledException)
-            {
-                throw; // pass-thru
-            }
             catch (OperationCanceledException)
             {
-                // A valid response for VS dialog when user hits cancel button
-                promptCredentials = null;
+                throw; // pass-thru
             }
             catch (Exception e)
             {

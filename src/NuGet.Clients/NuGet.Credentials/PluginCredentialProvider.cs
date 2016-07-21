@@ -96,7 +96,7 @@ namespace NuGet.Credentials
                 {
                     var result = new NetworkCredential(response.Username, response.Password);
 
-                    taskResponse = new CredentialResponse(result, CredentialStatus.Success);
+                    taskResponse = new CredentialResponse(result);
                 }
                 else
                 {
