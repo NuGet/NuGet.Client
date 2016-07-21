@@ -13,9 +13,9 @@ namespace NuGet.VisualStudio
     [Export(typeof(IVsPackageInstallerProjectEvents))]
     public class VsPackageInstallerProjectEvents : IVsPackageInstallerProjectEvents
     {
-        public event EventHandler<IVsPackageProjectMetadata> BatchStart;
+        public event VsPackageProjectEventHandler BatchStart;
 
-        public event EventHandler<IVsPackageProjectMetadata> BatchEnd;
+        public event VsPackageProjectEventHandler BatchEnd;
 
         [ImportingConstructor]
         public VsPackageInstallerProjectEvents(IPackageProjectEventsProvider eventProvider)
@@ -29,13 +29,13 @@ namespace NuGet.VisualStudio
         private void NotifyBatchStart(object sender, PackageProjectEventArgs e)
         {
             var handle = BatchStart;
-            handle?.Invoke(this, new VsPackageProjectMetadata(e.Id, e.Name));
+            handle?.Invoke(new VsPackageProjectMetadata(e.Id, e.Name));
         }
 
         private void NotifyBatchEnd(object sender, PackageProjectEventArgs e)
         {
             var handle = BatchEnd;
-            handle?.Invoke(this, new VsPackageProjectMetadata(e.Id, e.Name));
+            handle?.Invoke(new VsPackageProjectMetadata(e.Id, e.Name));
         }
 
     }

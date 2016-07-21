@@ -17,12 +17,12 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Raised before any IVsPackageInstallerEvents events are raised for a project.
         /// </summary>
-        event EventHandler<IVsPackageProjectMetadata> BatchStart;
+        event VsPackageProjectEventHandler BatchStart;
 
         /// <summary>
         /// Raised after all IVsPackageInstallerEvents events are raised for a project.
         /// </summary>
-        event EventHandler<IVsPackageProjectMetadata> BatchEnd;
+        event VsPackageProjectEventHandler BatchEnd;
 
     }
 }

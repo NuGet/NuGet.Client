@@ -97,12 +97,12 @@ namespace API.Test
             var batchStartIds = new List<string>();
             var batchEndIds = new List<string>();
 
-            packageProjectEventService.BatchStart += (o, args) =>
+            packageProjectEventService.BatchStart += (args) =>
             {
                 batchStartIds.Add(args.BatchId);
             };
 
-            packageProjectEventService.BatchEnd += (o, args) =>
+            packageProjectEventService.BatchEnd += (args) =>
             {
                 batchEndIds.Add(args.BatchId);
             };
