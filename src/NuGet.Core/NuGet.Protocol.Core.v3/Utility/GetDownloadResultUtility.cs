@@ -18,6 +18,7 @@ namespace NuGet.Protocol
 {
     public static class GetDownloadResultUtility
     {
+        private const int BufferSize = 8192;
         public static async Task<DownloadResourceResult> GetDownloadResultAsync(
            HttpSource client,
            PackageIdentity identity,
@@ -128,20 +129,12 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(settings));
             }
 
-            var versionFolderPathContext = new VersionFolderPathContext(
-                packageIdentity,
-                packagesDirectory,
-                logger,
-                packageSaveMode: PackageSaveMode.Nupkg | PackageSaveMode.Nuspec,
-                xmlDocFileSaveMode: PackageExtractionBehavior.XmlDocFileSaveMode);
-
-            await PackageExtractor.InstallFromSourceAsync(
-                stream => packageStream.CopyToAsync(stream, bufferSize: 8192, cancellationToken: token),
-                versionFolderPathContext,
-                token: token);
-
-            var defaultPackagePathResolver = new VersionFolderPathResolver(packagesDirectory);
-            var path = defaultPackagePathResolver.GetPackageFilePath(packageIdentity.Id, packageIdentity.Version);
+            var path = Path.Combine(packagesDirectory, Path.GetRandomFileName());
+            Directory.CreateDirectory(packagesDirectory);
+            using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None, BufferSize, useAsync: true))
+            {
+                await packageStream.CopyToAsync(fileStream);
+            }
 
             if (File.Exists(path))
             {
