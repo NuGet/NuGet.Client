@@ -17,17 +17,17 @@
   </Installation>
   <Assets>
     <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
-    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="PackageManagement.VisualStudio" Path="|PackageManagement.VisualStudio|" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="NuGet.PackageManagement.VisualStudio" Path="|NuGet.PackageManagement.VisualStudio|" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.PackageManagement.dll" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.PackageManagement.UI.dll" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.ProjectManagement.dll" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.Protocol.VisualStudio.dll" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
-    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="Console" Path="|Console|" />
-    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="PowerShellHostProvider" Path="|PowerShellHostProvider|" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="NuGet.Console" Path="|NuGet.Console|" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="NuGetConsole.Host.PowerShellProvider" Path="|NuGetConsole.Host.PowerShellProvider|" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.Configuration.dll" />
-    <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="VisualStudio.Interop" Path="|VisualStudio.Interop|" AssemblyName="|VisualStudio.Interop;AssemblyName|" />
-    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="NuGet.VisualStudioImplement" Path="|NuGet.VisualStudio.Implementation|" />
-    <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="VisualStudio" Path="|VisualStudio|" AssemblyName="|VisualStudio;AssemblyName|" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="NuGet.VisualStudio.Interop" Path="|NuGet.VisualStudio.Interop|" AssemblyName="|NuGet.VisualStudio.Interop;AssemblyName|" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="NuGet.VisualStudio.Implementation" Path="|NuGet.VisualStudio.Implementation|" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="NuGet.VisualStudio" Path="|NuGet.VisualStudio|" AssemblyName="|NuGet.VisualStudio;AssemblyName|" />
   </Assets>
 </PackageManifest>

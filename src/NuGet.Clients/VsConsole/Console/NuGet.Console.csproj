@@ -122,21 +122,21 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\PackageManagement.PowerShellCmdlets\PackageManagement.PowerShellCmdlets.csproj">
+    <ProjectReference Include="..\..\PackageManagement.PowerShellCmdlets\NuGet.PackageManagement.PowerShellCmdlets.csproj">
       <Project>{26dc17ac-a390-4515-a2c0-07a0950036c5}</Project>
-      <Name>PackageManagement.PowerShellCmdlets</Name>
+      <Name>NuGet.PackageManagement.PowerShellCmdlets</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\PackageManagement.UI\PackageManagement.UI.csproj">
+    <ProjectReference Include="..\..\PackageManagement.UI\NuGet.PackageManagement.UI.csproj">
       <Project>{538adefd-2170-40a9-a2c5-ec8369cfe490}</Project>
-      <Name>PackageManagement.UI</Name>
+      <Name>NuGet.PackageManagement.UI</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\PackageManagement.VisualStudio\PackageManagement.VisualStudio.csproj">
+    <ProjectReference Include="..\..\PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj">
       <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
-      <Name>PackageManagement.VisualStudio</Name>
+      <Name>NuGet.PackageManagement.VisualStudio</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Console.Types\Console.Types.csproj">
+    <ProjectReference Include="..\Console.Types\NuGet.Console.Types.csproj">
       <Project>{6FD11460-39A3-4A10-BA63-7541B0A7D053}</Project>
-      <Name>Console.Types</Name>
+      <Name>NuGet.Console.Types</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -52,13 +52,13 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\NuGet.Clients\PackageManagement.VisualStudio\PackageManagement.VisualStudio.csproj">
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj">
       <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
-      <Name>PackageManagement.VisualStudio</Name>
+      <Name>NuGet.PackageManagement.VisualStudio</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\src\NuGet.Clients\VisualStudio.Facade\VisualStudio.Facade.csproj">
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\VisualStudio.Facade\NuGet.VisualStudio.Facade.csproj">
       <Project>{EEA49A74-6EFC-410E-9745-BAD367AC151D}</Project>
-      <Name>VisualStudio.Facade</Name>
+      <Name>NuGet.VisualStudio.Facade</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
