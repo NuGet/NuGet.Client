@@ -182,7 +182,7 @@ namespace NuGet.VisualStudio
 
                     VSAPIProjectContext projectContext = new VSAPIProjectContext(skipAssemblyReferences, disableBindingRedirects);
 
-                    return InstallInternalAsync(
+                    await InstallInternalAsync(
                         project,
                         toInstall,
                         repoProvider,
