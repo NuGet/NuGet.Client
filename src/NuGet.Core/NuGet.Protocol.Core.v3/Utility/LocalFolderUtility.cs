@@ -861,14 +861,14 @@ namespace NuGet.Protocol
             // Check for package files one level deep.
             DirectoryInfo rootDirectoryInfo = GetAndVerifyRootDirectory(root);
 
-            if (!rootDirectoryInfo.Exists)
+            var idRoot = Path.Combine(rootDirectoryInfo.FullName, id);
+            if (!Directory.Exists(idRoot))
             {
                 // Directory is missing
                 yield break;
             }
 
             var pathResolver = new VersionFolderPathResolver(root);
-            var idRoot = Path.Combine(root, id);
 
             foreach (var versionDir in GetDirectoriesSafe(idRoot, log))
             {
