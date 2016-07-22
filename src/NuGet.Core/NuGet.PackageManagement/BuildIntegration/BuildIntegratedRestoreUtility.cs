@@ -105,7 +105,6 @@ namespace NuGet.PackageManagement
             using (var request = new RestoreRequest(packageSpec, providers, logger, disposeProviders: false))
             {
                 request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
-                request.LockFileVersion = await GetLockFileVersion(project, context);
 
                 // Add the existing lock file if it exists
                 var lockFilePath = ProjectJsonPathUtilities.GetLockFilePath(project.JsonConfigPath);
@@ -271,7 +270,7 @@ namespace NuGet.PackageManagement
         /// If a full restore is required this will return false.
         /// </summary>
         /// <remarks>Floating versions and project.json files with supports require a full restore.</remarks>
-        public static async Task<bool> IsRestoreRequired(
+        public static bool IsRestoreRequired(
             IReadOnlyList<BuildIntegratedNuGetProject> projects,
             IReadOnlyList<string> packageFolderPaths,
             ExternalProjectReferenceContext referenceContext)
@@ -293,11 +292,9 @@ namespace NuGet.PackageManagement
                 var lockFileFormat = new LockFileFormat();
                 var lockFile = lockFileFormat.Read(lockFilePath, referenceContext.Logger);
 
-                var lockFileVersion = await GetLockFileVersion(project, referenceContext);
-
                 var packageSpec = referenceContext.GetOrCreateSpec(project.ProjectName, project.JsonConfigPath);
 
-                if (!lockFile.IsValidForPackageSpec(packageSpec, lockFileVersion))
+                if (!lockFile.IsValidForPackageSpec(packageSpec, LockFileFormat.Version))
                 {
                     // The project.json file has been changed and the lock file needs to be updated.
                     return true;
@@ -403,27 +400,6 @@ namespace NuGet.PackageManagement
 
             // sort parents by name to make this more deterministic during restores
             return parents.OrderBy(parent => parent.ProjectName, StringComparer.Ordinal).ToList();
-        }
-
-        /// <summary>
-        /// If the project is non-xproj and has no xproj references it may fallback to v1.
-        /// </summary>
-        public static async Task<int> GetLockFileVersion(
-            NuGetProject project,
-            ExternalProjectReferenceContext referenceContext)
-        {
-            var lockFileVersion = LockFileFormat.Version;
-
-            var buildProject = project as BuildIntegratedNuGetProject;
-
-            if (buildProject != null)
-            {
-                var references = await buildProject.GetProjectReferenceClosureAsync(referenceContext);
-
-                lockFileVersion = LockFileUtilities.GetLockFileVersion(references);
-            }
-
-            return lockFileVersion;
         }
 
         /// <summary>
