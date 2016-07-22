@@ -477,9 +477,9 @@ namespace NuGetVSExtension
                 packageFolderPaths.AddRange(nugetPaths.FallbackPackageFolders);
 
                 // Verify all packages exist and have the expected hashes
-                var restoreRequired = await BuildIntegratedRestoreUtility.IsRestoreRequired(
+                var restoreRequired = BuildIntegratedRestoreUtility.IsRestoreRequired(
                     projects,
-                    packageFolderPaths, 
+                    packageFolderPaths,
                     referenceContext);
 
                 if (restoreRequired)

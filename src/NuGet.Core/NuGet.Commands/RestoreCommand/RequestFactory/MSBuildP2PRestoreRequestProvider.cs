@@ -100,13 +100,6 @@ namespace NuGet.Commands
             var externalReferences = msbuildProvider.GetReferences(project.MSBuildProjectPath).ToList();
             request.ExternalProjects = externalReferences;
 
-            // Determine if this needs to fall back to an older lock file format
-            // Skip this if the arguments override the lock file version
-            if (restoreContext.LockFileVersion == null)
-            {
-                request.LockFileVersion = LockFileUtilities.GetLockFileVersion(externalReferences);
-            }
-
             // The lock file is loaded later since this is an expensive operation
 
             var summaryRequest = new RestoreSummaryRequest(
