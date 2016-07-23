@@ -14,6 +14,7 @@ namespace NuGet.Protocol.Core.Types
     {
         private readonly Stream _stream;
         private readonly PackageReaderBase _packageReader;
+        private readonly string _packageSource;
 
         public DownloadResourceResult(DownloadResourceResultStatus status)
         {
@@ -25,7 +26,7 @@ namespace NuGet.Protocol.Core.Types
             Status = status;
         }
 
-        public DownloadResourceResult(Stream stream)
+        public DownloadResourceResult(Stream stream, string source)
         {
             if (stream == null)
             {
@@ -34,12 +35,23 @@ namespace NuGet.Protocol.Core.Types
 
             Status = DownloadResourceResultStatus.Available;
             _stream = stream;
+            _packageSource = source;
+        }
+
+        public DownloadResourceResult(Stream stream)
+            : this(stream, source: null)
+        {
+        }
+
+        public DownloadResourceResult(Stream stream, PackageReaderBase packageReader, string source)
+            : this(stream, source)
+        {
+            _packageReader = packageReader;
         }
 
         public DownloadResourceResult(Stream stream, PackageReaderBase packageReader)
-            : this(stream)
+            : this(stream, packageReader, source: null)
         {
-            _packageReader = packageReader;
         }
 
         public DownloadResourceResultStatus Status { get; }
@@ -48,6 +60,11 @@ namespace NuGet.Protocol.Core.Types
         /// Gets the package <see cref="PackageStream"/>.
         /// </summary>
         public Stream PackageStream => _stream;
+
+        /// <summary>
+        /// Gets the source containing this package, if not from cache
+        /// </summary>
+        public string PackageSource => _packageSource;
 
         /// <summary>
         /// Gets the <see cref="PackageReaderBase"/> for the package.
