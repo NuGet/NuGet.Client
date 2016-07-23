@@ -135,7 +135,9 @@ namespace NuGet.ProjectManagement
                     // Pend all the package files including the nupkg file
                     FileSystemUtility.PendAddFiles(addedPackageFilesList, Root, nuGetProjectContext);
 
-                    nuGetProjectContext.Log(MessageLevel.Info, Strings.AddedPackageToFolder, packageIdentity, Path.GetFullPath(Root));
+                    string format = string.IsNullOrEmpty(downloadResourceResult.PackageSource) ? Strings.AddedPackageToFolder : Strings.AddedPackageToFolderFromSource;
+                    nuGetProjectContext.Log(MessageLevel.Info, format, packageIdentity, Path.GetFullPath(Root), downloadResourceResult.PackageSource);
+
                     return Task.FromResult(true);
                 },
                 token: token);
