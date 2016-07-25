@@ -326,15 +326,18 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <param name="matchingSource">Matching Source if the specified source is a known source. Else null.</param>
         protected void UpdateActiveSourceRepository(string source, bool validateSource)
         {
+            // If source string is not specified, get the current active package source from the host
+            source = string.IsNullOrEmpty(source) ? (string)GetPropertyValueFromHost(ActivePackageSourceKey) : source;
+
             // Look through all available sources (including those disabled) by matching source name and url
             var matchingSource = GetMatchingSource(source);
+            
             // Check if the source is valid http, local. Else throw an exception.
             if (validateSource && matchingSource == null)
             {
                 source = CheckSourceValidity(source);
             }
-            // If source string is not specified, get the current active package source from the host
-            source = string.IsNullOrEmpty(source) ? (string)GetPropertyValueFromHost(ActivePackageSourceKey) : source;
+
             if (!string.IsNullOrEmpty(source))
             {
                 if (matchingSource != null)
@@ -348,6 +351,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }
 
             }
+
             EnabledSourceRepositories = _sourceRepositoryProvider?.GetRepositories()
                 .Where(r => r.PackageSource.IsEnabled)
                 .ToList();
