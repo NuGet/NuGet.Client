@@ -1,36 +1,58 @@
-[CmdletBinding()]
+<#
+.SYNOPSIS
+Replaces all occurances of build version string in project.json and other files
+
+.PARAMETER NewVersion
+New version string to set
+
+.PARAMETER OldVersion
+Optional. Old version string to replace.
+Will use version from .teamcity.properties file if not specified.
+
+.PARAMETER NuGetRoot
+Optional. NuGet client repository root.
+
+.PARAMETER Force
+Optional switch to force replacing text when new and old versions are the same
+#>
+[CmdletBinding(SupportsShouldProcess=$True)]
 Param (
     [Parameter(Mandatory=$true, Position=0)]
-    [string]$OldVersion,
-    [Parameter(Mandatory=$true, Position=1)]
+    [Alias('version')]
     [string]$NewVersion,
+    [Parameter(Mandatory=$false, Position=1)]
+    [string]$OldVersion,
     [Parameter(Mandatory=$false, Position=2)]
-    [string]$NuGetRoot = (Join-Path $PSScriptRoot '..\..\'))
+    [string]$NuGetRoot,
+    [switch]$Force)
 
-function ReplaceNuGetVersion
-{
-    Param(
-        [Parameter(ValueFromPipeline=$True, Mandatory=$True, Position=0)]
-        [string[]]$Files
-    )
-    Process {
-        $Files`
-            | ?{ (Get-Content $_ | Out-String) -match $OldVersion }`
-            | %{
-                Write-Output "Processing $_"
+. "$PSScriptRoot\..\common.ps1"
 
-                $updated = (Get-Content $_) | %{
-                    $_.Replace($OldVersion, $NewVersion)
-                }
+if (-not $NuGetRoot -and (Test-Path Env:\NuGetRoot)) {
+    $NuGetRoot = $env:NuGetRoot
+}
 
-                Set-Content $_ $updated | Out-Null
-            }
-    }
+if (-not $NuGetRoot) {
+    $NuGetRoot = Join-Path $PSScriptRoot '..\..\' -Resolve
+}
+
+if (-not $OldVersion -and (Test-Path "$NuGetRoot\.teamcity.properties")) {
+    $properties = ReadPropertiesFile "$NuGetRoot\.teamcity.properties"
+    $OldVersion = $properties['ReleaseProductVersion']
+}
+
+if (-not $OldVersion) {
+    throw "OLD version string can't be found"
+}
+
+if ($OldVersion -eq $NewVersion -and -not $Force) {
+    Write-Output "NO-OP [$OldVersion == $NewVersion]"
+    exit 0
 }
 
 Write-Output "Updating NuGet version [$OldVersion => $NewVersion]"
 
-ls -r project.json | %{ $_.FullName } | ReplaceNuGetVersion
+gci -r project.json | %{ $_.FullName } | ReplaceTextInFiles -old $OldVersion -new $NewVersion
 
 $miscFiles = @(
     "src\NuGet.Clients\VsExtension\source.extension.dev14.vsixmanifest",
@@ -41,4 +63,4 @@ $miscFiles = @(
     "appveyor.yml"
 )
 
-$miscFiles | %{ Join-Path $NuGetRoot $_ } | ReplaceNuGetVersion
+$miscFiles | %{ Join-Path $NuGetRoot $_ -Resolve } | ReplaceTextInFiles -old $OldVersion -new $NewVersion
