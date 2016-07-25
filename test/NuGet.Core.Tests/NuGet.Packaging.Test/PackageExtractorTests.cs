@@ -634,8 +634,8 @@ namespace NuGet.Packaging.Test
 
                     // Assert
                     var installPath = resolver.GetInstallPath(identity);
-                    Assert.True(File.Exists(Path.Combine(installPath, "a.2.0.3.nupkg")));
-                    Assert.True(File.Exists(Path.Combine(installPath, "a.nuspec")));
+                    Assert.True(File.Exists(Path.Combine(installPath, resolver.GetPackageFileName(identity))));
+                    Assert.True(File.Exists(Path.Combine(installPath, resolver.GetManifestFileName(identity))));
                     Assert.False(File.Exists(Path.Combine(installPath, "lib", "net45", "A.dll")));
                     Assert.False(File.Exists(Path.Combine(installPath, "content", "net40", "B.txt")));
                 }
@@ -674,8 +674,8 @@ namespace NuGet.Packaging.Test
 
                     // Assert
                     var installPath = resolver.GetInstallPath(identity);
-                    Assert.True(File.Exists(Path.Combine(installPath, "a.2.0.3.nupkg")));
-                    Assert.False(File.Exists(Path.Combine(installPath, "a.nuspec")));
+                    Assert.True(File.Exists(Path.Combine(installPath, resolver.GetPackageFileName(identity))));
+                    Assert.False(File.Exists(Path.Combine(installPath, resolver.GetManifestFileName(identity))));
                     Assert.True(File.Exists(Path.Combine(installPath, "lib", "net45", "A.dll")));
                     Assert.True(File.Exists(Path.Combine(installPath, "content", "net40", "B.txt")));
                 }
@@ -714,8 +714,8 @@ namespace NuGet.Packaging.Test
 
                     // Assert
                     var installPath = resolver.GetInstallPath(identity);
-                    Assert.True(File.Exists(Path.Combine(installPath, "a.2.0.3.nupkg")));
-                    Assert.True(File.Exists(Path.Combine(installPath, "a.nuspec")));
+                    Assert.True(File.Exists(Path.Combine(installPath, resolver.GetPackageFileName(identity))));
+                    Assert.True(File.Exists(Path.Combine(installPath, resolver.GetManifestFileName(identity))));
                     Assert.True(File.Exists(Path.Combine(installPath, "lib", "net45", "A.dll")));
                     Assert.True(File.Exists(Path.Combine(installPath, "content", "net40", "B.nuspec")));
                 }
@@ -754,8 +754,8 @@ namespace NuGet.Packaging.Test
 
                     // Assert
                     var installPath = resolver.GetInstallPath(identity);
-                    Assert.True(File.Exists(Path.Combine(installPath, "a.2.0.3.nupkg")));
-                    Assert.False(File.Exists(Path.Combine(installPath, "a.nuspec")));
+                    Assert.True(File.Exists(Path.Combine(installPath, resolver.GetPackageFileName(identity))));
+                    Assert.False(File.Exists(Path.Combine(installPath, resolver.GetManifestFileName(identity))));
                     Assert.True(File.Exists(Path.Combine(installPath, "lib", "net45", "A.dll")));
                     Assert.True(File.Exists(Path.Combine(installPath, "content", "net40", "B.nuspec")));
                 }
@@ -794,8 +794,8 @@ namespace NuGet.Packaging.Test
 
                     // Assert
                     var installPath = resolver.GetInstallPath(identity);
-                    Assert.False(File.Exists(Path.Combine(installPath, "a.2.0.3.nupkg")));
-                    Assert.True(File.Exists(Path.Combine(installPath, "a.nuspec")));
+                    Assert.False(File.Exists(Path.Combine(installPath, resolver.GetPackageFileName(identity))));
+                    Assert.True(File.Exists(Path.Combine(installPath, resolver.GetManifestFileName(identity))));
                     Assert.True(File.Exists(Path.Combine(installPath, "lib", "net45", "A.dll")));
                     Assert.True(File.Exists(Path.Combine(installPath, "content", "net40", "B.txt")));
                 }
