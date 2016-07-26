@@ -204,15 +204,7 @@ namespace NuGet.CommandLine
 
             try
             {
-                // Populate the package builder with initial metadata from the assembly/exe
-                if (!Directory.Exists(TargetPath))
-                {
-                    AssemblyMetadataExtractor.ExtractMetadata(builder, TargetPath);
-                }
-                else
-                {
-                    ExtractMetadataFromProject(builder);
-                }
+                ExtractMetadata(builder);
             }
             catch (Exception ex)
             {
@@ -679,24 +671,7 @@ namespace NuGet.CommandLine
                 projectFactory.BuildProject();
                 var builder = new Packaging.PackageBuilder();
 
-                // If building an xproj, then TargetPath points to the folder where the framework folders will be
-                // instead of to a single dll. Skip trying to ExtractMetadata from the dll and instead
-                // use only metadata from the project and json file.
-                if (!Directory.Exists(projectFactory.TargetPath))
-                {
-                    try
-                    {
-                        AssemblyMetadataExtractor.ExtractMetadata(builder, projectFactory.TargetPath);
-                    }
-                    catch
-                    {
-                        projectFactory.ExtractMetadataFromProject(builder);
-                    }
-                }
-                else
-                {
-                    projectFactory.ExtractMetadataFromProject(builder);
-                }
+                projectFactory.ExtractMetadata(builder);
 
                 projectFactory.InitializeProperties(builder);
 
@@ -732,6 +707,31 @@ namespace NuGet.CommandLine
                     project.FullPath,
                     ex.Message);
                 throw new CommandLineException(message, ex);
+            }
+        }
+
+        private void ExtractMetadata(Packaging.PackageBuilder builder)
+        {
+            // If building an xproj, then TargetPath points to the folder where the framework folders will be
+            // instead of to a single dll. Skip trying to ExtractMetadata from the dll and instead
+            // use only metadata from the project and json file.
+            if (!Directory.Exists(TargetPath))
+            {
+                // If building a project targeting netstandard, asssembly metadata extraction fails
+                // because it tries to load system.runtime version 4.1.0 which is not present in the local
+                // path or the gac. In this case, we should just skip it and extract metadata from the project.
+                try
+                {
+                    AssemblyMetadataExtractor.ExtractMetadata(builder, TargetPath);
+                }
+                catch
+                {
+                    ExtractMetadataFromProject(builder);
+                }
+            }
+            else
+            {
+                ExtractMetadataFromProject(builder);
             }
         }
 
