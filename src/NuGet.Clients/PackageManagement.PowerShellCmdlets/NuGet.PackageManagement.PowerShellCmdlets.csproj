@@ -65,6 +65,8 @@
     <Compile Include="Model\PowerShellInstalledPackage.cs" />
     <Compile Include="Model\PowerShellRemotePackage.cs" />
     <Compile Include="Model\PowerShellUpdatePackage.cs" />
+    <Compile Include="SourceValidationResult.cs" />
+    <Compile Include="SourceValidity.cs" />
     <Compile Include="Utility\IErrorHandler.cs" />
     <Compile Include="Utility\IHttpClientEvents.cs" />
     <Compile Include="Cmdlets\InstallPackageCommand.cs" />

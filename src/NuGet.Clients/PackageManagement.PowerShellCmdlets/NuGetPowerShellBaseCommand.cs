@@ -249,7 +249,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             var packages = await PackageRestoreManager.GetPackagesInSolutionAsync(solutionDirectory, CancellationToken.None);
             if (packages.Any(p => p.IsMissing))
             {
-                var packageRestoreConsent = new VisualStudio.PackageRestoreConsent(ConfigSettings);
+                var packageRestoreConsent = new PackageRestoreConsent(ConfigSettings);
                 if (packageRestoreConsent.IsGranted)
                 {
                     await TaskScheduler.Default;
@@ -276,80 +276,66 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         #region Cmdlets base APIs
 
-        /// <summary>
-        /// Looks through all available sources (including those disabled) by matching source name and url to get matching sources.
-        /// </summary>
-        /// <param name="source">The source string specified by -Source switch.</param>
-        /// <returns>Returns an object of PackageSource if the specified source string is a known source. Else returns a null.</returns>
-        protected PackageSource GetMatchingSource(string source)
+        protected SourceValidationResult ValidateSource(string source)
         {
-            var packageSources = _sourceRepositoryProvider.PackageSourceProvider?.LoadPackageSources();
-            var matchingSource = packageSources
-                ?.FirstOrDefault(p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, source) ||
-                          StringComparer.OrdinalIgnoreCase.Equals(p.Source, source));
-            return matchingSource;
-        }
-
-        /// <summary>
-        /// Checks if the sourse is valid http or local source. Else throws an exception.
-        /// </summary>
-        /// <param name="source">The source string specified by -Source switch.</param>
-        /// <param name="packageId">The package ID string specified.</param>
-        /// <param name="matchingSource">Matching Source if the specified source is a known source. Else null.</param>
-        /// <returns>Returns an absolute version of the specified source if it is a relative local source. Else returns it unchanged.</returns>
-        /// <exception cref="PackageSourceException">Throws an PackageSourceException if the specified source is either invalid or is not http/local type.</exception>
-        protected string CheckSourceValidity(string source)
-        {
-            // Check validity only if the source was specified and it is not a known source
-            if (!string.IsNullOrEmpty(source))
+            // If source string is not specified, get the current active package source from the host.
+            if (string.IsNullOrEmpty(source))
             {
-                // Convert a relative local URI into an absolute URI
-                source = ConvertRelativeUriToAbsolute(source);
-
-                // Convert source into a PackageSource
-                var packageSource = new PackageSource(source);
-
-                // Check if the source is a valid http
-                if ((packageSource.IsHttp && packageSource.TrySourceAsUri == null))
-                {
-                    throw new PackageSourceException(PackageSourceException.ExceptionType.UnknownSource);
-                }
+                source = (string)GetPropertyValueFromHost(ActivePackageSourceKey);
             }
-            return source;
+            
+            // Look through all available sources (including those disabled) by matching source name and URL (or path).
+            var matchingSource = GetMatchingSource(source);
+            if (matchingSource != null)
+            {
+                return SourceValidationResult.Valid(
+                    source,
+                    _sourceRepositoryProvider?.CreateRepository(matchingSource));
+            }
+
+            // If we really can't find a source string, return an empty validation result.
+            if (string.IsNullOrEmpty(source))
+            {
+                return SourceValidationResult.None;
+            }
+
+            return CheckSourceValidity(source);
         }
 
+        protected void UpdateActiveSourceRepository(string source)
+        {
+            var result = ValidateSource(source);
+            EnsureValidSource(result);
+            UpdateActiveSourceRepository(result.SourceRepository);
+        }
+
+        protected void EnsureValidSource(SourceValidationResult result)
+        {
+            if (result.Validity == SourceValidity.UnknownSource)
+            {
+                throw new PackageSourceException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.UnknownSource,
+                    result.Source));
+            }
+            else if (result.Validity == SourceValidity.UnknownSourceType)
+            {
+                throw new PackageSourceException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.UnknownSourceType,
+                    result.Source));
+            }
+        }
 
         /// <summary>
         /// Initializes source repositories for PowerShell cmdlets, based on config, source string, and/or host active source property value.
         /// </summary>
         /// <param name="source">The source string specified by -Source switch.</param>
-        /// <param name="matchingSource">Matching Source if the specified source is a known source. Else null.</param>
-        protected void UpdateActiveSourceRepository(string source, bool validateSource)
+        protected void UpdateActiveSourceRepository(SourceRepository sourceRepository)
         {
-            // If source string is not specified, get the current active package source from the host
-            source = string.IsNullOrEmpty(source) ? (string)GetPropertyValueFromHost(ActivePackageSourceKey) : source;
-
-            // Look through all available sources (including those disabled) by matching source name and url
-            var matchingSource = GetMatchingSource(source);
-            
-            // Check if the source is valid http, local. Else throw an exception.
-            if (validateSource && matchingSource == null)
+            if (sourceRepository != null)
             {
-                source = CheckSourceValidity(source);
-            }
-
-            if (!string.IsNullOrEmpty(source))
-            {
-                if (matchingSource != null)
-                {
-                    _activeSourceRepository = _sourceRepositoryProvider?.CreateRepository(matchingSource);
-                }
-                else
-                {
-                    // source should be the format of url here; otherwise it cannot resolve from name anyways.
-                    _activeSourceRepository = CreateRepositoryFromSource(source);
-                }
-
+                _activeSourceRepository = sourceRepository;
             }
 
             EnabledSourceRepositories = _sourceRepositoryProvider?.GetRepositories()
@@ -358,16 +344,43 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// If a relative local URI is passed, it converts it into an abosolute URI.
-        /// If the local URI does not exist or it is niether http nor local type, then an exception is thrown.
+        /// Create a package repository from the source by trying to resolve relative paths.
+        /// </summary>
+        private SourceRepository CreateRepositoryFromSource(string source)
+        {
+            var packageSource = new PackageSource(source);
+            var repository = _sourceRepositoryProvider.CreateRepository(packageSource);
+            var resource = repository.GetResource<PackageSearchResource>();
+
+            return repository;
+        }
+
+        /// <summary>
+        /// Looks through all available sources (including those disabled) by matching source name and url to get matching sources.
+        /// </summary>
+        /// <param name="source">The source string specified by -Source switch.</param>
+        /// <returns>Returns an object of PackageSource if the specified source string is a known source. Else returns a null.</returns>
+        private PackageSource GetMatchingSource(string source)
+        {
+            var packageSources = _sourceRepositoryProvider.PackageSourceProvider?.LoadPackageSources();
+
+            var matchingSource = packageSources?.FirstOrDefault(
+                p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, source) ||
+                     StringComparer.OrdinalIgnoreCase.Equals(p.Source, source));
+
+            return matchingSource;
+        }
+
+        /// <summary>
+        /// If a relative local URI is passed, it converts it into an absolute URI.
+        /// If the local URI does not exist or it is neither http nor local type, then the source is rejected.
         /// If the URI is not relative then no action is taken.
         /// </summary>
         /// <param name="source">The source string specified by -Source switch.</param>
-        /// <param name="packageId">The package ID string specified.</param>
-        /// <returns>Returns an absolute version of the source string if it is a relative local source. Else returns it unchanged.</returns>
-        /// <exception cref="PackageSourceException">Throws an PackageSourceException if the specified source is a non-existent local source or if the source is not http or local source.</exception>
-        protected string ConvertRelativeUriToAbsolute(string source)
+        /// <returns>The source validation result.</returns>
+        private SourceValidationResult CheckSourceValidity(string source)
         {
+            // Convert a relative local URI into an absolute URI
             var packageSource = new PackageSource(source);
             Uri sourceUri;
             if (Uri.TryCreate(source, UriKind.Relative, out sourceUri))
@@ -375,67 +388,32 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 string outputPath;
                 bool? exists;
                 string errorMessage;
-                if (TryTranslatePSPath(source, out outputPath, out exists, out errorMessage)
-                    && exists == true)
+                if (PSPathUtility.TryTranslatePSPath(SessionState, source, out outputPath, out exists, out errorMessage) &&
+                    exists == true)
                 {
                     source = outputPath;
+                    packageSource = new PackageSource(source);
                 }
-                else if (exists.HasValue && !exists.Value)
+                else if (exists == false)
                 {
-                    // Throw an unknown source exception if the local source does not exist
-                    throw new PackageSourceException(PackageSourceException.ExceptionType.UnknownSource);
+                    return SourceValidationResult.UnknownSource(source);
                 }
             }
             else if (!packageSource.IsHttp)
             {
                 // Throw and unknown source type error if the specified source is neither local nor http
-                throw new PackageSourceException(PackageSourceException.ExceptionType.UnknownSourceType);
+                return SourceValidationResult.UnknownSourceType(source);
             }
-            return source;
-        }
-
-        /// <summary>
-        /// Create a package repository from the source by trying to resolve relative paths.
-        /// </summary>
-        protected SourceRepository CreateRepositoryFromSource(string source)
-        {
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
-
-            var packageSource = new Configuration.PackageSource(source);
-            var repository = _sourceRepositoryProvider.CreateRepository(packageSource);
-            var resource = repository.GetResource<PackageSearchResource>();
             
-            // Right now if packageSource is invalid, CreateRepository will not throw. Instead, resource returned is null.
-            if (resource == null)
+            // Check if the source is a valid HTTP URI.
+            if (packageSource.IsHttp && packageSource.TrySourceAsUri == null)
             {
-                // Try to create Uri again to throw UriFormat exception for invalid source input.
-                new Uri(source);
+                return SourceValidationResult.UnknownSource(source);
             }
 
-            return repository;
-        }
+            var sourceRepository = CreateRepositoryFromSource(source);
 
-        /// <summary>
-        /// Translate a PSPath into a System.IO.* friendly Win32 path.
-        /// Does not resolve/glob wildcards.
-        /// </summary>
-        /// <param name="psPath">
-        /// The PowerShell PSPath to translate which may reference PSDrives or have
-        /// provider-qualified paths which are syntactically invalid for .NET APIs.
-        /// </param>
-        /// <param name="path">The translated PSPath in a format understandable to .NET APIs.</param>
-        /// <param name="exists">Returns null if not tested, or a bool representing path existence.</param>
-        /// <param name="errorMessage">If translation failed, contains the reason.</param>
-        /// <returns>True if successfully translated, false if not.</returns>
-        [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", MessageId = "1#", Justification = "Following TryParse pattern in BCL", Target = "path")]
-        [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", MessageId = "2#", Justification = "Following TryParse pattern in BCL", Target = "exists")]
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "ps", Justification = "ps is a common powershell prefix")]
-        protected bool TryTranslatePSPath(string psPath, out string path, out bool? exists, out string errorMessage)
-        {
-            return PSPathUtility.TryTranslatePSPath(SessionState, psPath, out path, out exists, out errorMessage);
+            return SourceValidationResult.Valid(source, sourceRepository);
         }
 
         /// <summary>
@@ -482,20 +460,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     ErrorHandler.WriteProjectNotFoundError(projectName, terminating: true);
                 }
             }
-        }
-
-        protected IEnumerable<NuGetProject> GetNuGetProjectsByName(string[] projectNames)
-        {
-            List<NuGetProject> nuGetProjects = new List<NuGetProject>();
-            foreach (Project project in GetProjectsByName(projectNames))
-            {
-                NuGetProject nuGetProject = VsSolutionManager.GetNuGetProject(project.Name);
-                if (nuGetProject != null)
-                {
-                    nuGetProjects.Add(nuGetProject);
-                }
-            }
-            return nuGetProjects;
         }
 
         /// <summary>
@@ -581,7 +545,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// unique names and safe names.
         /// </summary>
         /// <returns></returns>
-        protected IEnumerable<string> GetAllValidProjectNames()
+        private IEnumerable<string> GetAllValidProjectNames()
         {
             var nugetProjects = VsSolutionManager.GetNuGetProjects();
             var safeNames = nugetProjects?.Select(p => VsSolutionManager.GetNuGetProjectSafeName(p));
@@ -593,13 +557,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// Get the list of installed packages based on Filter, Skip and First parameters. Used for Get-Package.
         /// </summary>
         /// <returns></returns>
-        protected static async Task<Dictionary<NuGetProject, IEnumerable<Packaging.PackageReference>>> GetInstalledPackagesAsync(IEnumerable<NuGetProject> projects,
+        protected static async Task<Dictionary<NuGetProject, IEnumerable<PackageReference>>> GetInstalledPackagesAsync(IEnumerable<NuGetProject> projects,
             string filter,
             int skip,
             int take,
             CancellationToken token)
         {
-            var installedPackages = new Dictionary<NuGetProject, IEnumerable<Packaging.PackageReference>>();
+            var installedPackages = new Dictionary<NuGetProject, IEnumerable<PackageReference>>();
 
             foreach (var project in projects)
             {

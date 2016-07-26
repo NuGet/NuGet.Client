@@ -849,7 +849,7 @@ function Test-UpdatePackageThrowsWhenSourceIsInvalid {
     $p | Install-Package jQuery -Version 1.5.1 -Source $context.RepositoryPath
 
     # Act & Assert
-    Assert-Throws { Update-Package jQuery -source "d:package" } "Failed to retrieve information from remote source 'd:package'.`r`n  Invalid URI: A Dos path must be rooted, for example, 'c:\'."
+    Assert-Throws { Update-Package jQuery -source "d:package" } "Unsupported type of source 'd:package'. Please provide an HTTP or local source."
 }
 
 function Test-UpdatePackageInOneProjectDoesNotCheckAllPackagesInSolution {

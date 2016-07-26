@@ -59,23 +59,25 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected virtual void Preprocess()
         {
             CheckSolutionState();
-            try
+
+            var result = ValidateSource(Source);
+            if (result.Validity == SourceValidity.UnknownSource)
             {
-                UpdateActiveSourceRepository(Source, validateSource: true);
+                throw new PackageSourceException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.UnknownSourceWithId,
+                    Id,
+                    result.Source));
             }
-            catch(PackageSourceException ex)
+            else if (result.Validity == SourceValidity.UnknownSourceType)
             {
-                if (ex.Type == PackageSourceException.ExceptionType.UnknownSource)
-                {
-                    // If the exception is of unknown/invalid source then add package id and throw the exception
-                    throw new PackageSourceException(string.Format(CultureInfo.CurrentCulture, Strings.UnknownSource, Id, Source));
-                }
-                else
-                {
-                    // If the exception is of unknown source type then throw the exception
-                    throw new PackageSourceException(string.Format(CultureInfo.CurrentCulture, Strings.UnknownSourceType, Source));
-                }
+                throw new PackageSourceException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.UnknownSourceType,
+                    result.Source));
             }
+
+            UpdateActiveSourceRepository(result.SourceRepository);
             GetNuGetProject(ProjectName);
             DetermineFileConflictAction();
             NuGetUIThreadHelper.JoinableTaskFactory.Run(CheckMissingPackagesAsync);

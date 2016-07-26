@@ -600,7 +600,7 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Unable to find package &apos;{0}&apos; at source &apos;{1}&apos;. Source not found..
+        ///    Looks up a localized string similar to Source &apos;{0}&apos; not found. Please provide an HTTP or local source..
         /// </summary>
         public static string UnknownSource {
             get {
@@ -609,11 +609,20 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Unsupported type of source  &apos;{0}&apos;. Please provide an http or local source..
+        ///    Looks up a localized string similar to Unsupported type of source &apos;{0}&apos;. Please provide an HTTP or local source..
         /// </summary>
         public static string UnknownSourceType {
             get {
                 return ResourceManager.GetString("UnknownSourceType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Unable to find package &apos;{0}&apos; at source &apos;{1}&apos;. Source not found..
+        /// </summary>
+        public static string UnknownSourceWithId {
+            get {
+                return ResourceManager.GetString("UnknownSourceWithId", resourceCulture);
             }
         }
         
