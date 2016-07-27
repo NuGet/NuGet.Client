@@ -31,7 +31,6 @@ namespace NuGet.PackageManagement.VisualStudio
     public class BuildIntegratedProjectSystem : BuildIntegratedNuGetProject
     {
         private IScriptExecutor _scriptExecutor;
-        private IVsProjectBuildSystem _buildSystem;
 
         public BuildIntegratedProjectSystem(
             string jsonConfigPath,
@@ -61,29 +60,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
                 return _scriptExecutor;
             }
-        }
-
-        public IVsProjectBuildSystem ProjectBuildSystem
-        {
-            get
-            {
-                if (_buildSystem == null)
-                {
-                    _buildSystem = EnvDTEProjectUtility.GetVsProjectBuildSystem(EnvDTEProject);
-                }
-
-                return _buildSystem;
-            }
-        }
-
-        public override void BeginProcessing()
-        {
-            ProjectBuildSystem?.StartBatchEdit();
-        }
-
-        public override void EndProcessing()
-        {
-            ProjectBuildSystem?.EndBatchEdit();
         }
 
         /// <summary>
