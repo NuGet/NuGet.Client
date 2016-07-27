@@ -234,16 +234,6 @@ namespace NuGet.ProjectManagement.Projects
             return Task.FromResult(false);
         }
 
-        public virtual void BeginProcessing()
-        {
-            // Intentional no-op
-        }
-
-        public virtual void EndProcessing()
-        {
-            // Intentional no-op
-        }
-
         private async Task<JObject> GetJsonAsync()
         {
             try
