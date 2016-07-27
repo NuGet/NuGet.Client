@@ -52,6 +52,7 @@
     <Compile Include="Converters\IconUrlToImageCacheConverterTests.cs" />
     <Compile Include="ConverterTests.cs" />
     <Compile Include="Feeds\MultiSourcePackageMetadataProviderTests.cs" />
+    <Compile Include="Feeds\UpdatePackageFeedTests.cs" />
     <Compile Include="PackageItemLoaderTests.cs" />
     <Compile Include="PackageManagerProviderTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

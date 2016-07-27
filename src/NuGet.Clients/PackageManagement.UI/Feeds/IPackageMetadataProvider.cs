@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement.UI
@@ -28,11 +29,12 @@ namespace NuGet.PackageManagement.UI
         /// Retrieves a package metadata of a highest available version along with list of all available versions
         /// </summary>
         /// <param name="identity">Desired package identity</param>
+        /// <param name="project">Project reference to determine the latest version</param>
         /// <param name="includePrerelease">Filters pre-release versions</param>
         /// <param name="cancellationToken">A cancellation token</param>
         /// <returns>Package metadata</returns>
-        Task<IPackageSearchMetadata> GetLatestPackageMetadataAsync(PackageIdentity identity,
-            bool includePrerelease, CancellationToken cancellationToken);
+        Task<IPackageSearchMetadata> GetLatestPackageMetadataAsync(PackageIdentity identity, 
+            NuGetProject project, bool includePrerelease, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves a list of metadata objects of all available versions for given package id.
