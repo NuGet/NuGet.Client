@@ -12,8 +12,7 @@
     "NuGet.Test.Utility": {
       "target": "project"
     },
-    "xunit": "2.1.0",
-    "Newtonsoft.Json": "8.0.3"
+    "xunit": "2.1.0"
   },
   "frameworks": {
     "netcoreapp1.0": {
