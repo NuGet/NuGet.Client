@@ -34,8 +34,7 @@
     },
     "NuGet.Protocol.Core.Types": {
       "target": "project"
-    },
-    "Newtonsoft.Json": "6.0.4"
+    }
   },
   "frameworks": {
     "net45": {
@@ -49,16 +48,15 @@
         "define": [
           "IS_DESKTOP"
         ]
+      },
+      "dependencies": {
+        "Newtonsoft.Json": "6.0.4"
       }
     },
     "netstandard1.3": {
-      "imports": [
-        "dotnet5.6",
-        "dnxcore50",
-        "portable-net45+win8"
-      ],
       "dependencies": {
         "NETStandard.Library": "1.6.0",
+        "Newtonsoft.Json": "9.0.1",
         "System.Dynamic.Runtime": "4.0.11"
       },
       "buildOptions": {
