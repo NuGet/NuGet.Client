@@ -8,7 +8,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Host;
@@ -42,6 +41,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         private readonly BlockingCollection<Message> _blockingCollection = new BlockingCollection<Message>();
         private readonly Semaphore _scriptEndSemaphore = new Semaphore(0, Int32.MaxValue);
+        private readonly Semaphore _flushSemaphore = new Semaphore(0, Int32.MaxValue);
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly ICommonOperations _commonOperations;
         private readonly IDeleteOnRestartManager _deleteOnRestartManager;
@@ -1006,6 +1006,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         LogCore(logMessage.Level, logMessage.Content);
                         continue;
                     }
+
+                    var flushMessage = message as FlushMessage;
+                    if (flushMessage != null)
+                    {
+                        _flushSemaphore.Release();
+                    }
                 }
             }
             catch (InvalidOperationException ex)
@@ -1061,6 +1067,18 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         public PackageExtractionContext PackageExtractionContext { get; set; }
+
+        /// <summary>
+        /// Flushes all existing messages in the <see cref="BlockingCollection"/> before
+        /// continuing. This is useful before prompting for user input so that log messages are
+        /// written out before the user prompt text.
+        /// </summary>
+        protected void FlushBlockingCollection()
+        {
+            BlockingCollection.Add(new FlushMessage());
+
+            WaitHandle.WaitAny(new WaitHandle[] { _flushSemaphore });
+        }
 
         public void ExecutePSScript(string scriptPath, bool throwOnFailure)
         {

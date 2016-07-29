@@ -11,15 +11,13 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
-using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using Resx = NuGet.PackageManagement.UI;
-using Microsoft.VisualStudio.Threading;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -370,7 +368,7 @@ namespace NuGet.PackageManagement.UI
                 settings.ShowPreviewWindow = false;
             }
 
-            if (DeprecatedFrameworkWindow.IsDoNotShowDeprecatedFrameworkWindowEnabled())
+            if (DotnetDeprecatedPrompt.GetDoNotShowPromptState())
             {
                 settings.ShowDeprecatedFrameworkWindow = false;
             }

@@ -31,17 +31,17 @@
       Grid.Row="0"
       Margin="12,4,12,0"
       TextWrapping="Wrap">
-        <Run Text="{Binding Details, Mode=OneTime}" /><Hyperlink AutomationProperties.AutomationId="MigrationLink"
+        <Run Text="{Binding TextBeforeLink, Mode=OneTime}" /><Hyperlink AutomationProperties.AutomationId="MigrationLink"
                    NavigateUri="{Binding MigrationUrl, Mode=OneTime}"
                    Style="{StaticResource HyperlinkStyle}"
-                   RequestNavigate="OnMigrationUrlNavigate"><Run Text="{x:Static nuget:Resources.Text_DeprecatedFramework_DocumentLink}" />
-        </Hyperlink><Run Text="{x:Static nuget:Resources.Text_DeprecatedFramework_DocumentLink_After}" />
+                   RequestNavigate="OnMigrationUrlNavigate"><Run Text="{Binding LinkText, Mode=OneTime}" />
+        </Hyperlink><Run Text="{Binding TextAfterLink, Mode=OneTime}" />
     </TextBlock>
     <TextBlock
       Grid.Row="1"
       Margin="12,4,12,0"
       TextWrapping="Wrap"
-      Text="{x:Static nuget:Resources.Text_DeprecatedFramework_ProjectList}" />
+      Text="{Binding ProjectListText, Mode=OneTime}" />
 
     <Border
       Grid.Row="2"

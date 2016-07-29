@@ -10,13 +10,13 @@ namespace NuGet.PackageManagement.UI
     {
         private bool _initialized;
         private INuGetUIContext _uiContext;
-
+        
         public DeprecatedFrameworkWindow(INuGetUIContext uiContext)
         {
             _initialized = false;
             _uiContext = uiContext;
             InitializeComponent();
-            _doNotShowCheckBox.IsChecked = IsDoNotShowDeprecatedFrameworkWindowEnabled();
+            _doNotShowCheckBox.IsChecked = DotnetDeprecatedPrompt.GetDoNotShowPromptState();
 
             if (StandaloneSwitch.IsRunningStandalone)
             {
@@ -69,16 +69,8 @@ namespace NuGet.PackageManagement.UI
         private void SaveDoNotShowPreviewWindowSetting(bool doNotshow)
         {
             _uiContext.ApplyShowDeprecatedFrameworkSetting(!doNotshow);
-            
-            RegistrySettingUtility.SetBooleanSetting(
-                Constants.DoNotShowDeprecatedFrameworkWindowRegistryName,
-                doNotshow);
-        }
 
-        public static bool IsDoNotShowDeprecatedFrameworkWindowEnabled()
-        {
-            return RegistrySettingUtility.GetBooleanSetting(
-                Constants.DoNotShowDeprecatedFrameworkWindowRegistryName);
+            DotnetDeprecatedPrompt.SaveDoNotShowPromptState(doNotshow);
         }
     }
 }
