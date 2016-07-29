@@ -60,10 +60,7 @@ namespace NuGet.Packaging
             _root = folder;
         }
 
-        /// <summary>
-        /// Opens the nuspec file in read only mode.
-        /// </summary>
-        public override Stream GetNuspec()
+        public override string GetNuspecFile()
         {
             // This needs to be explicitly case insensitive in order to work on XPlat, since GetFiles is normally case sensitive on non-Windows
             var nuspecFiles = _root.GetFiles("*.*", SearchOption.TopDirectoryOnly).Where(f => f.Name.EndsWith(".nuspec", StringComparison.OrdinalIgnoreCase)).ToArray();
@@ -77,7 +74,7 @@ namespace NuGet.Packaging
                 throw new PackagingException(Strings.MultipleNuspecFiles);
             }
 
-            return nuspecFiles[0].OpenRead();
+            return nuspecFiles[0].FullName;
         }
 
         /// <summary>

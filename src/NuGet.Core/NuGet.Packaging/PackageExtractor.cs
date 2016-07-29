@@ -286,7 +286,7 @@ namespace NuGet.Packaging
                                     var nuspecFileName = Path.GetFileName(targetNuspec);
                                     var hashFileName = Path.GetFileName(hashPath);
                                     var packageFiles = packageReader.GetFiles()
-                                        .Where(file => ShouldInclude(file, nupkgFileName, nuspecFileName, hashFileName));
+                                        .Where(file => ShouldInclude(file, hashFileName));
                                     var packageFileExtractor = new PackageFileExtractor(
                                         packageFiles,
                                         versionFolderPathContext.XmlDocFileSaveMode);
@@ -348,8 +348,6 @@ namespace NuGet.Packaging
 
         private static bool ShouldInclude(
             string fullName,
-            string nupkgFileName,
-            string nuspecFileName,
             string hashFileName)
         {
             // Not all the files from a zip file are needed
@@ -373,9 +371,15 @@ namespace NuGet.Packaging
                 return false;
             }
 
-            if (string.Equals(fullName, nupkgFileName, StringComparison.OrdinalIgnoreCase)
-                || string.Equals(fullName, hashFileName, StringComparison.OrdinalIgnoreCase)
-                || string.Equals(fullName, nuspecFileName, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(fullName, hashFileName, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            // Skip nupkgs and nuspec files found in the root, the valid ones are already extracted
+            if (PackageHelper.IsRoot(fullName) 
+                && (PackageHelper.IsNuspec(fullName) 
+                    || fullName.EndsWith(PackagingCoreConstants.NupkgExtension, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }
