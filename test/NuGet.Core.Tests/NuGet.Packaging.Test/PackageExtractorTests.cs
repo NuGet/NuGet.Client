@@ -15,6 +15,59 @@ namespace NuGet.Packaging.Test
     public class PackageExtractorTests
     {
         [Fact]
+        public async Task PackageExtractor_NuspecWithDifferentName_InstallForV3()
+        {
+            // Arrange
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packageA = new SimpleTestPackageContext()
+                {
+                    Id = "a",
+                    Version = "1.0.0"
+                };
+
+                packageA.AddFile("lib/net45/a.dll");
+
+                SimpleTestPackageUtility.CreatePackages(root, packageA);
+
+                var packageFile = Path.Combine(root, "a.1.0.0.nupkg");
+
+                // Move a.nuspec to b.nuspec
+                using (var stream = File.Open(packageFile, FileMode.Open))
+                using (var zipFile = new ZipArchive(stream, ZipArchiveMode.Update))
+                {
+                    var nuspecEntry = zipFile.Entries.Where(e => e.FullName.EndsWith(".nuspec")).Single();
+
+                    using (var nuspecStream = nuspecEntry.Open())
+                    using (var reader = new StreamReader(nuspecStream))
+                    {
+                        zipFile.AddEntry("b.nuspec", reader.ReadToEnd());
+                    }
+
+                    nuspecEntry.Delete();
+                }
+
+                using (var packageStream = File.OpenRead(packageFile))
+                {
+                    // Act
+                    await PackageExtractor.InstallFromSourceAsync(
+                        packageStream.CopyToAsync,
+                        new VersionFolderPathContext(
+                            new PackageIdentity("a", NuGetVersion.Parse("1.0.0")),
+                            root,
+                            NullLogger.Instance,
+                            packageSaveMode: PackageSaveMode.Defaultv3,
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.False(File.Exists(Path.Combine(root, "a", "1.0.0", "b.nuspec")));
+                    Assert.True(File.Exists(Path.Combine(root, "a", "1.0.0", "a.nuspec")));
+                }
+            }
+        }
+
+        [Fact]
         public void PackageExtractor_WithContentXmlFile()
         {
             // Arrange

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using NuGet.Common;
@@ -120,11 +119,6 @@ namespace NuGet.Packaging
             }
 
             return stream;
-        }
-
-        public override Stream GetNuspec()
-        {
-            return GetStream(this.GetNuspecFile());
         }
 
         protected override void Dispose(bool disposing)

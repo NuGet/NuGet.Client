@@ -54,6 +54,11 @@ namespace NuGet.Packaging.Core
         /// </summary>
         Stream GetNuspec();
 
+        /// <summary>
+        /// Nuspec path
+        /// </summary>
+        string GetNuspecFile();
+
         IEnumerable<string> CopyFiles(
             string destination,
             IEnumerable<string> packageFiles,

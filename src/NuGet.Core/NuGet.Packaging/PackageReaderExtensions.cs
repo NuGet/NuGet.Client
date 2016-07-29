@@ -31,26 +31,5 @@ namespace NuGet.Packaging
 
             return satelliteFiles;
         }
-
-        public static string GetNuspecFile(this IPackageCoreReader packageReader)
-        {
-            // Find all nuspec files in the root folder of the zip.
-            var nuspecEntries = packageReader.GetFiles()
-                .Select(f => f.TrimStart('/').Replace('/', Path.DirectorySeparatorChar))
-                .Where(f => f.EndsWith(PackagingCoreConstants.NuspecExtension, StringComparison.OrdinalIgnoreCase))
-                .Where(f => string.Equals(f, Path.GetFileName(f), StringComparison.OrdinalIgnoreCase))
-                .ToArray();
-
-            if (nuspecEntries.Length == 0)
-            {
-                throw new PackagingException(Strings.MissingNuspec);
-            }
-            else if (nuspecEntries.Length > 1)
-            {
-                throw new PackagingException(Strings.MultipleNuspecFiles);
-            }
-
-            return nuspecEntries[0];
-        }
     }
 }
