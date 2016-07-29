@@ -15,7 +15,7 @@ using Microsoft.VisualStudio.ProjectSystem.Designers;
 using Microsoft.VisualStudio.ProjectSystem.Properties;
 #endif
 
-namespace NuGet.VisualStudio.Facade
+namespace NuGet.VisualStudio.Facade.ProjectSystem
 {
     public static class ProjectHelper
     {
