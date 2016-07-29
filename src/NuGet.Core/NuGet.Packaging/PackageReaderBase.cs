@@ -89,7 +89,11 @@ namespace NuGet.Packaging
         {
             // This is the default implementation. It is overridden and optimized in
             // PackageArchiveReader and PackageFolderReader.
+            return GetStream(GetNuspecFile());
+        }
 
+        public virtual string GetNuspecFile()
+        {
             // Find all nuspecs in the root folder.
             var nuspecPaths = GetFiles()
                 .Where(entryPath => PackageHelper.IsManifest(entryPath))
@@ -104,7 +108,7 @@ namespace NuGet.Packaging
                 throw new PackagingException(Strings.MultipleNuspecFiles);
             }
 
-            return GetStream(nuspecPaths.Single());
+            return nuspecPaths.Single();
         }
 
         /// <summary>
