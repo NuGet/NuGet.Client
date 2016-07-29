@@ -434,7 +434,6 @@ namespace NuGet.PackageManagement.Test
                 }
 
                 var graph = RestoreTargetGraph.Create(
-                    false,
                     new[] { node },
                     new RemoteWalkContext(),
                     NullLogger.Instance,
