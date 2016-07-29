@@ -15,6 +15,7 @@ function ReadPropertiesFile {
 }
 
 function ReplaceTextInFiles {
+    [CmdletBinding(SupportsShouldProcess=$True)]
     Param(
         [Parameter(ValueFromPipeline=$True, Mandatory=$True, Position=0)]
         [string[]]$Files,

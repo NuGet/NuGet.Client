@@ -14,6 +14,9 @@ Optional. NuGet client repository root.
 
 .PARAMETER Force
 Optional switch to force replacing text when new and old versions are the same
+
+.EXAMPLE
+UpdateNuGetVersion.ps1 3.5.1 -Verbose
 #>
 [CmdletBinding(SupportsShouldProcess=$True)]
 Param (
@@ -55,6 +58,7 @@ Write-Output "Updating NuGet version [$OldVersion => $NewVersion]"
 gci -r project.json | %{ $_.FullName } | ReplaceTextInFiles -old $OldVersion -new $NewVersion
 
 $miscFiles = @(
+    "src\NuGet.Clients\NuGet.CommandLine\NuGet.CommandLine.nuspec"
     "src\NuGet.Clients\VsExtension\source.extension.dev14.vsixmanifest",
     "src\NuGet.Clients\VsExtension\source.extension.dev15.vsixmanifest",
     "src\NuGet.Clients\VsExtension\NuGetPackage.cs",
