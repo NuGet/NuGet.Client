@@ -48,7 +48,7 @@ $RunTests = (-not $SkipTests) -and (-not $Fast)
 
 # Adjust version skipping if only one version installed - if VS15 is not installed, no need to specify SkipVS15
 $VS14Installed = Test-MSBuildVersionPresent -MSBuildVersion "14"
-$SkipVS14 = $SkipVS4 -or -not $VS14Installed
+$SkipVS14 = $SkipVS14 -or -not $VS14Installed
 
 $VS15Installed = Test-MSBuildVersionPresent -MSBuildVersion "15"
 $SkipVS15 = $SkipVS15 -or -not $VS15Installed
