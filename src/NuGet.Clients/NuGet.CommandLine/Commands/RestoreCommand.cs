@@ -576,9 +576,9 @@ namespace NuGet.CommandLine
             {
                 // Access to a subpath of the directory is denied.
                 var resourceMessage = LocalizedResourceManager.GetString("Error_UnableToLocateRestoreTarget_Because");
-                var message = string.Format(CultureInfo.CurrentCulture, resourceMessage, directory, e.Message);
+                var message = string.Format(CultureInfo.CurrentCulture, resourceMessage, directory);
 
-                throw new InvalidOperationException(message);
+                throw new InvalidOperationException(message, e);
             }
 
             // The directory did not contain a valid target, fail!

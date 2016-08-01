@@ -3346,7 +3346,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to find an msbuild solution, packages.config, or project.json file in the folder &apos;{0}&apos; because {1}.
+        ///   Looks up a localized string similar to Failed to find an msbuild solution, packages.config, or project.json file in the folder &apos;{0}&apos;..
         /// </summary>
         public static string Error_UnableToLocateRestoreTarget_Because {
             get {

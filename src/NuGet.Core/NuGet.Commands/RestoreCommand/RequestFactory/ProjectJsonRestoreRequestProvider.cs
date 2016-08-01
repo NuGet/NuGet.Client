@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -95,11 +96,23 @@ namespace NuGet.Commands
 
         private static List<string> GetProjectJsonFilesInDirectory(string path)
         {
-            return Directory.GetFiles(path,
-                $"*{ProjectJsonPathUtilities.ProjectConfigFileName}",
-                SearchOption.AllDirectories)
-                    .Where(file => ProjectJsonPathUtilities.IsProjectConfig(file))
-                    .ToList();
+            try
+            {
+                return Directory.GetFiles(
+                    path,
+                    $"*{ProjectJsonPathUtilities.ProjectConfigFileName}",
+                    SearchOption.AllDirectories)
+                        .Where(file => ProjectJsonPathUtilities.IsProjectConfig(file))
+                        .ToList();
+            }
+            catch (UnauthorizedAccessException e)
+            {
+                // Access to a subpath of the directory is denied.
+                var resourceMessage = Strings.Error_UnableToLocateRestoreTarget_Because;
+                var message = string.Format(CultureInfo.CurrentCulture, resourceMessage, path);
+
+                throw new InvalidOperationException(message, e);
+            }
         }
     }
 }
