@@ -18,6 +18,7 @@ namespace NuGet.PackageManagement.UI
         {
             IncludePrerelease = RegistrySettingUtility.GetBooleanSetting(Constants.IncludePrereleaseRegistryName);
             ShowPreviewWindow = true;
+            ShowDeprecatedFrameworkWindow = true;
             SelectedFilter = ItemFilter.Installed;
             DependencyBehavior = DependencyBehavior.Lowest;
             FileConflictAction = FileConflictAction.PromptUser;
@@ -27,6 +28,8 @@ namespace NuGet.PackageManagement.UI
         public string SourceRepository { get; set; }
 
         public bool ShowPreviewWindow { get; set; }
+
+        public bool ShowDeprecatedFrameworkWindow { get; set; }
 
         public bool RemoveDependencies { get; set; }
 

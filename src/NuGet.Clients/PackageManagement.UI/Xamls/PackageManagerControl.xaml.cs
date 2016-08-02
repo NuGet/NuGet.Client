@@ -11,15 +11,13 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
-using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using Resx = NuGet.PackageManagement.UI;
-using Microsoft.VisualStudio.Threading;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -258,6 +256,11 @@ namespace NuGet.PackageManagement.UI
             _detailModel.Options.ShowPreviewWindow = show;
         }
 
+        public void ApplyShowDeprecatedFrameworkSetting(bool show)
+        {
+            _detailModel.Options.ShowDeprecatedFrameworkWindow = show;
+        }
+
         private void ApplySettings(
             UserSettings settings,
             Configuration.ISettings nugetSettings)
@@ -271,6 +274,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             _detailModel.Options.ShowPreviewWindow = settings.ShowPreviewWindow;
+            _detailModel.Options.ShowDeprecatedFrameworkWindow = settings.ShowDeprecatedFrameworkWindow;
             _detailModel.Options.RemoveDependencies = settings.RemoveDependencies;
             _detailModel.Options.ForceRemove = settings.ForceRemove;
             _topPanel.CheckboxPrerelease.IsChecked = settings.IncludePrerelease;
@@ -342,6 +346,7 @@ namespace NuGet.PackageManagement.UI
             {
                 SourceRepository = SelectedSource?.SourceName,
                 ShowPreviewWindow = _detailModel.Options.ShowPreviewWindow,
+                ShowDeprecatedFrameworkWindow = _detailModel.Options.ShowDeprecatedFrameworkWindow,
                 RemoveDependencies = _detailModel.Options.RemoveDependencies,
                 ForceRemove = _detailModel.Options.ForceRemove,
                 DependencyBehavior = _detailModel.Options.SelectedDependencyBehavior.Behavior,
@@ -357,9 +362,15 @@ namespace NuGet.PackageManagement.UI
         private UserSettings LoadSettings()
         {
             var settings = Model.Context.GetSettings(GetSettingsKey());
+
             if (PreviewWindow.IsDoNotShowPreviewWindowEnabled())
             {
                 settings.ShowPreviewWindow = false;
+            }
+
+            if (DotnetDeprecatedPrompt.GetDoNotShowPromptState())
+            {
+                settings.ShowDeprecatedFrameworkWindow = false;
             }
 
             return settings;
@@ -941,6 +952,7 @@ namespace NuGet.PackageManagement.UI
             nugetUi.RemoveDependencies = options.RemoveDependencies;
             nugetUi.ForceRemove = options.ForceRemove;
             nugetUi.DisplayPreviewWindow = options.ShowPreviewWindow;
+            nugetUi.DisplayDeprecatedFrameworkWindow = options.ShowDeprecatedFrameworkWindow;
 
             nugetUi.Projects = Model.Context.Projects;
             nugetUi.ProgressWindow.ActionType = actionType;

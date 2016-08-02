@@ -1,1 +1,1 @@
-his folder contains nupkgs used within this repository.
+This folder contains nupkgs used within this repository.

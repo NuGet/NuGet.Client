@@ -47,9 +47,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PackageManagement.VisualStudio\PackageManagement.VisualStudio.csproj">
+    <ProjectReference Include="..\PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj">
       <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
-      <Name>PackageManagement.VisualStudio</Name>
+      <Name>NuGet.PackageManagement.VisualStudio</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

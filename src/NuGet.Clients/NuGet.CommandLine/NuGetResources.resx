@@ -495,11 +495,11 @@
 To prevent NuGet from downloading packages during build, open the Visual Studio Options dialog, click on the Package Manager node and uncheck '{0}'.</value>
   </data>
   <data name="ProjectRestoreCommandNoPackagesConfigOrProjectJson" xml:space="preserve">
-   <value>Nothing to do. This project does not specify any packages for NuGet to restore.</value>
- </data>
+    <value>Nothing to do. This project does not specify any packages for NuGet to restore.</value>
+  </data>
   <data name="SolutionRestoreCommandNoPackagesConfigOrProjectJson" xml:space="preserve">
-   <value>Nothing to do. None of the projects in this solution specify any packages for NuGet to restore.</value>
- </data>
+    <value>Nothing to do. None of the projects in this solution specify any packages for NuGet to restore.</value>
+  </data>
   <data name="Error_CannotGetGetAllProjectFileNamesMethod" xml:space="preserve">
     <value>Cannot get the GetAllProjectFileNamesMethod from type  Mono.XBuild.CommandLine.SolutionParser.</value>
   </data>
@@ -6083,7 +6083,8 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
     <value>The folder '{0}' does not contain an msbuild solution, packages.config, or project.json file to restore.</value>
   </data>
   <data name="Error_UnableToLocateRestoreTarget_Because" xml:space="preserve">
-    <value>Failed to find an msbuild solution, packages.config, or project.json file in the folder '{0}' because {1}</value>
+    <value>Failed to find an msbuild solution, packages.config, or project.json file in the folder '{0}'.</value>
+    <comment>{0} is the folder that could not be accessed. The underlying failure is available in the inner exception message.</comment>
   </data>
   <data name="PushCommandTimeoutError" xml:space="preserve">
     <value>Pushing took too long. You can change the default timeout of 300 seconds by using the -Timeout &lt;seconds&gt; option with the push command.</value>
@@ -6097,5 +6098,8 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   </data>
   <data name="OutputNuGetVersion" xml:space="preserve">
     <value>{0} Version: {1}</value>
+  </data>
+  <data name="Error_MultipleTargetFrameworks" xml:space="preserve">
+    <value>project.json cannot contain multiple Target Frameworks.</value>
   </data>
 </root>

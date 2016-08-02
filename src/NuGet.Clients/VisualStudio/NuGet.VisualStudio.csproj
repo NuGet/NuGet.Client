@@ -74,6 +74,7 @@
     <Compile Include="Extensibility\IVsGlobalPackagesInitScriptExecutor.cs" />
     <Compile Include="Extensibility\IVsFrameworkCompatibility.cs" />
     <Compile Include="Extensibility\IVsPackageInstaller2.cs" />
+    <Compile Include="Extensibility\IVsPackageInstallerProjectEvents.cs" />
     <Compile Include="Extensibility\IVsPackageSourceProvider.cs" />
     <Compile Include="Extensibility\IVsPackageInstaller.cs" />
     <Compile Include="Extensibility\IVsPackageInstallerEvents.cs" />
@@ -81,6 +82,7 @@
     <Compile Include="Extensibility\IVsPackageMetadata.cs" />
     <Compile Include="Extensibility\IVsPackageRestorer.cs" />
     <Compile Include="Extensibility\IVsPackageUninstaller.cs" />
+    <Compile Include="Extensibility\IVsPackageProjectMetadata.cs" />
     <Compile Include="Extensibility\IVsSemanticVersionComparer.cs" />
     <Compile Include="Extensibility\VsPackageEventHandler.cs" />
     <Compile Include="IVsPackageManagerProvider.cs" />
@@ -101,9 +103,9 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\VisualStudio.Facade\VisualStudio.Facade.csproj">
+    <ProjectReference Include="..\VisualStudio.Facade\NuGet.VisualStudio.Facade.csproj">
       <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
-      <Name>VisualStudio.Facade</Name>
+      <Name>NuGet.VisualStudio.Facade</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

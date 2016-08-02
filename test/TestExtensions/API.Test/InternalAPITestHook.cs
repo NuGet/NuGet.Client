@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
@@ -86,6 +87,34 @@ namespace API.Test
             }
 
             return false;
+        }
+
+        public static bool BatchEventsApi(string id, string version)
+        {
+            var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+            var packageProjectEventService = ServiceLocator.GetInstance<IVsPackageInstallerProjectEvents>();
+            var installerServices = ServiceLocator.GetInstance<IVsPackageInstaller>();
+            var batchStartIds = new List<string>();
+            var batchEndIds = new List<string>();
+
+            packageProjectEventService.BatchStart += (args) =>
+            {
+                batchStartIds.Add(args.BatchId);
+            };
+
+            packageProjectEventService.BatchEnd += (args) =>
+            {
+                batchEndIds.Add(args.BatchId);
+            };
+
+            foreach (EnvDTE.Project project in dte.Solution.Projects)
+            {
+                installerServices.InstallPackage(null, project, id, version, false);
+            }
+
+            return batchStartIds.Count == 1 &&
+                   batchEndIds.Count == 1 &&
+                   batchStartIds[0].Equals(batchEndIds[0], StringComparison.Ordinal);
         }
     }
 }

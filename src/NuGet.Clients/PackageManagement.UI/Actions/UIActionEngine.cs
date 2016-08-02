@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +12,6 @@ using System.Windows;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
-using System.Globalization;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -206,7 +206,7 @@ namespace NuGet.PackageManagement.UI
                 var actions = await resolveActionsAsync();
                 var results = GetPreviewResults(actions);
 
-                // preview window
+                // Show the preview window.
                 if (uiService.DisplayPreviewWindow)
                 {
                     var shouldContinue = uiService.PromptForPreviewAcceptance(results);
@@ -215,11 +215,22 @@ namespace NuGet.PackageManagement.UI
                         return;
                     }
                 }
-
+                
+                // Show the license acceptance window.
                 var accepted = await CheckLicenseAcceptanceAsync(uiService, results, token);
                 if (!accepted)
                 {
                     return;
+                }
+
+                // Warn about the fact that the "dotnet" TFM is deprecated.
+                if (uiService.DisplayDeprecatedFrameworkWindow)
+                {
+                    var shouldContinue = ShouldContinueDueToDotnetDeprecation(uiService, actions, token);
+                    if (!shouldContinue)
+                    {
+                        return;
+                    }
                 }
 
                 if (!token.IsCancellationRequested)
@@ -281,6 +292,25 @@ namespace NuGet.PackageManagement.UI
                     .Where(p => p.RequireLicenseAcceptance)
                     .Select(e => new PackageLicenseInfo(e.Identity.Id, e.LicenseUrl, e.Authors));
                 return uiService.PromptForLicenseAcceptance(licenseInfoItems);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Warns the user about the fact that the dotnet TFM is deprecated.
+        /// </summary>
+        /// <returns>Returns true if the user wants to ignore the warning or if the warning does not apply.</returns>
+        private bool ShouldContinueDueToDotnetDeprecation(
+            INuGetUI uiService,
+            IEnumerable<ResolvedAction> actions,
+            CancellationToken token)
+        {
+            var projects = DotnetDeprecatedPrompt.GetAffectedProjects(actions);
+
+            if (projects.Any())
+            {
+                return uiService.WarnAboutDotnetDeprecation(projects);
             }
 
             return true;

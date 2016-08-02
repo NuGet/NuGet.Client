@@ -136,6 +136,7 @@ namespace NuGet.PackageManagement.UI
                     nugetUi.ForceRemove = model.Options.ForceRemove;
                     nugetUi.Projects = model.GetSelectedProjects(action);
                     nugetUi.DisplayPreviewWindow = model.Options.ShowPreviewWindow;
+                    nugetUi.DisplayDeprecatedFrameworkWindow = model.Options.ShowDeprecatedFrameworkWindow;
                     nugetUi.ProgressWindow.ActionType = actionType;
                 });
         }

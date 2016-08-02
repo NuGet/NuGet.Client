@@ -55,7 +55,7 @@ namespace NuGet.Credentials
                 isRetry);
 
             var response = cred != null
-                ? new CredentialResponse(cred, CredentialStatus.Success)
+                ? new CredentialResponse(cred)
                 : new CredentialResponse(CredentialStatus.ProviderNotApplicable);
 
             return Task.FromResult(response);

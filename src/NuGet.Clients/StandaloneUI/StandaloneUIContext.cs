@@ -102,5 +102,10 @@ namespace StandaloneUI
         {
             // no-op
         }
+
+        public override void ApplyShowDeprecatedFrameworkSetting(bool show)
+        {
+            // no-op
+        }
     }
 }

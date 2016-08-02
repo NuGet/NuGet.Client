@@ -567,4 +567,24 @@ Packages installed into Website projects will not be restored during build. Cons
     <value>These options are not applicable to projects managing their dependencies through project.json.</value>
     <comment>To be displayed for the VS UI opened through a solution. bug #2665</comment>
   </data>
+  <data name="Text_DeprecatedFramework_DocumentLink_Before" xml:space="preserve">
+    <value>The NuGet operation failed due to one or more packages being incompatible with your project. The '{0}' ('{1}') project framework is deprecated. For more information about how to migrate your projects to a supported framework, please refer to the </value>
+    <comment>This text goes immediately before the document link.
+{0} is the full name of the deprecated framework (e.g. ".NETFramework,Version=v4.5").
+{1} is the short folder representation of the framework (e.g. "net45").</comment>
+  </data>
+  <data name="WindowTitle_DeprecatedFramework" xml:space="preserve">
+    <value>Deprecated Framework</value>
+  </data>
+  <data name="Text_DeprecatedFramework_ProjectList" xml:space="preserve">
+    <value>The following project(s) target the deprecated framework:</value>
+  </data>
+  <data name="Text_DeprecatedFramework_DocumentLink" xml:space="preserve">
+    <value>migration document</value>
+    <comment>The text has the document hyperlink applied to it.</comment>
+  </data>
+  <data name="Text_DeprecatedFramework_DocumentLink_After" xml:space="preserve">
+    <value>.</value>
+    <comment>This test goes immediately after the document link.</comment>
+  </data>
 </root>

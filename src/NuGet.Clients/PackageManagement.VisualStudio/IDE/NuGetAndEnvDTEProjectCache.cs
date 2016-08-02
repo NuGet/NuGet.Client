@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.Telemetry;
 using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
 
@@ -29,7 +31,7 @@ namespace NuGet.PackageManagement.VisualStudio
         // We need another dictionary for short names since there may be more than project name per short name
         private readonly Dictionary<string, HashSet<EnvDTEProjectName>> _shortNameCache = new Dictionary<string, HashSet<EnvDTEProjectName>>(StringComparer.OrdinalIgnoreCase);
 
-        public bool IsInitialized { get; private set; }
+        public bool IsInitialized { get; set; }
 
         public bool TryGetNuGetProject(string name, out NuGetProject nuGetProject)
         {
@@ -117,38 +119,37 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <summary>
-        /// Add a project to the cache.
+        /// Adds a project to the project cache. If the project already exists in the cache, this
+        /// this operation does nothing.
         /// </summary>
-        /// <param name="project">project to add to the cache.</param>
-        /// <returns>The project name of the added project.</returns>
-        public EnvDTEProjectName AddProject(EnvDTEProject project, VSNuGetProjectFactory factory)
+        /// <param name="projectName">The project name.</param>
+        /// <param name="project">The VS project.</param>
+        /// <param name="nuGetProject">The NuGet project.</param>
+        /// <returns>
+        /// Returns true if the project was newly added to the cache. Returns false if the project
+        /// was already in the cache.
+        /// </returns>
+        public bool AddProject(EnvDTEProjectName projectName, EnvDTEProject project, NuGetProject nuGetProject)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            // Create the nuget project first, if this throws we bail out, and not change the cache
-            var nuGetProject = factory.CreateNuGetProject(project);
-
-            // First create a project name from the project
-            var EnvDTEProjectName = new EnvDTEProjectName(project);
-
             // Do nothing if we already have an entry
-            if (_envDTEProjectCache.ContainsKey(EnvDTEProjectName))
+            if (_envDTEProjectCache.ContainsKey(projectName))
             {
-                return EnvDTEProjectName;
+                return false;
             }
 
-            AddShortName(EnvDTEProjectName);
+            // Add the project to the cache.
+            AddShortName(projectName);
 
-            _projectNamesCache[EnvDTEProjectName.CustomUniqueName] = EnvDTEProjectName;
-            _projectNamesCache[EnvDTEProjectName.UniqueName] = EnvDTEProjectName;
-            _projectNamesCache[EnvDTEProjectName.FullName] = EnvDTEProjectName;
+            _projectNamesCache[projectName.CustomUniqueName] = projectName;
+            _projectNamesCache[projectName.UniqueName] = projectName;
+            _projectNamesCache[projectName.FullName] = projectName;
+
+            _nuGetProjectCache[projectName] = nuGetProject;
 
             // Add the entry mapping project name to the actual project
-            _envDTEProjectCache[EnvDTEProjectName] = project;
+            _envDTEProjectCache[projectName] = project;
 
-            _nuGetProjectCache[EnvDTEProjectName] = nuGetProject;
-
-            return EnvDTEProjectName;
+            return true;
         }
 
         /// <summary>
@@ -216,34 +217,6 @@ namespace NuGet.PackageManagement.VisualStudio
             _projectNamesCache.Remove(envDTEProjectName.FullName);
             _envDTEProjectCache.Remove(envDTEProjectName);
             _nuGetProjectCache.Remove(envDTEProjectName);
-        }
-
-        public void Initialize(IEnumerable<EnvDTEProject> projects, VSNuGetProjectFactory factory)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (projects.Any())
-            {
-                foreach (EnvDTEProject project in projects)
-                {
-                    try
-                    {
-                        // If a single project fails this method throws and the rest of the projects will never load
-                        AddProject(project, factory);
-                    }
-                    catch (Exception ex)
-                    {
-                        // ignore failed projects
-                        ActivityLog.LogWarning(ExceptionHelper.LogEntrySource,
-                            "The project " + project.Name + " failed to initialize as a nuget project");
-
-                        ExceptionHelper.WriteToActivityLog(ex);
-                    }
-                }
-
-                // Consider that the cache is initialized, only, when there are any projects to add
-                IsInitialized = true;
-            }
         }
 
         public void Clear()

@@ -68,6 +68,7 @@ namespace NuGet.Packaging
             Authors = new HashSet<string>();
             Owners = new HashSet<string>();
             Tags = new HashSet<string>();
+            TargetFrameworks = new List<NuGetFramework>();
             // Just like parameter replacements, these are also case insensitive, for consistency.
             Properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
@@ -212,6 +213,12 @@ namespace NuGet.Packaging
         {
             get;
             private set;
+        }
+
+        public IList<NuGetFramework> TargetFrameworks
+        {
+            get;
+            set;
         }
 
         /// <summary>

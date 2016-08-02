@@ -14,40 +14,46 @@ namespace NuGet.Protocol
     /// </summary>
     public class HttpSourceCredentials : CredentialCache, ICredentials
     {
+        public HttpSourceCredentials()
+        {
+            Credentials = null;
+        }
+
         /// <summary>
         /// Credentials can be changed by other threads, for this reason volatile
         /// is added below so that the value is not cached anywhere.
         /// </summary>
-        private volatile ICredentials _credentials;
+        private volatile VersionedCredentials _credentials;
 
         /// <summary>
-        /// Latest credentials to be used.
+        /// The latest credentials to be used.
         /// </summary>
         public ICredentials Credentials
         {
             get
             {
-                return _credentials;
+                return _credentials.Credentials;
             }
 
             set
             {
-                Version = Guid.NewGuid();
-                _credentials = value;
+                // We must update the credentials and it's associated version GUID atomically. This
+                // can be achieved with a reference assignment. It is important that credentials and
+                // version always match. In other words, if the credentials are updated, it should
+                // at no instant be possible to get old version GUID and the new credentials.
+                _credentials = new VersionedCredentials(value);
             }
         }
 
-        public Guid Version { get; private set; } = Guid.NewGuid();
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpSourceCredentials"/> class
+        /// The latest version ID of the <see cref="Credentials"/>.
         /// </summary>
-        /// <param name="credentials">
-        /// Optional initial credentials. May be null.
-        /// </param>
-        public HttpSourceCredentials(ICredentials credentials = null)
+        public Guid Version
         {
-            _credentials = credentials;
+            get
+            {
+                return _credentials.Version;
+            }
         }
 
         /// <summary>
@@ -57,6 +63,18 @@ namespace NuGet.Protocol
         {
             // Get credentials from the current credential store, if any
             return Credentials?.GetCredential(uri, authType);
+        }
+
+        private class VersionedCredentials
+        {
+            public VersionedCredentials(ICredentials credentials)
+            {
+                Version = Guid.NewGuid();
+                Credentials = credentials;
+            }
+
+            public ICredentials Credentials { get; }
+            public Guid Version { get; }
         }
     }
 }

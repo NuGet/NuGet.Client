@@ -248,6 +248,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             if (actions.Any())
             {
+                if (!ShouldContinueDueToDotnetDeprecation(project, actions, WhatIf.IsPresent))
+                {
+                    return;
+                }
+
                 if (WhatIf.IsPresent)
                 {
                     // For -WhatIf, only preview the actions

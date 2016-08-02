@@ -15,6 +15,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Configuration;
+using NuGet.PackageManagement.Telemetry;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
@@ -516,18 +517,35 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void EnsureNuGetAndEnvDTEProjectCache()
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
+            ThreadHelper.ThrowIfNotOnUIThread();
 
             if (!_nuGetAndEnvDTEProjectCache.IsInitialized && IsSolutionOpen)
             {
-                var factory = GetProjectFactory();
-
                 try
                 {
                     var supportedProjects = EnvDTESolutionUtility.GetAllEnvDTEProjects(_dte)
                         .Where(project => EnvDTEProjectUtility.IsSupported(project));
 
-                    _nuGetAndEnvDTEProjectCache.Initialize(supportedProjects, factory);
+                    foreach (var project in supportedProjects)
+                    {
+                        try
+                        {
+                            AddEnvDTEProjectToCache(project);
+                        }
+                        catch (Exception ex)
+                        {
+                            // Ignore failed projects.
+                            ActivityLog.LogWarning(
+                                ExceptionHelper.LogEntrySource,
+                                $"The project {project.Name} failed to initialize as a NuGet project.");
+
+                            ExceptionHelper.WriteToActivityLog(ex);
+                        }
+
+                        // Consider that the cache is initialized only when there are any projects to add.
+                        _nuGetAndEnvDTEProjectCache.IsInitialized = true;
+                    }
+
                     SetDefaultProjectName();
                 }
                 catch
@@ -542,7 +560,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void AddEnvDTEProjectToCache(EnvDTEProject envDTEProject)
         {
-            Debug.Assert(ThreadHelper.CheckAccess());
+            ThreadHelper.ThrowIfNotOnUIThread();
 
             if (!EnvDTEProjectUtility.IsSupported(envDTEProject))
             {
@@ -552,7 +570,21 @@ namespace NuGet.PackageManagement.VisualStudio
             EnvDTEProjectName oldEnvDTEProjectName;
             _nuGetAndEnvDTEProjectCache.TryGetProjectNameByShortName(EnvDTEProjectUtility.GetName(envDTEProject), out oldEnvDTEProjectName);
 
-            var newEnvDTEProjectName = _nuGetAndEnvDTEProjectCache.AddProject(envDTEProject, GetProjectFactory());
+            // Create the NuGet project first. If this throws we bail out and do not change the cache.
+            var nuGetProject = GetProjectFactory().CreateNuGetProject(envDTEProject);
+
+            // Then create the project name from the project.
+            var newEnvDTEProjectName = new EnvDTEProjectName(envDTEProject);
+
+            // Finally, try to add the project to the cache.
+            var added = _nuGetAndEnvDTEProjectCache.AddProject(newEnvDTEProjectName, envDTEProject, nuGetProject);
+            if (added)
+            {
+                // Emit project specific telemetry as we are adding the project to the cache.
+                // This ensures we do not emit the events over and over while the solution is
+                // open.
+                NuGetProjectTelemetryService.Instance.EmitNuGetProject(envDTEProject, nuGetProject);
+            }
 
             if (string.IsNullOrEmpty(DefaultNuGetProjectName) ||
                 newEnvDTEProjectName.ShortName.Equals(DefaultNuGetProjectName, StringComparison.OrdinalIgnoreCase))
@@ -635,9 +667,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private VSNuGetProjectFactory GetProjectFactory()
         {
-            var settings = ServiceLocator.GetInstance<Configuration.ISettings>();
+            var settings = ServiceLocator.GetInstance<ISettings>();
 
-            // We are doing this to avoid a loop at initialization. We probably want to remove this dependency alltogether.
+            // We are doing this to avoid a loop at initialization. We probably want to remove this dependency altogether.
             var factory = new VSNuGetProjectFactory(() => PackagesFolderPathUtility.GetPackagesFolderPath(this, settings));
 
             return factory;

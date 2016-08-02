@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
@@ -56,7 +57,10 @@ namespace NuGet.Protocol
             if (_credentialService == null || !_credentialService.HandlesDefaultCredentials)
             {
                 // This is used to match the value of HttpClientHandler.UseDefaultCredentials = true
-                _credentials = new HttpSourceCredentials(CredentialCache.DefaultNetworkCredentials);
+                _credentials = new HttpSourceCredentials
+                {
+                    Credentials = CredentialCache.DefaultNetworkCredentials
+                };
             }
             else
             {
@@ -144,14 +148,14 @@ namespace NuGet.Protocol
 
                 var authState = GetAuthenticationState();
 
-                authState.Increment();
-
                 if (authState.IsBlocked)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     return null;
                 }
 
-                // Prompt the user
+                // Construct a reasonable message for the prompt to use.
                 CredentialRequestType type;
                 string message;
                 if (statusCode == HttpStatusCode.Unauthorized)
@@ -174,17 +178,12 @@ namespace NuGet.Protocol
                 var promptCredentials = await PromptForCredentialsAsync(
                     type,
                     message,
+                    authState,
                     log,
                     cancellationToken);
 
                 if (promptCredentials == null)
                 {
-                    // null means cancelled by user or error occured
-                    // block subsequent attempts to annoy user with prompts
-                    authState.IsBlocked = true;
-
-                    cancellationToken.ThrowIfCancellationRequested();
-
                     return null;
                 }
 
@@ -215,6 +214,7 @@ namespace NuGet.Protocol
         private async Task<ICredentials> PromptForCredentialsAsync(
             CredentialRequestType type,
             string message,
+            AmbientAuthenticationState authState,
             ILogger log,
             CancellationToken token)
         {
@@ -232,21 +232,32 @@ namespace NuGet.Protocol
 
                 promptCredentials = await _credentialService
                     .GetCredentialsAsync(_packageSource.SourceUri, proxy, type, message, token);
-            }
-            catch (TaskCanceledException)
-            {
-                throw; // pass-thru
+
+                if (promptCredentials == null)
+                {
+                    // If this is the case, this means none of the credential providers were able to
+                    // handle the credential request or no credentials were available for the
+                    // endpoint.
+                    authState.Block();
+                }
+                else
+                {
+                    authState.Increment();
+                }
             }
             catch (OperationCanceledException)
             {
-                // A valid response for VS dialog when user hits cancel button
-                promptCredentials = null;
+                // This indicates a non-human cancellation.
+                throw;
             }
             catch (Exception e)
             {
-                // Fatal credential service failure
+                // If this is the case, this means there was a fatal exception when interacting
+                // with the credential service (or its underlying credential providers). Either way,
+                // block asking for credentials for the live of this operation.
                 log.LogError(ExceptionUtilities.DisplayMessage(e));
                 promptCredentials = null;
+                authState.Block();
             }
             finally
             {

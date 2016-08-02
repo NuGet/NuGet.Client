@@ -474,6 +474,7 @@ namespace NuGet.Commands
                         throw new Exception(String.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidTargetFramework, framework.FrameworkName));
                     }
 
+                    builder.TargetFrameworks.Add(framework.FrameworkName);
                     AddDependencyGroups(framework.Dependencies.Concat(spec.Dependencies), framework.FrameworkName, builder);
                 }
             }

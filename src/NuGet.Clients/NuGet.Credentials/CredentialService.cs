@@ -126,25 +126,21 @@ namespace NuGet.Credentials
                             cancellationToken);
 
                         // Check that the provider gave us a valid response.
-                        if (response == null || (response.Status != CredentialStatus.ProviderNotApplicable && 
-                                                 response.Status != CredentialStatus.Success))
+                        if (response == null || (response.Status != CredentialStatus.Success &&
+                                                 response.Status != CredentialStatus.ProviderNotApplicable &&
+                                                 response.Status != CredentialStatus.UserCanceled))
                         {
                             throw new ProviderException(Resources.ProviderException_MalformedResponse);
                         }
 
-                        AddToCredentialCache(uri, type, provider, response);
+                        if (response.Status != CredentialStatus.UserCanceled)
+                        {
+                            AddToCredentialCache(uri, type, provider, response);
+                        }
                     }
 
                     if (response.Status == CredentialStatus.Success)
                     {
-                        if (response.Credentials == null)
-                        {
-                            // It is invalid to have a success without getting credentials.  that should
-                            // instead be a failure. (or Provider not applicable if the endpoint is not
-                            // one the provider works with).
-                            throw new ProviderException(Resources.ProviderException_MalformedResponse);
-                        }
-
                         _retryCache[retryKey] = true;
                         creds = response.Credentials;
                         break;

@@ -7,31 +7,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     public class PackageSourceException : Exception
     {
-        public enum ExceptionType { Default, UnknownSource, UnknownSourceType };
-        private ExceptionType type;
-
-        public ExceptionType Type
-        {
-            get
-            {
-                return type;
-            }
-        }
-
-        public PackageSourceException()
-        {
-            type = ExceptionType.Default;
-        }
-
-        public PackageSourceException(ExceptionType exceptionType)
-        {
-            type = exceptionType;
-        }
-
         public PackageSourceException(string message)
             : base(message)
         {
-            type = ExceptionType.Default;
         }
     }
 }

@@ -2932,6 +2932,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to project.json cannot contain multiple Target Frameworks..
+        /// </summary>
+        public static string Error_MultipleTargetFrameworks {
+            get {
+                return ResourceManager.GetString("Error_MultipleTargetFrameworks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error parsing packages.config file at {0}: {1}.
         /// </summary>
         public static string Error_PackagesConfigParseError {
@@ -3333,6 +3342,15 @@ namespace NuGet.CommandLine {
         public static string Error_UnableToLocateRestoreTarget {
             get {
                 return ResourceManager.GetString("Error_UnableToLocateRestoreTarget", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to find an msbuild solution, packages.config, or project.json file in the folder &apos;{0}&apos;..
+        /// </summary>
+        public static string Error_UnableToLocateRestoreTarget_Because {
+            get {
+                return ResourceManager.GetString("Error_UnableToLocateRestoreTarget_Because", resourceCulture);
             }
         }
         

@@ -61,5 +61,19 @@ namespace NuGetVSExtension
                 }
             }
         }
+
+        public override void ApplyShowDeprecatedFrameworkSetting(bool show)
+        {
+            var serviceProvider = ServiceLocator.GetInstance<IServiceProvider>();
+            IVsUIShell uiShell = (IVsUIShell)serviceProvider.GetService(typeof(SVsUIShell));
+            foreach (var windowFrame in VsUtility.GetDocumentWindows(uiShell))
+            {
+                var packageManagerControl = VsUtility.GetPackageManagerControl(windowFrame);
+                if (packageManagerControl != null)
+                {
+                    packageManagerControl.ApplyShowDeprecatedFrameworkSetting(show);
+                }
+            }
+        }
     }
 }

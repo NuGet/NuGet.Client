@@ -100,7 +100,7 @@ namespace NuGet.Credentials
                         result = new AuthTypeFilteredCredentials(result, response.AuthTypes);
                     }
 
-                    taskResponse = new CredentialResponse(result, CredentialStatus.Success);
+                    taskResponse = new CredentialResponse(result);
                 }
                 else
                 {

@@ -17,6 +17,8 @@ namespace NuGet.PackageManagement.UI
     /// <remarks>This is not expected to be thread safe.</remarks>
     public interface INuGetUI
     {
+        bool WarnAboutDotnetDeprecation(IEnumerable<NuGetProject> projects);
+
         bool PromptForLicenseAcceptance(IEnumerable<PackageLicenseInfo> packages);
 
         void LaunchExternalLink(Uri url);
@@ -52,6 +54,11 @@ namespace NuGet.PackageManagement.UI
         /// True if the option to preview actions first is checked
         /// </summary>
         bool DisplayPreviewWindow { get; }
+
+        /// <summary>
+        /// True if the option to ignore the deprecated framework window is unchecked
+        /// </summary>
+        bool DisplayDeprecatedFrameworkWindow { get; }
 
         /// <summary>
         /// Package currently selected in the UI

@@ -66,6 +66,8 @@ namespace NuGet.PackageManagement.UI
 
         public abstract void ApplyShowPreviewSetting(bool show);
 
+        public abstract void ApplyShowDeprecatedFrameworkSetting(bool show);
+
         public IEnumerable<IVsPackageManagerProvider> PackageManagerProviders { get; }
     }
 }

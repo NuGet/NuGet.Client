@@ -945,6 +945,42 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to migration document.
+        /// </summary>
+        public static string Text_DeprecatedFramework_DocumentLink {
+            get {
+                return ResourceManager.GetString("Text_DeprecatedFramework_DocumentLink", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ..
+        /// </summary>
+        public static string Text_DeprecatedFramework_DocumentLink_After {
+            get {
+                return ResourceManager.GetString("Text_DeprecatedFramework_DocumentLink_After", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The NuGet operation failed due to one or more packages being incompatible with your project. The &apos;{0}&apos; (&apos;{1}&apos;) project framework is deprecated. For more information about how to migrate your projects to a supported framework, please refer to the .
+        /// </summary>
+        public static string Text_DeprecatedFramework_DocumentLink_Before {
+            get {
+                return ResourceManager.GetString("Text_DeprecatedFramework_DocumentLink_Before", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The following project(s) target the deprecated framework:.
+        /// </summary>
+        public static string Text_DeprecatedFramework_ProjectList {
+            get {
+                return ResourceManager.GetString("Text_DeprecatedFramework_ProjectList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} downloads.
         /// </summary>
         public static string Text_Downloads {
@@ -1339,7 +1375,16 @@ namespace NuGet.PackageManagement.UI {
                 return ResourceManager.GetString("Warning_ProjectJson", resourceCulture);
             }
         }
-
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Deprecated Framework.
+        /// </summary>
+        public static string WindowTitle_DeprecatedFramework {
+            get {
+                return ResourceManager.GetString("WindowTitle_DeprecatedFramework", resourceCulture);
+            }
+        }
+        
         /// <summary>
         ///   Looks up a localized string similar to Error.
         /// </summary>

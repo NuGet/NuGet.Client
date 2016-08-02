@@ -164,7 +164,53 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task SendAsync_WhenCancelledDuringAcquiringCredentials_Throws()
+        public async Task SendAsync_WhenTaskCanceledExceptionThrownDuringAcquiringCredentials_Throws()
+        {
+            // Arrange
+            var packageSource = new PackageSource("http://package.source.net");
+            var clientHandler = new HttpClientHandler();
+            
+            var credentialService = Mock.Of<ICredentialService>();
+            Mock.Get(credentialService)
+                .Setup(
+                    x => x.GetCredentialsAsync(
+                        packageSource.SourceUri,
+                        It.IsAny<IWebProxy>(),
+                        CredentialRequestType.Unauthorized,
+                        It.IsAny<string>(),
+                        It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new TaskCanceledException());
+
+            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService);
+
+            int retryCount = 0;
+            var innerHandler = new LambdaMessageHandler(
+                _ =>
+                {
+                    retryCount++;
+                    return new HttpResponseMessage(HttpStatusCode.Unauthorized);
+                });
+            handler.InnerHandler = innerHandler;
+
+            // Act & Assert
+            await Assert.ThrowsAsync<TaskCanceledException>(
+                () => SendAsync(handler));
+
+            Assert.Equal(1, retryCount);
+
+            Mock.Get(credentialService)
+                .Verify(
+                    x => x.GetCredentialsAsync(
+                        packageSource.SourceUri,
+                        It.IsAny<IWebProxy>(),
+                        CredentialRequestType.Unauthorized,
+                        It.IsAny<string>(),
+                        It.IsAny<CancellationToken>()),
+                    Times.Once);
+        }
+
+        [Fact]
+        public async Task SendAsync_WhenOperationCanceledExceptionThrownDuringAcquiringCredentials_Throws()
         {
             // Arrange
             var packageSource = new PackageSource("http://package.source.net");
@@ -181,19 +227,23 @@ namespace NuGet.Protocol.Tests
                         CredentialRequestType.Unauthorized,
                         It.IsAny<string>(),
                         It.IsAny<CancellationToken>()))
-                .ThrowsAsync(new TaskCanceledException())
+                .ThrowsAsync(new OperationCanceledException())
                 .Callback(() => cts.Cancel());
 
             var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService);
 
             int retryCount = 0;
             var innerHandler = new LambdaMessageHandler(
-                _ => { retryCount++; return new HttpResponseMessage(HttpStatusCode.Unauthorized); });
+                _ =>
+                {
+                    retryCount++;
+                    return new HttpResponseMessage(HttpStatusCode.Unauthorized);
+                });
             handler.InnerHandler = innerHandler;
 
             // Act & Assert
-            await Assert.ThrowsAsync<TaskCanceledException>(
-                () => SendAsync(handler, cancellationToken: cts.Token));
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                () => SendAsync(handler));
 
             Assert.Equal(1, retryCount);
 
@@ -211,6 +261,7 @@ namespace NuGet.Protocol.Tests
         [Fact]
         public async Task SendAsync_WithWrongCredentials_StopsRetryingAfter3Times()
         {
+            // Arrange
             var packageSource = new PackageSource("http://package.source.net");
             var clientHandler = new HttpClientHandler();
 
@@ -229,15 +280,21 @@ namespace NuGet.Protocol.Tests
 
             int retryCount = 0;
             var innerHandler = new LambdaMessageHandler(
-                _ => { retryCount++; return new HttpResponseMessage(HttpStatusCode.Unauthorized); });
+                _ =>
+                {
+                    retryCount++;
+                    return new HttpResponseMessage(HttpStatusCode.Unauthorized);
+                });
             handler.InnerHandler = innerHandler;
 
+            // Act
             var response = await SendAsync(handler);
 
+            // Assert
             Assert.NotNull(response);
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
 
-            Assert.Equal(HttpSourceAuthenticationHandler.MaxAuthRetries+1, retryCount);
+            Assert.Equal(HttpSourceAuthenticationHandler.MaxAuthRetries + 1, retryCount);
 
             Mock.Get(credentialService)
                 .Verify(
@@ -253,19 +310,31 @@ namespace NuGet.Protocol.Tests
         [Fact]
         public async Task SendAsync_WithMissingCredentials_Returns401()
         {
+            // Arrange
             var packageSource = new PackageSource("http://package.source.net");
             var clientHandler = new HttpClientHandler();
 
             var credentialService = Mock.Of<ICredentialService>();
-            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService)
-            {
-                InnerHandler = GetLambdaMessageHandler(HttpStatusCode.Unauthorized)
-            };
 
+            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService);
+
+            int retryCount = 0;
+            var innerHandler = new LambdaMessageHandler(
+                _ =>
+                {
+                    retryCount++;
+                    return new HttpResponseMessage(HttpStatusCode.Unauthorized);
+                });
+            handler.InnerHandler = innerHandler;
+
+            // Act
             var response = await SendAsync(handler);
 
+            // Assert
             Assert.NotNull(response);
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+
+            Assert.Equal(1, retryCount);
 
             Mock.Get(credentialService)
                 .Verify(
@@ -281,6 +350,7 @@ namespace NuGet.Protocol.Tests
         [Fact]
         public async Task SendAsync_WhenCredentialServiceThrows_Returns401()
         {
+            // Arrange
             var packageSource = new PackageSource("http://package.source.net");
             var clientHandler = new HttpClientHandler();
 
@@ -295,15 +365,25 @@ namespace NuGet.Protocol.Tests
                        It.IsAny<CancellationToken>()))
                .Throws(new InvalidOperationException("Credential service failed acquring user credentials"));
 
-            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService)
-            {
-                InnerHandler = GetLambdaMessageHandler(HttpStatusCode.Unauthorized)
-            };
+            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService);
 
+            int retryCount = 0;
+            var innerHandler = new LambdaMessageHandler(
+                _ =>
+                {
+                    retryCount++;
+                    return new HttpResponseMessage(HttpStatusCode.Unauthorized);
+                });
+            handler.InnerHandler = innerHandler;
+
+            // Act
             var response = await SendAsync(handler);
 
+            // Assert
             Assert.NotNull(response);
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+
+            Assert.Equal(1, retryCount);
 
             Mock.Get(credentialService)
                 .Verify(

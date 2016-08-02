@@ -78,6 +78,20 @@ function GetPackageAcceptsAllAsSourceName {
     Assert-True (1 -le $p.Count)
 }
 
+function Test-GetPackageAcceptsAbsolutePathSource {
+    param(
+        $context
+    )
+
+	$source = Split-Path $context.TestRoot
+
+    # Act
+    $p = @(Get-Package -ListAvailable -Source $source)
+
+    # Assert
+    Assert-True (1 -le $p.Count)
+}
+
 function Test-GetPackageAcceptsRelativePathSource {
     param(
         $context
@@ -119,7 +133,7 @@ function Test-GetPackageAcceptsRelativePathSource2 {
 
 function Test-GetPackageThrowsWhenSourceIsInvalid {
     # Act & Assert
-    Assert-Throws { Get-Package -ListAvailable -source "d:package" } "The following source failed to search for packages: 'd:package'`r`nThe path 'd:package' for the selected source could not be resolved."
+    Assert-Throws { Get-Package -ListAvailable -source "d:package" } "Unsupported type of source 'd:package'. Please provide an HTTP or local source."
 }
 
 function Test-GetPackageForProjectReturnsEmptyProjectIfItHasNoInstalledPackage {

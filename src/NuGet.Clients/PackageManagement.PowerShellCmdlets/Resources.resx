@@ -258,4 +258,19 @@
 {1} is a line separator.
 {2} is the exception message.</comment>
   </data>
+  <data name="Cmdlet_DeprecatedFrameworkNoHelp" xml:space="preserve">
+    <value>Do not continue with the project action(s)</value>
+  </data>
+  <data name="Cmdlet_DeprecatedFrameworkYesDoNotPromptAgainHelp" xml:space="preserve">
+    <value>Continue with the project action(s) and do not prompt for confirmation again</value>
+  </data>
+  <data name="Cmdlet_DeprecatedFrameworkYesHelp" xml:space="preserve">
+    <value>Continue with the project action(s)</value>
+  </data>
+  <data name="Cmdlet_YesDoNotPromptAgain" xml:space="preserve">
+    <value>Yes and &amp;Ignore future warnings</value>
+  </data>
+  <data name="Cmdlet_DeprecatedFrameworkContinue" xml:space="preserve">
+    <value>Would you like to continue with the project action(s) anyways?</value>
+  </data>
 </root>

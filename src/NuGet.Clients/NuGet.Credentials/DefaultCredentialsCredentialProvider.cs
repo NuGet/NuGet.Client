@@ -21,7 +21,7 @@ namespace NuGet.Credentials
         public string Id { get; } = $"{nameof(DefaultCredentialsCredentialProvider)}_{Guid.NewGuid()}";
 
         /// <summary>
-        /// Returns <see cref="CredentialCache.DefaultNetworkCredentials"/>, or 
+        /// Returns <see cref="CredentialCache.DefaultNetworkCredentials"/>, or
         /// <see cref="CredentialStatus.ProviderNotApplicable"/> if this is a retry
         /// </summary>
         /// <remarks>
@@ -51,10 +51,7 @@ namespace NuGet.Credentials
                 return Task.FromResult(new CredentialResponse(CredentialStatus.ProviderNotApplicable));
             }
 
-            return Task.FromResult(
-                new CredentialResponse(
-                    CredentialCache.DefaultNetworkCredentials,
-                    CredentialStatus.Success));
+            return Task.FromResult(new CredentialResponse(CredentialCache.DefaultNetworkCredentials));
         }
     }
 }

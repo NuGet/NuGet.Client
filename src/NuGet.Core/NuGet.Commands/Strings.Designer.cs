@@ -186,6 +186,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Failed to find a project to restore in the folder &apos;{0}&apos;..
+        /// </summary>
+        public static string Error_UnableToLocateRestoreTarget_Because {
+            get {
+                return ResourceManager.GetString("Error_UnableToLocateRestoreTarget_Because", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Package &apos;{0}&apos; specifies an invalid build action &apos;{1}&apos; for file &apos;{2}&apos;..
         /// </summary>
         public static string Error_UnknownBuildAction {

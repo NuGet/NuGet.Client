@@ -42,7 +42,7 @@ namespace NuGet.Packaging
             return IsRoot(path) && IsNuspec(path);
         }
 
-        private static bool IsRoot(string path)
+        public static bool IsRoot(string path)
         {
             // True if the path contains no directory slashes.
             return path.IndexOfAny(Slashes) == -1;

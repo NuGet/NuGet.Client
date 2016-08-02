@@ -123,10 +123,12 @@ namespace NuGet.CommandLine.Test
   ""version"": ""1.0.0"",
   ""title"": ""packageA"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
   ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
   ""dependencies"": {
     ""packageB"": {
       ""version"": ""1.0.0"",
@@ -454,10 +456,12 @@ namespace NuGet.CommandLine.Test
   ""version"": ""1.0.0"",
   ""title"": ""packageA"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
   ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
   ""frameworks"": {
     ""native"": {
     },
@@ -567,10 +571,12 @@ namespace NuGet.CommandLine.Test
   ""version"": ""1.0.0"",
   ""title"": ""packageA"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
-  ""copyright"": ""Copyright ©  2013""
+  ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
 }");
 
                 // Act
@@ -776,6 +782,176 @@ namespace Proj2
                         @"lib\net40\proj1.dll",
                         @"lib\net40\proj2.dll"
                     });
+            }
+        }
+
+        [Fact]
+        public void PackCommand_PclProjectWithProjectJsonAndTargetsNetStandard()
+        {
+            // This bug tests issue: https://github.com/NuGet/Home/issues/3108
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+                var packagesDirectory = Path.Combine(proj1Directory, "packages");
+                // create project 1
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>bin\Debug\</OutputPath>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include='proj1_file1.cs'/>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include='project.json'/>
+  </ItemGroup>
+  <Import Project='$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets'/>
+</Project>");
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1_file1.cs",
+@"using System;
+
+namespace Proj1
+{
+    public class Class1
+    {
+        public int A { get; set; }
+    }
+}");
+
+                Util.CreateFile(proj1Directory,
+                    "project.json",
+                    @"{
+  ""supports"": {},
+  ""dependencies"": {
+                    ""Microsoft.NETCore.Portable.Compatibility"": ""1.0.1"",
+    ""NETStandard.Library"": ""1.6.0""
+  },
+  ""frameworks"": {
+                    ""netstandard1.3"": { }
+                }
+            }
+            ");
+
+                var t = CommandRunner.Run(
+                    nugetexe,
+                    proj1Directory,
+                    "restore ",
+                    waitForExit: true);
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj1Directory,
+                    "pack proj1.csproj -build ",
+                    waitForExit: true);
+                Assert.Equal(0, r.Item1);
+
+                // Assert
+                var nupkgName = Path.Combine(proj1Directory, "proj1.0.0.0.nupkg");
+                Assert.True(File.Exists(nupkgName));
+                var package = new OptimizedZipPackage(nupkgName);
+                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                Array.Sort(files);
+                Assert.Equal(
+                    files,
+                    new string[]
+                    {
+                        @"lib\netstandard1.3\proj1.dll"
+                    });
+            }
+        }
+
+        [Fact]
+        public void PackCommand_WithTransformFile()
+        {
+            // This bug tests issue: https://github.com/NuGet/Home/issues/3160
+            // Fixed by PR : https://github.com/NuGet/NuGet.Client/pull/768
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+                var packagesDirectory = Path.Combine(proj1Directory, "packages");
+                // create project 1
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include='proj1_file1.cs'/>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include='Web.config'/>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include='packages.config'/>
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets'/>
+</Project>");
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1_file1.cs",
+@"using System;
+
+namespace Proj1
+{
+    public class Class1
+    {
+        public int A { get; set; }
+    }
+}");
+                Util.CreateFile(
+                    proj1Directory,
+                    "Web.config",
+                    @"<?xml version='1.0' encoding='utf-8' ?>
+<configuration>
+</configuration>");
+
+                Util.CreateFile(proj1Directory,
+                    "packages.config",
+                    @"<?xml version='1.0' encoding='utf-8'?>
+<packages>
+  <package id = 'Microsoft.AspNet.WebApi' version = '5.2.3' targetFramework = 'net452'/>
+  <package id = 'Microsoft.AspNet.WebApi.Client' version = '5.2.3' targetFramework = 'net452'/>
+  <package id = 'Microsoft.AspNet.WebApi.Core' version = '5.2.3' targetFramework = 'net452'/>
+  <package id = 'Microsoft.AspNet.WebApi.WebHost' version = '5.2.3' targetFramework = 'net452'/>
+  <package id = 'Newtonsoft.Json' version = '6.0.4' targetFramework = 'net452'/>
+</packages> ");
+
+                var t = CommandRunner.Run(
+                    nugetexe,
+                    proj1Directory,
+                    "restore packages.config -PackagesDirectory " + packagesDirectory,
+                    waitForExit: true);
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj1Directory,
+                    "pack proj1.csproj -build ",
+                    waitForExit: true);
+                Assert.Equal(0, r.Item1);
+
+                // Assert
+                var nupkgName = Path.Combine(proj1Directory, "proj1.0.0.0.nupkg");
+                Assert.True(File.Exists(nupkgName));
             }
         }
 
@@ -1041,10 +1217,12 @@ namespace Proj2
   ""version"": ""1.0.0.0"",
   ""title"": ""Proj2"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
   ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
   ""dependencies"": {
     ""p1"": {
       ""version"": ""1.5.11""
@@ -1058,10 +1236,12 @@ namespace Proj2
   ""version"": ""2.0.0.0"",
   ""title"": ""Proj6"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
   ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
   ""dependencies"": {
     ""p2"": {
       ""version"": ""1.5.11""
@@ -1260,10 +1440,12 @@ namespace Proj2
   ""version"": ""1.0.0.0"",
   ""title"": ""Proj2"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
   ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
   ""dependencies"": {
     ""p1"": {
       ""version"": ""1.5.11""
@@ -1277,10 +1459,12 @@ namespace Proj2
   ""version"": ""2.0.0.0"",
   ""title"": ""Proj6"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
   ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
   ""dependencies"": {
     ""p2"": {
       ""version"": ""1.5.11""
@@ -2915,8 +3099,6 @@ namespace " + projectName + @"
   ""version"": ""1.0.0"",
   ""title"": ""packageA"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
   ""copyright"": ""Copyright ©  2013"",
   ""frameworks"": {
@@ -2929,6 +3111,10 @@ namespace " + projectName + @"
   },
   ""packInclude"": {
     ""image"": ""contentFiles/any/any/image.jpg""
+  },
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
   }
 }
 ");
@@ -3072,10 +3258,12 @@ stuff \n <<".Replace("\r\n", "\n");
   ""version"": ""1.0.0-*"",
   ""title"": ""packageA"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
   ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
   ""dependencies"": {
     ""packageB"": {
       ""version"": ""1.0.0"",
@@ -3320,10 +3508,12 @@ stuff \n <<".Replace("\r\n", "\n");
   ""version"": ""1.0.0-rc-*"",
   ""title"": ""packageA"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
   ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
   ""dependencies"": {
     ""packageB"": {
       ""version"": ""1.0.0"",
@@ -3385,10 +3575,12 @@ stuff \n <<".Replace("\r\n", "\n");
   ""version"": ""1.0.0"",
   ""title"": ""packageA"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
   ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
   ""frameworks"": {
     ""native"": {
     },
@@ -3509,12 +3701,14 @@ stuff \n <<".Replace("\r\n", "\n");
   ""version"": ""1.0.0"",
   ""title"": ""packageA"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
   ""buildOptions"": {
     ""outputName"": """ + dllName + @""",
   },
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
   ""copyright"": ""Copyright ©  2013"",
   ""frameworks"": {
     ""native"": {
@@ -3550,6 +3744,54 @@ stuff \n <<".Replace("\r\n", "\n");
         }
 
         [Fact]
+        public void PackCommand_BuildBareMinimumProjectJson()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+
+                CreateTestProject(workingDirectory, "proj1",
+                    new string[] {
+                    });
+                Util.CreateFile(
+                proj1Directory,
+                "project.json",
+            @"{
+  ""version"": ""1.0.0"",
+  ""title"": ""proj1"",
+  ""authors"": [ ""test"" ],
+  ""description"": ""Description"",
+  ""frameworks"": {
+    ""net46"": {
+      ""frameworkAssemblies"": {
+        ""System"": """",
+        ""System.Runtime"": """"
+      }
+    }
+  }
+}");
+
+                // Act
+                CommandRunner.Run(
+                    NuGetEnvironment.GetDotNetLocation(),
+                    proj1Directory,
+                    "restore",
+                    waitForExit: true);
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj1Directory,
+                    "pack project.json -build",
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+            }
+        }
+
+        [Fact]
         public void PackCommand_BuildProjectJson()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -3569,10 +3811,12 @@ stuff \n <<".Replace("\r\n", "\n");
   ""version"": ""1.0.0"",
   ""title"": ""proj1"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
   ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
   ""frameworks"": {
     ""net46"": {
       ""frameworkAssemblies"": {
@@ -3630,10 +3874,12 @@ stuff \n <<".Replace("\r\n", "\n");
   ""version"": ""1.0.0"",
   ""title"": ""proj1"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
   ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
   ""frameworks"": {
     ""net46"": {
       ""frameworkAssemblies"": {
@@ -3691,10 +3937,12 @@ stuff \n <<".Replace("\r\n", "\n");
   ""version"": ""1.0.0"",
   ""title"": ""proj1"",
   ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
   ""description"": ""Description"",
   ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
   ""frameworks"": {
     ""net46"": {
       ""frameworkAssemblies"": {
