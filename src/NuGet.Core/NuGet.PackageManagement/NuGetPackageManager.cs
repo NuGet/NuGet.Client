@@ -1684,9 +1684,6 @@ namespace NuGet.PackageManagement
                 // batch events argument object
                 PackageProjectEventArgs packageProjectEventArgs = null;
 
-                // to keep track of vs batch event start
-                var isVsBatchStartEventRaised = false;
-
                 try
                 {
                     // PreProcess projects
@@ -1719,8 +1716,10 @@ namespace NuGet.PackageManagement
 
                     if (msbuildProject != null)
                     {
-                        msbuildProject.MSBuildNuGetProjectSystem.BeginProcessing();
-                        isVsBatchStartEventRaised = true;
+                        // Leaving it as comment for future reference
+                        // Don't use batch API for whole install or uninstall which also includes adding/ removing references
+                        // from project, since it could then create problems while adding binding redirects.
+                        // msbuildProject.MSBuildNuGetProjectSystem.BeginProcessing();
 
                         // raise Nuget batch start event
                         var batchId = Guid.NewGuid().ToString();
@@ -1817,12 +1816,6 @@ namespace NuGet.PackageManagement
                         {
                             BatchEnd?.Invoke(this, packageProjectEventArgs);
                             PackageProjectEventsProvider.Instance.NotifyBatchEnd(packageProjectEventArgs);
-                        }
-
-                        if (isVsBatchStartEventRaised)
-                        {
-                            // raise batch end event only when we raised vs batch start
-                            msbuildProject.MSBuildNuGetProjectSystem.EndProcessing();
                         }
                     }
                     
