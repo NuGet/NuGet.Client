@@ -1,4 +1,8 @@
-. "$PSScriptRoot\Utils.ps1"
+param (
+    [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
+    [string]$VSVersion = "14.0")
+
+ . "$PSScriptRoot\Utils.ps1"
 
 function EnableWindowsDeveloperMode()
 {
@@ -64,7 +68,6 @@ Write-Host -ForegroundColor Cyan 'Before running all the functional tests, ' `
 Write-Host
 Write-Host 'Trying to set some registry keys to avoid dialog boxes popping during the functional test run...'
 
-$VSVersion = '14.0'
 DisableTextTemplateSecurityWarning $VSVersion
 
 $net35x86 = "C:\windows\Microsoft.NET\Framework\v3.5\msbuild.exe"
