@@ -38,7 +38,12 @@ function Test-PackFromProjectWithDevelopmentDependencySet {
 
     $p = New-WebApplication
 
-    # install packages from the Basic MVC app manually
+    # Workaround for Roslyn issue 622865 (VSTS) - MSBuild 15 has a dependency on an MSBuild 14 library. Installing the compiler 
+    # and code dom packages fixes the build break in the case where MSBuild 14 isn't installed.
+    install-package Microsoft.CodeDom.Providers.DotNetCompilerPlatform -version 1.0.1 -ignoreDependencies
+    install-package Microsoft.Net.Compilers -version 1.3.2 -ignoreDependencies
+
+    # install packages from the Basic web app manually
 
     install-package EntityFramework -version 5.0.0 -ignoreDependencies
     install-package jquery -version 1.8.2 -ignoreDependencies
