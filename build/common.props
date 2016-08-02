@@ -13,13 +13,14 @@
 		<BaseIntermediateOutputPath>$([System.IO.Path]::GetFullPath( $(BaseIntermediateOutputPath) ))</BaseIntermediateOutputPath>
 
 		<Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+		<VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">14.0</VisualStudioVersion>
 
-		<OutputPath>$(ArtifactRoot)\$(MSBuildProjectName)\$(Configuration)</OutputPath>
+		<OutputPath>$(ArtifactRoot)\$(MSBuildProjectName)\$(VisualStudioVersion)\$(Configuration)</OutputPath>
 		<OutputPath>$([System.IO.Path]::GetFullPath( $(OutputPath) ))\</OutputPath>
 
 		<AppxPackageDir>$(OutputPath)</AppxPackageDir>
 
-		<IntermediateOutputPath>$(BaseIntermediateOutputPath)\$(MSBuildProjectName)\$(Configuration)</IntermediateOutputPath>
+		<IntermediateOutputPath>$(BaseIntermediateOutputPath)\$(MSBuildProjectName)\$(VisualStudioVersion)\$(Configuration)</IntermediateOutputPath>
 		<IntermediateOutputPath>$([System.IO.Path]::GetFullPath( $(IntermediateOutputPath) ))\</IntermediateOutputPath>
 
 		<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(EnlistmentRoot)\</SolutionDir>
