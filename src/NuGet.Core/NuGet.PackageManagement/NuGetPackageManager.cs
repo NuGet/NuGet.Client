@@ -1701,11 +1701,6 @@ namespace NuGet.PackageManagement
                             logger);
                     }
 
-                    if (msbuildProject != null)
-                    {
-                        msbuildProject.MSBuildNuGetProjectSystem.BeginProcessing();
-                    }
-
                     foreach (var nuGetProjectAction in actionsList)
                     {
                         executedNuGetProjectActions.Push(nuGetProjectAction);
@@ -1783,11 +1778,6 @@ namespace NuGet.PackageManagement
                         }
 
                         downloadTokenSource.Dispose();
-                    }
-
-                    if (msbuildProject != null)
-                    {
-                        msbuildProject.MSBuildNuGetProjectSystem.EndProcessing();
                     }
                 }
 
