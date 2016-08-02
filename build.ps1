@@ -116,23 +116,6 @@ Invoke-BuildStep 'Building NuGet.Clients projects - VS15 dependencies' {
     -skip:$SkipVS15 `
     -ev +BuildErrors
 
-## Clean between the two builds
-Invoke-BuildStep 'Cleaning VS15 build before running the VS14 build' {
-        param($Configuration)
-
-        $solutionPath = Join-Path $NuGetClientRoot NuGet.Clients.sln
-        $opts = , $solutionPath
-        $opts += "/p:Configuration=$Configuration", "/t:Clean"
-
-        $MSBuildExe = Get-MSBuildExe "14"
-
-        Trace-Log "$MSBuildExe $opts"
-        & $MSBuildExe $opts
-    } `
-    -args $Configuration `
-    -skip:($SkipVS14 -or $SkipVS15) `
-    -ev +BuildErrors
-
 ## Building the VS14 Tooling solution
 Invoke-BuildStep 'Building NuGet.Clients projects - VS14 dependencies' {
         param($Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore, $Fast)
