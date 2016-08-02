@@ -605,15 +605,21 @@ Function Invoke-ILMerge {
     [CmdletBinding()]
     param(
         [string]$Configuration = $DefaultConfiguration,
+        [string]$MSBuildVersion = $DefaultMSBuildVersion,
         [string]$KeyFile
     )
     $nugetIntermediateExe='NuGet.intermediate.exe'
     $nugetIntermediatePdb='NuGet.intermediate.pdb'
     $nugetCore='NuGet.Core.dll'
-    $buildArtifactsFolder = [io.path]::combine($Artifacts, 'NuGet.CommandLine', $Configuration)
+    $buildArtifactsFolder = [io.path]::combine($Artifacts, 'NuGet.CommandLine', ($MSBuildVersion + '.0'), $Configuration)
     $ignoreList = Read-FileList (Join-Path $buildArtifactsFolder '.mergeignore')
     $buildArtifacts = Get-ChildItem $buildArtifactsFolder -Exclude $ignoreList | %{ $_.Name }
 
+    $outputFolder = [io.path]::combine($Artifacts, ('VS' + $MSBuildVersion))
+    if (-Not (Test-Path $outputFolder)) {
+        New-Item -ItemType Directory -Path $outputFolder | Out-Null
+    }
+    
     $includeList = Read-FileList (Join-Path $buildArtifactsFolder '.mergeinclude')
     $notInList = $buildArtifacts | ?{ -not ($includeList -contains $_) }
     if ($notInList) {
@@ -624,11 +630,13 @@ Function Invoke-ILMerge {
         Error-Log "Missing build artifacts listed in include list: $($notFound -join ', ')"
     }
 
+    $nugetIntermediateExePath="$outputFolder\$nugetIntermediateExe"
+
     Trace-Log 'Creating the intermediate ilmerged nuget.exe'
-    $opts = , 'NuGet.exe'
+    $opts = , "$buildArtifactsFolder\NuGet.exe"
     $opts += "/lib:$buildArtifactsFolder"
     $opts += $buildArtifacts
-    $opts += "/out:$buildArtifactsFolder\$nugetIntermediateExe"
+    $opts += "/out:$nugetIntermediateExePath"
     $opts += "/internalize"
 
     if ($VerbosePreference) {
@@ -642,7 +650,7 @@ Function Invoke-ILMerge {
         Error-Log "ILMerge has failed during the intermediate stage. Code: $LASTEXITCODE"
     }
 
-    $opts2 = , $nugetIntermediateExe
+    $opts2 = , "$nugetIntermediateExePath"
     $opts2 += "/lib:$buildArtifactsFolder"
     $opts2 += $nugetCore
     if ($KeyFile) {
@@ -650,19 +658,19 @@ Function Invoke-ILMerge {
         $opts2 += "/keyfile:$KeyFile"
     }
 
-    $opts2 += "/out:$Artifacts\NuGet.exe"
-    
+    $opts2 += "/out:$outputFolder\NuGet.exe"
+
     if ($VerbosePreference) {
         $opts2 += '/log'
     }
-    
+
     Trace-Log "$ILMerge $opts2"
     & $ILMerge $opts2 2>&1
-    
+
     if (-not $?) {
         Error-Log "ILMerge has failed. Code: $LASTEXITCODE"
     }
-        
-    Remove-Item $buildArtifactsFolder\$nugetIntermediateExe
-    Remove-Item $buildArtifactsFolder\$nugetIntermediatePdb
-    }
+
+    Remove-Item $nugetIntermediateExePath
+    Remove-Item $outputFolder\$nugetIntermediatePdb
+}

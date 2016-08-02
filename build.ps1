@@ -128,7 +128,7 @@ Invoke-BuildStep 'Building NuGet.Clients projects - Dev14 dependencies' {
 ## ILMerge the Dev14 exe only
 Invoke-BuildStep 'Merging NuGet.exe' {
         param($Configuration, $MSPFXPath)
-        Invoke-ILMerge $Configuration $MSPFXPath
+        Invoke-ILMerge $Configuration "14" $MSPFXPath
     } `
     -args $Configuration, $MSPFXPath `
     -skip:($SkipILMerge -or $Fast -or $SkipDev14) `
