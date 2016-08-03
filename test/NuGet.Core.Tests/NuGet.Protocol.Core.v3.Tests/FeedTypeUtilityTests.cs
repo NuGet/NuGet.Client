@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
 using Xunit;
@@ -133,6 +134,22 @@ namespace NuGet.Protocol.Core.v3.Tests
         }
 
         [Fact]
+        public void FeedTypeUtility_NupkgAtRootIsV2_FileUri()
+        {
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                CreateFile(Path.Combine(root, "a.1.0.0.nupkg"));
+
+                // Act
+                var type = FeedTypeUtility.GetFeedType(new PackageSource(UriUtility.CreateSourceUri(root).AbsoluteUri));
+
+                // Assert
+                Assert.Equal(FeedType.FileSystemV2, type);
+            }
+        }
+
+        [Fact]
         public void FeedTypeUtility_NupkgInVersionFolderIsV3()
         {
             using (var root = TestFileSystemUtility.CreateRandomTestFolder())
@@ -144,6 +161,24 @@ namespace NuGet.Protocol.Core.v3.Tests
 
                 // Act
                 var type = FeedTypeUtility.GetFeedType(new PackageSource(root));
+
+                // Assert
+                Assert.Equal(FeedType.FileSystemV3, type);
+            }
+        }
+
+        [Fact]
+        public void FeedTypeUtility_NupkgInVersionFolderIsV3_FileUri()
+        {
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                CreateFile(Path.Combine(root, "a", "1.0.0", "a.1.0.0.nupkg.sha512"));
+                CreateFile(Path.Combine(root, "a", "1.0.0", "a.nuspec"));
+                CreateFile(Path.Combine(root, "a", "1.0.0", "a.1.0.0.nupkg"));
+
+                // Act
+                var type = FeedTypeUtility.GetFeedType(new PackageSource(UriUtility.CreateSourceUri(root).AbsoluteUri));
 
                 // Assert
                 Assert.Equal(FeedType.FileSystemV3, type);

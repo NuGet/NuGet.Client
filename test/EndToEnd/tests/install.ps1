@@ -107,17 +107,6 @@ function Test-InstallPackageWithValidKnownSource {
 	Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
 }
 
-function Test-InstallPackageWithFileProtocolSource {
-	# Arrange
-	$package = "Rules"
-	$project = New-ConsoleApplication
-	$source = "file://Rules"
-	$message = "Unsupported type of source '$source'. Please provide an http or local source."
-
-	# Act & Assert
-	Assert-Throws { Install-Package $package -ProjectName $project.Name -source $source } $message
-}
-
 function Test-InstallPackageWithFtpProtocolSource {
 	# Arrange
 	$package = "Rules"
@@ -162,6 +151,23 @@ function Test-SinglePackageInstallIntoSingleProject {
     Assert-Package $project Castle.Core
     Assert-SolutionPackage FakeItEasy
     Assert-SolutionPackage Castle.Core
+}
+
+# Test install-package -WhatIf to downgrade an installed package.
+function Test-PackageInstallWithFileUri {
+    # Arrange
+    $project = New-ConsoleApplication
+
+    $uri = $context.RepositoryRoot
+    $uri = $uri.replace("\", "/")
+    $uri = "file:///" + $uri
+    
+	# Act
+	Install-Package TestUpdatePackage -Version 2.0.0.0 -Source $uri
+
+	# Assert
+	# that the installed package is not touched.
+	Assert-Package $project TestUpdatePackage '2.0.0.0'
 }
 
 function Test-PackageInstallWhatIf {

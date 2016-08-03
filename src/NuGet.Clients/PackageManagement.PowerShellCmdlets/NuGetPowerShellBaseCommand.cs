@@ -378,8 +378,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         /// <param name="source">The source string specified by -Source switch.</param>
         /// <returns>The source validation result.</returns>
-        private SourceValidationResult CheckSourceValidity(string source)
+        private SourceValidationResult CheckSourceValidity(string inputSource)
         {
+            // Convert file:// to a local path if needed, this noops for other types
+            var source = UriUtility.GetLocalPath(inputSource);
+
             // Convert a relative local URI into an absolute URI
             var packageSource = new PackageSource(source);
             Uri sourceUri;

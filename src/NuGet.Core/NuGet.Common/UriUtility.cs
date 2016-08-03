@@ -5,6 +5,8 @@ namespace NuGet.Common
 {
     public static class UriUtility
     {
+        private const string FilePrefix = "file://";
+
         /// <summary>
         /// Same as "new Uri" except that it can handle UNIX style paths that start with '/'
         /// </summary>
@@ -30,7 +32,7 @@ namespace NuGet.Common
             // UNIX absolute paths need to start with file://
             if (Path.DirectorySeparatorChar == '/' && !string.IsNullOrEmpty(source) && source[0] == '/')
             {
-                source = "file://" + source;
+                source = FilePrefix + source;
             }
 
             return source;
@@ -41,7 +43,7 @@ namespace NuGet.Common
         /// </summary>
         public static string UrlEncodeOdataParameter(string value)
         {
-            if (!String.IsNullOrEmpty(value))
+            if (!string.IsNullOrEmpty(value))
             {
                 // OData requires that a single quote MUST be escaped as 2 single quotes.
                 // In .NET 4.5, Uri.EscapeDataString() escapes single quote as %27. Thus we must replace %27 with 2 single quotes.
@@ -50,6 +52,30 @@ namespace NuGet.Common
             }
 
             return value;
+        }
+
+        /// <summary>
+        /// Convert a file:// URI to a local path.
+        /// </summary>
+        /// <returns>If the input can be parsed this will return Uri.LocalPath, if the input 
+        /// is not a URI or fails to parse the original string will be returned.</returns>
+        /// <param name="localOrUriPath">Possible file:// URI path or local path.</param>
+        public static string GetLocalPath(string localOrUriPath)
+        {
+            // check if this starts with file://
+            if (!string.IsNullOrEmpty(localOrUriPath)
+                && localOrUriPath.StartsWith(FilePrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                // convert to a uri and get the local path
+                Uri uri;
+                if (Uri.TryCreate(localOrUriPath, UriKind.RelativeOrAbsolute, out uri))
+                {
+                    return uri.LocalPath;
+                }
+            }
+
+            // Return the same path
+            return localOrUriPath;
         }
     }
 }
