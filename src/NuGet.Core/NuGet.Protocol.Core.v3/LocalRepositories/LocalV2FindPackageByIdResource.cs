@@ -27,7 +27,9 @@ namespace NuGet.Protocol
 
         public LocalV2FindPackageByIdResource(PackageSource packageSource)
         {
-            _source = packageSource.Source;
+            var rootDirInfo = LocalFolderUtility.GetAndVerifyRootDirectory(packageSource.Source);
+
+            _source = rootDirInfo.FullName;
         }
 
         public override Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, CancellationToken token)

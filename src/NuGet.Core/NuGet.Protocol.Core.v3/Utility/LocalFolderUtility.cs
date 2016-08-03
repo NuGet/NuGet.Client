@@ -150,13 +150,13 @@ namespace NuGet.Protocol
             }
 
             // Verify the root path is a valid path.
-            GetAndVerifyRootDirectory(root);
+            var rootDirInfo = GetAndVerifyRootDirectory(root);
 
             // Search directories starting with the top directory for any package matching the identity
             // If multiple packages are found in the same directory that match (ex: 1.0, 1.0.0.0)
             // then favor the exact non-normalized match. If no exact match is found take the first
             // using the file system sort order. This is to match the legacy nuget 2.8.x behavior.
-            foreach (var directoryList in GetNupkgsFromFlatFolderChunked(root, log))
+            foreach (var directoryList in GetNupkgsFromFlatFolderChunked(rootDirInfo, log))
             {
                 LocalPackageInfo fallbackMatch = null;
 
@@ -211,12 +211,12 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(log));
             }
 
-            var rootDir = new DirectoryInfo(root);
+            var rootDirInfo = GetAndVerifyRootDirectory(root);
 
             // Find the matching nupkg for each sub directory.
-            if (rootDir.Exists)
+            if (rootDirInfo.Exists)
             {
-                foreach (var dir in rootDir.GetDirectories())
+                foreach (var dir in rootDirInfo.GetDirectories())
                 {
                     var package = GetPackagesConfigFolderPackage(dir);
 
@@ -255,13 +255,13 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(log));
             }
 
-            var rootDir = new DirectoryInfo(root);
+            var rootDirInfo = GetAndVerifyRootDirectory(root);
 
-            if (rootDir.Exists)
+            if (rootDirInfo.Exists)
             {
                 var searchPattern = GetPackagesConfigFolderSearchPattern(id);
 
-                foreach (var dir in rootDir.GetDirectories(searchPattern, SearchOption.TopDirectoryOnly))
+                foreach (var dir in rootDirInfo.GetDirectories(searchPattern, SearchOption.TopDirectoryOnly))
                 {
                     // Check the id and version of the path, if the id matches and the version
                     // is valid this will be non-null;
@@ -304,9 +304,11 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(log));
             }
 
+            var rootDirInfo = GetAndVerifyRootDirectory(root);
+
             // Try matching the exact version format
             var idVersion = $"{identity.Id}.{identity.Version.ToString()}";
-            var expectedPath = Path.Combine(root, idVersion, $"{idVersion}{PackagingCoreConstants.NupkgExtension}");
+            var expectedPath = Path.Combine(rootDirInfo.FullName, idVersion, $"{idVersion}{PackagingCoreConstants.NupkgExtension}");
             var expectedFile = new FileInfo(expectedPath);
 
             if (expectedFile.Exists)
@@ -321,13 +323,12 @@ namespace NuGet.Protocol
             }
 
             // Search all sub folders
-            var rootDir = new DirectoryInfo(root);
 
-            if (rootDir.Exists)
+            if (rootDirInfo.Exists)
             {
                 var searchPattern = GetPackagesConfigFolderSearchPattern(identity.Id);
 
-                foreach (var dir in rootDir.GetDirectories(searchPattern, SearchOption.TopDirectoryOnly))
+                foreach (var dir in rootDirInfo.GetDirectories(searchPattern, SearchOption.TopDirectoryOnly))
                 {
                     // Check the id and version of the path, if the id matches and the version
                     // is valid this will be non-null;
@@ -597,9 +598,9 @@ namespace NuGet.Protocol
             }
 
             // Verify the root path is a valid path.
-            GetAndVerifyRootDirectory(root);
+            var rootDirInfo = GetAndVerifyRootDirectory(root);
 
-            var pathResolver = new VersionFolderPathResolver(root);
+            var pathResolver = new VersionFolderPathResolver(rootDirInfo.FullName);
 
             // Verify the neccessary files exist
             var nupkgPath = pathResolver.GetPackageFilePath(identity.Id, identity.Version);
@@ -656,7 +657,7 @@ namespace NuGet.Protocol
             DirectoryInfo rootDirectoryInfo = GetAndVerifyRootDirectory(root);
 
             // Return all directory file list chunks in a flat list
-            foreach (var directoryList in GetNupkgsFromFlatFolderChunked(rootDirectoryInfo.FullName, log))
+            foreach (var directoryList in GetNupkgsFromFlatFolderChunked(rootDirectoryInfo, log))
             {
                 foreach (var file in directoryList)
                 {
@@ -677,14 +678,23 @@ namespace NuGet.Protocol
 
             try
             {
+                // Convert file:// to a local path if needed
+                var localPath = UriUtility.GetLocalPath(root);
+
                 // Verify that the directory is a valid path.
-                rootDirectoryInfo = new DirectoryInfo(root);
+                rootDirectoryInfo = new DirectoryInfo(localPath);
 
                 // The root must also be parsable as a URI (relative or absolute). This rejects
                 // sources that have the weird "C:Source" format. For more information about this 
                 // format, see:
                 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx#paths
-                new Uri(root, UriKind.RelativeOrAbsolute);
+                var uriResult = new Uri(root, UriKind.RelativeOrAbsolute);
+
+                // Allow only local paths
+                if (uriResult?.IsAbsoluteUri == true && !uriResult.IsFile)
+                {
+                    throw new NotSupportedException(uriResult.AbsoluteUri);
+                }
             }
             catch (Exception ex) when (ex is ArgumentException ||
                                        ex is IOException ||
@@ -726,7 +736,7 @@ namespace NuGet.Protocol
         /// Retrieve files in chunks, this helps maintain the legacy behavior of searching for
         /// certain non-normalized file names.
         /// </summary>
-        private static IEnumerable<FileInfo[]> GetNupkgsFromFlatFolderChunked(string root, ILogger log)
+        private static IEnumerable<FileInfo[]> GetNupkgsFromFlatFolderChunked(DirectoryInfo root, ILogger log)
         {
             if (root == null)
             {
@@ -739,7 +749,7 @@ namespace NuGet.Protocol
             }
 
             // Ignore missing directories for v2
-            if (!Directory.Exists(root))
+            if (!root.Exists)
             {
                 yield break;
             }
@@ -755,7 +765,7 @@ namespace NuGet.Protocol
             // Search all sub directories
             foreach (var subDirectory in GetDirectoriesSafe(root, log))
             {
-                var files = GetNupkgsFromDirectory(subDirectory.FullName, log);
+                var files = GetNupkgsFromDirectory(subDirectory, log);
 
                 if (files.Length > 0)
                 {
@@ -825,7 +835,7 @@ namespace NuGet.Protocol
             }
 
             // Match all nupkgs in the folder
-            foreach (var idPath in GetDirectoriesSafe(root, log))
+            foreach (var idPath in GetDirectoriesSafe(rootDirectoryInfo, log))
             {
                 foreach (var nupkg in GetPackagesV3(root, id: idPath.Name, log: log))
                 {
@@ -861,8 +871,8 @@ namespace NuGet.Protocol
             // Check for package files one level deep.
             DirectoryInfo rootDirectoryInfo = GetAndVerifyRootDirectory(root);
 
-            var idRoot = Path.Combine(rootDirectoryInfo.FullName, id);
-            if (!Directory.Exists(idRoot))
+            var idRoot = new DirectoryInfo(Path.Combine(rootDirectoryInfo.FullName, id));
+            if (!idRoot.Exists)
             {
                 // Directory is missing
                 yield break;
@@ -922,12 +932,11 @@ namespace NuGet.Protocol
         /// <summary>
         /// Retrieve directories and log exceptions that occur.
         /// </summary>
-        private static DirectoryInfo[] GetDirectoriesSafe(string root, ILogger log)
+        private static DirectoryInfo[] GetDirectoriesSafe(DirectoryInfo root, ILogger log)
         {
             try
             {
-                var rootDir = new DirectoryInfo(root);
-                return rootDir.GetDirectories();
+                return root.GetDirectories();
             }
             catch (Exception e)
             {
@@ -940,12 +949,11 @@ namespace NuGet.Protocol
         /// <summary>
         /// Retrieve files and log exceptions that occur.
         /// </summary>
-        private static FileInfo[] GetFilesSafe(string root, string filter, ILogger log)
+        private static FileInfo[] GetFilesSafe(DirectoryInfo root, string filter, ILogger log)
         {
             try
             {
-                var rootDir = new DirectoryInfo(root);
-                return rootDir.GetFiles(filter);
+                return root.GetFiles(filter);
             }
             catch (Exception e)
             {
@@ -1001,7 +1009,7 @@ namespace NuGet.Protocol
         /// <summary>
         /// Find all nupkgs in the top level of a directory.
         /// </summary>
-        private static FileInfo[] GetNupkgsFromDirectory(string root, ILogger log)
+        private static FileInfo[] GetNupkgsFromDirectory(DirectoryInfo root, ILogger log)
         {
             return GetFilesSafe(root, NupkgFilter, log);
         }
