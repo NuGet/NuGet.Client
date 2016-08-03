@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -27,6 +26,41 @@ namespace NuGet.Test
 {
     public class BuildIntegratedTests
     {
+        [Fact]
+        public void BuildIntegrated_VerifyGetAddedIsOnlyPackages()
+        {
+            // Arrange
+            var lockFile = new LockFile();
+            var lockFileEmpty = new LockFile();
+
+            var targetEmpty = new LockFileTarget();
+            lockFileEmpty.Targets.Add(targetEmpty);
+
+            var target = new LockFileTarget();
+            lockFile.Targets.Add(target);
+
+            target.Libraries.Add(new LockFileTargetLibrary()
+            {
+                Name = "a",
+                Version = NuGetVersion.Parse("1.0.0"),
+                Type = "package"
+            });
+
+            target.Libraries.Add(new LockFileTargetLibrary()
+            {
+                Name = "b",
+                Version = NuGetVersion.Parse("1.0.0"),
+                Type = "project"
+            });
+
+            // Act
+            var added = BuildIntegratedRestoreUtility.GetAddedPackages(lockFileEmpty, lockFile);
+
+            // Assert
+            Assert.Equal(1, added.Count);
+            Assert.Equal("a", added.Single().Id);
+        }
+
         // Verify that parent projects are restored when a child project is updated
         [Fact]
         public async Task TestPacManBuildIntegratedInstallPackageTransitive()
@@ -552,7 +586,7 @@ namespace NuGet.Test
         {
             // Arrange
             // This package is not compatible with netcore50 and will cause the rollback.
-            var oldVersioning = new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("1.0.5")); 
+            var oldVersioning = new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("1.0.5"));
 
             // This package is compatible.
             var oldJson = new PackageIdentity("Newtonsoft.Json", NuGetVersion.Parse("6.0.8"));
@@ -1462,7 +1496,7 @@ namespace NuGet.Test
             }
 
             public TestExternalProjectReference(
-                BuildIntegratedNuGetProject project, 
+                BuildIntegratedNuGetProject project,
                 params BuildIntegratedNuGetProject[] children)
             {
                 Project = project;
@@ -1476,9 +1510,9 @@ namespace NuGet.Test
                     if (ProjectName != null)
                     {
                         return new ExternalProjectReference(
-                            ProjectName, 
+                            ProjectName,
                             null,
-                            null, 
+                            null,
                             Enumerable.Empty<string>());
                     }
                     else

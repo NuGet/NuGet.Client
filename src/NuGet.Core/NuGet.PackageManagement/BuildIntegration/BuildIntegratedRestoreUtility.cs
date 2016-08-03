@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Commands;
 using NuGet.Common;
+using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -148,9 +149,11 @@ namespace NuGet.PackageManagement
             LockFile updatedLockFile)
         {
             var updatedPackages = updatedLockFile.Targets.SelectMany(target => target.Libraries)
+                .Where(library => library.Type == LibraryType.Package)
                 .Select(library => new PackageIdentity(library.Name, library.Version));
 
             var originalPackages = originalLockFile.Targets.SelectMany(target => target.Libraries)
+                .Where(library => library.Type == LibraryType.Package)
                 .Select(library => new PackageIdentity(library.Name, library.Version));
 
             var results = updatedPackages.Except(originalPackages, PackageIdentity.Comparer).ToList();
@@ -301,7 +304,9 @@ namespace NuGet.PackageManagement
                 }
 
                 // Verify all libraries are on disk
-                foreach (var library in lockFile.Libraries)
+                var packages = lockFile.Libraries.Where(library => library.Type == LibraryType.Package);
+
+                foreach (var library in packages)
                 {
                     var identity = new PackageIdentity(library.Name, library.Version);
 
