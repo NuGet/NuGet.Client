@@ -32,16 +32,18 @@ function Test-PackFromProjectWithDevelopmentDependencySet {
         $context
     )
 
+    # An MSBuild 15 dependency on an MSBuild 14 DLL is breaking this test. Leave it enabled for MSBuild 14 
+    # and remove this skip when issue addressed. Re-enabling tracked here: https://github.com/NuGet/Home/issues/3272
+    if ((Get-VSVersion) -eq "15.0") {
+        Write-Host "Skipping PackFromProjectWithDevelopmentDependencySet for VS15"
+        return
+    }
+
     # This test is for bug 3378: Undue circular dependency detected when developmentDependency = "true"
 
     # Arrange 
 
     $p = New-WebApplication
-
-    # Workaround for Roslyn issue 622865 (VSTS) - MSBuild 15 has a dependency on an MSBuild 14 library. Installing the compiler 
-    # and code dom packages fixes the build break in the case where MSBuild 14 isn't installed.
-    install-package Microsoft.CodeDom.Providers.DotNetCompilerPlatform -version 1.0.1 -ignoreDependencies
-    install-package Microsoft.Net.Compilers -version 1.3.2 -ignoreDependencies
 
     # install packages from the Basic web app manually
 
