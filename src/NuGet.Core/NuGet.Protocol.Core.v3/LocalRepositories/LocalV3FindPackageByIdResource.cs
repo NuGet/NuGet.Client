@@ -36,8 +36,10 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(source));
             }
 
-            _source = source.Source;
-            _resolver = new VersionFolderPathResolver(source.Source);
+            var rootDirInfo = LocalFolderUtility.GetAndVerifyRootDirectory(source.Source);
+
+            _source = rootDirInfo.FullName;
+            _resolver = new VersionFolderPathResolver(_source);
         }
 
         public override Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, CancellationToken token)
