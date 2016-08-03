@@ -276,6 +276,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to The package {0} was converted to original case in the packages directory..
+        /// </summary>
+        public static string Log_ConvertedPackageToOriginalCase {
+            get {
+                return ResourceManager.GetString("Log_ConvertedPackageToOriginalCase", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Cycle detected:.
         /// </summary>
         public static string Log_CycleDetected {

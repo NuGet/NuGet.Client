@@ -1,6 +1,8 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -8,8 +10,11 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
+using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -18,6 +23,199 @@ namespace NuGet.Commands.Test
 {
     public class RestoreCommandTests
     {
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task RestoreCommand_ObservesLowercaseFlag(bool isLowercase)
+        {
+            // Arrange
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
+                var sourceDir = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
+                var projectDir = new DirectoryInfo(Path.Combine(workingDir, "projects", "project1"));
+                packagesDir.Create();
+                sourceDir.Create();
+                projectDir.Create();
+
+                var resolver = new VersionFolderPathResolver(packagesDir.FullName, isLowercase);
+
+                var sources = new List<string>();
+                sources.Add(sourceDir.FullName);
+
+                var projectJson = @"
+                {
+                  ""frameworks"": {
+                    ""netstandard1.0"": {
+                      ""dependencies"": {
+                        ""PackageA"": ""1.0.0-Beta""
+                      }
+                    }
+                  }
+                }";
+
+                File.WriteAllText(Path.Combine(projectDir.FullName, "project.json"), projectJson);
+
+                var specPath = Path.Combine(projectDir.FullName, "project.json");
+                var spec = JsonPackageSpecReader.GetPackageSpec(projectJson, "project1", specPath);
+
+                var logger = new TestLogger();
+                var request = new RestoreRequest(
+                    spec,
+                    sources.Select(x => Repository.Factory.GetCoreV3(x)),
+                    packagesDir.FullName,
+                    Enumerable.Empty<string>(),
+                    logger)
+                {
+                    IsLowercasePackagesDirectory = isLowercase
+                };
+                request.LockFilePath = Path.Combine(projectDir.FullName, "project.lock.json");
+
+                var packageId = "PackageA";
+                var packageVersion = "1.0.0-Beta";
+                var packageAContext = new SimpleTestPackageContext(packageId, packageVersion);
+                packageAContext.AddFile("lib/netstandard1.0/a.dll");
+
+                SimpleTestPackageUtility.CreateFullPackage(sourceDir.FullName, packageAContext);
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+                var lockFile = result.LockFile;
+
+                // Assert
+                Assert.True(result.Success);
+
+                var library = lockFile
+                    .Libraries
+                    .FirstOrDefault(l => l.Name == packageId && l.Version.ToNormalizedString() == packageVersion);
+
+                Assert.NotNull(library);
+                Assert.Equal(
+                    PathUtility.GetPathWithForwardSlashes(resolver.GetPackageDirectory(packageId, library.Version)),
+                    library.Path);
+                Assert.True(File.Exists(resolver.GetPackageFilePath(packageId, library.Version)));
+            }
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task RestoreCommand_WhenSwitchingBetweenLowercaseSettings_LockFileAlwaysRespectsLatestSetting(bool isLowercase)
+        {
+            // Arrange
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
+                var sourceDir = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
+                var projectDir = new DirectoryInfo(Path.Combine(workingDir, "projects", "project1"));
+                packagesDir.Create();
+                sourceDir.Create();
+                projectDir.Create();
+
+                var resolverA = new VersionFolderPathResolver(packagesDir.FullName, !isLowercase);
+                var resolverB = new VersionFolderPathResolver(packagesDir.FullName, isLowercase);
+
+                var sources = new List<string>();
+                sources.Add(sourceDir.FullName);
+
+                var projectJson = @"
+                {
+                  ""frameworks"": {
+                    ""netstandard1.0"": {
+                      ""dependencies"": {
+                        ""PackageA"": ""1.0.0-Beta""
+                      }
+                    }
+                  }
+                }";
+
+                File.WriteAllText(Path.Combine(projectDir.FullName, "project.json"), projectJson);
+
+                var specPath = Path.Combine(projectDir.FullName, "project.json");
+                var spec = JsonPackageSpecReader.GetPackageSpec(projectJson, "project1", specPath);
+
+                var logger = new TestLogger();
+                var lockFilePath = Path.Combine(projectDir.FullName, "project.lock.json");
+
+                var packageId = "PackageA";
+                var packageVersion = "1.0.0-Beta";
+                var packageAContext = new SimpleTestPackageContext(packageId, packageVersion);
+                packageAContext.AddFile("lib/netstandard1.0/a.dll");
+
+                SimpleTestPackageUtility.CreateFullPackage(sourceDir.FullName, packageAContext);
+
+                // Act
+                // Execute the first restore with the opposite lowercase setting.
+                var requestA = new RestoreRequest(
+                    spec,
+                    sources.Select(x => Repository.Factory.GetCoreV3(x)),
+                    packagesDir.FullName,
+                    Enumerable.Empty<string>(),
+                    logger)
+                {
+                    LockFilePath = lockFilePath,
+                    IsLowercasePackagesDirectory = !isLowercase
+                };
+                var commandA = new RestoreCommand(requestA);
+                var resultA = await commandA.ExecuteAsync();
+                await resultA.CommitAsync(logger, CancellationToken.None);
+
+                // Execute the second restore with the request lowercase setting.
+                var requestB = new RestoreRequest(
+                    spec,
+                    sources.Select(x => Repository.Factory.GetCoreV3(x)),
+                    packagesDir.FullName,
+                    Enumerable.Empty<string>(),
+                    logger)
+                {
+                    LockFilePath = lockFilePath,
+                    IsLowercasePackagesDirectory = isLowercase
+                };
+                var commandB = new RestoreCommand(requestB);
+                var resultB = await commandB.ExecuteAsync();
+                await resultB.CommitAsync(logger, CancellationToken.None);
+
+                // Assert
+                // Commands should have succeeded.
+                Assert.True(resultA.Success);
+                Assert.True(resultB.Success);
+
+                // The lock file library path should match the requested case.
+                var libraryA = resultA
+                    .LockFile
+                    .Libraries
+                    .FirstOrDefault(l => l.Name == packageId && l.Version.ToNormalizedString() == packageVersion);
+                Assert.NotNull(libraryA);
+                Assert.Equal(
+                    PathUtility.GetPathWithForwardSlashes(resolverA.GetPackageDirectory(packageId, libraryA.Version)),
+                    libraryA.Path);
+                Assert.True(File.Exists(resolverA.GetPackageFilePath(packageId, libraryA.Version)));
+
+                var libraryB = resultB
+                    .LockFile
+                    .Libraries
+                    .FirstOrDefault(l => l.Name == packageId && l.Version.ToNormalizedString() == packageVersion);
+                Assert.NotNull(libraryB);
+                Assert.Equal(
+                    PathUtility.GetPathWithForwardSlashes(resolverB.GetPackageDirectory(packageId, libraryB.Version)),
+                    libraryB.Path);
+                Assert.True(File.Exists(resolverB.GetPackageFilePath(packageId, libraryB.Version)));
+
+                // The lock file on disk should match the second restore's library.
+                var lockFileFormat = new LockFileFormat();
+                var diskLockFile = lockFileFormat.Read(lockFilePath);
+                var lockFileLibrary = diskLockFile
+                    .Libraries
+                    .FirstOrDefault(l => l.Name == packageId && l.Version.ToNormalizedString() == packageVersion);
+                Assert.NotNull(lockFileLibrary);
+                Assert.Equal(
+                    PathUtility.GetPathWithForwardSlashes(resolverB.GetPackageDirectory(packageId, libraryB.Version)),
+                    libraryB.Path);
+                Assert.Equal(libraryB, lockFileLibrary);
+            }
+        }
+
         [Fact]
         public async Task RestoreCommand_FileUriV3Folder()
         {

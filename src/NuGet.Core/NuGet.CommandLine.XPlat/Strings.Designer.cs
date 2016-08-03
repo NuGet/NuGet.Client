@@ -528,6 +528,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Use legacy behavior when the restore operation is interacting with the global packages directory. This means the ID and version folder names are written with the original package case rather than being normalized to lowercase..
+        /// </summary>
+        public static string Restore_Switch_LegacyPackagesDirectory_Description {
+            get {
+                return ResourceManager.GetString("Restore_Switch_LegacyPackagesDirectory_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Do not cache packages and http requests..
         /// </summary>
         public static string Restore_Switch_NoCache_Description {

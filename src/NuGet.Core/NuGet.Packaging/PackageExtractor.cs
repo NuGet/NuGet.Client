@@ -185,7 +185,22 @@ namespace NuGet.Packaging
             return filesAdded;
         }
 
-        public static async Task InstallFromSourceAsync(
+        /// <summary>
+        /// Uses a copy function to install a package to a global packages directory.
+        /// </summary>
+        /// <param name="copyToAsync">
+        /// A function which should copy the package to the provided destination stream.
+        /// </param>
+        /// <param name="versionFolderPathContext">
+        /// The version folder path context, which encapsulates all of the parameters to observe
+        /// while installing the package.
+        /// </param>
+        /// <param name="token">The cancellation token.</param>
+        /// <returns>
+        /// True if the package was installed. False if the package already exists and therefore
+        /// resulted in no copy operation.
+        /// </returns>
+        public static async Task<bool> InstallFromSourceAsync(
             Func<Stream, Task> copyToAsync,
             VersionFolderPathContext versionFolderPathContext,
             CancellationToken token)
@@ -200,7 +215,9 @@ namespace NuGet.Packaging
                 throw new ArgumentNullException(nameof(versionFolderPathContext));
             }
 
-            var packagePathResolver = new VersionFolderPathResolver(versionFolderPathContext.PackagesDirectory);
+            var packagePathResolver = new VersionFolderPathResolver(
+            	versionFolderPathContext.PackagesDirectory,
+            	versionFolderPathContext.IsLowercasePackagesDirectory);
 
             var packageIdentity = versionFolderPathContext.Package;
             var logger = versionFolderPathContext.Logger;
@@ -215,7 +232,7 @@ namespace NuGet.Packaging
 
             // Acquire the lock on a nukpg before we extract it to prevent the race condition when multiple
             // processes are extracting to the same destination simultaneously
-            await ConcurrencyUtilities.ExecuteWithFileLockedAsync(targetNupkg,
+            return await ConcurrencyUtilities.ExecuteWithFileLockedAsync(targetNupkg,
                 action: async cancellationToken =>
                 {
                     // If this is the first process trying to install the target nupkg, go ahead
@@ -334,14 +351,14 @@ namespace NuGet.Packaging
                         File.Move(tempHashPath, hashPath);
 
                         logger.LogVerbose($"Completed installation of {packageIdentity.Id} {packageIdentity.Version}");
+                        return true;
                     }
                     else
                     {
                         logger.LogVerbose("Lock not required - Package already installed "
                                             + $"{packageIdentity.Id} {packageIdentity.Version}");
+                        return false;
                     }
-
-                    return 0;
                 },
                 token: token);
         }

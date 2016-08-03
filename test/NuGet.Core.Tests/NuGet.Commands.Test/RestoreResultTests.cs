@@ -83,6 +83,7 @@ namespace NuGet.Commands.Test
                 var toolResult = new ToolRestoreResult(
                     toolName: null,
                     success: true,
+                    graphs: null,
                     lockFileTarget: null,
                     fileTargetLibrary: null,
                     lockFilePath: path,
@@ -121,6 +122,7 @@ namespace NuGet.Commands.Test
                 var toolResult = new ToolRestoreResult(
                     toolName: null,
                     success: true,
+                    graphs: null,
                     lockFileTarget: null,
                     fileTargetLibrary: null,
                     lockFilePath: path,

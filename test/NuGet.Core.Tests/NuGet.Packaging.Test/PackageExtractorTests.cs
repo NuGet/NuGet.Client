@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -14,6 +17,125 @@ namespace NuGet.Packaging.Test
 {
     public class PackageExtractorTests
     {
+        [Fact]
+        public async Task PackageExtractor_InstallFromSourceAsync_ReturnsFalseWhenAlreadyInstalled()
+        {
+            // Arrange
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var identity = new PackageIdentity("PackageA", new NuGetVersion("2.0.3-Beta"));
+
+                var sourcePath = Path.Combine(root, "source");
+                Directory.CreateDirectory(sourcePath);
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                   sourcePath,
+                   identity.Id,
+                   identity.Version.ToString(),
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "lib/net45/A.dll");
+
+                var packagesPath = Path.Combine(root, "packages");
+                await SimpleTestPackageUtility.CreateFolderFeedV3(packagesPath, identity);
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    // Act
+                    var installed = await PackageExtractor.InstallFromSourceAsync(
+                        packageStream.CopyToAsync,
+                        new VersionFolderPathContext(
+                            identity,
+                            packagesPath,
+                            NullLogger.Instance,
+                            packageSaveMode: PackageSaveMode.Nupkg,
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.False(installed);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task PackageExtractor_InstallFromSourceAsync_ReturnsTrueAfterNewInstall()
+        {
+            // Arrange
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var identity = new PackageIdentity("PackageA", new NuGetVersion("2.0.3-Beta"));
+
+                var sourcePath = Path.Combine(root, "source");
+                Directory.CreateDirectory(sourcePath);
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                    sourcePath,
+                    identity.Id,
+                    identity.Version.ToString(),
+                    DateTimeOffset.UtcNow.LocalDateTime,
+                    "lib/net45/A.dll");
+
+                var packagesPath = Path.Combine(root, "packages");
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    // Act
+                    var installed = await PackageExtractor.InstallFromSourceAsync(
+                        packageStream.CopyToAsync,
+                        new VersionFolderPathContext(
+                            identity,
+                            packagesPath,
+                            NullLogger.Instance,
+                            packageSaveMode: PackageSaveMode.Nupkg,
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.True(installed);
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task PackageExtractor_WithLowercaseSpecified_ExtractsToSpecifiedCase(bool isLowercase)
+        {
+            // Arrange
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var identity = new PackageIdentity("PackageA", new NuGetVersion("2.0.3-Beta"));
+
+                var sourcePath = Path.Combine(root, "source");
+                Directory.CreateDirectory(sourcePath);
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                   sourcePath,
+                   identity.Id,
+                   identity.Version.ToString(),
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "lib/net45/A.dll");
+
+                var packagesPath = Path.Combine(root, "packages");
+                var resolver = new VersionFolderPathResolver(packagesPath, isLowercase);
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    // Act
+                    await PackageExtractor.InstallFromSourceAsync(
+                        packageStream.CopyToAsync,
+                        new VersionFolderPathContext(
+                            identity,
+                            packagesPath,
+                            isLowercase,
+                            new TestLogger(),
+                            packageSaveMode: PackageSaveMode.Nupkg,
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.True(File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)), "The .nupkg should exist.");
+                }
+            }
+        }
+
         [Fact]
         public async Task PackageExtractor_NuspecWithDifferentName_InstallForV3()
         {

@@ -413,4 +413,8 @@
     <value>Failed to find a project to restore in the folder '{0}'.</value>
     <comment>{0} is the folder that could not be accessed. The underlying failure is available in the inner exception message.</comment>
   </data>
+  <data name="Log_ConvertedPackageToOriginalCase" xml:space="preserve">
+    <value>The package {0} was converted to original case in the packages directory.</value>
+    <comment>{0} is the package identity.</comment>
+  </data>
 </root>

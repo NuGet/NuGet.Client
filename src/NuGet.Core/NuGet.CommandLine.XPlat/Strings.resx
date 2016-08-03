@@ -311,4 +311,7 @@
   <data name="SymbolApiKey_Description" xml:space="preserve">
     <value>The API key for the symbol server.</value>
   </data>
+  <data name="Restore_Switch_LegacyPackagesDirectory_Description" xml:space="preserve">
+    <value>Use legacy behavior when the restore operation is interacting with the global packages directory. This means the ID and version folder names are written with the original package case rather than being normalized to lowercase.</value>
+  </data>
 </root>

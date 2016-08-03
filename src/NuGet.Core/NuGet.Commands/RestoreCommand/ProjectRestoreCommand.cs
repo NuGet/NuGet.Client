@@ -70,9 +70,7 @@ namespace NuGet.Commands
             }
 
             await InstallPackagesAsync(graphs,
-                _request.PackagesDirectory,
                 allInstalledPackages,
-                _request.MaxDegreeOfConcurrency,
                 token);
 
             // Clear the in-memory cache for newly installed packages
@@ -126,9 +124,7 @@ namespace NuGet.Commands
 
                 // Install runtime-specific packages
                 await InstallPackagesAsync(runtimeGraphs,
-                    _request.PackagesDirectory,
                     allInstalledPackages,
-                    _request.MaxDegreeOfConcurrency,
                     token);
 
                 // Clear the in-memory cache for newly installed packages
@@ -241,45 +237,43 @@ namespace NuGet.Commands
         }
 
         private async Task InstallPackagesAsync(IEnumerable<RestoreTargetGraph> graphs,
-            string packagesDirectory,
             HashSet<LibraryIdentity> allInstalledPackages,
-            int maxDegreeOfConcurrency,
             CancellationToken token)
         {
             var packagesToInstall = graphs.SelectMany(g => g.Install.Where(match => allInstalledPackages.Add(match.Library)));
-            if (maxDegreeOfConcurrency <= 1)
+            if (_request.MaxDegreeOfConcurrency <= 1)
             {
                 foreach (var match in packagesToInstall)
                 {
-                    await InstallPackageAsync(match, packagesDirectory, token);
+                    await InstallPackageAsync(match, token);
                 }
             }
             else
             {
                 var bag = new ConcurrentBag<RemoteMatch>(packagesToInstall);
-                var tasks = Enumerable.Range(0, maxDegreeOfConcurrency)
+                var tasks = Enumerable.Range(0, _request.MaxDegreeOfConcurrency)
                     .Select(async _ =>
                     {
                         RemoteMatch match;
                         while (bag.TryTake(out match))
                         {
-                            await InstallPackageAsync(match, packagesDirectory, token);
+                            await InstallPackageAsync(match, token);
                         }
                     });
                 await Task.WhenAll(tasks);
             }
         }
 
-        private async Task InstallPackageAsync(RemoteMatch installItem, string packagesDirectory, CancellationToken token)
+        private async Task InstallPackageAsync(RemoteMatch installItem, CancellationToken token)
         {
             var packageIdentity = new PackageIdentity(installItem.Library.Name, installItem.Library.Version);
 
             var versionFolderPathContext = new VersionFolderPathContext(
                 packageIdentity,
-                packagesDirectory,
+                _request.PackagesDirectory,
                 _logger,
-                packageSaveMode: _request.PackageSaveMode,
-                xmlDocFileSaveMode: _request.XmlDocFileSaveMode);
+                _request.PackageSaveMode,
+                _request.XmlDocFileSaveMode);
 
             await PackageExtractor.InstallFromSourceAsync(
                 stream => installItem.Provider.CopyToAsync(installItem.Library, stream, token),
