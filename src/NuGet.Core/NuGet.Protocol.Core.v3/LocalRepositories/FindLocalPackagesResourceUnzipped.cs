@@ -96,7 +96,7 @@ namespace NuGet.Protocol
 
         private static IReadOnlyList<LocalPackageInfo> GetPackagesCore(string root)
         {
-            var rootDirInfo = new DirectoryInfo(root);
+            var rootDirInfo = LocalFolderUtility.GetAndVerifyRootDirectory(root);
 
             if (!rootDirInfo.Exists)
             {
