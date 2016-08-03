@@ -374,7 +374,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                     if (buildIntegratedProject != null)
                     {
-                        var packages = BuildIntegratedProjectUtility.GetOrderedProjectDependencies(buildIntegratedProject);
+                        var packages = BuildIntegratedProjectUtility.GetOrderedProjectPackageDependencies(buildIntegratedProject);
                         sortedGlobalPackages.AddRange(packages);
                     }
                     else

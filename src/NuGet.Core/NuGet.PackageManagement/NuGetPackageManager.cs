@@ -2109,7 +2109,7 @@ namespace NuGet.PackageManagement
 
                 // Run init.ps1 scripts
                 var sortedPackages =
-                    BuildIntegratedProjectUtility.GetOrderedProjectDependencies(buildIntegratedProject);
+                    BuildIntegratedProjectUtility.GetOrderedProjectPackageDependencies(buildIntegratedProject);
 
                 var addedPackages = new HashSet<PackageIdentity>(
                     BuildIntegratedRestoreUtility.GetAddedPackages(
