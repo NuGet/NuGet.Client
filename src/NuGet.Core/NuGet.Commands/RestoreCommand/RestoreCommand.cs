@@ -119,13 +119,7 @@ namespace NuGet.Commands
             }
 
             // Generate Targets/Props files
-            var msbuild = BuildAssetsUtils.RestoreMSBuildFiles(
-                _request.Project,
-                graphs,
-                localRepositories,
-                contextForProject,
-                _request,
-                _includeFlagGraphs);
+            var msbuild = RestoreMSBuildFiles(_request.Project, graphs, localRepositories, contextForProject);
 
             // If the request is for a v1 lock file then downgrade it and remove all v2 properties
             if (_request.LockFileVersion == 1)
@@ -413,7 +407,7 @@ namespace NuGet.Commands
                     toolSuccess = false;
                     _success = false;
                 }
-
+                
                 var checkResults = VerifyCompatibility(
                     toolPackageSpec,
                     new Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>>(),
@@ -648,6 +642,107 @@ namespace NuGet.Commands
             }
 
             return context;
+        }
+
+        private MSBuildRestoreResult RestoreMSBuildFiles(PackageSpec project,
+            IEnumerable<RestoreTargetGraph> targetGraphs,
+            IReadOnlyList<NuGetv3LocalRepository> repositories,
+            RemoteWalkContext context)
+        {
+            // Get the project graph
+            var projectFrameworks = project.TargetFrameworks.Select(f => f.FrameworkName).ToList();
+
+            // Non-Msbuild projects should skip targets and treat it as success
+            if (!context.IsMsBuildBased)
+            {
+                return new MSBuildRestoreResult(project.Name, project.BaseDirectory, success: true);
+            }
+
+            // Invalid msbuild projects should write out an msbuild error target
+            if (projectFrameworks.Count != 1
+                || !targetGraphs.Any())
+            {
+                return new MSBuildRestoreResult(project.Name, project.BaseDirectory, success: false);
+            }
+
+            // Gather props and targets to write out
+            var graph = targetGraphs
+                .Single(g => g.Framework.Equals(projectFrameworks[0]) && string.IsNullOrEmpty(g.RuntimeIdentifier));
+
+            var flattenedFlags = IncludeFlagUtils.FlattenDependencyTypes(_includeFlagGraphs, _request.Project, graph);
+
+            var targets = new List<string>();
+            var props = new List<string>();
+            foreach (var library in graph.Flattened
+                .Distinct()
+                .OrderBy(g => g.Data.Match.Library))
+            {
+                var includeLibrary = true;
+
+                LibraryIncludeFlags libraryFlags;
+                if (flattenedFlags.TryGetValue(library.Key.Name, out libraryFlags))
+                {
+                    includeLibrary = libraryFlags.HasFlag(LibraryIncludeFlags.Build);
+                }
+
+                // Skip libraries that do not include build files such as transitive packages
+                if (includeLibrary)
+                {
+                    var packageIdentity = new PackageIdentity(library.Key.Name, library.Key.Version);
+                    IList<string> packageFiles;
+                    context.PackageFileCache.TryGetValue(packageIdentity, out packageFiles);
+
+                    if (packageFiles != null)
+                    {
+                        var contentItemCollection = new ContentItemCollection();
+                        contentItemCollection.Load(packageFiles);
+
+                        // Find MSBuild thingies
+                        var groups = contentItemCollection.FindItemGroups(graph.Conventions.Patterns.MSBuildFiles);
+
+                        // Find the nearest msbuild group, this can include the root level Any group.
+                        var buildItems = NuGetFrameworkUtility.GetNearest(
+                            groups,
+                            graph.Framework,
+                            group =>
+                                group.Properties[ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker]
+                                    as NuGetFramework);
+
+                        if (buildItems != null)
+                        {
+                            // We need to additionally filter to items that are named "{packageId}.targets" and "{packageId}.props"
+                            // Filter by file name here and we'll filter by extension when we add things to the lists.
+                            var items = buildItems.Items
+                                .Where(item =>
+                                    Path.GetFileNameWithoutExtension(item.Path)
+                                    .Equals(library.Key.Name, StringComparison.OrdinalIgnoreCase))
+                                .ToList();
+
+                            var packageInfo = NuGetv3LocalRepositoryUtility.GetPackage(repositories, library.Key.Name, library.Key.Version);
+                            var pathResolver = packageInfo.Repository.PathResolver;
+
+                            targets.AddRange(items
+                                .Where(c => Path.GetExtension(c.Path).Equals(".targets", StringComparison.OrdinalIgnoreCase))
+                                .Select(c =>
+                                    Path.Combine(pathResolver.GetInstallPath(library.Key.Name, library.Key.Version),
+                                    c.Path.Replace('/', Path.DirectorySeparatorChar))));
+
+                            props.AddRange(items
+                                .Where(c => Path.GetExtension(c.Path).Equals(".props", StringComparison.OrdinalIgnoreCase))
+                                .Select(c =>
+                                    Path.Combine(pathResolver.GetInstallPath(library.Key.Name, library.Key.Version),
+                                    c.Path.Replace('/', Path.DirectorySeparatorChar))));
+                        }
+                    }
+                }
+            }
+
+            // Targets files contain a macro for the repository root. If only the user package folder was used
+            // allow a replacement. If fallback folders were used the macro cannot be applied.
+            // Do not use macros for fallback folders. Use only the first repository which is the user folder.
+            var repositoryRoot = repositories.First().RepositoryRoot;
+
+            return new MSBuildRestoreResult(project.Name, project.BaseDirectory, repositoryRoot, props, targets);
         }
 
         private void DowngradeLockFileToV1(LockFile lockFile)
