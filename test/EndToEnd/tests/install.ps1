@@ -153,21 +153,21 @@ function Test-SinglePackageInstallIntoSingleProject {
     Assert-SolutionPackage Castle.Core
 }
 
-# Test install-package -WhatIf to downgrade an installed package.
-function Test-PackageInstallWithFileUri {
-    # Arrange
-    $project = New-ConsoleApplication
+# Test install-package -WhatIf to downgrade an installed package.       
+function Test-PackageInstallWithFileUri {      
+    # Arrange      
+    $project = New-ConsoleApplication 
+ 
+    $uri = $context.RepositoryRoot  
+    $uri = $uri.replace("\", "/")     
+    $uri = "file:///" + $uri  
 
-    $uri = $context.RepositoryRoot
-    $uri = $uri.replace("\", "/")
-    $uri = "file:///" + $uri
-    
-	# Act
-	Install-Package TestUpdatePackage -Version 2.0.0.0 -Source $uri
+    # Act
+    Install-Package TestUpdatePackage -Version 2.0.0.0 -Source $uri
 
-	# Assert
-	# that the installed package is not touched.
-	Assert-Package $project TestUpdatePackage '2.0.0.0'
+    # Assert
+    # that the installed package is not touched.
+    Assert-Package $project TestUpdatePackage '2.0.0.0'
 }
 
 function Test-PackageInstallWhatIf {
@@ -646,6 +646,12 @@ function Test-InstallPackageWithGacReferenceIntoWindowsPhoneProject {
         $context
     )
 
+    # Windows 8.x/Phone tests irrelevant post-VS14
+    if ((Get-VSVersion) -ge "15.0") {
+        Write-Host "Skipping InstallPackageWithGacReferenceIntoWindowsPhoneProject"
+        return
+    }
+
     # Arrange
     $p = New-WindowsPhoneClassLibrary
     
@@ -680,6 +686,12 @@ function Test-InstallPackageThatTargetsWindowsPhone {
     param(
         $context
     )
+
+    # Windows 8.x/Phone tests irrelevant post-VS14
+    if ((Get-VSVersion) -ge "15.0") {
+        Write-Host "Skipping InstallPackageThatTargetsWindowsPhone"
+        return
+    }
 
     # Arrange
     $p = New-WindowsPhoneClassLibrary
@@ -1244,6 +1256,12 @@ function Test-InstallPackageAfterRenaming {
 }
 
 function Test-InstallPackageIntoSecondProjectWithIncompatibleAssembliesDoesNotRollbackIfInUse {
+    # Windows 8.x/Phone tests irrelevant post-VS14
+    if ((Get-VSVersion) -ge "15.0") {
+        Write-Host "Skipping InstallPackageIntoSecondProjectWithIncompatibleAssembliesDoesNotRollbackIfInUse"
+        return
+    }	
+
     # Arrange
     $p1 = New-WebApplication
     $p2 = New-WindowsPhoneClassLibrary
@@ -2021,6 +2039,12 @@ function Test-InstallPackageThrowsIfThereIsNoCompatibleContentFiles
 {
     param($context)
 
+    # Windows 8.x/Phone tests irrelevant post-VS14
+    if ((Get-VSVersion) -ge "15.0") {
+        Write-Host "Skipping InstallPackageThrowsIfThereIsNoCompatibleContentFiles"
+        return
+    }	
+
     # Arrange
     $project = New-JavaScriptApplication
     
@@ -2531,8 +2555,9 @@ function Test-NonFrameworkAssemblyReferenceShouldHaveABindingRedirect
 # NuGet is not involved in that step. We may need to update the template.
 function InstallPackageIntoJavaScriptApplication
 {
-    if ((Get-VSVersion) -eq "10.0")
-    {
+    # Windows 8.x/Phone tests irrelevant post-VS14
+    if ((Get-VSVersion) -ge "15.0") {
+        Write-Host "Skipping InstallPackageIntoJavaScriptApplication"
         return
     }
 
@@ -2548,10 +2573,10 @@ function InstallPackageIntoJavaScriptApplication
 
 function Test-InstallPackageIntoJavaScriptWindowsPhoneApp
 {
-    # this test is only applicable to VS 2013 on Windows 8.1
-    if ((Get-VSVersion) -eq "10.0" -or (Get-VSVersion) -eq "11.0" -or [System.Environment]::OSVersion.Version -lt 6.3)
-    {
-        return;
+    # Windows 8.x/Phone tests irrelevant post-VS14
+    if ((Get-VSVersion) -ge "15.0") {
+        Write-Host "Skipping InstallPackageIntoJavaScriptWindowsPhoneApp"
+        return
     }
 
     # Arrange
@@ -2585,9 +2610,9 @@ function Test-InstallPackageIntoJSAppOnWin81UseTheCorrectFxFolder
 {
     param($context)
 
-    # this test is only applicable to VS 2013 on Windows 8.1
-    if ((Get-VSVersion) -eq "10.0" -or (Get-VSVersion) -eq "11.0" -or [System.Environment]::OSVersion.Version -lt 6.3)
-    {
+    # Windows 8.x/Phone tests irrelevant post-VS14
+    if ((Get-VSVersion) -ge "15.0") {
+        Write-Host "Skipping InstallPackageIntoJSAppOnWin81UseTheCorrectFxFolder"
         return
     }
 
@@ -2608,9 +2633,9 @@ function Test-InstallPackageIntoJSWindowsPhoneAppOnWin81UseTheCorrectFxFolder
 {
     param($context)
 
-    # this test is only applicable to VS 2013 on Windows 8.1
-    if ((Get-VSVersion) -eq "10.0" -or (Get-VSVersion) -eq "11.0" -or [System.Environment]::OSVersion.Version -lt 6.3)
-    {
+    # Windows 8.x/Phone tests irrelevant post-VS14
+    if ((Get-VSVersion) -ge "15.0") {
+        Write-Host "Skipping InstallPackageIntoJSWindowsPhoneAppOnWin81UseTheCorrectFxFolder"
         return
     }
 
@@ -2673,9 +2698,9 @@ function Test-InstallPackageIntoJSAppOnWin81AcceptWinmdFile
 {
     param($context)
 
-    # this test is only applicable to VS 2013 on Windows 8.1
-    if ((Get-VSVersion) -eq "10.0" -or (Get-VSVersion) -eq "11.0" -or [System.Environment]::OSVersion.Version -lt 6.3)
-    {
+    # Windows 8.x/Phone tests irrelevant post-VS14
+    if ((Get-VSVersion) -ge "15.0") {
+        Write-Host "Skipping InstallPackageIntoJSAppOnWin81AcceptWinmdFile"
         return
     }
 
@@ -2693,10 +2718,11 @@ function Test-PackageWithConfigTransformInstallToWinJsProject
 {
     param($context)
 
-    if ((Get-VSVersion) -eq "10.0")
-    {
+    # Windows 8.x/Phone tests irrelevant post-VS14
+    if ((Get-VSVersion) -ge "15.0") {
+        Write-Host "Skipping PackageWithConfigTransformInstallToWinJsProject"
         return
-    }
+    }	
 
     # Arrange
     $p = New-JavaScriptApplication
