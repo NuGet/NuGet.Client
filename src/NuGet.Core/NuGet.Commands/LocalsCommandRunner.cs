@@ -23,9 +23,10 @@ namespace NuGet.Commands
 
         private IList<string> Arguments { get; set; }
 
+        private ISettings Settings { get; set; }
+
         public Task ExecuteCommand()
         {
-
             var localResourceName = GetLocalResourceName(Arguments[0]);
 
             if (Clear)
@@ -64,9 +65,7 @@ namespace NuGet.Commands
                     break;
                 default:
                     // Invalid local resource name provided.
-                    throw new CommandLineException(
-                        LocalizedResourceManager.GetString(
-                            nameof(NuGetResources.LocalsCommand_InvalidLocalResourceName)));
+                    throw new Exception(Strings.LocalsCommand_InvalidLocalResourceName);
             }
         }
 
@@ -74,10 +73,7 @@ namespace NuGet.Commands
         {
             if (string.IsNullOrWhiteSpace(path))
             {
-                Console.WriteWarning(
-                    LocalizedResourceManager.GetString(
-                        nameof(NuGetResources.LocalsCommand_LocalResourcePathNotSet)),
-                    resourceName);
+                Console.WriteLine(Strings.LocalsCommand_LocalResourcePathNotSet);
             }
             else
             {
@@ -111,20 +107,16 @@ namespace NuGet.Commands
                     break;
                 default:
                     // Invalid local resource name provided.
-                    throw new CommandLineException(
-                        LocalizedResourceManager.GetString(
-                            nameof(NuGetResources.LocalsCommand_InvalidLocalResourceName)));
+                    throw new Exception(Strings.LocalsCommand_InvalidLocalResourceName);
             }
 
             if (!success)
             {
-                throw new CommandLineException(
-                    LocalizedResourceManager.GetString(nameof(NuGetResources.LocalsCommand_ClearFailed)));
+                throw new Exception(Strings.LocalsCommand_ClearFailed);
             }
             else
             {
-                Console.WriteLine(
-                    LocalizedResourceManager.GetString(nameof(NuGetResources.LocalsCommand_ClearedSuccessful)));
+                Console.WriteLine(Strings.LocalsCommand_ClearedSuccessful);
             }
         }
 
@@ -137,9 +129,7 @@ namespace NuGet.Commands
             var success = true;
             var globalPackagesFolderPath = SettingsUtility.GetGlobalPackagesFolder(Settings);
 
-            Console.WriteLine(
-                LocalizedResourceManager.GetString(nameof(NuGetResources.LocalsCommand_ClearingNuGetGlobalPackagesCache)),
-                globalPackagesFolderPath);
+            Console.WriteLine(Strings.LocalsCommand_ClearingNuGetGlobalPackagesCache, globalPackagesFolderPath);
 
             success &= ClearCacheDirectory(globalPackagesFolderPath);
             return success;
@@ -154,8 +144,7 @@ namespace NuGet.Commands
             var success = true;
             if (!string.IsNullOrEmpty(MachineCache.Default?.Source))
             {
-                Console.WriteLine(LocalizedResourceManager.GetString(
-                    nameof(NuGetResources.LocalsCommand_ClearingNuGetCache)), MachineCache.Default.Source);
+                Console.WriteLine(Strings.LocalsCommand_ClearingNuGetCache, MachineCache.Default.Source);
 
                 success = ClearCacheDirectory(MachineCache.Default.Source);
             }
@@ -173,8 +162,7 @@ namespace NuGet.Commands
 
             if (!string.IsNullOrEmpty(httpCacheFolderPath))
             {
-                Console.WriteLine(
-                    LocalizedResourceManager.GetString(nameof(NuGetResources.LocalsCommand_ClearingNuGetHttpCache)),
+                Console.WriteLine(Strings.LocalsCommand_ClearingNuGetHttpCache,
                     httpCacheFolderPath);
 
                 success &= ClearCacheDirectory(httpCacheFolderPath);
@@ -226,14 +214,11 @@ namespace NuGet.Commands
 
             if (failedDeletes.Any())
             {
-                Console.WriteWarning(
-                    LocalizedResourceManager.GetString(nameof(NuGetResources.LocalsCommand_LocalsPartiallyCleared)));
+                Console.WriteLine(Strings.LocalsCommand_LocalsPartiallyCleared);
 
                 foreach (var failedDelete in failedDeletes.OrderBy(f => f, StringComparer.OrdinalIgnoreCase))
                 {
-                    Console.WriteWarning(
-                        LocalizedResourceManager.GetString(nameof(NuGetResources.LocalsCommand_FailedToDeletePath)),
-                        failedDelete);
+                    Console.WriteLine(Strings.LocalsCommand_FailedToDeletePath, failedDelete);
                 }
 
                 return false;
