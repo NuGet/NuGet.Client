@@ -49,7 +49,7 @@ namespace NuGet.Commands
                     PrintLocalResourcePath(_httpCacheResourceName, SettingsUtility.GetHttpCacheFolder());
                     break;
                 case LocalResourceName.PackagesCache:
-                    PrintLocalResourcePath(_packagesCacheResourceName, MachineCache.Default?.Source);
+                    PrintLocalResourcePath(_packagesCacheResourceName, MachineCache.GetCachePath());
                     break;
                 case LocalResourceName.GlobalPackagesFolder:
                     PrintLocalResourcePath(_globalPackagesResourceName, SettingsUtility.GetGlobalPackagesFolder(Settings));
@@ -59,7 +59,7 @@ namespace NuGet.Commands
                     break;
                 case LocalResourceName.All:
                     PrintLocalResourcePath(_httpCacheResourceName, SettingsUtility.GetHttpCacheFolder());
-                    PrintLocalResourcePath(_packagesCacheResourceName, MachineCache.Default?.Source);
+                    PrintLocalResourcePath(_packagesCacheResourceName, MachineCache.GetCachePath());
                     PrintLocalResourcePath(_globalPackagesResourceName, SettingsUtility.GetGlobalPackagesFolder(Settings));
                     PrintLocalResourcePath(_tempResourceName, NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp));
                     break;
@@ -142,11 +142,11 @@ namespace NuGet.Commands
         private bool ClearNuGetPackagesCache()
         {
             var success = true;
-            if (!string.IsNullOrEmpty(MachineCache.Default?.Source))
+            if (!string.IsNullOrEmpty(MachineCache.GetCachePath()))
             {
-                Console.WriteLine(Strings.LocalsCommand_ClearingNuGetCache, MachineCache.Default.Source);
+                Console.WriteLine(Strings.LocalsCommand_ClearingNuGetCache, MachineCache.GetCachePath());
 
-                success = ClearCacheDirectory(MachineCache.Default.Source);
+                success = ClearCacheDirectory(MachineCache.GetCachePath());
             }
             return success;
         }
