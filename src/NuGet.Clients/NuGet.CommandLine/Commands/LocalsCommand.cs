@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Commands;
 
 namespace NuGet.CommandLine.Commands
 {
@@ -42,16 +43,8 @@ namespace NuGet.CommandLine.Commands
                 return Task.FromResult(0);
             }
 
-            var localResourceName = GetLocalResourceName(Arguments[0]);
-
-            if (Clear)
-            {
-                ClearLocalResource(localResourceName);
-            }
-            else if (List)
-            {
-                ListLocalResource(localResourceName);
-            }
+            var localsCommandRunner = new LocalsCommandRunner(Arguments, Settings, Clear, List);
+            localsCommandRunner.ExecuteCommand();
 
             return Task.FromResult(0);
         }
