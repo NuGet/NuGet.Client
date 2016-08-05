@@ -18,15 +18,16 @@
     }
   },
   "dependencies": {
-    "xunit": "2.1.0",
     "NuGet.Packaging": {
       "target": "project"
-    }
+    },
+    "xunit": "2.1.0"
   },
   "frameworks": {
     "net45": {
       "frameworkAssemblies": {
-        "System.IO.Compression": ""
+        "System.IO.Compression": "",
+        "System.Runtime": ""
       },
       "buildOptions": {
         "define": [
@@ -41,8 +42,8 @@
       ],
       "dependencies": {
         "NETStandard.Library": "1.6.0",
-        "System.IO.Compression.ZipFile": "4.0.1",
-        "System.Diagnostics.Process": "4.1.0"
+        "System.Diagnostics.Process": "4.1.0",
+        "System.IO.Compression.ZipFile": "4.0.1"
       },
       "buildOptions": {
         "define": [

@@ -69,6 +69,15 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Encryption is not supported on non-Windows platforms..
+        /// </summary>
+        public static string Error_EncryptionUnsupported {
+            get {
+                return ResourceManager.GetString("Error_EncryptionUnsupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to There are no writable config files..
         /// </summary>
         public static string Error_NoWritableConfig {
@@ -177,7 +186,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Password decryption is not supported on .NET Core for this platform. The following feed uses an encrypted password: &apos;{0}&apos;. You can use a clear text password as a workaround.
+        ///    Looks up a localized string similar to Password decryption is not supported on .NET Core for this platform. The following feed uses an encrypted password: &apos;{0}&apos;. You can use a clear text password as a workaround..
         /// </summary>
         public static string UnsupportedDecryptPassword {
             get {
@@ -186,7 +195,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Password encryption is not supported on .NET Core for this platform. The following feed try to use an encrypted password: &apos;{0}&apos;. You can use a clear text password as a workaround.
+        ///    Looks up a localized string similar to Password encryption is not supported on .NET Core for this platform. The following feed try to use an encrypted password: &apos;{0}&apos;. You can use a clear text password as a workaround..
         /// </summary>
         public static string UnsupportedEncryptPassword {
             get {

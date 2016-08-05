@@ -1,9 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using NuGet.Test.Utility;
 using Xunit;
 
-namespace NuGet.Configuration
+namespace NuGet.Configuration.Test
 {
     public class PackageSourceCredentialTests
     {
@@ -34,30 +35,42 @@ namespace NuGet.Configuration
             Assert.Equal("password", credentials.Password);
         }
 
-#if !IS_CORECLR
-        [Fact]
-        public void FromUserInput_WithStorePasswordEncrypted_EncryptsPassword()
+        [Fact, Platform(Platform.Windows)]
+        public void FromUserInput_WithStorePasswordEncrypted_OnWindows_EncryptsPassword()
         {
             var credentials = PackageSourceCredential.FromUserInput("source", "user", "password", storePasswordInClearText: false);
 
             Assert.NotEqual("password", credentials.PasswordText);
             Assert.Equal("password", credentials.Password);
         }
-#else
-        [Fact]
-        public void FromUserInput_WithStorePasswordEncrypted_Throws()
+
+        [Fact, Platform(Platform.Linux)]
+        public void FromUserInput_WithStorePasswordEncrypted_OnLinux_Throws()
         {
             Assert.Throws<NuGetConfigurationException>(() => PackageSourceCredential.FromUserInput("source", "user", "password", storePasswordInClearText: false));
         }
 
-        [Fact]
-        public void Password_WithEncryptedPassword_Throws()
+        [Fact, Platform(Platform.Linux)]
+        public void Password_WithEncryptedPassword_OnLinux_Throws()
         {
             var credentials = new PackageSourceCredential("source", "user", "password", isPasswordClearText: false);
 
             Assert.Throws<NuGetConfigurationException>(() => credentials.Password);
         }
-#endif
+
+        [Fact, Platform(Platform.Darwin)]
+        public void FromUserInput_WithStorePasswordEncrypted_OnMacOS_Throws()
+        {
+            Assert.Throws<NuGetConfigurationException>(() => PackageSourceCredential.FromUserInput("source", "user", "password", storePasswordInClearText: false));
+        }
+
+        [Fact, Platform(Platform.Darwin)]
+        public void Password_WithEncryptedPassword_OnMacOS_Throws()
+        {
+            var credentials = new PackageSourceCredential("source", "user", "password", isPasswordClearText: false);
+
+            Assert.Throws<NuGetConfigurationException>(() => credentials.Password);
+        }
 
         [Fact]
         public void IsValid_WithNonEmptyValues_ReturnsTrue()

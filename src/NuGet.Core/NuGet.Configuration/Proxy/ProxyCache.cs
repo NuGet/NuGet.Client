@@ -82,23 +82,24 @@ namespace NuGet.Configuration
 
         public WebProxy GetUserConfiguredProxy()
         {
-            // Try reading from the settings. The values are stored as 3 config values http_proxy, http_proxy_user, http_proxy_password
+            // Try reading from the settings. The values are stored as 3 config values http_proxy, http_proxy.user, http_proxy.password
             var host = _settings.GetValue(SettingsUtility.ConfigSection, ConfigurationConstants.HostKey);
             if (!string.IsNullOrEmpty(host))
             {
                 // The host is the minimal value we need to assume a user configured proxy.
                 var webProxy = new WebProxy(host);
 
-#if !IS_CORECLR
-                var userName = _settings.GetValue(SettingsUtility.ConfigSection, ConfigurationConstants.UserKey);
-                var password = SettingsUtility.GetDecryptedValue(_settings, SettingsUtility.ConfigSection, ConfigurationConstants.PasswordKey);
-
-                if (!string.IsNullOrEmpty(userName)
-                    && !string.IsNullOrEmpty(password))
+                if (RuntimeEnvironmentHelper.IsWindows)
                 {
-                    webProxy.Credentials = new NetworkCredential(userName, password);
+                    var userName = _settings.GetValue(SettingsUtility.ConfigSection, ConfigurationConstants.UserKey);
+                    var password = SettingsUtility.GetDecryptedValue(_settings, SettingsUtility.ConfigSection, ConfigurationConstants.PasswordKey);
+
+                    if (!string.IsNullOrEmpty(userName)
+                        && !string.IsNullOrEmpty(password))
+                    {
+                        webProxy.Credentials = new NetworkCredential(userName, password);
+                    }
                 }
-#endif
 
                 var noProxy = _settings.GetValue(SettingsUtility.ConfigSection, ConfigurationConstants.NoProxy);
                 if (!string.IsNullOrEmpty(noProxy))

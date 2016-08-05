@@ -55,8 +55,17 @@ do
 	if grep -q "netcoreapp1.0" "$testProject"; then
 		pushd $testDir
 
-		echo "$DOTNET test $testDir --configuration release --framework netcoreapp1.0"
-		$DOTNET test $testDir --configuration release --framework netcoreapp1.0
+		case "$(uname -s)" in
+			Linux)
+				echo "$DOTNET test $testDir --configuration release --framework netcoreapp1.0 -notrait Platform=Windows -notrait Platform=Darwin"
+				$DOTNET test $testDir --configuration release --framework netcoreapp1.0 -notrait Platform=Windows -notrait Platform=Darwin
+				;;
+			Darwin)
+				echo "$DOTNET test $testDir --configuration release --framework netcoreapp1.0 -notrait Platform=Windows -notrait Platform=Linux"
+				$DOTNET test $testDir --configuration release --framework netcoreapp1.0 -notrait Platform=Windows -notrait Platform=Linux
+				;;
+			*) ;;
+		esac
 
 		if [ $? -ne 0 ]; then
 			echo "$testDir FAILED on CoreCLR"

@@ -438,6 +438,7 @@ Function Test-XProject {
                     $opts += '-v'
                 }
                 $opts += 'test', '--configuration', $Configuration, '--framework', 'netcoreapp1.0'
+                $opts += '-notrait', 'Platform=Linux', '-notrait', 'Platform=Darwin'
                 if ($VerbosePreference) {
                     $opts += '-verbose'
                 }
@@ -469,6 +470,7 @@ Function Test-XProject {
                     $htmlOutput = Join-Path $_ "bin\$Configuration\net46\win7-x64\xunit.results.html"
                     $desktopTestAssembly = Join-Path $_ "bin\$Configuration\net46\win7-x64\$directoryName.dll"
                     $opts = $desktopTestAssembly, '-html', $htmlOutput
+                    $opts += '-notrait', 'Platform=Linux', '-notrait', 'Platform=Darwin'
                     if ($VerbosePreference) {
                         $opts += '-verbose'
                     }
@@ -620,7 +622,7 @@ Function Invoke-ILMerge {
     if (-Not (Test-Path $outputFolder)) {
         New-Item -ItemType Directory -Path $outputFolder | Out-Null
     }
-    
+
     $includeList = Read-FileList (Join-Path $buildArtifactsFolder '.mergeinclude')
     $notInList = $buildArtifacts | ?{ -not ($includeList -contains $_) }
     if ($notInList) {
