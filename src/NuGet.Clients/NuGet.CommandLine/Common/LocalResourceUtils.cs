@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 
-namespace NuGet.Common
+namespace NuGet.CommandLine
 {
     public class LocalResourceUtils
     {

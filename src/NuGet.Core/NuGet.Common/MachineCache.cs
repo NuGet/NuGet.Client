@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-
 namespace NuGet.Common
 {
     /// <summary>
@@ -16,10 +15,16 @@ namespace NuGet.Common
         /// </summary>
         public static string GetCachePath()
         {
-            return GetCachePath(Environment.GetEnvironmentVariable, Environment.GetFolderPath);
+#if IS_CORECLR
+            string localAppDataPath = NuGetEnvironment.GetFolderPath(NuGetFolderPath.HttpCacheDirectory);
+            return GetCachePath(Environment.GetEnvironmentVariable, localAppDataPath);
+#else
+            string localAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            return GetCachePath(Environment.GetEnvironmentVariable, localAppDataPath);
+#endif
         }
 
-        public static string GetCachePath(Func<string, string> getEnvironmentVariable, Func<System.Environment.SpecialFolder, string> getFolderPath)
+        public static string GetCachePath(Func<string, string> getEnvironmentVariable, string localAppDataPath)
         {
             string cacheOverride = getEnvironmentVariable(NuGetCachePathEnvironmentVariable);
             if (!String.IsNullOrEmpty(cacheOverride))
@@ -28,7 +33,6 @@ namespace NuGet.Common
             }
             else
             {
-                string localAppDataPath = getFolderPath(System.Environment.SpecialFolder.LocalApplicationData);
                 if (String.IsNullOrEmpty(localAppDataPath))
                 {
                     // there's a bug on Windows Azure Web Sites environment where calling through the Environment.GetFolderPath()
