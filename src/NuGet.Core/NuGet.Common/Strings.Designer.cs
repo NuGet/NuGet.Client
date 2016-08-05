@@ -69,6 +69,15 @@ namespace NuGet.Common {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Argument cannot be null or empty.
+        /// </summary>
+        public static string ArgumentNullOrEmpty {
+            get {
+                return ResourceManager.GetString("ArgumentNullOrEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to At least one package folder path must be provided..
         /// </summary>
         public static string NoPackageFoldersFound {
