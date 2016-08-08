@@ -41,8 +41,11 @@ namespace NuGet.Commands
             this.Clear = clear;
             this.List = list;
         }
-
-        public Task ExecuteCommand()
+        /// <summary>
+        /// Executes the logic for nuget locals command.
+        /// </summary>
+        /// <returns></returns>
+        public void ExecuteCommand()
         {
             var localResourceName = GetLocalResourceName(Arguments[0]);
 
@@ -55,7 +58,7 @@ namespace NuGet.Commands
                 ListLocalResource(localResourceName);
             }
 
-            return Task.FromResult(0);
+            return;
         }
 
         private void ListLocalResource(LocalResourceName localResourceName)
@@ -245,7 +248,5 @@ namespace NuGet.Commands
                 return true;
             }
         }
-
-
     }
 }
