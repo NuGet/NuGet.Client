@@ -9,8 +9,17 @@ namespace NuGet.Commands
 {
     public class LocalsCommandRunner
     {
-
+        private enum LocalResourceName
+        {
+            Unknown,
+            HttpCache,
+            PackagesCache,
+            GlobalPackagesFolder,
+            Temp,
+            All
+        }
         private const string _httpCacheResourceName = "http-cache";
+        private const string _packagesCacheResourceName = "packages-cache";
         private const string _globalPackagesResourceName = "global-packages";
         private const string _allResourceName = "all";
         private const string _tempResourceName = "temp";
@@ -56,6 +65,9 @@ namespace NuGet.Commands
                 case LocalResourceName.HttpCache:
                     PrintLocalResourcePath(_httpCacheResourceName, SettingsUtility.GetHttpCacheFolder());
                     break;
+                case LocalResourceName.PackagesCache:
+                    PrintLocalResourcePath(_packagesCacheResourceName,MachineCache.GetCachePath());
+                    break;
                 case LocalResourceName.GlobalPackagesFolder:
                     PrintLocalResourcePath(_globalPackagesResourceName, SettingsUtility.GetGlobalPackagesFolder(Settings));
                     break;
@@ -64,6 +76,7 @@ namespace NuGet.Commands
                     break;
                 case LocalResourceName.All:
                     PrintLocalResourcePath(_httpCacheResourceName, SettingsUtility.GetHttpCacheFolder());
+                    PrintLocalResourcePath(_packagesCacheResourceName, MachineCache.GetCachePath());
                     PrintLocalResourcePath(_globalPackagesResourceName, SettingsUtility.GetGlobalPackagesFolder(Settings));
                     PrintLocalResourcePath(_tempResourceName, NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp));
                     break;
@@ -94,6 +107,9 @@ namespace NuGet.Commands
                 case LocalResourceName.HttpCache:
                     success &= ClearNuGetHttpCache();
                     break;
+                case LocalResourceName.PackagesCache:
+                    success &= ClearNuGetPackagesCache();
+                    break;
                 case LocalResourceName.GlobalPackagesFolder:
                     success &= ClearNuGetGlobalPackagesFolder();
                     break;
@@ -102,6 +118,7 @@ namespace NuGet.Commands
                     break;
                 case LocalResourceName.All:
                     success &= ClearNuGetHttpCache();
+                    success &= ClearNuGetPackagesCache();
                     success &= ClearNuGetGlobalPackagesFolder();
                     success &= ClearNuGetTempFolder();
                     break;
@@ -132,6 +149,22 @@ namespace NuGet.Commands
             Console.WriteLine(Strings.LocalsCommand_ClearingNuGetGlobalPackagesCache, globalPackagesFolderPath);
 
             success &= ClearCacheDirectory(globalPackagesFolderPath);
+            return success;
+        }
+
+        /// <summary>
+        /// Clear the NuGet machine cache.
+        /// </summary>
+        /// <returns><code>True</code> if the operation was successful; otherwise <code>false</code>.</returns>
+        private bool ClearNuGetPackagesCache()
+        {
+            var success = true;
+            if (!string.IsNullOrEmpty(MachineCache.GetCachePath()))
+            {
+                Console.WriteLine(Strings.LocalsCommand_ClearingNuGetCache, MachineCache.GetCachePath());
+
+                success = ClearCacheDirectory(MachineCache.GetCachePath());
+            }
             return success;
         }
 
@@ -172,6 +205,10 @@ namespace NuGet.Commands
             {
                 return LocalResourceName.HttpCache;
             }
+            else if (string.Equals(localResourceName, _packagesCacheResourceName, StringComparison.OrdinalIgnoreCase))
+            {
+                return LocalResourceName.PackagesCache;
+            }
             else if (string.Equals(localResourceName, _globalPackagesResourceName, StringComparison.OrdinalIgnoreCase))
             {
                 return LocalResourceName.GlobalPackagesFolder;
@@ -209,14 +246,6 @@ namespace NuGet.Commands
             }
         }
 
-        private enum LocalResourceName
-        {
-            Unknown,
-            HttpCache,
-            PackagesCache,
-            GlobalPackagesFolder,
-            Temp,
-            All
-        }
+
     }
 }
