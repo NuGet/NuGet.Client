@@ -2,6 +2,8 @@
 
 -------------
 
+This repository contains v3.0 and later of the NuGet client libraries, replacing the Nuget2 repository and the NuGet.Core package.
+
 ## Build Status
 
 [![Build status](https://ci.appveyor.com/api/projects/status/1encuvwjo6k2sq68?svg=true)](https://ci.appveyor.com/project/NuGetTeam/nuget-client)
