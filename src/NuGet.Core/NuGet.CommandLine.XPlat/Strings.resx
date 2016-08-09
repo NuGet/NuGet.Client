@@ -311,4 +311,17 @@
   <data name="SymbolApiKey_Description" xml:space="preserve">
     <value>The API key for the symbol server.</value>
   </data>
+  <data name="LocalsCommand_ArgumentDescription" xml:space="preserve">
+    <value>Specifies the cache location(s) to list or clear. 
+&lt;all | http-cache | global-packages | temp&gt; [-clear | -list]</value>
+  </data>
+  <data name="LocalsCommand_ClearDescription" xml:space="preserve">
+    <value>Clear the selected local resources or cache location(s).</value>
+  </data>
+  <data name="LocalsCommand_ListDescription" xml:space="preserve">
+    <value>List the selected local resources or cache location(s).</value>
+  </data>
+  <data name="LocalsCommand_Description" xml:space="preserve">
+    <value>Clears or lists local NuGet resources such as http requests cache, packages cache or machine-wide global packages folder.</value>
+  </data>
 </root>

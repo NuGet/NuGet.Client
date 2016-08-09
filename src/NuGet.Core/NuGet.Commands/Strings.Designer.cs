@@ -240,25 +240,6 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Specifies the cache location(s) to list or clear. 
-        ///&lt;all | http-cache | global-packages | temp&gt; [-clear | -list].
-        /// </summary>
-        public static string LocalsCommand_ArgumentDescription {
-            get {
-                return ResourceManager.GetString("LocalsCommand_ArgumentDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to Clear the selected local resources or cache location(s)..
-        /// </summary>
-        public static string LocalsCommand_ClearDescription {
-            get {
-                return ResourceManager.GetString("LocalsCommand_ClearDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///    Looks up a localized string similar to Local resources cleared..
         /// </summary>
         public static string LocalsCommand_ClearedSuccessful {
@@ -304,15 +285,6 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Clears or lists local NuGet resources such as http requests cache, packages cache or machine-wide global packages folder..
-        /// </summary>
-        public static string LocalsCommand_Description {
-            get {
-                return ResourceManager.GetString("LocalsCommand_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///    Looks up a localized string similar to Failed to delete &apos;{0}&apos;..
         /// </summary>
         public static string LocalsCommand_FailedToDeletePath {
@@ -327,15 +299,6 @@ namespace NuGet.Commands {
         public static string LocalsCommand_InvalidLocalResourceName {
             get {
                 return ResourceManager.GetString("LocalsCommand_InvalidLocalResourceName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to List the selected local resources or cache location(s)..
-        /// </summary>
-        public static string LocalsCommand_ListDescription {
-            get {
-                return ResourceManager.GetString("LocalsCommand_ListDescription", resourceCulture);
             }
         }
         
