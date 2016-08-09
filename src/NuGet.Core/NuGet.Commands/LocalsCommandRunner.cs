@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
-using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
+
 
 namespace NuGet.Commands
 {
@@ -38,6 +39,7 @@ namespace NuGet.Commands
             this.Settings = settings;
             this.Clear = clear;
             this.List = list;
+
         }
         /// <summary>
         /// Executes the logic for nuget locals command.
@@ -79,7 +81,7 @@ namespace NuGet.Commands
                     break;
                 default:
                     // Invalid local resource name provided.
-                    throw new Exception(Strings.LocalsCommand_InvalidLocalResourceName);
+                    throw new ArgumentException(String.Format(CultureInfo.CurrentCulture,Strings.LocalsCommand_InvalidLocalResourceName));
             }
         }
 
@@ -87,11 +89,11 @@ namespace NuGet.Commands
         {
             if (string.IsNullOrWhiteSpace(path))
             {
-                Console.WriteLine(Strings.LocalsCommand_LocalResourcePathNotSet);
+                Console.WriteLine(String.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_LocalResourcePathNotSet));
             }
             else
             {
-                Console.WriteLine($"{resourceName}: {path}");
+                Console.WriteLine(String.Format(CultureInfo.CurrentCulture, $"{resourceName}: {path}"));
             }
         }
 
@@ -117,16 +119,16 @@ namespace NuGet.Commands
                     break;
                 default:
                     // Invalid local resource name provided.
-                    throw new Exception(Strings.LocalsCommand_InvalidLocalResourceName);
+                    throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_InvalidLocalResourceName));
             }
 
             if (!success)
             {
-                throw new Exception(Strings.LocalsCommand_ClearFailed);
+                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_ClearFailed));
             }
             else
             {
-                Console.WriteLine(Strings.LocalsCommand_ClearedSuccessful);
+                Console.WriteLine(String.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_ClearedSuccessful));
             }
         }
 
@@ -139,7 +141,7 @@ namespace NuGet.Commands
             var success = true;
             var globalPackagesFolderPath = SettingsUtility.GetGlobalPackagesFolder(Settings);
 
-            Console.WriteLine(Strings.LocalsCommand_ClearingNuGetGlobalPackagesCache, globalPackagesFolderPath);
+            Console.WriteLine(String.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_ClearingNuGetGlobalPackagesCache, globalPackagesFolderPath));
 
             success &= ClearCacheDirectory(globalPackagesFolderPath);
             return success;
@@ -156,8 +158,8 @@ namespace NuGet.Commands
 
             if (!string.IsNullOrEmpty(httpCacheFolderPath))
             {
-                Console.WriteLine(Strings.LocalsCommand_ClearingNuGetHttpCache,
-                    httpCacheFolderPath);
+                Console.WriteLine(String.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_ClearingNuGetHttpCache,
+                    httpCacheFolderPath));
 
                 success &= ClearCacheDirectory(httpCacheFolderPath);
             }
@@ -204,11 +206,11 @@ namespace NuGet.Commands
 
             if (failedDeletes.Any())
             {
-                Console.WriteLine(Strings.LocalsCommand_LocalsPartiallyCleared);
+                Console.WriteLine(String.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_LocalsPartiallyCleared));
 
                 foreach (var failedDelete in failedDeletes.OrderBy(f => f, StringComparer.OrdinalIgnoreCase))
                 {
-                    Console.WriteLine(Strings.LocalsCommand_FailedToDeletePath, failedDelete);
+                    Console.WriteLine(String.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_FailedToDeletePath, failedDelete));
                 }
 
                 return false;
