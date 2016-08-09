@@ -12,6 +12,7 @@ using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using Xunit;
+using System.Text.RegularExpressions;
 
 namespace NuGet.CommandLine.Test
 {
@@ -1904,6 +1905,132 @@ EndProject");
                 var bLibraryNames = bLibraries.Select(lib => lib.Name).ToList();
                 Assert.Contains("packageA", bLibraryNames);
                 Assert.Contains("packageB", bLibraryNames);
+            }
+        }
+
+        [Fact]
+        public void RestoreCommand_SourceLoggingFileSource()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                Directory.CreateDirectory(repositoryPath);
+                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
+                Util.CreateFile(workingPath, "packages.config",
+@"<packages>
+  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
+</packages>");
+
+                string[] args = new string[] { "restore", "-PackagesDirectory", "outputDir", "-Source", repositoryPath, "-Verbosity detailed" };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+                var packageFileA = Path.Combine(workingPath, @"outputDir\packageA.1.1.0\packageA.1.1.0.nupkg");
+                Assert.True(File.Exists(packageFileA));
+                Assert.Contains(" from source ", r.Item2); // source logging present in verbose log
+            }
+        }
+
+        [Fact]
+        public void RestoreCommand_SourceLoggingFromV3FeedNoGlobalPackageCache()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+            var source = @"https://api.nuget.org/v3/index.json";
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Overriding globalPackages folder
+                Util.CreateFile(workingPath, "nuget.config",
+@"<configuration> 
+  <config> 
+    <add key=""globalPackagesFolder"" value=""globalPackages"" /> 
+  </config> 
+</configuration>");
+                Util.CreateFile(workingPath, "packages.config",
+@"<packages>
+  <package id=""Newtonsoft.Json"" version=""7.0.1"" targetFramework=""net45"" />
+</packages>");
+
+                string[] args = new string[] { "restore", "-PackagesDirectory", "outputDir", "-Source ", source, "-Verbosity detailed" };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+                var packageFile = Path.Combine(workingPath, @"outputDir\newtonsoft.json.7.0.1\newtonsoft.json.7.0.1.nupkg");
+                Assert.True(File.Exists(packageFile));
+                Assert.Contains(" from source ", r.Item2); // source logging present in verbose log
+                
+                // verify sorce logging reported the correct source
+                var match = Regex.Match(r.Item2, @" from source '(.*)'");
+                Assert.True(match.Success);
+                Assert.Contains(source, match.Groups[1].Value);
+            }
+        }
+
+        [Fact]
+        public void RestoreCommand_SourceLoggingFromGlobalPackageCache()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Overriding globalPackages folder
+                Util.CreateFile(workingPath, "nuget.config",
+@"<configuration> 
+  <config> 
+    <add key=""globalPackagesFolder"" value=""globalPackages"" /> 
+  </config> 
+</configuration>");
+                Util.CreateFile(workingPath, "packages.config",
+@"<packages>
+  <package id=""Newtonsoft.Json"" version=""7.0.1"" targetFramework=""net45"" />
+</packages>");
+                var globalPackagesFolder = Path.Combine(workingPath, @"globalPackages");
+                // Prime Cache
+                string[] args1 = new string[] { "restore", "-PackagesDirectory", "primeOutputDir", "-Source https://api.nuget.org/v3/index.json", "-Verbosity detailed" };
+                CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args1),
+                    waitForExit: true);
+                //Verify primed
+                Assert.True(File.Exists(Path.Combine(globalPackagesFolder, @"newtonsoft.json\7.0.1\newtonsoft.json.7.0.1.nupkg")));
+
+                // Act
+                string[] args2 = new string[] { "restore", "-PackagesDirectory", "outputDir", "-Source https://api.nuget.org/v3/index.json", "-Verbosity detailed" };
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args2),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+                var packageFile = Path.Combine(workingPath, @"outputDir\newtonsoft.json.7.0.1\newtonsoft.json.7.0.1.nupkg");
+                Assert.True(File.Exists(packageFile));
+                Assert.Contains(" from source ", r.Item2); // source logging present in verbose log
+
+                //verify source logging reported the globalPacakges folder
+                var match = Regex.Match(r.Item2, @" from source '(.*)'");
+                Assert.True(match.Success);
+                Assert.Contains(globalPackagesFolder, match.Groups[1].Value);
             }
         }
     }
