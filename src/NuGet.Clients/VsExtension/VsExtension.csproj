@@ -321,24 +321,24 @@
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
   <Target Name="FindSourceVsixManifest">
     <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
-      <SourceVsixManifest Include="source.extension.dev14.vsixmanifest" />
+      <SourceVsixManifest Include="source.extension.vs14.vsixmanifest" />
     </ItemGroup>
     <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
-      <SourceVsixManifest Include="source.extension.dev15.vsixmanifest" />
+      <SourceVsixManifest Include="source.extension.vs15.vsixmanifest" />
     </ItemGroup>
   </Target>
   <ItemGroup>
     <VsixIncludeFile Include=".vsixinclude" />
   </ItemGroup>
   <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
-    <VsixIgnoreFile Include=".vsixignore.dev14" />
-    <None Include="source.extension.dev14.vsixmanifest">
+    <VsixIgnoreFile Include=".vsixignore.vs14" />
+    <None Include="source.extension.vs14.vsixmanifest">
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
   <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
-    <VsixIgnoreFile Include=".vsixignore.dev15" />
-    <None Include="source.extension.dev15.vsixmanifest">
+    <VsixIgnoreFile Include=".vsixignore.vs15" />
+    <None Include="source.extension.vs15.vsixmanifest">
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
