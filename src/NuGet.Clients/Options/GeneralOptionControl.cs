@@ -5,6 +5,10 @@ using System;
 using System.Diagnostics;
 using System.Windows.Forms;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Commands;
+using System.Collections.Generic;
+using System.IO;
+using NuGet.Configuration;
 
 namespace NuGet.Options
 {
@@ -98,5 +102,15 @@ namespace NuGet.Options
                 packageRestoreAutomaticCheckBox.Checked = false;
             }
         }
+
+        private void localsCommandButton_OnClick(object sender, EventArgs e)
+        {
+            var arguments = new List<string>();
+            arguments.Add("all");
+            var settings = ServiceLocator.GetInstance<ISettings>();
+            var localsCommandRunner = new LocalsCommandRunner(arguments , settings, clear:true, list:false);
+            localsCommandRunner.ExecuteCommand();
+        }
+
     }
 }
