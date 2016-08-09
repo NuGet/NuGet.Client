@@ -7,7 +7,7 @@ namespace NuGet.CommandLine.Test
     public class NuGetLocalsCommandTest
     {
         private const string LocalsHelpStringFragment =
-            "usage: NuGet locals <all | http-cache | packages-cache | global-packages | temp> [-clear | -list]";
+            "usage: NuGet locals <all | http-cache | global-packages | temp> [-clear | -list]";
 
         [Theory]
         [InlineData("locals")]
@@ -76,8 +76,8 @@ namespace NuGet.CommandLine.Test
 
         [Theory]
         [InlineData("http-cache")]
-        [InlineData("packages-cache")]
         [InlineData("global-packages")]
+        [InlineData("temp")]
         public void LocalsCommand_Success_ValidLocalResource_ListMessage(string args)
         {
             // Arrange & Act

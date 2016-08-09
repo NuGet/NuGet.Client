@@ -1,14 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Commands;
-using NuGet.Common;
-using NuGet.Configuration;
-
 
 namespace NuGet.CommandLine.Commands
 {
@@ -18,10 +13,6 @@ namespace NuGet.CommandLine.Commands
     public class LocalsCommand
         : Command
     {
-        private const string _httpCacheResourceName = "http-cache";
-        private const string _packagesCacheResourceName = "packages-cache";
-        private const string _globalPackagesResourceName = "global-packages";
-        private const string _tempResourceName = "temp";
 
         [Option(typeof(NuGetCommand), "LocalsCommandClearDescription")]
         public bool Clear { get; set; }
