@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using NuGet.Commands;
 using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 
@@ -30,13 +31,14 @@ namespace NuGet.PackageManagement
         /// </summary>
         public IReadOnlyList<SourceRepository> Sources { get; }
 
-        public BuildIntegratedProjectAction(PackageIdentity packageIdentity,
+        public BuildIntegratedProjectAction(NuGetProject project,
+            PackageIdentity packageIdentity,
             NuGetProjectActionType nuGetProjectActionType,
             LockFile originalLockFile,
             JObject updatedProjectJson,
             RestoreResult restoreResult,
             IReadOnlyList<SourceRepository> sources)
-            : base(packageIdentity, nuGetProjectActionType)
+            : base(packageIdentity, nuGetProjectActionType, project)
         {
             if (packageIdentity == null)
             {
@@ -80,12 +82,12 @@ namespace NuGet.PackageManagement
 
                 foreach (var package in added)
                 {
-                    actions.Add(NuGetProjectAction.CreateInstallProjectAction(package, sourceRepository: null));
+                    actions.Add(NuGetProjectAction.CreateInstallProjectAction(package, sourceRepository: null, project: Project));
                 }
 
                 foreach (var package in removed)
                 {
-                    actions.Add(NuGetProjectAction.CreateUninstallProjectAction(package));
+                    actions.Add(NuGetProjectAction.CreateUninstallProjectAction(package, Project));
                 }
             }
 

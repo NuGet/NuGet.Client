@@ -449,5 +449,63 @@ namespace NuGet.PackageManagement
 
             return closure;
         }
+
+        /// <summary>
+        /// Find the list of child projects direct or indirect references of target project in
+        /// reverse dependency order like the least dependent package first.
+        /// </summary>
+        public static async Task GetChildProjectsInClosure(BuildIntegratedNuGetProject target,
+            IList<BuildIntegratedNuGetProject> projects,
+            IList<BuildIntegratedNuGetProject> orderedChilds,
+            HashSet<string> uniqueProjectNames,
+            ExternalProjectReferenceContext referenceContext)
+        {
+            if (projects == null)
+            {
+                throw new ArgumentNullException(nameof(projects));
+            }
+
+            if (target == null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
+
+            if (orderedChilds == null)
+            {
+                orderedChilds = new List<BuildIntegratedNuGetProject>();
+            }
+
+            if (uniqueProjectNames == null)
+            {
+                uniqueProjectNames = new HashSet<string>();
+            }
+
+            uniqueProjectNames.Add(target.ProjectName);
+
+            if (!orderedChilds.Contains(target))
+            {
+                var closure = await target.GetProjectReferenceClosureAsync(referenceContext);
+
+                if (closure.Count > 0)
+                {
+                    foreach (var dependency in closure)
+                    {
+                        if (dependency.PackageSpecPath != null)
+                        {
+                            var depProject = projects.FirstOrDefault(
+                                proj =>
+                                    StringComparer.OrdinalIgnoreCase.Equals(proj.JsonConfigPath,
+                                        dependency.PackageSpecPath));
+
+                            if (depProject != null && !orderedChilds.Contains(depProject) && uniqueProjectNames.Add(depProject.ProjectName))
+                            {
+                                await GetChildProjectsInClosure(depProject, projects, orderedChilds, uniqueProjectNames, referenceContext);
+                            }
+                        }
+                    }
+                }
+                orderedChilds.Add(target);
+            }
+        }
     }
 }

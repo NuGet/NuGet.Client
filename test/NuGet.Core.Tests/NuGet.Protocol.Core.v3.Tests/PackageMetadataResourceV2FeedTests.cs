@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Test.Utility;
@@ -74,6 +75,57 @@ namespace NuGet.Protocol.Tests
 
             // Assert
             Assert.Equal(0, metadata.Count());
+        }
+
+        [Fact]
+        public async Task PackageMetadataResource_PackageIdentity()
+        {
+            // Arrange
+            var serviceAddress = TestUtility.CreateServiceAddress();
+
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "Packages(Id='WindowsAzure.Storage',Version='4.3.2-preview')",
+                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageGetPackages.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
+
+            var packageMetadataResource = await repo.GetResourceAsync<PackageMetadataResource>();
+
+            var packageIdentity = new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("4.3.2-preview"));
+
+            // Act
+            var metadata = await packageMetadataResource.GetMetadataAsync(packageIdentity, NullLogger.Instance, CancellationToken.None);
+
+            // Assert
+            Assert.Equal("WindowsAzure.Storage", metadata.Identity.Id);
+            Assert.Equal("4.3.2-preview", metadata.Identity.Version.ToNormalizedString());
+        }
+
+        [Fact]
+        public async Task PackageMetadataResource_PackageIdentity_NotFound()
+        {
+            // Arrange
+            var serviceAddress = TestUtility.CreateServiceAddress();
+
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "FindPackagesById()?id='WindowsAzure.Storage'",
+                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.NotFoundFindPackagesById.xml", GetType()));
+            responses.Add(serviceAddress + "Packages(Id='WindowsAzure.Storage',Version='0.0.0')",
+                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.NotFoundFindPackagesById.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
+
+            var packageMetadataResource = await repo.GetResourceAsync<PackageMetadataResource>();
+
+            var packageIdentity = new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("0.0.0"));
+
+            // Act
+            var metadata = await packageMetadataResource.GetMetadataAsync(packageIdentity, NullLogger.Instance, CancellationToken.None);
+
+            // Assert
+            Assert.Null(metadata);
         }
     }
 }

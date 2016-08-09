@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.Protocol.Core.v3.Tests
@@ -300,6 +302,93 @@ namespace NuGet.Protocol.Core.v3.Tests
                 Assert.Equal("sum", package.Summary);
                 Assert.Equal("a b c", package.Tags);
                 Assert.Equal("myTitle", package.Title);
+            }
+        }
+
+        [Fact]
+        public async Task LocalPackageMetadataResourceTests_GetMetadataAsync_PackageIdentity()
+        {
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var testLogger = new TestLogger();
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageA1 = new SimpleTestPackageContext()
+                {
+                    Id = "a",
+                    Version = "1.0.0",
+                    Dependencies = new List<SimpleTestPackageContext>() { packageX }
+                };
+
+                var packageContexts = new SimpleTestPackageContext[]
+                {
+                    packageA1,
+                    packageX
+                };
+
+                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+
+                var localResource = new FindLocalPackagesResourceV2(root);
+                var resource = new LocalPackageMetadataResource(localResource);
+
+                // Act
+                var result = await resource.GetMetadataAsync(
+                    new PackageIdentity("A", new NuGetVersion("1.0.0")),
+                    log: testLogger,
+                    token: CancellationToken.None);
+
+                // Assert
+                Assert.Equal("a", result.Identity.Id);
+                Assert.Equal("1.0.0", result.Identity.Version.ToFullString());
+            }
+        }
+
+        [Fact]
+        public async Task LocalPackageMetadataResourceTests_GetMetadataAsync_PackageIdentity_NotFound()
+        {
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var testLogger = new TestLogger();
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageA1 = new SimpleTestPackageContext()
+                {
+                    Id = "a",
+                    Version = "1.0.0",
+                    Dependencies = new List<SimpleTestPackageContext>() { packageX }
+                };
+
+                var packageContexts = new SimpleTestPackageContext[]
+                {
+                    packageA1,
+                    packageX
+                };
+
+                SimpleTestPackageUtility.CreatePackages(root, packageContexts);
+
+                var localResource = new FindLocalPackagesResourceV2(root);
+                var resource = new LocalPackageMetadataResource(localResource);
+
+                // Act
+                var result = await resource.GetMetadataAsync(
+                    new PackageIdentity("A", new NuGetVersion("2.0.0")),
+                    log: testLogger,
+                    token: CancellationToken.None);
+
+                // Assert
+                Assert.Null(result);
             }
         }
     }

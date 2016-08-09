@@ -33,6 +33,16 @@ namespace NuGet.Protocol
             return metadataList.Select(ParseMetadata);
         }
 
+        public override async Task<IPackageSearchMetadata> GetMetadataAsync(PackageIdentity package, Common.ILogger log, CancellationToken token)
+        {
+            var metadata = await _regResource.GetPackageMetadata(package, log, token);
+            if (metadata != null)
+            {
+                return ParseMetadata(metadata);
+            }
+            return null;
+        }
+
         private IPackageSearchMetadata ParseMetadata(JObject metadata)
         {
             var parsed = metadata.FromJToken<PackageSearchMetadata>();

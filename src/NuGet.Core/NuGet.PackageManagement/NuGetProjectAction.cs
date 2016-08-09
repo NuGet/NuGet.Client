@@ -3,6 +3,7 @@
 
 using System;
 using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement
@@ -44,7 +45,12 @@ namespace NuGet.PackageManagement
         /// </summary>
         public SourceRepository SourceRepository { get; private set; }
 
-        protected NuGetProjectAction(PackageIdentity packageIdentity, NuGetProjectActionType nuGetProjectActionType, SourceRepository sourceRepository = null)
+        /// <summary>
+        /// NugetProject for which the action is created
+        /// </summary>
+        public NuGetProject Project { get; private set; }
+
+        protected NuGetProjectAction(PackageIdentity packageIdentity, NuGetProjectActionType nuGetProjectActionType, NuGetProject project, SourceRepository sourceRepository = null)
         {
             if (packageIdentity == null)
             {
@@ -54,16 +60,17 @@ namespace NuGet.PackageManagement
             PackageIdentity = packageIdentity;
             NuGetProjectActionType = nuGetProjectActionType;
             SourceRepository = sourceRepository;
+            Project = project;
         }
 
-        public static NuGetProjectAction CreateInstallProjectAction(PackageIdentity packageIdentity, SourceRepository sourceRepository)
+        public static NuGetProjectAction CreateInstallProjectAction(PackageIdentity packageIdentity, SourceRepository sourceRepository, NuGetProject project)
         {
-            return new NuGetProjectAction(packageIdentity, NuGetProjectActionType.Install, sourceRepository);
+            return new NuGetProjectAction(packageIdentity, NuGetProjectActionType.Install, project, sourceRepository);
         }
 
-        public static NuGetProjectAction CreateUninstallProjectAction(PackageIdentity packageIdentity)
+        public static NuGetProjectAction CreateUninstallProjectAction(PackageIdentity packageIdentity, NuGetProject project)
         {
-            return new NuGetProjectAction(packageIdentity, NuGetProjectActionType.Uninstall);
+            return new NuGetProjectAction(packageIdentity, NuGetProjectActionType.Uninstall, project, null);
         }
     }
 }
