@@ -347,6 +347,10 @@ namespace NuGet.Commands
 
             _logger.LogVerbose(Strings.Log_ScanningForRuntimeJson);
             runtimeGraph = RuntimeGraph.Empty;
+
+            // maintain visited nodes to avoid duplicate runtime graph for the same node
+            var visitedNodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
             graph.Graphs.ForEach(node =>
             {
                 var match = node?.Item?.Data?.Match;
@@ -357,6 +361,12 @@ namespace NuGet.Commands
 
                 // Ignore runtime.json from rejected nodes
                 if (node.Disposition == Disposition.Rejected)
+                {
+                    return;
+                }
+
+                // ignore the same node again
+                if (!visitedNodes.Add(match.Library.Name))
                 {
                     return;
                 }
