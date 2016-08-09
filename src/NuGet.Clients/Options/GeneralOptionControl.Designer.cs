@@ -34,6 +34,7 @@
             this.packageRestoreConsentCheckBox = new System.Windows.Forms.CheckBox();
             this.packageRestoreAutomaticCheckBox = new System.Windows.Forms.CheckBox();
             this.BindingRedirectsHeader = new System.Windows.Forms.Label();
+            this.localsCommandButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // skipBindingRedirects
@@ -65,6 +66,14 @@
             resources.ApplyResources(this.BindingRedirectsHeader, "BindingRedirectsHeader");
             this.BindingRedirectsHeader.Name = "BindingRedirectsHeader";
             // 
+            // localsCommandButton
+            // 
+            resources.ApplyResources(this.localsCommandButton, "localsCommandButton");
+            this.localsCommandButton.Name = "localsCommandButton";
+            this.localsCommandButton.AutoSize = true;
+            this.localsCommandButton.Text = "Clear NuGet Cache";
+            this.localsCommandButton.Click += new System.EventHandler(this.localsCommandButton_OnClick);
+            // 
             // GeneralOptionControl
             // 
             resources.ApplyResources(this, "$this");
@@ -74,9 +83,15 @@
             this.Controls.Add(this.PackageRestoreHeader);
             this.Controls.Add(this.packageRestoreConsentCheckBox);
             this.Controls.Add(this.packageRestoreAutomaticCheckBox);
+            this.Controls.Add(this.localsCommandButton);
             this.Name = "GeneralOptionControl";
             this.ResumeLayout(false);
             this.PerformLayout();
+
+        }
+
+        private void executeLocals()
+        {
 
         }
 
@@ -87,5 +102,6 @@
         private System.Windows.Forms.CheckBox packageRestoreConsentCheckBox;
         private System.Windows.Forms.CheckBox packageRestoreAutomaticCheckBox;
         private System.Windows.Forms.Label BindingRedirectsHeader;
+        private System.Windows.Forms.Button localsCommandButton;
     }
 }
