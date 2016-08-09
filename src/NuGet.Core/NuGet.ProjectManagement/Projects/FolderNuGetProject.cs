@@ -138,6 +138,7 @@ namespace NuGet.ProjectManagement
                     nuGetProjectContext.Log(MessageLevel.Info, Strings.AddedPackageToFolder, packageIdentity, Path.GetFullPath(Root));
 
                     // Extra logging with source for verbosity detailed
+                    // Used by external tool CoreXT to track package provenance
                     if (!string.IsNullOrEmpty(downloadResourceResult.PackageSource))
                     {
                         nuGetProjectContext.Log(MessageLevel.Debug, Strings.AddedPackageToFolderFromSource, packageIdentity, Path.GetFullPath(Root), downloadResourceResult.PackageSource);
