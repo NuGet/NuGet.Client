@@ -21,7 +21,7 @@ test_script:
     } -ev +TestErrors
 
     Invoke-BuildStep 'Running NuGet.Clients tests - Dev14 dependencies' {
-      Test-ClientsProjects -Configuration Release -MSBuildVersion "14"
+      Test-ClientsProjects -Configuration Release -MSBuildVersion "14" -SkipProjects 'NuGet.CommandLine.Test'
     } -ev +TestErrors
 
     if ($TestErrors) {

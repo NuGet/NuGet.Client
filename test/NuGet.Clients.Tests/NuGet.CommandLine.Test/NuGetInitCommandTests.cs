@@ -547,18 +547,11 @@ namespace NuGet.CommandLine.Test
             var invalidPath = "foo|<>|bar";
             using (var testInfo = new TestInfo(invalidPath, TestFileSystemUtility.CreateRandomTestFolder()))
             {
-                var args = new string[]
-                {
-                    "init",
-                    testInfo.SourceFeed,
-                    testInfo.DestinationFeed,
-                };
-
                 // Act
                 var result = CommandRunner.Run(
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
-                    string.Join(" ", args),
+                    $"init \"{testInfo.SourceFeed}\" \"{testInfo.DestinationFeed}\"",
                     waitForExit: true);
 
                 // Assert
@@ -574,18 +567,11 @@ namespace NuGet.CommandLine.Test
             var invalidPath = "foo|<>|bar";
             using (var testInfo = new TestInfo(TestFileSystemUtility.CreateRandomTestFolder(), invalidPath))
             {
-                var args = new string[]
-                {
-                    "init",
-                    testInfo.SourceFeed,
-                    testInfo.DestinationFeed,
-                };
-
                 // Act
                 var result = CommandRunner.Run(
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
-                    string.Join(" ", args),
+                    $"init \"{testInfo.SourceFeed}\" \"{testInfo.DestinationFeed}\"",
                     waitForExit: true);
 
                 // Assert

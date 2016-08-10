@@ -18,8 +18,10 @@
     }
   },
   "dependencies": {
-    "xunit": "2.1.0",
-    "Microsoft.VisualStudio.ProjectSystem.Interop": "1.0.0-*",
+    "Microsoft.VisualStudio.ProjectSystem.Interop":{
+      "type": "build",
+      "version": "1.0.0-*"
+    },
     "NuGet.PackageManagement": {
       "target": "project"
     },
@@ -28,7 +30,8 @@
     },
     "NuGet.Test.Utility": {
       "target": "project"
-    }
+    },
+    "xunit": "2.1.0"
   },
   "frameworks": {
     "net45": {

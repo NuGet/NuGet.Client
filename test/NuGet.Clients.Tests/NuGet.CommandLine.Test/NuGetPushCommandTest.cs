@@ -275,16 +275,15 @@ namespace NuGet.CommandLine.Test
                     server.Start();
 
                     // Act
-                    string[] args = new string[] { "push", packageFileName, "-Source", server.Uri + "push" };
                     var result = CommandRunner.Run(
                                     nugetexe,
                                     Directory.GetCurrentDirectory(),
-                                    string.Join(" ", args),
+                                    $"push {packageFileName} -Source {server.Uri}push",
                                     true);
                     server.Stop();
 
                     // Assert
-                    Assert.Equal(0, result.Item1);
+                    Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
                     var output = result.Item2;
                     Assert.Contains("Your package was pushed.", output);
                     AssertFileEqual(packageFileName, outputFileName);
@@ -600,7 +599,7 @@ namespace NuGet.CommandLine.Test
 
         // Regression test for the bug that "nuget.exe push" will retry forever instead of asking for
         // user's password when NuGet.Server uses Windows Authentication.
-        [Fact(Skip = "TODO: reconstruct faked response headers which won't crash HttpClient. " + 
+        [Fact(Skip = "TODO: reconstruct faked response headers which won't crash HttpClient. " +
             "Using real serevr, same sceanrio works fine")]
         public void PushCommand_PushToServerWontRetryForever()
         {
@@ -1367,24 +1366,16 @@ namespace NuGet.CommandLine.Test
                     serverV3.Start();
 
                     // Act
-                    string[] args = new string[]
-                    {
-                            "push",
-                            packageFileName,
-                            "-Source",
-                            serverV3.Uri + "index.json"
-                    };
-
                     var result = CommandRunner.Run(
                                     nugetexe,
                                     Directory.GetCurrentDirectory(),
-                                    string.Join(" ", args),
+                                    $"push {packageFileName} -Source {serverV3.Uri}index.json",
                                     true);
 
                     serverV3.Stop();
 
                     // Assert
-                    Assert.True(result.Item1 == 1, result.Item2 + " " + result.Item3);
+                    Assert.True(1 == result.Item1, $"{result.Item2} {result.Item3}");
 
                     var expectedOutput =
                         string.Format(
@@ -1491,20 +1482,10 @@ namespace NuGet.CommandLine.Test
                     server.Start();
 
                     // Act
-                    var args = new [] 
-                    {
-                        "push",
-                        packageFileName,
-                        testApiKey,
-                        "-Source",
-                        server.Uri + "nuget",
-                        "-NonInteractive"
-                    };
-
                     var result = CommandRunner.Run(
                         NuGetExePath,
                         Directory.GetCurrentDirectory(),
-                        string.Join(" ", args),
+                        $"push {packageFileName} {testApiKey} -Source {server.Uri}nuget -NonInteractive",
                         waitForExit: true);
 
                     server.Stop();

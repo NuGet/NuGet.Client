@@ -227,7 +227,7 @@ namespace NuGet.CommandLine.Test
                     "-OutputDirectory",
                     "outputDir",
                     "-Source",
-                    repositoryPath
+                    $"\"{repositoryPath}\""
                 };
 
                 // Act
@@ -238,7 +238,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.True(0 == r.Item1, $"{r.Item2} {r.Item3}");
                 var packageFileA = Path.Combine(workingPath, @"outputDir\packageA.1.1.0\packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, @"outputDir\packageB.2.2.0\packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
@@ -300,7 +300,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(packageFileB));
             }
         }
-        
+
         public void InstallCommand_PackageSaveModeNuspec()
         {
             using (var source = TestFileSystemUtility.CreateRandomTestFolder())
@@ -330,7 +330,7 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(0, nupkgFiles.Length);
             }
         }
-        
+
         public void InstallCommand_PackageSaveModeNupkg()
         {
             using (var source = TestFileSystemUtility.CreateRandomTestFolder())
@@ -360,7 +360,7 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(0, nuspecFiles.Length);
             }
         }
-        
+
         public void InstallCommand_PackageSaveModeNuspecNupkg()
         {
             using (var source = TestFileSystemUtility.CreateRandomTestFolder())

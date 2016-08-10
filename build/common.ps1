@@ -559,17 +559,20 @@ Function Test-ClientsProjects {
     [CmdletBinding()]
     param(
         [string]$Configuration = $DefaultConfiguration,
-        [string]$MSBuildVersion = $DefaultMSBuildVersion
+        [string]$MSBuildVersion = $DefaultMSBuildVersion,
+        [string[]]$SkipProjects
     )
 
-    # We don't run command line tests on VS15 as we don't build a nuget.exe for this version
-    $testProjectsLocation = Join-Path $NuGetClientRoot test\NuGet.Clients.Tests
-    $testProjects = Get-ChildItem $testProjectsLocation -Recurse -Filter '*.csproj' |
-        %{ $_.FullName } |
-        ?{ -not $_.EndsWith('WebAppTest.csproj') -and
-           -not ($_.EndsWith('NuGet.CommandLine.Test.csproj') -and ($MSBuildVersion -eq '15'))}
+    if (-not $SkipProjects) {
+        $SkipProjects = @()
+    }
 
-    $testProjects | Test-ClientProject -Configuration $Configuration -MSBuildVersion $MSBuildVersion
+    $ExcludeFilter = ('WebAppTest', $SkipProjects) | %{ "$_.csproj" }
+    $TestProjectsLocation = Join-Path $NuGetClientRoot test\NuGet.Clients.Tests -Resolve
+    $TestProjects = Get-ChildItem $TestProjectsLocation -Recurse -Filter '*.csproj' -Exclude $ExcludeFilter |
+        %{ $_.FullName }
+
+    $TestProjects | Test-ClientProject -Configuration $Configuration -MSBuildVersion $MSBuildVersion
 }
 
 Function Test-ClientProject {

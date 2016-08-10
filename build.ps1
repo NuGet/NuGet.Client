@@ -144,7 +144,8 @@ Invoke-BuildStep 'Running NuGet.Core tests' {
 
 Invoke-BuildStep 'Running NuGet.Clients tests - VS15 dependencies' {
         param($Configuration)
-        Test-ClientsProjects -Configuration $Configuration -MSBuildVersion "15"
+        # We don't run command line tests on VS15 as we don't build a nuget.exe for this version
+        Test-ClientsProjects -Configuration $Configuration -MSBuildVersion "15" -SkipProjects 'NuGet.CommandLine.Test'
     } `
     -args $Configuration `
     -skip:((-not $RunTests) -or $SkipVS15) `
