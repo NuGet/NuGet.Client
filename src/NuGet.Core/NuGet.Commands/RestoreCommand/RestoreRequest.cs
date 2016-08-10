@@ -20,6 +20,9 @@ namespace NuGet.Commands
         public static readonly int DefaultDegreeOfConcurrency = 16;
         private readonly bool _disposeProviders;
 
+        /// <summary>
+        /// This overload should only be used by tests.
+        /// </summary>
         public RestoreRequest(
             PackageSpec project,
             IEnumerable<PackageSource> sources,
@@ -34,6 +37,9 @@ namespace NuGet.Commands
         {
         }
 
+        /// <summary>
+        /// This overload should only be used by tests.
+        /// </summary>
         public RestoreRequest(
             PackageSpec project,
             IEnumerable<PackageSource> sources,
@@ -48,23 +54,30 @@ namespace NuGet.Commands
                   log)
         {
         }
-
+        
+        /// <summary>
+        /// This overload should only be used by tests.
+        /// </summary>
         public RestoreRequest(
             PackageSpec project,
             IEnumerable<SourceRepository> sources,
             string packagesDirectory,
             IEnumerable<string> fallbackPackageFolders,
-            ILogger log)
-            : this(project,
-                  RestoreCommandProviders.Create(packagesDirectory,
-                    fallbackPackageFolders,
-                    sources,
-                    new SourceCacheContext(),
-                    log),
-                  log)
+            ILogger log) : this(
+                project,
+                RestoreCommandProviders.Create(
+                    packagesDirectory,
+                    fallbackPackageFolderPaths: fallbackPackageFolders,
+                    sources: sources,
+                    cacheContext: new SourceCacheContext(),
+                    log: log),
+                log)
         {
         }
 
+        /// <summary>
+        /// This overload should only be used by tests.
+        /// </summary>
         public RestoreRequest(
             PackageSpec project,
             RestoreCommandProviders dependencyProviders,
@@ -100,6 +113,7 @@ namespace NuGet.Commands
             CompatibilityProfiles = new HashSet<FrameworkRuntimePair>();
 
             PackagesDirectory = dependencyProviders.GlobalPackages.RepositoryRoot;
+            IsLowercasePackagesDirectory = true;
 
             Log = log;
 
@@ -119,6 +133,12 @@ namespace NuGet.Commands
         /// The directory in which to install packages
         /// </summary>
         public string PackagesDirectory { get; }
+
+        /// <summary>
+        /// Whether or not packages written and read from the global packages directory has
+        /// lowercase ID and version folder names or original case.
+        /// </summary>
+        public bool IsLowercasePackagesDirectory { get; set; }
 
         /// <summary>
         /// A list of projects provided by external build systems (i.e. MSBuild)

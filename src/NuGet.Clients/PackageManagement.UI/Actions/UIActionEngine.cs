@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
@@ -227,7 +226,7 @@ namespace NuGet.PackageManagement.UI
                 // Warn about the fact that the "dotnet" TFM is deprecated.
                 if (uiService.DisplayDeprecatedFrameworkWindow)
                 {
-                    var shouldContinue = WarnAboutDotnetDeprecation(uiService, actions, token);
+                    var shouldContinue = ShouldContinueDueToDotnetDeprecation(uiService, actions, token);
                     if (!shouldContinue)
                     {
                         return;
@@ -302,39 +301,12 @@ namespace NuGet.PackageManagement.UI
         /// Warns the user about the fact that the dotnet TFM is deprecated.
         /// </summary>
         /// <returns>Returns true if the user wants to ignore the warning or if the warning does not apply.</returns>
-        private bool WarnAboutDotnetDeprecation(
+        private bool ShouldContinueDueToDotnetDeprecation(
             INuGetUI uiService,
             IEnumerable<ResolvedAction> actions,
             CancellationToken token)
         {
-            var projects = new HashSet<NuGetProject>();
-
-            foreach (var action in actions)
-            {
-                var buildIntegrationAction = action.Action as BuildIntegratedProjectAction;
-
-                if (buildIntegrationAction == null || buildIntegrationAction.RestoreResult.Success)
-                {
-                    continue;
-                }
-
-                // Get all failed compatibility check results.
-                var incompatible = buildIntegrationAction
-                    .RestoreResult
-                    .CompatibilityCheckResults
-                    .Where(result => !result.Success && result.Issues.Any());
-
-                // Only focus on compatibility check results when restoring for "dotnet".
-                var anyIncompatibleDotnet = incompatible.Any(result => string.Equals(
-                    result.Graph.Framework.Framework,
-                    FrameworkConstants.FrameworkIdentifiers.NetPlatform,
-                    StringComparison.OrdinalIgnoreCase));
-
-                if (anyIncompatibleDotnet)
-                {
-                    projects.Add(action.Project);
-                }
-            }
+            var projects = DotnetDeprecatedPrompt.GetAffectedProjects(actions);
 
             if (projects.Any())
             {

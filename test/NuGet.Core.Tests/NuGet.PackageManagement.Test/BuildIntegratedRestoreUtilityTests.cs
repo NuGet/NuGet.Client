@@ -302,7 +302,7 @@ namespace NuGet.Test
                 var packageFolders = new List<string>() { packagesFolder };
 
                 // Act
-                var b = await BuildIntegratedRestoreUtility.IsRestoreRequired(projects, packageFolders, context);
+                var b = BuildIntegratedRestoreUtility.IsRestoreRequired(projects, packageFolders, context);
 
                 // Assert
                 Assert.True(b);
@@ -366,7 +366,7 @@ namespace NuGet.Test
                 var context = GetExternalProjectReferenceContext();
 
                 // Act
-                var b = await BuildIntegratedRestoreUtility.IsRestoreRequired(projects, packageFolders, context);
+                var b = BuildIntegratedRestoreUtility.IsRestoreRequired(projects, packageFolders, context);
 
                 // Assert
                 Assert.True(b);
@@ -427,7 +427,7 @@ namespace NuGet.Test
                 // Act
                 TestFileSystemUtility.DeleteRandomTestFolder(pathToDelete);
 
-                var b = await BuildIntegratedRestoreUtility.IsRestoreRequired(projects, packageFolders, context);
+                var b = BuildIntegratedRestoreUtility.IsRestoreRequired(projects, packageFolders, context);
 
                 // Assert
                 Assert.True(b);
@@ -483,7 +483,7 @@ namespace NuGet.Test
                 var context = GetExternalProjectReferenceContext();
 
                 // Act
-                var b = await BuildIntegratedRestoreUtility.IsRestoreRequired(projects, packageFolders, context);
+                var b = BuildIntegratedRestoreUtility.IsRestoreRequired(projects, packageFolders, context);
 
                 // Assert
                 Assert.False(b);
@@ -539,7 +539,7 @@ namespace NuGet.Test
                 var context = GetExternalProjectReferenceContext();
 
                 // Act
-                var b = await BuildIntegratedRestoreUtility.IsRestoreRequired(projects, packageFolders, context);
+                var b = BuildIntegratedRestoreUtility.IsRestoreRequired(projects, packageFolders, context);
 
                 // Assert
                 Assert.False(b);
@@ -596,7 +596,7 @@ namespace NuGet.Test
                 var context = GetExternalProjectReferenceContext();
 
                 // Act
-                var b = await BuildIntegratedRestoreUtility.IsRestoreRequired(projects, packageFolders, context);
+                var b = BuildIntegratedRestoreUtility.IsRestoreRequired(projects, packageFolders, context);
 
                 // Assert
                 Assert.False(b);
@@ -665,7 +665,7 @@ namespace NuGet.Test
                 var context = GetExternalProjectReferenceContext();
 
                 // Act
-                var b = await BuildIntegratedRestoreUtility.IsRestoreRequired(projects, packageFolders, context);
+                var b = BuildIntegratedRestoreUtility.IsRestoreRequired(projects, packageFolders, context);
 
                 // Assert
                 Assert.False(b);

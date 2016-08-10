@@ -79,6 +79,42 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Would you like to continue with the project action(s) anyways?.
+        /// </summary>
+        internal static string Cmdlet_DeprecatedFrameworkContinue {
+            get {
+                return ResourceManager.GetString("Cmdlet_DeprecatedFrameworkContinue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Do not continue with the project action(s).
+        /// </summary>
+        internal static string Cmdlet_DeprecatedFrameworkNoHelp {
+            get {
+                return ResourceManager.GetString("Cmdlet_DeprecatedFrameworkNoHelp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Continue with the project action(s) and do not prompt for confirmation again.
+        /// </summary>
+        internal static string Cmdlet_DeprecatedFrameworkYesDoNotPromptAgainHelp {
+            get {
+                return ResourceManager.GetString("Cmdlet_DeprecatedFrameworkYesDoNotPromptAgainHelp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Continue with the project action(s).
+        /// </summary>
+        internal static string Cmdlet_DeprecatedFrameworkYesHelp {
+            get {
+                return ResourceManager.GetString("Cmdlet_DeprecatedFrameworkYesHelp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Stop to display more packages.
         /// </summary>
         internal static string Cmdlet_DisplayMorePackagesNoHelp {
@@ -471,6 +507,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         internal static string Cmdlet_YesAll {
             get {
                 return ResourceManager.GetString("Cmdlet_YesAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Yes and &amp;Ignore future warnings.
+        /// </summary>
+        internal static string Cmdlet_YesDoNotPromptAgain {
+            get {
+                return ResourceManager.GetString("Cmdlet_YesDoNotPromptAgain", resourceCulture);
             }
         }
     }

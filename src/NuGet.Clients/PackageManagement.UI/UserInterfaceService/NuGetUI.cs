@@ -22,7 +22,6 @@ namespace NuGet.PackageManagement.UI
     {
         private readonly INuGetUIContext _context;
         public const string LogEntrySource = "NuGet Package Manager";
-        private const string DotnetDeprecationUrl = "https://aka.ms/rugr4c";
 
         public NuGetUI(
             INuGetUIContext context,
@@ -54,10 +53,7 @@ namespace NuGet.PackageManagement.UI
         {
             var window = new DeprecatedFrameworkWindow(_context)
             {
-                DataContext = new DeprecatedFrameworkModel(
-                    FrameworkConstants.CommonFrameworks.DotNet,
-                    DotnetDeprecationUrl,
-                    projects)
+                DataContext = DotnetDeprecatedPrompt.GetDeprecatedFrameworkModel(projects)
             };
 
             var dialogResult = window.ShowModal();

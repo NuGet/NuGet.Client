@@ -23,16 +23,11 @@ namespace NuGet.PackageManagement.UI
         private readonly SourceRepository _localRepository;
         private readonly IEnumerable<SourceRepository> _globalLocalRepositories;
         private readonly Common.ILogger _logger;
-        private readonly NuGetProject[] _projects;
-        private readonly bool _isSolution;
-        private IEnumerable<Packaging.PackageReference> _packageReferences;
 
         public MultiSourcePackageMetadataProvider(
             IEnumerable<SourceRepository> sourceRepositories,
             SourceRepository optionalLocalRepository,
             IEnumerable<SourceRepository> optionalGlobalLocalRepositories,
-            NuGetProject[] projects,
-            bool isSolution,
             Common.ILogger logger)
         {
             if (sourceRepositories == null)
@@ -40,24 +35,17 @@ namespace NuGet.PackageManagement.UI
                 throw new ArgumentNullException(nameof(sourceRepositories));
             }
 
-            if (projects == null)
-            {
-                throw new ArgumentNullException(nameof(projects));
-            }
             _sourceRepositories = sourceRepositories;
 
             _localRepository = optionalLocalRepository;
 
             _globalLocalRepositories = optionalGlobalLocalRepositories;
 
-            _projects = projects;
-
-            _isSolution = isSolution;
-
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
             }
+
             _logger = logger;
         }
 
@@ -87,33 +75,24 @@ namespace NuGet.PackageManagement.UI
                 asyncValueFactory: () => MergeVersionsAsync(identity, completed));
         }
 
-        public async Task<IPackageSearchMetadata> GetLatestPackageMetadataAsync(PackageIdentity identity,
-            bool includePrerelease, CancellationToken cancellationToken)
+        public async Task<IPackageSearchMetadata> GetLatestPackageMetadataAsync(
+            PackageIdentity identity,
+            NuGetProject project,
+            bool includePrerelease, 
+            CancellationToken cancellationToken)
         {
-            VersionRange allowedVersions = VersionRange.All;
+            // get all package references for all the projects and cache locally
+            var packageReferences = await project.GetInstalledPackagesAsync(cancellationToken);
 
-            // at this time, allowed version range should be applied at project level. 
-            // For solution level, we will apply allowed version range for all the selected projects in detail control model
-            if (!_isSolution)
-            {
-                if (_packageReferences == null)
-                {
-                    // get all package references for all the projects and cache locally
-                    var packageReferencesTasks = _projects.Select(project => project.GetInstalledPackagesAsync(cancellationToken));
-                    _packageReferences = (await Task.WhenAll(packageReferencesTasks)).SelectMany(p => p).Where(p => p != null);
-                }
+            // filter package references for current package identity
+            var matchedPackageReferences = packageReferences
+                .Where(r => StringComparer.OrdinalIgnoreCase.Equals(r.PackageIdentity.Id, identity.Id));
 
-                // filter package references for current package identity
-                var matchedPackageReferences = _packageReferences.Where(r => StringComparer.OrdinalIgnoreCase.Equals(r.PackageIdentity.Id, identity.Id));
-
-                // Allowed version range for current package across all selected projects
-                var allowedVersionsRange = matchedPackageReferences.Select(r => r.AllowedVersions).Where(v => v != null).ToArray();
-
-                if (allowedVersionsRange.Length > 0)
-                {                    
-                    allowedVersions = allowedVersionsRange[0];
-                }
-            }
+            // Allowed version range for current package across all selected projects
+            // Picks the first non-default range
+            var allowedVersions = matchedPackageReferences
+                .Select(r => r.AllowedVersions)
+                .FirstOrDefault(v => v != null) ?? VersionRange.All;
 
             var tasks = _sourceRepositories
                 .Select(r => r.GetLatestPackageMetadataAsync(identity.Id, includePrerelease, cancellationToken, allowedVersions))
@@ -134,7 +113,11 @@ namespace NuGet.PackageManagement.UI
                 asyncValueFactory: () => MergeVersionsAsync(identity, completed));
         }
 
-        public async Task<IEnumerable<IPackageSearchMetadata>> GetPackageMetadataListAsync(string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken cancellationToken)
+        public async Task<IEnumerable<IPackageSearchMetadata>> GetPackageMetadataListAsync(
+            string packageId,
+            bool includePrerelease,
+            bool includeUnlisted,
+            CancellationToken cancellationToken)
         {
             var tasks = _sourceRepositories
                 .Select(r => r.GetPackageMetadataListAsync(packageId, includePrerelease, includeUnlisted, cancellationToken))
@@ -147,7 +130,14 @@ namespace NuGet.PackageManagement.UI
             var completed = (await Task.WhenAll(tasks))
                 .Where(m => m != null);
 
-            return completed.SelectMany(p => p);
+            var packages = completed.SelectMany(p => p);
+
+            var uniquePackages = packages
+                .GroupBy(
+                    m => m.Identity.Version,
+                    (v, ms) => ms.First());
+
+            return uniquePackages;
         }
 
         /// <summary>

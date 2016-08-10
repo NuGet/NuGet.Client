@@ -63,29 +63,29 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PackageManagement.PowerShellCmdlets\PackageManagement.PowerShellCmdlets.csproj">
+    <ProjectReference Include="..\PackageManagement.PowerShellCmdlets\NuGet.PackageManagement.PowerShellCmdlets.csproj">
       <Project>{26dc17ac-a390-4515-a2c0-07a0950036c5}</Project>
-      <Name>PackageManagement.PowerShellCmdlets</Name>
+      <Name>NuGet.PackageManagement.PowerShellCmdlets</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PackageManagement.UI\PackageManagement.UI.csproj">
+    <ProjectReference Include="..\PackageManagement.UI\NuGet.PackageManagement.UI.csproj">
       <Project>{538adefd-2170-40a9-a2c5-ec8369cfe490}</Project>
-      <Name>PackageManagement.UI</Name>
+      <Name>NuGet.PackageManagement.UI</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PackageManagement.VisualStudio\PackageManagement.VisualStudio.csproj">
+    <ProjectReference Include="..\PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj">
       <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
-      <Name>PackageManagement.VisualStudio</Name>
+      <Name>NuGet.PackageManagement.VisualStudio</Name>
     </ProjectReference>
-    <ProjectReference Include="..\VsConsole\Console.Types\Console.Types.csproj">
+    <ProjectReference Include="..\VsConsole\Console.Types\NuGet.Console.Types.csproj">
       <Project>{6fd11460-39a3-4a10-ba63-7541b0a7d053}</Project>
-      <Name>Console.Types</Name>
+      <Name>NuGet.Console.Types</Name>
     </ProjectReference>
-    <ProjectReference Include="..\VsConsole\PowerShellHostProvider\PowerShellHostProvider.csproj">
+    <ProjectReference Include="..\VsConsole\PowerShellHostProvider\NuGetConsole.Host.PowerShellProvider.csproj">
       <Project>{a5e7aeb3-738f-4c39-a459-00f90483b2fe}</Project>
-      <Name>PowerShellHostProvider</Name>
+      <Name>NuGetConsole.Host.PowerShellProvider</Name>
     </ProjectReference>
-    <ProjectReference Include="..\VsConsole\PowerShellHost\PowerShellHost.csproj">
+    <ProjectReference Include="..\VsConsole\PowerShellHost\NuGetConsole.Host.PowerShell.csproj">
       <Project>{5a79eef3-51c0-4a14-8d37-50ef38ad835d}</Project>
-      <Name>PowerShellHost</Name>
+      <Name>NuGetConsole.Host.PowerShell</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

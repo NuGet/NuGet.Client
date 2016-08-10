@@ -249,7 +249,7 @@ function Test-GetProjectForDNXClassLibrary
 {
 	param($context)
 
-	if ((Get-VSVersion) -eq '14.0') {
+	if ((Get-VSVersion) -ge '14.0') {
 		# Arrange
 		$p1 = New-DNXClassLibrary
 

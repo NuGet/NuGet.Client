@@ -3,10 +3,15 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using NuGet.CommandLine.XPlat;
+using NuGet.Commands;
+using NuGet.LibraryModel;
 using NuGet.Packaging;
+using NuGet.ProjectModel;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.XPlat.FuncTest
@@ -335,6 +340,105 @@ namespace NuGet.XPlat.FuncTest
                 Assert.Equal(1, exitCode);
                 Assert.Equal(1, log.Errors);
                 Assert.Contains(fallbackDir1, log.ShowErrors());
+            }
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task Restore_RespectsLegacyPackagesDirectorySwitch(bool useSwitch)
+        {
+            using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var specPath = Path.Combine(projectDir, "XPlatRestoreTests", "project.json");
+                var spec = XPlatTestUtils.BasicConfigNetCoreApp;
+
+                var packageAId = "PackageA";
+                var packageBId = "PackageB";
+                var packageAVersion = "1.0.0-Beta";
+                var packageBVersion = "2.0.0-Beta";
+
+                XPlatTestUtils.AddDependency(spec, packageAId, packageAVersion);
+                XPlatTestUtils.AddDependency(spec, packageBId, packageBVersion);
+                XPlatTestUtils.WriteJson(spec, specPath);
+
+                var packageA = new SimpleTestPackageContext(packageAId, packageAVersion);
+                var packageB = new SimpleTestPackageContext(packageBId, packageBVersion);
+                
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    sourceDir,
+                    PackageSaveMode.Defaultv3,
+                    packageA,
+                    packageB);
+
+                var log = new TestCommandOutputLogger();
+
+                var config = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <config>
+        <add key=""globalPackagesFolder"" value=""{packagesDir}"" />
+    </config>
+    <packageSources>
+        <add key=""a"" value=""{sourceDir}"" />
+    </packageSources>
+</configuration>";
+
+                File.WriteAllText(Path.Combine(projectDir, "NuGet.Config"), config);
+
+                var args = new List<string>
+                {
+                    "restore",
+                    projectDir
+                };
+
+                if (useSwitch)
+                {
+                    args.Add("--legacy-packages-directory");
+                }
+
+                // Act
+                var exitCode = Program.MainInternal(args.ToArray(), log);
+
+                // Assert
+                Assert.Equal(0, exitCode);
+                Assert.Equal(0, log.Errors);
+                Assert.Equal(0, log.Warnings);
+
+                var resolver = new VersionFolderPathResolver(packagesDir, isLowercase: !useSwitch);
+                
+                Assert.True(File.Exists(resolver.GetPackageFilePath(packageAId, NuGetVersion.Parse(packageAVersion))));
+                Assert.True(File.Exists(resolver.GetPackageFilePath(packageBId, NuGetVersion.Parse(packageBVersion))));
+
+                // The switch results in both cases being restored.
+                if (useSwitch)
+                {
+                    var lowercaseResolver = new VersionFolderPathResolver(packagesDir, isLowercase: true);
+                    Assert.True(File.Exists(lowercaseResolver.GetPackageFilePath(packageAId, NuGetVersion.Parse(packageAVersion))));
+                    Assert.True(File.Exists(lowercaseResolver.GetPackageFilePath(packageBId, NuGetVersion.Parse(packageBVersion))));
+                }
+
+                // Verify the lock file has the correct path.
+                var lockFileFormat = new LockFileFormat();
+                var lockFilePath = Path.ChangeExtension(specPath, "lock.json");
+                var lockFile = lockFileFormat.Read(lockFilePath);
+
+                var packageALibrary = lockFile.Libraries.FirstOrDefault(l => l.Name == packageAId);
+                Assert.NotNull(packageALibrary);
+                Assert.Equal(packageAVersion, packageALibrary.Version.ToFullString());
+                Assert.Equal(LibraryType.Package, packageALibrary.Type);
+                Assert.Equal(
+                    PathUtility.GetPathWithForwardSlashes(resolver.GetPackageDirectory(packageAId, NuGetVersion.Parse(packageAVersion))),
+                    packageALibrary.Path);
+
+                var packageBLibrary = lockFile.Libraries.FirstOrDefault(l => l.Name == packageBId);
+                Assert.NotNull(packageBLibrary);
+                Assert.Equal(packageBVersion, packageBLibrary.Version.ToFullString());
+                Assert.Equal(LibraryType.Package, packageBLibrary.Type);
+                Assert.Equal(
+                    PathUtility.GetPathWithForwardSlashes(resolver.GetPackageDirectory(packageBId, NuGetVersion.Parse(packageBVersion))),
+                    packageBLibrary.Path);
             }
         }
     }

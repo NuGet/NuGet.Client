@@ -119,20 +119,21 @@ namespace NuGet.Commands
 
                     var package = packageInfo.Package;
                     var resolver = packageInfo.Repository.PathResolver;
-
-                    var sha512 = File.ReadAllText(resolver.GetHashPath(package.Id, package.Version));
-
+                    
                     LockFileLibrary previousLibrary = null;
-                    previousLibraries?.TryGetValue(Tuple.Create(library.Name, library.Version), out previousLibrary);
+                    previousLibraries?.TryGetValue(Tuple.Create(package.Id, package.Version), out previousLibrary);
+                    
+                    var sha512 = File.ReadAllText(resolver.GetHashPath(package.Id, package.Version));
+                    var path = PathUtility.GetPathWithForwardSlashes(
+                        resolver.GetPackageDirectory(package.Id, package.Version));
 
                     var lockFileLib = previousLibrary;
 
                     // If we have the same library in the lock file already, use that.
-                    if (previousLibrary == null || previousLibrary.Sha512 != sha512)
+                    if (previousLibrary == null ||
+                        previousLibrary.Sha512 != sha512 ||
+                        previousLibrary.Path != path)
                     {
-                        var path = resolver.GetPackageDirectory(package.Id, package.Version);
-                        path = PathUtility.GetPathWithForwardSlashes(path);
-
                         lockFileLib = CreateLockFileLibrary(
                             package,
                             sha512,

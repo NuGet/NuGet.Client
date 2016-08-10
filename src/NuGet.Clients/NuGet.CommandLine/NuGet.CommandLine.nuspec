@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>NuGet.CommandLine</id>
-    <version>3.4.0</version>
+    <version>3.6.0</version>
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
     <licenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt</licenseUrl>
@@ -13,5 +13,6 @@
   </metadata>
   <files>
       <file src="NuGet.exe" target="tools" />
+      <file src="NuGet.pdb" target="tools" />
   </files>
 </package>

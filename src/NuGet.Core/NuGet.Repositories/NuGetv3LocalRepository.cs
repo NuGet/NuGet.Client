@@ -30,6 +30,24 @@ namespace NuGet.Repositories
 
         public string RepositoryRoot { get; }
 
+        public LocalPackageInfo FindPackage(string packageId, NuGetVersion version)
+        {
+            var package = FindPackagesById(packageId)
+                .FirstOrDefault(localPackage => localPackage.Version == version);
+
+            if (package == null)
+            {
+                return null;
+            }
+
+            return new LocalPackageInfo(
+                packageId,
+                version,
+                package.ExpandedPath,
+                package.ManifestPath,
+                package.ZipPath);
+        }
+
         public IEnumerable<LocalPackageInfo> FindPackagesById(string packageId)
         {
             if (string.IsNullOrEmpty(packageId))

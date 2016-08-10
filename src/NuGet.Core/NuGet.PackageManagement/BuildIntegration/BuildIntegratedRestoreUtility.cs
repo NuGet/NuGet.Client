@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Commands;
 using NuGet.Common;
+using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -105,7 +106,6 @@ namespace NuGet.PackageManagement
             using (var request = new RestoreRequest(packageSpec, providers, logger, disposeProviders: false))
             {
                 request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
-                request.LockFileVersion = await GetLockFileVersion(project, context);
 
                 // Add the existing lock file if it exists
                 var lockFilePath = ProjectJsonPathUtilities.GetLockFilePath(project.JsonConfigPath);
@@ -149,9 +149,11 @@ namespace NuGet.PackageManagement
             LockFile updatedLockFile)
         {
             var updatedPackages = updatedLockFile.Targets.SelectMany(target => target.Libraries)
+                .Where(library => library.Type == LibraryType.Package)
                 .Select(library => new PackageIdentity(library.Name, library.Version));
 
             var originalPackages = originalLockFile.Targets.SelectMany(target => target.Libraries)
+                .Where(library => library.Type == LibraryType.Package)
                 .Select(library => new PackageIdentity(library.Name, library.Version));
 
             var results = updatedPackages.Except(originalPackages, PackageIdentity.Comparer).ToList();
@@ -271,7 +273,7 @@ namespace NuGet.PackageManagement
         /// If a full restore is required this will return false.
         /// </summary>
         /// <remarks>Floating versions and project.json files with supports require a full restore.</remarks>
-        public static async Task<bool> IsRestoreRequired(
+        public static bool IsRestoreRequired(
             IReadOnlyList<BuildIntegratedNuGetProject> projects,
             IReadOnlyList<string> packageFolderPaths,
             ExternalProjectReferenceContext referenceContext)
@@ -293,18 +295,18 @@ namespace NuGet.PackageManagement
                 var lockFileFormat = new LockFileFormat();
                 var lockFile = lockFileFormat.Read(lockFilePath, referenceContext.Logger);
 
-                var lockFileVersion = await GetLockFileVersion(project, referenceContext);
-
                 var packageSpec = referenceContext.GetOrCreateSpec(project.ProjectName, project.JsonConfigPath);
 
-                if (!lockFile.IsValidForPackageSpec(packageSpec, lockFileVersion))
+                if (!lockFile.IsValidForPackageSpec(packageSpec, LockFileFormat.Version))
                 {
                     // The project.json file has been changed and the lock file needs to be updated.
                     return true;
                 }
 
                 // Verify all libraries are on disk
-                foreach (var library in lockFile.Libraries)
+                var packages = lockFile.Libraries.Where(library => library.Type == LibraryType.Package);
+
+                foreach (var library in packages)
                 {
                     var identity = new PackageIdentity(library.Name, library.Version);
 
@@ -403,27 +405,6 @@ namespace NuGet.PackageManagement
 
             // sort parents by name to make this more deterministic during restores
             return parents.OrderBy(parent => parent.ProjectName, StringComparer.Ordinal).ToList();
-        }
-
-        /// <summary>
-        /// If the project is non-xproj and has no xproj references it may fallback to v1.
-        /// </summary>
-        public static async Task<int> GetLockFileVersion(
-            NuGetProject project,
-            ExternalProjectReferenceContext referenceContext)
-        {
-            var lockFileVersion = LockFileFormat.Version;
-
-            var buildProject = project as BuildIntegratedNuGetProject;
-
-            if (buildProject != null)
-            {
-                var references = await buildProject.GetProjectReferenceClosureAsync(referenceContext);
-
-                lockFileVersion = LockFileUtilities.GetLockFileVersion(references);
-            }
-
-            return lockFileVersion;
         }
 
         /// <summary>

@@ -22,7 +22,7 @@ namespace NuGet.Protocol.Tests
         private const int MaxTries = 5;
         private const string TestUrl = "https://test.local/test.json";
         private static readonly TimeSpan SmallTimeout = TimeSpan.FromMilliseconds(50);
-        private static readonly TimeSpan LargeTimeout = TimeSpan.FromMilliseconds(250);
+        private static readonly TimeSpan LargeTimeout = TimeSpan.FromSeconds(5);
 
         [Fact]
         public async Task HttpRetryHandler_HandlesFailureToConnect()
@@ -132,12 +132,20 @@ namespace NuGet.Protocol.Tests
         public async Task HttpRetryHandler_AppliesTimeoutToRequestsIndividually()
         {
             // Arrange
-            int hits = 0;
 
+            // 20 requests that take 50ms each for a total of 1 second (plus noise).
+            var requestDuration = TimeSpan.FromMilliseconds(50);
+            var maxTries = 20;
+
+            // Make the request timeout longer than each request duration but less than the total
+            // duration of all attempts.
+            var requestTimeout = TimeSpan.FromMilliseconds(500);
+
+            int hits = 0;
             Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> handler = async (requestMessage, token) =>
             {
                 hits++;
-                await Task.Delay(SmallTimeout);
+                await Task.Delay(requestDuration);
                 return new HttpResponseMessage(HttpStatusCode.InternalServerError);
             };
 
@@ -146,8 +154,8 @@ namespace NuGet.Protocol.Tests
             var httpClient = new HttpClient(testHandler);
             var request = new HttpRetryHandlerRequest(httpClient, () => new HttpRequestMessage(HttpMethod.Get, TestUrl))
             {
-                MaxTries = MaxTries,
-                RequestTimeout = LargeTimeout,
+                MaxTries = maxTries,
+                RequestTimeout = requestTimeout,
                 RetryDelay = TimeSpan.Zero
             };
             var log = new TestLogger();
@@ -158,7 +166,7 @@ namespace NuGet.Protocol.Tests
             }
 
             // Assert
-            Assert.Equal(MaxTries, hits);
+            Assert.Equal(maxTries, hits);
         }
 
         [Fact]

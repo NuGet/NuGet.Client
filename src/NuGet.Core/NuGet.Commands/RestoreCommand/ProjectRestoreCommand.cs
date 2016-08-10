@@ -41,7 +41,6 @@ namespace NuGet.Commands
             IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders,
             RemoteDependencyWalker remoteWalker,
             RemoteWalkContext context,
-            bool writeToLockFile,
             bool forceRuntimeGraphCreation,
             CancellationToken token)
         {
@@ -58,7 +57,6 @@ namespace NuGet.Commands
                     pair.Key,
                     remoteWalker,
                     context,
-                    writeToLockFile: writeToLockFile,
                     token: token));
             }
 
@@ -72,9 +70,7 @@ namespace NuGet.Commands
             }
 
             await InstallPackagesAsync(graphs,
-                _request.PackagesDirectory,
                 allInstalledPackages,
-                _request.MaxDegreeOfConcurrency,
                 token);
 
             // Clear the in-memory cache for newly installed packages
@@ -111,7 +107,6 @@ namespace NuGet.Commands
                         remoteWalker,
                         context,
                         runtimeGraph,
-                        writeToLockFile: writeToLockFile,
                         token: token));
                 }
 
@@ -129,9 +124,7 @@ namespace NuGet.Commands
 
                 // Install runtime-specific packages
                 await InstallPackagesAsync(runtimeGraphs,
-                    _request.PackagesDirectory,
                     allInstalledPackages,
-                    _request.MaxDegreeOfConcurrency,
                     token);
 
                 // Clear the in-memory cache for newly installed packages
@@ -145,7 +138,6 @@ namespace NuGet.Commands
             NuGetFramework framework,
             RemoteDependencyWalker walker,
             RemoteWalkContext context,
-            bool writeToLockFile,
             CancellationToken token)
         {
             return WalkDependenciesAsync(projectRange,
@@ -154,7 +146,6 @@ namespace NuGet.Commands
                 runtimeGraph: RuntimeGraph.Empty,
                 walker: walker,
                 context: context,
-                writeToLockFile: writeToLockFile,
                 token: token);
         }
 
@@ -164,7 +155,6 @@ namespace NuGet.Commands
             RuntimeGraph runtimeGraph,
             RemoteDependencyWalker walker,
             RemoteWalkContext context,
-            bool writeToLockFile,
             CancellationToken token)
         {
             var name = FrameworkRuntimePair.GetName(framework, runtimeIdentifier);
@@ -181,7 +171,7 @@ namespace NuGet.Commands
             _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_ResolvingConflicts, name));
 
             // Flatten and create the RestoreTargetGraph to hold the packages
-            var result = RestoreTargetGraph.Create(writeToLockFile, runtimeGraph, graphs, context, _logger, framework, runtimeIdentifier);
+            var result = RestoreTargetGraph.Create(runtimeGraph, graphs, context, _logger, framework, runtimeIdentifier);
 
             // Check if the dependencies got bumped up
             if (_request.ExistingLockFile == null)
@@ -247,45 +237,43 @@ namespace NuGet.Commands
         }
 
         private async Task InstallPackagesAsync(IEnumerable<RestoreTargetGraph> graphs,
-            string packagesDirectory,
             HashSet<LibraryIdentity> allInstalledPackages,
-            int maxDegreeOfConcurrency,
             CancellationToken token)
         {
             var packagesToInstall = graphs.SelectMany(g => g.Install.Where(match => allInstalledPackages.Add(match.Library)));
-            if (maxDegreeOfConcurrency <= 1)
+            if (_request.MaxDegreeOfConcurrency <= 1)
             {
                 foreach (var match in packagesToInstall)
                 {
-                    await InstallPackageAsync(match, packagesDirectory, token);
+                    await InstallPackageAsync(match, token);
                 }
             }
             else
             {
                 var bag = new ConcurrentBag<RemoteMatch>(packagesToInstall);
-                var tasks = Enumerable.Range(0, maxDegreeOfConcurrency)
+                var tasks = Enumerable.Range(0, _request.MaxDegreeOfConcurrency)
                     .Select(async _ =>
                     {
                         RemoteMatch match;
                         while (bag.TryTake(out match))
                         {
-                            await InstallPackageAsync(match, packagesDirectory, token);
+                            await InstallPackageAsync(match, token);
                         }
                     });
                 await Task.WhenAll(tasks);
             }
         }
 
-        private async Task InstallPackageAsync(RemoteMatch installItem, string packagesDirectory, CancellationToken token)
+        private async Task InstallPackageAsync(RemoteMatch installItem, CancellationToken token)
         {
             var packageIdentity = new PackageIdentity(installItem.Library.Name, installItem.Library.Version);
 
             var versionFolderPathContext = new VersionFolderPathContext(
                 packageIdentity,
-                packagesDirectory,
+                _request.PackagesDirectory,
                 _logger,
-                packageSaveMode: _request.PackageSaveMode,
-                xmlDocFileSaveMode: _request.XmlDocFileSaveMode);
+                _request.PackageSaveMode,
+                _request.XmlDocFileSaveMode);
 
             await PackageExtractor.InstallFromSourceAsync(
                 stream => installItem.Provider.CopyToAsync(installItem.Library, stream, token),
@@ -323,7 +311,6 @@ namespace NuGet.Commands
             RemoteDependencyWalker walker,
             RemoteWalkContext context,
             RuntimeGraph runtimes,
-            bool writeToLockFile,
             CancellationToken token)
         {
             var resultGraphs = new List<Task<RestoreTargetGraph>>();
@@ -337,7 +324,6 @@ namespace NuGet.Commands
                     runtimes,
                     walker,
                     context,
-                    writeToLockFile,
                     token));
             }
 
@@ -355,6 +341,10 @@ namespace NuGet.Commands
 
             _logger.LogVerbose(Strings.Log_ScanningForRuntimeJson);
             runtimeGraph = RuntimeGraph.Empty;
+
+            // maintain visited nodes to avoid duplicate runtime graph for the same node
+            var visitedNodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
             graph.Graphs.ForEach(node =>
             {
                 var match = node?.Item?.Data?.Match;
@@ -365,6 +355,12 @@ namespace NuGet.Commands
 
                 // Ignore runtime.json from rejected nodes
                 if (node.Disposition == Disposition.Rejected)
+                {
+                    return;
+                }
+
+                // ignore the same node again
+                if (!visitedNodes.Add(match.Library.Name))
                 {
                     return;
                 }

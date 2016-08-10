@@ -124,6 +124,12 @@ function Test-BuildIntegratedLockFileIsCreatedOnBuild {
 }
 
 function Test-BuildIntegratedInstallPackagePrefersWindowsOverWindowsPhoneApp {
+    # Windows 8.x/Phone tests irrelevant post-VS14
+    if ((Get-VSVersion) -ge "15.0") {
+        Write-Host "Skipping BuildIntegratedInstallPackagePrefersWindowsOverWindowsPhoneApp"
+        return
+    }
+
     # Arrange
     $project = New-BuildIntegratedProj UAPApp
 
@@ -135,6 +141,12 @@ function Test-BuildIntegratedInstallPackagePrefersWindowsOverWindowsPhoneApp {
 }
 
 function Test-BuildIntegratedInstallPackageWithWPA81 {
+    # Windows 8.x/Phone tests irrelevant post-VS14
+    if ((Get-VSVersion) -ge "15.0") {
+        Write-Host "Skipping BuildIntegratedInstallPackageWithWPA81"
+        return
+    }
+	
     # Arrange
     $project = New-BuildIntegratedProj UAPApp
 

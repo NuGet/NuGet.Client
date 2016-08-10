@@ -2,9 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Management.Automation;
+using System.Management.Automation.Host;
+using System.Text;
 using System.Threading;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
@@ -59,23 +63,25 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected virtual void Preprocess()
         {
             CheckSolutionState();
-            try
+
+            var result = ValidateSource(Source);
+            if (result.Validity == SourceValidity.UnknownSource)
             {
-                UpdateActiveSourceRepository(Source, validateSource: true);
+                throw new PackageSourceException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.UnknownSourceWithId,
+                    Id,
+                    result.Source));
             }
-            catch(PackageSourceException ex)
+            else if (result.Validity == SourceValidity.UnknownSourceType)
             {
-                if (ex.Type == PackageSourceException.ExceptionType.UnknownSource)
-                {
-                    // If the exception is of unknown/invalid source then add package id and throw the exception
-                    throw new PackageSourceException(string.Format(CultureInfo.CurrentCulture, Strings.UnknownSource, Id, Source));
-                }
-                else
-                {
-                    // If the exception is of unknown source type then throw the exception
-                    throw new PackageSourceException(string.Format(CultureInfo.CurrentCulture, Strings.UnknownSourceType, Source));
-                }
+                throw new PackageSourceException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.UnknownSourceType,
+                    result.Source));
             }
+
+            UpdateActiveSourceRepository(result.SourceRepository);
             GetNuGetProject(ProjectName);
             DetermineFileConflictAction();
             NuGetUIThreadHelper.JoinableTaskFactory.Run(CheckMissingPackagesAsync);
@@ -101,6 +107,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             try
             {
                 var actions = await PackageManager.PreviewInstallPackageAsync(project, identity, resolutionContext, projectContext, PrimarySourceRepositories, null, CancellationToken.None);
+
+                if (!ShouldContinueDueToDotnetDeprecation(project, actions, isPreview))
+                {
+                    return;
+                }
 
                 if (isPreview)
                 {
@@ -142,6 +153,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             try
             {
                 var actions = await PackageManager.PreviewInstallPackageAsync(project, packageId, resolutionContext, projectContext, PrimarySourceRepositories, null, CancellationToken.None);
+
+                if (!ShouldContinueDueToDotnetDeprecation(project, actions, isPreview))
+                {
+                    return;
+                }
 
                 if (isPreview)
                 {
@@ -203,6 +219,71 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     string.Join(", ", packageDirectoriesMarkedForDeletion));
                 WriteWarning(message);
             }
+        }
+
+        protected bool ShouldContinueDueToDotnetDeprecation(NuGetProject project, IEnumerable<NuGetProjectAction> actions, bool whatIf)
+        {
+            // Don't prompt if the user has chosen to ignore this warning.
+            // Also, -WhatIf should not prompt the user since there is not action performed anyway.
+            if (DotnetDeprecatedPrompt.GetDoNotShowPromptState() || whatIf)
+            {
+                return true;
+            }
+
+            // Determine if any of the project actions are affected by the deprecated framework.
+            var resolvedActions = actions
+                .Select(action => new ResolvedAction(project, action));
+
+            var projects = DotnetDeprecatedPrompt.GetAffectedProjects(resolvedActions);
+            if (!projects.Any())
+            {
+                return true;
+            }
+
+            var model = DotnetDeprecatedPrompt.GetDeprecatedFrameworkModel(projects);
+
+            // Flush the existing messages (e.g. logging from the action preview).
+            FlushBlockingCollection();
+
+            // Prompt the user to determine if the project actions should be executed.
+            var choices = new Collection<ChoiceDescription>
+            {
+                new ChoiceDescription(Resources.Cmdlet_No, Resources.Cmdlet_DeprecatedFrameworkNoHelp),
+                new ChoiceDescription(Resources.Cmdlet_Yes, Resources.Cmdlet_DeprecatedFrameworkYesHelp),
+                new ChoiceDescription(Resources.Cmdlet_YesDoNotPromptAgain, Resources.Cmdlet_DeprecatedFrameworkYesDoNotPromptAgainHelp)
+            };
+
+            var messageBuilder = new StringBuilder();
+            messageBuilder.Append(model.TextBeforeLink);
+            messageBuilder.Append(model.LinkText);
+            messageBuilder.Append(" (");
+            messageBuilder.Append(model.MigrationUrl);
+            messageBuilder.Append(")");
+            messageBuilder.Append(model.TextAfterLink);
+            messageBuilder.Append(" ");
+            messageBuilder.Append(Resources.Cmdlet_DeprecatedFrameworkContinue);
+
+            WriteLine();
+            var choice = Host.UI.PromptForChoice(
+                string.Empty,
+                messageBuilder.ToString(),
+                choices,
+                defaultChoice: 0);
+            WriteLine();
+
+            // Handle the response from the user.
+            if (choice == 2)
+            {
+                // Yes and do not prompt again.
+                DotnetDeprecatedPrompt.SaveDoNotShowPromptState(true);
+                return true;
+            }
+            else if (choice == 1) // Yes
+            {
+                return true;
+            }
+
+            return false; // No
         }
 
         /// <summary>

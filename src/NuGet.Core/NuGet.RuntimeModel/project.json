@@ -1,5 +1,5 @@
-﻿{
-  "version": "3.5.0-*",
+{
+  "version": "3.6.0-*",
   "description": "NuGet v3 core library.",
   "copyright": "Copyright .NET Foundation. All rights reserved.",
   "packOptions": {
@@ -21,7 +21,6 @@
     }
   },
   "dependencies": {
-    "Newtonsoft.Json": "6.0.4",
     "NuGet.Versioning": {
       "target": "project"
     },
@@ -35,16 +34,15 @@
         "define": [
           "IS_DESKTOP"
         ]
+      },
+      "dependencies": {
+        "Newtonsoft.Json": "6.0.4"
       }
     },
     "netstandard1.3": {
-      "imports": [
-        "dotnet5.6",
-        "dnxcore50",
-        "portable-net45+win8"
-      ],
       "dependencies": {
         "NETStandard.Library": "1.6.0",
+        "Newtonsoft.Json": "9.0.1",
         "System.ObjectModel": "4.0.12",
         "System.Dynamic.Runtime": "4.0.11"
       },

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
@@ -13,6 +14,22 @@ namespace NuGet.Protocol.Core.v3.Tests
 {
     public class LocalFolderUtilityTests
     {
+        [Fact]
+        public void LocalFolderUtility_GetAndVerifyRootDirectory_WithAbsoluteFileUri()
+        {
+            // Arrange
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Act
+                var uri = UriUtility.CreateSourceUri(root, UriKind.Absolute);
+                var actual = LocalFolderUtility.GetAndVerifyRootDirectory(uri.AbsoluteUri);
+
+                // Assert
+                Assert.Equal(root.ToString(), actual.FullName);
+                Assert.True(actual.Exists, "The root directory should exist.");
+            }
+        }
+
         [Fact]
         public void LocalFolderUtility_GetAndVerifyRootDirectory_WithAbsolute()
         {
@@ -66,6 +83,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [InlineData("")]
         [InlineData(null)]
         [InlineData("X:Windows")]
+        [InlineData("http://nuget.org")]
         public void LocalFolderUtility_GetAndVerifyRootDirectory_RejectsInvalid(string source)
         {
             // Arrange & Act & Assert
@@ -105,6 +123,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 Assert.Equal("a.1.0.0", packages[1].Identity.ToString());
                 Assert.Equal("b.1.0.0", packages[2].Identity.ToString());
                 Assert.Equal("c.1.0.0", packages[3].Identity.ToString());
+                Assert.Equal(0, testLogger.Messages.Count);
             }
         }
 
@@ -135,6 +154,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 Assert.Equal(2, packages.Count);
                 Assert.Equal("a.1.0.0-beta", packages[0].Identity.ToString());
                 Assert.Equal("a.1.0.0", packages[1].Identity.ToString());
+                Assert.Equal(0, testLogger.Messages.Count);
             }
         }
 
@@ -163,6 +183,7 @@ namespace NuGet.Protocol.Core.v3.Tests
 
                 // Assert
                 Assert.Equal(0, packages.Count);
+                Assert.Equal(0, testLogger.Messages.Count);
             }
         }
 
@@ -190,6 +211,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 Assert.True(foundA.IsNupkg);
                 Assert.Equal(a, foundA.GetReader().GetIdentity());
                 Assert.Contains("a.1.0.0.nupkg", foundA.Path);
+                Assert.Equal(0, testLogger.Messages.Count);
             }
         }
 
@@ -370,6 +392,7 @@ namespace NuGet.Protocol.Core.v3.Tests
 
                 // Assert
                 Assert.Null(foundA);
+                Assert.Equal(0, testLogger.Messages.Count);
             }
         }
 
@@ -387,6 +410,7 @@ namespace NuGet.Protocol.Core.v3.Tests
 
                 // Assert
                 Assert.Equal(0, packages.Count);
+                Assert.Equal(0, testLogger.Messages.Count);
             }
         }
 
@@ -404,6 +428,7 @@ namespace NuGet.Protocol.Core.v3.Tests
 
                 // Assert
                 Assert.Equal(0, packages.Count);
+                Assert.Equal(0, testLogger.Messages.Count);
             }
         }
 
@@ -577,6 +602,7 @@ namespace NuGet.Protocol.Core.v3.Tests
 
                 // Assert
                 Assert.Equal(0, packages.Count());
+                Assert.Equal(0, testLogger.Messages.Count);
             }
         }
 
@@ -621,6 +647,7 @@ namespace NuGet.Protocol.Core.v3.Tests
 
                 // Assert
                 Assert.Equal(0, packages.Count());
+                Assert.Equal(0, testLogger.Messages.Count);
             }
         }
 
@@ -751,6 +778,7 @@ namespace NuGet.Protocol.Core.v3.Tests
 
                 // Assert
                 Assert.Equal(0, packages.Count);
+                Assert.Equal(0, testLogger.Messages.Count);
             }
         }
 
@@ -767,6 +795,7 @@ namespace NuGet.Protocol.Core.v3.Tests
 
                 // Assert
                 Assert.Equal(0, packages.Count);
+                Assert.Equal(0, testLogger.Messages.Count);
             }
         }
 
@@ -783,6 +812,7 @@ namespace NuGet.Protocol.Core.v3.Tests
 
                 // Assert
                 Assert.Equal(0, packages.Count);
+                Assert.Equal(0, testLogger.Messages.Count);
             }
         }
 
@@ -799,6 +829,7 @@ namespace NuGet.Protocol.Core.v3.Tests
 
                 // Assert
                 Assert.Equal(0, packages.Count);
+                Assert.Equal(0, testLogger.Messages.Count);
             }
         }
 
@@ -898,6 +929,7 @@ namespace NuGet.Protocol.Core.v3.Tests
 
                 // Assert
                 Assert.Equal(0, packages.Count);
+                Assert.Equal(0, testLogger.Messages.Count);
             }
         }
 
@@ -914,6 +946,7 @@ namespace NuGet.Protocol.Core.v3.Tests
 
                 // Assert
                 Assert.Equal(0, packages.Count);
+                Assert.Equal(0, testLogger.Messages.Count);
             }
         }
 
@@ -930,6 +963,7 @@ namespace NuGet.Protocol.Core.v3.Tests
 
                 // Assert
                 Assert.Equal(0, packages.Count);
+                Assert.Equal(0, testLogger.Messages.Count);
             }
         }
 
@@ -946,6 +980,7 @@ namespace NuGet.Protocol.Core.v3.Tests
 
                 // Assert
                 Assert.Equal(0, packages.Count);
+                Assert.Equal(0, testLogger.Messages.Count);
             }
         }
 

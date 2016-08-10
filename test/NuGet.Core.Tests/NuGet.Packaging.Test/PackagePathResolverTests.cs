@@ -32,8 +32,8 @@ namespace NuGet.Packaging.Test
         }
 
         [Theory]
-        [InlineData(true, "packagea.1.0.0.0-beta")]
-        [InlineData(false, "packagea")]
+        [InlineData(true, "PackageA.1.0.0.0-BETA")]
+        [InlineData(false, "PackageA")]
         public void PackagePathResolver_GetPackageDirectoryName(bool useSideBySidePaths, string expected)
         {
             // Arrange
@@ -49,8 +49,8 @@ namespace NuGet.Packaging.Test
         }
 
         [Theory]
-        [InlineData(true, "packagea.1.0.0.0-beta.nupkg")]
-        [InlineData(false, "packagea.nupkg")]
+        [InlineData(true, "PackageA.1.0.0.0-BETA.nupkg")]
+        [InlineData(false, "PackageA.nupkg")]
         public void PackagePathResolver_GetPackageFileName(bool useSideBySidePaths, string expected)
         {
             // Arrange
@@ -66,8 +66,8 @@ namespace NuGet.Packaging.Test
         }
 
         [Theory]
-        [InlineData(true, "packagea.nuspec")]
-        [InlineData(false, "packagea.nuspec")]
+        [InlineData(true, "PackageA.nuspec")]
+        [InlineData(false, "PackageA.nuspec")]
         public void PackagePathResolver_GetManifestFileName(bool useSideBySidePaths, string expected)
         {
             // Arrange
@@ -83,8 +83,8 @@ namespace NuGet.Packaging.Test
         }
 
         [Theory]
-        [InlineData(true, "packagea.1.0.0.0-beta")]
-        [InlineData(false, "packagea")]
+        [InlineData(true, "PackageA.1.0.0.0-BETA")]
+        [InlineData(false, "PackageA")]
         public void PackagePathResolver_GetInstallPath(bool useSideBySidePaths, string expected)
         {
             // Arrange

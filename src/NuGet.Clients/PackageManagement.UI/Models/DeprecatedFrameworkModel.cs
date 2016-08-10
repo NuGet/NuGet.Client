@@ -13,11 +13,14 @@ namespace NuGet.PackageManagement.UI
     {
         public DeprecatedFrameworkModel(NuGetFramework deprecated, string migrationUrl, IEnumerable<NuGetProject> projects)
         {
-            Details = string.Format(
+            TextBeforeLink = string.Format(
                 CultureInfo.CurrentCulture,
                 Resources.Text_DeprecatedFramework_DocumentLink_Before,
                 deprecated.DotNetFrameworkName,
                 deprecated.GetShortFolderName());
+            LinkText = Resources.Text_DeprecatedFramework_DocumentLink;
+            TextAfterLink = Resources.Text_DeprecatedFramework_DocumentLink_After;
+            ProjectListText = Resources.Text_DeprecatedFramework_ProjectList;
 
             MigrationUrl = migrationUrl;
 
@@ -27,7 +30,10 @@ namespace NuGet.PackageManagement.UI
                 .ToList();
         }
 
-        public string Details { get; }
+        public string TextBeforeLink { get; }
+        public string LinkText { get; }
+        public string TextAfterLink { get; }
+        public string ProjectListText { get; }
         public string MigrationUrl { get; }
         public IReadOnlyList<string> Projects { get; }
     }

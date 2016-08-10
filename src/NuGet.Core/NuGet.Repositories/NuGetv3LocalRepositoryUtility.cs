@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using NuGet.Versioning;
 
 namespace NuGet.Repositories
@@ -18,8 +17,7 @@ namespace NuGet.Repositories
 
             foreach (var repository in repositories)
             {
-                package = repository.FindPackagesById(id)
-                    .FirstOrDefault(p => p.Version.Equals(version));
+                package = repository.FindPackage(id, version);
 
                 if (package != null)
                 {

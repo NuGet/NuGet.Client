@@ -1,5 +1,5 @@
-﻿{
-  "version": "3.5.0-*",
+{
+  "version": "3.6.0-*",
   "dependencies": {
     "NuGet.Commands": {
       "target": "project"
@@ -18,6 +18,8 @@
       ],
       "dependencies": {
         "dotnet-test-xunit": "1.0.0-rc2-173384-19",
+        "moq.netcore": "4.4.0-beta8",
+        "System.Diagnostics.TraceSource": "4.0.0",
         "Microsoft.NETCore.App": {
           "type": "platform",
           "version": "1.0.0"
@@ -36,6 +38,9 @@
         "System.Core": "",
         "System.Runtime": "",
         "System.Threading.Tasks": ""
+      },
+      "dependencies": {
+        "Moq": "4.2.1510.2205"
       },
       "buildOptions": {
         "define": [

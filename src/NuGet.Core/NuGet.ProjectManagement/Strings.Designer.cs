@@ -69,6 +69,15 @@ namespace NuGet.ProjectManagement {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Added package &apos;{0}&apos; to folder &apos;{1}&apos; from source &apos;{2}&apos;.
+        /// </summary>
+        public static string AddedPackageToFolderFromSource {
+            get {
+                return ResourceManager.GetString("AddedPackageToFolderFromSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Added package &apos;{0}&apos; to project &apos;{1}&apos;.
         /// </summary>
         public static string AddedPackageToMSBuildProject {

@@ -186,6 +186,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Failed to find a project to restore in the folder &apos;{0}&apos;..
+        /// </summary>
+        public static string Error_UnableToLocateRestoreTarget_Because {
+            get {
+                return ResourceManager.GetString("Error_UnableToLocateRestoreTarget_Because", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Package &apos;{0}&apos; specifies an invalid build action &apos;{1}&apos; for file &apos;{2}&apos;..
         /// </summary>
         public static string Error_UnknownBuildAction {
@@ -263,6 +272,15 @@ namespace NuGet.Commands {
         public static string Log_ConfigFileSummary {
             get {
                 return ResourceManager.GetString("Log_ConfigFileSummary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to The package {0} was converted to original case in the packages directory..
+        /// </summary>
+        public static string Log_ConvertedPackageToOriginalCase {
+            get {
+                return ResourceManager.GetString("Log_ConvertedPackageToOriginalCase", resourceCulture);
             }
         }
         

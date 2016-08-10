@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using NuGet.Common;
 using NuGet.Versioning;
 
 namespace NuGet.Packaging
@@ -9,10 +10,16 @@ namespace NuGet.Packaging
     public class VersionFolderPathResolver
     {
         private readonly string _path;
+        private readonly bool _isLowercase;
 
-        public VersionFolderPathResolver(string path)
+        public VersionFolderPathResolver(string path) : this(path, isLowercase: true)
+        {
+        }
+
+        public VersionFolderPathResolver(string path, bool isLowercase)
         {
             _path = path;
+            _isLowercase = isLowercase;
         }
 
         public string GetInstallPath(string packageId, NuGetVersion version)
@@ -75,12 +82,24 @@ namespace NuGet.Packaging
 
         private string Normalize(NuGetVersion version)
         {
-            return version.ToNormalizedString().ToLowerInvariant();
+            var versionString = version.ToNormalizedString();
+
+            if (_isLowercase)
+            {
+                versionString = versionString.ToLowerInvariant();
+            }
+
+            return versionString;
         }
 
         private string Normalize(string packageId)
         {
-            return packageId.ToLowerInvariant();
+            if (_isLowercase)
+            {
+                packageId = packageId.ToLowerInvariant();
+            }
+
+            return packageId;
         }
     }
 }

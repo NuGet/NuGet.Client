@@ -29,7 +29,7 @@ namespace NuGet.Protocol
             }
             else if (packageSource.IsLocal)
             {
-                var path = packageSource.Source;
+                var path = UriUtility.GetLocalPath(packageSource.Source);
 
                 if (!Directory.Exists(path))
                 {

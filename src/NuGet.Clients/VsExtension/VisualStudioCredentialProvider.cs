@@ -89,10 +89,7 @@ namespace NuGetVSExtension
                 // or request credentials. 
                 WebRequest.DefaultWebProxy = new WebProxy(uriToDisplay);
 
-                var cred = await PromptForCredentials(uri, cancellationToken);
-
-                var response = new CredentialResponse(cred, CredentialStatus.Success);
-                return response;
+                return PromptForCredentials(uri, cancellationToken);
             }
             finally
             {
@@ -106,7 +103,7 @@ namespace NuGetVSExtension
         /// This method is responsible for retrieving either cached credentials
         /// or forcing a prompt if we need the user to give us new credentials.
         /// </summary>
-        private Task<ICredentials> PromptForCredentials(Uri uri, CancellationToken cancellationToken)
+        private CredentialResponse PromptForCredentials(Uri uri, CancellationToken cancellationToken)
         {
             const __VsWebProxyState oldState = __VsWebProxyState.VsWebProxyState_PromptForCredentials;
 
@@ -131,12 +128,13 @@ namespace NuGetVSExtension
             if (result != 0
                 || newState == (uint)__VsWebProxyState.VsWebProxyState_Abort)
             {
-                // Clear out the current credentials because the user might have clicked cancel
-                // and we don't want to use the currently set credentials if they are wrong.
-                throw new OperationCanceledException();
+                // The user might have clicked cancel, so we don't want to use the currently set
+                // credentials if they are wrong.
+                return new CredentialResponse(CredentialStatus.UserCanceled);
             }
+
             // Get the new credentials from the proxy instance
-            return System.Threading.Tasks.Task.FromResult(WebRequest.DefaultWebProxy.Credentials);
+            return new CredentialResponse(WebRequest.DefaultWebProxy.Credentials);
         }
     }
 }

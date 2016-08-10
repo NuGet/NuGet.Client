@@ -11,15 +11,13 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
-using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using Resx = NuGet.PackageManagement.UI;
-using Microsoft.VisualStudio.Threading;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -370,7 +368,7 @@ namespace NuGet.PackageManagement.UI
                 settings.ShowPreviewWindow = false;
             }
 
-            if (DeprecatedFrameworkWindow.IsDoNotShowDeprecatedFrameworkWindowEnabled())
+            if (DotnetDeprecatedPrompt.GetDoNotShowPromptState())
             {
                 settings.ShowDeprecatedFrameworkWindow = false;
             }
@@ -661,7 +659,12 @@ namespace NuGet.PackageManagement.UI
 
             if (filter == ItemFilter.UpdatesAvailable)
             {
-                return new UpdatePackageFeed(installedPackages, metadataProvider, context.CachedPackages, logger);
+                return new UpdatePackageFeed(
+                    installedPackages,
+                    metadataProvider,
+                    context.Projects,
+                    context.CachedPackages,
+                    logger);
             }
 
             throw new InvalidOperationException("Unsupported feed type");
@@ -675,8 +678,6 @@ namespace NuGet.PackageManagement.UI
                 context.SourceRepositories,
                 context.PackageManager?.PackagesFolderSourceRepository,
                 context.PackageManager?.GlobalPackageFolderRepositories,
-                context.Projects,
-                context.IsSolution,
                 logger);
         }
 

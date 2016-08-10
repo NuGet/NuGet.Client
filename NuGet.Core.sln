@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{BD1946CE-5544-4F28-A04A-9C3D51113E1A}"
 EndProject
@@ -129,6 +129,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{DE23D0
 		Shared\TypeExtensions.cs = Shared\TypeExtensions.cs
 		Shared\TypeInfo.cs = Shared\TypeInfo.cs
 	EndProjectSection
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Repositories.Test", "test\NuGet.Core.Tests\NuGet.Repositories.Test\NuGet.Repositories.Test.xproj", "{93D1D30C-45F8-4DCE-8EAD-7C7C504713B6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -348,6 +350,10 @@ Global
 		{2034C981-C938-4F0F-8F3B-528B83CB8F7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2034C981-C938-4F0F-8F3B-528B83CB8F7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2034C981-C938-4F0F-8F3B-528B83CB8F7D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93D1D30C-45F8-4DCE-8EAD-7C7C504713B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93D1D30C-45F8-4DCE-8EAD-7C7C504713B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93D1D30C-45F8-4DCE-8EAD-7C7C504713B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93D1D30C-45F8-4DCE-8EAD-7C7C504713B6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -406,5 +412,6 @@ Global
 		{1A94F70B-1AB6-4638-931A-4AB0EBEF7EC1} = {BB63CACA-866F-454F-BA4C-78B788D032BB}
 		{626E0086-1375-4ABE-A0F8-412786D315FA} = {7323F93B-D141-4001-BB9E-7AF14031143E}
 		{2034C981-C938-4F0F-8F3B-528B83CB8F7D} = {BB63CACA-866F-454F-BA4C-78B788D032BB}
+		{93D1D30C-45F8-4DCE-8EAD-7C7C504713B6} = {7323F93B-D141-4001-BB9E-7AF14031143E}
 	EndGlobalSection
 EndGlobal

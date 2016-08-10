@@ -10,16 +10,22 @@ namespace NuGet.Protocol
     {
         internal const int MaxAuthRetries = 3;
 
-        public bool IsBlocked { get; set; } = false;
-        public int AuthenticationRetriesCount { get; set; }
+        public bool IsBlocked { get; private set; } = false;
+        public int AuthenticationRetriesCount { get; private set; } = 0;
+
+        public void Block()
+        {
+            IsBlocked = true;
+        }
 
         public void Increment()
         {
             AuthenticationRetriesCount++;
 
-            if (AuthenticationRetriesCount > MaxAuthRetries)
+            if (AuthenticationRetriesCount >= MaxAuthRetries)
             {
-                IsBlocked = true;
+                // Block future attempts.
+                Block();
             }
         }
     }

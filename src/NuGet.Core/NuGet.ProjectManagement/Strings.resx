@@ -120,6 +120,9 @@
   <data name="AddedPackageToFolder" xml:space="preserve">
     <value>Added package '{0}' to folder '{1}'</value>
   </data>
+  <data name="AddedPackageToFolderFromSource" xml:space="preserve">
+    <value>Added package '{0}' to folder '{1}' from source '{2}'</value>
+  </data>
   <data name="AddedPackageToMSBuildProject" xml:space="preserve">
     <value>Added package '{0}' to project '{1}'</value>
   </data>

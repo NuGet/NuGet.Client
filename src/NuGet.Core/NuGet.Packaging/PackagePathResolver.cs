@@ -49,7 +49,7 @@ namespace NuGet.Packaging
 
         public string GetManifestFileName(PackageIdentity packageIdentity)
         {
-            return packageIdentity.Id.ToLowerInvariant() + PackagingCoreConstants.NuspecExtension;
+            return GetId(packageIdentity) + PackagingCoreConstants.NuspecExtension;
         }
 
         public string GetInstallPath(PackageIdentity packageIdentity)
@@ -69,11 +69,23 @@ namespace NuGet.Packaging
             return PackagePathHelper.GetInstalledPackageFilePath(packageIdentity, this);
         }
 
+        private string GetId(PackageIdentity identity)
+        {
+            // We use original case for the ID (no normalization).
+            return identity.Id;
+        }
+
+        private string GetVersion(PackageIdentity identity)
+        {
+            // We use original case for the version (no normalization).
+            return identity.Version.ToString();
+        }
+
         private StringBuilder GetPathBase(PackageIdentity packageIdentity)
         {
             var builder = new StringBuilder();
 
-            builder.Append(packageIdentity.Id.ToLowerInvariant());
+            builder.Append(GetId(packageIdentity));
 
             if (UseSideBySidePaths)
             {
@@ -81,7 +93,7 @@ namespace NuGet.Packaging
 
                 // Always use legacy package install path. Otherwise, restore may be broken for
                 // packages like 'Microsoft.Web.Infrastructure.1.0.0.0', installed using old clients.
-                builder.Append(packageIdentity.Version.ToString().ToLowerInvariant());
+                builder.Append(GetVersion(packageIdentity));
             }
 
             return builder;

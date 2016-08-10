@@ -61,7 +61,7 @@ namespace NuGetVSExtension
 
             return credentials == null
                 ? new CredentialResponse(CredentialStatus.ProviderNotApplicable)
-                : new CredentialResponse(credentials, CredentialStatus.Success);
+                : new CredentialResponse(credentials);
         }
     }
 }

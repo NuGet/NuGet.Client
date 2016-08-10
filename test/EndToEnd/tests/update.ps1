@@ -849,7 +849,7 @@ function Test-UpdatePackageThrowsWhenSourceIsInvalid {
     $p | Install-Package jQuery -Version 1.5.1 -Source $context.RepositoryPath
 
     # Act & Assert
-    Assert-Throws { Update-Package jQuery -source "d:package" } "Failed to retrieve information from remote source 'd:package'.`r`n  Invalid URI: A Dos path must be rooted, for example, 'c:\'."
+    Assert-Throws { Update-Package jQuery -source "d:package" } "Unsupported type of source 'd:package'. Please provide an HTTP or local source."
 }
 
 function Test-UpdatePackageInOneProjectDoesNotCheckAllPackagesInSolution {
@@ -1737,4 +1737,27 @@ function Test-UpdatePackageWithToHighestMinorFlag {
     Assert-Null (Get-ProjectPackage $p A 1.0.0)
     Assert-Null (Get-ProjectPackage $p B 1.0.0)
     Assert-Null (Get-ProjectPackage $p C 1.0.0)
+}
+
+function Test-UpdatingBindingRedirectAfterUpdate {
+    param(
+        $context
+    )
+
+    # Arrange
+    $p = New-WebApplication
+
+    # Act
+    $p | Install-Package B -Version 2.0 -Source $context.RepositoryPath
+    $p | Install-Package A -Version 1.0 -Source $context.RepositoryPath
+
+    # Assert
+    Assert-BindingRedirect $p web.config B '0.0.0.0-2.0.0.0' '2.0.0.0'
+
+    # ACT
+    $p | Update-Package B -Version 3.0 -Source $context.RepositoryPath
+
+    # Assert
+    Assert-Package $p B 3.0
+    Assert-BindingRedirect $p web.config B '0.0.0.0-3.0.0.0' '3.0.0.0'
 }

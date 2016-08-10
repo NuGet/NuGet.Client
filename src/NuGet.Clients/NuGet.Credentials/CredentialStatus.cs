@@ -10,6 +10,7 @@ namespace NuGet.Credentials
     public enum CredentialStatus
     {
         Success,
-        ProviderNotApplicable
+        ProviderNotApplicable,
+        UserCanceled
     }
 }

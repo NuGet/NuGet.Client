@@ -1,5 +1,5 @@
-﻿{
-  "version": "3.5.0-*",
+{
+  "version": "3.6.0-*",
   "copyright": "Copyright .NET Foundation. All rights reserved.",
   "packOptions": {
     "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
@@ -51,11 +51,6 @@
   },
   "frameworks": {
     "net45": {
-      "imports": [
-        "dotnet5.6",
-        "dnxcore50",
-        "portable-net45+win8"
-      ],
       "frameworkAssemblies": {
         "System.Xml": "",
         "System.Xml.Linq": ""
@@ -67,11 +62,6 @@
       }
     },
     "netstandard1.3": {
-      "imports": [
-        "dotnet5.6",
-        "dnxcore50",
-        "portable-net45+win8"
-      ],
       "dependencies": {
         "NETStandard.Library": "1.6.0",
         "System.Xml.XDocument": "4.0.11"
