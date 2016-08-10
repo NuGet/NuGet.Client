@@ -33,11 +33,6 @@ namespace NuGet.CommandLine.XPlat
                     Strings.LocalsCommand_ListDescription,
                     CommandOptionType.NoValue);
 
-                var configFile = locals.Option(
-                    "--configfile <config file path>",
-                    Strings.LocalsCommand_ListDescription,
-                    CommandOptionType.SingleValue);
-
                 var arguments = locals.Argument(
                     "Cache Location(s)",
                     Strings.LocalsCommand_ArgumentDescription,
