@@ -26,10 +26,15 @@ namespace NuGet.CommandLine.XPlat
                 var clear = locals.Option(
                     "-c|--clear <Arg>",
                     Strings.LocalsCommand_ClearDescription,
-                    CommandOptionType.SingleValue);
+                    CommandOptionType.NoValue);
 
                 var list = locals.Option(
-                    "-l|--list <Arg>",
+                    "-l|--list",
+                    Strings.LocalsCommand_ListDescription,
+                    CommandOptionType.NoValue);
+
+                var configFile = locals.Option(
+                    "--configfile <config file path>",
                     Strings.LocalsCommand_ListDescription,
                     CommandOptionType.SingleValue);
 
@@ -40,7 +45,9 @@ namespace NuGet.CommandLine.XPlat
 
                 locals.OnExecute(() =>
                 {
-                    var localsCommandRunner = new LocalsCommandRunner(arguments.Values, null, false, true);
+                    var setting = Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null);
+
+                    var localsCommandRunner = new LocalsCommandRunner(arguments.Values, setting, clear.HasValue(), list.HasValue());
                     localsCommandRunner.ExecuteCommand();
 
                     return 0;
