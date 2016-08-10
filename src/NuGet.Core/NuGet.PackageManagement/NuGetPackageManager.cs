@@ -43,7 +43,9 @@ namespace NuGet.PackageManagement
 
         private Configuration.ISettings Settings { get; }
 
-        private IDictionary<string, bool> BuildIntegratedProjectsUpdateDict { get; set; }
+        private IDictionary<string, bool> _buildIntegratedProjectsUpdateDict;
+
+        private IReadOnlyDictionary<string, BuildIntegratedProjectCacheEntry> _buildIntegratedProjectsCache;
 
         public IDeleteOnRestartManager DeleteOnRestartManager { get; }
 
@@ -1686,12 +1688,16 @@ namespace NuGet.PackageManagement
             {
                 var logger = new ProjectContextLogger(nuGetProjectContext);
                 var referenceContext = new ExternalProjectReferenceContext(logger);
-                BuildIntegratedProjectsUpdateDict = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+                _buildIntegratedProjectsUpdateDict = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
 
                 // get all build integrated projects of the solution which will be used to map project references
                 // of the target projects
                 var allBuildIntegratedProjects =
                     SolutionManager.GetNuGetProjects().OfType<BuildIntegratedNuGetProject>().ToList();
+
+                _buildIntegratedProjectsCache =
+                    await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(allBuildIntegratedProjects,
+                        referenceContext);
 
                 var orderedChilds = new List<BuildIntegratedNuGetProject>();
                 var uniqueProjectNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -1700,15 +1706,14 @@ namespace NuGet.PackageManagement
                 {
                     if (uniqueProjectNames.Add(project.ProjectName))
                     {
-                        await
-                            BuildIntegratedRestoreUtility.GetChildProjectsInClosure(project, allBuildIntegratedProjects,
-                                orderedChilds, uniqueProjectNames, referenceContext);
+                        BuildIntegratedRestoreUtility.GetChildProjectsInClosure(project, allBuildIntegratedProjects,
+                                orderedChilds, uniqueProjectNames, _buildIntegratedProjectsCache);
                     }
                 }
                 sortedProjectsToUpdate.AddRange(orderedChilds);
 
                 // cache these projects which will be used to avoid duplicate restore as part of parent projects
-                BuildIntegratedProjectsUpdateDict.AddRange(
+                _buildIntegratedProjectsUpdateDict.AddRange(
                     orderedChilds.Select(child => new KeyValuePair<string, bool>(child.ProjectName, false)));
             }
 
@@ -1720,7 +1725,7 @@ namespace NuGet.PackageManagement
             }
 
             // clear cache which could temper with other updates
-            BuildIntegratedProjectsUpdateDict?.Clear();
+            _buildIntegratedProjectsUpdateDict?.Clear();
 
         }
 
@@ -2192,8 +2197,8 @@ namespace NuGet.PackageManagement
 
                 // Check if current project is there in update cache and needs revaluation
                 var isProjectUpdated = false;
-                if (BuildIntegratedProjectsUpdateDict != null && 
-                    BuildIntegratedProjectsUpdateDict.TryGetValue(buildIntegratedProject.ProjectName, out isProjectUpdated) &&
+                if (_buildIntegratedProjectsUpdateDict != null &&
+                    _buildIntegratedProjectsUpdateDict.TryGetValue(buildIntegratedProject.ProjectName, out isProjectUpdated) &&
                     isProjectUpdated)
                 {
                     await BuildIntegratedRestoreUtility.RestoreAsync(
@@ -2265,18 +2270,29 @@ namespace NuGet.PackageManagement
                     }
                 }
 
+                // find list of buildintegrated projects
+                var projects = SolutionManager.GetNuGetProjects().OfType<BuildIntegratedNuGetProject>().ToList();
+
+                // build reference cache if not done already
+                if (_buildIntegratedProjectsCache == null)
+                {
+                    _buildIntegratedProjectsCache = await
+                        BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects,
+                            referenceContext);
+                }
+
                 // Restore parent projects. These will be updated to include the transitive changes.
-                var parents = await BuildIntegratedRestoreUtility.GetParentProjectsInClosure(
-                    SolutionManager,
+                var parents = BuildIntegratedRestoreUtility.GetParentProjectsInClosure(
+                    projects,
                     buildIntegratedProject,
-                    referenceContext);
+                    _buildIntegratedProjectsCache);
 
                 foreach (var parent in parents)
                 {
                     // if this parent exists in update cache, then update it's entry to be revaluated
-                    if (BuildIntegratedProjectsUpdateDict != null && BuildIntegratedProjectsUpdateDict.ContainsKey(parent.ProjectName))
+                    if (_buildIntegratedProjectsUpdateDict != null && _buildIntegratedProjectsUpdateDict.ContainsKey(parent.ProjectName))
                     {
-                        BuildIntegratedProjectsUpdateDict[parent.ProjectName] = true;
+                        _buildIntegratedProjectsUpdateDict[parent.ProjectName] = true;
                     }
                     else
                     {

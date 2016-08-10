@@ -493,13 +493,10 @@ namespace NuGet.PackageManagement.UI
             var allPackages = packages.ToArray();
 
             // first check all the packages with local sources.
-            var tasks = allPackages.Select(package => GetPackageMetadataAsync(sources, package, token)).ToArray();
-
-            var ignore = tasks
-                .Select(task => task.ContinueWith(newTask => LogError(newTask, uiService), TaskContinuationOptions.OnlyOnFaulted))
-                .ToArray();
-
-            var completed = (await Task.WhenAll(tasks)).Where(m => m != null).ToArray();
+            var completed = (await TaskCombinators.ThrottledAsync(
+                allPackages,
+                (p, t) => GetPackageMetadataAsync(sources, p, t),
+                token)).ToArray();
 
             results.AddRange(completed);
 
@@ -508,13 +505,10 @@ namespace NuGet.PackageManagement.UI
                 // get remaining package's metadata from remote repositories
                 var remainingPackages = allPackages.Where(package => !completed.Any(pack => pack.Identity.Equals(package)));
 
-                tasks = remainingPackages.Select(package => GetPackageMetadataAsync(uiService.ActiveSources, package, token)).ToArray();
-
-                ignore = tasks
-                .Select(task => task.ContinueWith(newTask => LogError(newTask, uiService), TaskContinuationOptions.OnlyOnFaulted))
-                .ToArray();
-
-                var remoteResults = (await Task.WhenAll(tasks)).Where(m => m != null).ToArray();
+                var remoteResults = (await TaskCombinators.ThrottledAsync(
+                    remainingPackages,
+                    (p, t) => GetPackageMetadataAsync(sources, p, t),
+                    token)).ToArray();
 
                 results.AddRange(remoteResults);
             }

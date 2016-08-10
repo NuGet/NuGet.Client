@@ -352,23 +352,10 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Find the list of parent projects which directly or indirectly reference the child project.
         /// </summary>
-        public static async Task<IReadOnlyList<BuildIntegratedNuGetProject>> GetParentProjectsInClosure(
-            ISolutionManager solutionManager,
-            BuildIntegratedNuGetProject target,
-            ExternalProjectReferenceContext referenceContext)
-        {
-            var projects = solutionManager.GetNuGetProjects().OfType<BuildIntegratedNuGetProject>().ToList();
-
-            return await GetParentProjectsInClosure(projects, target, referenceContext);
-        }
-
-        /// <summary>
-        /// Find the list of parent projects which directly or indirectly reference the child project.
-        /// </summary>
-        public static async Task<IReadOnlyList<BuildIntegratedNuGetProject>> GetParentProjectsInClosure(
+        public static IReadOnlyList<BuildIntegratedNuGetProject> GetParentProjectsInClosure(
             IReadOnlyList<BuildIntegratedNuGetProject> projects,
             BuildIntegratedNuGetProject target,
-            ExternalProjectReferenceContext referenceContext)
+            IReadOnlyDictionary<string, BuildIntegratedProjectCacheEntry> cache)
         {
             if (projects == null)
             {
@@ -380,6 +367,11 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(target));
             }
 
+            if (cache == null)
+            {
+                throw new ArgumentNullException(nameof(cache));
+            }
+
             var parents = new HashSet<BuildIntegratedNuGetProject>();
 
             var targetProjectJson = Path.GetFullPath(target.JsonConfigPath);
@@ -389,16 +381,17 @@ namespace NuGet.PackageManagement
                 // do not count the target as a parent
                 if (!target.Equals(project))
                 {
-                    var closure = await project.GetProjectReferenceClosureAsync(referenceContext);
+                    var uniqueName = project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
+                    BuildIntegratedProjectCacheEntry cacheEntry;
 
-                    // find all projects which have a child reference matching the same project.json path as the target
-                    if (closure.Any(reference =>
-                        reference.PackageSpecPath != null &&
-                        string.Equals(targetProjectJson,
-                            Path.GetFullPath(reference.PackageSpecPath),
-                            StringComparison.OrdinalIgnoreCase)))
+                    if (cache.TryGetValue(uniqueName, out cacheEntry))
                     {
-                        parents.Add(project);
+                        // find all projects which have a child reference matching the same project.json path as the target
+                        if (cacheEntry.ReferenceClosure.Any(reference =>
+                            string.Equals(targetProjectJson, Path.GetFullPath(reference), StringComparison.OrdinalIgnoreCase)))
+                        {
+                            parents.Add(project);
+                        }
                     }
                 }
             }
@@ -454,11 +447,11 @@ namespace NuGet.PackageManagement
         /// Find the list of child projects direct or indirect references of target project in
         /// reverse dependency order like the least dependent package first.
         /// </summary>
-        public static async Task GetChildProjectsInClosure(BuildIntegratedNuGetProject target,
-            IList<BuildIntegratedNuGetProject> projects,
+        public static void GetChildProjectsInClosure(BuildIntegratedNuGetProject target,
+            IReadOnlyList<BuildIntegratedNuGetProject> projects,
             IList<BuildIntegratedNuGetProject> orderedChilds,
             HashSet<string> uniqueProjectNames,
-            ExternalProjectReferenceContext referenceContext)
+            IReadOnlyDictionary<string, BuildIntegratedProjectCacheEntry> cache)
         {
             if (projects == null)
             {
@@ -484,23 +477,22 @@ namespace NuGet.PackageManagement
 
             if (!orderedChilds.Contains(target))
             {
-                var closure = await target.GetProjectReferenceClosureAsync(referenceContext);
+                var uniqueName = target.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
 
-                if (closure.Count > 0)
+                BuildIntegratedProjectCacheEntry cacheEntry;
+                if (cache.TryGetValue(uniqueName, out cacheEntry))
                 {
-                    foreach (var dependency in closure)
+                    foreach (var reference in cacheEntry.ReferenceClosure)
                     {
-                        if (dependency.PackageSpecPath != null)
-                        {
-                            var depProject = projects.FirstOrDefault(
-                                proj =>
-                                    StringComparer.OrdinalIgnoreCase.Equals(proj.JsonConfigPath,
-                                        dependency.PackageSpecPath));
+                        var packageSpecPath = Path.GetFullPath(reference);
+                        var depProject = projects.FirstOrDefault(
+                            proj =>
+                                StringComparer.OrdinalIgnoreCase.Equals(Path.GetFullPath(proj.JsonConfigPath),
+                                    packageSpecPath));
 
-                            if (depProject != null && !orderedChilds.Contains(depProject) && uniqueProjectNames.Add(depProject.ProjectName))
-                            {
-                                await GetChildProjectsInClosure(depProject, projects, orderedChilds, uniqueProjectNames, referenceContext);
-                            }
+                        if (depProject != null && !orderedChilds.Contains(depProject) && uniqueProjectNames.Add(depProject.ProjectName))
+                        {
+                            GetChildProjectsInClosure(depProject, projects, orderedChilds, uniqueProjectNames, cache);
                         }
                     }
                 }
