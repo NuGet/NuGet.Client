@@ -49,7 +49,11 @@ namespace NuGet.Resolver
             // validate existing package.config for any invalid dependency
             foreach (var package in installedPackages)
             {
-                var existingPackage = context.AvailablePackages.FirstOrDefault(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, package.Id) && p.Version.Equals(package.Version));
+                var existingPackage =
+                    context.AvailablePackages.FirstOrDefault(
+                        p =>
+                            StringComparer.OrdinalIgnoreCase.Equals(p.Id, package.Id) &&
+                            p.Version.Equals(package.Version));
 
                 if (existingPackage != null)
                 {
@@ -63,8 +67,19 @@ namespace NuGet.Resolver
                 }
                 else
                 {
-                    var packageString = $"'{package.Id} {package.Version.ToNormalizedString()}'";
-                    invalidExistingPackages.Add(packageString);
+                    // check same package is being updated and we've a higher version then 
+                    // ignore logging warning for that.
+                    existingPackage =
+                        context.AvailablePackages.FirstOrDefault(
+                            p =>
+                                StringComparer.OrdinalIgnoreCase.Equals(p.Id, package.Id) &&
+                                VersionComparer.Default.Compare(p.Version, package.Version) > 0);
+
+                    if (existingPackage == null)
+                    {
+                        var packageString = $"'{package.Id} {package.Version.ToNormalizedString()}'";
+                        invalidExistingPackages.Add(packageString);
+                    }
                 }
             }
             // log warning message for all the invalid package dependencies
