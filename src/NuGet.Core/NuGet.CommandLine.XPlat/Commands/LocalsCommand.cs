@@ -45,7 +45,7 @@ namespace NuGet.CommandLine.XPlat
                     var localsCommandRunner = new LocalsCommandRunner(arguments.Values, setting, clear.HasValue(), list.HasValue());
                     localsCommandRunner.ExecuteCommand();
 
-                    return 0;
+                    return 0; 
                 });
             });
 
