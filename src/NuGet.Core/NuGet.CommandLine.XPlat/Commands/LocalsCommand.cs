@@ -6,6 +6,7 @@ using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using System;
+using System.Globalization;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -41,10 +42,21 @@ namespace NuGet.CommandLine.XPlat
                 {
                     var setting = Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null);
 
-                    var localsCommandRunner = new LocalsCommandRunner(arguments.Values, setting, clear.HasValue(), list.HasValue());
-                    localsCommandRunner.ExecuteCommand();
+                    if (((arguments.Values.Count < 1) || string.IsNullOrWhiteSpace(arguments.Values[0])) || (clear.HasValue() ^ list.HasValue()))
+                    {
+                        // Using both -clear and -list command options, or neither one of them, is not supported.
+                        // We use MinArgs = 0 even though the first argument is required,
+                        // to avoid throwing a command argument validation exception and
+                        // immediately show usage help for this command instead.
+                        throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_Help()));
+                    }
+                    else
+                    {
+                        var localsCommandRunner = new LocalsCommandRunner(arguments.Values, setting, clear.HasValue(), list.HasValue());
+                        localsCommandRunner.ExecuteCommand();
+                    }
 
-                    return 0; 
+                    return 0;
                 });
             });
 

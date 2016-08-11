@@ -241,6 +241,24 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to  usage: NuGet locals &lt;all | http-cache | packages-cache | global-packages | temp&gt; [-clear | -list]
+        ///
+        ///Clears or lists local NuGet resources such as http requests cache, packages cache or machine-wide global packages folder.
+        ///
+        ///options:
+        ///
+        /// -Clear                        Clear the selected local resources or cache location(s).
+        /// -List                         List the selected local resources or cache location(s).
+        /// -Help                    (?)  help
+        /// -Verbosity                    Display this amount of detail [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string LocalsCommand_Help {
+            get {
+                return ResourceManager.GetString("LocalsCommand_Help", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to List the selected local resources or cache location(s)..
         /// </summary>
         public static string LocalsCommand_ListDescription {
