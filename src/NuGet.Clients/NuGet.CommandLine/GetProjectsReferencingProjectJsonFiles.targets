@@ -31,7 +31,7 @@
           Include="#:$(MSBuildProjectFullPath)"
           Condition=" '$(NuGetWriteEntryPoint)' == 'true' " />
       <_ProjectReferencingProjectJsonFile 
-        Include="$(MsBuildProjectFullPath)|%(NuGetFullPathForOutput.Identity)" Condition=" %(NuGetFullPathForOutput.Identity) != '' " />
+        Include="=:$(MsBuildProjectFullPath)|%(NuGetFullPathForOutput.Identity)" Condition=" %(NuGetFullPathForOutput.Identity) != '' " />
     </ItemGroup>
 
     <MSBuild

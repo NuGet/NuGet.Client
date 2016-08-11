@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
@@ -54,6 +55,9 @@ namespace NuGet.Commands
             Log = log;
 
             DependencyProviders = dependencyProviders;
+
+            // Default to the project folder
+            RestoreOutputPath = Path.GetDirectoryName(Project.FilePath);
         }
 
         public SourceCacheContext CacheContext { get; set; }
@@ -138,5 +142,15 @@ namespace NuGet.Commands
         /// This includes both remote and local package providers.
         /// </summary>
         public RestoreCommandProviders DependencyProviders { get; set; }
+        /// <summary>
+        /// Defines the paths and behavior for outputs
+        /// </summary>
+        public RestoreOutputType RestoreOutputType { get; set; } = RestoreOutputType.Unknown;
+
+        /// <summary>
+        /// Restore output path
+        /// </summary>
+        public string RestoreOutputPath { get; set; }
+
     }
 }

@@ -27,8 +27,9 @@ namespace NuGet.Commands
         /// </summary>
         public bool Success { get; }
 
-        public string ProjectName { get; }
-        public string ProjectDirectory { get; }
+        public string TargetsPath { get; }
+
+        public string PropsPath { get; }
 
         /// <summary>
         /// Gets the root of the repository containing packages with MSBuild files
@@ -38,32 +39,44 @@ namespace NuGet.Commands
         /// <summary>
         /// Gets a list of MSBuild props files provided by packages during this restore
         /// </summary>
-        public IEnumerable<string> Props { get; }
+        public IReadOnlyList<string> Props { get; }
 
         /// <summary>
         /// Gets a list of MSBuild targets files provided by packages during this restore
         /// </summary>
-        public IEnumerable<string> Targets { get; }
+        public IReadOnlyList<string> Targets { get; }
 
-        public MSBuildRestoreResult(string projectName, string projectDirectory, bool success)
+        public MSBuildRestoreResult(string targetsPath, string propsPath, bool success)
+            : this(targetsPath,
+                  propsPath, 
+                  repositoryRoot: string.Empty, 
+                  targets: new List<string>(),
+                  props: new List<string>(),
+                  success: success)
         {
-            Success = success;
-            ProjectName = projectName;
-            ProjectDirectory = projectDirectory;
-            RepositoryRoot = string.Empty;
-            Props = Enumerable.Empty<string>();
-            Targets = Enumerable.Empty<string>();
         }
 
-        public MSBuildRestoreResult(string projectName,
-            string projectDirectory,
+        public MSBuildRestoreResult(
+            string targetsPath,
+            string propsPath,
             string repositoryRoot,
-            IEnumerable<string> props,
-            IEnumerable<string> targets)
+            IReadOnlyList<string> props,
+            IReadOnlyList<string> targets)
+            : this(targetsPath, propsPath, repositoryRoot, props, targets, success: true)
         {
-            Success = true;
-            ProjectName = projectName;
-            ProjectDirectory = projectDirectory;
+        }
+
+        private MSBuildRestoreResult(
+            string targetsPath,
+            string propsPath,
+            string repositoryRoot,
+            IReadOnlyList<string> props,
+            IReadOnlyList<string> targets,
+            bool success)
+        {
+            Success = success;
+            TargetsPath = targetsPath;
+            PropsPath = propsPath;
             RepositoryRoot = repositoryRoot;
             Props = props;
             Targets = targets;
@@ -71,42 +84,52 @@ namespace NuGet.Commands
 
         public void Commit(ILogger log)
         {
+            // Ensure the directories exists
+            if (!Success || Targets.Count > 0 || Props.Count > 0)
+            {
+                var outputDirs = new HashSet<string>() { Path.GetDirectoryName(TargetsPath), Path.GetDirectoryName(PropsPath) };
+
+                foreach (var dir in outputDirs)
+                {
+                    Directory.CreateDirectory(dir);
+                }
+            }
+
             if (!Success)
             {
-                var name = $"{ProjectName}.nuget.targets";
-                var path = Path.Combine(ProjectDirectory, name);
+                // Write a target containing an error 
+                log.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_GeneratingMsBuildFile, TargetsPath));
+                GenerateMSBuildErrorFile(TargetsPath);
 
-                log.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_GeneratingMsBuildFile, name));
-                GenerateMSBuildErrorFile(path);
+                // Clean up any props that exist
+                if (File.Exists(PropsPath))
+                {
+                    File.Delete(PropsPath);
+                }
             }
             else
             {
                 // Generate the files as needed
-                var targetsName = $"{ProjectName}.nuget.targets";
-                var propsName = $"{ProjectName}.nuget.props";
-                var targetsPath = Path.Combine(ProjectDirectory, targetsName);
-                var propsPath = Path.Combine(ProjectDirectory, propsName);
-
-                if (Targets.Any())
+                if (Targets.Count > 0)
                 {
-                    log.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_GeneratingMsBuildFile, targetsName));
+                    log.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_GeneratingMsBuildFile, TargetsPath));
 
-                    GenerateImportsFile(targetsPath, Targets);
+                    GenerateImportsFile(TargetsPath, Targets);
                 }
-                else if (File.Exists(targetsPath))
+                else if (File.Exists(TargetsPath))
                 {
-                    File.Delete(targetsPath);
+                    File.Delete(TargetsPath);
                 }
 
-                if (Props.Any())
+                if (Props.Count > 0)
                 {
-                    log.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_GeneratingMsBuildFile, propsName));
+                    log.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_GeneratingMsBuildFile, PropsPath));
 
-                    GenerateImportsFile(propsPath, Props);
+                    GenerateImportsFile(PropsPath, Props);
                 }
-                else if (File.Exists(propsPath))
+                else if (File.Exists(PropsPath))
                 {
-                    File.Delete(propsPath);
+                    File.Delete(PropsPath);
                 }
             }
         }

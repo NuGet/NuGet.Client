@@ -65,7 +65,7 @@ namespace NuGet.Commands.Test
 
                 var lines = new List<string>();
                 lines.Add($"#:{project1proj}");
-                lines.Add($"{project1proj}|{project2proj}");
+                lines.Add($"=:{project1proj}|{project2proj}");
 
                 // Act
                 var provider = new MSBuildProjectReferenceProvider(lines);

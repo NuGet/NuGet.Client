@@ -157,9 +157,6 @@ namespace NuGet.Commands
                         result.LockFilePath,
                         lockedToken =>
                         {
-                            var lockFileDirectory = Path.GetDirectoryName(result.LockFilePath);
-                            Directory.CreateDirectory(lockFileDirectory);
-
                             lockFileFormat.Write(result.LockFilePath, result.LockFile);
 
                             return Task.FromResult(0);

@@ -130,6 +130,10 @@ namespace NuGet.ProjectModel
 
         public void Write(string filePath, LockFile lockFile)
         {
+            // Create the directory if it does not exist
+            var fileInfo = new FileInfo(filePath);
+            fileInfo.Directory.Create();
+
             using (var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
             {
                 Write(stream, lockFile);

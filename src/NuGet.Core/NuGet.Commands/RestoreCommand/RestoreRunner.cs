@@ -52,7 +52,7 @@ namespace NuGet.Commands
             var inputs = new List<string>(restoreContext.Inputs);
 
             // If there are no inputs, use the current directory
-            if (!inputs.Any())
+            if (restoreContext.PreLoadedRequestProviders.Count < 1 && !inputs.Any())
             {
                 inputs.Add(Path.GetFullPath("."));
             }
@@ -65,6 +65,17 @@ namespace NuGet.Commands
             var uniqueRequest = new HashSet<string>(comparer);
 
             // Create requests
+            // Pre-loaded requests
+            foreach (var request in await CreatePreLoadedRequests(restoreContext))
+            {
+                // De-dupe requests
+                if (uniqueRequest.Add(request.Request.LockFilePath))
+                {
+                    requests.Enqueue(request);
+                }
+            }
+
+            // Input based requests
             foreach (var input in inputs)
             {
                 var inputRequests = await CreateRequests(input, restoreContext);
@@ -176,6 +187,20 @@ namespace NuGet.Commands
             var doneTask = await Task.WhenAny(restoreTasks);
             restoreTasks.Remove(doneTask);
             return await doneTask;
+        }
+
+        private static async Task<IReadOnlyList<RestoreSummaryRequest>> CreatePreLoadedRequests(
+            RestoreArgs restoreContext)
+        {
+            var results = new List<RestoreSummaryRequest>();
+
+            foreach (var provider in restoreContext.PreLoadedRequestProviders)
+            {
+                var requests = await provider.CreateRequests(restoreContext);
+                results.AddRange(requests);
+            }
+
+            return results;
         }
 
         private static async Task<IReadOnlyList<RestoreSummaryRequest>> CreateRequests(

@@ -27,16 +27,25 @@ namespace NuGet.Commands
             RestoreRequest request,
             Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>> includeFlagGraphs)
         {
+            var targetsPath = Path.Combine(request.RestoreOutputPath, $"{project.Name}.nuget.targets");
+            var propsPath = Path.Combine(request.RestoreOutputPath, $"{project.Name}.nuget.props");
+
+            if (request.RestoreOutputType == RestoreOutputType.NETCore)
+            {
+                targetsPath = Path.Combine(request.RestoreOutputPath, $"project.generated.targets");
+                propsPath = Path.Combine(request.RestoreOutputPath, $"project.generated.props");
+            }
+
             // Non-Msbuild projects should skip targets and treat it as success
             if (!context.IsMsBuildBased && !ForceWriteTargets())
             {
-                return new MSBuildRestoreResult(project.Name, project.BaseDirectory, success: true);
+                return new MSBuildRestoreResult(targetsPath, propsPath, success: true);
             }
 
             // Invalid msbuild projects should write out an msbuild error target
             if (!targetGraphs.Any())
             {
-                return new MSBuildRestoreResult(project.Name, project.BaseDirectory, success: false);
+                return new MSBuildRestoreResult(targetsPath, propsPath, success: false);
             }
 
             // Framework -> (targets, props)
@@ -60,7 +69,7 @@ namespace NuGet.Commands
             // Conditionals for targets and props by framework is not currently supported.
             if (NeedsMSBuildConditionals(buildAssetsByFramework))
             {
-                return new MSBuildRestoreResult(project.Name, project.BaseDirectory, success: false);
+                return new MSBuildRestoreResult(targetsPath, propsPath, success: false);
             }
 
             // Since all targets and props are the same, any framework can be used.
@@ -74,8 +83,8 @@ namespace NuGet.Commands
 
             // Create a result which may be committed to disk later.
             return new MSBuildRestoreResult(
-                project.Name,
-                project.BaseDirectory,
+                targetsPath,
+                propsPath,
                 repositoryRoot,
                 combinedTargetsAndProps.Props,
                 combinedTargetsAndProps.Targets);

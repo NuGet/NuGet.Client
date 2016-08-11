@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -25,15 +26,18 @@ namespace NuGet.Commands.Test
                     // Only run the test if globalPackagesFolder can be determined
                     // Because, globalPackagesFolder would be null if %USERPROFILE% was null
 
-                    var msBuildRestoreResult = new MSBuildRestoreResult(
-                        projectName,
-                        randomProjectDirectory,
-                        globalPackagesFolder,
-                        Enumerable.Empty<string>(),
-                        new[] { "blah" });
-
                     var targetsName = $"{projectName}.nuget.targets";
                     var targetsPath = Path.Combine(randomProjectDirectory, targetsName);
+
+                    var propsName = $"{projectName}.nuget.props";
+                    var propsPath = Path.Combine(randomProjectDirectory, propsName);
+
+                    var msBuildRestoreResult = new MSBuildRestoreResult(
+                        targetsPath,
+                        propsPath,
+                        globalPackagesFolder,
+                        new List<string>(),
+                        new List<string>() { "blah" });
 
                     // Assert
                     Assert.False(File.Exists(targetsPath));
