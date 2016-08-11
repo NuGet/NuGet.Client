@@ -48,7 +48,7 @@ namespace NuGet.CommandLine.XPlat
                         // We use MinArgs = 0 even though the first argument is required,
                         // to avoid throwing a command argument validation exception and
                         // immediately show usage help for this command instead.
-                        throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_Help()));
+                        throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_Help));
                     }
                     else
                     {
