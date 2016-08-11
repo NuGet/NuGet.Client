@@ -89,7 +89,7 @@ namespace NuGet.Commands
             return repository;
         }
 
-        private async Task<IList<string>> GetListEndpointsAsync()
+        private async Task<IList<KeyValuePair<Configuration.PackageSource, string>>> GetListEndpointsAsync()
         {
             var configurationSources = SourceProvider.LoadPackageSources()
                 .Where(p => p.IsEnabled)
@@ -98,10 +98,9 @@ namespace NuGet.Commands
             IList<Configuration.PackageSource> packageSources;
             if (Source.Count > 0)
             {
-                packageSources
-                    = Source
-                        .Select(s => Common.PackageSourceProviderExtensions.ResolveSource(configurationSources, s))
-                        .ToList();
+                packageSources = Source
+                    .Select(s => Common.PackageSourceProviderExtensions.ResolveSource(configurationSources, s))
+                    .ToList();
             }
             else
             {
@@ -110,40 +109,32 @@ namespace NuGet.Commands
 
             var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(SourceProvider);
 
-            var listCommandResourceTasks = new List<Task<ListCommandResource>>();
+            var listCommandResourceTasks = packageSources
+                .Select(source => 
+                {
+                    var sourceRepository = sourceRepositoryProvider.CreateRepository(source);
+                    return sourceRepository.GetResourceAsync<ListCommandResource>();
+                })
+                .ToList();
 
-            foreach (var source in packageSources)
-            {
-                var sourceRepository = sourceRepositoryProvider.CreateRepository(source);
-                listCommandResourceTasks.Add(sourceRepository.GetResourceAsync<ListCommandResource>());
-            }
             var listCommandResources = await Task.WhenAll(listCommandResourceTasks);
 
-            var listEndpoints = new List<string>();
-            for (int i = 0; i < listCommandResources.Length; i++)
+            var listEndpoints = packageSources.Zip(
+                listCommandResources,
+                (p, l) => new KeyValuePair<Configuration.PackageSource, string>(p, l?.GetListEndpoint()));
+
+            var partitioned = listEndpoints.ToLookup(kv => kv.Value != null);
+
+            foreach (var packageSource in partitioned[key: false].Select(kv => kv.Key))
             {
-                string listEndpoint = null;
-                var listCommandResource = listCommandResources[i];
-                if (listCommandResource != null)
-                {
-                    listEndpoint = listCommandResource.GetListEndpoint();
-                }
+                var message = string.Format(
+                    LocalizedResourceManager.GetString("ListCommand_ListNotSupported"),
+                    packageSource.Source);
 
-                if (listEndpoint != null)
-                {
-                    listEndpoints.Add(listEndpoint);
-                }
-                else
-                {
-                    var message = string.Format(
-                        LocalizedResourceManager.GetString("ListCommand_ListNotSupported"),
-                        packageSources[i].Source);
-
-                    Console.LogWarning(message);
-                }
+                Console.LogWarning(message);
             }
 
-            return listEndpoints;
+            return partitioned[key: true].ToList();
         }
 
         public override async Task ExecuteCommandAsync()
@@ -155,7 +146,13 @@ namespace NuGet.Commands
             }
 
             var listEndpoints = await GetListEndpointsAsync();
-            var packages = GetPackages(listEndpoints);
+
+            // override v2 credentials adapter with new one having endpoints mapping
+            var adapter = new Credentials.CredentialServiceAdapter(CredentialService);
+            adapter.SetEndpoints(listEndpoints);
+            HttpClient.DefaultCredentialProvider = adapter;
+
+            var packages = GetPackages(listEndpoints.Select(kv => kv.Value));
 
             bool hasPackages = false;
 

@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using NuGet.Test.Utility;
 using Xunit;
+using System.Text;
 
 namespace NuGet.CommandLine.Test
 {
@@ -653,7 +654,7 @@ namespace NuGet.CommandLine.Test
                     using (var serverV2 = new MockServer())
                     {
                         Util.AddFlatContainerResource(indexJson, serverV3);
-                        Util.AddLegacyUrlResource(indexJson, serverV2);
+                        Util.AddLegacyGalleryResource(indexJson, serverV2);
                         string searchRequest = string.Empty;
 
                         serverV2.Get.Add("/", r =>
@@ -963,6 +964,112 @@ namespace NuGet.CommandLine.Test
                 result.Item3.Contains("Response status code does not indicate success: 400 (Bad Request)."),
                 "Expected error message not found in " + result.Item3
                 );
+        }
+
+        [Fact]
+        public void ListCommand_WithAuthenticatedSource_AppliesCredentialsFromSettings()
+        {
+            Util.ClearWebCache();
+            var expectedAuthHeader = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes("user:password"));
+            var listEndpoint = Guid.NewGuid().ToString() + "/api/v2";
+
+            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", randomTestFolder);
+                var package1 = new ZipPackage(packageFileName1);
+
+                // Server setup
+                using (var serverV3 = new MockServer())
+                {
+                    var indexJson = Util.CreateIndexJson();
+                    Util.AddFlatContainerResource(indexJson, serverV3);
+                    Util.AddLegacyGalleryResource(indexJson, serverV3, listEndpoint);
+
+                    serverV3.Get.Add("/", r =>
+                    {
+                        var h = r.Headers["Authorization"];
+                        if (h == null)
+                        {
+                            return new Action<HttpListenerResponse>(response =>
+                            {
+                                response.StatusCode = 401;
+                                response.AddHeader("WWW-Authenticate", @"Basic realm=""Test""");
+                                MockServer.SetResponseContent(response, "401 Unauthenticated");
+                            });
+                        }
+
+                        if (expectedAuthHeader != h)
+                        {
+                            return HttpStatusCode.Forbidden;
+                        }
+
+                        var path = r.Url.AbsolutePath;
+
+                        if (path == "/index.json")
+                        {
+                            return new Action<HttpListenerResponse>(response =>
+                            {
+                                response.StatusCode = 200;
+                                response.ContentType = "text/javascript";
+                                MockServer.SetResponseContent(response, indexJson.ToString());
+                            });
+                        }
+
+                        if (path == $"/{listEndpoint}/$metadata")
+                        {
+                            return MockServerResource.NuGetV2APIMetadata;
+                        }
+
+                        if (path == $"/{listEndpoint}/Search()")
+                        {
+                            return new Action<HttpListenerResponse>(response =>
+                            {
+                                response.ContentType = "application/atom+xml;type=feed;charset=utf-8";
+                                var feed = serverV3.ToODataFeed(new[] { package1 }, "Search");
+                                MockServer.SetResponseContent(response, feed);
+                            });
+                        }
+
+                        return "OK";
+                    });
+
+                    var config = $@"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+  <packageSources>
+    <add key='vsts' value='{serverV3.Uri}index.json' protocolVersion='3' />
+  </packageSources>
+  <packageSourceCredentials>
+    <vsts>
+      <add key='Username' value='user' />
+      <add key='ClearTextPassword' value='password' />
+    </vsts>
+  </packageSourceCredentials>
+ </configuration>";
+
+                    var configFileName = Path.Combine(randomTestFolder, "nuget.config");
+                    File.WriteAllText(configFileName, config);
+
+                    serverV3.Start();
+
+                    // Act
+                    var result = CommandRunner.Run(
+                        Util.GetNuGetExePath(),
+                        Directory.GetCurrentDirectory(),
+                        $"list test -source {serverV3.Uri}index.json -configfile {configFileName} -verbosity detailed -noninteractive",
+                        waitForExit: true);
+
+                    serverV3.Stop();
+
+                    // Assert
+                    Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
+                    Assert.Contains("Using credentials from config. UserName: user", result.Item2);
+                    Assert.Contains($"GET {serverV3.Uri}{listEndpoint}/Search()", result.Item2);
+                    // verify that only package id & version is displayed
+                    Assert.Matches(@"(?m)testPackage1\s+1\.1\.0", result.Item2);
+
+                }
+            }
         }
     }
 }
