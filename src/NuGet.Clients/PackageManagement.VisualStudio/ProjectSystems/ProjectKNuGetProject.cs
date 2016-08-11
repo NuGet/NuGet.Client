@@ -72,22 +72,6 @@ namespace NuGet.PackageManagement.VisualStudio
             InternalMetadata.Add(NuGetProjectMetadataKeys.SupportedFrameworks, supportedFrameworks);
         }
 
-        private static bool IsCompatible(
-            NuGetFramework projectFrameworkName,
-            IEnumerable<NuGetFramework> packageSupportedFrameworks)
-        {
-            if (packageSupportedFrameworks.Any())
-            {
-                return packageSupportedFrameworks.Any(packageSupportedFramework =>
-                    DefaultCompatibilityProvider.Instance.IsCompatible(
-                        projectFrameworkName,
-                        packageSupportedFramework));
-            }
-
-            // No supported frameworks means that everything is supported.
-            return true;
-        }
-
         public override async Task<bool> InstallPackageAsync(
             PackageIdentity packageIdentity,
             DownloadResourceResult downloadResourceResult,
@@ -105,11 +89,25 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentException(ProjectManagement.Strings.PackageStreamShouldBeSeekable);
             }
 
+            // Uninstall the package if it is already installed. This should only happen when an
+            // update occurred from Install-Package PMC command, the Browse tab in the UI, or the
+            // Installed tab in the UI. An update from the Updates tab has an explicit Uninstall
+            // action before the install.
+            var installedPackages = await GetInstalledPackagesAsync(token);
+            var packageToReplace = installedPackages
+                .Where(pr => StringComparer.OrdinalIgnoreCase.Equals(pr.PackageIdentity.Id, packageIdentity.Id))
+                .FirstOrDefault();
+
+            if (packageToReplace != null)
+            {
+                await UninstallPackageAsync(packageToReplace.PackageIdentity, nuGetProjectContext, token);
+            }
+
             nuGetProjectContext.Log(MessageLevel.Info, Strings.InstallingPackage, packageIdentity);
 
+            // Get additional information from the package that the INuGetPackageManager can act on.
             packageStream.Seek(0, SeekOrigin.Begin);
             
-            // Get additional information from the package that the INuGetPackageManager can act on.
             IEnumerable<NuGetFramework> supportedFrameworks;
             IEnumerable<PackageType> packageTypes;
             using (var packageReader = new PackageArchiveReader(packageStream, leaveStreamOpen: true))
@@ -133,6 +131,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 args[StateKey] = state;
             }
 
+            // Perform the actual installation by delegating to INuGetPackageManager.
             await _project.InstallPackageAsync(
                 new NuGetPackageMoniker
                 {
