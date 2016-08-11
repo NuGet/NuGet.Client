@@ -329,29 +329,6 @@
   </data>
   <data name="LocalsCommand_Help" xml:space="preserve">
     <value>usage: NuGet locals &lt;all | http-cache | packages-cache | global-packages | temp&gt; [-clear | -list]
-
-Clears or lists local NuGet resources such as http requests cache, packages cache or machine-wide global packages folder.
-
-options:
-
- -Clear                        Clear the selected local resources or cache location(s).
- -List                         List the selected local resources or cache location(s).
- -Help                    (?)  help
- -Verbosity                    Display this amount of details in the output: normal, quiet, detailed.
- -NonInteractive               Do not prompt for user input or confirmations.
- -ConfigFile                   The NuGet configuration file. If not specified, file %AppData%\NuGet\NuGet.config is used as configuration file.
- -ForceEnglishOutput           Forces the application to run using an invariant, English-based culture.
-
-examples:
-
-nuget locals all -clear
-
-nuget locals http-cache -clear
-
-nuget locals packages-cache -list
-
-nuget locals global-packages -list
-
 For more information, visit http://docs.nuget.org/docs/reference/command-line-reference</value>
   </data>
 </root>
