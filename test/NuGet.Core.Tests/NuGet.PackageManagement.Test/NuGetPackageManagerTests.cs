@@ -5462,6 +5462,98 @@ namespace NuGet.Test
             }
         }
 
+        [Fact]
+        public async Task TestPacMan_PreviewUpdatePackage_DeepDependencies()
+        {
+            // Arrange
+
+            // Set up Package Dependencies
+            var dependencies = new List<PackageDependency>();
+            for (int j = 1; j < 3; j++)
+            {
+                for (int i = 2; i <= 30; i++)
+                {
+                    dependencies.Add(new PackageDependency($"Package{i}", new VersionRange(new NuGetVersion(j, 0, 0))));
+                }
+            }
+
+            // Set up Package Source
+            var packages = new List<SourcePackageDependencyInfo>();
+            int next = 1;
+            for (int i = 1; i < 3; i++)
+            {
+                for (int j = 1; j < 30; j++)
+                {
+                    next = j + 1;
+                    packages.Add(new SourcePackageDependencyInfo($"Package{j}", new NuGetVersion(i, 0, 0),
+                        dependencies.Where(dep => dep.Id.CompareTo($"Package{j}") > 0 && dep.VersionRange.MinVersion.Equals(new NuGetVersion(i, 0, 0))),
+                        true,
+                        null));
+                }
+
+                packages.Add(new SourcePackageDependencyInfo($"Package{next}", new NuGetVersion(i, 0, 0),
+                    new PackageDependency[] {},
+                    true,
+                    null));
+            }
+
+            var sourceRepositoryProvider = CreateSource(packages);
+
+            // Set up NuGetProject
+            var fwk45 = NuGetFramework.Parse("net45");
+
+            var installedPackages = new List<PackageReference>();
+            for (int i = 1; i <= 30; i++)
+            {
+                installedPackages.Add(new PackageReference(new PackageIdentity($"Package{i}", new NuGetVersion(1, 0, 0)), fwk45, true));
+            }
+
+            var nuGetProject = new TestNuGetProject(installedPackages);
+
+            // Create Package Manager
+            using (var solutionManager = new TestSolutionManager(true))
+            {
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    new Configuration.NullSettings(),
+                    solutionManager,
+                    new TestDeleteOnRestartManager());
+
+                // Main Act
+                var targets = new List<PackageIdentity>
+                  {
+                    new PackageIdentity("Package1", new NuGetVersion(2, 0, 0)),
+                    new PackageIdentity("Package2", new NuGetVersion(2, 0, 0)),
+                    new PackageIdentity("Package3", new NuGetVersion(2, 0, 0)),
+                    new PackageIdentity("Package4", new NuGetVersion(2, 0, 0)),
+                    new PackageIdentity("Package5", new NuGetVersion(2, 0, 0)),
+                    new PackageIdentity("Package6", new NuGetVersion(2, 0, 0)),
+                    new PackageIdentity("Package7", new NuGetVersion(2, 0, 0)),
+                    new PackageIdentity("Package8", new NuGetVersion(2, 0, 0)),
+                  };
+
+                var result = await nuGetPackageManager.PreviewUpdatePackagesAsync(
+                    targets,
+                    nuGetProject,
+                    new ResolutionContext(),
+                    new TestNuGetProjectContext(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None);
+
+                // Assert
+                var resulting = result.Select(a => Tuple.Create(a.PackageIdentity, a.NuGetProjectActionType)).ToArray();
+
+                var expected = new List<Tuple<PackageIdentity, NuGetProjectActionType>>();
+                for (int i = 1; i <= 30; i++)
+                {
+                    Expected(expected, $"Package{i}", new NuGetVersion(1, 0, 0), new NuGetVersion(2, 0, 0));
+                }
+
+                Assert.True(Compare(resulting, expected));
+            }
+        }
+
         private static void AddToPackagesFolder(PackageIdentity package, string root)
         {
             var dir = Path.Combine(root, $"{package.Id}.{package.Version.ToString()}");

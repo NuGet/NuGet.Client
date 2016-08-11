@@ -1065,6 +1065,12 @@ namespace NuGet.PackageManagement
             IEnumerable<PackageIdentity> packages,
             IEnumerable<SourcePackageDependencyInfo> available, int depth)
         {
+            // check if we've already added dependencies for current id
+            if (!result.Add(id))
+            {
+                return;
+            }
+
             // we want the exact PackageIdentity for this id
             var packageIdentity = packages.FirstOrDefault(p => p.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
             if (packageIdentity == null)
@@ -1078,8 +1084,6 @@ namespace NuGet.PackageManagement
             {
                 throw new ArgumentException("available");
             }
-
-            result.Add(id);
 
             // iterate through all the dependencies and call recursively to collect dependencies
             foreach (var dependency in sourceDepInfo.Dependencies)
