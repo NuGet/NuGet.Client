@@ -414,11 +414,17 @@ namespace NuGet.CommandLine.Test
             array.Add(resource);
         }
 
-        public static void AddLegacyUrlResource(JObject index, MockServer serverV2)
+        public static void AddLegacyGalleryResource(JObject index, MockServer serverV2, string relativeUri = null)
         {
+            var resourceUri = new Uri(serverV2.Uri);
+            if (relativeUri != null)
+            {
+                resourceUri = new Uri(resourceUri, relativeUri);
+            }
+
             var resource = new JObject
             {
-                { "@id", serverV2.Uri },
+                { "@id", resourceUri },
                 { "@type", "LegacyGallery/2.0.0" }
             };
 

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics.CodeAnalysis;
@@ -7,7 +10,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using NuGet.Common;
 using NuGet.Credentials;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -23,7 +25,6 @@ namespace NuGet.CommandLine
         protected Command()
         {
             Arguments = new List<string>();
-            _credentialRequested = new HashSet<Uri>();
         }
 
         public IList<string> Arguments { get; private set; }
@@ -55,8 +56,7 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "Option_ForceEnglishOutput")]
         public bool ForceEnglishOutput { get; set; }
 
-        // Used to check if credential has been requested for a uri.
-        private readonly HashSet<Uri> _credentialRequested;
+        protected Configuration.ICredentialService CredentialService { get; private set; }
 
         public string CurrentDirectory
         {
@@ -158,11 +158,11 @@ namespace NuGet.CommandLine
         /// </summary>
         protected void SetDefaultCredentialProvider()
         {
-            var credentialService = new CredentialService(GetCredentialProviders(), Console.WriteError, NonInteractive);
+            CredentialService = new CredentialService(GetCredentialProviders(), Console.WriteError, NonInteractive);
 
-            HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(credentialService);
+            HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(CredentialService);
 
-            HttpHandlerResourceV3.CredentialService = credentialService;
+            HttpHandlerResourceV3.CredentialService = CredentialService;
 
             HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>
             {

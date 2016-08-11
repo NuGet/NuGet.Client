@@ -5,6 +5,8 @@ using System;
 using System.Net;
 using System.Threading;
 using NuGet.Configuration;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace NuGet.Credentials
 {
@@ -13,9 +15,10 @@ namespace NuGet.Credentials
     /// </summary>
     public class CredentialServiceAdapter : NuGet.ICredentialProvider
     {
-        private readonly CredentialService _credentialService;
+        private readonly ICredentialService _credentialService;
+        private IDictionary<Uri, Uri> _endpoints;
 
-        public CredentialServiceAdapter(CredentialService service)
+        public CredentialServiceAdapter(ICredentialService service)
         {
             if (service == null)
             {
@@ -25,11 +28,32 @@ namespace NuGet.Credentials
             _credentialService = service;
         }
 
+        /// <summary>
+        /// Initializes endpoint-to-source uri mapping
+        /// </summary>
+        /// <param name="endpoints">List of endpoint mapping entries</param>
+        public void SetEndpoints(IEnumerable<KeyValuePair<Configuration.PackageSource, string>> endpoints)
+        {
+            _endpoints = endpoints
+                .Where(kv => kv.Key.IsHttp)
+                .ToDictionary(
+                    kv => new Uri(kv.Value),
+                    kv => kv.Key.SourceUri);
+        }
+
         public ICredentials GetCredentials(Uri uri, IWebProxy proxy, CredentialType credentialType, bool retrying)
         {
             if (uri == null)
             {
                 throw new ArgumentNullException(nameof(uri));
+            }
+
+            // NuGetCore calls the adapter with a "list" endpoint uri.
+            // It may be different from a source uri, for instance when v3 source advertises v2 search endpoint.
+            // If endpoints mapping is supplied, retrieve the source uri and use it to acquire credentials
+            if (_endpoints != null && _endpoints.ContainsKey(uri))
+            {
+                uri = _endpoints[uri];
             }
 
             var type = credentialType == CredentialType.ProxyCredentials ?
