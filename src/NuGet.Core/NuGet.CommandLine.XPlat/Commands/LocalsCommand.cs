@@ -1,12 +1,11 @@
-﻿using System;
-using System.Globalization;
-using System.IO;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using Microsoft.Dnx.Runtime.Common.CommandLine;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Versioning;
-
+using System;
 
 namespace NuGet.CommandLine.XPlat
 {
