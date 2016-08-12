@@ -556,7 +556,7 @@ namespace NuGet.Test
                 // Act
                 var actions = await nuGetPackageManager.PreviewUpdatePackagesAsync(
                     "Newtonsoft.Json",
-                    buildIntegratedProject,
+                    new List<NuGetProject> { buildIntegratedProject },
                     new ResolutionContext(),
                     new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories(),
@@ -630,7 +630,7 @@ namespace NuGet.Test
                     CancellationToken.None);
 
                 var actions = await nuGetPackageManager.PreviewUpdatePackagesAsync(
-                    buildIntegratedProject,
+                    new List<NuGetProject> { buildIntegratedProject },
                     new ResolutionContext(),
                     new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories(),
@@ -703,7 +703,7 @@ namespace NuGet.Test
 
                 // Act
                 var actions = await nuGetPackageManager.PreviewUpdatePackagesAsync(
-                    buildIntegratedProject,
+                    new List<NuGetProject> { buildIntegratedProject },
                     new ResolutionContext(),
                     new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories(),
@@ -773,7 +773,7 @@ namespace NuGet.Test
 
                 // Update to the latest
                 var actions = await nuGetPackageManager.PreviewUpdatePackagesAsync(
-                    buildIntegratedProject,
+                    new List<NuGetProject> { buildIntegratedProject },
                     new ResolutionContext(),
                     new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories(),
@@ -788,7 +788,7 @@ namespace NuGet.Test
 
                 // Act
                 actions = await nuGetPackageManager.PreviewUpdatePackagesAsync(
-                    buildIntegratedProject,
+                    new List<NuGetProject> { buildIntegratedProject },
                     new ResolutionContext(),
                     new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories(),
@@ -847,7 +847,7 @@ namespace NuGet.Test
                 // Act
                 var actions = await nuGetPackageManager.PreviewUpdatePackagesAsync(
                     versioning107,
-                    buildIntegratedProject,
+                    new List<NuGetProject> { buildIntegratedProject },
                     new ResolutionContext(),
                     new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories(),
@@ -941,7 +941,7 @@ namespace NuGet.Test
                 // Act
                 var actions = await nuGetPackageManager.PreviewUpdatePackagesAsync(
                     targets,
-                    buildIntegratedProject,
+                    new List<NuGetProject> { buildIntegratedProject },
                     new ResolutionContext(),
                     new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories(),
@@ -1021,7 +1021,7 @@ namespace NuGet.Test
                 // Act
                 var actions = await nuGetPackageManager.PreviewUpdatePackagesAsync(
                     versioning101,
-                    buildIntegratedProject,
+                    new List<NuGetProject> { buildIntegratedProject },
                     new ResolutionContext(),
                     new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories(),

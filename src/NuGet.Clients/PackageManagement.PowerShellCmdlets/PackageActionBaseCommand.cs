@@ -108,7 +108,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 var actions = await PackageManager.PreviewInstallPackageAsync(project, identity, resolutionContext, projectContext, PrimarySourceRepositories, null, CancellationToken.None);
 
-                if (!ShouldContinueDueToDotnetDeprecation(project, actions, isPreview))
+                if (!ShouldContinueDueToDotnetDeprecation(actions, isPreview))
                 {
                     return;
                 }
@@ -154,7 +154,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 var actions = await PackageManager.PreviewInstallPackageAsync(project, packageId, resolutionContext, projectContext, PrimarySourceRepositories, null, CancellationToken.None);
 
-                if (!ShouldContinueDueToDotnetDeprecation(project, actions, isPreview))
+                if (!ShouldContinueDueToDotnetDeprecation(actions, isPreview))
                 {
                     return;
                 }
@@ -221,7 +221,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        protected bool ShouldContinueDueToDotnetDeprecation(NuGetProject project, IEnumerable<NuGetProjectAction> actions, bool whatIf)
+        protected bool ShouldContinueDueToDotnetDeprecation(IEnumerable<NuGetProjectAction> actions, bool whatIf)
         {
             // Don't prompt if the user has chosen to ignore this warning.
             // Also, -WhatIf should not prompt the user since there is not action performed anyway.
@@ -231,8 +231,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
 
             // Determine if any of the project actions are affected by the deprecated framework.
-            var resolvedActions = actions
-                .Select(action => new ResolvedAction(project, action));
+            var resolvedActions = actions.Select(action => new ResolvedAction(action.Project, action));
 
             var projects = DotnetDeprecatedPrompt.GetAffectedProjects(resolvedActions);
             if (!projects.Any())

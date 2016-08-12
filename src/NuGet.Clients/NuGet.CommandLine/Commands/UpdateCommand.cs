@@ -289,7 +289,7 @@ namespace NuGet.CommandLine
                 {
                     var actions = await packageManager.PreviewUpdatePackagesAsync(
                         targetIdentities,
-                        nugetProject,
+                        new[] { nugetProject },
                         resolutionContext,
                         project.NuGetProjectContext,
                         sourceRepositories,
@@ -302,7 +302,7 @@ namespace NuGet.CommandLine
             else
             {
                 var actions = await packageManager.PreviewUpdatePackagesAsync(
-                        nugetProject,
+                        new[] { nugetProject },
                         resolutionContext,
                         project.NuGetProjectContext,
                         sourceRepositories,

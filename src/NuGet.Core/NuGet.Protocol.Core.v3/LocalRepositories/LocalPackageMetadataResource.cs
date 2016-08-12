@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol
@@ -38,6 +39,23 @@ namespace NuGet.Protocol
                     .Select(GetPackageMetadata)
                     .ToList();
             },
+            token);
+        }
+
+        public override Task<IPackageSearchMetadata> GetMetadataAsync(
+            PackageIdentity package,
+            ILogger log,
+            CancellationToken token)
+        {
+            return Task.Run<IPackageSearchMetadata>(() =>
+                {
+                    var packageInfo = _localResource.GetPackage(package, log, token);
+                    if (packageInfo != null)
+                    {
+                        return GetPackageMetadata(packageInfo);
+                    }
+                    return null;
+                },
             token);
         }
 

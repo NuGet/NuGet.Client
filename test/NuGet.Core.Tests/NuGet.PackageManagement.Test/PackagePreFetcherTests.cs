@@ -57,8 +57,8 @@ namespace NuGet.PackageManagement.Test
                 var target = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
                 var target2 = new PackageIdentity("packageB", NuGetVersion.Parse("1.0.0"));
 
-                actions.Add(NuGetProjectAction.CreateUninstallProjectAction(target));
-                actions.Add(NuGetProjectAction.CreateUninstallProjectAction(target2));
+                actions.Add(NuGetProjectAction.CreateUninstallProjectAction(target, packagesFolder));
+                actions.Add(NuGetProjectAction.CreateUninstallProjectAction(target2, packagesFolder));
 
                 // Act
                 var result = await PackagePreFetcher.GetPackagesAsync(
@@ -89,7 +89,7 @@ namespace NuGet.PackageManagement.Test
 
                 // Add package
                 AddToPackagesFolder(target, packagesFolderDir);
-                actions.Add(NuGetProjectAction.CreateInstallProjectAction(target, source));
+                actions.Add(NuGetProjectAction.CreateInstallProjectAction(target, source, packagesFolder));
 
                 AddToSource(target, sourceDir);
 
@@ -131,8 +131,8 @@ namespace NuGet.PackageManagement.Test
 
                 // Add package
                 AddToPackagesFolder(target, packagesFolderDir);
-                actions.Add(NuGetProjectAction.CreateUninstallProjectAction(target));
-                actions.Add(NuGetProjectAction.CreateInstallProjectAction(target, source));
+                actions.Add(NuGetProjectAction.CreateUninstallProjectAction(target, packagesFolder));
+                actions.Add(NuGetProjectAction.CreateInstallProjectAction(target, source, packagesFolder));
 
                 AddToSource(target, sourceDir);
 
@@ -185,12 +185,12 @@ namespace NuGet.PackageManagement.Test
                 AddToPackagesFolder(targetA2, packagesFolderDir);
 
                 // Update A and B, install C, A already exists
-                actions.Add(NuGetProjectAction.CreateUninstallProjectAction(targetA1));
-                actions.Add(NuGetProjectAction.CreateUninstallProjectAction(targetB1));
+                actions.Add(NuGetProjectAction.CreateUninstallProjectAction(targetA1, packagesFolder));
+                actions.Add(NuGetProjectAction.CreateUninstallProjectAction(targetB1, packagesFolder));
 
-                actions.Add(NuGetProjectAction.CreateInstallProjectAction(targetC2, source));
-                actions.Add(NuGetProjectAction.CreateInstallProjectAction(targetB2, source));
-                actions.Add(NuGetProjectAction.CreateInstallProjectAction(targetA2, source));
+                actions.Add(NuGetProjectAction.CreateInstallProjectAction(targetC2, source, packagesFolder));
+                actions.Add(NuGetProjectAction.CreateInstallProjectAction(targetB2, source, packagesFolder));
+                actions.Add(NuGetProjectAction.CreateInstallProjectAction(targetA2, source, packagesFolder));
 
                 AddToSource(targetA2, sourceDir);
                 AddToSource(targetB2, sourceDir);
@@ -254,7 +254,7 @@ namespace NuGet.PackageManagement.Test
 
                 // Add package
                 AddToPackagesFolder(targetNonNormalized, packagesFolderDir);
-                actions.Add(NuGetProjectAction.CreateInstallProjectAction(target, source));
+                actions.Add(NuGetProjectAction.CreateInstallProjectAction(target, source, packagesFolder));
 
                 AddToSource(targetNonNormalized, sourceDir);
 
@@ -296,7 +296,7 @@ namespace NuGet.PackageManagement.Test
 
                 // Add package
                 AddToPackagesFolder(target, packagesFolderDir);
-                actions.Add(NuGetProjectAction.CreateInstallProjectAction(targetNonNormalized, source));
+                actions.Add(NuGetProjectAction.CreateInstallProjectAction(targetNonNormalized, source, packagesFolder));
 
                 AddToSource(target, sourceDir);
 
@@ -335,7 +335,7 @@ namespace NuGet.PackageManagement.Test
                 var target = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
                 var source = Repository.Factory.GetVisualStudio(new Configuration.PackageSource(sourceDir.Path));
 
-                actions.Add(NuGetProjectAction.CreateInstallProjectAction(target, source));
+                actions.Add(NuGetProjectAction.CreateInstallProjectAction(target, source, packagesFolder));
                 AddToSource(target, sourceDir);
 
                 // Act
@@ -374,7 +374,7 @@ namespace NuGet.PackageManagement.Test
                 var target = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
                 var source = Repository.Factory.GetVisualStudio(new Configuration.PackageSource(sourceDir.Path));
 
-                actions.Add(NuGetProjectAction.CreateInstallProjectAction(target, source));
+                actions.Add(NuGetProjectAction.CreateInstallProjectAction(target, source, packagesFolder));
 
                 // Act
                 var result = await PackagePreFetcher.GetPackagesAsync(
