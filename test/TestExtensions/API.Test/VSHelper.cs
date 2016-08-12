@@ -134,14 +134,20 @@ namespace API.Test
                 throw new InvalidOperationException("Unable to locate the error list");
             }
 
-            errorListWindow.Object.ShowErrors = true;
-            errorListWindow.Object.ShowWarnings = true;
-            errorListWindow.Object.ShowMessages = true;
-
-            var errorItems = errorListWindow.Object.ErrorItems as ErrorItems;
-            if (errorItems == null)
+            ErrorList errorList = errorListWindow.Object as ErrorList;
+            if (errorList == null)
             {
                 throw new InvalidOperationException("Unable to retrieve the error list");
+            }
+
+            errorList.ShowErrors = true;
+            errorList.ShowWarnings = true;
+            errorList.ShowMessages = true;
+
+            var errorItems = errorList.ErrorItems as ErrorItems;
+            if (errorItems == null)
+            {
+                throw new InvalidOperationException("Unable to retrieve the error list items");
             }
 
             var errorTasks = new List<ErrorItem>();
