@@ -136,6 +136,9 @@ namespace NuGet.Packaging
                 case "contentFiles":
                     manifestMetadata.ContentFiles = ReadContentFiles(element);
                     break;
+                case "repository":
+                    manifestMetadata.Repository = ReadRepository(element);
+                    break;
             }
         }
 
@@ -277,10 +280,11 @@ namespace NuGet.Packaging
             }
         }
 
-        private static List<PackageDependency> ReadDependencies(XElement containerElement)
+        private static ISet<PackageDependency> ReadDependencies(XElement containerElement)
         {
             // element is <dependency>
-            return (from element in containerElement.ElementsNoNamespace("dependency")
+
+            var dependency = (from element in containerElement.ElementsNoNamespace("dependency")
                     let idElement = element.Attribute("id")
                     where idElement != null && !String.IsNullOrEmpty(idElement.Value)
                     let elementVersion = element.GetOptionalAttributeValue("version")
@@ -291,6 +295,7 @@ namespace NuGet.Packaging
                         element.GetOptionalAttributeValue("include")?.Trim()?.Split(',').Select(a => a.Trim()).ToArray(),
                         element.GetOptionalAttributeValue("exclude")?.Trim()?.Split(',').Select(a => a.Trim()).ToArray()
                     )).ToList();
+            return new HashSet<PackageDependency>(dependency);
         }
 
         private static List<ManifestFile> ReadFilesList(XElement xElement)
@@ -323,6 +328,29 @@ namespace NuGet.Packaging
                     }));
             }
             return files;
+        }
+
+        private static RepositoryMetadata ReadRepository(XElement element)
+        {
+            var repositoryType = element.Attribute("type");
+            var repositoryUrl = element.Attribute("url");
+            var repository = new RepositoryMetadata();
+            if (!string.IsNullOrEmpty(repositoryType?.Value))
+            {
+                repository.Type = repositoryType.Value;
+            }
+            if (!string.IsNullOrEmpty(repositoryUrl?.Value))
+            {
+                repository.Url = repositoryUrl.Value;
+            }
+            if (string.IsNullOrEmpty(repository.Type) && string.IsNullOrEmpty(repository.Type))
+            {
+                return null;
+            }
+            else
+            {
+                return repository;
+            }
         }
     }
 }

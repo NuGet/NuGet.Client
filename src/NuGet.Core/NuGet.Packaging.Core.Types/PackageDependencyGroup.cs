@@ -17,14 +17,14 @@ namespace NuGet.Packaging
     public class PackageDependencyGroup : IEquatable<PackageDependencyGroup>, IFrameworkSpecific
     {
         private readonly NuGetFramework _targetFramework;
-        private readonly IEnumerable<PackageDependency> _packages;
+        private readonly ISet<PackageDependency> _packages;
 
         /// <summary>
         /// Dependency group
         /// </summary>
         /// <param name="targetFramework">target framework</param>
         /// <param name="packages">dependant packages</param>
-        public PackageDependencyGroup(NuGetFramework targetFramework, IEnumerable<PackageDependency> packages)
+        public PackageDependencyGroup(NuGetFramework targetFramework, ISet<PackageDependency> packages)
         {
             if (targetFramework == null)
             {
@@ -51,7 +51,7 @@ namespace NuGet.Packaging
         /// <summary>
         /// Package dependencies
         /// </summary>
-        public IEnumerable<PackageDependency> Packages
+        public ISet<PackageDependency> Packages
         {
             get { return _packages; }
         }

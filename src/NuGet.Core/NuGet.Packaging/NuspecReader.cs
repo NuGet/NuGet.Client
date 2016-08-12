@@ -117,7 +117,7 @@ namespace NuGet.Packaging
 
                 var groupFramework = GetAttributeValue(depGroup, TargetFramework);
 
-                var packages = new List<PackageDependency>();
+                var packages = new HashSet<PackageDependency>();
 
                 foreach (var depNode in depGroup.Elements(XName.Get(Dependency, ns)))
                 {
@@ -157,7 +157,7 @@ namespace NuGet.Packaging
                 var depNodes = MetadataNode.Elements(XName.Get(Dependencies, ns))
                     .Elements(XName.Get(Dependency, ns));
 
-                var packages = new List<PackageDependency>();
+                var packages = new HashSet<PackageDependency>();
 
                 foreach (var depNode in depNodes)
                 {

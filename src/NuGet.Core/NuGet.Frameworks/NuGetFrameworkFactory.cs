@@ -99,6 +99,7 @@ namespace NuGet.Frameworks
                 }
 
                 var version = new Version(0, 0);
+
                 string profile = null;
 
                 var versionPart = SingleOrDefaultSafe(parts.Where(s => s.IndexOf("Version=", StringComparison.OrdinalIgnoreCase) == 0));
@@ -120,6 +121,10 @@ namespace NuGet.Frameworks
                             Strings.InvalidFrameworkVersion,
                             versionString));
                     }
+                }
+                else if (parts.Count() > 1 && !string.IsNullOrEmpty(parts[1]) && parts[1].StartsWith("v") && !parts[1].Contains("="))
+                {
+                    version = new Version(parts[1].Substring(1));
                 }
 
                 if (!String.IsNullOrEmpty(profilePart))

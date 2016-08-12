@@ -23,6 +23,7 @@ namespace NuGet.Packaging
             public static readonly string Runtimes = "runtimes";
             public static readonly string Ref = "ref";
             public static readonly string Analyzers = "analyzers";
+            public static readonly string Source = "src";
 
             public static string[] Known { get; } = new string[]
             {
@@ -34,7 +35,8 @@ namespace NuGet.Packaging
                 Native,
                 Runtimes,
                 Ref,
-                Analyzers
+                Analyzers,
+                Source
             };
         }
 
