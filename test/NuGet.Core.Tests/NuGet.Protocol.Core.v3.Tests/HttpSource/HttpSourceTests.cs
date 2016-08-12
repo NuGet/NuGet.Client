@@ -401,16 +401,20 @@ namespace NuGet.Protocol.Tests
                 var networkResponses = new Dictionary<string, string> { { Url, NetworkContent } };
                 var messageHandler = new TestMessageHandler(networkResponses, string.Empty);
                 var handlerResource = new TestHttpHandler(messageHandler);
-                CacheContext = new HttpSourceCacheContext();
-                Logger = new TestLogger();
-                TestDirectory = testDirectory;
-                RetryHandlerMock = new Mock<IHttpRetryHandler>();
 
-                // target
-                HttpSource = new HttpSource(packageSource, () => Task.FromResult((HttpHandlerResource)handlerResource), Throttle.Object)
+                using (var cacheContext = new SourceCacheContext())
                 {
-                    HttpCacheDirectory = TestDirectory
-                };
+                    CacheContext = new HttpSourceCacheContext(cacheContext);
+                    Logger = new TestLogger();
+                    TestDirectory = testDirectory;
+                    RetryHandlerMock = new Mock<IHttpRetryHandler>();
+
+                    // target
+                    HttpSource = new HttpSource(packageSource, () => Task.FromResult((HttpHandlerResource)handlerResource), Throttle.Object)
+                    {
+                        HttpCacheDirectory = TestDirectory
+                    };
+                }
             }
 
             public Exception CacheValidationException { get; }

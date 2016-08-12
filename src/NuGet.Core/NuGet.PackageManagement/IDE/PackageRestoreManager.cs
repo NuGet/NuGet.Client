@@ -194,7 +194,10 @@ namespace NuGet.PackageManagement
                 return new PackageRestoreData(p.Key, p.Value, isMissing: true);
             });
 
-            return await RestoreMissingPackagesAsync(solutionDirectory, packages, nuGetProjectContext, new SourceCacheContext(), token);
+            using (var cacheContext = new SourceCacheContext())
+            {
+                return await RestoreMissingPackagesAsync(solutionDirectory, packages, nuGetProjectContext, cacheContext, token);
+            }
         }
 
         /// <summary>

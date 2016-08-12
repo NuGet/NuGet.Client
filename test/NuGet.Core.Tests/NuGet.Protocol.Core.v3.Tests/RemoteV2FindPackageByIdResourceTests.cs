@@ -29,16 +29,19 @@ namespace NuGet.Protocol.Tests
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
-            var resource = await repo.GetResourceAsync<FindPackageByIdResource>();
-            resource.Logger = NullLogger.Instance;
-            resource.CacheContext = new SourceCacheContext();
+            using (var cacheContext = new SourceCacheContext())
+            {
+                var resource = await repo.GetResourceAsync<FindPackageByIdResource>();
+                resource.Logger = NullLogger.Instance;
+                resource.CacheContext = cacheContext;
 
-            // Act
-            var versions = await resource.GetAllVersionsAsync("a", CancellationToken.None);
+                // Act
+                var versions = await resource.GetAllVersionsAsync("a", CancellationToken.None);
 
-            // Assert
-            // Verify no items returned, and no exceptions were thrown above
-            Assert.Equal(0, versions.Count());
+                // Assert
+                // Verify no items returned, and no exceptions were thrown above
+                Assert.Equal(0, versions.Count());
+            }
         }
 
         [Fact]
@@ -78,20 +81,23 @@ namespace NuGet.Protocol.Tests
 
                 var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
-                var resource = await repo.GetResourceAsync<FindPackageByIdResource>();
-                resource.Logger = NullLogger.Instance;
-                resource.CacheContext = new SourceCacheContext();
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var resource = await repo.GetResourceAsync<FindPackageByIdResource>();
+                    resource.Logger = NullLogger.Instance;
+                    resource.CacheContext = cacheContext;
 
-                // Act
-                var identity = await resource.GetOriginalIdentityAsync(
-                    "XUNIT",
-                    new NuGetVersion("2.2.0-BETA1-build3239"),
-                    CancellationToken.None);
+                    // Act
+                    var identity = await resource.GetOriginalIdentityAsync(
+                        "XUNIT",
+                        new NuGetVersion("2.2.0-BETA1-build3239"),
+                        CancellationToken.None);
 
-                // Assert
-                Assert.IsType<RemoteV2FindPackageByIdResource>(resource);
-                Assert.Equal("xunit", identity.Id);
-                Assert.Equal("2.2.0-beta1-build3239", identity.Version.ToNormalizedString());
+                    // Assert
+                    Assert.IsType<RemoteV2FindPackageByIdResource>(resource);
+                    Assert.Equal("xunit", identity.Id);
+                    Assert.Equal("2.2.0-beta1-build3239", identity.Version.ToNormalizedString());
+                }
             }
         }
 
@@ -132,20 +138,23 @@ namespace NuGet.Protocol.Tests
 
                 var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
-                var resource = await repo.GetResourceAsync<FindPackageByIdResource>();
-                resource.Logger = NullLogger.Instance;
-                resource.CacheContext = new SourceCacheContext();
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var resource = await repo.GetResourceAsync<FindPackageByIdResource>();
+                    resource.Logger = NullLogger.Instance;
+                    resource.CacheContext = cacheContext;
 
-                // Act
-                var identity = await resource.GetOriginalIdentityAsync(
-                    "WINDOWSAZURE.STORAGE",
-                    new NuGetVersion("6.2.2-PREVIEW"),
-                    CancellationToken.None);
+                    // Act
+                    var identity = await resource.GetOriginalIdentityAsync(
+                        "WINDOWSAZURE.STORAGE",
+                        new NuGetVersion("6.2.2-PREVIEW"),
+                        CancellationToken.None);
 
-                // Assert
-                Assert.IsType<RemoteV2FindPackageByIdResource>(resource);
-                Assert.Equal("WindowsAzure.Storage", identity.Id);
-                Assert.Equal("6.2.2-preview", identity.Version.ToNormalizedString());
+                    // Assert
+                    Assert.IsType<RemoteV2FindPackageByIdResource>(resource);
+                    Assert.Equal("WindowsAzure.Storage", identity.Id);
+                    Assert.Equal("6.2.2-preview", identity.Version.ToNormalizedString());
+                }
             }
         }
     }

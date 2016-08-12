@@ -35,12 +35,15 @@ namespace NuGet.PackageManagement
             Exception exception = null;
             try
             {
-                await PackageDownloader.GetDownloadResourceResultAsync(v2sourceRepository,
-                    packageIdentity,
-                    Configuration.NullSettings.Instance,
-                    new SourceCacheContext(),
-                    Common.NullLogger.Instance,
-                    CancellationToken.None);
+                using (var cacheContenxt = new SourceCacheContext())
+                {
+                    await PackageDownloader.GetDownloadResourceResultAsync(v2sourceRepository,
+                        packageIdentity,
+                        Configuration.NullSettings.Instance,
+                        cacheContenxt,
+                        Common.NullLogger.Instance,
+                        CancellationToken.None);
+                }
             }
             catch (Exception ex)
             {
@@ -67,12 +70,15 @@ namespace NuGet.PackageManagement
             Exception exception = null;
             try
             {
-                await PackageDownloader.GetDownloadResourceResultAsync(v3sourceRepository,
-                    packageIdentity,
-                    Configuration.NullSettings.Instance,
-                    new SourceCacheContext(),
-                    Common.NullLogger.Instance,
-                    CancellationToken.None);
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    await PackageDownloader.GetDownloadResourceResultAsync(v3sourceRepository,
+                        packageIdentity,
+                        Configuration.NullSettings.Instance,
+                        cacheContext,
+                        Common.NullLogger.Instance,
+                        CancellationToken.None);
+                }
             }
             catch (Exception ex)
             {
@@ -92,10 +98,11 @@ namespace NuGet.PackageManagement
             var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
 
             // Act
+            using (var cacheContext = new SourceCacheContext())
             using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(v2sourceRepository,
                 packageIdentity,
                 Configuration.NullSettings.Instance,
-                new SourceCacheContext(),
+                cacheContext,
                 Common.NullLogger.Instance,
                 CancellationToken.None))
             {
@@ -117,10 +124,11 @@ namespace NuGet.PackageManagement
             var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
 
             // Act
+            using (var cacheContext = new SourceCacheContext())
             using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(v3sourceRepository,
                 packageIdentity,
                 Configuration.NullSettings.Instance,
-                new SourceCacheContext(),
+                cacheContext,
                 Common.NullLogger.Instance,
                 CancellationToken.None))
             {
@@ -194,10 +202,11 @@ namespace NuGet.PackageManagement
             var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
 
             // Act
+            using (var cacheContext = new SourceCacheContext())
             using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(),
                 packageIdentity,
                 Configuration.NullSettings.Instance,
-                new SourceCacheContext(),
+                cacheContext,
                 Common.NullLogger.Instance,
                 CancellationToken.None))
             {
@@ -220,12 +229,15 @@ namespace NuGet.PackageManagement
 
             var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
 
-            await Assert.ThrowsAsync<FatalProtocolException>(async () => await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(),
+            using (var cacheContext = new SourceCacheContext())
+            {
+                await Assert.ThrowsAsync<FatalProtocolException>(async () => await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(),
                 packageIdentity,
                 Configuration.NullSettings.Instance,
-                new SourceCacheContext(),
+                cacheContext,
                 Common.NullLogger.Instance,
                 CancellationToken.None));
+            }
         }
 
         [Fact]
@@ -244,10 +256,11 @@ namespace NuGet.PackageManagement
             var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
 
             // Act
+            using (var cacheContext = new SourceCacheContext())
             using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(),
                 packageIdentity,
                 Configuration.NullSettings.Instance,
-                new SourceCacheContext(),
+                cacheContext,
                 Common.NullLogger.Instance,
                 CancellationToken.None))
             {

@@ -34,50 +34,54 @@ namespace NuGet.Protocol.Core.v3.Tests
 
                 resourceV2.Logger = testLogger;
                 resourceV3.Logger = testLogger;
-                resourceV2.CacheContext = new SourceCacheContext();
-                resourceV3.CacheContext = new SourceCacheContext();
-
-                var bNonNorm = new PackageIdentity("B", NuGetVersion.Parse("1.0"));
-
-                // Act
-                var versionsV2 = new HashSet<NuGetVersion>(await resourceV2.GetAllVersionsAsync("A", CancellationToken.None));
-                var versionsV3 = new HashSet<NuGetVersion>(await resourceV3.GetAllVersionsAsync("A", CancellationToken.None));
-
-                var emptyV2 = (await resourceV2.GetAllVersionsAsync("c", CancellationToken.None))
-                    .ToList();
-
-                var emptyV3 = (await resourceV3.GetAllVersionsAsync("c", CancellationToken.None))
-                    .ToList();
-
-                var v2CanSeek = false;
-                var v3CanSeek = false;
-
-                using (var stream = await resourceV2.GetNupkgStreamAsync(bNonNorm.Id, bNonNorm.Version, CancellationToken.None))
+                using (var cacheContext1 = new SourceCacheContext())
+                using (var cacheContext2 = new SourceCacheContext())
                 {
-                    v2CanSeek = stream.CanSeek;
+                    resourceV2.CacheContext = cacheContext1;
+                    resourceV3.CacheContext = cacheContext2;
+
+                    var bNonNorm = new PackageIdentity("B", NuGetVersion.Parse("1.0"));
+
+                    // Act
+                    var versionsV2 = new HashSet<NuGetVersion>(await resourceV2.GetAllVersionsAsync("A", CancellationToken.None));
+                    var versionsV3 = new HashSet<NuGetVersion>(await resourceV3.GetAllVersionsAsync("A", CancellationToken.None));
+
+                    var emptyV2 = (await resourceV2.GetAllVersionsAsync("c", CancellationToken.None))
+                        .ToList();
+
+                    var emptyV3 = (await resourceV3.GetAllVersionsAsync("c", CancellationToken.None))
+                        .ToList();
+
+                    var v2CanSeek = false;
+                    var v3CanSeek = false;
+
+                    using (var stream = await resourceV2.GetNupkgStreamAsync(bNonNorm.Id, bNonNorm.Version, CancellationToken.None))
+                    {
+                        v2CanSeek = stream.CanSeek;
+                    }
+
+                    using (var stream = await resourceV3.GetNupkgStreamAsync(bNonNorm.Id, bNonNorm.Version, CancellationToken.None))
+                    {
+                        v3CanSeek = stream.CanSeek;
+                    }
+
+                    var depV2 = await resourceV2.GetDependencyInfoAsync(bNonNorm.Id, bNonNorm.Version, CancellationToken.None);
+                    var depV3 = await resourceV3.GetDependencyInfoAsync(bNonNorm.Id, bNonNorm.Version, CancellationToken.None);
+
+                    var depEmptyV2 = await resourceV2.GetDependencyInfoAsync(bNonNorm.Id, NuGetVersion.Parse("2.9"), CancellationToken.None);
+                    var depEmptyV3 = await resourceV3.GetDependencyInfoAsync(bNonNorm.Id, NuGetVersion.Parse("2.9"), CancellationToken.None);
+
+                    // Assert
+                    Assert.True(versionsV2.SetEquals(versionsV3));
+                    Assert.Equal(0, emptyV2.Count);
+                    Assert.Equal(0, emptyV3.Count);
+                    Assert.True(v2CanSeek);
+                    Assert.True(v3CanSeek);
+                    Assert.Equal(0, depV2.DependencyGroups.Count);
+                    Assert.Equal(0, depV3.DependencyGroups.Count);
+                    Assert.Null(depEmptyV2);
+                    Assert.Null(depEmptyV3);
                 }
-
-                using (var stream = await resourceV3.GetNupkgStreamAsync(bNonNorm.Id, bNonNorm.Version, CancellationToken.None))
-                {
-                    v3CanSeek = stream.CanSeek;
-                }
-
-                var depV2 = await resourceV2.GetDependencyInfoAsync(bNonNorm.Id, bNonNorm.Version, CancellationToken.None);
-                var depV3 = await resourceV3.GetDependencyInfoAsync(bNonNorm.Id, bNonNorm.Version, CancellationToken.None);
-
-                var depEmptyV2 = await resourceV2.GetDependencyInfoAsync(bNonNorm.Id, NuGetVersion.Parse("2.9"), CancellationToken.None);
-                var depEmptyV3 = await resourceV3.GetDependencyInfoAsync(bNonNorm.Id, NuGetVersion.Parse("2.9"), CancellationToken.None);
-
-                // Assert
-                Assert.True(versionsV2.SetEquals(versionsV3));
-                Assert.Equal(0, emptyV2.Count);
-                Assert.Equal(0, emptyV3.Count);
-                Assert.True(v2CanSeek);
-                Assert.True(v3CanSeek);
-                Assert.Equal(0, depV2.DependencyGroups.Count);
-                Assert.Equal(0, depV3.DependencyGroups.Count);
-                Assert.Null(depEmptyV2);
-                Assert.Null(depEmptyV3);
             }
         }
     }
