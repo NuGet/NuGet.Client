@@ -234,7 +234,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Download directly without populating the global package cache..
+        ///   Looks up a localized string similar to Download directly without populating any caches with metadata or binaries..
         /// </summary>
         internal static string CommandDirectDownload {
             get {
