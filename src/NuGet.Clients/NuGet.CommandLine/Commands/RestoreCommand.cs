@@ -107,7 +107,8 @@ namespace NuGet.CommandLine
                     var providerCache = new RestoreCommandProvidersCache();
 
                     // Add restore args to the restore context
-                    cacheContext.NoCache = DirectDownload;
+                    // Set for both DirectDownload and NoCache as for projectJson -NoCache already bypassed http cache
+                    cacheContext.NoCache = DirectDownload || NoCache;
                     restoreContext.CacheContext = cacheContext;
                     restoreContext.DisableParallel = DisableParallelProcessing;
                     restoreContext.ConfigFile = ConfigFile;
