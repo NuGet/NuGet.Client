@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
@@ -496,7 +497,7 @@ namespace NuGet.PackageManagement.UI
             var completed = (await TaskCombinators.ThrottledAsync(
                 allPackages,
                 (p, t) => GetPackageMetadataAsync(sources, p, t),
-                token)).ToArray();
+                token)).Where(metadata => metadata != null).ToArray();
 
             results.AddRange(completed);
 
@@ -507,8 +508,8 @@ namespace NuGet.PackageManagement.UI
 
                 var remoteResults = (await TaskCombinators.ThrottledAsync(
                     remainingPackages,
-                    (p, t) => GetPackageMetadataAsync(sources, p, t),
-                    token)).ToArray();
+                    (p, t) => GetPackageMetadataAsync(uiService.ActiveSources, p, t),
+                    token)).Where(metadata => metadata != null).ToArray();
 
                 results.AddRange(remoteResults);
             }
@@ -527,10 +528,8 @@ namespace NuGet.PackageManagement.UI
 
         private void LogError(Task task, INuGetUI uiService)
         {
-            foreach (var ex in task.Exception.Flatten().InnerExceptions)
-            {
-                uiService.ProgressWindow.Log(MessageLevel.Error, ex.ToString());
-            }
+            var exception = ExceptionUtilities.Unwrap(task.Exception);
+            uiService.ProgressWindow.Log(MessageLevel.Error, exception.Message);
         }
 
         private static async Task<IPackageSearchMetadata> GetPackageMetadataAsync(

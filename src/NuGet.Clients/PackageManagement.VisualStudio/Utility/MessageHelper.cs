@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Common;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -36,7 +37,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static void ShowErrorMessage(Exception exception, string title)
         {
-            ShowErrorMessage(ExceptionHelper.Unwrap(exception).Message, title);
+            ShowErrorMessage(ExceptionUtilities.Unwrap(exception).Message, title);
         }
 
         public static void ShowErrorMessage(string message, string title)

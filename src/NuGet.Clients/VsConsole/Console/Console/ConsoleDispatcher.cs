@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows.Media;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
+using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
@@ -201,7 +202,7 @@ namespace NuGetConsole.Implementation.Console
 
                                             if (task.IsFaulted)
                                             {
-                                                var exception = ExceptionHelper.Unwrap(task.Exception);
+                                                var exception = ExceptionUtilities.Unwrap(task.Exception);
                                                 WriteError(exception.Message);
                                             }
 

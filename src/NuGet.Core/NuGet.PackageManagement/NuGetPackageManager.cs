@@ -482,57 +482,77 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(secondarySources));
             }
 
-            var tasks = new List<Task<IEnumerable<NuGetProjectAction>>>();
+            var maxTasks = Environment.ProcessorCount;
+            var tasks = new List<Task<IEnumerable<NuGetProjectAction>>>(maxTasks);
+            var nugetActions = new List<NuGetProjectAction>();
+            
+            var buildIntegratedProjects = nuGetProjects.OfType<BuildIntegratedNuGetProject>().ToList();
+            var nonBuildIntegratedProjects = nuGetProjects.Except(buildIntegratedProjects).ToList();
 
-            foreach (var project in nuGetProjects)
+            // add tasks for all build integrated projects
+            foreach (var project in buildIntegratedProjects)
             {
-                if (project is INuGetIntegratedProject)
+                // if tasks count reachs max then wait until an existing task is completed
+                if (tasks.Count == maxTasks)
                 {
-                    // project.json based projects are handled here
-                    tasks.Add(Task.Run(async ()
-                        => await PreviewUpdatePackagesForBuildIntegratedAsync(
-                            packageId,
-                            packageIdentities,
-                            project,
-                            resolutionContext,
-                            nuGetProjectContext,
-                            primarySources,
-                            secondarySources,
-                            token)));
+                    var actions = await CompleteTaskAsync(tasks);
+                    nugetActions.AddRange(actions);
                 }
-                else
-                {
-                    // otherwise classic style packages.config style projects are handled here
-                    tasks.Add(Task.Run(async ()
-                        => await PreviewUpdatePackagesForClassicAsync(
-                            packageId,
-                            packageIdentities,
-                            project,
-                            resolutionContext,
-                            nuGetProjectContext,
-                            primarySources,
-                            secondarySources,
-                            token)));
-                }
+
+                // project.json based projects are handled here
+                tasks.Add(Task.Run(async ()
+                    => await PreviewUpdatePackagesForBuildIntegratedAsync(
+                        packageId,
+                        packageIdentities,
+                        project,
+                        resolutionContext,
+                        nuGetProjectContext,
+                        primarySources,
+                        secondarySources,
+                        token)));
             }
 
-            var actions = await Task.WhenAll(tasks);
+            // Wait for all restores to finish
+            var allActions = await Task.WhenAll(tasks);
+            nugetActions.AddRange(allActions.SelectMany(action => action));
 
-            return actions.SelectMany(value => value);
+            foreach (var project in nonBuildIntegratedProjects)
+            {
+                // packages.config based projects are handled here
+                nugetActions.AddRange(await PreviewUpdatePackagesForClassicAsync(
+                    packageId,
+                    packageIdentities,
+                    project,
+                    resolutionContext,
+                    nuGetProjectContext,
+                    primarySources,
+                    secondarySources,
+                    token));
+            }
+
+            return nugetActions;
+        }
+
+        private async Task<IEnumerable<NuGetProjectAction>> CompleteTaskAsync(
+            List<Task<IEnumerable<NuGetProjectAction>>> updateTasks)
+        {
+            var doneTask = await Task.WhenAny(updateTasks);
+            updateTasks.Remove(doneTask);
+            return await doneTask;
         }
 
         /// <summary>
         /// Update Package logic specific to build integrated style NuGet projects
         /// </summary>
         private async Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesForBuildIntegratedAsync(
-                string packageId,
-                List<PackageIdentity> packageIdentities,
-                NuGetProject nuGetProject,
-                ResolutionContext resolutionContext,
-                INuGetProjectContext nuGetProjectContext,
-                IEnumerable<SourceRepository> primarySources,
-                IEnumerable<SourceRepository> secondarySources,
-                CancellationToken token)
+            string packageId,
+            List<PackageIdentity> packageIdentities,
+            NuGetProject nuGetProject,
+            ResolutionContext resolutionContext,
+            INuGetProjectContext nuGetProjectContext,
+            IEnumerable<SourceRepository> primarySources,
+            IEnumerable<SourceRepository> secondarySources,
+            CancellationToken token)
         {
             var projectInstalledPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
 
@@ -705,22 +725,19 @@ namespace NuGet.PackageManagement
                 preferredVersions[installedPackage.Id] = installedPackage;
             }
 
-            var primaryTargetIds = Enumerable.Empty<string>();
-            var primaryTargets = Enumerable.Empty<PackageIdentity>();
+            var primaryTargetIds = new List<string>();
+            var primaryTargets = new List<PackageIdentity>();
 
             // We have been given the exact PackageIdentities (id and version) to update to e.g. from PMC update-package -Id <id> -Version <version>
             if (packageIdentities.Count > 0)
             {
-                primaryTargets = new List<PackageIdentity>();
-                primaryTargetIds = new List<string>();
-
                 // If we have been given explicit PackageIdentities to install then we will naturally prefer that
                 foreach (var packageIdentity in packageIdentities)
                 {
                     // Just a check to make sure the preferredVersions created from the existing package list actually contains the target
                     if (preferredVersions.ContainsKey(packageIdentity.Id))
                     {
-                        ((List<string>)primaryTargetIds).Add(packageIdentity.Id);
+                        primaryTargetIds.Add(packageIdentity.Id);
 
                         // If there was a version specified we will prefer that version
                         if (packageIdentity.HasVersion)
@@ -743,11 +760,11 @@ namespace NuGet.PackageManagement
                 {
                     if (PrunePackageTree.IsExactVersion(resolutionContext.VersionConstraints))
                     {
-                        primaryTargets = new[] {preferredVersions[packageId]};
+                        primaryTargets = new List<PackageIdentity> {preferredVersions[packageId]};
                     }
                     else
                     {
-                        primaryTargetIds = new[] {packageId};
+                        primaryTargetIds = new List<string> { packageId};
 
                         // If we have been given just a package Id we certainly don't want the one installed - pruning will be significant
                         preferredVersions.Remove(packageId);
@@ -757,7 +774,7 @@ namespace NuGet.PackageManagement
             // We are apply update logic to the complete project - attempting to resolver all updates together
             else
             {
-                primaryTargetIds = projectInstalledPackageReferences.Select(p => p.PackageIdentity.Id);
+                primaryTargetIds = projectInstalledPackageReferences.Select(p => p.PackageIdentity.Id).ToList();
 
                 // We are performing a global project-wide update - nothing is preferred - again pruning will be significant
                 preferredVersions.Clear();
