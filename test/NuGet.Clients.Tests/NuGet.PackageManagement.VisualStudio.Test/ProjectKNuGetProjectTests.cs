@@ -144,6 +144,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     .Setup(x => x.GetSupportedFrameworksAsync(It.IsAny<CancellationToken>()))
                     .Returns(() => Task.FromResult<IReadOnlyCollection<FrameworkName>>(
                         SupportedFrameworks.Select(f => new FrameworkName(f.DotNetFrameworkName)).ToList()));
+
+                PackageManager
+                    .Setup(x => x.GetInstalledPackagesAsync(It.IsAny<CancellationToken>()))
+                    .Returns(() => Task.FromResult<IReadOnlyCollection<object>>(new object[0]));
                 
                 Target = new ProjectKNuGetProject(
                     PackageManager.Object,
