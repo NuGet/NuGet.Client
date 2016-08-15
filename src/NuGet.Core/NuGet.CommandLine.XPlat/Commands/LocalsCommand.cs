@@ -24,7 +24,7 @@ namespace NuGet.CommandLine.XPlat
                     CommandOptionType.NoValue);
 
                 var clear = locals.Option(
-                    "-c|--clear <Arg>",
+                    "-c|--clear",
                     Strings.LocalsCommand_ClearDescription,
                     CommandOptionType.NoValue);
 
