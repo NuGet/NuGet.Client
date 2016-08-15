@@ -25,10 +25,8 @@ namespace NuGet.Commands
         private const string _allResourceName = "all";
         private const string _tempResourceName = "temp";
 
-        //[Option(typeof(NuGetCommand), "LocalsCommandClearDescription")]
         public bool Clear { get; set; }
 
-        //[Option(typeof(NuGetCommand), "LocalsCommandListDescription")]
         public bool List { get; set; }
 
         private IList<string> Arguments { get; set; }

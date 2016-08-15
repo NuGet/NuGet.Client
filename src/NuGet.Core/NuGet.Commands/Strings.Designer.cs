@@ -294,7 +294,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to An invalid local resource name was provided. Please provide one of the following values: http-cache, packages-cache, global-packages, all..
+        ///    Looks up a localized string similar to An invalid local resource name was provided. Please provide one of the following values: http-cache, temp global-packages, all..
         /// </summary>
         public static string LocalsCommand_InvalidLocalResourceName {
             get {

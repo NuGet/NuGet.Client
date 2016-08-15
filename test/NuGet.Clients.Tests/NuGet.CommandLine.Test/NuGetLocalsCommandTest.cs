@@ -39,7 +39,7 @@ namespace NuGet.CommandLine.Test
                 waitForExit: true);
 
             // Assert
-            Util.VerifyResultFailure(result, "An invalid local resource name was provided. Please provide one of the following values: http-cache, packages-cache, global-packages, all.");
+            Util.VerifyResultFailure(result, "An invalid local resource name was provided. Please provide one of the following values: http-cache, temp, global-packages, all.");
         }
 
         [Theory]
