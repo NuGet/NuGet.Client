@@ -436,7 +436,7 @@
     <value>Failed to delete '{0}'.</value>
   </data>
   <data name="LocalsCommand_InvalidLocalResourceName" xml:space="preserve">
-    <value>An invalid local resource name was provided. Please provide one of the following values: http-cache, temp global-packages, all.</value>
+    <value>An invalid local resource name was provided. Please provide one of the following values: http-cache, temp, global-packages, all.</value>
   </data>
   <data name="LocalsCommand_LocalResourcePathNotSet" xml:space="preserve">
     <value>The location of local resource '{0}' is undefined.</value>
