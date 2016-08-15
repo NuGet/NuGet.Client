@@ -51,13 +51,23 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 Init();
 
-                if (String.IsNullOrEmpty(DefaultNuGetProjectName))
+                if (string.IsNullOrEmpty(DefaultNuGetProjectName))
                 {
+                    ActivityLog.LogWarning(
+                                ExceptionHelper.LogEntrySource, $"The default project name is null.");
                     return null;
                 }
 
                 NuGetProject defaultNuGetProject;
                 _nuGetAndEnvDTEProjectCache.TryGetNuGetProject(DefaultNuGetProjectName, out defaultNuGetProject);
+
+                if (defaultNuGetProject == null)
+                {
+                    var projects = _nuGetAndEnvDTEProjectCache.GetNuGetProjects().Select(p => NuGetProject.GetUniqueNameOrName(p));
+                    ActivityLog.LogWarning(
+                                ExceptionHelper.LogEntrySource, 
+                                $"Cannot find project {DefaultNuGetProjectName} in NuGetDTEProjectCache, NuGetDTEProjectCache contains {string.Join(",", projects)} .");
+                }
                 return defaultNuGetProject;
             }
         }
@@ -138,6 +148,13 @@ namespace NuGet.PackageManagement.VisualStudio
             if (_nuGetAndEnvDTEProjectCache != null)
             {
                 _nuGetAndEnvDTEProjectCache.TryGetNuGetProject(nuGetProjectSafeName, out nuGetProject);
+                if (nuGetProject == null)
+                {
+                    var projects = _nuGetAndEnvDTEProjectCache.GetNuGetProjects().Select(p => NuGetProject.GetUniqueNameOrName(p));
+                    ActivityLog.LogWarning(
+                                ExceptionHelper.LogEntrySource,
+                                $"Cannot find project {nuGetProjectSafeName} in NuGetDTEProjectCache, NuGetDTEProjectCache contains {string.Join(",", projects)} .");
+                }
             }
             return nuGetProject;
         }
@@ -237,6 +254,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     if (!IsSolutionOpen)
                     {
                         // Solution is not open. Return false.
+                        ActivityLog.LogWarning(
+                                ExceptionHelper.LogEntrySource, $"The solution is not open.");
                         return false;
                     }
 
@@ -252,6 +271,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         // Solution is open, but not saved. That is, 'Save as' is required.
                         // And, there are no projects or there is a packages.config based project. Return false.
+                        ActivityLog.LogWarning(
+                                ExceptionHelper.LogEntrySource, $"The solution is open but not saved.");
                         return false;
                     }
 
@@ -525,6 +546,13 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     var supportedProjects = EnvDTESolutionUtility.GetAllEnvDTEProjects(_dte)
                         .Where(project => EnvDTEProjectUtility.IsSupported(project));
+
+                    if (!supportedProjects.Any())
+                    {
+                        ActivityLog.LogWarning(
+                                 ExceptionHelper.LogEntrySource,
+                                 $"There are no supported projects in the solution.");
+                    }
 
                     foreach (var project in supportedProjects)
                     {
