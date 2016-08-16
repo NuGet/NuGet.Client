@@ -20,11 +20,22 @@ namespace NuGet.Commands
             Temp,
             All
         }
+        /// <summary>
+        /// Enum used to indicate the result of the command to callers.
+        /// </summary>
+        public enum LocalsCommandResult
+        {
+            InvalidLocalResourceName,
+            ClearFailure,
+            ClearSuccess
+        }
         private const string _httpCacheResourceName = "http-cache";
         private const string _globalPackagesResourceName = "global-packages";
         private const string _allResourceName = "all";
         private const string _tempResourceName = "temp";
+        private LocalsCommandResult result;
 
+        public LocalsCommandResult Result { get; private set; }
         public bool Clear { get; set; }
 
         public bool List { get; set; }
@@ -39,7 +50,6 @@ namespace NuGet.Commands
             this.Settings = settings;
             this.Clear = clear;
             this.List = list;
-
         }
         /// <summary>
         /// Executes the logic for nuget locals command.
@@ -81,6 +91,7 @@ namespace NuGet.Commands
                     break;
                 default:
                     // Invalid local resource name provided.
+                    Result = LocalsCommandResult.InvalidLocalResourceName;
                     throw new ArgumentException(String.Format(CultureInfo.CurrentCulture,Strings.LocalsCommand_InvalidLocalResourceName));
             }
         }
@@ -119,15 +130,18 @@ namespace NuGet.Commands
                     break;
                 default:
                     // Invalid local resource name provided.
+                    Result = LocalsCommandResult.InvalidLocalResourceName;
                     throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_InvalidLocalResourceName));
             }
 
             if (!success)
             {
+                Result = LocalsCommandResult.ClearFailure;
                 throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_ClearFailed));
             }
             else
             {
+                Result = LocalsCommandResult.ClearSuccess;
                 Console.WriteLine(String.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_ClearedSuccessful));
             }
         }

@@ -105,7 +105,7 @@ namespace NuGet.Options
         private void localsCommandButton_OnClick(object sender, EventArgs e)
         {
             var arguments = new List<string>();
-            arguments.Add("all");
+            arguments.Add("http-cache");
             var settings = ServiceLocator.GetInstance<ISettings>();
             var localsCommandRunner = new LocalsCommandRunner(arguments , settings, clear:true, list:false);
             localsCommandRunner.ExecuteCommand();
