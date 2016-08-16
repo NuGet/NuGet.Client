@@ -24,7 +24,7 @@ namespace NuGet.PackageManagement.UI.Test
         {
             var uiContext = Mock.Of<INuGetUIContext>();
 
-            var source1 = new Configuration.PackageSource("https://www.myget.org/F/nuget-volatile/api/v3/index.json", "NuGetVolatile");
+            var source1 = new Configuration.PackageSource("https://dotnet.myget.org/F/nuget-volatile/api/v3/index.json", "NuGetVolatile");
             var source2 = new Configuration.PackageSource("https://api.nuget.org/v3/index.json", "NuGet.org");
 
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { source1, source2 });
@@ -61,7 +61,7 @@ namespace NuGet.PackageManagement.UI.Test
         {
             var uiContext = Mock.Of<INuGetUIContext>();
 
-            var source1 = new Configuration.PackageSource("https://www.myget.org/F/nuget-volatile/api/v3/index.json", "NuGetVolatile");
+            var source1 = new Configuration.PackageSource("https://dotnet.myget.org/F/nuget-volatile/api/v3/index.json", "NuGetVolatile");
             var source2 = new Configuration.PackageSource("https://api.nuget.org/v3/index.json", "NuGet.org");
 
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { source1, source2 });
