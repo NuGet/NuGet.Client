@@ -56,7 +56,7 @@ namespace NuGet.XPlat.FuncTest
         {
             var log = new TestCommandOutputLogger();
             var exitCode = Program.MainInternal(args.Split(null), log);
-            Assert.Equal("usage: NuGet locals <all | http-cache | global-packages | temp> [--clear | -c | --list | -l]" + Environment.NewLine + "For more information, visit http://docs.nuget.org/docs/reference/command-line-reference", log.ShowErrors());
+            Assert.Equal("Unrecognized option '"+args.Split(null)[1]+"'", log.ShowErrors());
             Assert.Equal(1, exitCode);
         }
     }   
