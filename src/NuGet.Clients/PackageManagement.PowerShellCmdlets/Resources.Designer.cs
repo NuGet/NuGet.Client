@@ -430,7 +430,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Project &apos;{0}&apos; is not found. Please check visual studio activity log for more detail..
+        ///   Looks up a localized string similar to Project &apos;{0}&apos; is not found. Please check ActivityLog.xml for more detail..
         /// </summary>
         internal static string Cmdlet_ProjectNotFound {
             get {

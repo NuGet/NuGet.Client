@@ -54,7 +54,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (string.IsNullOrEmpty(DefaultNuGetProjectName))
                 {
                     ActivityLog.LogWarning(
-                                ExceptionHelper.LogEntrySource, $"The default project name is null.");
+                                ExceptionHelper.LogEntrySource, "The default project name is null.");
                     return null;
                 }
 
@@ -153,7 +153,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     var projects = _nuGetAndEnvDTEProjectCache.GetNuGetProjects().Select(p => NuGetProject.GetUniqueNameOrName(p));
                     ActivityLog.LogWarning(
                                 ExceptionHelper.LogEntrySource,
-                                $"Cannot find project {nuGetProjectSafeName} in NuGetDTEProjectCache, NuGetDTEProjectCache contains {string.Join(",", projects)} .");
+                                $"[{nameof(GetNuGetProject)}] Cannot find project {nuGetProjectSafeName} in NuGetDTEProjectCache, NuGetDTEProjectCache contains {string.Join(",", projects)} .");
                 }
             }
             return nuGetProject;
@@ -551,7 +551,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         ActivityLog.LogWarning(
                                  ExceptionHelper.LogEntrySource,
-                                 $"There are no supported projects in the solution.");
+                                 $"[{nameof(EnsureNuGetAndEnvDTEProjectCache)}] There are no supported projects in the solution.");
                     }
 
                     foreach (var project in supportedProjects)
@@ -565,7 +565,7 @@ namespace NuGet.PackageManagement.VisualStudio
                             // Ignore failed projects.
                             ActivityLog.LogWarning(
                                 ExceptionHelper.LogEntrySource,
-                                $"The project {project.Name} failed to initialize as a NuGet project.");
+                                $"[{nameof(EnsureNuGetAndEnvDTEProjectCache)}] The project {project.Name} failed to initialize as a NuGet project.");
 
                             ExceptionHelper.WriteToActivityLog(ex);
                         }
