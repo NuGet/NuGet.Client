@@ -1,14 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using NuGet.Commands;
+using NuGet.Configuration;
+using NuGet.PackageManagement.VisualStudio;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Forms;
-using NuGet.PackageManagement.VisualStudio;
-using NuGet.Commands;
-using System.Collections.Generic;
-using System.IO;
-using NuGet.Configuration;
 
 namespace NuGet.Options
 {

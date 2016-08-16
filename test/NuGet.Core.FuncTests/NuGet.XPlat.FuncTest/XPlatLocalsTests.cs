@@ -30,7 +30,7 @@ namespace NuGet.XPlat.FuncTest
         {
             var log = new TestCommandOutputLogger();
             var exitCode = Program.MainInternal(args.Split(null), log);
-            Assert.Equal("usage: NuGet locals <all | http-cache | global-packages | temp> [-clear | -list]"+ Environment.NewLine + "For more information, visit http://docs.nuget.org/docs/reference/command-line-reference", log.ShowErrors());
+            Assert.Equal("usage: NuGet locals <all | http-cache | global-packages | temp> [--clear | -c | --list | -l]" + Environment.NewLine + "For more information, visit http://docs.nuget.org/docs/reference/command-line-reference", log.ShowErrors());
             Assert.Equal(1, exitCode);
         }
 
@@ -44,6 +44,19 @@ namespace NuGet.XPlat.FuncTest
             var log = new TestCommandOutputLogger();
             var exitCode = Program.MainInternal(args.Split(null), log);
             Assert.Equal("An invalid local resource name was provided. Please provide one of the following values: http-cache, temp, global-packages, all.", log.ShowErrors());
+            Assert.Equal(1, exitCode);
+        }
+
+        [Theory]
+        [InlineData("locals -list")]
+        [InlineData("locals -clear")]
+        [InlineData("locals --l")]
+        [InlineData("locals --c")]
+        public static void Locals_Success_InvalidFlags_HelpMessage(String args)
+        {
+            var log = new TestCommandOutputLogger();
+            var exitCode = Program.MainInternal(args.Split(null), log);
+            Assert.Equal("usage: NuGet locals <all | http-cache | global-packages | temp> [--clear | -c | --list | -l]" + Environment.NewLine + "For more information, visit http://docs.nuget.org/docs/reference/command-line-reference", log.ShowErrors());
             Assert.Equal(1, exitCode);
         }
     }   

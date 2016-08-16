@@ -241,7 +241,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to usage: NuGet locals &lt;all | http-cache | global-packages | temp&gt; [-clear | -list]
+        ///    Looks up a localized string similar to usage: NuGet locals &lt;all | http-cache | global-packages | temp&gt; [--clear | -c | --list | -l]
         ///For more information, visit http://docs.nuget.org/docs/reference/command-line-reference.
         /// </summary>
         public static string LocalsCommand_Help {

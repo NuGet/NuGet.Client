@@ -328,7 +328,7 @@
     <value>Clears or lists local NuGet resources such as http requests cache, packages cache or machine-wide global packages folder.</value>
   </data>
   <data name="LocalsCommand_Help" xml:space="preserve">
-    <value>usage: NuGet locals &lt;all | http-cache | global-packages | temp&gt; [-clear | -list]
+    <value>usage: NuGet locals &lt;all | http-cache | global-packages | temp&gt; [--clear | -c | --list | -l]
 For more information, visit http://docs.nuget.org/docs/reference/command-line-reference</value>
   </data>
 </root>

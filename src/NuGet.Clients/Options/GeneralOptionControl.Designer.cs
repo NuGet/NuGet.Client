@@ -90,11 +90,6 @@
 
         }
 
-        private void executeLocals()
-        {
-
-        }
-
         #endregion
 
         private System.Windows.Forms.CheckBox skipBindingRedirects;
