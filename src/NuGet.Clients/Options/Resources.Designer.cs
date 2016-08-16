@@ -88,6 +88,24 @@ namespace NuGet.Options {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to NuGet cache(s) cleared.
+        /// </summary>
+        public static string PopupMessage_ClearNuGetCacheSuccess {
+            get {
+                return ResourceManager.GetString("PopupMessage_ClearNuGetCacheSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clear NuGet Cache Result.
+        /// </summary>
+        public static string PopupTitle_ClearNuGetCache {
+            get {
+                return ResourceManager.GetString("PopupTitle_ClearNuGetCache", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to NuGet.Config is malformed, Please check NuGet.Config.
         /// </summary>
         public static string ShowError_ConfigInvalidOperation {

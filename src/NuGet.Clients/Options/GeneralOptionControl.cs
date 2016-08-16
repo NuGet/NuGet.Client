@@ -108,7 +108,18 @@ namespace NuGet.Options
             arguments.Add("http-cache");
             var settings = ServiceLocator.GetInstance<ISettings>();
             var localsCommandRunner = new LocalsCommandRunner(arguments , settings, clear:true, list:false);
-            localsCommandRunner.ExecuteCommand();
+            try
+            {
+                localsCommandRunner.ExecuteCommand();
+            }
+            catch(ArgumentException ex)
+            {
+                MessageBox.Show(ex.Message, Resources.PopupTitle_ClearNuGetCache);
+            }
+            if (localsCommandRunner.Result == LocalsCommandRunner.LocalsCommandResult.ClearSuccess)
+            {
+                MessageBox.Show(Resources.PopupMessage_ClearNuGetCacheSuccess, Resources.PopupTitle_ClearNuGetCache);
+            }
         }
 
     }

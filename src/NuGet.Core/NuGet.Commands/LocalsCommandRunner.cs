@@ -33,9 +33,9 @@ namespace NuGet.Commands
         private const string _globalPackagesResourceName = "global-packages";
         private const string _allResourceName = "all";
         private const string _tempResourceName = "temp";
-        private LocalsCommandResult result;
 
         public LocalsCommandResult Result { get; private set; }
+
         public bool Clear { get; set; }
 
         public bool List { get; set; }
