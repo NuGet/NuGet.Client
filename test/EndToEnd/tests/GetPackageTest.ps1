@@ -506,7 +506,7 @@ function Test-GetPackageUpdatesAfterSwitchToSourceThatDoesNotContainInstalledPac
     $p | Install-Package antlr -Version '3.1.1' -Source $SourceNuGet
 
     # Act
-    $packages = @(Get-Package -updates -Source 'https://www.myget.org/F/nuget-volatile/api/v3/index.json')
+    $packages = @(Get-Package -updates -Source 'https://dotnet.myget.org/F/nuget-volatile/api/v3/index.json')
 
     # Assert
     Assert-AreEqual 0 $packages.Count

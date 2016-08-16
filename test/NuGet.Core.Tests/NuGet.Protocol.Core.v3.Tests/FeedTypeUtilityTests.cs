@@ -19,7 +19,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [InlineData("http://nuget.org")]
         [InlineData("http://")]
         [InlineData("http://nuget.org/index.xml")]
-        [InlineData("https://www.myget.org/F/nuget-volatile/api/v2")]
+        [InlineData("https://dotnet.myget.org/F/nuget-volatile/api/v2")]
         [InlineData("http://nuget.org/index.json.html")]
         [InlineData("http://tempuri.org/api/v2/")]
         public void FeedTypeUtility_HttpSourcesV2(string source)
@@ -31,7 +31,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [InlineData("https://api.nuget.org/v3/index.json")]
         [InlineData("http://api.nuget.org/v3/index.json")]
         [InlineData("https://api.nuget.org/v3/INDEX.JSON")]
-        [InlineData("https://www.myget.org/F/nuget-volatile/api/v3/index.json")]
+        [InlineData("https://dotnet.myget.org/F/nuget-volatile/api/v3/index.json")]
         public void FeedTypeUtility_HttpSourcesV3(string source)
         {
             Assert.Equal(FeedType.HttpV3, FeedTypeUtility.GetFeedType(new PackageSource(source)));
