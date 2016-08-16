@@ -136,6 +136,9 @@
   <data name="ErrorNestedPromptNotSupported" xml:space="preserve">
     <value>Nested prompt not supported.</value>
   </data>
+  <data name="LanguageModeWarning" xml:space="preserve">
+    <value>Warning: language mode for current session is {0}, it might impact powershell script running.</value>
+  </data>
   <data name="PowerShellHostTitle" xml:space="preserve">
     <value>Package Manager Console Host Version {0}</value>
   </data>

@@ -4,14 +4,15 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Reflection;
+using System.Windows.Media;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.PowerShell;
-using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
@@ -61,6 +62,15 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     ScopedItemOptions.AllScope | ScopedItemOptions.Constant)
                 );
 
+            // check language mode for current session
+            var languageMode = initialSessionState.LanguageMode;
+
+            if (languageMode != PSLanguageMode.FullLanguage)
+            {
+                console.Write(String.Format(CultureInfo.CurrentCulture, Resources.LanguageModeWarning, languageMode.ToString()) + Environment.NewLine,
+                    Colors.Black, Colors.Yellow);
+            }
+
             // this is used by the functional tests
             var sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
             var solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
@@ -70,9 +80,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             Tuple<string, object>[] privateData = { sourceRepoTuple, solutionManagerTuple };
 
             var host = new NuGetPSHost(hostName, privateData)
-                {
-                    ActiveConsole = console
-                };
+            {
+                ActiveConsole = console
+            };
 
             var runspace = RunspaceFactory.CreateRunspace(host, initialSessionState);
             runspace.ThreadOptions = PSThreadOptions.Default;
