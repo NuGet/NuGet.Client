@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.DependencyResolver;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -88,8 +87,13 @@ namespace NuGet.Commands
 
             var localProviders = new List<IRemoteDependencyProvider>()
             {
-                // Do not throw or warn for gloabal cache
-                new SourceRepositoryDependencyProvider(globalPackagesSource, log, cacheContext, ignoreFailedSources: true, ignoreWarning: true)
+                // Do not throw or warn for global cache
+                new SourceRepositoryDependencyProvider(
+                    globalPackagesSource,
+                    log,
+                    cacheContext,
+                    ignoreFailedSources: true,
+                    ignoreWarning: true)
             };
 
             // Add fallback sources as local providers also
@@ -100,7 +104,12 @@ namespace NuGet.Commands
                 var fallbackRepository = new NuGetv3LocalRepository(path);
                 var fallbackSource = Repository.Factory.GetCoreV3(path, FeedType.FileSystemV3);
 
-                var provider = new SourceRepositoryDependencyProvider(fallbackSource, log, cacheContext, ignoreFailedSources: false, ignoreWarning: false);
+                var provider = new SourceRepositoryDependencyProvider(
+                    fallbackSource,
+                    log,
+                    cacheContext,
+                    ignoreFailedSources: false,
+                    ignoreWarning: false);
 
                 fallbackPackageFolders.Add(fallbackRepository);
                 localProviders.Add(provider);
@@ -110,11 +119,22 @@ namespace NuGet.Commands
 
             foreach (var source in sources)
             {
-                var provider = new SourceRepositoryDependencyProvider(source, log, cacheContext);
+                var provider = new SourceRepositoryDependencyProvider(
+                    source,
+                    log,
+                    cacheContext,
+                    cacheContext.IgnoreFailedSources,
+                    ignoreWarning: false);
+
                 remoteProviders.Add(provider);
             }
 
-            return new RestoreCommandProviders(globalPackages, fallbackPackageFolders, localProviders, remoteProviders, cacheContext);
+            return new RestoreCommandProviders(
+                globalPackages,
+                fallbackPackageFolders,
+                localProviders,
+                remoteProviders,
+                cacheContext);
         }
 
         public void Dispose()

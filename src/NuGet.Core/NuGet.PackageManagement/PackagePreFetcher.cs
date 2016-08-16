@@ -8,8 +8,10 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement
 {
@@ -21,23 +23,14 @@ namespace NuGet.PackageManagement
         public static async Task<Dictionary<PackageIdentity, PackagePreFetcherResult>> GetPackagesAsync(
             IEnumerable<NuGetProjectAction> actions,
             FolderNuGetProject packagesFolder,
-            Configuration.ISettings settings,
-            Common.ILogger logger,
+            PackageDownloadContext downloadContext,
+            string globalPackagesFolder,
+            ILogger logger,
             CancellationToken token)
         {
-            if (token == null)
+            if (actions == null)
             {
-                throw new ArgumentNullException(nameof(token));
-            }
-
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
-
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
+                throw new ArgumentNullException(nameof(actions));
             }
 
             if (packagesFolder == null)
@@ -45,9 +38,19 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(packagesFolder));
             }
 
-            if (actions == null)
+            if (downloadContext == null)
             {
-                throw new ArgumentNullException(nameof(actions));
+                throw new ArgumentNullException(nameof(downloadContext));
+            }
+
+            if (globalPackagesFolder == null)
+            {
+                throw new ArgumentNullException(nameof(globalPackagesFolder));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
             }
 
             var result = new Dictionary<PackageIdentity, PackagePreFetcherResult>();
@@ -127,7 +130,8 @@ namespace NuGet.PackageManagement
                     var task = Task.Run(async () => await PackageDownloader.GetDownloadResourceResultAsync(
                                         action.SourceRepository,
                                         action.PackageIdentity,
-                                        settings,
+                                        downloadContext,
+                                        globalPackagesFolder,
                                         logger,
                                         token));
 
@@ -152,7 +156,7 @@ namespace NuGet.PackageManagement
         public static void LogFetchMessages(
             IEnumerable<PackagePreFetcherResult> fetchResults,
             string packagesFolderRoot,
-            Common.ILogger logger)
+            ILogger logger)
         {
             if (fetchResults == null)
             {

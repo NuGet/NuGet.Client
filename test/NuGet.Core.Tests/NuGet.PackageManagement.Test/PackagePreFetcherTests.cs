@@ -23,6 +23,7 @@ namespace NuGet.PackageManagement.Test
         public async Task PackagePreFetcher_NoActionsInput()
         {
             using (var packagesFolderDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
@@ -31,15 +32,18 @@ namespace NuGet.PackageManagement.Test
                 var logger = new TestLogger();
 
                 // Act
-                var result = await PackagePreFetcher.GetPackagesAsync(
-                    actions,
-                    packagesFolder,
-                    testSettings,
-                    logger,
-                    CancellationToken.None);
-
-                // Assert
-                Assert.Equal(0, result.Count);
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var result = await PackagePreFetcher.GetPackagesAsync(
+                        actions,
+                        packagesFolder,
+                        new PackageDownloadContext(cacheContext),
+                        globalPackagesFolder,
+                        logger,
+                        CancellationToken.None);
+                    // Assert
+                    Assert.Equal(0, result.Count);
+                }
             }
         }
 
@@ -47,6 +51,7 @@ namespace NuGet.PackageManagement.Test
         public async Task PackagePreFetcher_NoInstallActionsInput()
         {
             using (var packagesFolderDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
@@ -61,15 +66,19 @@ namespace NuGet.PackageManagement.Test
                 actions.Add(NuGetProjectAction.CreateUninstallProjectAction(target2));
 
                 // Act
-                var result = await PackagePreFetcher.GetPackagesAsync(
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var result = await PackagePreFetcher.GetPackagesAsync(
                     actions,
                     packagesFolder,
-                    testSettings,
+                    new PackageDownloadContext(cacheContext),
+                    globalPackagesFolder,
                     logger,
                     CancellationToken.None);
 
-                // Assert
-                Assert.Equal(0, result.Count);
+                    // Assert
+                    Assert.Equal(0, result.Count);
+                }
             }
         }
 
@@ -78,6 +87,7 @@ namespace NuGet.PackageManagement.Test
         {
             using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
             using (var packagesFolderDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
@@ -94,24 +104,28 @@ namespace NuGet.PackageManagement.Test
                 AddToSource(target, sourceDir);
 
                 // Act
-                var result = await PackagePreFetcher.GetPackagesAsync(
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var result = await PackagePreFetcher.GetPackagesAsync(
                     actions,
                     packagesFolder,
-                    testSettings,
+                    new PackageDownloadContext(cacheContext),
+                    globalPackagesFolder,
                     logger,
                     CancellationToken.None);
 
-                var downloadResult = await result[target].GetResultAsync();
+                    var downloadResult = await result[target].GetResultAsync();
 
-                // Assert
-                Assert.Equal(1, result.Count);
-                Assert.True(result[target].InPackagesFolder);
-                Assert.Null(result[target].Source);
-                Assert.Equal(target, result[target].Package);
-                Assert.True(result[target].IsComplete);
-                Assert.Equal(target, downloadResult.PackageReader.GetIdentity());
-                Assert.NotNull(downloadResult.PackageStream);
-                Assert.Equal(DownloadResourceResultStatus.Available, downloadResult.Status);
+                    // Assert
+                    Assert.Equal(1, result.Count);
+                    Assert.True(result[target].InPackagesFolder);
+                    Assert.Null(result[target].Source);
+                    Assert.Equal(target, result[target].Package);
+                    Assert.True(result[target].IsComplete);
+                    Assert.Equal(target, downloadResult.PackageReader.GetIdentity());
+                    Assert.NotNull(downloadResult.PackageStream);
+                    Assert.Equal(DownloadResourceResultStatus.Available, downloadResult.Status);
+                }
             }
         }
 
@@ -120,6 +134,7 @@ namespace NuGet.PackageManagement.Test
         {
             using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
             using (var packagesFolderDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
@@ -137,24 +152,28 @@ namespace NuGet.PackageManagement.Test
                 AddToSource(target, sourceDir);
 
                 // Act
-                var result = await PackagePreFetcher.GetPackagesAsync(
-                    actions,
-                    packagesFolder,
-                    testSettings,
-                    logger,
-                    CancellationToken.None);
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var result = await PackagePreFetcher.GetPackagesAsync(
+                        actions,
+                        packagesFolder,
+                        new PackageDownloadContext(cacheContext),
+                        globalPackagesFolder,
+                        logger,
+                        CancellationToken.None);
 
-                var downloadResult = await result[target].GetResultAsync();
+                    var downloadResult = await result[target].GetResultAsync();
 
-                // Assert
-                Assert.Equal(1, result.Count);
-                Assert.False(result[target].InPackagesFolder);
-                Assert.Equal(source.PackageSource, result[target].Source);
-                Assert.Equal(target, result[target].Package);
-                Assert.True(result[target].IsComplete);
-                Assert.Equal(target, downloadResult.PackageReader.GetIdentity());
-                Assert.NotNull(downloadResult.PackageStream);
-                Assert.Equal(DownloadResourceResultStatus.Available, downloadResult.Status);
+                    // Assert
+                    Assert.Equal(1, result.Count);
+                    Assert.False(result[target].InPackagesFolder);
+                    Assert.Equal(source.PackageSource, result[target].Source);
+                    Assert.Equal(target, result[target].Package);
+                    Assert.True(result[target].IsComplete);
+                    Assert.Equal(target, downloadResult.PackageReader.GetIdentity());
+                    Assert.NotNull(downloadResult.PackageStream);
+                    Assert.Equal(DownloadResourceResultStatus.Available, downloadResult.Status);
+                }
             }
         }
 
@@ -163,6 +182,7 @@ namespace NuGet.PackageManagement.Test
         {
             using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
             using (var packagesFolderDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
@@ -197,43 +217,47 @@ namespace NuGet.PackageManagement.Test
                 AddToSource(targetC2, sourceDir);
 
                 // Act
-                var result = await PackagePreFetcher.GetPackagesAsync(
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var result = await PackagePreFetcher.GetPackagesAsync(
                     actions,
                     packagesFolder,
-                    testSettings,
+                    new PackageDownloadContext(cacheContext),
+                    globalPackagesFolder,
                     logger,
                     CancellationToken.None);
 
-                var resultA2 = await result[targetA2].GetResultAsync();
-                var resultB2 = await result[targetB2].GetResultAsync();
-                var resultC2 = await result[targetC2].GetResultAsync();
+                    var resultA2 = await result[targetA2].GetResultAsync();
+                    var resultB2 = await result[targetB2].GetResultAsync();
+                    var resultC2 = await result[targetC2].GetResultAsync();
 
-                // Assert
-                Assert.Equal(3, result.Count);
+                    // Assert
+                    Assert.Equal(3, result.Count);
 
-                Assert.True(result[targetA2].InPackagesFolder);
-                Assert.Null(result[targetA2].Source);
-                Assert.Equal(targetA2, result[targetA2].Package);
-                Assert.True(result[targetA2].IsComplete);
-                Assert.Equal(targetA2, resultA2.PackageReader.GetIdentity());
-                Assert.NotNull(resultA2.PackageStream);
-                Assert.Equal(DownloadResourceResultStatus.Available, resultA2.Status);
+                    Assert.True(result[targetA2].InPackagesFolder);
+                    Assert.Null(result[targetA2].Source);
+                    Assert.Equal(targetA2, result[targetA2].Package);
+                    Assert.True(result[targetA2].IsComplete);
+                    Assert.Equal(targetA2, resultA2.PackageReader.GetIdentity());
+                    Assert.NotNull(resultA2.PackageStream);
+                    Assert.Equal(DownloadResourceResultStatus.Available, resultA2.Status);
 
-                Assert.False(result[targetB2].InPackagesFolder);
-                Assert.Equal(source.PackageSource, result[targetB2].Source);
-                Assert.Equal(targetB2, result[targetB2].Package);
-                Assert.True(result[targetB2].IsComplete);
-                Assert.Equal(targetB2, resultB2.PackageReader.GetIdentity());
-                Assert.NotNull(resultB2.PackageStream);
-                Assert.Equal(DownloadResourceResultStatus.Available, resultB2.Status);
+                    Assert.False(result[targetB2].InPackagesFolder);
+                    Assert.Equal(source.PackageSource, result[targetB2].Source);
+                    Assert.Equal(targetB2, result[targetB2].Package);
+                    Assert.True(result[targetB2].IsComplete);
+                    Assert.Equal(targetB2, resultB2.PackageReader.GetIdentity());
+                    Assert.NotNull(resultB2.PackageStream);
+                    Assert.Equal(DownloadResourceResultStatus.Available, resultB2.Status);
 
-                Assert.False(result[targetC2].InPackagesFolder);
-                Assert.Equal(source.PackageSource, result[targetC2].Source);
-                Assert.Equal(targetC2, result[targetC2].Package);
-                Assert.True(result[targetC2].IsComplete);
-                Assert.Equal(targetC2, resultC2.PackageReader.GetIdentity());
-                Assert.NotNull(resultC2.PackageStream);
-                Assert.Equal(DownloadResourceResultStatus.Available, resultC2.Status);
+                    Assert.False(result[targetC2].InPackagesFolder);
+                    Assert.Equal(source.PackageSource, result[targetC2].Source);
+                    Assert.Equal(targetC2, result[targetC2].Package);
+                    Assert.True(result[targetC2].IsComplete);
+                    Assert.Equal(targetC2, resultC2.PackageReader.GetIdentity());
+                    Assert.NotNull(resultC2.PackageStream);
+                    Assert.Equal(DownloadResourceResultStatus.Available, resultC2.Status);
+                }
             }
         }
 
@@ -242,6 +266,7 @@ namespace NuGet.PackageManagement.Test
         {
             using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
             using (var packagesFolderDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
@@ -259,23 +284,27 @@ namespace NuGet.PackageManagement.Test
                 AddToSource(targetNonNormalized, sourceDir);
 
                 // Act
-                var result = await PackagePreFetcher.GetPackagesAsync(
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var result = await PackagePreFetcher.GetPackagesAsync(
                     actions,
                     packagesFolder,
-                    testSettings,
+                    new PackageDownloadContext(cacheContext),
+                    globalPackagesFolder,
                     logger,
                     CancellationToken.None);
 
-                var downloadResult = await result[target].GetResultAsync();
+                    var downloadResult = await result[target].GetResultAsync();
 
-                // Assert
-                Assert.Equal(1, result.Count);
-                Assert.True(result[target].InPackagesFolder);
-                Assert.Null(result[target].Source);
-                Assert.Equal(target, result[target].Package);
-                Assert.True(result[target].IsComplete);
-                Assert.NotNull(downloadResult.PackageStream);
-                Assert.Equal(DownloadResourceResultStatus.Available, downloadResult.Status);
+                    // Assert
+                    Assert.Equal(1, result.Count);
+                    Assert.True(result[target].InPackagesFolder);
+                    Assert.Null(result[target].Source);
+                    Assert.Equal(target, result[target].Package);
+                    Assert.True(result[target].IsComplete);
+                    Assert.NotNull(downloadResult.PackageStream);
+                    Assert.Equal(DownloadResourceResultStatus.Available, downloadResult.Status);
+                }
             }
         }
 
@@ -284,6 +313,7 @@ namespace NuGet.PackageManagement.Test
         {
             using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
             using (var packagesFolderDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
@@ -301,23 +331,27 @@ namespace NuGet.PackageManagement.Test
                 AddToSource(target, sourceDir);
 
                 // Act
-                var result = await PackagePreFetcher.GetPackagesAsync(
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var result = await PackagePreFetcher.GetPackagesAsync(
                     actions,
                     packagesFolder,
-                    testSettings,
+                    new PackageDownloadContext(cacheContext),
+                    globalPackagesFolder,
                     logger,
                     CancellationToken.None);
 
-                var downloadResult = await result[target].GetResultAsync();
+                    var downloadResult = await result[target].GetResultAsync();
 
-                // Assert
-                Assert.Equal(1, result.Count);
-                Assert.True(result[target].InPackagesFolder);
-                Assert.Null(result[target].Source);
-                Assert.Equal(target, result[target].Package);
-                Assert.True(result[target].IsComplete);
-                Assert.NotNull(downloadResult.PackageStream);
-                Assert.Equal(DownloadResourceResultStatus.Available, downloadResult.Status);
+                    // Assert
+                    Assert.Equal(1, result.Count);
+                    Assert.True(result[target].InPackagesFolder);
+                    Assert.Null(result[target].Source);
+                    Assert.Equal(target, result[target].Package);
+                    Assert.True(result[target].IsComplete);
+                    Assert.NotNull(downloadResult.PackageStream);
+                    Assert.Equal(DownloadResourceResultStatus.Available, downloadResult.Status);
+                }
             }
         }
 
@@ -326,6 +360,7 @@ namespace NuGet.PackageManagement.Test
         {
             using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
             using (var packagesFolderDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
@@ -339,24 +374,28 @@ namespace NuGet.PackageManagement.Test
                 AddToSource(target, sourceDir);
 
                 // Act
-                var result = await PackagePreFetcher.GetPackagesAsync(
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var result = await PackagePreFetcher.GetPackagesAsync(
                     actions,
                     packagesFolder,
-                    testSettings,
+                    new PackageDownloadContext(cacheContext),
+                    globalPackagesFolder,
                     logger,
                     CancellationToken.None);
 
-                var downloadResult = await result[target].GetResultAsync();
+                    var downloadResult = await result[target].GetResultAsync();
 
-                // Assert
-                Assert.Equal(1, result.Count);
-                Assert.False(result[target].InPackagesFolder);
-                Assert.Equal(source.PackageSource, result[target].Source);
-                Assert.Equal(target, result[target].Package);
-                Assert.True(result[target].IsComplete);
-                Assert.Equal(target, downloadResult.PackageReader.GetIdentity());
-                Assert.NotNull(downloadResult.PackageStream);
-                Assert.Equal(DownloadResourceResultStatus.Available, downloadResult.Status);
+                    // Assert
+                    Assert.Equal(1, result.Count);
+                    Assert.False(result[target].InPackagesFolder);
+                    Assert.Equal(source.PackageSource, result[target].Source);
+                    Assert.Equal(target, result[target].Package);
+                    Assert.True(result[target].IsComplete);
+                    Assert.Equal(target, downloadResult.PackageReader.GetIdentity());
+                    Assert.NotNull(downloadResult.PackageStream);
+                    Assert.Equal(DownloadResourceResultStatus.Available, downloadResult.Status);
+                }
             }
         }
 
@@ -365,6 +404,7 @@ namespace NuGet.PackageManagement.Test
         {
             using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
             using (var packagesFolderDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
@@ -377,27 +417,31 @@ namespace NuGet.PackageManagement.Test
                 actions.Add(NuGetProjectAction.CreateInstallProjectAction(target, source));
 
                 // Act
-                var result = await PackagePreFetcher.GetPackagesAsync(
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var result = await PackagePreFetcher.GetPackagesAsync(
                     actions,
                     packagesFolder,
-                    testSettings,
+                    new PackageDownloadContext(cacheContext),
+                    globalPackagesFolder,
                     logger,
                     CancellationToken.None);
 
-                Exception exception = null;
+                    Exception exception = null;
 
-                try
-                {
-                    var downloadResult = await result[target].GetResultAsync();
-                    Assert.True(false);
-                }
-                catch (Exception ex)
-                {
-                    exception = ex;
-                }
+                    try
+                    {
+                        var downloadResult = await result[target].GetResultAsync();
+                        Assert.True(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        exception = ex;
+                    }
 
-                // Assert
-                Assert.StartsWith("Package 'packageA.1.0.0' is not found on source", exception.Message);
+                    // Assert
+                    Assert.StartsWith("Package 'packageA.1.0.0' is not found on source", exception.Message);
+                }
             }
         }
 

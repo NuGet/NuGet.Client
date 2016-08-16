@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.DependencyResolver;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -43,7 +42,12 @@ namespace NuGet.Commands
                 var pathSource = Repository.Factory.GetCoreV3(path, FeedType.FileSystemV3);
 
                 // Do not throw or warn for global cache 
-                return new SourceRepositoryDependencyProvider(pathSource, log, cacheContext, ignoreFailedSources: true, ignoreWarning: true);
+                return new SourceRepositoryDependencyProvider(
+                    pathSource,
+                    log,
+                    cacheContext,
+                    ignoreFailedSources: true,
+                    ignoreWarning: true);
             });
 
             var localProviders = new List<IRemoteDependencyProvider>() { local };
@@ -60,7 +64,12 @@ namespace NuGet.Commands
                     var pathSource = Repository.Factory.GetCoreV3(path, FeedType.FileSystemV3);
 
                     // Throw for fallback package folders
-                    return new SourceRepositoryDependencyProvider(pathSource, log, cacheContext, ignoreFailedSources: false, ignoreWarning: false);
+                    return new SourceRepositoryDependencyProvider(
+                        pathSource,
+                        log,
+                        cacheContext,
+                        ignoreFailedSources: false,
+                        ignoreWarning: false);
                 });
 
                 localProviders.Add(localProvider);
@@ -70,7 +79,13 @@ namespace NuGet.Commands
 
             foreach (var source in sources)
             {
-                var remoteProvider = _remoteProviders.GetOrAdd(source, (sourceRepo) => new SourceRepositoryDependencyProvider(sourceRepo, log, cacheContext));
+                var remoteProvider = _remoteProviders.GetOrAdd(source, (sourceRepo) => new SourceRepositoryDependencyProvider(
+                    sourceRepo,
+                    log,
+                    cacheContext,
+                    cacheContext.IgnoreFailedSources,
+                    ignoreWarning: false));
+
                 remoteProviders.Add(remoteProvider);
             }
 

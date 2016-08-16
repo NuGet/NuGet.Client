@@ -8,15 +8,15 @@ namespace NuGet.Protocol
 {
     public class HttpCacheResult
     {
-        public HttpCacheResult(TimeSpan maxAge, string newCacheFile, string cacheFile)
+        public HttpCacheResult(TimeSpan maxAge, string newFile, string cacheFule)
         {
             MaxAge = maxAge;
-            NewCacheFile = newCacheFile;
-            CacheFile = cacheFile;
+            NewFile = newFile;
+            CacheFile = cacheFule;
         }
 
         public TimeSpan MaxAge { get; }
-        public string NewCacheFile { get; }
+        public string NewFile { get; }
         public string CacheFile { get; }
         public Stream Stream { get; set; }
     }

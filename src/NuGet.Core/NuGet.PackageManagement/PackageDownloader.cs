@@ -25,10 +25,12 @@ namespace NuGet.PackageManagement
         /// Returns the <see cref="DownloadResourceResult"/> for a given <paramref name="packageIdentity" />
         /// from the given <paramref name="sources" />.
         /// </summary>
-        public static async Task<DownloadResourceResult> GetDownloadResourceResultAsync(IEnumerable<SourceRepository> sources,
+        public static async Task<DownloadResourceResult> GetDownloadResourceResultAsync(
+            IEnumerable<SourceRepository> sources,
             PackageIdentity packageIdentity,
-            Configuration.ISettings settings,
-            Common.ILogger logger,
+            PackageDownloadContext downloadContext,
+            string globalPackagesFolder,
+            ILogger logger,
             CancellationToken token)
         {
             if (sources == null)
@@ -41,9 +43,14 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(packageIdentity));
             }
 
-            if (settings == null)
+            if (downloadContext == null)
             {
-                throw new ArgumentNullException(nameof(settings));
+                throw new ArgumentNullException(nameof(downloadContext));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
             }
 
             var failedTasks = new List<Task<DownloadResourceResult>>();
@@ -81,7 +88,14 @@ namespace NuGet.PackageManagement
 
                     foreach (var source in sourceGroup)
                     {
-                        var task = GetDownloadResourceResultAsync(source, packageIdentity, settings, logger, linkedTokenSource.Token);
+                        var task = GetDownloadResourceResultAsync(
+                            source,
+                            packageIdentity,
+                            downloadContext,
+                            globalPackagesFolder,
+                            logger,
+                            linkedTokenSource.Token);
+
                         tasksLookup.Add(task, source);
                         tasks.Add(task);
                     }
@@ -165,10 +179,12 @@ namespace NuGet.PackageManagement
         /// Returns the <see cref="DownloadResourceResult"/> for a given <paramref name="packageIdentity" /> from the given
         /// <paramref name="sourceRepository" />.
         /// </summary>
-        public static async Task<DownloadResourceResult> GetDownloadResourceResultAsync(SourceRepository sourceRepository,
+        public static async Task<DownloadResourceResult> GetDownloadResourceResultAsync(
+            SourceRepository sourceRepository,
             PackageIdentity packageIdentity,
-            Configuration.ISettings settings,
-            Common.ILogger logger,
+            PackageDownloadContext downloadContext,
+            string globalPackagesFolder,
+            ILogger logger,
             CancellationToken token)
         {
             if (sourceRepository == null)
@@ -181,9 +197,14 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(packageIdentity));
             }
 
-            if (settings == null)
+            if (downloadContext == null)
             {
-                throw new ArgumentNullException(nameof(settings));
+                throw new ArgumentNullException(nameof(downloadContext));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
             }
 
             var downloadResource = await sourceRepository.GetResourceAsync<DownloadResource>(token);
@@ -200,7 +221,8 @@ namespace NuGet.PackageManagement
             {
                 result = await downloadResource.GetDownloadResourceResultAsync(
                    packageIdentity,
-                   settings,
+                   downloadContext,
+                   globalPackagesFolder,
                    logger,
                    token);
             }

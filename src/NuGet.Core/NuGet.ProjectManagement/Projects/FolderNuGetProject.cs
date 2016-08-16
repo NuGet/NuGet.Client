@@ -77,9 +77,11 @@ namespace NuGet.ProjectManagement
             {
                 throw new ArgumentException(Strings.PackageStreamShouldBeSeekable);
             }
-            var packageFile = PackagePathResolver.GetInstallPath(packageIdentity);
 
-            return ConcurrencyUtilities.ExecuteWithFileLockedAsync(packageFile,
+            var packageDirectory = PackagePathResolver.GetInstallPath(packageIdentity);
+
+            return ConcurrencyUtilities.ExecuteWithFileLockedAsync(
+                packageDirectory,
                 action: cancellationToken =>
                 {
                     // 1. Set a default package extraction context, if necessary.

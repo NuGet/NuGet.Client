@@ -19,35 +19,36 @@ namespace NuGet.Protocol
 
         public static HttpCacheResult InitializeHttpCacheResult(
             string httpCacheDirectory,
-            Uri baseUri,
+            Uri sourceUri,
             string cacheKey,
             HttpSourceCacheContext context)
         {
-            // When the MaxAge is TimeSpan.Zero, this means the caller is passing in a folder different than
-            // the global HTTP cache used by default. Additionally, creating and cleaning up the directory is
-            // all the responsibility of the caller.
-            var maxAge = context.MaxAge;
-            string newFile;
-            string cacheFile;
-            if (!maxAge.Equals(TimeSpan.Zero))
+            var baseFolderName = RemoveInvalidFileNameChars(ComputeHash(sourceUri.OriginalString));
+            var baseFileName = RemoveInvalidFileNameChars(cacheKey) + ".dat";
+            var cacheFolder = Path.Combine(httpCacheDirectory, baseFolderName);
+            var cacheFile = Path.Combine(cacheFolder, baseFileName);
+            var newCacheFile = cacheFile + "-new";
+
+            var temporaryFile = Path.Combine(context.RootTempFolder, Path.GetRandomFileName());
+            var newTemporaryFile = Path.Combine(context.RootTempFolder, Path.GetRandomFileName());
+
+            // When the MaxAge is TimeSpan.Zero, this means the caller is passing is using a temporary directory for
+            // cache files, instead of the global HTTP cache used by default. Additionally, the cleaning up of this
+            // directory is the responsibility of the caller.
+            if (!context.MaxAge.Equals(TimeSpan.Zero))
             {
-                var baseFolderName = RemoveInvalidFileNameChars(ComputeHash(baseUri.OriginalString));
-                var baseFileName = RemoveInvalidFileNameChars(cacheKey) + ".dat";
-
-                var cacheFolder = Path.Combine(httpCacheDirectory, baseFolderName);
-
-                cacheFile = Path.Combine(cacheFolder, baseFileName);
-
-                newFile = cacheFile + "-new";
+                return new HttpCacheResult(
+                    context.MaxAge,
+                    newCacheFile,
+                    cacheFile);
             }
             else
             {
-                cacheFile = Path.Combine(context.RootTempFolder, Path.GetRandomFileName());
-
-                newFile = Path.Combine(context.RootTempFolder, Path.GetRandomFileName());
+                return new HttpCacheResult(
+                    context.MaxAge,
+                    newTemporaryFile,
+                    temporaryFile);
             }
-
-            return new HttpCacheResult(maxAge, newFile, cacheFile);
         }
 
         private static string ComputeHash(string value)
@@ -75,18 +76,10 @@ namespace NuGet.Protocol
 
         public static Stream TryReadCacheFile(string uri, TimeSpan maxAge, string cacheFile)
         {
-            if (!maxAge.Equals(TimeSpan.Zero))
-            {
-                string cacheFolder = Path.GetDirectoryName(cacheFile);
-                if (!Directory.Exists(cacheFolder))
-                {
-                    Directory.CreateDirectory(cacheFolder);
-                }
-            }
+            var fileInfo = new FileInfo(cacheFile);
 
-            if (File.Exists(cacheFile))
+            if (fileInfo.Exists)
             {
-                var fileInfo = new FileInfo(cacheFile);
                 var age = DateTime.UtcNow.Subtract(fileInfo.LastWriteTimeUtc);
                 if (age < maxAge)
                 {
@@ -107,17 +100,23 @@ namespace NuGet.Protocol
 
         public static async Task CreateCacheFileAsync(
             HttpCacheResult result,
-            string uri,
             HttpResponseMessage response,
-            HttpSourceCacheContext context,
             Action<Stream> ensureValidContents,
             CancellationToken cancellationToken)
         {
+            // Get the cache file directories, so we can make sure they are created before writing
+            // files to them.
+            var newCacheFileDirectory = Path.GetDirectoryName(result.NewFile);
+            var cacheFileDirectory = Path.GetDirectoryName(result.CacheFile);
+
+            // Make sure the new cache file directory is created before writing a file to it.
+            Directory.CreateDirectory(newCacheFileDirectory);
+
             // The update of a cached file is divided into two steps:
             // 1) Delete the old file.
             // 2) Create a new file with the same name.
             using (var fileStream = new FileStream(
-                result.NewCacheFile,
+                result.NewFile,
                 FileMode.Create,
                 FileAccess.ReadWrite,
                 FileShare.None,
@@ -145,12 +144,18 @@ namespace NuGet.Protocol
                 }
             }
 
+            // Make sure the cache file directory is created before moving or writing a file to it.
+            if (cacheFileDirectory != newCacheFileDirectory)
+            {
+                Directory.CreateDirectory(cacheFileDirectory);
+            }
+
             // If the destination file doesn't exist, we can safely perform moving operation.
             // Otherwise, moving operation will fail.
             if (!File.Exists(result.CacheFile))
             {
                 File.Move(
-                    result.NewCacheFile,
+                    result.NewFile,
                     result.CacheFile);
             }
 

@@ -5327,4 +5327,7 @@ nuget locals global-packages -list</value>
     <value>nuget restore MySoluion.sln</value>
     <comment>command line example, do not localize</comment>
   </data>
+  <data name="CommandDirectDownload" xml:space="preserve">
+    <value>Download directly without populating any caches with metadata or binaries.</value>
+  </data>
 </root>

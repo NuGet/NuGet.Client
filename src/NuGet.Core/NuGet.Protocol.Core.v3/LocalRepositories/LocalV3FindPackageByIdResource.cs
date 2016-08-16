@@ -47,17 +47,26 @@ namespace NuGet.Protocol
             return Task.FromResult(GetVersions(id).AsEnumerable());
         }
 
-        public override Task<Stream> GetNupkgStreamAsync(string id, NuGetVersion version, CancellationToken token)
+        public override async Task<bool> CopyNupkgToStreamAsync(
+            string id,
+            NuGetVersion version,
+            Stream destination,
+            CancellationToken token)
         {
             var matchedVersion = GetVersion(id, version);
-            Stream result = null;
+
             if (matchedVersion != null)
             {
                 var packagePath = _resolver.GetPackageFilePath(id, matchedVersion);
-                result = File.OpenRead(packagePath);
+
+                using (var fileStream = File.OpenRead(packagePath))
+                {
+                    await fileStream.CopyToAsync(destination, token);
+                    return true;
+                }
             }
 
-            return Task.FromResult(result);
+            return false;
         }
 
         public override Task<PackageIdentity> GetOriginalIdentityAsync(string id, NuGetVersion version, CancellationToken token)

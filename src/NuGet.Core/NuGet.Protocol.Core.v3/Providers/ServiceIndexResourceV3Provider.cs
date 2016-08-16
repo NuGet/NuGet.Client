@@ -112,40 +112,46 @@ namespace NuGet.Protocol
             var url = source.PackageSource.Source;
             var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
             var client = httpSourceResource.HttpSource;
-            
+
             for (var retry = 0; retry < 3; retry++)
             {
-                var cacheContext = HttpSourceCacheContext.CreateCacheContext(new SourceCacheContext(), retry);
-
-                try
+                using (var sourecCacheContext = new SourceCacheContext())
                 {
-                    using (var sourceResponse = await client.GetAsync(
-                        new HttpSourceCachedRequest(
-                            url,
-                            "service_index",
-                            cacheContext)
-                        {
-                            EnsureValidContents = stream => HttpStreamValidation.ValidateJObject(url, stream)
-                        },
-                        log,
-                        token))
+                    var cacheContext = HttpSourceCacheContext.Create(sourecCacheContext, retry);
+
+                    try
                     {
-                        return ConsumeServiceIndexStream(sourceResponse.Stream, utcNow);
-                    }
-                }
-                catch (Exception ex) when (retry < 2)
-                {
-                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingServiceIndex, url)
-                        + Environment.NewLine
-                        + ExceptionUtilities.DisplayMessage(ex);
-                    log.LogMinimal(message);
-                }
-                catch (Exception ex) when (retry == 2)
-                {
-                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToReadServiceIndex, url);
-                    log.LogError(message + Environment.NewLine + ExceptionUtilities.DisplayMessage(ex));
+                        return await client.GetAsync(
+                            new HttpSourceCachedRequest(
+                                url,
+                                "service_index",
+                                cacheContext)
+                            {
+                                EnsureValidContents = stream => HttpStreamValidation.ValidateJObject(url, stream)
+                            },
+                            httpSourceResult =>
+                            {
+                                var result = ConsumeServiceIndexStream(httpSourceResult.Stream, utcNow);
 
-                    throw new FatalProtocolException(message, ex);
+                                return Task.FromResult(result);
+                            },
+                            log,
+                            token);
+                    }
+                    catch (Exception ex) when (retry < 2)
+                    {
+                        var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingServiceIndex, url)
+                            + Environment.NewLine
+                            + ExceptionUtilities.DisplayMessage(ex);
+                        log.LogMinimal(message);
+                    }
+                    catch (Exception ex) when (retry == 2)
+                    {
+                        var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToReadServiceIndex, url);
+                        log.LogError(message + Environment.NewLine + ExceptionUtilities.DisplayMessage(ex));
+
+                        throw new FatalProtocolException(message, ex);
+                    }
                 }
             }
 

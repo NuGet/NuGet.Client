@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
-using NuGet.Configuration;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 
@@ -28,10 +24,21 @@ namespace NuGet.Protocol
 
         public override Task<DownloadResourceResult> GetDownloadResourceResultAsync(
             PackageIdentity identity,
-            ISettings settings,
+            PackageDownloadContext downloadContext,
+            string globalPackagesFolder,
             ILogger logger,
             CancellationToken token)
         {
+            if (identity == null)
+            {
+                throw new ArgumentNullException(nameof(identity));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
             // Find the package from the local folder
             LocalPackageInfo packageInfo = null;
 

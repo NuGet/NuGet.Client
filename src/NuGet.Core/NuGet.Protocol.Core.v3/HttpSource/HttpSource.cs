@@ -19,7 +19,7 @@ namespace NuGet.Protocol
     public class HttpSource : IDisposable
     {
         private readonly Func<Task<HttpHandlerResource>> _messageHandlerFactory;
-        private readonly Uri _baseUri;
+        private readonly Uri _sourceUri;
         private HttpClient _httpClient;
         private string _httpCacheDirectory;
         private readonly PackageSource _packageSource;
@@ -53,7 +53,7 @@ namespace NuGet.Protocol
             }
 
             _packageSource = packageSource;
-            _baseUri = packageSource.SourceUri;
+            _sourceUri = packageSource.SourceUri;
             _messageHandlerFactory = messageHandlerFactory;
             _throttle = throttle;
         }
@@ -61,43 +61,46 @@ namespace NuGet.Protocol
         /// <summary>
         /// Caching Get request.
         /// </summary>
-        public async Task<HttpSourceResult> GetAsync(
+        public async Task<T> GetAsync<T>(
             HttpSourceCachedRequest request,
+            Func<HttpSourceResult, Task<T>> processAsync,
             ILogger log,
             CancellationToken token)
         {
-            var result = HttpCacheUtility.InitializeHttpCacheResult(
+            var cacheResult = HttpCacheUtility.InitializeHttpCacheResult(
                 HttpCacheDirectory,
-                _baseUri,
+                _sourceUri,
                 request.CacheKey,
                 request.CacheContext);
 
             return await ConcurrencyUtilities.ExecuteWithFileLockedAsync(
-                result.CacheFile,
+                cacheResult.CacheFile,
                 action: async lockedToken =>
                 {
-                    result.Stream = TryReadCacheFile(request.Uri, result.MaxAge, result.CacheFile);
+                    cacheResult.Stream = TryReadCacheFile(request.Uri, cacheResult.MaxAge, cacheResult.CacheFile);
 
-                    if (result.Stream != null)
+                    if (cacheResult.Stream != null)
                     {
                         log.LogInformation(string.Format(CultureInfo.InvariantCulture, "  " + Strings.Http_RequestLog, "CACHE", request.Uri));
 
                         // Validate the content fetched from the cache.
                         try
                         {
-                            request.EnsureValidContents?.Invoke(result.Stream);
+                            request.EnsureValidContents?.Invoke(cacheResult.Stream);
 
-                            result.Stream.Seek(0, SeekOrigin.Begin);
+                            cacheResult.Stream.Seek(0, SeekOrigin.Begin);
 
-                            return new HttpSourceResult(
+                            var httpSourceResult = new HttpSourceResult(
                                 HttpSourceResultStatus.OpenedFromDisk,
-                                result.CacheFile,
-                                result.Stream);
+                                cacheResult.CacheFile,
+                                cacheResult.Stream);
+
+                            return await processAsync(httpSourceResult);
                         }
                         catch (Exception e)
                         {
-                            result.Stream.Dispose();
-                            result.Stream = null;
+                            cacheResult.Stream.Dispose();
+                            cacheResult.Stream = null;
 
                             string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_InvalidCacheEntry, request.Uri)
                                              + Environment.NewLine
@@ -122,6 +125,7 @@ namespace NuGet.Protocol
                         requestFactory,
                         request.RequestTimeout,
                         request.DownloadTimeout,
+                        request.MaxTries,
                         log,
                         lockedToken);
 
@@ -129,29 +133,52 @@ namespace NuGet.Protocol
                     {
                         if (request.IgnoreNotFounds && throttledResponse.Response.StatusCode == HttpStatusCode.NotFound)
                         {
-                            return new HttpSourceResult(HttpSourceResultStatus.NotFound);
+                            var httpSourceResult = new HttpSourceResult(HttpSourceResultStatus.NotFound);
+
+                            return await processAsync(httpSourceResult);
                         }
 
                         if (throttledResponse.Response.StatusCode == HttpStatusCode.NoContent)
                         {
                             // Ignore reading and caching the empty stream.
-                            return new HttpSourceResult(HttpSourceResultStatus.NoContent);
+                            var httpSourceResult = new HttpSourceResult(HttpSourceResultStatus.NoContent);
+
+                            return await processAsync(httpSourceResult);
                         }
 
                         throttledResponse.Response.EnsureSuccessStatusCode();
 
-                        await HttpCacheUtility.CreateCacheFileAsync(
-                            result,
-                            request.Uri,
-                            throttledResponse.Response,
-                            request.CacheContext,
-                            request.EnsureValidContents,
-                            lockedToken);
+                        if (!request.CacheContext.DirectDownload)
+                        {
+                            await HttpCacheUtility.CreateCacheFileAsync(
+                                cacheResult,
+                                throttledResponse.Response,
+                                request.EnsureValidContents,
+                                lockedToken);
 
-                        return new HttpSourceResult(
-                            HttpSourceResultStatus.OpenedFromDisk,
-                            result.CacheFile,
-                            result.Stream);
+                            using (var httpSourceResult = new HttpSourceResult(
+                                HttpSourceResultStatus.OpenedFromDisk,
+                                cacheResult.CacheFile,
+                                cacheResult.Stream))
+                            {
+                                return await processAsync(httpSourceResult);
+                            }
+                        }
+                        else
+                        {
+                            // Note that we do not execute the content validator on the response stream when skipping
+                            // the cache. We cannot seek on the network stream and it is not valuable to download the
+                            // content twice just to validate the first time (considering that the second download could
+                            // be different from the first thus rendering the first validation meaningless).
+                            using (var stream = await throttledResponse.Response.Content.ReadAsStreamAsync())
+                            using (var httpSourceResult = new HttpSourceResult(
+                                HttpSourceResultStatus.OpenedFromNetwork,
+                                cacheFileName: null,
+                                stream: stream))
+                            {
+                                return await processAsync(httpSourceResult);
+                            }
+                        }
                     }
                 },
                 token: token);
@@ -192,6 +219,7 @@ namespace NuGet.Protocol
                 request.RequestFactory,
                 request.RequestTimeout,
                 request.DownloadTimeout,
+                request.MaxTries,
                 log,
                 token);
 
@@ -226,6 +254,7 @@ namespace NuGet.Protocol
             Func<HttpRequestMessage> requestFactory,
             TimeSpan requestTimeout,
             TimeSpan downloadTimeout,
+            int maxTries,
             ILogger log,
             CancellationToken cancellationToken)
         {
@@ -235,7 +264,8 @@ namespace NuGet.Protocol
             var request = new HttpRetryHandlerRequest(_httpClient, requestFactory)
             {
                 RequestTimeout = requestTimeout,
-                DownloadTimeout = downloadTimeout
+                DownloadTimeout = downloadTimeout,
+                MaxTries = maxTries
             };
 
             // Acquire the semaphore.

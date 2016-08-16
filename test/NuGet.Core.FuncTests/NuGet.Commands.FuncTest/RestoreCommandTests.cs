@@ -1915,23 +1915,25 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var context = new SourceCacheContext();
-                context.IgnoreFailedSources = true;
-                var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
+                using (var context = new SourceCacheContext())
+                {
+                    context.IgnoreFailedSources = true;
+                    var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
-                var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, logger);
-                var request = new RestoreRequest(spec, provider, logger);
+                    var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, logger);
+                    var request = new RestoreRequest(spec, provider, logger);
 
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+                    request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
-                var lockFileFormat = new LockFileFormat();
-                var command = new RestoreCommand(request);
+                    var lockFileFormat = new LockFileFormat();
+                    var command = new RestoreCommand(request);
 
-                // Act
-                var result = await command.ExecuteAsync();
+                    // Act
+                    var result = await command.ExecuteAsync();
 
-                // Assert
-                Assert.True(result.Success);
+                    // Assert
+                    Assert.True(result.Success);
+                }
             }
         }
 
@@ -1960,23 +1962,25 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var context = new SourceCacheContext();
-                context.IgnoreFailedSources = true;
-                var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
+                using (var context = new SourceCacheContext())
+                {
+                    context.IgnoreFailedSources = true;
+                    var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
-                var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, logger);
-                var request = new RestoreRequest(spec, provider, logger);
+                    var provider = RestoreCommandProviders.Create(packagesDir, new List<string>(), sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, logger);
+                    var request = new RestoreRequest(spec, provider, logger);
 
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+                    request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
-                var lockFileFormat = new LockFileFormat();
-                var command = new RestoreCommand(request);
+                    var lockFileFormat = new LockFileFormat();
+                    var command = new RestoreCommand(request);
 
-                // Act
-                var result = await command.ExecuteAsync();
+                    // Act
+                    var result = await command.ExecuteAsync();
 
-                // Assert
-                Assert.True(result.Success);
+                    // Assert
+                    Assert.True(result.Success);
+                }
             }
         }
 

@@ -57,29 +57,32 @@ namespace NuGet.Commands.Test
 
                 var providerCache = new RestoreCommandProvidersCache();
 
-                var restoreContext = new RestoreArgs()
+                using (var cacheContext = new SourceCacheContext())
                 {
-                    CacheContext = new SourceCacheContext(),
-                    DisableParallel = true,
-                    GlobalPackagesFolder = packagesDir.FullName,
-                    Sources = new List<string>() { packageSource.FullName },
-                    Inputs = new List<string>() { specPath1 },
-                    Log = logger,
-                    CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),
-                    RequestProviders = new List<IRestoreRequestProvider>()
+                    var restoreContext = new RestoreArgs()
                     {
-                        new ProjectJsonRestoreRequestProvider(providerCache)
-                    }
-                };
+                        CacheContext = cacheContext,
+                        DisableParallel = true,
+                        GlobalPackagesFolder = packagesDir.FullName,
+                        Sources = new List<string>() { packageSource.FullName },
+                        Inputs = new List<string>() { specPath1 },
+                        Log = logger,
+                        CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),
+                        RequestProviders = new List<IRestoreRequestProvider>()
+                        {
+                            new ProjectJsonRestoreRequestProvider(providerCache)
+                        }
+                    };
 
-                // Act
-                var summaries = await RestoreRunner.Run(restoreContext);
-                var summary = summaries.Single();
+                    // Act
+                    var summaries = await RestoreRunner.Run(restoreContext);
+                    var summary = summaries.Single();
 
-                // Assert
-                Assert.True(summary.Success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
-                Assert.Equal(1, summary.FeedsUsed.Count);
-                Assert.True(File.Exists(lockPath), lockPath);
+                    // Assert
+                    Assert.True(summary.Success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
+                    Assert.Equal(1, summary.FeedsUsed.Count);
+                    Assert.True(File.Exists(lockPath), lockPath);
+                }
             }
         }
 
@@ -133,29 +136,32 @@ namespace NuGet.Commands.Test
 
                 var providerCache = new RestoreCommandProvidersCache();
 
-                var restoreContext = new RestoreArgs()
+                using (var cacheContext = new SourceCacheContext())
                 {
-                    CacheContext = new SourceCacheContext(),
-                    DisableParallel = true,
-                    GlobalPackagesFolder = packagesDir.FullName,
-                    ConfigFile = configPath,
-                    Inputs = new List<string>() { specPath1 },
-                    Log = logger,
-                    CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(new List<PackageSource>())),
-                    RequestProviders = new List<IRestoreRequestProvider>()
+                    var restoreContext = new RestoreArgs()
                     {
-                        new ProjectJsonRestoreRequestProvider(providerCache)
-                    }
-                };
+                        CacheContext = cacheContext,
+                        DisableParallel = true,
+                        GlobalPackagesFolder = packagesDir.FullName,
+                        ConfigFile = configPath,
+                        Inputs = new List<string>() { specPath1 },
+                        Log = logger,
+                        CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(new List<PackageSource>())),
+                        RequestProviders = new List<IRestoreRequestProvider>()
+                        {
+                            new ProjectJsonRestoreRequestProvider(providerCache)
+                        }
+                    };
 
-                // Act
-                var summaries = await RestoreRunner.Run(restoreContext);
-                var summary = summaries.Single();
+                    // Act
+                    var summaries = await RestoreRunner.Run(restoreContext);
+                    var summary = summaries.Single();
 
-                // Assert
-                Assert.True(summary.Success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
-                Assert.Equal(1, summary.FeedsUsed.Count);
-                Assert.True(File.Exists(lockPath), lockPath);
+                    // Assert
+                    Assert.True(summary.Success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
+                    Assert.Equal(1, summary.FeedsUsed.Count);
+                    Assert.True(File.Exists(lockPath), lockPath);
+                }
             }
         }
 
@@ -236,36 +242,38 @@ namespace NuGet.Commands.Test
 
                 var providerCache = new RestoreCommandProvidersCache();
 
-                var restoreContext = new RestoreArgs()
+                using (var cacheContext = new SourceCacheContext())
                 {
-                    
-                    CacheContext = new SourceCacheContext(),
-                    DisableParallel = true,
-                    GlobalPackagesFolder = packagesDir.FullName,
-                    Sources = new List<string>() { packageSource.FullName },
-                    Inputs = new List<string>() { dgPath },
-                    Log = logger,
-                    CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),
-                    RequestProviders = new List<IRestoreRequestProvider>()
+                    var restoreContext = new RestoreArgs()
                     {
-                        new MSBuildP2PRestoreRequestProvider(providerCache),
-                        new ProjectJsonRestoreRequestProvider(providerCache)
-                    }
-                };
+                        CacheContext = cacheContext,
+                        DisableParallel = true,
+                        GlobalPackagesFolder = packagesDir.FullName,
+                        Sources = new List<string>() { packageSource.FullName },
+                        Inputs = new List<string>() { dgPath },
+                        Log = logger,
+                        CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),
+                        RequestProviders = new List<IRestoreRequestProvider>()
+                        {
+                            new MSBuildP2PRestoreRequestProvider(providerCache),
+                            new ProjectJsonRestoreRequestProvider(providerCache)
+                        }
+                    };
 
-                // Act
-                var summaries = await RestoreRunner.Run(restoreContext);
-                var success = summaries.All(s => s.Success);
+                    // Act
+                    var summaries = await RestoreRunner.Run(restoreContext);
+                    var success = summaries.All(s => s.Success);
 
-                var lockFormat = new LockFileFormat();
-                var lockFile1 = lockFormat.Read(lockPath1);
-                var project2Lib = lockFile1.Libraries.First();
+                    var lockFormat = new LockFileFormat();
+                    var lockFile1 = lockFormat.Read(lockPath1);
+                    var project2Lib = lockFile1.Libraries.First();
 
-                // Assert
-                Assert.True(success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
-                Assert.True(File.Exists(lockPath1), lockPath1);
-                Assert.True(File.Exists(lockPath2), lockPath2);
-                Assert.Equal("project2", project2Lib.Name);
+                    // Assert
+                    Assert.True(success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
+                    Assert.True(File.Exists(lockPath1), lockPath1);
+                    Assert.True(File.Exists(lockPath2), lockPath2);
+                    Assert.Equal("project2", project2Lib.Name);
+                }
             }
         }
 
@@ -332,31 +340,33 @@ namespace NuGet.Commands.Test
 
                 var providerCache = new RestoreCommandProvidersCache();
 
-                var restoreContext = new RestoreArgs()
+                using (var cacheContext = new SourceCacheContext())
                 {
-
-                    CacheContext = new SourceCacheContext(),
-                    DisableParallel = true,
-                    GlobalPackagesFolder = packagesDir.FullName,
-                    Sources = new List<string>() { packageSource.FullName },
-                    Inputs = new List<string>() { workingDir },
-                    Log = logger,
-                    CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),
-                    RequestProviders = new List<IRestoreRequestProvider>()
+                    var restoreContext = new RestoreArgs()
                     {
-                        new MSBuildP2PRestoreRequestProvider(providerCache),
-                        new ProjectJsonRestoreRequestProvider(providerCache)
-                    }
-                };
+                        CacheContext = cacheContext,
+                        DisableParallel = true,
+                        GlobalPackagesFolder = packagesDir.FullName,
+                        Sources = new List<string>() { packageSource.FullName },
+                        Inputs = new List<string>() { workingDir },
+                        Log = logger,
+                        CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),
+                        RequestProviders = new List<IRestoreRequestProvider>()
+                        {
+                            new MSBuildP2PRestoreRequestProvider(providerCache),
+                            new ProjectJsonRestoreRequestProvider(providerCache)
+                        }
+                    };
 
-                // Act
-                var summaries = await RestoreRunner.Run(restoreContext);
-                var success = summaries.All(s => s.Success);
+                    // Act
+                    var summaries = await RestoreRunner.Run(restoreContext);
+                    var success = summaries.All(s => s.Success);
 
-                // Assert
-                Assert.True(success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
-                Assert.True(File.Exists(lockPath1), lockPath1);
-                Assert.True(File.Exists(lockPath2), lockPath2);
+                    // Assert
+                    Assert.True(success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
+                    Assert.True(File.Exists(lockPath1), lockPath1);
+                    Assert.True(File.Exists(lockPath2), lockPath2);
+                }
             }
         }
 
@@ -402,33 +412,36 @@ namespace NuGet.Commands.Test
 
                 var providerCache = new RestoreCommandProvidersCache();
 
-                var restoreContext = new RestoreArgs()
+                using (var cacheContext = new SourceCacheContext())
                 {
-                    CacheContext = new SourceCacheContext(),
-                    DisableParallel = true,
-                    GlobalPackagesFolder = packagesDir.FullName,
-                    Sources = new List<string>() { packageSource.FullName },
-                    Inputs = new List<string>() { specPath1 },
-                    Log = logger,
-                    CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),
-                    RequestProviders = new List<IRestoreRequestProvider>()
+                    var restoreContext = new RestoreArgs()
                     {
-                        new ProjectJsonRestoreRequestProvider(providerCache)
-                    }
-                };
+                        CacheContext = cacheContext,
+                        DisableParallel = true,
+                        GlobalPackagesFolder = packagesDir.FullName,
+                        Sources = new List<string>() { packageSource.FullName },
+                        Inputs = new List<string>() { specPath1 },
+                        Log = logger,
+                        CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),
+                        RequestProviders = new List<IRestoreRequestProvider>()
+                        {
+                             new ProjectJsonRestoreRequestProvider(providerCache)
+                        }
+                    };
 
-                restoreContext.Runtimes.Add("linux-x86");
+                    restoreContext.Runtimes.Add("linux-x86");
 
-                // Act
-                var summaries = await RestoreRunner.Run(restoreContext);
-                var success = summaries.All(s => s.Success);
+                    // Act
+                    var summaries = await RestoreRunner.Run(restoreContext);
+                    var success = summaries.All(s => s.Success);
 
-                var lockFormat = new LockFileFormat();
-                var lockFile = lockFormat.Read(lockPath1);
+                    var lockFormat = new LockFileFormat();
+                    var lockFile = lockFormat.Read(lockPath1);
 
-                // Assert
-                Assert.True(success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
-                Assert.True(lockFile.Targets.Any(graph => graph.RuntimeIdentifier == "linux-x86"));
+                    // Assert
+                    Assert.True(success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
+                    Assert.True(lockFile.Targets.Any(graph => graph.RuntimeIdentifier == "linux-x86"));
+                }
             }
         }
 
@@ -443,25 +456,28 @@ namespace NuGet.Commands.Test
                 // Arrange
                 var logger = new TestLogger();
                 var providerCache = new RestoreCommandProvidersCache();
-                var restoreContext = new RestoreArgs()
+                using (var cacheContext = new SourceCacheContext())
                 {
-                    CacheContext = new SourceCacheContext(),
-                    DisableParallel = true,
-                    Inputs = new List<string>() { workingDir },
-                    Log = logger,
-                    RequestProviders = new List<IRestoreRequestProvider>()
+                    var restoreContext = new RestoreArgs()
                     {
-                        new ProjectJsonRestoreRequestProvider(providerCache)
-                    }
-                };
+                        CacheContext = cacheContext,
+                        DisableParallel = true,
+                        Inputs = new List<string>() { workingDir },
+                        Log = logger,
+                        RequestProviders = new List<IRestoreRequestProvider>()
+                        {
+                            new ProjectJsonRestoreRequestProvider(providerCache)
+                        }
+                    };
 
-                // Act
-                var summaries = await RestoreRunner.Run(restoreContext);
+                    // Act
+                    var summaries = await RestoreRunner.Run(restoreContext);
 
-                // Assert
-                Assert.Equal(0, summaries.Count);
-                var matchingError = logger.Messages.ToList().Find(error => error.Contains(workingDir));
-                Assert.NotNull(matchingError);
+                    // Assert
+                    Assert.Equal(0, summaries.Count);
+                    var matchingError = logger.Messages.ToList().Find(error => error.Contains(workingDir));
+                    Assert.NotNull(matchingError);
+                }
             }
         }
     }

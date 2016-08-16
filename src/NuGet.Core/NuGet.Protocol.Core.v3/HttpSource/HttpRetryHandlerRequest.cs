@@ -3,7 +3,6 @@
 
 using System;
 using System.Net.Http;
-using System.Threading;
 
 namespace NuGet.Protocol
 {
@@ -13,6 +12,7 @@ namespace NuGet.Protocol
     /// </summary>
     public class HttpRetryHandlerRequest
     {
+        public static readonly int DefaultMaxTries = 3;
         public static readonly TimeSpan DefaultDownloadTimeout = TimeSpan.FromSeconds(60);
 
         public HttpRetryHandlerRequest(HttpClient httpClient, Func<HttpRequestMessage> requestFactory)
@@ -20,7 +20,7 @@ namespace NuGet.Protocol
             HttpClient = httpClient;
             RequestFactory = requestFactory;
             CompletionOption = HttpCompletionOption.ResponseHeadersRead;
-            MaxTries = 3;
+            MaxTries = DefaultMaxTries;
             RequestTimeout = TimeSpan.FromSeconds(100);
             RetryDelay = TimeSpan.FromMilliseconds(200);
             DownloadTimeout = DefaultDownloadTimeout;
@@ -38,7 +38,6 @@ namespace NuGet.Protocol
         public HttpCompletionOption CompletionOption { get; set; }
 
         /// <summary>The maximum number of times to try the request. This value includes the initial attempt.</summary>
-        /// <remarks>This API is intended only for testing purposes and should not be used in product code.</remarks>
         public int MaxTries { get; set; }
 
         /// <summary>How long to wait on the request to come back with a response.</summary>

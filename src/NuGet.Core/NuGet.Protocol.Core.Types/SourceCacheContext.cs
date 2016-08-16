@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -12,60 +13,43 @@ namespace NuGet.Protocol.Core.Types
     /// </summary>
     public class SourceCacheContext : IDisposable
     {
-        private static readonly string _tempFolderGuid = Guid.NewGuid().ToString();
+        /// <summary>
+        /// Path of temp folder if requested by GeneratedTempFolder
+        /// </summary>
+        private string _generatedTempFolder = null;
 
         /// <summary>
         /// Default amount of time to cache version lists.
         /// </summary>
-        private static readonly TimeSpan DefaultCacheAgeLimitList = TimeSpan.FromMinutes(30);
+        private static readonly TimeSpan DefaultMaxAge = TimeSpan.FromMinutes(30);
 
         /// <summary>
-        /// Default amount of time to cache nupkgs.
-        /// </summary>
-        private static readonly TimeSpan DefaultCacheAgeLimitNupkg = TimeSpan.FromHours(24);
-
-        /// <summary>
-        /// If set, ignore the disk cache when listing and downloading packages
+        /// If set, the global disk cache will not be written to or read from. Instead, a temporary directory will be
+        /// used.
         /// </summary>
         public bool NoCache { get; set; }
 
         /// <summary>
-        /// Package version lists from the server older than this date
-        /// will be fetched from the server.
+        /// If set, the global disk cache will not be written to.
         /// </summary>
-        /// <remarks>This will be ignored if <see cref="NoCache"/> is true.</remarks>
-        /// <remarks>If the value is null the default expiration will be used.</remarks>
-        public DateTimeOffset? ListMaxAge { get; set; }
+        public bool DirectDownload { get; set; }
 
         /// <summary>
-        /// Nupkgs from the server older than this date will be fetched from the server.
+        /// Package version lists or packages from the server older than this date will be fetched from the server.
         /// </summary>
         /// <remarks>This will be ignored if <see cref="NoCache"/> is true.</remarks>
         /// <remarks>If the value is null the default expiration will be used.</remarks>
-        public DateTimeOffset? NupkgMaxAge { get; set; }
-
+        public DateTimeOffset? MaxAge { get; set; }
 
         /// <summary>
         /// Package version lists from the server older than this time span
         /// will be fetched from the server.
         /// </summary>
-        public TimeSpan ListMaxAgeTimeSpan
+        public TimeSpan MaxAgeTimeSpan
         {
             get
             {
-                return GetCacheTime(ListMaxAge, DefaultCacheAgeLimitList);
-            }
-        }
-
-        /// <summary>
-        /// Packages from the server older than this time span
-        /// will be fetched from the server.
-        /// </summary>
-        public TimeSpan NupkgMaxAgeTimeSpan
-        {
-            get
-            {
-                return GetCacheTime(NupkgMaxAge, DefaultCacheAgeLimitNupkg);
+                return GetCacheTime(MaxAge, DefaultMaxAge);
             }
         }
 
@@ -95,18 +79,41 @@ namespace NuGet.Protocol.Core.Types
             return timeSpan;
         }
 
-        public string GeneratedTempFolder { get; } = Path.Combine(Path.GetTempPath(), "NuGet", "TempCache", _tempFolderGuid);
+        public string GeneratedTempFolder
+        {
+            get
+            {
+                if (_generatedTempFolder == null)
+                {
+                    var newTempFolder = Path.Combine(
+                        Path.GetTempPath(),
+                        "NuGet",
+                        "TempCache",
+                        Guid.NewGuid().ToString());
+
+                    Interlocked.CompareExchange(ref _generatedTempFolder, newTempFolder, null);
+                }
+
+                return _generatedTempFolder;
+            }
+        }
 
         public bool IgnoreFailedSources { get; set; }
 
         public void Dispose()
         {
-            try
+            var currentTempFolder = Interlocked.CompareExchange(ref _generatedTempFolder, null, null);
+
+            if (currentTempFolder != null)
             {
-                Directory.Delete(GeneratedTempFolder, recursive: true);
-            }
-            catch
-            {
+                try
+                {
+                    Directory.Delete(_generatedTempFolder, recursive: true);
+                }
+                catch
+                {
+                    // Ignore failures when cleaning up.
+                }
             }
         }
     }

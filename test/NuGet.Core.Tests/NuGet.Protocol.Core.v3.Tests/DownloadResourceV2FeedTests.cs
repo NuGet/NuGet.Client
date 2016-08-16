@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Configuration;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
@@ -33,15 +33,21 @@ namespace NuGet.Protocol.Tests
 
             var downloadResource = await repo.GetResourceAsync<DownloadResource>();
 
-            // Act 
-            var actual = await downloadResource.GetDownloadResourceResultAsync(new PackageIdentity("xunit", new NuGetVersion("1.0.0-notfound")),
-                NullSettings.Instance,
-                NullLogger.Instance,
-                CancellationToken.None);
+            // Act
+            using (var packagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var sourceCacheContext = new SourceCacheContext())
+            {
+                var actual = await downloadResource.GetDownloadResourceResultAsync(
+                    new PackageIdentity("xunit", new NuGetVersion("1.0.0-notfound")),
+                    new PackageDownloadContext(sourceCacheContext),
+                    packagesFolder,
+                    NullLogger.Instance,
+                    CancellationToken.None);
 
-            // Assert
-            Assert.NotNull(actual);
-            Assert.Equal(DownloadResourceResultStatus.NotFound, actual.Status);
+                // Assert
+                Assert.NotNull(actual);
+                Assert.Equal(DownloadResourceResultStatus.NotFound, actual.Status);
+            }
         }
     }
 }
