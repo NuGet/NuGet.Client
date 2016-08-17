@@ -66,6 +66,10 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         // store the current command typed so far
         private ComplexCommand _complexCommand;
 
+        // store the current CancellationTokenSource which will be used to cancel the operation
+        // in case of abort
+        private CancellationTokenSource _tokenSource;
+
         // store the current CancellationToken. This will be set on the private data
         private CancellationToken _token;
 
@@ -576,21 +580,37 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             if (ComplexCommand.AddLine(command, out fullCommand)
                 && !string.IsNullOrEmpty(fullCommand))
             {
+                // create a new token source with each command since CTS aren't usable once cancelled.
+                _tokenSource = new CancellationTokenSource();
+                _token = _tokenSource.Token;
                 return ExecuteHost(fullCommand, command, inputs);
             }
 
             return false; // constructing multi-line command
         }
 
-        protected static void OnExecuteCommandEnd()
+        protected void OnExecuteCommandEnd()
         {
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageManagerConsoleCommandExecutionEnd);
+
+            // dispose token source related to this current command
+            _tokenSource?.Dispose();
+            _token = CancellationToken.None;
         }
 
         public void Abort()
         {
             ExecutingPipeline?.StopAsync();
             ComplexCommand.Clear();
+            try
+            {
+                _tokenSource?.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+                // ObjectDisposedException is expected here, since at clear console command, tokenSource
+                // would have already been disposed.
+            }
         }
 
         protected void SetPrivateDataOnHost(bool isSync)
