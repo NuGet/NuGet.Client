@@ -129,7 +129,9 @@ namespace NuGet.Resolver
             if (!availablePackages.Any(package => StringComparer.OrdinalIgnoreCase.Equals(problemPackageId, package.Id)) ||
                 !dependantPackages.Any())
             {
-                var packageSourceList = string.Join(", ", packageSources.Select(source => string.Format(CultureInfo.InvariantCulture, "'{0}'", source.Name)));
+                var packageSourceList = string.Join(", ",
+                    packageSources.Where(source => source.IsEnabled)
+                        .Select(source => string.Format(CultureInfo.InvariantCulture, "'{0}'", source.Name)));
 
                 if (packageSources.Any())
                 {

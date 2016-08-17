@@ -169,13 +169,15 @@ namespace NuGet.PackageManagement.UI
                         versionConstraints: VersionConstraints.None,
                         gatherCache: gatherCache);
 
+                    var secondarySources = _sourceProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
+
                     var actions = await _packageManager.PreviewUpdatePackagesAsync(
                         packagesToUpdateInProject,
                         project,
                         resolutionContext,
                         uiService.ProgressWindow,
                         uiService.ActiveSources,
-                        uiService.ActiveSources,
+                        secondarySources,
                         token);
                     resolvedActions.AddRange(actions.Select(action => new ResolvedAction(project, action))
                         .ToList());
