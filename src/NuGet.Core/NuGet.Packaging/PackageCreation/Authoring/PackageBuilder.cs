@@ -328,11 +328,6 @@ namespace NuGet.Packaging
                 throw new InvalidOperationException(NuGetResources.SemVerSpecialVersionTooLong);
             }
 
-            if (Version != null && Version.IsSemVer2)
-            {
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, NuGetResources.SemVer2VersionsNotSupported, Version));
-            }
-
             ValidateDependencyGroups(Version, DependencyGroups);
             ValidateReferenceAssemblies(Files, PackageAssemblyReferences);
 
@@ -793,7 +788,7 @@ namespace NuGet.Packaging
 
         private static bool ValidateSpecialVersionLength(SemanticVersion version)
         {
-            return version == null || !version.IsPrerelease || version.Release.Length <= 20;
+            return version == null || !version.IsPrerelease || version.Release.Length <= 250;
         }
 
         private void WriteOpcManifestRelationship(ZipArchive package, string path, string psmdcpPath)
@@ -885,7 +880,7 @@ namespace NuGet.Packaging
                     new XElement(dc + "creator", String.Join(", ", Authors)),
                     new XElement(dc + "description", Description),
                     new XElement(dc + "identifier", Id),
-                    new XElement(core + "version", Version.ToString()),
+                    new XElement(core + "version", Version.ToFullString()),
                     //new XElement(core + "language", Language),
                     new XElement(core + "keywords", ((IPackageMetadata)this).Tags),
                     //new XElement(dc + "title", Title),

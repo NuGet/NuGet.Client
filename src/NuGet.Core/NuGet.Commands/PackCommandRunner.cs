@@ -771,7 +771,7 @@ namespace NuGet.Commands
             var package = new PackageArchiveReader(outputPath);
 
             WriteLine("Id: {0}", builder.Id);
-            WriteLine("Version: {0}", builder.Version);
+            WriteLine("Version: {0}", builder.Version.ToFullString());
             WriteLine("Authors: {0}", String.Join(", ", builder.Authors));
             WriteLine("Description: {0}", builder.Description);
             if (builder.LicenseUrl != null)
@@ -936,7 +936,7 @@ namespace NuGet.Commands
 
             if (nugetVersion != null)
             {
-                version = nugetVersion.ToNormalizedString();
+                version = nugetVersion.ToFullString();
             }
             else
             {
@@ -951,7 +951,7 @@ namespace NuGet.Commands
                     }
                     else
                     {
-                        version = builder.Version.ToNormalizedString();
+                        version = builder.Version.ToFullString();
                     }
                 }
                 else
