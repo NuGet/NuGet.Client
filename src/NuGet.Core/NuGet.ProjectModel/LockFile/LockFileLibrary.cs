@@ -53,7 +53,7 @@ namespace NuGet.ProjectModel
                 && string.Equals(Sha512, other.Sha512, StringComparison.Ordinal)
                 && Version == other.Version)
             {
-                return Files.OrderedEquals(other.Files, s => s, StringComparer.OrdinalIgnoreCase, StringComparer.OrdinalIgnoreCase);
+                return Files.OrderedEquals(other.Files, s => s, StringComparer.Ordinal, StringComparer.Ordinal);
             }
 
             return false;
@@ -76,12 +76,31 @@ namespace NuGet.ProjectModel
             combiner.AddObject(Path);
             combiner.AddObject(MSBuildProject);
 
-            foreach (var file in Files.OrderBy(s => s, StringComparer.OrdinalIgnoreCase))
+            foreach (var file in Files.OrderBy(s => s, StringComparer.Ordinal))
             {
-                combiner.AddStringIgnoreCase(file);
+                combiner.AddObject(file);
             }
 
             return combiner.CombinedHash;
+        }
+
+        /// <summary>
+        /// Makes a deep clone of the lock file library.
+        /// </summary>
+        /// <returns>The cloned lock file library.</returns>
+        public LockFileLibrary Clone()
+        {
+            return new LockFileLibrary
+            {
+                Name = Name,
+                Type = Type,
+                Version = Version,
+                IsServiceable = IsServiceable,
+                Sha512 = Sha512,
+                Files = Files != null ? new List<string>(Files) : null,
+                Path = Path,
+                MSBuildProject = MSBuildProject
+            };
         }
     }
 }

@@ -137,6 +137,7 @@ namespace NuGet.Commands.Test
 
                 var logger = new TestLogger();
                 var lockFilePath = Path.Combine(projectDir.FullName, "project.lock.json");
+                var lockFileFormat = new LockFileFormat();
 
                 var packageId = "PackageA";
                 var packageVersion = "1.0.0-Beta";
@@ -170,7 +171,8 @@ namespace NuGet.Commands.Test
                     logger)
                 {
                     LockFilePath = lockFilePath,
-                    IsLowercasePackagesDirectory = isLowercase
+                    IsLowercasePackagesDirectory = isLowercase,
+                    ExistingLockFile = lockFileFormat.Read(lockFilePath)
                 };
                 var commandB = new RestoreCommand(requestB);
                 var resultB = await commandB.ExecuteAsync();
@@ -203,7 +205,6 @@ namespace NuGet.Commands.Test
                 Assert.True(File.Exists(resolverB.GetPackageFilePath(packageId, libraryB.Version)));
 
                 // The lock file on disk should match the second restore's library.
-                var lockFileFormat = new LockFileFormat();
                 var diskLockFile = lockFileFormat.Read(lockFilePath);
                 var lockFileLibrary = diskLockFile
                     .Libraries

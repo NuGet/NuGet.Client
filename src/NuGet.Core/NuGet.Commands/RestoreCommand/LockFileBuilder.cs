@@ -121,7 +121,13 @@ namespace NuGet.Commands
                     var resolver = packageInfo.Repository.PathResolver;
                     
                     LockFileLibrary previousLibrary = null;
-                    previousLibraries?.TryGetValue(Tuple.Create(package.Id, package.Version), out previousLibrary);
+                    if (previousLibraries?.TryGetValue(Tuple.Create(package.Id, package.Version), out previousLibrary) == true)
+                    {
+                        // We mutate this previous library so we must take a clone of it. This is
+                        // important because later, when deciding whether the lock file has changed,
+                        // we compare the new lock file to the previous (in-memory) lock file.
+                        previousLibrary = previousLibrary.Clone();
+                    }
                     
                     var sha512 = File.ReadAllText(resolver.GetHashPath(package.Id, package.Version));
                     var path = PathUtility.GetPathWithForwardSlashes(
