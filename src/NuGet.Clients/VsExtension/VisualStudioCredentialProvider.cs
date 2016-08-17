@@ -89,7 +89,7 @@ namespace NuGetVSExtension
                 // or request credentials. 
                 WebRequest.DefaultWebProxy = new WebProxy(uriToDisplay);
 
-                return PromptForCredentials(uri, cancellationToken);
+                return await PromptForCredentialsAsync(uri, cancellationToken);
             }
             finally
             {
@@ -103,7 +103,7 @@ namespace NuGetVSExtension
         /// This method is responsible for retrieving either cached credentials
         /// or forcing a prompt if we need the user to give us new credentials.
         /// </summary>
-        private CredentialResponse PromptForCredentials(Uri uri, CancellationToken cancellationToken)
+        private async Task<CredentialResponse> PromptForCredentialsAsync(Uri uri, CancellationToken cancellationToken)
         {
             const __VsWebProxyState oldState = __VsWebProxyState.VsWebProxyState_PromptForCredentials;
 
@@ -112,9 +112,9 @@ namespace NuGetVSExtension
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            ThreadHelper.JoinableTaskFactory.Run(async () =>
+            await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
                 result = _webProxyService.PrepareWebProxy(uri.OriginalString,
                     (uint)oldState,
