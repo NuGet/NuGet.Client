@@ -80,7 +80,7 @@
   <Choose>
     <When Condition="$(VisualStudioVersion)=='14.0'">
       <ItemGroup>
-        <ProjectReference Include="..\VisualStudio14.Packages\NuGet.VisualStudio14.Packages.csproj">
+        <ProjectReference Include=".\VisualStudio14.Packages\NuGet.VisualStudio14.Packages.csproj">
           <Project>{A3AB10FD-0E3E-426B-B3D9-B5BF34E5D190}</Project>
           <Name>NuGet.VisualStudio14.Packages</Name>
         </ProjectReference>
@@ -88,7 +88,7 @@
     </When>
     <When Condition="$(VisualStudioVersion)=='15.0'">
       <ItemGroup>
-        <ProjectReference Include="..\VisualStudio15.Packages\NuGet.VisualStudio15.Packages.csproj">
+        <ProjectReference Include=".\VisualStudio15.Packages\NuGet.VisualStudio15.Packages.csproj">
           <Project>{868ACCBA-B981-440D-9C98-2A235E1E861A}</Project>
           <Name>NuGet.VisualStudio15.Packages</Name>
         </ProjectReference>

@@ -11,9 +11,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudio.Interop"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudio.Facade", "src\NuGet.Clients\VisualStudio.Facade\NuGet.VisualStudio.Facade.csproj", "{EEA49A74-6EFC-410E-9745-BAD367AC151D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudio14.Packages", "src\NuGet.Clients\VisualStudio14.Packages\NuGet.VisualStudio14.Packages.csproj", "{A3AB10FD-0E3E-426B-B3D9-B5BF34E5D190}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudio14.Packages", "src\NuGet.Clients\VisualStudio.Facade\VisualStudio14.Packages\NuGet.VisualStudio14.Packages.csproj", "{A3AB10FD-0E3E-426B-B3D9-B5BF34E5D190}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudio15.Packages", "src\NuGet.Clients\VisualStudio15.Packages\NuGet.VisualStudio15.Packages.csproj", "{868ACCBA-B981-440D-9C98-2A235E1E861A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudio15.Packages", "src\NuGet.Clients\VisualStudio.Facade\VisualStudio15.Packages\NuGet.VisualStudio15.Packages.csproj", "{868ACCBA-B981-440D-9C98-2A235E1E861A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.Console", "src\NuGet.Clients\VsConsole\Console\NuGet.Console.csproj", "{50E33DA2-AF14-486D-81B8-BD8409744A38}"
 EndProject
