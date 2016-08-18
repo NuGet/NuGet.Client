@@ -15,6 +15,7 @@ namespace NuGet.CommandLine.XPlat
             app.Command("push", push =>
             {
                 push.Description = Strings.Push_Description;
+                push.HelpOption(XPlatUtility.HelpOption);
 
                 push.Option(
                     CommandConstants.ForceEnglishOutputOption,

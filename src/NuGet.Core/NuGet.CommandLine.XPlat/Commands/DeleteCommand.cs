@@ -15,6 +15,7 @@ namespace NuGet.CommandLine.XPlat
             app.Command("delete", delete =>
             {
                 delete.Description = Strings.Delete_Description;
+                delete.HelpOption(XPlatUtility.HelpOption);
 
                 delete.Option(
                     CommandConstants.ForceEnglishOutputOption,

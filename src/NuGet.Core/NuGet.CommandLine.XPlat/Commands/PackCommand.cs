@@ -16,6 +16,7 @@ namespace NuGet.CommandLine.XPlat
             app.Command("pack", pack =>
             {
                 pack.Description = Strings.PackCommand_Description;
+                pack.HelpOption(XPlatUtility.HelpOption);
 
                 pack.Option(
                     CommandConstants.ForceEnglishOutputOption,
