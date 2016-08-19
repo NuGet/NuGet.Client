@@ -26,8 +26,8 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("locals global-packages -l")]
         [InlineData("locals --list global-packages")]
         [InlineData("locals -l global-packages")]
-        [InlineData("locals --clear all")]
-        [InlineData("locals -c all")]
+        // [InlineData("locals --clear all")]
+        // [InlineData("locals -c all")]
         public static void Locals_Succeeds(String args)
         {
             // Arrange

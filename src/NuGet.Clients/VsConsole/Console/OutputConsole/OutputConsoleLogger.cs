@@ -86,7 +86,7 @@ namespace NuGetConsole
             if (uiShell != null)
             {
                 IVsWindowFrame toolWindow = null;
-                uiShell.FindToolWindow(0, ref GuidList.guidVsWindowKindOutput, out toolWindow);
+                uiShell.FindToolWindow(0, ref Implementation.GuidList.guidVsWindowKindOutput, out toolWindow);
                 toolWindow?.Show();
             }
         }

@@ -20,11 +20,16 @@ namespace NuGet.Options
     {
         private readonly Configuration.ISettings _settings;
         private bool _initialized;
-        private IServiceProvider _serviceprovider;
-        private OutputConsoleLogger _outputConsoleLogger;
+        private readonly IServiceProvider _serviceprovider;
+        private readonly OutputConsoleLogger _outputConsoleLogger;
 
         public GeneralOptionControl(IServiceProvider serviceProvider)
         {
+            if (serviceProvider == null)
+            {
+                throw new ArgumentNullException(nameof(serviceProvider));
+            }
+
             InitializeComponent();
             _settings = ServiceLocator.GetInstance<Configuration.ISettings>();
             _serviceprovider = serviceProvider;
@@ -113,15 +118,16 @@ namespace NuGet.Options
         private void localsCommandButton_OnClick(object sender, EventArgs e)
         {
             updateLocalsCommandStatusText(string.Format(Resources.ShowMessage_LocalsCommandWorking), visibility: true);
-            var arguments = new List<string> { "all" };
-            var settings = ServiceLocator.GetInstance<ISettings>();            
-            Log logError = new Log(LogError);
-            Log logInformation = new Log(LogInformation);
+            var arguments = new List<string> { "temp" };
+            var settings = ServiceLocator.GetInstance<ISettings>();
+            var logError = new Log(LogError);
+            var logInformation = new Log(LogInformation);
             _outputConsoleLogger.Start();
             var localsCommandRunner = new LocalsCommandRunner(arguments, settings, logInformation, logError, clear: true, list: false);
             try
             {
                 localsCommandRunner.ExecuteCommand();
+                updateLocalsCommandStatusText(string.Format(Resources.ShowMessage_LocalsCommandSuccess, DateTime.Now.ToString(Resources.Culture)), visibility: true);
             }
             catch (Exception ex)
             {
@@ -129,11 +135,10 @@ namespace NuGet.Options
                 LogError(string.Format(Resources.ShowMessage_LocalsCommandFailure, DateTime.Now.ToString(Resources.Culture), ex.Message));
                 ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
             }
-            if (localsCommandRunner.Result == LocalsCommandResult.ClearSuccess)
+            finally
             {
-                updateLocalsCommandStatusText(string.Format(Resources.ShowMessage_LocalsCommandSuccess, DateTime.Now.ToString(Resources.Culture)), visibility: true);
+                _outputConsoleLogger.End();
             }
-            _outputConsoleLogger.End();
         }
 
         private void updateLocalsCommandStatusText(string statusText, bool visibility)

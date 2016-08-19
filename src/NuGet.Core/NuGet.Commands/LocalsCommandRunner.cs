@@ -24,24 +24,12 @@ namespace NuGet.Commands
             All
         }
 
-        /// <summary>
-        /// Enum used to indicate the result of the command to callers.
-        /// </summary>
-        public enum LocalsCommandResult
-        {
-            InvalidLocalResourceName,
-            ClearFailure,
-            ClearSuccess
-        }
-
         public delegate void Log(string message);
 
         private const string HttpCacheResourceName = "http-cache";
         private const string GlobalPackagesResourceName = "global-packages";
         private const string AllResourceName = "all";
         private const string TempResourceName = "temp";
-
-        public LocalsCommandResult Result { get; private set; }
 
         public bool Clear { get; set; }
 
@@ -133,7 +121,6 @@ namespace NuGet.Commands
 
                 default:
                     // Invalid local resource name provided.
-                    Result = LocalsCommandResult.InvalidLocalResourceName;
                     throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_InvalidLocalResourceName));
             }
         }
@@ -187,18 +174,15 @@ namespace NuGet.Commands
 
                 default:
                     // Invalid local resource name provided.
-                    Result = LocalsCommandResult.InvalidLocalResourceName;
                     throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_InvalidLocalResourceName));
             }
 
             if (!success)
             {
-                Result = LocalsCommandResult.ClearFailure;
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_ClearFailed));
             }
             else
             {
-                Result = LocalsCommandResult.ClearSuccess;
                 LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_ClearedSuccessful));
             }
         }

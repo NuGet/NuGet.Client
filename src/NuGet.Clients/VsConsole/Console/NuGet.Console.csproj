@@ -77,7 +77,6 @@
     <Compile Include="IHostInitializer.cs" />
     <Compile Include="IPowerConsoleService.cs" />
     <Compile Include="NativeMethods.cs" />
-    <Compile Include="OutputConsole\Guids.cs" />
     <Compile Include="OutputConsole\IOutputConsoleProvider.cs" />
     <Compile Include="OutputConsole\OutputConsole.cs" />
     <Compile Include="OutputConsole\OutputConsoleLogger.cs" />
