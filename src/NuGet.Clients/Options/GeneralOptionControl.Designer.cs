@@ -35,7 +35,7 @@
             this.packageRestoreAutomaticCheckBox = new System.Windows.Forms.CheckBox();
             this.BindingRedirectsHeader = new System.Windows.Forms.Label();
             this.localsCommandButton = new System.Windows.Forms.Button();
-            this.localsCommandStatusText = new System.Windows.Forms.Label();
+            this.localsCommandStatusText = new System.Windows.Forms.RichTextBox();
             this.SuspendLayout();
             // 
             // skipBindingRedirects
@@ -77,7 +77,12 @@
             // 
             resources.ApplyResources(this.localsCommandStatusText, "localsCommandStatusText");
             this.localsCommandStatusText.BackColor = System.Drawing.SystemColors.Control;
+            this.localsCommandStatusText.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.localsCommandStatusText.Name = "localsCommandStatusText";
+            this.localsCommandStatusText.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.localsCommandStatusText_LinkClicked);
+            this.localsCommandStatusText.ContentsResized += new System.Windows.Forms.ContentsResizedEventHandler(this.localsCommandStatusText_ContentChanged);
+            this.localsCommandStatusText.WordWrap = false;
+            this.localsCommandStatusText.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.None;           
             // 
             // GeneralOptionControl
             // 
@@ -104,6 +109,6 @@
         private System.Windows.Forms.CheckBox packageRestoreAutomaticCheckBox;
         private System.Windows.Forms.Label BindingRedirectsHeader;
         private System.Windows.Forms.Button localsCommandButton;
-        private System.Windows.Forms.Label localsCommandStatusText;
+        private System.Windows.Forms.RichTextBox localsCommandStatusText;
     }
 }

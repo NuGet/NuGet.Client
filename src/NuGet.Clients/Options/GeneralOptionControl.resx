@@ -309,14 +309,14 @@
   <data name="localsCommandStatusText.Location" type="System.Drawing.Point, System.Drawing">
     <value>5, 220</value>
   </data>
-  <data name="localsCommandStatusText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>3, 3, 3, 3</value>
-  </data>
   <data name="localsCommandStatusText.Size" type="System.Drawing.Size, System.Drawing">
-    <value>0, 13</value>
+    <value>432, 62</value>
   </data>
   <data name="localsCommandStatusText.TabIndex" type="System.Int32, mscorlib">
     <value>18</value>
+  </data>
+  <data name="localsCommandStatusText.Text" xml:space="preserve">
+    <value>http://example.com/help/locals</value>
   </data>
   <data name="localsCommandStatusText.Visible" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -325,7 +325,7 @@
     <value>localsCommandStatusText</value>
   </data>
   <data name="&gt;&gt;localsCommandStatusText.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Windows.Forms.RichTextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;localsCommandStatusText.Parent" xml:space="preserve">
     <value>$this</value>

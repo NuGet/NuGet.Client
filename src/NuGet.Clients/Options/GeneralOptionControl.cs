@@ -118,7 +118,7 @@ namespace NuGet.Options
         private void localsCommandButton_OnClick(object sender, EventArgs e)
         {
             updateLocalsCommandStatusText(string.Format(Resources.ShowMessage_LocalsCommandWorking), visibility: true);
-            var arguments = new List<string> { "all" };
+            var arguments = new List<string> { "temp" };
             var settings = ServiceLocator.GetInstance<ISettings>();
             var logError = new Log(LogError);
             var logInformation = new Log(LogInformation);
@@ -156,6 +156,17 @@ namespace NuGet.Options
         private void LogInformation(string message)
         {
             _outputConsoleLogger.Log(MessageLevel.Info, message);
+        }
+
+        private void localsCommandStatusText_LinkClicked(object sender, LinkClickedEventArgs e)
+        {
+            Process.Start(e.LinkText);
+        }
+
+        private void localsCommandStatusText_ContentChanged(object sender, ContentsResizedEventArgs e)
+        {
+            localsCommandStatusText.Height = e.NewRectangle.Height + localsCommandStatusText.Margin.Top + localsCommandStatusText.Margin.Bottom;
+            localsCommandStatusText.Width = e.NewRectangle.Width + localsCommandStatusText.Margin.Left + localsCommandStatusText.Margin.Right;
         }
     }
 }
