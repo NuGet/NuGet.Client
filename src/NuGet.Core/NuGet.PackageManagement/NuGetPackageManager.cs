@@ -2086,7 +2086,7 @@ namespace NuGet.PackageManagement
                 await restoreResult.CommitAsync(logger, token);
 
                 // Write out a message for each action
-                foreach (var action in nuGetProjectActions)
+                foreach (var action in actions)
                 {
                     var identityString = String.Format(CultureInfo.InvariantCulture, "{0} {1}",
                         action.PackageIdentity.Id,
