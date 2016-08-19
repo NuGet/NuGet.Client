@@ -121,10 +121,10 @@ namespace NuGetConsole
             if (_outputWindowPane == null)
             {
                 // create the Package Manager pane within the Output window
-                int result = _outputWindow.CreatePane(ref GuidList.guidNuGetOutputWindowPaneGuid, Resources.OutputConsolePaneName, fInitVisible: 1, fClearWithSolution: 0);
+                int result = _outputWindow.CreatePane(ref NuGetConsole.Implementation.GuidList.guidNuGetOutputWindowPaneGuid, Resources.OutputConsolePaneName, fInitVisible: 1, fClearWithSolution: 0);
                 if (result == VSConstants.S_OK)
                 {
-                    result = _outputWindow.GetPane(ref GuidList.guidNuGetOutputWindowPaneGuid, out _outputWindowPane);
+                    result = _outputWindow.GetPane(ref NuGetConsole.Implementation.GuidList.guidNuGetOutputWindowPaneGuid, out _outputWindowPane);
 
                     Debug.Assert(result == VSConstants.S_OK);
                     Debug.Assert(_outputWindowPane != null);

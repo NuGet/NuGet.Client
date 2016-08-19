@@ -1,12 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Globalization;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
-using System;
-using System.Globalization;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -40,6 +40,7 @@ namespace NuGet.CommandLine.XPlat
 
                 locals.OnExecute(() =>
                 {
+                    var logger = getLogger();
                     var setting = Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null);
                     if (((arguments.Values.Count < 1) || string.IsNullOrWhiteSpace(arguments.Values[0])) || (clear.HasValue() && list.HasValue()) || (!clear.HasValue() && !list.HasValue()))
                     {
@@ -51,14 +52,13 @@ namespace NuGet.CommandLine.XPlat
                     }
                     else
                     {
-                        var localsCommandRunner = new LocalsCommandRunner(arguments.Values, setting, clear.HasValue(), list.HasValue());
+                        var localsCommandRunner = new LocalsCommandRunner(arguments.Values, setting, logger.LogInformation, logger.LogError, clear.HasValue(), list.HasValue());
                         localsCommandRunner.ExecuteCommand();
                     }
 
                     return 0;
                 });
             });
-
         }
     }
 }

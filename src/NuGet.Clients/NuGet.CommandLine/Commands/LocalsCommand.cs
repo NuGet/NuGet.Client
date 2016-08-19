@@ -1,9 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using NuGet.Commands;
 using System.Linq;
 using System.Threading.Tasks;
+using NuGet.Commands;
 
 namespace NuGet.CommandLine.Commands
 {
@@ -13,7 +13,6 @@ namespace NuGet.CommandLine.Commands
     public class LocalsCommand
         : Command
     {
-
         [Option(typeof(NuGetCommand), "LocalsCommandClearDescription")]
         public bool Clear { get; set; }
 
@@ -35,7 +34,7 @@ namespace NuGet.CommandLine.Commands
                 return Task.FromResult(0);
             }
 
-            var localsCommandRunner = new LocalsCommandRunner(Arguments, Settings, Clear, List);
+            var localsCommandRunner = new LocalsCommandRunner(Arguments, Settings, Console.LogInformation, Console.LogError, Clear, List);
             localsCommandRunner.ExecuteCommand();
 
             return Task.FromResult(0);

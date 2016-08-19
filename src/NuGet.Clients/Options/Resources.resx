@@ -126,12 +126,6 @@
   <data name="ErrorDialogBoxTitle" xml:space="preserve">
     <value>Operation failed</value>
   </data>
-  <data name="PopupMessage_ClearNuGetCacheSuccess" xml:space="preserve">
-    <value>NuGet cache(s) cleared</value>
-  </data>
-  <data name="PopupTitle_ClearNuGetCache" xml:space="preserve">
-    <value>Clear NuGet Cache Result</value>
-  </data>
   <data name="ShowError_ConfigInvalidOperation" xml:space="preserve">
     <value>NuGet.Config is malformed, Please check NuGet.Config</value>
   </data>
@@ -140,6 +134,21 @@
   </data>
   <data name="ShowInfo_ClearPackageCache" xml:space="preserve">
     <value>All packages have been cleared from the cache.</value>
+  </data>
+  <data name="ShowMessage_LocalsCommandFailure" xml:space="preserve">
+    <value>NuGet cache(s) clear failed at {0}. 
+Error: {1}
+Please see http://example.com/help/locals for more help.</value>
+    <comment>{0} :error message;
+{1}: date and time
+</comment>
+  </data>
+  <data name="ShowMessage_LocalsCommandSuccess" xml:space="preserve">
+    <value>NuGet cache(s) cleared at {0}</value>
+    <comment>{0} for date and time string</comment>
+  </data>
+  <data name="ShowMessage_LocalsCommandWorking" xml:space="preserve">
+    <value>Clearing all NuGet cache(s). </value>
   </data>
   <data name="ShowWarning_InvalidSource" xml:space="preserve">
     <value>The source specified is invalid. Please provide a valid source.</value>

@@ -236,7 +236,7 @@ namespace NuGet.Options
                 return false;
             }
 
-            // find the enabled package source 
+            // find the enabled package source
             return true;
         }
 
@@ -533,9 +533,9 @@ namespace NuGet.Options
 
                     if (_checkBoxSize.IsEmpty)
                     {
-                        // save the checkbox size so that we can detect mouse click on the 
+                        // save the checkbox size so that we can detect mouse click on the
                         // checkbox in the MouseUp event handler.
-                        // here we assume that all checkboxes have the same size, which is reasonable. 
+                        // here we assume that all checkboxes have the same size, which is reasonable.
                         _checkBoxSize = checkBoxSize;
                     }
 
@@ -546,7 +546,7 @@ namespace NuGet.Options
                         graphics.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
 
                         // draw each package source as
-                        // 
+                        //
                         // [checkbox] Name
                         //            Source (italics)
 

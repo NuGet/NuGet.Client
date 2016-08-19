@@ -1,15 +1,18 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using NuGet.Common;
-using NuGet.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using NuGet.Common;
+using NuGet.Configuration;
 
 namespace NuGet.Commands
 {
+    /// <summary>
+    /// Command Runner used to run the business logic for nuget locals command
+    /// </summary>
     public class LocalsCommandRunner
     {
         private enum LocalResourceName
@@ -20,6 +23,7 @@ namespace NuGet.Commands
             Temp,
             All
         }
+
         /// <summary>
         /// Enum used to indicate the result of the command to callers.
         /// </summary>
@@ -29,10 +33,13 @@ namespace NuGet.Commands
             ClearFailure,
             ClearSuccess
         }
-        private const string _httpCacheResourceName = "http-cache";
-        private const string _globalPackagesResourceName = "global-packages";
-        private const string _allResourceName = "all";
-        private const string _tempResourceName = "temp";
+
+        public delegate void Log(string message);
+
+        private const string HttpCacheResourceName = "http-cache";
+        private const string GlobalPackagesResourceName = "global-packages";
+        private const string AllResourceName = "all";
+        private const string TempResourceName = "temp";
 
         public LocalsCommandResult Result { get; private set; }
 
@@ -44,13 +51,39 @@ namespace NuGet.Commands
 
         private ISettings Settings { get; set; }
 
-        public LocalsCommandRunner(IList<string> arguments, ISettings settings, bool clear, bool list)
+        private ILogger Logger { get; set; }
+
+        private Log LogError { get; set; }
+
+        private Log LogInformation { get; set; }
+
+        public LocalsCommandRunner(IList<string> arguments, ISettings settings, Log logInformation, Log logError, bool clear, bool list)
         {
-            this.Arguments = arguments;
-            this.Settings = settings;
-            this.Clear = clear;
-            this.List = list;
+            if (arguments == null)
+            {
+                throw new ArgumentNullException(nameof(arguments));
+            }
+            else if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+            else if (logInformation == null)
+            {
+                throw new ArgumentNullException(nameof(logInformation));
+            }
+            else if (logError == null)
+            {
+                throw new ArgumentNullException(nameof(logError));
+            }
+
+            Arguments = arguments;
+            Settings = settings;
+            Clear = clear;
+            List = list;
+            LogError = logError;
+            LogInformation = logInformation;
         }
+
         /// <summary>
         /// Executes the logic for nuget locals command.
         /// </summary>
@@ -71,43 +104,64 @@ namespace NuGet.Commands
             return;
         }
 
+        /// <summary>
+        /// Lists out the cache location(s) path.
+        /// </summary>
+        /// <param name="localResourceName">Cache resource to be listed</param>
+        /// <throws>Thorws <code>ArgumentException</code> if the specified resource name does not match a known cache type.</throws>
         private void ListLocalResource(LocalResourceName localResourceName)
         {
             switch (localResourceName)
             {
                 case LocalResourceName.HttpCache:
-                    PrintLocalResourcePath(_httpCacheResourceName, SettingsUtility.GetHttpCacheFolder());
+                    PrintLocalResourcePath(HttpCacheResourceName, SettingsUtility.GetHttpCacheFolder());
                     break;
+
                 case LocalResourceName.GlobalPackagesFolder:
-                    PrintLocalResourcePath(_globalPackagesResourceName, SettingsUtility.GetGlobalPackagesFolder(Settings));
+                    PrintLocalResourcePath(GlobalPackagesResourceName, SettingsUtility.GetGlobalPackagesFolder(Settings));
                     break;
+
                 case LocalResourceName.Temp:
-                    PrintLocalResourcePath(_tempResourceName, NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp));
+                    PrintLocalResourcePath(TempResourceName, NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp));
                     break;
+
                 case LocalResourceName.All:
-                    PrintLocalResourcePath(_httpCacheResourceName, SettingsUtility.GetHttpCacheFolder());
-                    PrintLocalResourcePath(_globalPackagesResourceName, SettingsUtility.GetGlobalPackagesFolder(Settings));
-                    PrintLocalResourcePath(_tempResourceName, NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp));
+                    PrintLocalResourcePath(HttpCacheResourceName, SettingsUtility.GetHttpCacheFolder());
+                    PrintLocalResourcePath(GlobalPackagesResourceName, SettingsUtility.GetGlobalPackagesFolder(Settings));
+                    PrintLocalResourcePath(TempResourceName, NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp));
                     break;
+
                 default:
                     // Invalid local resource name provided.
                     Result = LocalsCommandResult.InvalidLocalResourceName;
-                    throw new ArgumentException(String.Format(CultureInfo.CurrentCulture,Strings.LocalsCommand_InvalidLocalResourceName));
+                    LogError(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_InvalidLocalResourceName));
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_InvalidLocalResourceName));
             }
         }
 
+        /// <summary>
+        /// Prints the specified local resource path.
+        /// </summary>
+        /// <param name="resourceName"> Specified resource name</param>
+        /// <param name="path"> Path for the specified resource</param>
         private void PrintLocalResourcePath(string resourceName, string path)
         {
             if (string.IsNullOrWhiteSpace(path))
             {
-                Console.WriteLine(String.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_LocalResourcePathNotSet));
+                LogError(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_LocalResourcePathNotSet));
             }
             else
             {
-                Console.WriteLine(String.Format(CultureInfo.CurrentCulture, $"{resourceName}: {path}"));
+                LogInformation(string.Format(CultureInfo.CurrentCulture, $"{resourceName}: {path}"));
             }
         }
 
+        /// <summary>
+        /// Clears the specified cache location(s).
+        /// </summary>
+        /// <param name="localResourceName"></param>
+        /// <throws>Thorws <code>ArgumentException</code> if the specified resource name does not match a known cache type.</throws>
+        /// <returns><code>True</code> if the operation was successful; otherwise <code>false</code>.</returns>
         private void ClearLocalResource(LocalResourceName localResourceName)
         {
             var success = true;
@@ -117,32 +171,38 @@ namespace NuGet.Commands
                 case LocalResourceName.HttpCache:
                     success &= ClearNuGetHttpCache();
                     break;
+
                 case LocalResourceName.GlobalPackagesFolder:
                     success &= ClearNuGetGlobalPackagesFolder();
                     break;
+
                 case LocalResourceName.Temp:
                     success &= ClearNuGetTempFolder();
                     break;
+
                 case LocalResourceName.All:
                     success &= ClearNuGetHttpCache();
                     success &= ClearNuGetGlobalPackagesFolder();
                     success &= ClearNuGetTempFolder();
                     break;
+
                 default:
                     // Invalid local resource name provided.
                     Result = LocalsCommandResult.InvalidLocalResourceName;
-                    throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_InvalidLocalResourceName));
+                    LogError(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_InvalidLocalResourceName));
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_InvalidLocalResourceName));
             }
 
             if (!success)
             {
                 Result = LocalsCommandResult.ClearFailure;
-                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_ClearFailed));
+                LogError(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_ClearFailed));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_ClearFailed));
             }
             else
             {
                 Result = LocalsCommandResult.ClearSuccess;
-                Console.WriteLine(String.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_ClearedSuccessful));
+                LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_ClearedSuccessful));
             }
         }
 
@@ -155,7 +215,7 @@ namespace NuGet.Commands
             var success = true;
             var globalPackagesFolderPath = SettingsUtility.GetGlobalPackagesFolder(Settings);
 
-            Console.WriteLine(String.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_ClearingNuGetGlobalPackagesCache, globalPackagesFolderPath));
+            LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_ClearingNuGetGlobalPackagesCache, globalPackagesFolderPath));
 
             success &= ClearCacheDirectory(globalPackagesFolderPath);
             return success;
@@ -172,7 +232,7 @@ namespace NuGet.Commands
 
             if (!string.IsNullOrEmpty(httpCacheFolderPath))
             {
-                Console.WriteLine(String.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_ClearingNuGetHttpCache,
+                LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_ClearingNuGetHttpCache,
                     httpCacheFolderPath));
 
                 success &= ClearCacheDirectory(httpCacheFolderPath);
@@ -181,6 +241,10 @@ namespace NuGet.Commands
             return success;
         }
 
+        /// <summary>
+        /// Clears the temp folder cache.
+        /// </summary>
+        /// <returns><code>True</code> if the operation was successful; otherwise <code>false</code>.</returns>
         private bool ClearNuGetTempFolder()
         {
             var tempFolderPath = NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp);
@@ -188,21 +252,26 @@ namespace NuGet.Commands
             return ClearCacheDirectory(tempFolderPath);
         }
 
+        /// <summary>
+        /// Identifies the specified resource name to be cleared.
+        /// </summary>
+        /// <param name="localResourceName">specified resource name</param>
+        /// <returns>Returns <code>LocalResourceName</code> indicating the local resource name specified.</returns>
         private static LocalResourceName GetLocalResourceName(string localResourceName)
         {
-            if (string.Equals(localResourceName, _allResourceName, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(localResourceName, AllResourceName, StringComparison.OrdinalIgnoreCase))
             {
                 return LocalResourceName.All;
             }
-            else if (string.Equals(localResourceName, _httpCacheResourceName, StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(localResourceName, HttpCacheResourceName, StringComparison.OrdinalIgnoreCase))
             {
                 return LocalResourceName.HttpCache;
             }
-            else if (string.Equals(localResourceName, _globalPackagesResourceName, StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(localResourceName, GlobalPackagesResourceName, StringComparison.OrdinalIgnoreCase))
             {
                 return LocalResourceName.GlobalPackagesFolder;
             }
-            else if (string.Equals(localResourceName, _tempResourceName, StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(localResourceName, TempResourceName, StringComparison.OrdinalIgnoreCase))
             {
                 return LocalResourceName.Temp;
             }
@@ -212,6 +281,11 @@ namespace NuGet.Commands
             }
         }
 
+        /// <summary>
+        /// Recursively deletes the specified directory tree.
+        /// </summary>
+        /// <param name="folderPath">Specified directory to be deleted</param>
+        /// <returns><code>True</code> if the operation was successful; otherwise <code>false</code>.</returns>
         private bool ClearCacheDirectory(string folderPath)
         {
             // In order to get detailed error messages, we need to do recursion ourselves.
@@ -220,11 +294,11 @@ namespace NuGet.Commands
 
             if (failedDeletes.Any())
             {
-                Console.WriteLine(String.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_LocalsPartiallyCleared));
+                LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_LocalsPartiallyCleared));
 
                 foreach (var failedDelete in failedDeletes.OrderBy(f => f, StringComparer.OrdinalIgnoreCase))
                 {
-                    Console.WriteLine(String.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_FailedToDeletePath, failedDelete));
+                    LogError(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_FailedToDeletePath, failedDelete));
                 }
 
                 return false;

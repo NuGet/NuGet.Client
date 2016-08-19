@@ -123,6 +123,9 @@
   <data name="ExecutingScript" xml:space="preserve">
     <value>Executing script file '{0}'...</value>
   </data>
+  <data name="Finished" xml:space="preserve">
+    <value>========== Finished ==========</value>
+  </data>
   <data name="OutputConsolePaneName" xml:space="preserve">
     <value>Package Manager</value>
   </data>

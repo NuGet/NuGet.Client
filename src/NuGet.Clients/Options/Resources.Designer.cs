@@ -88,24 +88,6 @@ namespace NuGet.Options {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to NuGet cache(s) cleared.
-        /// </summary>
-        public static string PopupMessage_ClearNuGetCacheSuccess {
-            get {
-                return ResourceManager.GetString("PopupMessage_ClearNuGetCacheSuccess", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Clear NuGet Cache Result.
-        /// </summary>
-        public static string PopupTitle_ClearNuGetCache {
-            get {
-                return ResourceManager.GetString("PopupTitle_ClearNuGetCache", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to NuGet.Config is malformed, Please check NuGet.Config.
         /// </summary>
         public static string ShowError_ConfigInvalidOperation {
@@ -129,6 +111,35 @@ namespace NuGet.Options {
         public static string ShowInfo_ClearPackageCache {
             get {
                 return ResourceManager.GetString("ShowInfo_ClearPackageCache", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NuGet cache(s) clear failed at {0}. 
+        ///Error: {1}
+        ///Please see http://example.com/help/locals for more help..
+        /// </summary>
+        public static string ShowMessage_LocalsCommandFailure {
+            get {
+                return ResourceManager.GetString("ShowMessage_LocalsCommandFailure", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NuGet cache(s) cleared at {0}.
+        /// </summary>
+        public static string ShowMessage_LocalsCommandSuccess {
+            get {
+                return ResourceManager.GetString("ShowMessage_LocalsCommandSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clearing all NuGet cache(s). .
+        /// </summary>
+        public static string ShowMessage_LocalsCommandWorking {
+            get {
+                return ResourceManager.GetString("ShowMessage_LocalsCommandWorking", resourceCulture);
             }
         }
         

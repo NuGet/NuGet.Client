@@ -53,7 +53,7 @@ namespace NuGet.Options
             {
                 if (_optionsWindow == null)
                 {
-                    _optionsWindow = new GeneralOptionControl();
+                    _optionsWindow = new GeneralOptionControl(this);
                     _optionsWindow.Location = new Point(0, 0);
                 }
 
