@@ -113,7 +113,7 @@ namespace NuGet.Options
         private void localsCommandButton_OnClick(object sender, EventArgs e)
         {
             updateLocalsCommandStatusText(String.Format(Resources.ShowMessage_LocalsCommandWorking), visibility: true);
-            var arguments = new List<string> { "temp" };
+            var arguments = new List<string> { "all" };
             var settings = ServiceLocator.GetInstance<ISettings>();            
             Log logError = new Log(LogError);
             Log logInformation = new Log(LogInformation);
@@ -125,12 +125,13 @@ namespace NuGet.Options
             }
             catch (Exception ex)
             {
-                updateLocalsCommandStatusText(String.Format(Resources.ShowMessage_LocalsCommandFailure, DateTime.Now.ToString(Resources.Culture), ex.Message), visibility: true);
+                updateLocalsCommandStatusText(string.Format(Resources.ShowMessage_LocalsCommandFailure, DateTime.Now.ToString(Resources.Culture), ex.Message), visibility: true);
+                LogError(string.Format(Resources.ShowMessage_LocalsCommandFailure, DateTime.Now.ToString(Resources.Culture), ex.Message));
                 ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
             }
-            if (localsCommandRunner.Result == LocalsCommandRunner.LocalsCommandResult.ClearSuccess)
+            if (localsCommandRunner.Result == LocalsCommandResult.ClearSuccess)
             {
-                updateLocalsCommandStatusText(String.Format(Resources.ShowMessage_LocalsCommandSuccess, DateTime.Now.ToString(Resources.Culture)), visibility: true);
+                updateLocalsCommandStatusText(string.Format(Resources.ShowMessage_LocalsCommandSuccess, DateTime.Now.ToString(Resources.Culture)), visibility: true);
             }
             _outputConsoleLogger.End();
         }

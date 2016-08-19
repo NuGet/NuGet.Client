@@ -134,7 +134,6 @@ namespace NuGet.Commands
                 default:
                     // Invalid local resource name provided.
                     Result = LocalsCommandResult.InvalidLocalResourceName;
-                    LogError(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_InvalidLocalResourceName));
                     throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_InvalidLocalResourceName));
             }
         }
@@ -189,14 +188,12 @@ namespace NuGet.Commands
                 default:
                     // Invalid local resource name provided.
                     Result = LocalsCommandResult.InvalidLocalResourceName;
-                    LogError(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_InvalidLocalResourceName));
                     throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_InvalidLocalResourceName));
             }
 
             if (!success)
             {
                 Result = LocalsCommandResult.ClearFailure;
-                LogError(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_ClearFailed));
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_ClearFailed));
             }
             else
