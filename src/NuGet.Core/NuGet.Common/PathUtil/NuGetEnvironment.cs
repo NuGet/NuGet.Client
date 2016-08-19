@@ -256,7 +256,7 @@ namespace NuGet.Common
         /// make our own and re-implement the functionality. On .NET Framework, we can use the
         /// built-in functionality.
         /// </summary>
-        public enum SpecialFolder
+        private enum SpecialFolder
         {
             ProgramFilesX86,
             ProgramFiles,

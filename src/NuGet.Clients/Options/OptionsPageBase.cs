@@ -32,9 +32,9 @@ namespace NuGet.Options
 
             // delay 5 milliseconds to give the Options dialog a chance to close itself
             var timer = new Timer
-            {
-                Interval = 5
-            };
+                {
+                    Interval = 5
+                };
             timer.Tick += OnTimerTick;
             timer.Start();
         }
