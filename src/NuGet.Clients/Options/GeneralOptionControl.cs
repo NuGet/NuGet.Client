@@ -112,7 +112,7 @@ namespace NuGet.Options
 
         private void localsCommandButton_OnClick(object sender, EventArgs e)
         {
-            updateLocalsCommandStatusText(String.Format(Resources.ShowMessage_LocalsCommandWorking), visibility: true);
+            updateLocalsCommandStatusText(string.Format(Resources.ShowMessage_LocalsCommandWorking), visibility: true);
             var arguments = new List<string> { "all" };
             var settings = ServiceLocator.GetInstance<ISettings>();            
             Log logError = new Log(LogError);

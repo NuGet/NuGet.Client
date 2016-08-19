@@ -249,7 +249,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Clearing local resources failed: one or more errors occured..
+        ///    Looks up a localized string similar to Clearing local resources failed: Unable to delete one or more files..
         /// </summary>
         public static string LocalsCommand_ClearFailed {
             get {
