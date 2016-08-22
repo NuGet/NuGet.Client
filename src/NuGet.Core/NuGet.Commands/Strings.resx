@@ -417,4 +417,31 @@
     <value>The package {0} was converted to original case in the packages directory.</value>
     <comment>{0} is the package identity.</comment>
   </data>
+  <data name="LocalsCommand_ClearedSuccessful" xml:space="preserve">
+    <value>Local resources cleared.</value>
+  </data>
+  <data name="LocalsCommand_ClearFailed" xml:space="preserve">
+    <value>Clearing local resources failed: Unable to delete one or more files.</value>
+  </data>
+  <data name="LocalsCommand_ClearingNuGetCache" xml:space="preserve">
+    <value>Clearing NuGet cache: {0}</value>
+  </data>
+  <data name="LocalsCommand_ClearingNuGetGlobalPackagesCache" xml:space="preserve">
+    <value>Clearing NuGet global packages cache: {0}</value>
+  </data>
+  <data name="LocalsCommand_ClearingNuGetHttpCache" xml:space="preserve">
+    <value>Clearing NuGet HTTP cache: {0}</value>
+  </data>
+  <data name="LocalsCommand_FailedToDeletePath" xml:space="preserve">
+    <value>Failed to delete '{0}'.</value>
+  </data>
+  <data name="LocalsCommand_InvalidLocalResourceName" xml:space="preserve">
+    <value>An invalid local resource name was provided. Please provide one of the following values: http-cache, temp, global-packages, all.</value>
+  </data>
+  <data name="LocalsCommand_LocalResourcePathNotSet" xml:space="preserve">
+    <value>The location of local resource '{0}' is undefined.</value>
+  </data>
+  <data name="LocalsCommand_LocalsPartiallyCleared" xml:space="preserve">
+    <value>Local resources partially cleared.</value>
+  </data>
 </root>

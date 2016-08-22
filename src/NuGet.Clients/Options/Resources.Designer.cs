@@ -115,6 +115,35 @@ namespace NuGet.Options {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to NuGet cache(s) clear failed at {0}. 
+        ///Error: {1}
+        ///Please see http://example.com/help/locals for more help..
+        /// </summary>
+        public static string ShowMessage_LocalsCommandFailure {
+            get {
+                return ResourceManager.GetString("ShowMessage_LocalsCommandFailure", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NuGet cache(s) cleared at {0}.
+        /// </summary>
+        public static string ShowMessage_LocalsCommandSuccess {
+            get {
+                return ResourceManager.GetString("ShowMessage_LocalsCommandSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clearing all NuGet cache(s). .
+        /// </summary>
+        public static string ShowMessage_LocalsCommandWorking {
+            get {
+                return ResourceManager.GetString("ShowMessage_LocalsCommandWorking", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The source specified is invalid. Please provide a valid source..
         /// </summary>
         public static string ShowWarning_InvalidSource {

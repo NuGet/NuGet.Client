@@ -213,6 +213,53 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Specifies the cache location(s) to list or clear. 
+        ///&lt;all | http-cache | global-packages | temp&gt; [-clear | -list].
+        /// </summary>
+        public static string LocalsCommand_ArgumentDescription {
+            get {
+                return ResourceManager.GetString("LocalsCommand_ArgumentDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Clear the selected local resources or cache location(s)..
+        /// </summary>
+        public static string LocalsCommand_ClearDescription {
+            get {
+                return ResourceManager.GetString("LocalsCommand_ClearDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Clears or lists local NuGet resources such as http requests cache, packages cache or machine-wide global packages folder..
+        /// </summary>
+        public static string LocalsCommand_Description {
+            get {
+                return ResourceManager.GetString("LocalsCommand_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to usage: NuGet locals &lt;all | http-cache | global-packages | temp&gt; [--clear | -c | --list | -l]
+        ///For more information, visit http://docs.nuget.org/docs/reference/command-line-reference.
+        /// </summary>
+        public static string LocalsCommand_Help {
+            get {
+                return ResourceManager.GetString("LocalsCommand_Help", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to List the selected local resources or cache location(s)..
+        /// </summary>
+        public static string LocalsCommand_ListDescription {
+            get {
+                return ResourceManager.GetString("LocalsCommand_ListDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Committing restore....
         /// </summary>
         public static string Log_Committing {

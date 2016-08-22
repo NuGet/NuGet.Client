@@ -120,6 +120,9 @@
   <data name="AbsolutePathRequired" xml:space="preserve">
     <value>An absolute path is required: '{0}'.</value>
   </data>
+  <data name="ArgumentNullOrEmpty" xml:space="preserve">
+    <value>Argument cannot be null or empty</value>
+  </data>
   <data name="NoPackageFoldersFound" xml:space="preserve">
     <value>At least one package folder path must be provided.</value>
   </data>

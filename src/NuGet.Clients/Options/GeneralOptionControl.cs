@@ -2,9 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Forms;
+using Microsoft.VisualStudio.Shell;
+using NuGet.Commands;
+using NuGet.Configuration;
+using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.ProjectManagement;
+using NuGetConsole;
+using static NuGet.Commands.LocalsCommandRunner;
 
 namespace NuGet.Options
 {
@@ -12,12 +20,20 @@ namespace NuGet.Options
     {
         private readonly Configuration.ISettings _settings;
         private bool _initialized;
+        private readonly IServiceProvider _serviceprovider;
+        private readonly OutputConsoleLogger _outputConsoleLogger;
 
-        public GeneralOptionControl()
+        public GeneralOptionControl(IServiceProvider serviceProvider)
         {
-            InitializeComponent();
+            if (serviceProvider == null)
+            {
+                throw new ArgumentNullException(nameof(serviceProvider));
+            }
 
+            InitializeComponent();
             _settings = ServiceLocator.GetInstance<Configuration.ISettings>();
+            _serviceprovider = serviceProvider;
+            _outputConsoleLogger = new OutputConsoleLogger(_serviceprovider);
             Debug.Assert(_settings != null);
         }
 
@@ -37,7 +53,7 @@ namespace NuGet.Options
                     var bindingRedirects = new BindingRedirectBehavior(_settings);
                     skipBindingRedirects.Checked = bindingRedirects.IsSkipped;
                 }
-                catch(InvalidOperationException)
+                catch (InvalidOperationException)
                 {
                     MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigInvalidOperation, Resources.ErrorDialogBoxTitle);
                 }
@@ -97,6 +113,60 @@ namespace NuGet.Options
             {
                 packageRestoreAutomaticCheckBox.Checked = false;
             }
+        }
+
+        private void localsCommandButton_OnClick(object sender, EventArgs e)
+        {
+            updateLocalsCommandStatusText(string.Format(Resources.ShowMessage_LocalsCommandWorking), visibility: true);
+            var arguments = new List<string> { "all" };
+            var settings = ServiceLocator.GetInstance<ISettings>();
+            var logError = new Log(LogError);
+            var logInformation = new Log(LogInformation);
+            _outputConsoleLogger.Start();
+            var localsCommandRunner = new LocalsCommandRunner(arguments, settings, logInformation, logError, clear: true, list: false);
+            try
+            {
+                localsCommandRunner.ExecuteCommand();
+                updateLocalsCommandStatusText(string.Format(Resources.ShowMessage_LocalsCommandSuccess, DateTime.Now.ToString(Resources.Culture)), visibility: true);
+            }
+            catch (Exception ex)
+            {
+                updateLocalsCommandStatusText(string.Format(Resources.ShowMessage_LocalsCommandFailure, DateTime.Now.ToString(Resources.Culture), ex.Message), visibility: true);
+                LogError(string.Format(Resources.ShowMessage_LocalsCommandFailure, DateTime.Now.ToString(Resources.Culture), ex.Message));
+                ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
+            }
+            finally
+            {
+                _outputConsoleLogger.End();
+            }
+        }
+
+        private void updateLocalsCommandStatusText(string statusText, bool visibility)
+        {
+            localsCommandStatusText.Visible = visibility;
+            localsCommandStatusText.Text = statusText;
+            localsCommandStatusText.Refresh();
+        }
+
+        private void LogError(string message)
+        {
+            _outputConsoleLogger.Log(MessageLevel.Error, message);
+        }
+
+        private void LogInformation(string message)
+        {
+            _outputConsoleLogger.Log(MessageLevel.Info, message);
+        }
+
+        private void localsCommandStatusText_LinkClicked(object sender, LinkClickedEventArgs e)
+        {
+            Process.Start(e.LinkText);
+        }
+
+        private void localsCommandStatusText_ContentChanged(object sender, ContentsResizedEventArgs e)
+        {
+            localsCommandStatusText.Height = e.NewRectangle.Height + localsCommandStatusText.Margin.Top + localsCommandStatusText.Margin.Bottom;
+            localsCommandStatusText.Width = e.NewRectangle.Width + localsCommandStatusText.Margin.Left + localsCommandStatusText.Margin.Right;
         }
     }
 }

@@ -276,6 +276,63 @@
   <data name="&gt;&gt;BindingRedirectsHeader.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
+  <data name="localsCommandButton.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="localsCommandButton.Location" type="System.Drawing.Point, System.Drawing">
+    <value>5, 194</value>
+  </data>
+  <data name="localsCommandButton.Size" type="System.Drawing.Size, System.Drawing">
+    <value>134, 23</value>
+  </data>
+  <data name="localsCommandButton.TabIndex" type="System.Int32, mscorlib">
+    <value>17</value>
+  </data>
+  <data name="localsCommandButton.Text" xml:space="preserve">
+    <value>Clear All NuGet Cache(s)</value>
+  </data>
+  <data name="&gt;&gt;localsCommandButton.Name" xml:space="preserve">
+    <value>localsCommandButton</value>
+  </data>
+  <data name="&gt;&gt;localsCommandButton.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;localsCommandButton.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;localsCommandButton.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="localsCommandStatusText.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="localsCommandStatusText.Location" type="System.Drawing.Point, System.Drawing">
+    <value>5, 220</value>
+  </data>
+  <data name="localsCommandStatusText.Size" type="System.Drawing.Size, System.Drawing">
+    <value>432, 62</value>
+  </data>
+  <data name="localsCommandStatusText.TabIndex" type="System.Int32, mscorlib">
+    <value>18</value>
+  </data>
+  <data name="localsCommandStatusText.Text" xml:space="preserve">
+    <value>http://example.com/help/locals</value>
+  </data>
+  <data name="localsCommandStatusText.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="&gt;&gt;localsCommandStatusText.Name" xml:space="preserve">
+    <value>localsCommandStatusText</value>
+  </data>
+  <data name="&gt;&gt;localsCommandStatusText.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RichTextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;localsCommandStatusText.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;localsCommandStatusText.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
   </metadata>

@@ -34,6 +34,8 @@
             this.packageRestoreConsentCheckBox = new System.Windows.Forms.CheckBox();
             this.packageRestoreAutomaticCheckBox = new System.Windows.Forms.CheckBox();
             this.BindingRedirectsHeader = new System.Windows.Forms.Label();
+            this.localsCommandButton = new System.Windows.Forms.Button();
+            this.localsCommandStatusText = new System.Windows.Forms.RichTextBox();
             this.SuspendLayout();
             // 
             // skipBindingRedirects
@@ -65,6 +67,23 @@
             resources.ApplyResources(this.BindingRedirectsHeader, "BindingRedirectsHeader");
             this.BindingRedirectsHeader.Name = "BindingRedirectsHeader";
             // 
+            // localsCommandButton
+            // 
+            resources.ApplyResources(this.localsCommandButton, "localsCommandButton");
+            this.localsCommandButton.Name = "localsCommandButton";
+            this.localsCommandButton.Click += new System.EventHandler(this.localsCommandButton_OnClick);
+            // 
+            // localsCommandStatusText
+            // 
+            resources.ApplyResources(this.localsCommandStatusText, "localsCommandStatusText");
+            this.localsCommandStatusText.BackColor = System.Drawing.SystemColors.Control;
+            this.localsCommandStatusText.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.localsCommandStatusText.Name = "localsCommandStatusText";
+            this.localsCommandStatusText.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.localsCommandStatusText_LinkClicked);
+            this.localsCommandStatusText.ContentsResized += new System.Windows.Forms.ContentsResizedEventHandler(this.localsCommandStatusText_ContentChanged);
+            this.localsCommandStatusText.WordWrap = false;
+            this.localsCommandStatusText.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.None;           
+            // 
             // GeneralOptionControl
             // 
             resources.ApplyResources(this, "$this");
@@ -74,6 +93,8 @@
             this.Controls.Add(this.PackageRestoreHeader);
             this.Controls.Add(this.packageRestoreConsentCheckBox);
             this.Controls.Add(this.packageRestoreAutomaticCheckBox);
+            this.Controls.Add(this.localsCommandButton);
+            this.Controls.Add(this.localsCommandStatusText);
             this.Name = "GeneralOptionControl";
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -87,5 +108,7 @@
         private System.Windows.Forms.CheckBox packageRestoreConsentCheckBox;
         private System.Windows.Forms.CheckBox packageRestoreAutomaticCheckBox;
         private System.Windows.Forms.Label BindingRedirectsHeader;
+        private System.Windows.Forms.Button localsCommandButton;
+        private System.Windows.Forms.RichTextBox localsCommandStatusText;
     }
 }
