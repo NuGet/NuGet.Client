@@ -31,9 +31,9 @@ namespace NuGet.Commands
         private const string AllResourceName = "all";
         private const string TempResourceName = "temp";
 
-        public bool Clear { get; set; }
+        private bool Clear { get; set; }
 
-        public bool List { get; set; }
+        private bool List { get; set; }
 
         private IList<string> Arguments { get; set; }
 
@@ -77,7 +77,7 @@ namespace NuGet.Commands
         /// </summary>
         /// <returns></returns>
         public void ExecuteCommand()
-        {
+        {           
             var localResourceName = GetLocalResourceName(Arguments[0]);
 
             if (Clear)
