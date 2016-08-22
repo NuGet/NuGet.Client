@@ -49,6 +49,8 @@ namespace NuGet.PackageManagement.UI
         {
             InitializeComponent();
 
+            BindingOperations.EnableCollectionSynchronization(Items, _itemsLock);
+
             DataContext = Items;
             CheckBoxesEnabled = false;
         }
@@ -77,17 +79,9 @@ namespace NuGet.PackageManagement.UI
 
         public bool IsSolution { get; set; }
 
-        private readonly ObservableCollection<object> _items = new ObservableCollection<object>(); 
+        private readonly SemaphoreSlim _itemsLock = new SemaphoreSlim(1, 1);
 
-        public ObservableCollection<object> Items
-        {
-            get
-            {
-                Debug.Assert(Mvs.ThreadHelper.CheckAccess());
-                return _items;
-            }
-        }
-
+        public ObservableCollection<object> Items { get; } = new ObservableCollection<object>();
         public IEnumerable<PackageItemListViewModel> PackageItems => Items.OfType<PackageItemListViewModel>().ToArray();
 
         public PackageItemListViewModel SelectedPackageItem => _list.SelectedItem as PackageItemListViewModel;
@@ -193,18 +187,20 @@ namespace NuGet.PackageManagement.UI
             var loadedItems = await LoadNextPageAsync(currentLoader, token);
             token.ThrowIfCancellationRequested();
 
+            // multiple loads may occur at the same time as a result of multiple instances,
+            // makes sure we update using the relevant one.
+            if (currentLoader == _loader)
+            {
+                UpdatePackageList(loadedItems, refresh: false);
+            }
+
+            token.ThrowIfCancellationRequested();
+
             await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-               // multiple loads may occur at the same time as a result of multiple instances,
-               // makes sure we update using the relevant one.
-                if (currentLoader == _loader)
-                {
-                    _loadingStatusBar.ItemsLoaded = currentLoader.State.ItemsCount;
-                    UpdatePackageList(loadedItems, refresh: false);
-                }
-                
+                _loadingStatusBar.ItemsLoaded = currentLoader.State.ItemsCount;
             });
 
             token.ThrowIfCancellationRequested();
@@ -271,7 +267,16 @@ namespace NuGet.PackageManagement.UI
 
                     if (!Items.Contains(_loadingStatusIndicator))
                     {
-                        Items.Add(_loadingStatusIndicator);
+                        await _itemsLock.WaitAsync();
+
+                        try
+                        {
+                            Items.Add(_loadingStatusIndicator);
+                        }
+                        finally
+                        {
+                            _itemsLock.Release();
+                        }
                     }
                 }
             });
@@ -306,23 +311,37 @@ namespace NuGet.PackageManagement.UI
 
         private void UpdatePackageList(IEnumerable<PackageItemListViewModel> packages, bool refresh)
         {
-            // remove the loading status indicator if it's in the list
-            Items.Remove(_loadingStatusIndicator);
-
-            if (refresh)
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                ClearPackageList();
-            }
+                // Synchronize updating Items list
+                await _itemsLock.WaitAsync();
 
-            // add newly loaded items
-            foreach (var package in packages)
-            {
-                package.PropertyChanged += Package_PropertyChanged;
-                Items.Add(package);
-                _selectedCount = package.Selected ? _selectedCount + 1 : _selectedCount;
-            }
+                try
+                {
+                    // remove the loading status indicator if it's in the list
+                    Items.Remove(_loadingStatusIndicator);
 
-            Items.Add(_loadingStatusIndicator);
+                    if (refresh)
+                    {
+                        ClearPackageList();
+                    }
+
+                    // add newly loaded items
+                    foreach (var package in packages)
+                    {
+                        package.PropertyChanged += Package_PropertyChanged;
+                        Items.Add(package);
+                        _selectedCount = package.Selected ? _selectedCount + 1 : _selectedCount;
+                    }
+
+                    Items.Add(_loadingStatusIndicator);
+                }
+
+                finally
+                {
+                    _itemsLock.Release();
+                }
+            });
         }
 
         private void ClearPackageList()
@@ -332,7 +351,18 @@ namespace NuGet.PackageManagement.UI
                 package.PropertyChanged -= Package_PropertyChanged;
             }
 
-            Items.Clear();
+            _itemsLock.Wait();
+
+            try
+            {
+                Items.Clear();
+            }
+
+            finally
+            {
+                _itemsLock.Release();
+            }
+
             _loadingStatusBar.ItemsLoaded = 0;
         }
 
