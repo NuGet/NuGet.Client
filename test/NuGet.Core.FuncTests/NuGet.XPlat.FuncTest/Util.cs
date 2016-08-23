@@ -20,8 +20,8 @@ namespace NuGet.XPlat.FuncTest
         {
             DotnetCliBinary = @"dotnet";
             DotnetCliExe = @"dotnet.exe";
-            XplatDll = @"NuGet.Core\NuGet.CommandLine.XPlat\bin\release\netcoreapp1.0\NuGet.CommandLine.XPlat.dll";
-            XplatDllShell = @"NuGet.Core/NuGet.CommandLine.XPlat/bin/release/netcoreapp1.0/NuGet.CommandLine.XPlat.dll";
+            XplatDll = @"NuGet.Core\NuGet.CommandLine.XPlat\bin\debug\netcoreapp1.0\NuGet.CommandLine.XPlat.dll";
+            XplatDllShell = @"NuGet.Core/NuGet.CommandLine.XPlat/bin/debug/netcoreapp1.0/NuGet.CommandLine.XPlat.dll";
         }
 
         public static string GetDotnetCli()
@@ -50,7 +50,7 @@ namespace NuGet.XPlat.FuncTest
                 currentDirInfo = new DirectoryInfo(parentDirInfo.FullName);
                 parentDirInfo = currentDirInfo.Parent;
             }
-            return dotnetCli;
+            return null;
         }
 
         public static void createTestFiles(string path)
@@ -88,7 +88,7 @@ namespace NuGet.XPlat.FuncTest
                 currentDirInfo = new DirectoryInfo(parentDirInfo.FullName);
                 parentDirInfo = currentDirInfo.Parent;
             }
-            return xplatDll;
+            return null;
         }
 
         public static void VerifyResultSuccess(CommandRunnerResult result, string expectedOutputMessage = null)
