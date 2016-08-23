@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using NuGet.Test.Utility;
 using Xunit;
@@ -50,6 +51,15 @@ namespace NuGet.XPlat.FuncTest
                 parentDirInfo = currentDirInfo.Parent;
             }
             return dotnetCli;
+        }
+
+        public static void createTestFiles(string path)
+        {
+            var fileNames = new List<string> { "file1.txt", "file2.txt" };
+            foreach (var fileName in fileNames)
+            {
+                File.Create(Path.Combine(path, fileName)).Dispose();
+            }
         }
 
         public static string GetXplatDll()

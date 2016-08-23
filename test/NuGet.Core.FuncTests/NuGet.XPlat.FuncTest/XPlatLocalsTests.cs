@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using NuGet.Test.Utility;
 using Xunit;
@@ -27,19 +28,49 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("locals global-packages -l")]
         [InlineData("locals --list global-packages")]
         [InlineData("locals -l global-packages")]
-        // [InlineData("locals --clear all")]
-        // [InlineData("locals -c all")]
+        [InlineData("locals --clear all")]
+        [InlineData("locals -c all")]
+        [InlineData("locals http-cache --clear")]
+        [InlineData("locals http-cache -c")]
+        [InlineData("locals --clear http-cache")]
+        [InlineData("locals -c http-cache")]
+        [InlineData("locals temp --clear")]
+        [InlineData("locals temp -c")]
+        [InlineData("locals --clear temp")]
+        [InlineData("locals -c temp")]
+        [InlineData("locals global-packages --clear")]
+        [InlineData("locals global-packages -c")]
+        [InlineData("locals --clear global-packages")]
+        [InlineData("locals -c global-packages")]
         public static void Locals_Succeeds(string args)
         {
-            // Act
-            var result = CommandRunner.Run(
-              Util.GetDotnetCli(),
-              Directory.GetCurrentDirectory(),
-              Util.GetXplatDll() + " " + args,
-              waitForExit: true);
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var mockGlobalPackagesDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"global-packages"));
+                var mockHttpCacheDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"http-cache"));
+                var mockTmpCacheDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"temp"));
 
-            // Assert
-            Util.VerifyResultSuccess(result, string.Empty);
+                Util.createTestFiles(mockGlobalPackagesDirectory.FullName);
+                Util.createTestFiles(mockHttpCacheDirectory.FullName);
+                Util.createTestFiles(mockTmpCacheDirectory.FullName);
+
+                // Act
+                var result = CommandRunner.Run(
+                  Util.GetDotnetCli(),
+                  Directory.GetCurrentDirectory(),
+                  Util.GetXplatDll() + " " + args,
+                  waitForExit: true,
+                environmentVariables: new Dictionary<string, string>
+                {
+                    { "NUGET_PACKAGES", mockGlobalPackagesDirectory.FullName },
+                    { "NUGET_HTTP_CACHE_PATH", mockHttpCacheDirectory.FullName },
+                    { "TMP", mockTmpCacheDirectory.FullName }
+                });
+
+                // Assert
+                Util.VerifyResultSuccess(result, string.Empty);
+            }
         }
 
         [Theory]
