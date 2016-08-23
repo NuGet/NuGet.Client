@@ -55,7 +55,12 @@ namespace NuGet.Packaging
         {
             return Path.Combine(
                 GetInstallPath(packageId, version),
-                $"{Normalize(packageId)}.{Normalize(version)}.nupkg.sha512");
+                GetHashFileName(packageId, version));
+        }
+
+        public string GetHashFileName(string packageId, NuGetVersion version)
+        {
+            return $"{Normalize(packageId)}.{Normalize(version)}.nupkg.sha512";
         }
 
         public string GetVersionListDirectory(string packageId)

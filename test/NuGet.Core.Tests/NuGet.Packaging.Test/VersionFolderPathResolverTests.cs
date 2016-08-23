@@ -76,6 +76,21 @@ namespace NuGet.Packaging.Test
         }
 
         [Theory]
+        [InlineData("nuget.packaging.3.4.3-beta.nupkg.sha512", true)]
+        [InlineData("NuGet.Packaging.3.4.3-Beta.nupkg.sha512", false)]
+        public void VersionFolderPathResolver_GetHashFileName(string file, bool isLowercase)
+        {
+            // Arrange
+            var tc = new TestContext { IsLowercase = isLowercase };
+
+            // Act
+            var actual = tc.Target.GetHashFileName(tc.Id, tc.Version);
+
+            // Assert
+            Assert.Equal(file, actual);
+        }
+
+        [Theory]
         [InlineData("nuget.packaging", "3.4.3-beta", true)]
         [InlineData("NuGet.Packaging", "3.4.3-Beta", false)]
         public void VersionFolderPathResolver_GetPackageDirectory(string id, string version, bool isLowercase)
