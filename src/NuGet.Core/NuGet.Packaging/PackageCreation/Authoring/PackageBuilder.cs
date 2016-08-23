@@ -328,11 +328,6 @@ namespace NuGet.Packaging
                 throw new InvalidOperationException(NuGetResources.SemVerSpecialVersionTooLong);
             }
 
-            if (Version != null && Version.IsSemVer2)
-            {
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, NuGetResources.SemVer2VersionsNotSupported, Version));
-            }
-
             ValidateDependencyGroups(Version, DependencyGroups);
             ValidateReferenceAssemblies(Files, PackageAssemblyReferences);
 
@@ -455,19 +450,6 @@ namespace NuGet.Packaging
             foreach (var dep in dependencies.SelectMany(s => s.Packages))
             {
                 PackageIdValidator.ValidatePackageId(dep.Id);
-
-                if (dep.VersionRange != null)
-                {
-                    if (dep.VersionRange.HasLowerBound && dep.VersionRange.MinVersion.IsSemVer2)
-                    {
-                        throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, NuGetResources.SemVer2VersionsNotSupported, dep.VersionRange.MinVersion));
-                    }
-
-                    if (dep.VersionRange.HasUpperBound && dep.VersionRange.MaxVersion.IsSemVer2)
-                    {
-                        throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, NuGetResources.SemVer2VersionsNotSupported, dep.VersionRange.MaxVersion));
-                    }
-                }
             }
 
             if (!version.IsPrerelease)

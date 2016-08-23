@@ -33,7 +33,7 @@ namespace NuGet.Packaging.Xml
             }
 
             elem.Add(new XElement(ns + "id", metadata.Id));
-            AddElementIfNotNull(elem, ns, "version", metadata.Version?.ToNormalizedString());
+            AddElementIfNotNull(elem, ns, "version", metadata.Version?.ToFullString());
             AddElementIfNotNull(elem, ns, "title", metadata.Title);
             AddElementIfNotNull(elem, ns, "authors", metadata.Authors, authors => string.Join(",", authors));
             AddElementIfNotNull(elem, ns, "owners", metadata.Owners, owners => string.Join(",", owners));
