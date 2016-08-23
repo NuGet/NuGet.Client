@@ -11,31 +11,31 @@ namespace NuGet.XPlat.FuncTest
     public class XPlatLocalsTests
     {
         [Theory]
-        [InlineData("nuget locals all --list")]
-        [InlineData("nuget locals all -l")]
-        [InlineData("nuget locals --list all")]
-        [InlineData("nuget locals -l all")]
-        [InlineData("nuget locals http-cache --list")]
-        [InlineData("nuget locals http-cache -l")]
-        [InlineData("nuget locals --list http-cache")]
-        [InlineData("nuget locals -l http-cache")]
-        [InlineData("nuget locals temp --list")]
-        [InlineData("nuget locals temp -l")]
-        [InlineData("nuget locals --list temp")]
-        [InlineData("nuget locals -l temp")]
-        [InlineData("nuget locals global-packages --list")]
-        [InlineData("nuget locals global-packages -l")]
-        [InlineData("nuget locals --list global-packages")]
-        [InlineData("nuget locals -l global-packages")]
-        // [InlineData("nuget locals --clear all")]
-        // [InlineData("nuget locals -c all")]
+        [InlineData("locals all --list")]
+        [InlineData("locals all -l")]
+        [InlineData("locals --list all")]
+        [InlineData("locals -l all")]
+        [InlineData("locals http-cache --list")]
+        [InlineData("locals http-cache -l")]
+        [InlineData("locals --list http-cache")]
+        [InlineData("locals -l http-cache")]
+        [InlineData("locals temp --list")]
+        [InlineData("locals temp -l")]
+        [InlineData("locals --list temp")]
+        [InlineData("locals -l temp")]
+        [InlineData("locals global-packages --list")]
+        [InlineData("locals global-packages -l")]
+        [InlineData("locals --list global-packages")]
+        [InlineData("locals -l global-packages")]
+        // [InlineData("locals --clear all")]
+        // [InlineData("locals -c all")]
         public static void Locals_Succeeds(string args)
         {
             // Act
             var result = CommandRunner.Run(
               Util.GetDotnetCli(),
               Directory.GetCurrentDirectory(),
-              args,
+              Util.GetXplatDll() + " " + args,
               waitForExit: true);
 
             // Assert
@@ -43,18 +43,18 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Theory]
-        [InlineData("nuget locals")]
-        [InlineData("nuget locals --list")]
-        [InlineData("nuget locals -l")]
-        [InlineData("nuget locals --clear")]
-        [InlineData("nuget locals -c")]
+        [InlineData("locals")]
+        [InlineData("locals --list")]
+        [InlineData("locals -l")]
+        [InlineData("locals --clear")]
+        [InlineData("locals -c")]
         public static void Locals_Success_InvalidArguments_HelpMessage(string args)
         {
             // Act
             var result = CommandRunner.Run(
               Util.GetDotnetCli(),
               Directory.GetCurrentDirectory(),
-              args,
+              Util.GetXplatDll() + " " + args,
               waitForExit: true);
 
             // Assert
@@ -62,17 +62,17 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Theory]
-        [InlineData("nuget locals --list unknownResource")]
-        [InlineData("nuget locals -l unknownResource")]
-        [InlineData("nuget locals --clear unknownResource")]
-        [InlineData("nuget locals -c unknownResource")]
+        [InlineData("locals --list unknownResource")]
+        [InlineData("locals -l unknownResource")]
+        [InlineData("locals --clear unknownResource")]
+        [InlineData("locals -c unknownResource")]
         public static void Locals_Success_InvalidResourceName_HelpMessage(string args)
         {
             // Act
             var result = CommandRunner.Run(
               Util.GetDotnetCli(),
               Directory.GetCurrentDirectory(),
-              args,
+              Util.GetXplatDll() + " " + args,
               waitForExit: true);
 
             // Assert
@@ -80,21 +80,21 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Theory]
-        [InlineData("nuget locals -list")]
-        [InlineData("nuget locals -clear")]
-        [InlineData("nuget locals --l")]
-        [InlineData("nuget locals --c")]
+        [InlineData("locals -list")]
+        [InlineData("locals -clear")]
+        [InlineData("locals --l")]
+        [InlineData("locals --c")]
         public static void Locals_Success_InvalidFlags_HelpMessage(string args)
         {
             // Act
             var result = CommandRunner.Run(
               Util.GetDotnetCli(),
               Directory.GetCurrentDirectory(),
-              args,
+              Util.GetXplatDll() + " " + args,
               waitForExit: true);
 
             // Assert
-            Util.VerifyResultFailure(result, "Specify --help for a list of available options and commands." + Environment.NewLine + "error: Unrecognized option '" + args.Split(null)[2] + "'");
+            Util.VerifyResultFailure(result, "Specify --help for a list of available options and commands." + Environment.NewLine + "error: Unrecognized option '" + args.Split(null)[1] + "'");
         }
     }
 }
