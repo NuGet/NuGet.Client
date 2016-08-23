@@ -668,6 +668,68 @@ namespace NuGet.Protocol
             yield break;
         }
 
+        public static FeedType GetLocalFeedType(string root)
+        {
+            if (root == null)
+            {
+                throw new ArgumentNullException(nameof(root));
+            }
+
+            if (log == null)
+            {
+                throw new ArgumentNullException(nameof(log));
+            }
+
+            // Check for package files one level deep.
+            DirectoryInfo rootDirectoryInfo = GetAndVerifyRootDirectory(root);
+
+            try
+            {
+
+                if (Directory.EnumerateFiles(root, NupkgFilter, SearchOption.TopDirectoryOnly).Any())
+                {
+                    return FeedType.FileSystemV2;
+                }
+
+                foreach (var dir in Directory.EnumerateDirectories(root))
+                {
+                    if (Directory.EnumerateFiles(dir, NupkgFilter, SearchOption.TopDirectoryOnly).Any())
+                    {
+                        return FeedType.FileSystemV2;
+                    }
+
+                    foreach (var versionDir in Directory.EnumerateDirectories(dir))
+                    {
+                        NuGetVersion version;
+                        if (NuGetVersion.TryParse(versionDir, out version))
+                        {
+                            var identity = new PackageIdentity(dir, version);
+
+                            // Read the package, this may be null if files are missing
+                            var package = GetPackageV3(root, identity, log);
+
+                            if (package != null)
+                            {
+                                return FeedType.FileSystemV3;
+                            }
+                        }
+                    }
+                }
+
+            }
+
+            catch (UnauthorizedAccessException)
+            {
+
+            }
+            catch (DirectoryNotFoundException)
+            {
+
+            }
+
+            return FeedType.FileSystemUnknown;
+        }
+
         /// <summary>
         /// Verify that a path could be a valid directory. Throw a FatalProtocolException otherwise.
         /// </summary>

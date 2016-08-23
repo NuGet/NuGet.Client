@@ -26,18 +26,21 @@ namespace NuGet.Protocol
 
             if (source.FeedTypeOverride == FeedType.Undefined)
             {
-                // Check the feed type
-                var feedType = FeedTypeUtility.GetFeedType(source.PackageSource);
+                if (!_feedTypeCache.TryGetValue(source.PackageSource, out curResource))
+                {
+                    // Check the feed type
+                    var feedType = FeedTypeUtility.GetFeedType(source.PackageSource);
 
-                if (feedType == FeedType.FileSystemUnknown)
-                {
-                    // Do not cache unknown folder types
-                    curResource = new FeedTypeResource(FeedType.FileSystemUnknown);
-                }
-                else
-                {
-                    curResource = _feedTypeCache.GetOrAdd(source.PackageSource,
-                        (packageSource) => new FeedTypeResource(feedType));
+                    if (feedType == FeedType.FileSystemUnknown)
+                    {
+                        // Do not cache unknown folder types
+                        curResource = new FeedTypeResource(FeedType.FileSystemUnknown);
+                    }
+                    else
+                    {
+                        curResource = _feedTypeCache.GetOrAdd(source.PackageSource,
+                            (packageSource) => new FeedTypeResource(feedType));
+                    }
                 }
             }
             else

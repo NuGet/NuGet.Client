@@ -39,14 +39,7 @@ namespace NuGet.Protocol
                 else
                 {
                     // Try to determine the actual folder feed type by looking for nupkgs
-                    if (LocalFolderUtility.GetNupkgsFromFlatFolder(path, NullLogger.Instance).Any())
-                    {
-                        type = FeedType.FileSystemV2;
-                    }
-                    else if (LocalFolderUtility.GetPackagesV3(path, NullLogger.Instance).Any())
-                    {
-                        type = FeedType.FileSystemV3;
-                    }
+                    type = LocalFolderUtility.GetLocalFeedType(path);
                 }
             }
 
