@@ -39,7 +39,7 @@ namespace NuGet.Protocol
                 else
                 {
                     // Try to determine the actual folder feed type by looking for nupkgs
-                    type = LocalFolderUtility.GetLocalFeedType(path);
+                    type = LocalFolderUtility.GetLocalFeedType(path, NullLogger.Instance);
                 }
             }
 

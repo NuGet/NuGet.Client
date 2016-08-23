@@ -668,7 +668,7 @@ namespace NuGet.Protocol
             yield break;
         }
 
-        public static FeedType GetLocalFeedType(string root)
+        public static FeedType GetLocalFeedType(string root, ILogger log)
         {
             if (root == null)
             {
@@ -686,24 +686,24 @@ namespace NuGet.Protocol
             try
             {
 
-                if (Directory.EnumerateFiles(root, NupkgFilter, SearchOption.TopDirectoryOnly).Any())
+                if (rootDirectoryInfo.EnumerateFiles(NupkgFilter, SearchOption.TopDirectoryOnly).Any())
                 {
                     return FeedType.FileSystemV2;
                 }
 
-                foreach (var dir in Directory.EnumerateDirectories(root))
+                foreach (var idDir in rootDirectoryInfo.EnumerateDirectories())
                 {
-                    if (Directory.EnumerateFiles(dir, NupkgFilter, SearchOption.TopDirectoryOnly).Any())
+                    if (idDir.EnumerateFiles(NupkgFilter, SearchOption.TopDirectoryOnly).Any())
                     {
                         return FeedType.FileSystemV2;
                     }
 
-                    foreach (var versionDir in Directory.EnumerateDirectories(dir))
+                    foreach (var versionDir in idDir.EnumerateDirectories())
                     {
                         NuGetVersion version;
-                        if (NuGetVersion.TryParse(versionDir, out version))
+                        if (NuGetVersion.TryParse(versionDir.Name, out version))
                         {
-                            var identity = new PackageIdentity(dir, version);
+                            var identity = new PackageIdentity(idDir.Name, version);
 
                             // Read the package, this may be null if files are missing
                             var package = GetPackageV3(root, identity, log);
