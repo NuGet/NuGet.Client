@@ -685,7 +685,7 @@ namespace NuGet.Protocol
 
             try
             {
-
+                // Search root directory for *.Nupkg, return V2 if there is any Nupkg file.
                 if (rootDirectoryInfo.EnumerateFiles(NupkgFilter, SearchOption.TopDirectoryOnly).Any())
                 {
                     return FeedType.FileSystemV2;
@@ -693,6 +693,7 @@ namespace NuGet.Protocol
 
                 foreach (var idDir in rootDirectoryInfo.EnumerateDirectories())
                 {
+                    // Search first sub directory for *.Nupkg, return V2 if there is any Nupkg file.
                     if (idDir.EnumerateFiles(NupkgFilter, SearchOption.TopDirectoryOnly).Any())
                     {
                         return FeedType.FileSystemV2;
@@ -700,22 +701,15 @@ namespace NuGet.Protocol
 
                     foreach (var versionDir in idDir.EnumerateDirectories())
                     {
-                        NuGetVersion version;
-                        if (NuGetVersion.TryParse(versionDir.Name, out version))
+                        // If we have files in the format {packageId}/{version}/{packageId}.{version}.nupkg, return V3. 
+                        var package = GetPackageV3(root, idDir.Name, versionDir.Name, log);
+
+                        if (package != null)
                         {
-                            var identity = new PackageIdentity(idDir.Name, version);
-
-                            // Read the package, this may be null if files are missing
-                            var package = GetPackageV3(root, identity, log);
-
-                            if (package != null)
-                            {
-                                return FeedType.FileSystemV3;
-                            }
+                            return FeedType.FileSystemV3;
                         }
                     }
                 }
-
             }
 
             catch (UnauthorizedAccessException)
@@ -944,22 +938,11 @@ namespace NuGet.Protocol
 
             foreach (var versionDir in GetDirectoriesSafe(idRoot, log))
             {
-                NuGetVersion version;
-                if (NuGetVersion.TryParse(versionDir.Name, out version))
-                {
-                    var identity = new PackageIdentity(id, version);
+                var package = GetPackageV3(root, id, versionDir.Name, log);
 
-                    // Read the package, this may be null if files are missing
-                    var package = GetPackageV3(root, identity, log);
-
-                    if (package != null)
-                    {
-                        yield return package;
-                    }
-                }
-                else
+                if (package != null)
                 {
-                    log.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.UnableToParseFolderV3Version, versionDir));
+                    yield return package;
                 }
             }
 
@@ -1074,6 +1057,24 @@ namespace NuGet.Protocol
         private static FileInfo[] GetNupkgsFromDirectory(DirectoryInfo root, ILogger log)
         {
             return GetFilesSafe(root, NupkgFilter, log);
+        }
+
+        private static LocalPackageInfo GetPackageV3(string root, string id, string version, ILogger log)
+        {
+            NuGetVersion nugetVersion;
+            if (NuGetVersion.TryParse(version, out nugetVersion))
+            {
+                var identity = new PackageIdentity(id, nugetVersion);
+
+                // Read the package, this may be null if files are missing
+                return GetPackageV3(root, identity, log);
+            }
+            else
+            {
+                log.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.UnableToParseFolderV3Version, version));
+            }
+
+            return null;
         }
     }
 }
