@@ -11,14 +11,6 @@ namespace NuGet.Protocol.Core.Types
         private readonly string _rootTempFolder;
         private bool tempFolderCreated;
 
-        /// <summary>
-        /// Default context, caches for 30 minutes
-        /// </summary>
-        public HttpSourceCacheContext()
-            : this(new SourceCacheContext())
-        {
-        }
-
         public HttpSourceCacheContext(SourceCacheContext context)
         {
             if (context == null)

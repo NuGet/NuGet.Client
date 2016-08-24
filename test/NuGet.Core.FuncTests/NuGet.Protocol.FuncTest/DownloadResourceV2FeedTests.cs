@@ -26,8 +26,10 @@ namespace NuGet.Protocol.FuncTest
             var package = new SourcePackageDependencyInfo("WindowsAzure.Storage", new NuGetVersion("6.2.0"), null, true, repo, new Uri($@"{TestServers.NuGetV2}/package/WindowsAzure.Storage/6.2.0"), "");
 
             // Act & Assert
+            using (var cacheContext = new SourceCacheContext())
             using (var downloadResult = await downloadResource.GetDownloadResourceResultAsync(package,
                                                               NullSettings.Instance,
+                                                              cacheContext,
                                                               NullLogger.Instance,
                                                               CancellationToken.None))
             {
@@ -49,8 +51,10 @@ namespace NuGet.Protocol.FuncTest
             var package = new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("6.2.0"));
 
             // Act & Assert
+            using (var cacheContext = new SourceCacheContext())
             using (var downloadResult = await downloadResource.GetDownloadResourceResultAsync(package,
                                                               NullSettings.Instance,
+                                                              cacheContext,
                                                               NullLogger.Instance,
                                                               CancellationToken.None))
             {
@@ -72,15 +76,19 @@ namespace NuGet.Protocol.FuncTest
             var package = new SourcePackageDependencyInfo("not-found", new NuGetVersion("6.2.0"), null, true, repo, new Uri($@"{TestServers.NuGetV2}/package/not-found/6.2.0"), "");
 
             // Act 
-            var actual = await downloadResource.GetDownloadResourceResultAsync(
-                package,
-                NullSettings.Instance,
-                NullLogger.Instance,
-                CancellationToken.None);
+            using (var cacheContext = new SourceCacheContext())
+            {
+                var actual = await downloadResource.GetDownloadResourceResultAsync(
+                    package,
+                    NullSettings.Instance,
+                    cacheContext,
+                    NullLogger.Instance,
+                    CancellationToken.None);
 
-            // Assert
-            Assert.NotNull(actual);
-            Assert.Equal(DownloadResourceResultStatus.NotFound, actual.Status);
+                // Assert
+                Assert.NotNull(actual);
+                Assert.Equal(DownloadResourceResultStatus.NotFound, actual.Status);
+            }
         }
 
         [Fact]

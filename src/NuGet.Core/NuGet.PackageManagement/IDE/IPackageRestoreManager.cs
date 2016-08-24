@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement
 {
@@ -76,6 +77,7 @@ namespace NuGet.PackageManagement
         Task<PackageRestoreResult> RestoreMissingPackagesAsync(string solutionDirectory,
             NuGetProject nuGetProject,
             INuGetProjectContext nuGetProjectContext,
+            SourceCacheContext cacheContext,
             CancellationToken token);
 
         /// <summary>
@@ -97,6 +99,7 @@ namespace NuGet.PackageManagement
         Task<PackageRestoreResult> RestoreMissingPackagesAsync(string solutionDirectory,
             IEnumerable<PackageRestoreData> packages,
             INuGetProjectContext nuGetProjectContext,
+            SourceCacheContext cacheContext,
             CancellationToken token);
     }
 

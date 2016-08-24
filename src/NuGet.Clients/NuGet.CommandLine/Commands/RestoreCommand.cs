@@ -107,7 +107,8 @@ namespace NuGet.CommandLine
                     var providerCache = new RestoreCommandProvidersCache();
 
                     // Add restore args to the restore context
-                    cacheContext.NoCache = NoCache;
+                    // Set for both DirectDownload and NoCache as for projectJson -NoCache already bypassed http cache
+                    cacheContext.NoCache = DirectDownload || NoCache;
                     restoreContext.CacheContext = cacheContext;
                     restoreContext.DisableParallel = DisableParallelProcessing;
                     restoreContext.ConfigFile = ConfigFile;
@@ -333,17 +334,23 @@ namespace NuGet.CommandLine
                 projectContext.PackageExtractionContext.PackageSaveMode = EffectivePackageSaveMode;
             }
 
-            var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
-                packageRestoreContext,
-                projectContext);
+            using (var cacheContext = new SourceCacheContext())
+            {
+                cacheContext.NoCache = DirectDownload;
 
-            return new RestoreSummary(
-                result.Restored,
-                "packages.config projects",
-                Settings.Priority.Select(x => Path.Combine(x.Root, x.FileName)),
-                packageSources.Select(x => x.Source),
-                installCount,
-                collectorLogger.Errors.Concat(failedEvents.Select(e => e.Exception.Message)));
+                var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
+                    packageRestoreContext,
+                    projectContext,
+                    cacheContext);
+
+                return new RestoreSummary(
+                    result.Restored,
+                    "packages.config projects",
+                    Settings.Priority.Select(x => Path.Combine(x.Root, x.FileName)),
+                    packageSources.Select(x => x.Source),
+                    installCount,
+                    collectorLogger.Errors.Concat(failedEvents.Select(e => e.Exception.Message)));
+            }
         }
 
         private void CheckRequireConsent()

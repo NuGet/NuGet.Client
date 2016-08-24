@@ -34,14 +34,18 @@ namespace NuGet.Protocol.Tests
             var downloadResource = await repo.GetResourceAsync<DownloadResource>();
 
             // Act 
-            var actual = await downloadResource.GetDownloadResourceResultAsync(new PackageIdentity("xunit", new NuGetVersion("1.0.0-notfound")),
+            using (var cacheContext = new SourceCacheContext())
+            {
+                var actual = await downloadResource.GetDownloadResourceResultAsync(new PackageIdentity("xunit", new NuGetVersion("1.0.0-notfound")),
                 NullSettings.Instance,
+                cacheContext,
                 NullLogger.Instance,
                 CancellationToken.None);
 
-            // Assert
-            Assert.NotNull(actual);
-            Assert.Equal(DownloadResourceResultStatus.NotFound, actual.Status);
+                // Assert
+                Assert.NotNull(actual);
+                Assert.Equal(DownloadResourceResultStatus.NotFound, actual.Status);
+            }
         }
     }
 }

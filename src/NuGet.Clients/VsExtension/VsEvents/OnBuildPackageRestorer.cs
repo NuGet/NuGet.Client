@@ -781,11 +781,14 @@ namespace NuGetVSExtension
             CancellationToken token)
         {
             await TaskScheduler.Default;
-
-            await PackageRestoreManager.RestoreMissingPackagesAsync(solutionDirectory,
-                packages,
-                NuGetProjectContext,
-                token);
+            using (var cacheContext = new SourceCacheContext())
+            {
+                await PackageRestoreManager.RestoreMissingPackagesAsync(solutionDirectory,
+                    packages,
+                    NuGetProjectContext,
+                    cacheContext,
+                    token);
+            }
         }
 
         /// <summary>

@@ -24,6 +24,7 @@ namespace NuGet.Protocol.Core.Types
         public abstract Task<DownloadResourceResult> GetDownloadResourceResultAsync(
             PackageIdentity identity,
             ISettings settings,
+            SourceCacheContext cacheContext,
             NuGet.Common.ILogger logger,
             CancellationToken token);
 

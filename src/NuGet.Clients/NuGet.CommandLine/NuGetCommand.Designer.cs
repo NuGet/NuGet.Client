@@ -234,6 +234,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Download directly without populating any caches with metadata or binaries..
+        /// </summary>
+        internal static string CommandDirectDownload {
+            get {
+                return ResourceManager.GetString("CommandDirectDownload", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Disable parallel processing of packages for this command..
         /// </summary>
         internal static string CommandDisableParallelProcessing {

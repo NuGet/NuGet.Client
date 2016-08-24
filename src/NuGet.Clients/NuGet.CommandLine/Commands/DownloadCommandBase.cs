@@ -38,6 +38,9 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "CommandNoCache")]
         public bool NoCache { get; set; }
 
+        [Option(typeof(NuGetCommand), "CommandDirectDownload")]
+        public bool DirectDownload { get; set; }
+
         [Option(typeof(NuGetCommand), "CommandDisableParallelProcessing")]
         public bool DisableParallelProcessing { get; set; }
 

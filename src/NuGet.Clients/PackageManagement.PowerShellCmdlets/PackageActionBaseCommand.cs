@@ -17,6 +17,7 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Resolver;
 using Task = System.Threading.Tasks.Task;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {

@@ -29,6 +29,7 @@ namespace NuGet.Protocol
         public override Task<DownloadResourceResult> GetDownloadResourceResultAsync(
             PackageIdentity identity,
             ISettings settings,
+            SourceCacheContext cacheContext,
             ILogger logger,
             CancellationToken token)
         {

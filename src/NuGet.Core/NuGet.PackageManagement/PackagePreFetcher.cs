@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement
 {
@@ -22,6 +23,7 @@ namespace NuGet.PackageManagement
             IEnumerable<NuGetProjectAction> actions,
             FolderNuGetProject packagesFolder,
             Configuration.ISettings settings,
+            SourceCacheContext cacheContext,
             Common.ILogger logger,
             CancellationToken token)
         {
@@ -128,6 +130,7 @@ namespace NuGet.PackageManagement
                                         action.SourceRepository,
                                         action.PackageIdentity,
                                         settings,
+                                        cacheContext,
                                         logger,
                                         token));
 

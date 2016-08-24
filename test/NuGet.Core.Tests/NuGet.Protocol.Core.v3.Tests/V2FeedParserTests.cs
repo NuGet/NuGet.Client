@@ -120,9 +120,11 @@ namespace NuGet.Protocol.Tests
             V2FeedParser parser = new V2FeedParser(httpSource, "https://www.nuget.org/api/v2/");
 
             // Act & Assert
+            using (var cacheContext = new SourceCacheContext())
             using (var downloadResult = await parser.DownloadFromUrl(new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("6.2.0")),
                                                               new Uri("https://www.nuget.org/api/v2/package/WindowsAzure.Storage/6.2.0"),
                                                               Configuration.NullSettings.Instance,
+                                                              cacheContext,
                                                               NullLogger.Instance,
                                                               CancellationToken.None))
             {
@@ -152,14 +154,18 @@ namespace NuGet.Protocol.Tests
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
 
             // Act
-            var actual = await parser.DownloadFromIdentity(new PackageIdentity("xunit", new NuGetVersion("1.0.0-notfound")),
+            using (var cacheContext = new SourceCacheContext())
+            {
+                var actual = await parser.DownloadFromIdentity(new PackageIdentity("xunit", new NuGetVersion("1.0.0-notfound")),
                 NullSettings.Instance,
+                cacheContext,
                 NullLogger.Instance,
                 CancellationToken.None);
 
-            // Assert
-            Assert.NotNull(actual);
-            Assert.Equal(DownloadResourceResultStatus.NotFound, actual.Status);
+                // Assert
+                Assert.NotNull(actual);
+                Assert.Equal(DownloadResourceResultStatus.NotFound, actual.Status);
+            }
         }
 
         [Fact]

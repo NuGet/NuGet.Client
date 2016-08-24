@@ -145,7 +145,7 @@ namespace NuGet.CommandLine
             return CurrentDirectory;
         }
 
-        private Task PerformV2Restore(string packagesConfigFilePath, string installPath)
+        private async Task PerformV2Restore(string packagesConfigFilePath, string installPath)
         {
             var sourceRepositoryProvider = GetSourceRepositoryProvider();
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, installPath, ExcludeVersion);
@@ -185,9 +185,11 @@ namespace NuGet.CommandLine
 
                 Console.LogMinimal(message);
             }
-
-            Task<PackageRestoreResult> packageRestoreTask = PackageRestoreManager.RestoreMissingPackagesAsync(packageRestoreContext, new ConsoleProjectContext(Console));
-            return packageRestoreTask;
+            using (var cacheContext = new SourceCacheContext())
+            {
+                cacheContext.NoCache = DirectDownload;
+                await PackageRestoreManager.RestoreMissingPackagesAsync(packageRestoreContext, new ConsoleProjectContext(Console), cacheContext);
+            }
         }
 
         private CommandLineSourceRepositoryProvider GetSourceRepositoryProvider()
@@ -271,14 +273,20 @@ namespace NuGet.CommandLine
                     projectContext.PackageExtractionContext.PackageSaveMode = EffectivePackageSaveMode;
                 }
 
-                await packageManager.InstallPackageAsync(
-                    folderProject,
-                    packageIdentity,
-                    resolutionContext,
-                    projectContext,
-                    primaryRepositories,
-                    Enumerable.Empty<SourceRepository>(),
-                    CancellationToken.None);
+                using(var cacheContext = new SourceCacheContext())
+                {
+                    cacheContext.NoCache = DirectDownload;
+
+                    await packageManager.InstallPackageAsync(
+                        folderProject,
+                        packageIdentity,
+                        resolutionContext,
+                        projectContext,
+                        cacheContext,
+                        primaryRepositories,
+                        Enumerable.Empty<SourceRepository>(),
+                        CancellationToken.None);
+                }
             }
         }
     }

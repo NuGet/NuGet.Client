@@ -265,24 +265,24 @@ namespace NuGet.ProjectManagement
             return string.Empty;
         }
 
-        /// <summary>
+        /// <summary>  
         /// Get the path to the package nuspec.
-        /// </summary>
+        /// </summary>  
         public string GetInstalledManifestFilePath(PackageIdentity packageIdentity)
         {
-            // Check the expected location before searching all directories
-            var packageDirectory = PackagePathResolver.GetInstallPath(packageIdentity);
+            // Check the expected location before searching all directories  
+            var packageDirectory = PackagePathResolver.GetInstallPath(packageIdentity);  
             var manifestName = PackagePathResolver.GetManifestFileName(packageIdentity);
 
             var installPath = Path.GetFullPath(Path.Combine(packageDirectory, manifestName));
 
-            // Keep the previous optimization of just going by the existance of the file if we find it.
-            if (File.Exists(installPath))
+            // Keep the previous optimization of just going by the existance of the file if we find it.  
+            if (File.Exists(installPath))  
             {
-                return installPath;
+                return installPath;  
             }
 
-            // Don't look in non-normalized paths for nuspec
+            // Don't look in non-normalized paths for nuspec  
             return string.Empty;
         }
 

@@ -12,7 +12,10 @@ namespace NuGet.Protocol.Core.Types
     /// </summary>
     public class SourceCacheContext : IDisposable
     {
-        private static readonly string _tempFolderGuid = Guid.NewGuid().ToString();
+        /// <summary>
+        /// Path of temp folder if requested by GeneratedTempFolder
+        /// </summary>
+        private string tempFolder = null;
 
         /// <summary>
         /// Default amount of time to cache version lists.
@@ -95,7 +98,17 @@ namespace NuGet.Protocol.Core.Types
             return timeSpan;
         }
 
-        public string GeneratedTempFolder { get; } = Path.Combine(Path.GetTempPath(), "NuGet", "TempCache", _tempFolderGuid);
+        public string GeneratedTempFolder
+        {
+            get
+            {
+                if (tempFolder == null)
+                {
+                    tempFolder = Path.Combine(Path.GetTempPath(), "NuGet", "TempCache", Guid.NewGuid().ToString());
+                }
+                return tempFolder;
+            }
+        }
 
         public bool IgnoreFailedSources { get; set; }
 
@@ -103,7 +116,10 @@ namespace NuGet.Protocol.Core.Types
         {
             try
             {
-                Directory.Delete(GeneratedTempFolder, recursive: true);
+                if (tempFolder != null)
+                {
+                    Directory.Delete(tempFolder, recursive: true);
+                }
             }
             catch
             {

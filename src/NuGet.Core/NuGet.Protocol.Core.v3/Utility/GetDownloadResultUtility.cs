@@ -11,24 +11,31 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Packaging;
+using NuGet.Packaging.PackageExtraction;
 
 namespace NuGet.Protocol
 {
     public static class GetDownloadResultUtility
     {
+        private const int BufferSize = 8192;
         public static async Task<DownloadResourceResult> GetDownloadResultAsync(
            HttpSource client,
            PackageIdentity identity,
            Uri uri,
            ISettings settings,
+           SourceCacheContext cacheContext,
            ILogger logger,
            CancellationToken token)
         {
             // Uri is not null, so the package exists in the source
             // Now, check if it is in the global packages folder, before, getting the package stream
 
-            // TODO: This code should respect no_cache settings and not write or read packages from the global packages folder
-            var packageFromGlobalPackages = GlobalPackagesFolderUtility.GetPackage(identity, settings);
+            DownloadResourceResult packageFromGlobalPackages = null;
+
+            //TODO: NuGet/Home#1406 This code should respect -NoCache option and not read packages from the global packages folder
+            //Note cacheContext.NoCache indicates that packages are not written to the global packages folder
+            packageFromGlobalPackages = GlobalPackagesFolderUtility.GetPackage(identity, settings);
 
             if (packageFromGlobalPackages != null)
             {
@@ -51,12 +58,25 @@ namespace NuGet.Protocol
                                 return new DownloadResourceResult(DownloadResourceResultStatus.NotFound);
                             }
 
-                            return await GlobalPackagesFolderUtility.AddPackageAsync(
-                                identity,
-                                packageStream,
-                                settings,
-                                logger,
-                                token);
+                            if (cacheContext.NoCache)
+                            {
+                                return await AddPackageDirectAsync(
+                                    identity,
+                                    packageStream,
+                                    settings,
+                                    cacheContext.GeneratedTempFolder,
+                                    logger,
+                                    token);
+                            }
+                            else
+                            {
+                                return await GlobalPackagesFolderUtility.AddPackageAsync(
+                                    identity,
+                                    packageStream,
+                                    settings,
+                                    logger,
+                                    token);
+                            }
                         },
                         logger,
                         token);
@@ -86,5 +106,64 @@ namespace NuGet.Protocol
 
             throw new InvalidOperationException("Reached an unexpected point in the code");
         }
+
+        private static async Task<DownloadResourceResult> AddPackageDirectAsync(PackageIdentity packageIdentity,
+            Stream packageStream,
+            ISettings settings,
+            string packagesDirectory,
+            ILogger logger,
+            CancellationToken token)
+        {
+            if (packageIdentity == null)
+            {
+                throw new ArgumentNullException(nameof(packageIdentity));
+            }
+
+            if (packageStream == null)
+            {
+                throw new ArgumentNullException(nameof(packageStream));
+            }
+
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
+            var path = Path.Combine(packagesDirectory, Path.GetRandomFileName());
+            Directory.CreateDirectory(packagesDirectory);
+            using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None, BufferSize, useAsync: true))
+            {
+                await packageStream.CopyToAsync(fileStream);
+            }
+
+            if (File.Exists(path))
+            {
+                Stream stream = null;
+                PackageReaderBase packageReader = null;
+                try
+                {
+                    stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    packageReader = new PackageArchiveReader(path);
+                    return new DownloadResourceResult(stream, packageReader);
+                }
+                catch
+                {
+                    if (stream != null)
+                    {
+                        stream.Dispose();
+                    }
+
+                    if (packageReader != null)
+                    {
+                        packageReader.Dispose();
+                    }
+
+                    throw;
+                }
+            }
+
+            return null;
+        }
+
     }
 }
