@@ -20,8 +20,8 @@ namespace NuGet.XPlat.FuncTest
         {
             DotnetCliBinary = @"dotnet";
             DotnetCliExe = @"dotnet.exe";
-            XplatDll = @"NuGet.Core\NuGet.CommandLine.XPlat\bin\debug\netcoreapp1.0\NuGet.CommandLine.XPlat.dll";
-            XplatDllShell = @"NuGet.Core/NuGet.CommandLine.XPlat/bin/debug/netcoreapp1.0/NuGet.CommandLine.XPlat.dll";
+            XplatDll = @"NuGet.Core\NuGet.CommandLine.XPlat\bin\release\netcoreapp1.0\NuGet.CommandLine.XPlat.dll";
+            XplatDllShell = @"NuGet.Core/NuGet.CommandLine.XPlat/bin/release/netcoreapp1.0/NuGet.CommandLine.XPlat.dll";
         }
 
         public static string GetDotnetCli()
