@@ -30,31 +30,19 @@ namespace NuGet.Credentials
         /// </summary>
         private static readonly Semaphore ProviderSemaphore = new Semaphore(1, 1);
 
-        private Action<string> ErrorDelegate { get; }
-
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="providers">All available credential providers.</param>
-        /// <param name="errorDelegate">Used to write error messages to the user</param>
         /// <param name="nonInteractive">If true, the nonInteractive flag will be passed to providers.
         /// NonInteractive requests must not promt the user for credentials.</param>
-        public CredentialService(
-            IEnumerable<ICredentialProvider> providers,
-            Action<string> errorDelegate,
-            bool nonInteractive)
+        public CredentialService(IEnumerable<ICredentialProvider> providers, bool nonInteractive)
         {
             if (providers == null)
             {
                 throw new ArgumentNullException(nameof(providers));
             }
-
-            if (errorDelegate == null)
-            {
-                throw new ArgumentNullException(nameof(errorDelegate));
-            }
-
-            ErrorDelegate = errorDelegate;
+            
             _nonInteractive = nonInteractive;
             Providers = new List<ICredentialProvider>(providers);
         }

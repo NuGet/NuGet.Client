@@ -16,8 +16,6 @@ namespace NuGet.Credentials.Test
     
     public class CredentialServiceTests
     {
-        private readonly StringBuilder _testErrorOutput = new StringBuilder();
-
         private readonly Mock<ICredentialProvider> _mockProvider;
 
         public CredentialServiceTests()
@@ -36,18 +34,12 @@ namespace NuGet.Credentials.Test
             _mockProvider.Setup(x => x.Id).Returns("1");
         }
 
-        private void TestableErrorWriter(string s)
-        {
-            _testErrorOutput.AppendLine(s);
-        }
-
         [Fact]
         public async Task GetCredentials_PassesAllParametersToProviders()
         {
             // Arrange
             var service = new CredentialService(
                 new[] { _mockProvider.Object },
-                TestableErrorWriter,
                 nonInteractive: true);
             var webProxy = new WebProxy();
             var uri = new Uri("http://uri");
@@ -77,7 +69,6 @@ namespace NuGet.Credentials.Test
             // Arrange
             var service = new CredentialService(
                 new[] { _mockProvider.Object },
-                TestableErrorWriter,
                 nonInteractive: false);
             _mockProvider.Setup(
                 x => x.GetAsync(
@@ -132,7 +123,6 @@ namespace NuGet.Credentials.Test
             // Arrange
             var service = new CredentialService(
                 new[] { _mockProvider.Object },
-                TestableErrorWriter,
                 nonInteractive: false);
             _mockProvider.Setup(
                 x => x.GetAsync(
@@ -187,7 +177,6 @@ namespace NuGet.Credentials.Test
             // Arrange
             var service = new CredentialService(
                 new[] { _mockProvider.Object },
-                TestableErrorWriter,
                 nonInteractive: true);
             var webProxy = new WebProxy();
             var uri = new Uri("http://uri");
@@ -231,7 +220,6 @@ namespace NuGet.Credentials.Test
             // Arrange
             var service = new CredentialService(
                 new[] { _mockProvider.Object },
-                TestableErrorWriter,
                 nonInteractive: false);
             _mockProvider
                 .Setup(x => x.GetAsync(
@@ -280,7 +268,6 @@ namespace NuGet.Credentials.Test
             // Arrange
             var service = new CredentialService(
                 new[] { _mockProvider.Object },
-                TestableErrorWriter,
                 nonInteractive: false);
             _mockProvider
                 .Setup(x => x.GetAsync(
@@ -353,7 +340,6 @@ namespace NuGet.Credentials.Test
             mockProvider2.Setup(x => x.Id).Returns("2");
             var service = new CredentialService(
                 new[] {mockProvider1.Object, mockProvider2.Object},
-                TestableErrorWriter,
                 nonInteractive: false);
             var uri1 = new Uri("http://host/some/path");
 
@@ -395,7 +381,6 @@ namespace NuGet.Credentials.Test
             // Arrange
             var service = new CredentialService(
                 new[] { _mockProvider.Object },
-                TestableErrorWriter,
                 nonInteractive: false);
             _mockProvider
                 .Setup(x => x.GetAsync(

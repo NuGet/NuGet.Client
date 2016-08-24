@@ -115,6 +115,33 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The legacy NuGet credential provider failed to load..
+        /// </summary>
+        internal static string CredentialProviderFailed_LegacyCredentialProvider {
+            get {
+                return ResourceManager.GetString("CredentialProviderFailed_LegacyCredentialProvider", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Visual Studio or VSTS account provider failed to load..
+        /// </summary>
+        internal static string CredentialProviderFailed_VisualStudioAccountProvider {
+            get {
+                return ResourceManager.GetString("CredentialProviderFailed_VisualStudioAccountProvider", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Visual Studio credential provider failed to load..
+        /// </summary>
+        internal static string CredentialProviderFailed_VisualStudioCredentialProvider {
+            get {
+                return ResourceManager.GetString("CredentialProviderFailed_VisualStudioCredentialProvider", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to NuGet Package Manager.
         /// </summary>
         internal static string DialogTitle {
@@ -357,24 +384,6 @@ namespace NuGetVSExtension {
         internal static string SolutionIsNotSavedPromptReopen {
             get {
                 return ResourceManager.GetString("SolutionIsNotSavedPromptReopen", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Error getting the credential provider.  {0}.
-        /// </summary>
-        internal static string VsCredentialProviderImport_GenericError {
-            get {
-                return ResourceManager.GetString("VsCredentialProviderImport_GenericError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Error loading VisualStudioAcountProvider. {0}.
-        /// </summary>
-        internal static string VsCredentialProviderImporter_LoadErrorFormat {
-            get {
-                return ResourceManager.GetString("VsCredentialProviderImporter_LoadErrorFormat", resourceCulture);
             }
         }
     }

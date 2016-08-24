@@ -296,6 +296,7 @@ namespace NuGetVSExtension
             _dteEvents.OnBeginShutdown += OnBeginShutDown;
 
             _outputConsoleLogger = new OutputConsoleLogger(this);
+
             SetDefaultCredentialProvider();
 
             if (SolutionManager != null)
@@ -354,10 +355,7 @@ namespace NuGetVSExtension
         /// </summary>
         private void SetDefaultCredentialProvider()
         {
-            var credentialService = new CredentialService(
-                GetCredentialProviders(),
-                this._outputConsoleLogger.OutputConsole.WriteLine,
-                nonInteractive: false);
+            var credentialService = GetCredentialService();
 
             HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(credentialService);
 
@@ -366,40 +364,92 @@ namespace NuGetVSExtension
             HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>
             {
                 // v2 stack credentials update
-                NuGet.CredentialStore.Instance.Add(uri, credentials);
+                CredentialStore.Instance.Add(uri, credentials);
             };
         }
 
-        private IEnumerable<NuGet.Credentials.ICredentialProvider> GetCredentialProviders()
+        private NuGet.Configuration.ICredentialService GetCredentialService()
         {
-            var packageSourceProvider = new PackageSourceProvider(new SettingsToLegacySettings(Settings));
+            // Initialize the credential providers.
             var credentialProviders = new List<NuGet.Credentials.ICredentialProvider>();
+            
+            TryAddCredentialProvider(
+                credentialProviders,
+                Resources.CredentialProviderFailed_LegacyCredentialProvider,
+                () =>
+                {
+                    var packageSourceProvider = new PackageSourceProvider(new SettingsToLegacySettings(Settings));
 
-            credentialProviders.Add(
-                new CredentialProviderAdapter(new SettingsCredentialProvider(NuGet.NullCredentialProvider.
-                    Instance, packageSourceProvider)));
+                    return new CredentialProviderAdapter(new SettingsCredentialProvider(
+                        NullCredentialProvider.Instance,
+                        packageSourceProvider));
+                });
+            
+            TryAddCredentialProvider(
+                credentialProviders,
+                Resources.CredentialProviderFailed_VisualStudioAccountProvider,
+                () =>
+                {
+                    var importer = new VsCredentialProviderImporter(
+                        _dte,
+                        VisualStudioAccountProvider.FactoryMethod);
 
-            Action<string> errorDelegate = (error) =>
+                    return importer.GetProvider();
+                });
+
+            TryAddCredentialProvider(
+                credentialProviders,
+                Resources.CredentialProviderFailed_VisualStudioCredentialProvider,
+                () =>
+                {
+                    var webProxy = (IVsWebProxy)GetService(typeof(SVsWebProxy));
+
+                    Debug.Assert(webProxy != null);
+
+                    return new VisualStudioCredentialProvider(webProxy);
+                });
+
+            // Initialize the credential service.
+            var credentialService = new CredentialService(credentialProviders, nonInteractive: false);
+
+            return credentialService;
+        }
+
+        private void TryAddCredentialProvider(
+            List<NuGet.Credentials.ICredentialProvider> credentialProviders,
+            string failureMessage,
+            Func<NuGet.Credentials.ICredentialProvider> factory)
+        {
+            try
             {
-                _outputConsoleLogger.OutputConsole.WriteLine(error);
-                ActivityLog.LogWarning(ExceptionHelper.LogEntrySource, error);
-            };
+                var credentialProvider = factory();
 
-            var importer = new VsCredentialProviderImporter(
-                _dte,
-                VisualStudioAccountProvider.FactoryMethod,
-                errorDelegate);
-
-            var vstsProvider = importer.GetProvider();
-            if (vstsProvider != null)
-            {
-                credentialProviders.Add(vstsProvider);
+                if (credentialProvider != null)
+                {
+                    credentialProviders.Add(credentialProvider);
+                }
             }
+            catch (Exception exception)
+            {
+                // Log the user-friendly message to the output console (no stack trace).
+                _outputConsoleLogger.OutputConsole.WriteLine(
+                    failureMessage +
+                    Environment.NewLine +
+                    ExceptionUtilities.DisplayMessage(exception));
 
-            var webProxy = (IVsWebProxy)GetService(typeof(SVsWebProxy));
-            Debug.Assert(webProxy != null);
-            credentialProviders.Add(new VisualStudioCredentialProvider(webProxy));
-            return credentialProviders;
+                // Write the stack trace to the activity log.
+                ActivityLog.LogWarning(
+                    ExceptionHelper.LogEntrySource,
+                    failureMessage +
+                    Environment.NewLine +
+                    exception);
+            }
+        }
+
+        private void LogCredentialProviderError(string error)
+        {
+            _outputConsoleLogger.OutputConsole.WriteLine(error);
+            ActivityLog.LogWarning(ExceptionHelper.LogEntrySource, error);
         }
 
         private void AddMenuCommandHandlers()
