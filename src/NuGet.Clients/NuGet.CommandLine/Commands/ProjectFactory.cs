@@ -978,13 +978,18 @@ namespace NuGet.CommandLine
             {
                 packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(solutionDir, ReadSettings(solutionDir));
             }
-            var sourceRepository = Repository.Factory.GetCoreV3(packagesFolderPath).GetResource<FindPackageByIdResource>();
+
+            var findLocalPackagesResource = Repository
+                .Factory
+                .GetCoreV3(packagesFolderPath)
+                .GetResource<FindLocalPackagesResource>();
 
             // Collect all packages
             IDictionary<PackageIdentity, Packaging.PackageReference> packageReferences =
                 references
                 .Where(r => !r.IsDevelopmentDependency)
                 .ToDictionary(r => r.PackageIdentity);
+
             // add all packages and create an associated dependency to the dictionary
             foreach (Packaging.PackageReference reference in packageReferences.Values)
             {
@@ -1001,19 +1006,23 @@ namespace NuGet.CommandLine
                         range = new VersionRange(packageReference.PackageIdentity.Version);
                     }
 
-                    var stream = sourceRepository.GetNupkgStreamAsync(packageReference.PackageIdentity.Id, packageReference.PackageIdentity.Version, CancellationToken.None).Result;
-                    if (stream != null)
+                    var localPackageInfo = findLocalPackagesResource.GetPackage(
+                        packageReference.PackageIdentity,
+                        _logger,
+                        CancellationToken.None);
+
+                    var reader = localPackageInfo?.GetReader();
+                    if (reader != null)
                     {
                         try
                         {
-                            var reader = new PackageArchiveReader(stream);
                             var dependency = new Packaging.Core.PackageDependency(packageReference.PackageIdentity.Id, range);
                             packagesAndDependencies.Add(packageReference.PackageIdentity.Id, Tuple.Create<PackageReaderBase, Packaging.Core.PackageDependency>(reader, dependency));
                         }
                         catch (Exception)
                         {
                             DisposePackageReaders(packagesAndDependencies);
-                            stream.Dispose();
+                            reader.Dispose();
 
                             throw;
                         }

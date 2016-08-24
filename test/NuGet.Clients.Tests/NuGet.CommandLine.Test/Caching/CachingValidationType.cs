@@ -9,6 +9,7 @@
         PackageFromHttpCacheUsed,
         PackageFromSourceUsed,
         PackageFromSourceNotUsed,
-        PackageFromGlobalPackagesFolderUsed
+        PackageFromGlobalPackagesFolderUsed,
+        DirectDownloadFilesDoNotExist,
     }
 }

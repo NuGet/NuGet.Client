@@ -17,7 +17,7 @@ namespace NuGet.Protocol.FuncTest
         [Fact]
         public async Task V2FeedParser_DownloadFromInvalidUrl()
         {
-            // Arrange
+        // Arrange
             var randomName = Guid.NewGuid().ToString();
             var repo = Repository.Factory.GetCoreV3(TestServers.NuGetV2);
 
@@ -26,15 +26,22 @@ namespace NuGet.Protocol.FuncTest
             V2FeedParser parser = new V2FeedParser(httpSource, TestServers.NuGetV2);
 
             // Act 
-            Exception ex = await Assert.ThrowsAsync<FatalProtocolException>(async () => await parser.DownloadFromUrl(new PackageIdentity("not-found", new NuGetVersion("6.2.0")),
-                                                              new Uri($"https://www.{randomName}.org/api/v2/"),
-                                                              Configuration.NullSettings.Instance,
-                                                              NullLogger.Instance,
-                                                              CancellationToken.None));
+            using (var packagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var cacheContext = new SourceCacheContext())
+            {
+                Exception ex = await Assert.ThrowsAsync<FatalProtocolException>(
+                    async () => await parser.DownloadFromUrl(
+                        new PackageIdentity("not-found", new NuGetVersion("6.2.0")),
+                        new Uri($"https://www.{randomName}.org/api/v2/"),
+                        new PackageDownloadContext(cacheContext),
+                        packagesFolder,
+                        NullLogger.Instance,
+                        CancellationToken.None));
 
-            // Assert
-            Assert.NotNull(ex);
-            Assert.Equal($"Error downloading 'not-found.6.2.0' from 'https://www.{randomName}.org/api/v2/'.", ex.Message);
+                // Assert
+                Assert.NotNull(ex);
+                Assert.Equal($"Error downloading 'not-found.6.2.0' from 'https://www.{randomName}.org/api/v2/'.", ex.Message);
+            }
         }
 
         [Fact]
@@ -48,15 +55,21 @@ namespace NuGet.Protocol.FuncTest
             V2FeedParser parser = new V2FeedParser(httpSource, TestServers.NuGetV2);
 
             // Act 
-            var actual = await parser.DownloadFromUrl(new PackageIdentity("not-found", new NuGetVersion("6.2.0")),
-                new Uri($@"{TestServers.NuGetV2}/package/not-found/6.2.0"),
-                Configuration.NullSettings.Instance,
-                NullLogger.Instance,
-                CancellationToken.None);
+            using (var packagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var cacheContext = new SourceCacheContext())
+            {
+                var actual = await parser.DownloadFromUrl(
+                    new PackageIdentity("not-found", new NuGetVersion("6.2.0")),
+                    new Uri($@"{TestServers.NuGetV2}/package/not-found/6.2.0"),
+                    new PackageDownloadContext(cacheContext),
+                    packagesFolder,
+                    NullLogger.Instance,
+                    CancellationToken.None);
 
-            // Assert
-            Assert.NotNull(actual);
-            Assert.Equal(DownloadResourceResultStatus.NotFound, actual.Status);
+                // Assert
+                Assert.NotNull(actual);
+                Assert.Equal(DownloadResourceResultStatus.NotFound, actual.Status);
+            }
         }
 
         [Fact]
@@ -70,15 +83,21 @@ namespace NuGet.Protocol.FuncTest
             V2FeedParser parser = new V2FeedParser(httpSource, TestServers.NuGetV2);
 
             // Act & Assert
-            using (var downloadResult = await parser.DownloadFromIdentity(new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("6.2.0")),
-                                                              Configuration.NullSettings.Instance,
-                                                              NullLogger.Instance,
-                                                              CancellationToken.None))
+            using (var packagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var cacheContext = new SourceCacheContext())
             {
-                var packageReader = downloadResult.PackageReader;
-                var files = packageReader.GetFiles();
+                using (var downloadResult = await parser.DownloadFromIdentity(
+                    new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("6.2.0")),
+                    new PackageDownloadContext(cacheContext),
+                    packagesFolder,
+                    NullLogger.Instance,
+                    CancellationToken.None))
+                {
+                    var packageReader = downloadResult.PackageReader;
+                    var files = packageReader.GetFiles();
 
-                Assert.Equal(11, files.Count());
+                    Assert.Equal(11, files.Count());
+                }
             }
         }
 
@@ -118,15 +137,21 @@ namespace NuGet.Protocol.FuncTest
             V2FeedParser parser = new V2FeedParser(httpSource, packageSource);
 
             // Act & Assert
-            using (var downloadResult = await parser.DownloadFromIdentity(new PackageIdentity("newtonsoft.json", new NuGetVersion("8.0.3")),
-                                                              Configuration.NullSettings.Instance,
-                                                              NullLogger.Instance,
-                                                              CancellationToken.None))
+            using (var packagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var cacheContext = new SourceCacheContext())
             {
-                var packageReader = downloadResult.PackageReader;
-                var files = packageReader.GetFiles();
+                using (var downloadResult = await parser.DownloadFromIdentity(
+                    new PackageIdentity("newtonsoft.json", new NuGetVersion("8.0.3")),
+                    new PackageDownloadContext(cacheContext),
+                    packagesFolder,
+                    NullLogger.Instance,
+                    CancellationToken.None))
+                {
+                    var packageReader = downloadResult.PackageReader;
+                    var files = packageReader.GetFiles();
 
-                Assert.Equal(15, files.Count());
+                    Assert.Equal(15, files.Count());
+                }
             }
         }
 
@@ -254,15 +279,21 @@ namespace NuGet.Protocol.FuncTest
             V2FeedParser parser = new V2FeedParser(httpSource, packageSource);
 
             // Act & Assert
-            using (var downloadResult = await parser.DownloadFromIdentity(new PackageIdentity("newtonsoft.json", new NuGetVersion("8.0.3")),
-                                                              Configuration.NullSettings.Instance,
-                                                              NullLogger.Instance,
-                                                              CancellationToken.None))
+            using (var packagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var cacheContext = new SourceCacheContext())
             {
-                var packageReader = downloadResult.PackageReader;
-                var files = packageReader.GetFiles();
+                using (var downloadResult = await parser.DownloadFromIdentity(
+                    new PackageIdentity("newtonsoft.json", new NuGetVersion("8.0.3")),
+                    new PackageDownloadContext(cacheContext),
+                    packagesFolder,
+                    NullLogger.Instance,
+                    CancellationToken.None))
+                {
+                    var packageReader = downloadResult.PackageReader;
+                    var files = packageReader.GetFiles();
 
-                Assert.Equal(15, files.Count());
+                    Assert.Equal(15, files.Count());
+                }
             }
         }
 

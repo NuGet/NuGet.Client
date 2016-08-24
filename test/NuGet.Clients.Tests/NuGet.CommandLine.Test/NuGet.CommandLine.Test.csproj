@@ -73,6 +73,7 @@
     <Compile Include="Caching\Commands\RestorePackagesConfigCommand.cs" />
     <Compile Include="Caching\Commands\RestoreProjectJsonCommand.cs" />
     <Compile Include="Caching\Tests\ReadsFromHttpCacheTest.cs" />
+    <Compile Include="Caching\Tests\CleansUpDirectDownloadTest.cs" />
     <Compile Include="Caching\Tests\WritesToHttpCacheTest.cs" />
     <Compile Include="Caching\Tests\PopulatesGlobalPackagesFolderTest.cs" />
     <Compile Include="Caching\Tests\PopulatesDestinationFolderTest.cs" />

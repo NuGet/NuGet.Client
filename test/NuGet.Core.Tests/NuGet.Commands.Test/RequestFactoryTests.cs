@@ -81,16 +81,19 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(p3, EmptyProjectJson);
 
                 var context = new RestoreArgs();
-                context.CacheContext = new SourceCacheContext();
-                context.Log = new TestLogger();
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    context.CacheContext = cacheContext;
+                    context.Log = new TestLogger();
 
-                // Act
-                var supports = await provider.Supports(workingDir);
-                var requests = await provider.CreateRequests(workingDir, context);
+                    // Act
+                    var supports = await provider.Supports(workingDir);
+                    var requests = await provider.CreateRequests(workingDir, context);
 
-                // Assert
-                Assert.Equal(true, supports);
-                Assert.Equal(3, requests.Count);
+                    // Assert
+                    Assert.Equal(true, supports);
+                    Assert.Equal(3, requests.Count);
+                }
             }
         }
 

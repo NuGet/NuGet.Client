@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -37,8 +36,8 @@ namespace NuGet.Protocol
             new ConcurrentDictionary<string, Task<SortedDictionary<NuGetVersion, PackageInfo>>>(StringComparer.OrdinalIgnoreCase);
         private readonly ConcurrentDictionary<PackageIdentity, Task<PackageIdentity>> _packageIdentityCache
             = new ConcurrentDictionary<PackageIdentity, Task<PackageIdentity>>();
-        private readonly Dictionary<string, Task<NupkgEntry>> _nupkgCache = new Dictionary<string, Task<NupkgEntry>>();
         private readonly IReadOnlyList<Uri> _baseUris;
+        private readonly FindPackagesByIdNupkgDownloader _nupkgDownloader;
 
         public HttpFileSystemBasedFindPackageByIdResource(
             IReadOnlyList<Uri> baseUris,
@@ -60,15 +59,7 @@ namespace NuGet.Protocol
                 .ToList();
 
             _httpSource = httpSource;
-        }
-
-        public override ILogger Logger
-        {
-            get { return base.Logger; }
-            set
-            {
-                base.Logger = value;
-            }
+            _nupkgDownloader = new FindPackagesByIdNupkgDownloader(httpSource);
         }
 
         public override async Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, CancellationToken cancellationToken)
@@ -88,14 +79,16 @@ namespace NuGet.Protocol
             }
 
             return await _packageIdentityCache.GetOrAdd(
-                new PackageIdentity(id, version),
+                packageInfo.Identity,
                 async identity =>
                 {
-                    var reader = await PackageUtilities.OpenNuspecFromNupkgAsync(
-                        packageInfo.Id,
-                        OpenNupkgStreamAsync(packageInfo, cancellationToken),
-                        Logger);
-
+                    var reader = await _nupkgDownloader.GetNuspecReaderFromNupkgAsync(
+                        packageInfo.Identity,
+                        packageInfo.ContentUri,
+                        CacheContext,
+                        Logger,
+                        cancellationToken);
+                    
                     return reader.GetIdentity();
                 });
         }
@@ -107,10 +100,12 @@ namespace NuGet.Protocol
             PackageInfo packageInfo;
             if (packageInfos.TryGetValue(version, out packageInfo))
             {
-                var reader = await PackageUtilities.OpenNuspecFromNupkgAsync(
-                    packageInfo.Id,
-                    OpenNupkgStreamAsync(packageInfo, cancellationToken),
-                    Logger);
+                var reader = await _nupkgDownloader.GetNuspecReaderFromNupkgAsync(
+                    packageInfo.Identity,
+                    packageInfo.ContentUri,
+                    CacheContext,
+                    Logger,
+                    cancellationToken);
 
                 // Populate the package identity cache while we have the .nuspec open.
                 var identity = reader.GetIdentity();
@@ -122,17 +117,27 @@ namespace NuGet.Protocol
             return null;
         }
 
-        public override async Task<Stream> GetNupkgStreamAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
+        public override async Task<bool> CopyNupkgToStreamAsync(
+            string id,
+            NuGetVersion version,
+            Stream destination,
+            CancellationToken cancellationToken)
         {
             var packageInfos = await EnsurePackagesAsync(id, cancellationToken);
 
             PackageInfo packageInfo;
             if (packageInfos.TryGetValue(version, out packageInfo))
             {
-                return await OpenNupkgStreamAsync(packageInfo, cancellationToken);
+                return await _nupkgDownloader.CopyNupkgToStreamAsync(
+                    packageInfo.Identity,
+                    packageInfo.ContentUri,
+                    destination,
+                    CacheContext,
+                    Logger,
+                    cancellationToken);
             }
 
-            return null;
+            return false;
         }
 
         private Task<SortedDictionary<NuGetVersion, PackageInfo>> EnsurePackagesAsync(string id, CancellationToken cancellationToken)
@@ -146,37 +151,45 @@ namespace NuGet.Protocol
             {
                 var baseUri = _baseUris[retry % _baseUris.Count].OriginalString;
                 var uri = baseUri + id.ToLowerInvariant() + "/index.json";
+                var httpSourceCacheContext = HttpSourceCacheContext.Create(CacheContext, retry);
 
                 try
                 {
-                    using (var result = await _httpSource.GetAsync(
+                    return await _httpSource.GetAsync(
                         new HttpSourceCachedRequest(
                             uri,
                             $"list_{id}",
-                            CreateCacheContext(retry))
+                            httpSourceCacheContext)
                         {
                             IgnoreNotFounds = true,
                             EnsureValidContents = stream => HttpStreamValidation.ValidateJObject(uri, stream)
                         },
+                        httpSourceResult =>
+                        {
+                            var result = new SortedDictionary<NuGetVersion, PackageInfo>();
+                            
+                            if (httpSourceResult.Status == HttpSourceResultStatus.OpenedFromDisk)
+                            {
+                                try
+                                {
+                                    result = ConsumeFlatContainerIndex(httpSourceResult.Stream, id, baseUri);
+                                }
+                                catch
+                                {
+                                    Logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Log_FileIsCorrupt, httpSourceResult.CacheFile));
+
+                                    throw;
+                                }
+                            }
+                            else if (httpSourceResult.Status == HttpSourceResultStatus.OpenedFromNetwork)
+                            {
+                                result = ConsumeFlatContainerIndex(httpSourceResult.Stream, id, baseUri);
+                            }
+
+                            return Task.FromResult(result);
+                        },
                         Logger,
-                        cancellationToken))
-                    {
-                        if (result.Status == HttpSourceResultStatus.NotFound)
-                        {
-                            return new SortedDictionary<NuGetVersion, PackageInfo>();
-                        }
-
-                        try
-                        {
-                            return ConsumeFlatContainerIndex(result.Stream, id, baseUri);
-                        }
-                        catch
-                        {
-                            Logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Log_FileIsCorrupt, result.CacheFileName));
-
-                            throw;
-                        }
-                    }
+                        cancellationToken);
                 }
                 catch (Exception ex) when (retry < 2)
                 {
@@ -217,9 +230,9 @@ namespace NuGet.Protocol
                 .Select(x => BuildModel(baseUri, id, x.ToString()))
                 .Where(x => x != null))
             {
-                if (!streamResults.ContainsKey(packageInfo.Version))
+                if (!streamResults.ContainsKey(packageInfo.Identity.Version))
                 {
-                    streamResults.Add(packageInfo.Version, packageInfo);
+                    streamResults.Add(packageInfo.Identity.Version, packageInfo);
                 }
             }
 
@@ -232,99 +245,18 @@ namespace NuGet.Protocol
             var normalizedVersionString = parsedVersion.ToNormalizedString();
             return new PackageInfo
             {
-                Id = id,
-                Version = parsedVersion,
+                Identity = new PackageIdentity(id, parsedVersion),
                 ContentUri = baseUri + id.ToLowerInvariant() + "/" + normalizedVersionString + "/" + id.ToLowerInvariant() + "." + normalizedVersionString + ".nupkg",
             };
         }
 
-        private async Task<Stream> OpenNupkgStreamAsync(PackageInfo package, CancellationToken cancellationToken)
-        {
-            Task<NupkgEntry> task;
-            lock (_nupkgCache)
-            {
-                if (!_nupkgCache.TryGetValue(package.ContentUri, out task))
-                {
-                    task = _nupkgCache[package.ContentUri] = OpenNupkgStreamAsyncCore(package, cancellationToken);
-                }
-            }
-
-            var result = await task;
-            if (result == null)
-            {
-                return null;
-            }
-
-            // Acquire the lock on a file before we open it to prevent this process
-            // from opening a file deleted by the logic in HttpSource.GetAsync() in another process
-            return await ConcurrencyUtilities.ExecuteWithFileLockedAsync(result.TempFileName,
-                action: token =>
-                {
-                    return Task.FromResult(
-                        new FileStream(result.TempFileName,
-                                       FileMode.Open,
-                                       FileAccess.Read,
-                                       FileShare.ReadWrite | FileShare.Delete));
-                },
-                token: cancellationToken);
-        }
-
-        private async Task<NupkgEntry> OpenNupkgStreamAsyncCore(PackageInfo package, CancellationToken cancellationToken)
-        {
-            for (var retry = 0; retry != 3; ++retry)
-            {
-                try
-                {
-                    using (var data = await _httpSource.GetAsync(
-                        new HttpSourceCachedRequest(
-                            package.ContentUri,
-                            "nupkg_" + package.Id + "." + package.Version.ToNormalizedString(),
-                            CreateCacheContext(retry))
-                        { 
-                            EnsureValidContents = stream => HttpStreamValidation.ValidateNupkg(package.ContentUri, stream)
-                        },
-                        Logger,
-                        cancellationToken))
-                    {
-                        return new NupkgEntry
-                        {
-                            TempFileName = data.CacheFileName
-                        };
-                    }
-                }
-                catch (Exception ex) when (retry < 2)
-                {
-                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToDownloadPackage, package.ContentUri)
-                        + Environment.NewLine
-                        + ExceptionUtilities.DisplayMessage(ex); 
-                    Logger.LogMinimal(message);
-                }
-                catch (Exception ex) when (retry == 2)
-                {
-                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToDownloadPackage, package.ContentUri)
-                        + Environment.NewLine
-                        + ExceptionUtilities.DisplayMessage(ex);
-                    Logger.LogError(message);
-                }
-            }
-
-            return null;
-        }
-
-        private class NupkgEntry
-        {
-            public string TempFileName { get; set; }
-        }
-
         private class PackageInfo
         {
-            public string Id { get; set; }
+            public PackageIdentity Identity { get; set; }
 
             public string Path { get; set; }
 
             public string ContentUri { get; set; }
-
-            public NuGetVersion Version { get; set; }
         }
     }
 }

@@ -52,21 +52,23 @@ namespace NuGet.Protocol.Tests
                 };
 
                 var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var resource = await repo.GetResourceAsync<FindPackageByIdResource>();
+                    resource.Logger = NullLogger.Instance;
+                    resource.CacheContext = cacheContext;
 
-                var resource = await repo.GetResourceAsync<FindPackageByIdResource>();
-                resource.Logger = NullLogger.Instance;
-                resource.CacheContext = new SourceCacheContext();
+                    // Act
+                    var identity = await resource.GetOriginalIdentityAsync(
+                        "DEEPEQUAL",
+                        new NuGetVersion("1.4.0.1-RC"),
+                        CancellationToken.None);
 
-                // Act
-                var identity = await resource.GetOriginalIdentityAsync(
-                    "DEEPEQUAL",
-                    new NuGetVersion("1.4.0.1-RC"),
-                    CancellationToken.None);
-
-                // Assert
-                Assert.IsType<HttpFileSystemBasedFindPackageByIdResource>(resource);
-                Assert.Equal("DeepEqual", identity.Id);
-                Assert.Equal("1.4.0.1-rc", identity.Version.ToNormalizedString());
+                    // Assert
+                    Assert.IsType<HttpFileSystemBasedFindPackageByIdResource>(resource);
+                    Assert.Equal("DeepEqual", identity.Id);
+                    Assert.Equal("1.4.0.1-rc", identity.Version.ToNormalizedString());
+                }
             }
         }
     }

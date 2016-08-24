@@ -351,50 +351,54 @@ namespace NuGetVSExtension
                         Token = threadedWaitDialogSession.UserCancellationToken;
                         ThreadedWaitDialogProgress = threadedWaitDialogSession.Progress;
 
-                        // Cache resources between requests
-                        var providerCache = new RestoreCommandProvidersCache();
-                        var tasks = new List<Task<KeyValuePair<string, Exception>>>();
-                        var maxTasks = 4;
-
-                        // Restore packages and create the lock file for each project
-                        foreach (var project in buildEnabledProjects)
+                        using (var cacheContext = new SourceCacheContext())
                         {
-                            // Mark this as having missing packages so that we will not 
-                            // display a noop message in the summary
-                            _hasMissingPackages = true;
-                            _displayRestoreSummary = true;
+                            // Cache resources between requests
+                            var providerCache = new RestoreCommandProvidersCache();
+                            var tasks = new List<Task<KeyValuePair<string, Exception>>>();
+                            var maxTasks = 4;
 
-                            if (tasks.Count >= maxTasks)
+                            // Restore packages and create the lock file for each project
+                            foreach (var project in buildEnabledProjects)
+                            {
+                                // Mark this as having missing packages so that we will not 
+                                // display a noop message in the summary
+                                _hasMissingPackages = true;
+                                _displayRestoreSummary = true;
+
+                                if (tasks.Count >= maxTasks)
+                                {
+                                    await ProcessTask(tasks);
+                                }
+
+                                // Skip further restores if the user has clicked cancel
+                                if (!Token.IsCancellationRequested)
+                                {
+                                    var projectName = NuGetProject.GetUniqueNameOrName(project);
+
+                                    // Restore and create a project.lock.json file
+                                    tasks.Add(RestoreProject(projectName, async () =>
+                                        await BuildIntegratedProjectRestoreAsync(
+                                            project,
+                                            solutionDirectory,
+                                            enabledSources,
+                                            referenceContext,
+                                            cacheContext,
+                                            providerCache,
+                                            Token)));
+                                }
+                            }
+
+                            // Wait for the remaining tasks
+                            while (tasks.Count > 0)
                             {
                                 await ProcessTask(tasks);
                             }
 
-                            // Skip further restores if the user has clicked cancel
-                            if (!Token.IsCancellationRequested)
+                            if (Token.IsCancellationRequested)
                             {
-                                var projectName = NuGetProject.GetUniqueNameOrName(project);
-
-                                // Restore and create a project.lock.json file
-                                tasks.Add(RestoreProject(projectName, async () =>
-                                    await BuildIntegratedProjectRestoreAsync(
-                                        project,
-                                        solutionDirectory,
-                                        enabledSources,
-                                        referenceContext,
-                                        providerCache,
-                                        Token)));
+                                _canceled = true;
                             }
-                        }
-
-                        // Wait for the remaining tasks
-                        while (tasks.Count > 0)
-                        {
-                            await ProcessTask(tasks);
-                        }
-
-                        if (Token.IsCancellationRequested)
-                        {
-                            _canceled = true;
                         }
                     }
                 }
@@ -510,6 +514,7 @@ namespace NuGetVSExtension
             string solutionDirectory,
             List<SourceRepository> enabledSources,
             ExternalProjectReferenceContext context,
+            SourceCacheContext cacheContext,
             RestoreCommandProvidersCache providerCache,
             CancellationToken token)
         {
@@ -520,32 +525,29 @@ namespace NuGetVSExtension
 
             var nugetPathContext = NuGetPathContext.Create(Settings);
 
-            using (var cacheContext = new SourceCacheContext())
+            providerCache.GetOrCreate(
+                nugetPathContext.UserPackageFolder,
+                nugetPathContext.FallbackPackageFolders,
+                enabledSources,
+                cacheContext,
+                context.Logger);
+
+            // Pass down the CancellationToken from the dialog
+            var restoreResult = await BuildIntegratedRestoreUtility.RestoreAsync(project,
+                context,
+                enabledSources,
+                nugetPathContext.UserPackageFolder,
+                 nugetPathContext.FallbackPackageFolders,
+                token);
+
+            if (!restoreResult.Success)
             {
-                providerCache.GetOrCreate(
-                    nugetPathContext.UserPackageFolder,
-                    nugetPathContext.FallbackPackageFolders,
-                    enabledSources,
-                    cacheContext,
-                    context.Logger);
+                // Mark this as having errors
+                _hasErrors = true;
 
-                // Pass down the CancellationToken from the dialog
-                var restoreResult = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                    context,
-                    enabledSources,
-                    nugetPathContext.UserPackageFolder,
-                     nugetPathContext.FallbackPackageFolders,
-                    token);
-
-                if (!restoreResult.Success)
-                {
-                    // Mark this as having errors
-                    _hasErrors = true;
-
-                    // Invalidate cached results for the project. This will cause it to restore the next time.
-                    _buildIntegratedCache.Remove(projectName);
-                    await BuildIntegratedProjectReportErrorAsync(projectName, restoreResult, token);
-                }
+                // Invalidate cached results for the project. This will cause it to restore the next time.
+                _buildIntegratedCache.Remove(projectName);
+                await BuildIntegratedProjectReportErrorAsync(projectName, restoreResult, token);
             }
         }
 
@@ -782,10 +784,17 @@ namespace NuGetVSExtension
         {
             await TaskScheduler.Default;
 
-            await PackageRestoreManager.RestoreMissingPackagesAsync(solutionDirectory,
-                packages,
-                NuGetProjectContext,
-                token);
+            using (var cacheContext = new SourceCacheContext())
+            {
+                var downloadContext = new PackageDownloadContext(cacheContext);
+
+                await PackageRestoreManager.RestoreMissingPackagesAsync(
+                    solutionDirectory,
+                    packages,
+                    NuGetProjectContext,
+                    downloadContext,
+                    token);
+            }
         }
 
         /// <summary>

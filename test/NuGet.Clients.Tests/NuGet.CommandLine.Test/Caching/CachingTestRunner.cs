@@ -8,12 +8,18 @@ namespace NuGet.CommandLine.Test.Caching
     {
         public static async Task<CachingValidations> ExecuteAsync(ICachingTest test, ICachingCommand command, INuGetExe nuGetExe, CachingType caching, ServerType server)
         {
-            var testFolder = TestFileSystemUtility.CreateRandomTestFolder();
+            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
             using (var mockServer = new MockServer())
             {
                 var tc = new CachingTestContext(testFolder, mockServer, nuGetExe);
 
+                // Enable this flag to launch the debugger when the nuget.exe process starts. This also increases
+                // logging verbosity and command timeout.
+                //
+                // tc.Debug = true;
+
                 tc.NoCache = caching.HasFlag(CachingType.NoCache);
+                tc.DirectDownload = caching.HasFlag(CachingType.DirectDownload);
                 tc.CurrentSource = server == ServerType.V2 ? tc.V2Source : tc.V3Source;
 
                 tc.ClearHttpCache();

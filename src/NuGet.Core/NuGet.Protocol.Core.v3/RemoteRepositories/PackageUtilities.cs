@@ -4,7 +4,6 @@
 using System;
 using System.Globalization;
 using System.IO;
-using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -17,41 +16,31 @@ namespace NuGet.Protocol
         /// <summary>
         /// Create a <see cref="NuspecReader"/> from a nupkg stream.
         /// </summary>
-        internal static async Task<NuspecReader> OpenNuspecFromNupkgAsync(
-            string id,
-            Task<Stream> openNupkgStreamAsync,
-            ILogger report)
+        internal static NuspecReader OpenNuspecFromNupkg(string id, Stream nupkgStream, ILogger log)
         {
-            using (var nupkgStream = await openNupkgStreamAsync)
+            try
             {
-                if (nupkgStream == null)
+                using (var reader = new PackageArchiveReader(nupkgStream, leaveStreamOpen: true))
+                using (var nuspecStream = reader.GetNuspec())
                 {
-                    throw new FatalProtocolException(string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToGetNupkgStream, id));
+                    if (nupkgStream == null)
+                    {
+                        throw new FatalProtocolException(string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToGetNuspecStream, id));
+                    }
+
+                    return new NuspecReader(nuspecStream);
+                }
+            }
+            catch (Exception exception) when (exception is PackagingException ||
+                                              exception is InvalidDataException)
+            {
+                var fileStream = nupkgStream as FileStream;
+                if (fileStream != null)
+                {
+                    log.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Log_FileIsCorrupt, fileStream.Name));
                 }
 
-                try
-                {
-                    using (var reader = new PackageArchiveReader(nupkgStream, leaveStreamOpen: true))
-                    using (var nuspecStream = reader.GetNuspec())
-                    {
-                        if (nupkgStream == null)
-                        {
-                            throw new FatalProtocolException(string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToGetNuspecStream, id));
-                        }
-
-                        return new NuspecReader(nuspecStream);
-                    }
-                }
-                catch (Exception exception) when (exception is PackagingException 
-                                                    || exception is InvalidDataException)
-                {
-                    var fileStream = nupkgStream as FileStream;
-                    if (fileStream != null)
-                    {
-                        report.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Log_FileIsCorrupt, fileStream.Name));
-                    }
-                    throw;
-                }
+                throw;
             }
         }
     }

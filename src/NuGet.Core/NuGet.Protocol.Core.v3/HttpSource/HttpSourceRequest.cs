@@ -54,6 +54,9 @@ namespace NuGet.Protocol
         /// </summary>
         public TimeSpan RequestTimeout { get; set; } = DefaultRequestTimeout;
 
+        /// <summary>The maximum number of times to try the request. This value includes the initial attempt.</summary>
+        public int MaxTries { get; set; } = HttpRetryHandlerRequest.DefaultMaxTries;
+
         /// <summary>The timeout to apply to <see cref="DownloadTimeoutStream"/> instances.</summary>
         public TimeSpan DownloadTimeout { get; set; } = HttpRetryHandlerRequest.DefaultDownloadTimeout;
     }

@@ -70,6 +70,14 @@ namespace NuGet.CommandLine.Test.Caching
                     True = "The package from the global packages folder was used.",
                     False = "The package from the global packages folder was not used."
                 }
+            },
+            {
+                CachingValidationType.DirectDownloadFilesDoNotExist,
+                new Messages
+                {
+                    True = "The direct download files were cleaned up.",
+                    False = "The direct download files were not cleaned up."
+                }
             }
         };
 

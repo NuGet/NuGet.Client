@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -34,7 +33,11 @@ namespace NuGet.Protocol.Core.Types
         /// </returns>
         public abstract Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(string id, NuGetVersion version, CancellationToken token);
 
-        public abstract Task<Stream> GetNupkgStreamAsync(string id, NuGetVersion version, CancellationToken token);
+        public abstract Task<bool> CopyNupkgToStreamAsync(
+            string id,
+            NuGetVersion version,
+            Stream destination,
+            CancellationToken token);
 
         /// <summary>
         /// Gets the original ID and version for a package. This is useful when finding the
@@ -61,17 +64,6 @@ namespace NuGet.Protocol.Core.Types
             return new FindPackageByIdDependencyInfo(
                 reader.GetDependencyGroups(),
                 reader.GetFrameworkReferenceGroups());
-        }
-
-        protected HttpSourceCacheContext CreateCacheContext(int retryCount)
-        {
-            if (CacheContext == null)
-            {
-                throw new InvalidOperationException(
-                    $"Must set cache context on {this.GetType().FullName} before consuming.");
-            }
-
-            return HttpSourceCacheContext.CreateCacheContext(CacheContext, retryCount);
         }
     }
 }

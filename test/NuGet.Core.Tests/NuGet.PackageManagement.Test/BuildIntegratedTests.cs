@@ -21,6 +21,7 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Test
 {
@@ -695,45 +696,64 @@ namespace NuGet.Test
 
                 string message = string.Empty;
 
-                await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, oldMvvm, new ResolutionContext(), new TestNuGetProjectContext(),
-                        sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var downloadContext = new PackageDownloadContext(cacheContext);
 
-                await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, oldJson, new ResolutionContext(), new TestNuGetProjectContext(),
-                        sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+                    await nuGetPackageManager.InstallPackageAsync(
+                        buildIntegratedProject,
+                        oldMvvm,
+                        new ResolutionContext(),
+                        new TestNuGetProjectContext(),
+                        downloadContext,
+                        sourceRepositoryProvider.GetRepositories(),
+                        sourceRepositoryProvider.GetRepositories(),
+                        CancellationToken.None);
 
-                // Act
-                var actions = await nuGetPackageManager.PreviewUpdatePackagesAsync(
-                    buildIntegratedProject,
-                    new ResolutionContext(),
-                    new TestNuGetProjectContext(),
-                    sourceRepositoryProvider.GetRepositories(),
-                    sourceRepositoryProvider.GetRepositories(),
-                    CancellationToken.None);
+                    await nuGetPackageManager.InstallPackageAsync(
+                        buildIntegratedProject,
+                        oldJson,
+                        new ResolutionContext(),
+                        new TestNuGetProjectContext(),
+                        downloadContext,
+                        sourceRepositoryProvider.GetRepositories(),
+                        sourceRepositoryProvider.GetRepositories(),
+                        CancellationToken.None);
 
-                await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
-                    buildIntegratedProject,
-                    actions,
-                    new TestNuGetProjectContext(),
-                    CancellationToken.None);
+                    // Act
+                    var actions = await nuGetPackageManager.PreviewUpdatePackagesAsync(
+                        buildIntegratedProject,
+                        new ResolutionContext(),
+                        new TestNuGetProjectContext(),
+                        sourceRepositoryProvider.GetRepositories(),
+                        sourceRepositoryProvider.GetRepositories(),
+                        CancellationToken.None);
 
-                var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
-                var lockFile = ProjectJsonPathUtilities.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
+                    await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
+                        buildIntegratedProject,
+                        actions,
+                        new TestNuGetProjectContext(),
+                        CancellationToken.None);
 
-                // Assert
-                Assert.Equal(1, actions.Count());
-                Assert.IsType<BuildIntegratedProjectAction>(actions.First());
-                Assert.Equal(NuGetProjectActionType.Install, actions.First().NuGetProjectActionType);
-                Assert.Equal(2, installedPackages.Count());
+                    var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
+                    var lockFile = ProjectJsonPathUtilities.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
 
-                var newMvvm = installedPackages.FirstOrDefault(x => x.PackageIdentity.Id == "MvvmLight");
-                Assert.NotNull(newMvvm);
-                Assert.True(newMvvm.PackageIdentity.Version > oldMvvm.Version);
+                    // Assert
+                    Assert.Equal(1, actions.Count());
+                    Assert.IsType<BuildIntegratedProjectAction>(actions.First());
+                    Assert.Equal(NuGetProjectActionType.Install, actions.First().NuGetProjectActionType);
+                    Assert.Equal(2, installedPackages.Count());
 
-                var newJson = installedPackages.FirstOrDefault(x => x.PackageIdentity.Id == "Newtonsoft.Json");
-                Assert.NotNull(newJson);
-                Assert.True(newJson.PackageIdentity.Version > oldJson.Version);
+                    var newMvvm = installedPackages.FirstOrDefault(x => x.PackageIdentity.Id == "MvvmLight");
+                    Assert.NotNull(newMvvm);
+                    Assert.True(newMvvm.PackageIdentity.Version > oldMvvm.Version);
 
-                Assert.True(File.Exists(lockFile));
+                    var newJson = installedPackages.FirstOrDefault(x => x.PackageIdentity.Id == "Newtonsoft.Json");
+                    Assert.NotNull(newJson);
+                    Assert.True(newJson.PackageIdentity.Version > oldJson.Version);
+
+                    Assert.True(File.Exists(lockFile));
+                }
             }
         }
 
@@ -767,45 +787,56 @@ namespace NuGet.Test
                 var buildIntegratedProject = new BuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
 
                 string message = string.Empty;
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var downloadContext = new PackageDownloadContext(cacheContext);
 
-                await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, oldJson, new ResolutionContext(), new TestNuGetProjectContext(),
-                        sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+                    await nuGetPackageManager.InstallPackageAsync(
+                        buildIntegratedProject,
+                        oldJson,
+                        new ResolutionContext(),
+                        new TestNuGetProjectContext(),
+                        downloadContext,
+                        sourceRepositoryProvider.GetRepositories(),
+                        sourceRepositoryProvider.GetRepositories(),
+                        CancellationToken.None);
 
-                // Update to the latest
-                var actions = await nuGetPackageManager.PreviewUpdatePackagesAsync(
-                    buildIntegratedProject,
-                    new ResolutionContext(),
-                    new TestNuGetProjectContext(),
-                    sourceRepositoryProvider.GetRepositories(),
-                    sourceRepositoryProvider.GetRepositories(),
-                    CancellationToken.None);
+                    // Update to the latest
+                    var actions = await nuGetPackageManager.PreviewUpdatePackagesAsync(
+                        buildIntegratedProject,
+                        new ResolutionContext(),
+                        new TestNuGetProjectContext(),
+                        sourceRepositoryProvider.GetRepositories(),
+                        sourceRepositoryProvider.GetRepositories(),
+                        CancellationToken.None);
 
-                await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
-                    buildIntegratedProject,
-                    actions,
-                    new TestNuGetProjectContext(),
-                    CancellationToken.None);
+                    await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
+                        buildIntegratedProject,
+                        actions,
+                        new TestNuGetProjectContext(),
+                        CancellationToken.None);
 
-                // Act
-                actions = await nuGetPackageManager.PreviewUpdatePackagesAsync(
-                    buildIntegratedProject,
-                    new ResolutionContext(),
-                    new TestNuGetProjectContext(),
-                    sourceRepositoryProvider.GetRepositories(),
-                    sourceRepositoryProvider.GetRepositories(),
-                    CancellationToken.None);
+                    // Act
+                    actions = await nuGetPackageManager.PreviewUpdatePackagesAsync(
+                        buildIntegratedProject,
+                        new ResolutionContext(),
+                        new TestNuGetProjectContext(),
+                        sourceRepositoryProvider.GetRepositories(),
+                        sourceRepositoryProvider.GetRepositories(),
+                        CancellationToken.None);
 
-                await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
-                    buildIntegratedProject,
-                    actions,
-                    new TestNuGetProjectContext(),
-                    CancellationToken.None);
+                    await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
+                        buildIntegratedProject,
+                        actions,
+                        new TestNuGetProjectContext(),
+                        CancellationToken.None);
 
-                var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
-                var lockFile = ProjectJsonPathUtilities.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
+                    var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
+                    var lockFile = ProjectJsonPathUtilities.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
 
-                // Assert
-                Assert.Equal(0, actions.Count());
+                    // Assert
+                    Assert.Equal(0, actions.Count());
+                }
             }
         }
 

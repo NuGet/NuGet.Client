@@ -49,15 +49,24 @@ namespace NuGet.Protocol
             return Task.FromResult<PackageIdentity>(null);
         }
 
-        public override Task<Stream> GetNupkgStreamAsync(string id, NuGetVersion version, CancellationToken token)
+        public override async Task<bool> CopyNupkgToStreamAsync(
+            string id,
+            NuGetVersion version,
+            Stream destination,
+            CancellationToken token)
         {
             var info = GetPackageInfo(id, version);
+
             if (info != null)
             {
-                return Task.FromResult<Stream>(File.OpenRead(info.Path));
+                using (var fileStream = File.OpenRead(info.Path))
+                {
+                    await fileStream.CopyToAsync(destination, token);
+                    return true;
+                }
             }
 
-            return Task.FromResult<Stream>(null);
+            return false;
         }
 
         public override Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(string id, NuGetVersion version, CancellationToken token)

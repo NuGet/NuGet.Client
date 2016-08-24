@@ -34,9 +34,29 @@ namespace Test.Utility
         {
         }
 
+        public bool DisableCaching { get; set; } = true;
+        public int CacheHits { get; private set; }
+        public int CacheMisses { get; private set; }
+
         protected override Stream TryReadCacheFile(string uri, TimeSpan maxAge, string cacheFile)
         {
-            return null;
+            if (DisableCaching)
+            {
+                return null;
+            }
+            
+            var result = base.TryReadCacheFile(uri, maxAge, cacheFile);
+            
+            if (result == null)
+            {
+                CacheMisses++;
+            }
+            else
+            {
+                CacheHits++;
+            }
+
+            return result;
         }
     }
 }

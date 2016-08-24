@@ -6,6 +6,7 @@ namespace NuGet.CommandLine.Test.Caching
     public enum CachingType
     {
         Default = 0,
-        NoCache = 1
+        NoCache = 1,
+        DirectDownload = 2
     }
 }

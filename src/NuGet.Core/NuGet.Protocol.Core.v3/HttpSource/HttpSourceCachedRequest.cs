@@ -66,6 +66,9 @@ namespace NuGet.Protocol
         /// </summary>
         public bool IgnoreNotFounds { get; set; }
 
+        /// <summary>The maximum number of times to try the request. This value includes the initial attempt.</summary>
+        public int MaxTries { get; set; } = HttpRetryHandlerRequest.DefaultMaxTries;
+
         /// <summary>
         /// A method used to validate the response stream. This method should not
         /// dispose the stream and should throw an exception when the content is invalid.

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -39,6 +40,7 @@ namespace NuGet.Protocol.Tests
                 // Act
                 await tc.HttpSource.GetAsync(
                     new HttpSourceCachedRequest(tc.Url, tc.CacheKey, tc.CacheContext),
+                    result => Task.FromResult(true),
                     tc.Logger,
                     token: CancellationToken.None);
 
@@ -129,7 +131,7 @@ namespace NuGet.Protocol.Tests
                 });
 
                 // Act
-                var result = await tc.HttpSource.GetAsync(
+                var actual = await tc.HttpSource.GetAsync(
                     new HttpSourceCachedRequest(
                         tc.Url,
                         tc.CacheKey,
@@ -137,11 +139,12 @@ namespace NuGet.Protocol.Tests
                     {
                         EnsureValidContents = tc.GetStreamValidator(validCache: true, validNetwork: true)
                     },
+                    result => Task.FromResult(result.Status),
                     tc.Logger,
                     token: CancellationToken.None);
 
                 // Assert
-                Assert.Equal(HttpSourceResultStatus.NoContent, result.Status);
+                Assert.Equal(HttpSourceResultStatus.NoContent, actual);
             }
         }
 
@@ -252,6 +255,75 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
+        public async Task HttpSource_DoesNotPopulateCacheWithDirectDownload()
+        {
+            // Arrange
+            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var tc = new TestContext(td)
+                {
+                    DirectDownload = true
+                };
+
+                // Act
+                var actual = await tc.HttpSource.GetAsync(
+                    new HttpSourceCachedRequest(
+                        tc.Url,
+                        tc.CacheKey,
+                        tc.CacheContext)
+                    {
+                        EnsureValidContents = tc.GetStreamValidator(validCache: true, validNetwork: true)
+                    },
+                    result => Task.FromResult(tc.ReadStream(result.Stream)),
+                    tc.Logger,
+                    CancellationToken.None);
+
+                // Assert
+                Assert.False(tc.ValidatedCacheContent, "The cache content should not have been cached at all.");
+                Assert.False(tc.ValidatedNetworkContent, "The network content should not been validated.");
+                Assert.Equal(tc.NetworkContent, actual);
+                Assert.Equal(0, Directory.EnumerateFileSystemEntries(td).Count());
+                tc.Throttle.Verify(x => x.WaitAsync(), Times.Once);
+                tc.Throttle.Verify(x => x.Release(), Times.Once);
+            }
+        }
+
+        [Fact]
+        public async Task HttpSource_ReadsFromTheCacheWithDirectDownload()
+        {
+            // Arrange
+            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var tc = new TestContext(td)
+                {
+                    DirectDownload = true
+                };
+                await tc.WriteToCacheAsync(tc.CacheKey, tc.CacheContent);
+
+                // Act
+                var actual = await tc.HttpSource.GetAsync(
+                    new HttpSourceCachedRequest(
+                        tc.Url,
+                        tc.CacheKey,
+                        tc.CacheContext)
+                    {
+                        EnsureValidContents = tc.GetStreamValidator(validCache: true, validNetwork: true)
+                    },
+                    result => Task.FromResult(tc.ReadStream(result.Stream)),
+                    tc.Logger,
+                    CancellationToken.None);
+
+                // Assert
+                Assert.True(tc.ValidatedCacheContent, "The cache content have been validated.");
+                Assert.False(tc.ValidatedNetworkContent, "The network content should not been validated.");
+                Assert.Equal(tc.CacheContent, actual);
+                Assert.Equal(1, Directory.EnumerateFileSystemEntries(td).Count());
+                tc.Throttle.Verify(x => x.WaitAsync(), Times.Never);
+                tc.Throttle.Verify(x => x.Release(), Times.Never);
+            }
+        }
+
+        [Fact]
         public async Task HttpSource_ValidatesValidNetworkContent()
         {
             // Arrange
@@ -260,7 +332,7 @@ namespace NuGet.Protocol.Tests
                 var tc = new TestContext(td);
 
                 // Act
-                var result = await tc.HttpSource.GetAsync(
+                var actual = await tc.HttpSource.GetAsync(
                     new HttpSourceCachedRequest(
                         tc.Url,
                         tc.CacheKey,
@@ -268,13 +340,15 @@ namespace NuGet.Protocol.Tests
                     {
                         EnsureValidContents = tc.GetStreamValidator(validCache: true, validNetwork: true)
                     },
+                    result => Task.FromResult(tc.ReadStream(result.Stream)),
                     tc.Logger,
                     CancellationToken.None);
 
                 // Assert
                 Assert.False(tc.ValidatedCacheContent, "The cache content should not have been cached at all.");
                 Assert.True(tc.ValidatedNetworkContent, "The network content should have been validated.");
-                Assert.Equal(tc.NetworkContent, tc.ReadStream(result.Stream));
+                Assert.Equal(tc.NetworkContent, actual);
+                Assert.Equal(1, Directory.EnumerateFileSystemEntries(td).Count());
                 tc.Throttle.Verify(x => x.WaitAsync(), Times.Once);
                 tc.Throttle.Verify(x => x.Release(), Times.Once);
             }
@@ -297,6 +371,7 @@ namespace NuGet.Protocol.Tests
                     {
                         EnsureValidContents = tc.GetStreamValidator(validCache: true, validNetwork: false)
                     },
+                    result => Task.FromResult(true),
                     tc.Logger,
                     CancellationToken.None));
 
@@ -304,6 +379,7 @@ namespace NuGet.Protocol.Tests
                 Assert.Same(tc.NetworkValidationException, exception);
                 Assert.False(tc.ValidatedCacheContent, "The cache content should not have been cached at all.");
                 Assert.True(tc.ValidatedNetworkContent, "The network content should have been validated.");
+                Assert.Equal(1, Directory.EnumerateFileSystemEntries(td).Count());
                 tc.Throttle.Verify(x => x.WaitAsync(), Times.Once);
                 tc.Throttle.Verify(x => x.Release(), Times.Once);
             }
@@ -316,10 +392,10 @@ namespace NuGet.Protocol.Tests
             using (var td = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 var tc = new TestContext(td);
-                tc.WriteToCache(tc.CacheKey, tc.CacheContent);
+                await tc.WriteToCacheAsync(tc.CacheKey, tc.CacheContent);
 
                 // Act
-                var result = await tc.HttpSource.GetAsync(
+                var actual = await tc.HttpSource.GetAsync(
                     new HttpSourceCachedRequest(
                         tc.Url,
                         tc.CacheKey,
@@ -327,13 +403,15 @@ namespace NuGet.Protocol.Tests
                     {
                         EnsureValidContents = tc.GetStreamValidator(validCache: true, validNetwork: true)
                     },
+                    result => Task.FromResult(tc.ReadStream(result.Stream)),
                     tc.Logger,
                     CancellationToken.None);
 
                 // Assert
                 Assert.True(tc.ValidatedCacheContent, "The cache content should have been validated.");
                 Assert.False(tc.ValidatedNetworkContent, "The network should not have been queried at all.");
-                Assert.Equal(tc.CacheContent, tc.ReadStream(result.Stream));
+                Assert.Equal(tc.CacheContent, actual);
+                Assert.Equal(1, Directory.EnumerateFileSystemEntries(td).Count());
                 tc.Throttle.Verify(x => x.WaitAsync(), Times.Never);
                 tc.Throttle.Verify(x => x.Release(), Times.Never);
             }
@@ -346,10 +424,10 @@ namespace NuGet.Protocol.Tests
             using (var td = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 var tc = new TestContext(td);
-                tc.WriteToCache(tc.CacheKey, tc.CacheContent);
+                await tc.WriteToCacheAsync(tc.CacheKey, tc.CacheContent);
 
                 // Act
-                var result = await tc.HttpSource.GetAsync(
+                var actual = await tc.HttpSource.GetAsync(
                     new HttpSourceCachedRequest(
                         tc.Url,
                         tc.CacheKey,
@@ -357,13 +435,15 @@ namespace NuGet.Protocol.Tests
                     {
                         EnsureValidContents = tc.GetStreamValidator(validCache: false, validNetwork: true)
                     },
+                    result => Task.FromResult(tc.ReadStream(result.Stream)),
                     tc.Logger,
                     CancellationToken.None);
 
                 // Assert
                 Assert.True(tc.ValidatedCacheContent, "The cache content should have been validated.");
                 Assert.True(tc.ValidatedNetworkContent, "The network content should have been validated.");
-                Assert.Equal(tc.NetworkContent, new StreamReader(result.Stream).ReadToEnd());
+                Assert.Equal(tc.NetworkContent, actual);
+                Assert.Equal(1, Directory.EnumerateFileSystemEntries(td).Count());
                 tc.Throttle.Verify(x => x.WaitAsync(), Times.Once);
                 tc.Throttle.Verify(x => x.Release(), Times.Once);
             }
@@ -371,8 +451,6 @@ namespace NuGet.Protocol.Tests
 
         private class TestContext
         {
-            private readonly string _cacheDirectory;
-
             public TestContext(TestDirectory testDirectory)
             {
                 // data
@@ -386,22 +464,12 @@ namespace NuGet.Protocol.Tests
                 Credentials = new NetworkCredential("foo", "bar");
                 Throttle = new Mock<IThrottle>();
 
-                if (!RuntimeEnvironmentHelper.IsWindows)
-                {
-                    _cacheDirectory = "c810bdb33f8c56015efcaf435f94766aa0c4748c$https:_fake.server_users.json";
-                }
-                else
-                {
-                    // colon is not valid path character on Windows
-                    _cacheDirectory = "c810bdb33f8c56015efcaf435f94766aa0c4748c$https_fake.server_users.json";
-                }
-
                 // dependencies
                 var packageSource = new PackageSource(source);
                 var networkResponses = new Dictionary<string, string> { { Url, NetworkContent } };
                 var messageHandler = new TestMessageHandler(networkResponses, string.Empty);
                 var handlerResource = new TestHttpHandler(messageHandler);
-                CacheContext = new HttpSourceCacheContext();
+
                 Logger = new TestLogger();
                 TestDirectory = testDirectory;
                 RetryHandlerMock = new Mock<IHttpRetryHandler>();
@@ -427,7 +495,17 @@ namespace NuGet.Protocol.Tests
 
             public TestLogger Logger { get; }
 
-            public HttpSourceCacheContext CacheContext { get; }
+            public HttpSourceCacheContext CacheContext
+            {
+                get
+                {
+                    using (var cacheContext = new SourceCacheContext())
+                    {
+                        cacheContext.DirectDownload = DirectDownload;
+                        return HttpSourceCacheContext.Create(cacheContext, retryCount: 0);
+                    }
+                }
+            }
 
             public HttpSource HttpSource { get; }
 
@@ -436,17 +514,41 @@ namespace NuGet.Protocol.Tests
             public bool ValidatedNetworkContent { get; set; }
 
             public bool ValidatedCacheContent { get; set; }
+
             public Mock<IHttpRetryHandler> RetryHandlerMock { get; }
+
             public ICredentials Credentials { get; }
+
             public Mock<IThrottle> Throttle { get; private set; }
 
-            public void WriteToCache(string cacheKey, string content)
-            {
-                var directory = Path.Combine(TestDirectory, _cacheDirectory);
-                Directory.CreateDirectory(directory);
+            public bool DirectDownload { get; set; }
 
-                var path = Path.Combine(directory, cacheKey + ".dat");
-                File.WriteAllText(path, content, new UTF8Encoding(false));
+            public async Task WriteToCacheAsync(string cacheKey, string content)
+            {
+                var response = new HttpResponseMessage
+                {
+                    Content = new StringContent(content, Encoding.UTF8)
+                };
+
+                using (response)
+                using (var sourceCacheContext = new SourceCacheContext())
+                {
+                    var httpSourceCacheContext = HttpSourceCacheContext.Create(sourceCacheContext, retryCount: 0);
+
+                    var result = HttpCacheUtility.InitializeHttpCacheResult(
+                        TestDirectory,
+                        new Uri(FakeSource),
+                        cacheKey,
+                        httpSourceCacheContext);
+
+                    await HttpCacheUtility.CreateCacheFileAsync(
+                        result,
+                        response,
+                        stream => { },
+                        CancellationToken.None);
+
+                    result.Stream.Dispose();
+                }
             }
 
             public string ReadStream(Stream stream)

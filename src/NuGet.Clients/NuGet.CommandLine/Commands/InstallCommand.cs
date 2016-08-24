@@ -145,7 +145,7 @@ namespace NuGet.CommandLine
             return CurrentDirectory;
         }
 
-        private Task PerformV2Restore(string packagesConfigFilePath, string installPath)
+        private async Task PerformV2Restore(string packagesConfigFilePath, string installPath)
         {
             var sourceRepositoryProvider = GetSourceRepositoryProvider();
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, installPath, ExcludeVersion);
@@ -185,9 +185,25 @@ namespace NuGet.CommandLine
 
                 Console.LogMinimal(message);
             }
+            using (var cacheContext = new SourceCacheContext())
+            {
+                cacheContext.NoCache = NoCache;
+                cacheContext.DirectDownload = DirectDownload;
 
-            Task<PackageRestoreResult> packageRestoreTask = PackageRestoreManager.RestoreMissingPackagesAsync(packageRestoreContext, new ConsoleProjectContext(Console));
-            return packageRestoreTask;
+                var downloadContext = new PackageDownloadContext(
+                    cacheContext,
+                    directDownloadDirectory: DirectDownload ? installPath : null);
+
+                await PackageRestoreManager.RestoreMissingPackagesAsync(
+                    packageRestoreContext,
+                    new ConsoleProjectContext(Console),
+                    downloadContext);
+
+                if (downloadContext.DirectDownload)
+                {
+                    GetDownloadResultUtility.CleanUpDirectDownloads(downloadContext);
+                }
+            }
         }
 
         private CommandLineSourceRepositoryProvider GetSourceRepositoryProvider()
@@ -271,14 +287,30 @@ namespace NuGet.CommandLine
                     projectContext.PackageExtractionContext.PackageSaveMode = EffectivePackageSaveMode;
                 }
 
-                await packageManager.InstallPackageAsync(
-                    folderProject,
-                    packageIdentity,
-                    resolutionContext,
-                    projectContext,
-                    primaryRepositories,
-                    Enumerable.Empty<SourceRepository>(),
-                    CancellationToken.None);
+                using(var cacheContext = new SourceCacheContext())
+                {
+                    cacheContext.NoCache = NoCache;
+                    cacheContext.DirectDownload = DirectDownload;
+
+                    var downloadContext = new PackageDownloadContext(
+                        cacheContext,
+                        directDownloadDirectory: DirectDownload ? installPath : null);
+
+                    await packageManager.InstallPackageAsync(
+                        folderProject,
+                        packageIdentity,
+                        resolutionContext,
+                        projectContext,
+                        downloadContext,
+                        primaryRepositories,
+                        Enumerable.Empty<SourceRepository>(),
+                        CancellationToken.None);
+
+                    if (downloadContext.DirectDownload)
+                    {
+                        GetDownloadResultUtility.CleanUpDirectDownloads(downloadContext);
+                    }
+                }
             }
         }
     }

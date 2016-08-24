@@ -10,20 +10,20 @@ namespace NuGet.Protocol
     {
         public Stream Stream { get; private set; }
         public HttpSourceResultStatus Status { get; }
-        public string CacheFileName { get; }
+        public string CacheFile { get; }
         
         public HttpSourceResult(HttpSourceResultStatus status)
         {
             Status = status;
             Stream = null;
-            CacheFileName = null;
+            CacheFile = null;
         }
 
         public HttpSourceResult(HttpSourceResultStatus status, string cacheFileName, Stream stream)
         {
             Status = status;
             Stream = stream;
-            CacheFileName = cacheFileName;
+            CacheFile = cacheFileName;
         }
 
         public void Dispose()
