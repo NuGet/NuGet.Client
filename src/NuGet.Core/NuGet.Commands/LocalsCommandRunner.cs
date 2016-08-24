@@ -77,7 +77,17 @@ namespace NuGet.Commands
         /// </summary>
         /// <returns></returns>
         public void ExecuteCommand()
-        {           
+        {
+            if (((Arguments.Count < 1) || string.IsNullOrWhiteSpace(Arguments[0]))
+                || (Clear && List) || (!Clear && !List))
+            {
+                // Using both -clear and -list command options, or neither one of them, is not supported.
+                // We use MinArgs = 0 even though the first argument is required,
+                // to avoid throwing a command argument validation exception and
+                // immediately show usage help for this command instead.
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_Help));
+            }
+
             var localResourceName = GetLocalResourceName(Arguments[0]);
 
             if (Clear)
