@@ -707,21 +707,27 @@ namespace NuGet.CommandLine
                 restoreInputs.PackagesConfigFiles.Add(solutionLevelPackagesConfig);
             }
 
-            var projectFiles = MsBuildUtility.GetAllProjectFileNames(solutionFileFullPath, _msbuildDirectory.Value)
-                .Select(Path.GetFullPath); // normalize path
+            var projectFiles = MsBuildUtility.GetAllProjectFileNames(solutionFileFullPath, _msbuildDirectory.Value); // normalize path
+
             foreach (var projectFile in projectFiles)
             {
                 if (!File.Exists(projectFile))
                 {
+                    var message = string.Format(CultureInfo.CurrentCulture, 
+                        LocalizedResourceManager.GetString("RestoreCommandProjectNotFound"),
+                        projectFile);
+                    Console.LogWarning(message);
                     continue;
                 }
 
+                var normalizedProjectFile = Path.GetFullPath(projectFile);
+
                 // packages.config
-                var packagesConfigFilePath = GetPackageReferenceFile(projectFile);
+                var packagesConfigFilePath = GetPackageReferenceFile(normalizedProjectFile);
 
                 // project.json
-                var dir = Path.GetDirectoryName(projectFile);
-                var projectName = Path.GetFileNameWithoutExtension(projectFile);
+                var dir = Path.GetDirectoryName(normalizedProjectFile);
+                var projectName = Path.GetFileNameWithoutExtension(normalizedProjectFile);
                 var projectJsonPath = ProjectJsonPathUtilities.GetProjectConfigPath(dir, projectName);
 
                 // project.json overrides packages.config
@@ -730,9 +736,9 @@ namespace NuGet.CommandLine
                     // project.json inputs are resolved again against the p2p file
                     // and are matched with the solution there
                     // For known msbuild project types use the project
-                    if (MsBuildUtility.IsMsBuildBasedProject(projectFile))
+                    if (MsBuildUtility.IsMsBuildBasedProject(normalizedProjectFile))
                     {
-                        restoreInputs.RestoreV3Context.Inputs.Add(projectFile);
+                        restoreInputs.RestoreV3Context.Inputs.Add(normalizedProjectFile);
                     }
                     else
                     {
