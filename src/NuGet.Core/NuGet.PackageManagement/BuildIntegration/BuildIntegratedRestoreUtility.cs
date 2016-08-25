@@ -217,7 +217,12 @@ namespace NuGet.PackageManagement
                     files,
                     lastModified);
 
-                var uniqueName = project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
+                var uniqueName = string.Empty;
+
+                if (!project.TryGetMetadata(NuGetProjectMetadataKeys.UniqueName, out uniqueName))
+                {
+                    uniqueName = project.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
+                }
 
                 if (!cache.ContainsKey(uniqueName))
                 {
@@ -381,7 +386,13 @@ namespace NuGet.PackageManagement
                 // do not count the target as a parent
                 if (!target.Equals(project))
                 {
-                    var uniqueName = project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
+                    var uniqueName = string.Empty;
+
+                    if (!project.TryGetMetadata(NuGetProjectMetadataKeys.UniqueName, out uniqueName))
+                    {
+                        uniqueName = project.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
+                    }
+
                     BuildIntegratedProjectCacheEntry cacheEntry;
 
                     if (cache.TryGetValue(uniqueName, out cacheEntry))
@@ -477,7 +488,12 @@ namespace NuGet.PackageManagement
 
             if (!orderedChilds.Contains(target))
             {
-                var uniqueName = target.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
+                var uniqueName = string.Empty;
+
+                if (!target.TryGetMetadata(NuGetProjectMetadataKeys.UniqueName, out uniqueName))
+                {
+                    uniqueName = target.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
+                }
 
                 BuildIntegratedProjectCacheEntry cacheEntry;
                 if (cache.TryGetValue(uniqueName, out cacheEntry))

@@ -1179,10 +1179,12 @@ namespace NuGet.Test
                 var uniqueProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 uniqueProjects.Add(project1.ProjectName);
 
+                var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects,
+                        GetExternalProjectReferenceContext());
+
                 // Act
-                await
-                    BuildIntegratedRestoreUtility.GetChildProjectsInClosure(project1, projects, orderedChilds,
-                        uniqueProjects, GetExternalProjectReferenceContext());
+                BuildIntegratedRestoreUtility.GetChildProjectsInClosure(project1, projects, orderedChilds,
+                        uniqueProjects, cache);
 
                 // Assert
                 Assert.Equal(4, orderedChilds.Count);
@@ -1263,10 +1265,12 @@ namespace NuGet.Test
                 var uniqueProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 uniqueProjects.Add(project1.ProjectName);
 
+                var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects,
+                        GetExternalProjectReferenceContext());
+
                 // Act
-                await
-                    BuildIntegratedRestoreUtility.GetChildProjectsInClosure(project1, projects, orderedChilds,
-                        uniqueProjects, GetExternalProjectReferenceContext());
+                BuildIntegratedRestoreUtility.GetChildProjectsInClosure(project1, projects, orderedChilds,
+                        uniqueProjects, cache);
 
                 // Assert
                 Assert.Equal(2, orderedChilds.Count);
@@ -1328,10 +1332,12 @@ namespace NuGet.Test
                 var uniqueProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 uniqueProjects.Add(project1.ProjectName);
 
+                var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects,
+                        GetExternalProjectReferenceContext());
+
                 // Act
-                await
-                    BuildIntegratedRestoreUtility.GetChildProjectsInClosure(project1, projects, orderedChilds,
-                        uniqueProjects, GetExternalProjectReferenceContext());
+                BuildIntegratedRestoreUtility.GetChildProjectsInClosure(project1, projects, orderedChilds,
+                        uniqueProjects, cache);
 
                 // Assert
                 Assert.Equal(1, orderedChilds.Count);
