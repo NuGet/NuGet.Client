@@ -332,4 +332,7 @@
     <value>Source '{0}' not found. Please provide an HTTP or local source.</value>
     <comment>{0} is the source</comment>
   </data>
+  <data name="NoPackageUpdates" xml:space="preserve">
+    <value>No package updates are available from the current package source for project '{0}'.</value>
+  </data>
 </root>

@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Packaging.Core;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -16,6 +17,14 @@ namespace NuGet.Protocol.Core.Types
             string packageId,
             bool includePrerelease,
             bool includeUnlisted,
+            Common.ILogger log,
+            CancellationToken token);
+
+        /// <summary>
+        /// Return package metadata for the input PackageIdentity
+        /// </summary>
+        public abstract Task<IPackageSearchMetadata> GetMetadataAsync(
+            PackageIdentity package,
             Common.ILogger log,
             CancellationToken token);
     }

@@ -276,6 +276,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to No package updates are available from the current package source for project &apos;{0}&apos;..
+        /// </summary>
+        public static string NoPackageUpdates {
+            get {
+                return ResourceManager.GetString("NoPackageUpdates", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///    Looks up a localized string similar to There are no new updates available..
         /// </summary>
         public static string NoUpdatesAvailable {

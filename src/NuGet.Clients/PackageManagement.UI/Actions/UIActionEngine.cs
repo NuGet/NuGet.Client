@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
@@ -109,14 +110,14 @@ namespace NuGet.PackageManagement.UI
                 },
                 async (actions) =>
                 {
-                    foreach (var projectActions in actions.GroupBy(action => action.Project))
-                    {
-                        await _packageManager.ExecuteNuGetProjectActionsAsync(
-                           projectActions.Key,
-                           projectActions.Select(action => action.Action),
-                           uiService.ProgressWindow,
-                           token);
-                    }
+                    // Get all Nuget projects and actions and call ExecuteNugetProjectActions once for all the projects.
+                    var nugetProjects = actions.Select(action => action.Project);
+                    var nugetActions = actions.Select(action => action.Action);
+                    await _packageManager.ExecuteNuGetProjectActionsAsync(
+                        nugetProjects,
+                        nugetActions,
+                        uiService.ProgressWindow,
+                        token);
                 },
                 windowOwner,
                 token);
@@ -142,47 +143,29 @@ namespace NuGet.PackageManagement.UI
             // Keep a single gather cache across projects
             var gatherCache = new GatherCache();
 
-            foreach (var project in uiService.Projects)
-            {
-                var installedPackages = await project.GetInstalledPackagesAsync(token);
-                HashSet<string> packageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                foreach (var p in installedPackages)
-                {
-                    packageIds.Add(p.PackageIdentity.Id);
-                }
+            var includePrerelease = packagesToUpdate.Where(
+                package => package.Version.IsPrerelease).Any();
 
-                // We need to filter out packages from packagesToUpdate that are not installed
-                // in the current project. Otherwise, we'll incorrectly install a
-                // package that is not installed before.
-                var packagesToUpdateInProject = packagesToUpdate.Where(
-                    package => packageIds.Contains(package.Id)).ToList();
+            var resolutionContext = new ResolutionContext(
+                uiService.DependencyBehavior,
+                includePrelease: includePrerelease,
+                includeUnlisted: true,
+                versionConstraints: VersionConstraints.None,
+                gatherCache: gatherCache);
 
-                if (packagesToUpdateInProject.Any())
-                {
-                    var includePrerelease = packagesToUpdateInProject.Where(
-                        package => package.Version.IsPrerelease).Any();
+            var secondarySources = _sourceProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
 
-                    var resolutionContext = new ResolutionContext(
-                        uiService.DependencyBehavior,
-                        includePrelease: includePrerelease,
-                        includeUnlisted: true,
-                        versionConstraints: VersionConstraints.None,
-                        gatherCache: gatherCache);
+            var actions = await _packageManager.PreviewUpdatePackagesAsync(
+                packagesToUpdate,
+                uiService.Projects,
+                resolutionContext,
+                uiService.ProgressWindow,
+                uiService.ActiveSources,
+                secondarySources,
+                token);
 
-                    var secondarySources = _sourceProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
-
-                    var actions = await _packageManager.PreviewUpdatePackagesAsync(
-                        packagesToUpdateInProject,
-                        project,
-                        resolutionContext,
-                        uiService.ProgressWindow,
-                        uiService.ActiveSources,
-                        secondarySources,
-                        token);
-                    resolvedActions.AddRange(actions.Select(action => new ResolvedAction(project, action))
-                        .ToList());
-                }
-            }
+            resolvedActions.AddRange(actions.Select(action => new ResolvedAction(action.Project, action))
+                .ToList());
 
             return resolvedActions;
         }
@@ -285,7 +268,8 @@ namespace NuGet.PackageManagement.UI
                     licenseCheck.Add(pkg.New);
                 }
             }
-            var licenseMetadata = await GetPackageMetadataAsync(licenseCheck, token);
+
+            var licenseMetadata = await GetPackageMetadataAsync(uiService, licenseCheck, token);
 
             // show license agreement
             if (licenseMetadata.Any(e => e.RequireLicenseAcceptance))
@@ -497,24 +481,57 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Get the package metadata to see if RequireLicenseAcceptance is true
         /// </summary>
-        private async Task<List<IPackageSearchMetadata>> GetPackageMetadataAsync(IEnumerable<PackageIdentity> packages, CancellationToken token)
+        private async Task<List<IPackageSearchMetadata>> GetPackageMetadataAsync(
+            INuGetUI uiService, 
+            IEnumerable<PackageIdentity> packages, 
+            CancellationToken token)
         {
-            var sources = _sourceProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
-
             var results = new List<IPackageSearchMetadata>();
-            foreach (var package in packages)
-            {
-                var metadata = await GetPackageMetadataAsync(sources, package, token);
-                if (metadata == null)
-                {
-                    throw new InvalidOperationException(
-                        string.Format("Unable to find metadata of {0}", package));
-                }
 
-                results.Add(metadata);
+            // local sources
+            var sources = new List<SourceRepository>();            
+            sources.Add(_packageManager.PackagesFolderSourceRepository);
+            sources.AddRange(_packageManager.GlobalPackageFolderRepositories);
+
+            var allPackages = packages.ToArray();
+
+            // first check all the packages with local sources.
+            var completed = (await TaskCombinators.ThrottledAsync(
+                allPackages,
+                (p, t) => GetPackageMetadataAsync(sources, p, t),
+                token)).Where(metadata => metadata != null).ToArray();
+
+            results.AddRange(completed);
+
+            if (completed.Length != allPackages.Length)
+            {
+                // get remaining package's metadata from remote repositories
+                var remainingPackages = allPackages.Where(package => !completed.Any(pack => pack.Identity.Equals(package)));
+
+                var remoteResults = (await TaskCombinators.ThrottledAsync(
+                    remainingPackages,
+                    (p, t) => GetPackageMetadataAsync(uiService.ActiveSources, p, t),
+                    token)).Where(metadata => metadata != null).ToArray();
+
+                results.AddRange(remoteResults);
+            }
+
+            // check if missing metadata for any package
+            if (allPackages.Length != results.Count)
+            {
+                var package = allPackages.First(pkg => !results.Any(result => result.Identity.Equals(pkg)));
+
+                throw new InvalidOperationException(
+                        string.Format("Unable to find metadata of {0}", package));
             }
 
             return results;
+        }
+
+        private void LogError(Task task, INuGetUI uiService)
+        {
+            var exception = ExceptionUtilities.Unwrap(task.Exception);
+            uiService.ProgressWindow.Log(MessageLevel.Error, exception.Message);
         }
 
         private static async Task<IPackageSearchMetadata> GetPackageMetadataAsync(
@@ -534,13 +551,10 @@ namespace NuGet.PackageManagement.UI
 
                 try
                 {
-                    var r = await metadataResource.GetMetadataAsync(
-                        package.Id,
-                        includePrerelease: true,
-                        includeUnlisted: true,
+                    var packageMetadata = await metadataResource.GetMetadataAsync(
+                        package,
                         log: Common.NullLogger.Instance,
                         token: token);
-                    var packageMetadata = r.FirstOrDefault(p => p.Identity.Version == package.Version);
                     if (packageMetadata != null)
                     {
                         return packageMetadata;

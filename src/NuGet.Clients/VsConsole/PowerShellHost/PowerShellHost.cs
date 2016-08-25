@@ -665,7 +665,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         protected void ReportError(Exception exception)
         {
-            exception = ExceptionHelper.Unwrap(exception);
+            exception = ExceptionUtilities.Unwrap(exception);
             WriteErrorLine(exception.Message);
         }
 

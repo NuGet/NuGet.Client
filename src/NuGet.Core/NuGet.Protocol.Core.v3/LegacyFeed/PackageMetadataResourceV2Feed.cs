@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol
@@ -46,6 +47,20 @@ namespace NuGet.Protocol
             var packages = await _feedParser.FindPackagesByIdAsync(packageId, includeUnlisted, includePrerelease, log, token);
 
             return packages.Select(p => new PackageSearchMetadataV2Feed(p)).ToList();
+        }
+
+        public override async Task<IPackageSearchMetadata> GetMetadataAsync(
+            PackageIdentity package,
+            Common.ILogger log,
+            CancellationToken token)
+        {
+            var v2Package = await _feedParser.GetPackage(package, log, token);
+
+            if (v2Package != null)
+            {
+                return new PackageSearchMetadataV2Feed(v2Package);
+            }
+            return null;
         }
     }
 }

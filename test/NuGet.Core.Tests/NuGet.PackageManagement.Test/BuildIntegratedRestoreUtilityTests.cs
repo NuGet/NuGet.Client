@@ -1,7 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -1098,6 +1100,242 @@ namespace NuGet.Test
                     "EntityFramework.5.0.0.nupkg")));
 
                 Assert.True(result.Success, logger.ShowErrors());
+            }
+        }
+
+        [Fact]
+        public async Task BuildIntegratedRestoreUtility_GetChildProjectsInClosure_MultipleChildHierarchy()
+        {           
+            // Arrange
+            using (var randomProjectFolderPathProject1 = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectFolderPathA = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectFolderPathB = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectFolderPathC = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var projectConfig = new FileInfo(Path.Combine(randomProjectFolderPathProject1, "project.json"));
+                var projectConfigA = new FileInfo(Path.Combine(randomProjectFolderPathA, "project.json"));
+                var projectConfigB = new FileInfo(Path.Combine(randomProjectFolderPathB, "project.json"));
+                var projectConfigC = new FileInfo(Path.Combine(randomProjectFolderPathC, "project.json"));
+                var projectTargetFramework = NuGetFramework.Parse("uap10.0");
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                    projectTargetFramework,
+                    testNuGetProjectContext,
+                    randomProjectFolderPathProject1,
+                    "project1");
+
+                var project1 = new TestBuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
+                project1.ProjectClosure = new List<ExternalProjectReference>()
+                {
+                    CreateReference(projectConfigA.FullName, "a/project.json", new string[] { }),
+                    CreateReference(projectConfigB.FullName, "b/project.json", new string[] { }),
+                    CreateReference(projectConfigC.FullName, "c/project.json", new string[] { }),
+                };
+
+                // Project A
+                var msBuildNuGetProjectSystemA = new TestMSBuildNuGetProjectSystem(
+                    projectTargetFramework,
+                    testNuGetProjectContext,
+                    randomProjectFolderPathA,
+                    "a");
+
+                var projectA = new TestBuildIntegratedNuGetProject(projectConfigA.FullName, msBuildNuGetProjectSystemA);
+                projectA.ProjectClosure = new List<ExternalProjectReference>()
+                {
+                    CreateReference(projectConfigB.FullName, "b/project.json", new string[] { }),
+                    CreateReference(projectConfigC.FullName, "c/project.json", new string[] { }),
+                };
+
+                // Project B
+                var msBuildNuGetProjectSystemB = new TestMSBuildNuGetProjectSystem(
+                    projectTargetFramework,
+                    testNuGetProjectContext,
+                    randomProjectFolderPathB,
+                    "b");
+
+                var projectB = new TestBuildIntegratedNuGetProject(projectConfigB.FullName, msBuildNuGetProjectSystemB);
+                projectB.ProjectClosure = new List<ExternalProjectReference>()
+                {
+                    CreateReference(projectConfigC.FullName, "c/project.json", new string[] { }),
+                };
+
+                var msBuildNuGetProjectSystemC = new TestMSBuildNuGetProjectSystem(
+                    projectTargetFramework,
+                    testNuGetProjectContext,
+                    randomProjectFolderPathC,
+                    "c");
+
+                var projectC = new TestBuildIntegratedNuGetProject(projectConfigC.FullName, msBuildNuGetProjectSystemC);
+                projectC.ProjectClosure = new List<ExternalProjectReference>() { };
+
+                var projects = new List<BuildIntegratedNuGetProject>();
+                projects.Add(project1);
+                projects.Add(projectA);
+                projects.Add(projectB);
+                projects.Add(projectC);
+
+                var orderedChilds = new List<BuildIntegratedNuGetProject>();
+                var uniqueProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                uniqueProjects.Add(project1.ProjectName);
+
+                // Act
+                await
+                    BuildIntegratedRestoreUtility.GetChildProjectsInClosure(project1, projects, orderedChilds,
+                        uniqueProjects, GetExternalProjectReferenceContext());
+
+                // Assert
+                Assert.Equal(4, orderedChilds.Count);
+                Assert.Equal(projectC.ProjectName, orderedChilds[0].ProjectName, StringComparer.OrdinalIgnoreCase);
+                Assert.Equal(projectB.ProjectName, orderedChilds[1].ProjectName, StringComparer.OrdinalIgnoreCase);
+                Assert.Equal(projectA.ProjectName, orderedChilds[2].ProjectName, StringComparer.OrdinalIgnoreCase);
+                Assert.Equal(project1.ProjectName, orderedChilds[3].ProjectName, StringComparer.OrdinalIgnoreCase);
+            }
+        }
+
+        [Fact]
+        public async Task BuildIntegratedRestoreUtility_GetChildProjectsInClosure_SingleChild()
+        {
+            // Arrange
+            using (var randomProjectFolderPathProject1 = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectFolderPathA = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectFolderPathB = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectFolderPathC = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var projectConfig = new FileInfo(Path.Combine(randomProjectFolderPathProject1, "project.json"));
+                var projectConfigA = new FileInfo(Path.Combine(randomProjectFolderPathA, "project.json"));
+                var projectConfigB = new FileInfo(Path.Combine(randomProjectFolderPathB, "project.json"));
+                var projectConfigC = new FileInfo(Path.Combine(randomProjectFolderPathC, "project.json"));
+                var projectTargetFramework = NuGetFramework.Parse("uap10.0");
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                    projectTargetFramework,
+                    testNuGetProjectContext,
+                    randomProjectFolderPathProject1,
+                    "project1");
+
+                var project1 = new TestBuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
+                project1.ProjectClosure = new List<ExternalProjectReference>()
+                {
+                    CreateReference(projectConfigA.FullName, "a/project.json", new string[] { }),
+                };
+
+                // Project A
+                var msBuildNuGetProjectSystemA = new TestMSBuildNuGetProjectSystem(
+                    projectTargetFramework,
+                    testNuGetProjectContext,
+                    randomProjectFolderPathA,
+                    "a");
+
+                var projectA = new TestBuildIntegratedNuGetProject(projectConfigA.FullName, msBuildNuGetProjectSystemA);
+                projectA.ProjectClosure = new List<ExternalProjectReference>() {};
+
+                // Project B
+                var msBuildNuGetProjectSystemB = new TestMSBuildNuGetProjectSystem(
+                    projectTargetFramework,
+                    testNuGetProjectContext,
+                    randomProjectFolderPathB,
+                    "b");
+
+                var projectB = new TestBuildIntegratedNuGetProject(projectConfigB.FullName, msBuildNuGetProjectSystemB);
+                projectB.ProjectClosure = new List<ExternalProjectReference>()
+                {
+                    CreateReference(projectConfigC.FullName, "c/project.json", new string[] { }),
+                };
+
+                var msBuildNuGetProjectSystemC = new TestMSBuildNuGetProjectSystem(
+                    projectTargetFramework,
+                    testNuGetProjectContext,
+                    randomProjectFolderPathC,
+                    "c");
+
+                var projectC = new TestBuildIntegratedNuGetProject(projectConfigC.FullName, msBuildNuGetProjectSystemC);
+                projectC.ProjectClosure = new List<ExternalProjectReference>() { };
+
+                var projects = new List<BuildIntegratedNuGetProject>();
+                projects.Add(project1);
+                projects.Add(projectA);
+                projects.Add(projectB);
+                projects.Add(projectC);
+
+                var orderedChilds = new List<BuildIntegratedNuGetProject>();
+                var uniqueProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                uniqueProjects.Add(project1.ProjectName);
+
+                // Act
+                await
+                    BuildIntegratedRestoreUtility.GetChildProjectsInClosure(project1, projects, orderedChilds,
+                        uniqueProjects, GetExternalProjectReferenceContext());
+
+                // Assert
+                Assert.Equal(2, orderedChilds.Count);
+                Assert.Equal(projectA.ProjectName, orderedChilds[0].ProjectName, StringComparer.OrdinalIgnoreCase);
+                Assert.Equal(project1.ProjectName, orderedChilds[1].ProjectName, StringComparer.OrdinalIgnoreCase);
+            }
+        }
+
+        [Fact]
+        public async Task BuildIntegratedRestoreUtility_GetChildProjectsInClosure_NoChild()
+        {
+            // Arrange
+            using (var randomProjectFolderPathProject1 = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectFolderPathA = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectFolderPathB = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var projectConfig = new FileInfo(Path.Combine(randomProjectFolderPathProject1, "project.json"));
+                var projectConfigA = new FileInfo(Path.Combine(randomProjectFolderPathA, "project.json"));
+                var projectConfigB = new FileInfo(Path.Combine(randomProjectFolderPathB, "project.json"));
+
+                var projectTargetFramework = NuGetFramework.Parse("uap10.0");
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                    projectTargetFramework,
+                    testNuGetProjectContext,
+                    randomProjectFolderPathProject1,
+                    "project1");
+
+                var project1 = new TestBuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
+                project1.ProjectClosure = new List<ExternalProjectReference>() {};
+
+                // Project A
+                var msBuildNuGetProjectSystemA = new TestMSBuildNuGetProjectSystem(
+                    projectTargetFramework,
+                    testNuGetProjectContext,
+                    randomProjectFolderPathA,
+                    "a");
+
+                var projectA = new TestBuildIntegratedNuGetProject(projectConfigA.FullName, msBuildNuGetProjectSystemA);
+                projectA.ProjectClosure = new List<ExternalProjectReference>() { };
+
+                // Project B
+                var msBuildNuGetProjectSystemB = new TestMSBuildNuGetProjectSystem(
+                    projectTargetFramework,
+                    testNuGetProjectContext,
+                    randomProjectFolderPathB,
+                    "b");
+
+                var projectB = new TestBuildIntegratedNuGetProject(projectConfigB.FullName, msBuildNuGetProjectSystemB);
+                projectB.ProjectClosure = new List<ExternalProjectReference>() {};
+
+                var projects = new List<BuildIntegratedNuGetProject>();
+                projects.Add(project1);
+                projects.Add(projectA);
+                projects.Add(projectB);
+
+                var orderedChilds = new List<BuildIntegratedNuGetProject>();
+                var uniqueProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                uniqueProjects.Add(project1.ProjectName);
+
+                // Act
+                await
+                    BuildIntegratedRestoreUtility.GetChildProjectsInClosure(project1, projects, orderedChilds,
+                        uniqueProjects, GetExternalProjectReferenceContext());
+
+                // Assert
+                Assert.Equal(1, orderedChilds.Count);
+                Assert.Equal(project1.ProjectName, orderedChilds[0].ProjectName, StringComparer.OrdinalIgnoreCase);
             }
         }
 

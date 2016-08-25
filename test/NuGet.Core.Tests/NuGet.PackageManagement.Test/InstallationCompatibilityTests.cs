@@ -85,9 +85,9 @@ namespace NuGet.PackageManagement.Test
                     tc.NuGetPathContext.Object,
                     new NuGetProjectAction[]
                     {
-                        NuGetProjectAction.CreateInstallProjectAction(tc.PackageIdentityA, tc.SourceRepository),
-                        NuGetProjectAction.CreateUninstallProjectAction(tc.PackageIdentityB),
-                        NuGetProjectAction.CreateInstallProjectAction(tc.PackageIdentityC, tc.SourceRepository)
+                        NuGetProjectAction.CreateInstallProjectAction(tc.PackageIdentityA, tc.SourceRepository, tc.ProjectKProject),
+                        NuGetProjectAction.CreateUninstallProjectAction(tc.PackageIdentityB, tc.ProjectKProject),
+                        NuGetProjectAction.CreateInstallProjectAction(tc.PackageIdentityC, tc.SourceRepository, tc.ProjectKProject)
                     },
                     tc.GetRestoreResult(new[]
                     {
@@ -124,7 +124,7 @@ namespace NuGet.PackageManagement.Test
                         tc.NuGetPathContext.Object,
                         new NuGetProjectAction[]
                         {
-                            NuGetProjectAction.CreateInstallProjectAction(tc.PackageIdentityA, tc.SourceRepository)
+                            NuGetProjectAction.CreateInstallProjectAction(tc.PackageIdentityA, tc.SourceRepository, tc.ProjectKProject)
                         },
                         tc.GetRestoreResult(new[] { tc.PackageIdentityA })));
 

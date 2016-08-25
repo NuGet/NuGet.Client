@@ -131,10 +131,16 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             try
             {
-                foreach (var project in Projects)
-                {
-                    await PreviewAndExecuteUpdateActionsforAllPackages(project);
-                }
+                // if the source is explicitly specified we will use exclusively that source otherwise use ALL enabled sources
+                var actions = await PackageManager.PreviewUpdatePackagesAsync(
+                    Projects,
+                    ResolutionContext,
+                    this,
+                    PrimarySourceRepositories,
+                    PrimarySourceRepositories,
+                    Token);
+
+                await ExecuteActions(actions);
             }
             catch (Exception ex)
             {
@@ -155,10 +161,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             try
             {
-                foreach (var project in Projects)
-                {
-                    await PreviewAndExecuteUpdateActionsforSinglePackage(project);
-                }
+                await PreviewAndExecuteUpdateActionsforSinglePackage();
 
                 if (!_isPackageInstalled)
                 {
@@ -176,67 +179,42 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Preview update actions for all packages
-        /// </summary>
-        /// <param name="project"></param>
-        /// <returns></returns>
-        private async Task PreviewAndExecuteUpdateActionsforAllPackages(NuGetProject project)
-        {
-            // if the source is explicitly specified we will use exclusively that source otherwise use ALL enabled sources
-            var actions = await PackageManager.PreviewUpdatePackagesAsync(
-                project,
-                ResolutionContext,
-                this,
-                PrimarySourceRepositories,
-                PrimarySourceRepositories,
-                Token);
-
-            await ExecuteActions(project, actions);
-        }
-
-        /// <summary>
         /// Preview update actions for single package
         /// </summary>
         /// <param name="project"></param>
         /// <returns></returns>
-        private async Task PreviewAndExecuteUpdateActionsforSinglePackage(NuGetProject project)
+        private async Task PreviewAndExecuteUpdateActionsforSinglePackage()
         {
-            var installedPackage = (await project.GetInstalledPackagesAsync(Token))
-                .FirstOrDefault(p => string.Equals(p.PackageIdentity.Id, Id, StringComparison.OrdinalIgnoreCase));
+            var actions = Enumerable.Empty<NuGetProjectAction>();
 
-            if (installedPackage != null)
+            // If -Version switch is specified
+            if (!string.IsNullOrEmpty(Version))
             {
-                // set _installed to true, if package to update is installed.
-                _isPackageInstalled = true;
-
-                var actions = Enumerable.Empty<NuGetProjectAction>();
-
-                // If -Version switch is specified
-                if (!string.IsNullOrEmpty(Version))
-                {
-                    actions = await PackageManager.PreviewUpdatePackagesAsync(
-                        new PackageIdentity(installedPackage.PackageIdentity.Id, PowerShellCmdletsUtility.GetNuGetVersionFromString(Version)),
-                        project,
-                        ResolutionContext,
-                        this,
-                        PrimarySourceRepositories,
-                        EnabledSourceRepositories,
-                        Token);
-                }
-                else
-                {
-                    actions = await PackageManager.PreviewUpdatePackagesAsync(
-                        installedPackage.PackageIdentity.Id,
-                        project,
-                        ResolutionContext,
-                        this,
-                        PrimarySourceRepositories,
-                        EnabledSourceRepositories,
-                        Token);
-                }
-
-                await ExecuteActions(project, actions);
+                actions = await PackageManager.PreviewUpdatePackagesAsync(
+                    new PackageIdentity(Id, PowerShellCmdletsUtility.GetNuGetVersionFromString(Version)),
+                    Projects,
+                    ResolutionContext,
+                    this,
+                    PrimarySourceRepositories,
+                    EnabledSourceRepositories,
+                    Token);
             }
+            else
+            {
+                actions = await PackageManager.PreviewUpdatePackagesAsync(
+                    Id,
+                    Projects,
+                    ResolutionContext,
+                    this,
+                    PrimarySourceRepositories,
+                    EnabledSourceRepositories,
+                    Token);
+            }
+
+            // set _installed to true, if package to update is installed.
+            _isPackageInstalled = actions.Any();
+
+            await ExecuteActions(actions);
         }
 
         /// <summary>
@@ -244,29 +222,22 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         /// <param name="actions"></param>
         /// <returns></returns>
-        private async Task ExecuteActions(NuGetProject project, IEnumerable<NuGetProjectAction> actions)
+        private async Task ExecuteActions(IEnumerable<NuGetProjectAction> actions)
         {
-            if (actions.Any())
-            {
-                if (!ShouldContinueDueToDotnetDeprecation(project, actions, WhatIf.IsPresent))
-                {
-                    return;
-                }
+			if (!ShouldContinueDueToDotnetDeprecation(actions, WhatIf.IsPresent))
+			{
+				return;
+			}
 
-                if (WhatIf.IsPresent)
-                {
-                    // For -WhatIf, only preview the actions
-                    PreviewNuGetPackageActions(actions);
-                }
-                else
-                {
-                    // Execute project actions by Package Manager
-                    await PackageManager.ExecuteNuGetProjectActionsAsync(project, actions, this, Token);
-                }
-            }
-            else
-            {
-                Log(MessageLevel.Info, Resources.Cmdlet_NoPackageUpdates, project.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+			if (WhatIf.IsPresent)
+			{
+				// For -WhatIf, only preview the actions
+				PreviewNuGetPackageActions(actions);
+			}
+			else
+			{
+			    // Execute project actions by Package Manager
+			    await PackageManager.ExecuteNuGetProjectActionsAsync(Projects, actions, this, Token);
             }
         }
 
