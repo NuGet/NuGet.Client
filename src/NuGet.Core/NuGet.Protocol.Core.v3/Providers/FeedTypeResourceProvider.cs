@@ -15,7 +15,7 @@ namespace NuGet.Protocol
         private readonly ConcurrentDictionary<PackageSource, FeedTypeResource> _feedTypeCache
             = new ConcurrentDictionary<PackageSource, FeedTypeResource>();
 
-        private object accessLock = new object();
+        private object _accessLock = new object();
 
         public FeedTypeResourceProvider()
             : base(typeof(FeedTypeResource), nameof(FeedTypeResourceProvider))
@@ -30,7 +30,7 @@ namespace NuGet.Protocol
             {
                 if (!_feedTypeCache.TryGetValue(source.PackageSource, out curResource))
                 {
-                    lock (accessLock)
+                    lock (_accessLock)
                     {
                         if (!_feedTypeCache.TryGetValue(source.PackageSource, out curResource))
                         {
