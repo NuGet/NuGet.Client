@@ -482,7 +482,7 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(secondarySources));
             }
 
-            var maxTasks = Environment.ProcessorCount;
+            var maxTasks = 4;
             var tasks = new List<Task<IEnumerable<NuGetProjectAction>>>(maxTasks);
             var nugetActions = new List<NuGetProjectAction>();
             
@@ -493,7 +493,7 @@ namespace NuGet.PackageManagement
             foreach (var project in buildIntegratedProjects)
             {
                 // if tasks count reachs max then wait until an existing task is completed
-                if (tasks.Count == maxTasks)
+                if (tasks.Count >= maxTasks)
                 {
                     var actions = await CompleteTaskAsync(tasks);
                     nugetActions.AddRange(actions);
