@@ -2402,7 +2402,7 @@ namespace NuGet.PackageManagement
                 var pathContext = NuGetPathContext.Create(Settings);
 
                 var now = DateTime.UtcNow;
-                Action<SourceCacheContext> cacheContextModifier = c => c.ListMaxAge = now;
+                Action<SourceCacheContext> cacheContextModifier = c => c.MaxAge = now;
 
                 // Check if current project is there in update cache and needs revaluation
                 var isProjectUpdated = false;
