@@ -174,16 +174,12 @@ namespace NuGet.Commands
             var result = RestoreTargetGraph.Create(runtimeGraph, graphs, context, _logger, framework, runtimeIdentifier);
 
             // Check if the dependencies got bumped up
-            if (_request.ExistingLockFile == null)
-            {
-                // No lock file, so check dependencies
-                CheckDependencies(result, _request.Project.Dependencies);
+            CheckDependencies(result, _request.Project.Dependencies);
 
-                var fxInfo = _request.Project.GetTargetFramework(framework);
-                if (fxInfo != null)
-                {
-                    CheckDependencies(result, fxInfo.Dependencies);
-                }
+            var fxInfo = _request.Project.GetTargetFramework(framework);
+            if (fxInfo != null)
+            {
+                CheckDependencies(result, fxInfo.Dependencies);
             }
 
             return result;

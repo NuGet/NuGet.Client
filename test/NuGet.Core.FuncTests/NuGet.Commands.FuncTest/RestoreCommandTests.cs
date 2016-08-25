@@ -1403,8 +1403,6 @@ namespace NuGet.Commands.FuncTest
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
-                var lockFileFormat = new LockFileFormat();
-
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
@@ -1413,6 +1411,42 @@ namespace NuGet.Commands.FuncTest
                 var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, "netcore50", null);
 
                 var runtimeAssembly = runtimeAssemblies.FirstOrDefault();
+
+                // Assert
+                Assert.Equal(3, logger.Warnings); // We'll get the warning for each runtime and for the runtime-less restore.
+                Assert.Contains("Dependency specified was Newtonsoft.Json (>= 7.0.0) but ended up with Newtonsoft.Json 7.0.1.", logger.Messages);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_WarnWhenWeBumpYouUpOnSubsequentRestores()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+
+            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
+
+                AddDependency(spec, "Newtonsoft.Json", "7.0.0"); // 7.0.0 does not exist so we'll bump up to 7.0.1
+                
+                // Execute the first restore
+                var requestA = new RestoreRequest(spec, sources, packagesDir, new TestLogger());
+                requestA.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+                var commandA = new RestoreCommand(requestA);
+                var resultA = await commandA.ExecuteAsync();
+
+                var logger = new TestLogger();
+                var requestB = new RestoreRequest(spec, sources, packagesDir, logger);
+                requestB.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+                requestB.ExistingLockFile = resultA.LockFile;
+                var commandB = new RestoreCommand(requestB);
+
+                // Act
+                var resultB = await commandB.ExecuteAsync();
 
                 // Assert
                 Assert.Equal(3, logger.Warnings); // We'll get the warning for each runtime and for the runtime-less restore.

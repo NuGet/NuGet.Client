@@ -43,7 +43,7 @@ namespace NuGet.DependencyResolver
 
             // Downgrade
 
-            // A -> B -> C -> D 2.0 (downgrage)
+            // A -> B -> C -> D 2.0 (downgrade)
             //        -> D 1.0
 
             // Potential downgrade that turns out to not downgrade
