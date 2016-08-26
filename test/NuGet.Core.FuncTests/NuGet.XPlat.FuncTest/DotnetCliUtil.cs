@@ -1,28 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.XPlat.FuncTest
 {
-    internal class Util
+    internal class DotnetCliUtil
     {
-        private static string DotnetCliBinary { get; set; }
-
-        private static string DotnetCliExe { get; set; }
-
-        private static string XplatDll { get; set; }
-
-        private static string XplatDllShell { get; set; }
-
-        static Util()
-        {
-            DotnetCliBinary = @"dotnet";
-            DotnetCliExe = @"dotnet.exe";
-            XplatDll = @"NuGet.Core\NuGet.CommandLine.XPlat\bin\release\netcoreapp1.0\NuGet.CommandLine.XPlat.dll";
-            XplatDllShell = @"NuGet.Core/NuGet.CommandLine.XPlat/bin/release/netcoreapp1.0/NuGet.CommandLine.XPlat.dll";
-        }
+        private const string _dotnetCliBinary = @"dotnet";
+        private const string _dotnetCliExe = @"dotnet.exe";
+        private static string _xplatDll = Path.Combine("NuGet.Core", "NuGet.CommandLine.XPlat", "bin",
+                                                       "release", "netcoreapp1.0", "NuGet.CommandLine.XPlat.dll");
 
         /// <summary>
         /// Provides the path to dotnet cli on the test machine.
@@ -34,21 +24,22 @@ namespace NuGet.XPlat.FuncTest
         /// </returns>
         public static string GetDotnetCli()
         {
-            var currentDirInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
+            var funcTestLocation = typeof(XPlatLocalsTests).GetTypeInfo().Assembly.Location;
+            var currentDirInfo = new DirectoryInfo(Path.GetDirectoryName(funcTestLocation));
             var parentDirInfo = currentDirInfo.Parent;
             while (parentDirInfo != null)
             {
-                var dotnetCli = "";
                 foreach (var dir in parentDirInfo.EnumerateDirectories())
                 {
-                    if (StringComparer.OrdinalIgnoreCase.Equals(dir.Name, "cli"))
+                    if (StringComparer.Ordinal.Equals(dir.Name, "cli"))
                     {
-                        dotnetCli = Path.Combine(dir.FullName, DotnetCliExe);
+                        var dotnetCli = "";
+                        dotnetCli = Path.Combine(dir.FullName, _dotnetCliExe);
                         if (File.Exists(dotnetCli))
                         {
                             return dotnetCli;
                         }
-                        dotnetCli = Path.Combine(dir.FullName, DotnetCliBinary);
+                        dotnetCli = Path.Combine(dir.FullName, _dotnetCliBinary);
                         if (File.Exists(dotnetCli))
                         {
                             return dotnetCli;
@@ -65,7 +56,7 @@ namespace NuGet.XPlat.FuncTest
         /// Adds a few dummy text files at the specified path for testing nuget locals --clear
         /// </summary>
         /// <param name="path">Path which needs to be populated with dummy files</param>
-        public static void createTestFiles(string path)
+        public static void CreateTestFiles(string path)
         {
             var fileNames = new List<string> { "file1.txt", "file2.txt" };
             foreach (var fileName in fileNames)
@@ -77,7 +68,7 @@ namespace NuGet.XPlat.FuncTest
         /// <summary>
         /// Provides the path to Xplat dll on the test machine.
         /// It traverses in the directory tree going one step up at a time and looks for src folder.
-        /// Once in src, it looks for the xplat dll in the location specified by <code>XplatDll</code> or <code>XplatDllShell</code>.
+        /// Once in src, it looks for the xplat dll in the location specified by <code>_xplatDll</code>.
         /// </summary>
         /// <returns>
         /// <code>String</code> containing the path to the dotnet cli within the local repository.
@@ -85,21 +76,16 @@ namespace NuGet.XPlat.FuncTest
         /// </returns>
         public static string GetXplatDll()
         {
-            var currentDirInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
+            var funcTestLocation = typeof(XPlatLocalsTests).GetTypeInfo().Assembly.Location;
+            var currentDirInfo = new DirectoryInfo(Path.GetDirectoryName(funcTestLocation));
             var parentDirInfo = currentDirInfo.Parent;
             while (parentDirInfo != null)
             {
-                var xplatDll = "";
                 foreach (var dir in parentDirInfo.EnumerateDirectories())
                 {
-                    if (StringComparer.OrdinalIgnoreCase.Equals(dir.Name, "src"))
+                    if (StringComparer.Ordinal.Equals(dir.Name, "src"))
                     {
-                        xplatDll = Path.Combine(dir.FullName, XplatDll);
-                        if (File.Exists(xplatDll))
-                        {
-                            return xplatDll;
-                        }
-                        xplatDll = Path.Combine(dir.FullName, XplatDllShell);
+                        var xplatDll = Path.Combine(dir.FullName, _xplatDll);
                         if (File.Exists(xplatDll))
                         {
                             return xplatDll;
@@ -121,7 +107,7 @@ namespace NuGet.XPlat.FuncTest
         {
             Assert.True(
                 result.Item1 == 0,
-                "nuget.exe DID NOT SUCCEED: Ouput is " + result.Item2 + ". Error is " + result.Item3);
+                "nuget DID NOT SUCCEED: Ouput is " + result.Item2 + ". Error is " + result.Item3);
 
             if (!string.IsNullOrEmpty(expectedOutputMessage))
             {
@@ -141,7 +127,7 @@ namespace NuGet.XPlat.FuncTest
         {
             Assert.True(
                 result.Item1 != 0,
-                "nuget.exe DID NOT FAIL: Ouput is " + result.Item2 + ". Error is " + result.Item3);
+                "nuget DID NOT FAIL: Ouput is " + result.Item2 + ". Error is " + result.Item3);
 
             Assert.True(
                 result.Item2.Contains(expectedErrorMessage),

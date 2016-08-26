@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -51,25 +52,26 @@ namespace NuGet.XPlat.FuncTest
                 var mockHttpCacheDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"http-cache"));
                 var mockTmpCacheDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"temp"));
 
-                Util.createTestFiles(mockGlobalPackagesDirectory.FullName);
-                Util.createTestFiles(mockHttpCacheDirectory.FullName);
-                Util.createTestFiles(mockTmpCacheDirectory.FullName);
+                DotnetCliUtil.CreateTestFiles(mockGlobalPackagesDirectory.FullName);
+                DotnetCliUtil.CreateTestFiles(mockHttpCacheDirectory.FullName);
+                DotnetCliUtil.CreateTestFiles(mockTmpCacheDirectory.FullName);
 
                 // Act
                 var result = CommandRunner.Run(
-                  Util.GetDotnetCli(),
-                  Directory.GetCurrentDirectory(),
-                  Util.GetXplatDll() + " " + args,
-                  waitForExit: true,
-                environmentVariables: new Dictionary<string, string>
-                {
-                    { "NUGET_PACKAGES", mockGlobalPackagesDirectory.FullName },
-                    { "NUGET_HTTP_CACHE_PATH", mockHttpCacheDirectory.FullName },
-                    { "TMP", mockTmpCacheDirectory.FullName }
-                });
+                      DotnetCliUtil.GetDotnetCli(),
+                      Directory.GetCurrentDirectory(),
+                      DotnetCliUtil.GetXplatDll() + " " + args,
+                      waitForExit: true,
+                    environmentVariables: new Dictionary<string, string>
+                    {
+                        { "NUGET_PACKAGES", mockGlobalPackagesDirectory.FullName },
+                        { "NUGET_HTTP_CACHE_PATH", mockHttpCacheDirectory.FullName },
+                        { RuntimeEnvironmentHelper.IsWindows?"TMP":"TMPDIR", mockTmpCacheDirectory.FullName }
+                    });
+                // Unix uses TMPDIR as environment variable as opposed to TMP on windows
 
                 // Assert
-                Util.VerifyResultSuccess(result, string.Empty);
+                DotnetCliUtil.VerifyResultSuccess(result, string.Empty);
             }
         }
 
@@ -81,15 +83,20 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("locals -c")]
         public static void Locals_Success_InvalidArguments_HelpMessage(string args)
         {
+            // Arrange
+            var expectedResult = string.Concat("error: usage: NuGet locals <all | http-cache | global-packages | temp> [--clear | -c | --list | -l]",
+                                               Environment.NewLine,
+                                               "error: For more information, visit http://docs.nuget.org/docs/reference/command-line-reference");
+
             // Act
             var result = CommandRunner.Run(
-              Util.GetDotnetCli(),
+              DotnetCliUtil.GetDotnetCli(),
               Directory.GetCurrentDirectory(),
-              Util.GetXplatDll() + " " + args,
+              DotnetCliUtil.GetXplatDll() + " " + args,
               waitForExit: true);
 
             // Assert
-            Util.VerifyResultFailure(result, "error: usage: NuGet locals <all | http-cache | global-packages | temp> [--clear | -c | --list | -l]" + Environment.NewLine + "error: For more information, visit http://docs.nuget.org/docs/reference/command-line-reference");
+            DotnetCliUtil.VerifyResultFailure(result, expectedResult);
         }
 
         [Theory]
@@ -99,15 +106,19 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("locals -c unknownResource")]
         public static void Locals_Success_InvalidResourceName_HelpMessage(string args)
         {
+            // Arrange
+            var expectedResult = string.Concat("error: An invalid local resource name was provided. " +
+                                               "Please provide one of the following values: http-cache, temp, global-packages, all.");
+
             // Act
             var result = CommandRunner.Run(
-              Util.GetDotnetCli(),
+              DotnetCliUtil.GetDotnetCli(),
               Directory.GetCurrentDirectory(),
-              Util.GetXplatDll() + " " + args,
+              DotnetCliUtil.GetXplatDll() + " " + args,
               waitForExit: true);
 
             // Assert
-            Util.VerifyResultFailure(result, "error: An invalid local resource name was provided. Please provide one of the following values: http-cache, temp, global-packages, all.");
+            DotnetCliUtil.VerifyResultFailure(result, expectedResult);
         }
 
         [Theory]
@@ -117,15 +128,19 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("locals --c")]
         public static void Locals_Success_InvalidFlags_HelpMessage(string args)
         {
+            // Arrange
+            var expectedResult = string.Concat("Specify --help for a list of available options and commands.",
+                                               Environment.NewLine, "error: Unrecognized option '", args.Split(null)[1], "'");
+
             // Act
             var result = CommandRunner.Run(
-              Util.GetDotnetCli(),
+              DotnetCliUtil.GetDotnetCli(),
               Directory.GetCurrentDirectory(),
-              Util.GetXplatDll() + " " + args,
+              DotnetCliUtil.GetXplatDll() + " " + args,
               waitForExit: true);
 
             // Assert
-            Util.VerifyResultFailure(result, "Specify --help for a list of available options and commands." + Environment.NewLine + "error: Unrecognized option '" + args.Split(null)[1] + "'");
+            DotnetCliUtil.VerifyResultFailure(result, expectedResult);
         }
     }
 }
