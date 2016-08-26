@@ -84,7 +84,7 @@ namespace NuGet.XPlat.FuncTest
                 var mockGlobalPackagesDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"global-packages"));
                 var mockHttpCacheDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"http-cache"));
                 var mockTmpDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"temp"));
-                var mockTmpCacheDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"NuGetScratch"));
+                var mockTmpCacheDirectory = Directory.CreateDirectory(Path.Combine(mockTmpDirectory.FullName, @"NuGetScratch"));
 
                 DotnetCliUtil.CreateTestFiles(mockGlobalPackagesDirectory.FullName);
                 DotnetCliUtil.CreateTestFiles(mockHttpCacheDirectory.FullName);
