@@ -61,6 +61,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
+        [Theory]
         [InlineData("locals --clear all")]
         [InlineData("locals -c all")]
         [InlineData("locals http-cache --clear")]
@@ -106,22 +107,31 @@ namespace NuGet.XPlat.FuncTest
                 // Unix uses TMPDIR as environment variable as opposed to TMP on windows
 
                 // Assert
-                if (StringComparer.Ordinal.Equals(cacheType, "all"))
+                if (cacheType == "all")
                 {
                     Assert.False(Directory.Exists(mockGlobalPackagesDirectory.FullName));
                     Assert.False(Directory.Exists(mockHttpCacheDirectory.FullName));
                     Assert.False(Directory.Exists(mockTmpCacheDirectory.FullName));
                 }
-                else if (StringComparer.Ordinal.Equals(cacheType, "global-packages"))
+                else if (cacheType == "global-packages")
                 {
+                    // Only the global packages cache should be cleared
                     Assert.False(Directory.Exists(mockGlobalPackagesDirectory.FullName));
+                    Assert.True(Directory.Exists(mockHttpCacheDirectory.FullName));
+                    Assert.True(Directory.Exists(mockTmpCacheDirectory.FullName));
                 }
-                else if (StringComparer.Ordinal.Equals(cacheType, "http-cache"))
+                else if (cacheType == "http-cache")
                 {
+                    // Only the http cache cache should be cleared
+                    Assert.True(Directory.Exists(mockGlobalPackagesDirectory.FullName));
                     Assert.False(Directory.Exists(mockHttpCacheDirectory.FullName));
+                    Assert.True(Directory.Exists(mockTmpCacheDirectory.FullName));
                 }
                 else
                 {
+                    // Only the temp cache should be cleared
+                    Assert.True(Directory.Exists(mockGlobalPackagesDirectory.FullName));
+                    Assert.True(Directory.Exists(mockHttpCacheDirectory.FullName));
                     Assert.False(Directory.Exists(mockTmpCacheDirectory.FullName));
                 }
                 DotnetCliUtil.VerifyResultSuccess(result, string.Empty);
