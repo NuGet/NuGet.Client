@@ -29,21 +29,7 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("locals global-packages -l")]
         [InlineData("locals --list global-packages")]
         [InlineData("locals -l global-packages")]
-        [InlineData("locals --clear all")]
-        [InlineData("locals -c all")]
-        [InlineData("locals http-cache --clear")]
-        [InlineData("locals http-cache -c")]
-        [InlineData("locals --clear http-cache")]
-        [InlineData("locals -c http-cache")]
-        [InlineData("locals temp --clear")]
-        [InlineData("locals temp -c")]
-        [InlineData("locals --clear temp")]
-        [InlineData("locals -c temp")]
-        [InlineData("locals global-packages --clear")]
-        [InlineData("locals global-packages -c")]
-        [InlineData("locals --clear global-packages")]
-        [InlineData("locals -c global-packages")]
-        public static void Locals_Succeeds(string args)
+        public static void Locals_List_Succeeds(string args)
         {
             using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
@@ -66,11 +52,67 @@ namespace NuGet.XPlat.FuncTest
                     {
                         { "NUGET_PACKAGES", mockGlobalPackagesDirectory.FullName },
                         { "NUGET_HTTP_CACHE_PATH", mockHttpCacheDirectory.FullName },
-                        { RuntimeEnvironmentHelper.IsWindows?"TMP":"TMPDIR", mockTmpCacheDirectory.FullName }
+                        { RuntimeEnvironmentHelper.IsWindows ? "TMP" : "TMPDIR", mockTmpCacheDirectory.FullName }
                     });
                 // Unix uses TMPDIR as environment variable as opposed to TMP on windows
 
                 // Assert
+                DotnetCliUtil.VerifyResultSuccess(result, string.Empty);
+            }
+        }
+
+        [InlineData("locals --clear all")]
+        [InlineData("locals -c all")]
+        [InlineData("locals http-cache --clear")]
+        [InlineData("locals http-cache -c")]
+        [InlineData("locals --clear http-cache")]
+        [InlineData("locals -c http-cache")]
+        [InlineData("locals temp --clear")]
+        [InlineData("locals temp -c")]
+        [InlineData("locals --clear temp")]
+        [InlineData("locals -c temp")]
+        [InlineData("locals global-packages --clear")]
+        [InlineData("locals global-packages -c")]
+        [InlineData("locals --clear global-packages")]
+        [InlineData("locals -c global-packages")]
+        public static void Locals_Clear_Succeeds(string args)
+        {
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var mockGlobalPackagesDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"global-packages"));
+                var mockHttpCacheDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"http-cache"));
+                var mockTmpCacheDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"temp"));
+
+                DotnetCliUtil.CreateTestFiles(mockGlobalPackagesDirectory.FullName);
+                DotnetCliUtil.CreateTestFiles(mockHttpCacheDirectory.FullName);
+                DotnetCliUtil.CreateTestFiles(mockTmpCacheDirectory.FullName);
+
+                var cacheType = args.Split(null)[1].StartsWith("-") ? args.Split(null)[2] : args.Split(null)[1];
+
+                // Act
+                var result = CommandRunner.Run(
+                      DotnetCliUtil.GetDotnetCli(),
+                      Directory.GetCurrentDirectory(),
+                      DotnetCliUtil.GetXplatDll() + " " + args,
+                      waitForExit: true,
+                    environmentVariables: new Dictionary<string, string>
+                    {
+                        { "NUGET_PACKAGES", mockGlobalPackagesDirectory.FullName },
+                        { "NUGET_HTTP_CACHE_PATH", mockHttpCacheDirectory.FullName },
+                        { RuntimeEnvironmentHelper.IsWindows ? "TMP" : "TMPDIR", mockTmpCacheDirectory.FullName }
+                    });
+                // Unix uses TMPDIR as environment variable as opposed to TMP on windows
+
+                // Assert
+                if (StringComparer.Ordinal.Equals(cacheType, "all"))
+                {
+                    Assert.False(Directory.Exists(mockGlobalPackagesDirectory.FullName));
+                    var x = Directory.EnumerateFileSystemEntries(mockGlobalPackagesDirectory.FullName);
+                    //Assert.Equal(Directory.EnumerateFileSystemEntries(mockGlobalPackagesDirectory.FullName), IEnumerable<String>);
+                    Assert.False(Directory.Exists(mockHttpCacheDirectory.FullName));
+                    Assert.False(Directory.Exists(mockTmpCacheDirectory.FullName));
+                }
                 DotnetCliUtil.VerifyResultSuccess(result, string.Empty);
             }
         }
