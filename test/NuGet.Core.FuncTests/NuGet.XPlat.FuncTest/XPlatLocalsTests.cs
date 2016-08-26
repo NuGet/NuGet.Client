@@ -82,7 +82,8 @@ namespace NuGet.XPlat.FuncTest
                 // Arrange
                 var mockGlobalPackagesDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"global-packages"));
                 var mockHttpCacheDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"http-cache"));
-                var mockTmpCacheDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"temp"));
+                var mockTmpDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"temp"));
+                var mockTmpCacheDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"NuGetScratch"));
 
                 DotnetCliUtil.CreateTestFiles(mockGlobalPackagesDirectory.FullName);
                 DotnetCliUtil.CreateTestFiles(mockHttpCacheDirectory.FullName);
@@ -100,7 +101,7 @@ namespace NuGet.XPlat.FuncTest
                     {
                         { "NUGET_PACKAGES", mockGlobalPackagesDirectory.FullName },
                         { "NUGET_HTTP_CACHE_PATH", mockHttpCacheDirectory.FullName },
-                        { RuntimeEnvironmentHelper.IsWindows ? "TMP" : "TMPDIR", mockTmpCacheDirectory.FullName }
+                        { RuntimeEnvironmentHelper.IsWindows ? "TMP" : "TMPDIR", mockTmpDirectory.FullName }
                     });
                 // Unix uses TMPDIR as environment variable as opposed to TMP on windows
 
@@ -108,9 +109,19 @@ namespace NuGet.XPlat.FuncTest
                 if (StringComparer.Ordinal.Equals(cacheType, "all"))
                 {
                     Assert.False(Directory.Exists(mockGlobalPackagesDirectory.FullName));
-                    var x = Directory.EnumerateFileSystemEntries(mockGlobalPackagesDirectory.FullName);
-                    //Assert.Equal(Directory.EnumerateFileSystemEntries(mockGlobalPackagesDirectory.FullName), IEnumerable<String>);
                     Assert.False(Directory.Exists(mockHttpCacheDirectory.FullName));
+                    Assert.False(Directory.Exists(mockTmpCacheDirectory.FullName));
+                }
+                else if (StringComparer.Ordinal.Equals(cacheType, "global-packages"))
+                {
+                    Assert.False(Directory.Exists(mockGlobalPackagesDirectory.FullName));
+                }
+                else if (StringComparer.Ordinal.Equals(cacheType, "http-cache"))
+                {
+                    Assert.False(Directory.Exists(mockHttpCacheDirectory.FullName));
+                }
+                else
+                {
                     Assert.False(Directory.Exists(mockTmpCacheDirectory.FullName));
                 }
                 DotnetCliUtil.VerifyResultSuccess(result, string.Empty);
