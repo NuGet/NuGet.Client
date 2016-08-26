@@ -2,10 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 using EnvDTE;
 using Moq;
 using NuGet.VisualStudio;
@@ -14,90 +10,83 @@ using Xunit;
 
 namespace NuGet.VsExtension.Test
 {
-    namespace TeamSystem.NuGetCredentialProvider
-    {
-        public class VisualStudioAccountProvider : IVsCredentialProvider
-        {
-            public Task<ICredentials> GetCredentialsAsync(Uri uri, IWebProxy proxy, bool isProxyRequest, bool isRetry, bool nonInteractive,
-                CancellationToken cancellationToken)
-            {
-                throw new NotImplementedException();
-            }
-        }
-    }
-
     public class VsCredentialProviderImporterTests
     {
         private readonly Mock<DTE> _mockDte = new Mock<DTE>();
         private readonly Func<Credentials.ICredentialProvider> _fallbackProviderFactory = () => new VisualStudioAccountProvider(null, null);
-        private readonly List<string> _errorMessages = new List<string>();
-        private readonly Action<string> _errorDelegate;
-
-        public VsCredentialProviderImporterTests()
-        {
-            _errorDelegate = s => _errorMessages.Add(s);
-        }
 
         private VsCredentialProviderImporter GetTestableImporter()
         {
             var importer = new VsCredentialProviderImporter(
                 _mockDte.Object,
                 _fallbackProviderFactory,
-                _errorDelegate,
                 () => { });
+
             importer.Version = _mockDte.Object.Version;
+
             return importer;
         }
 
         [Fact]
         public void WhenVstsImportNotFound_WhenDev14_ThenInsertBuiltInProvider()
         {
+            // Arrange
             _mockDte.Setup(x => x.Version).Returns("14.0.247200.00");
             var importer = GetTestableImporter();
 
+            // Act
             var result = importer.GetProvider();
 
+            // Assert
             Assert.IsType<VisualStudioAccountProvider>(result);
         }
 
         [Fact]
         public void WhenVstsImportNotFound_WhenNotDev14_ThenDoNotInsertBuiltInProvider()
         {
+            // Arrange
             _mockDte.Setup(x => x.Version).Returns("15.0.123456.00");
             var importer = GetTestableImporter();
 
+            // Act
             var result = importer.GetProvider();
 
+            // Assert
             Assert.Null(result);
         }
 
         [Fact]
         public void WhenVstsImportFound_ThenDoNotInsertBuiltInProvider()
-            {
+        {
+            // Arrange
             _mockDte.Setup(x => x.Version).Returns("14.0.247200.00");
             var importer = GetTestableImporter();
-            var testableProvider = new TeamSystem.NuGetCredentialProvider.VisualStudioAccountProvider();
+            var provider = new Mock<IVsCredentialProvider>();
+            var testableProvider = provider.Object;
             importer.ImportedProvider = testableProvider;
 
+            // Act
             var result = importer.GetProvider();
 
+            // Assert
             Assert.IsType<VsCredentialProviderAdapter>(result);
         }
 
         [Fact]
-        public void WhenVstsIntializerThrows_ThenGetProviderReturnsNull()
+        public void WhenVstsIntializerThrows_ThenExceptionBubblesOut()
         {
+            // Arrange
+            var exception = new ArgumentException();
             _mockDte.Setup(x => x.Version).Returns("14.0.247200.00");
             var importer = new VsCredentialProviderImporter(
                 _mockDte.Object,
                 _fallbackProviderFactory,
-                _errorDelegate,
-                () => { throw new ArgumentException(); });
+                () => { throw exception; });
             importer.Version = _mockDte.Object.Version;
 
-            var result = importer.GetProvider();
-
-            Assert.Null(result);
+            // Act & Assert
+            var actual = Assert.Throws<ArgumentException>(() => importer.GetProvider());
+            Assert.Same(exception, actual);
         }
     }
 }

@@ -6,7 +6,6 @@ using System.ComponentModel.Composition;
 using System.IO;
 using EnvDTE;
 using Microsoft.VisualStudio.ComponentModelHost;
-using Microsoft.VisualStudio.Shell;
 using NuGet.Credentials;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
@@ -21,7 +20,6 @@ namespace NuGetVSExtension
     public class VsCredentialProviderImporter
     {
         private readonly DTE _dte;
-        private readonly Action<string> _errorDelegate;
         private readonly Func<ICredentialProvider> _fallbackProviderFactory;
         private readonly Action _initializer;
 
@@ -32,10 +30,8 @@ namespace NuGetVSExtension
         /// <param name="fallbackProviderFactory">Factory method used to create a fallback provider for
         /// Dev14 in case a VSTS credential provider can not be imported.</param>
         /// <param name="errorDelegate">Used to write error messages to the user.</param>
-        public VsCredentialProviderImporter(
-            EnvDTE.DTE dte,
-            Func<ICredentialProvider> fallbackProviderFactory,
-            Action<string> errorDelegate) : this(dte, fallbackProviderFactory, errorDelegate, null)
+        public VsCredentialProviderImporter(DTE dte, Func<ICredentialProvider> fallbackProviderFactory)
+            : this(dte, fallbackProviderFactory, initializer: null)
         {
         }
 
@@ -49,9 +45,8 @@ namespace NuGetVSExtension
         /// <param name="initializer">Init method used to supply MEF imports. Should only
         /// be supplied by tests.</param>
         public VsCredentialProviderImporter (
-            EnvDTE.DTE dte,
+            DTE dte,
             Func<ICredentialProvider> fallbackProviderFactory,
-            Action<string> errorDelegate,
             Action initializer)
         {
             if (dte == null)
@@ -64,14 +59,8 @@ namespace NuGetVSExtension
                 throw new ArgumentNullException(nameof(fallbackProviderFactory));
             }
 
-            if (errorDelegate == null)
-            {
-                throw new ArgumentNullException(nameof(errorDelegate));
-            }
-
             _dte = dte;
             _fallbackProviderFactory = fallbackProviderFactory;
-            _errorDelegate = errorDelegate;
             _initializer = initializer ?? Initialize;
         }
 
@@ -87,44 +76,19 @@ namespace NuGetVSExtension
         {
             ICredentialProvider result = null;
 
-            try
+            _initializer();
+
+            if (ImportedProvider != null)
             {
-                _initializer();
-
-                if (ImportedProvider != null)
-                {
-                    result = new VsCredentialProviderAdapter(ImportedProvider);
-                }
-
-                // Dev15+ will provide a credential provider for VSTS.
-                // If we are in Dev14, and no imported VSTS provider is found,
-                // then fallback on the built-in VisualStudioAccountProvider
-                if (result == null && IsDev14)
-                {
-                    // Handle any type load exception constructing the provider
-                    try
-                    {
-                        result = _fallbackProviderFactory();
-                    }
-                    catch (Exception e) when
-                        (e is BadImageFormatException ||
-                         e is FileLoadException ||
-                         e is TypeLoadException)
-                    {
-                        _errorDelegate(string.Format(Resources.VsCredentialProviderImporter_LoadErrorFormat,
-                            e.Message));
-                    }
-                }
+                result = new VsCredentialProviderAdapter(ImportedProvider);
             }
-            catch (Exception e)
+
+            // Dev15+ will provide a credential provider for VSTS.
+            // If we are in Dev14, and no imported VSTS provider is found,
+            // then fallback on the built-in VisualStudioAccountProvider
+            if (result == null && IsDev14)
             {
-                // Typicall catching all exceptions is discuraged however the code calling this method
-                // is in the initialization of NuGet and is checking for the existance of a credential
-                // provider.   Crashing here is crashing at the NuGet startup in the IDE.  Considering
-                // the scenario is not close to 100% of the NuGet usage scenarios catching the exception
-                // writting the error and proceeding without the provider is a safer option.
-                _errorDelegate(string.Format(Resources.VsCredentialProviderImport_GenericError,
-                    e.Message));
+                result = _fallbackProviderFactory();
             }
 
             return result;

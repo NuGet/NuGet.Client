@@ -219,10 +219,13 @@ To prevent NuGet from restoring packages during build, open the Visual Studio Op
   <data name="SolutionIsNotSavedPromptReopen" xml:space="preserve">
     <value>Solution is not saved. Please save your solution and re-open solution before managing NuGet packages.</value>
   </data>
-  <data name="VsCredentialProviderImporter_LoadErrorFormat" xml:space="preserve">
-    <value>Error loading VisualStudioAcountProvider. {0}</value>
+  <data name="CredentialProviderFailed_LegacyCredentialProvider" xml:space="preserve">
+    <value>The legacy NuGet credential provider failed to load.</value>
   </data>
-  <data name="VsCredentialProviderImport_GenericError" xml:space="preserve">
-    <value>Error getting the credential provider.  {0}</value>
+  <data name="CredentialProviderFailed_VisualStudioCredentialProvider" xml:space="preserve">
+    <value>The Visual Studio credential provider failed to load.</value>
+  </data>
+  <data name="CredentialProviderFailed_VisualStudioAccountProvider" xml:space="preserve">
+    <value>The Visual Studio or VSTS account provider failed to load.</value>
   </data>
 </root>

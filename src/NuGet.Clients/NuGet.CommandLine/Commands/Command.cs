@@ -158,7 +158,7 @@ namespace NuGet.CommandLine
         /// </summary>
         protected void SetDefaultCredentialProvider()
         {
-            CredentialService = new CredentialService(GetCredentialProviders(), Console.WriteError, NonInteractive);
+            CredentialService = new CredentialService(GetCredentialProviders(), NonInteractive);
 
             HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(CredentialService);
 
