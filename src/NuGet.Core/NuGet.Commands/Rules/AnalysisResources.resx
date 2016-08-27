@@ -153,6 +153,15 @@
   <data name="InvalidFrameworkTitle" xml:space="preserve">
     <value>Invalid framework folder.</value>
   </data>
+  <data name="LegacyVersionDescription" xml:space="preserve">
+    <value>The package version '{0}' uses SemVer 2.0.0 or components of SemVer 1.0.0 that are not supported on legacy clients. This message can be ignored if the package is not intended for older clients.</value>
+  </data>
+  <data name="LegacyVersionSolution" xml:space="preserve">
+    <value>Change the package version to a SemVer 1.0.0 string. If the version contains a release label it must start with a letter.</value>
+  </data>
+  <data name="LegacyVersionTitle" xml:space="preserve">
+    <value>Package version not supported on legacy clients.</value>
+  </data>
   <data name="MisplacedInitScriptDescription" xml:space="preserve">
     <value>The file '{0}' will be ignored by NuGet because it is not directly under 'tools' folder.</value>
   </data>

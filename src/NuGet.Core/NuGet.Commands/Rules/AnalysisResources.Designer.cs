@@ -168,6 +168,33 @@ namespace NuGet.Commands.Rules {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to The package version &apos;{0}&apos; uses SemVer 2.0.0 or components of SemVer 1.0.0 that are not supported on legacy clients. This message can be ignored if the package is not intended for older clients..
+        /// </summary>
+        public static string LegacyVersionDescription {
+            get {
+                return ResourceManager.GetString("LegacyVersionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Change the package version to a SemVer 1.0.0 string. If the version contains a release label it must start with a letter..
+        /// </summary>
+        public static string LegacyVersionSolution {
+            get {
+                return ResourceManager.GetString("LegacyVersionSolution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Package version not supported on legacy clients..
+        /// </summary>
+        public static string LegacyVersionTitle {
+            get {
+                return ResourceManager.GetString("LegacyVersionTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to The file &apos;{0}&apos; will be ignored by NuGet because it is not directly under &apos;tools&apos; folder..
         /// </summary>
         public static string MisplacedInitScriptDescription {

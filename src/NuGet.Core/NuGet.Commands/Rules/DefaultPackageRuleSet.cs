@@ -16,7 +16,8 @@ namespace NuGet.Commands.Rules
                 new InitScriptNotUnderToolsRule(),
                 new WinRTNameIsObsoleteRule(),
                 new DefaultManifestValuesRule(),
-                new InvalidPlaceholderFileRule()
+                new InvalidPlaceholderFileRule(),
+                new LegacyVersionRule()
             }
         );
 
