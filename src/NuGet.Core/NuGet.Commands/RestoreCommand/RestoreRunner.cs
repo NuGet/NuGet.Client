@@ -147,21 +147,19 @@ namespace NuGet.Commands
 
             if (result.Success)
             {
-                log.LogMinimal(
-                    summaryRequest.InputPath + Environment.NewLine +
-                        string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.Log_RestoreComplete,
-                        sw.ElapsedMilliseconds));
+                log.LogMinimal(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.Log_RestoreComplete,
+                    sw.ElapsedMilliseconds,
+                    summaryRequest.InputPath));
             }
             else
             {
-                log.LogMinimal(
-                    summaryRequest.InputPath + Environment.NewLine +
-                        string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.Log_RestoreFailed,
-                        sw.ElapsedMilliseconds));
+                log.LogMinimal(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.Log_RestoreFailed,
+                    sw.ElapsedMilliseconds,
+                    summaryRequest.InputPath));
             }
 
             // Build the summary

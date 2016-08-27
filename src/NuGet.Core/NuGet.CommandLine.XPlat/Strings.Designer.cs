@@ -287,33 +287,6 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Reading project file {0}..
-        /// </summary>
-        public static string Log_ReadingProject {
-            get {
-                return ResourceManager.GetString("Log_ReadingProject", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to Restore completed in {0}ms..
-        /// </summary>
-        public static string Log_RestoreComplete {
-            get {
-                return ResourceManager.GetString("Log_RestoreComplete", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to Restore failed in {0}ms..
-        /// </summary>
-        public static string Log_RestoreFailed {
-            get {
-                return ResourceManager.GetString("Log_RestoreFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///    Looks up a localized string similar to Running non-parallel restore..
         /// </summary>
         public static string Log_RunningNonParallelRestore {

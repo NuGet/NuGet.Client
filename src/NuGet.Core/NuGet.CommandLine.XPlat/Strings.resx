@@ -153,15 +153,6 @@
   <data name="Log_LoadedProject" xml:space="preserve">
     <value>Loaded project {0} from {1}.</value>
   </data>
-  <data name="Log_ReadingProject" xml:space="preserve">
-    <value>Reading project file {0}.</value>
-  </data>
-  <data name="Log_RestoreComplete" xml:space="preserve">
-    <value>Restore completed in {0}ms.</value>
-  </data>
-  <data name="Log_RestoreFailed" xml:space="preserve">
-    <value>Restore failed in {0}ms.</value>
-  </data>
   <data name="Log_RunningNonParallelRestore" xml:space="preserve">
     <value>Running non-parallel restore.</value>
   </data>

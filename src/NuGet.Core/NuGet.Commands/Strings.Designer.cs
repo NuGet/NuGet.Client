@@ -690,7 +690,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Restore completed in {0}ms..
+        ///    Looks up a localized string similar to Restore completed in {0}ms for {1}..
         /// </summary>
         public static string Log_RestoreComplete {
             get {
@@ -699,7 +699,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Restore failed in {0}ms..
+        ///    Looks up a localized string similar to Restore failed in {0}ms for {1}..
         /// </summary>
         public static string Log_RestoreFailed {
             get {
