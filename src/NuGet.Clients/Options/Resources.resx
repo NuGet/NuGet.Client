@@ -138,7 +138,7 @@
   <data name="ShowMessage_LocalsCommandFailure" xml:space="preserve">
     <value>NuGet cache(s) clear failed at {0}. 
 Error: {1}
-Please see http://example.com/help/locals for more help.</value>
+Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <comment>{0} :error message;
 {1}: date and time
 </comment>

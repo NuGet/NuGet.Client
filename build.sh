@@ -47,6 +47,10 @@ if [ $? -ne 0 ]; then
 	exit 1
 fi
 
+# build xplat dll
+echo "$DOTNET build src/NuGet.Core/NuGet.CommandLine.XPlat --configuration release --framework netcoreapp1.0"
+$DOTNET build src/NuGet.Core/NuGet.CommandLine.XPlat --configuration release --framework netcoreapp1.0
+
 # run tests
 for testProject in `find test/NuGet.Core.Tests -type f -name project.json`
 do

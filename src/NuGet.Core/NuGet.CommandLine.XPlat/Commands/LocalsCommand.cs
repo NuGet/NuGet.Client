@@ -17,6 +17,7 @@ namespace NuGet.CommandLine.XPlat
             app.Command("locals", locals =>
             {
                 locals.Description = Strings.LocalsCommand_Description;
+                locals.HelpOption(XPlatUtility.HelpOption);
 
                 locals.Option(
                     CommandConstants.ForceEnglishOutputOption,

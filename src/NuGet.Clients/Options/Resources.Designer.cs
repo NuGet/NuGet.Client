@@ -117,7 +117,7 @@ namespace NuGet.Options {
         /// <summary>
         ///   Looks up a localized string similar to NuGet cache(s) clear failed at {0}. 
         ///Error: {1}
-        ///Please see http://example.com/help/locals for more help..
+        ///Please see https://aka.ms/troubleshoot_nuget_cache for more help..
         /// </summary>
         public static string ShowMessage_LocalsCommandFailure {
             get {
