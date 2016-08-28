@@ -16,7 +16,7 @@ namespace NuGet.Commands.Rules
 
         public IEnumerable<PackageIssue> Validate(PackageBuilder builder)
         {
-            var regex = new Regex(LegacyRegex);
+            var regex = new Regex(LegacyRegex, RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
 
             if (!regex.IsMatch(builder.Version.ToFullString()))
             {
