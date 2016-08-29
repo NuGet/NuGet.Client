@@ -50,19 +50,34 @@ namespace NuGet.Protocol
 
         public PackageSource PackageSource { get; }
 
-        public override async Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, CancellationToken cancellationToken)
+        public override async Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(
+            string id,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
-            var result = await EnsurePackagesAsync(id, cancellationToken);
+            var result = await EnsurePackagesAsync(id, cacheContext, logger, cancellationToken);
             return result.Select(item => item.Identity.Version);
         }
 
-        public override async Task<PackageIdentity> GetOriginalIdentityAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
+        public override async Task<PackageIdentity> GetOriginalIdentityAsync(
+            string id,
+            NuGetVersion version,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
             return await _packageIdentityCache.GetOrAdd(
                 new PackageIdentity(id, version),
                 async original =>
                 {
-                    var packageInfo = await GetPackageInfoAsync(original.Id, original.Version, cancellationToken);
+                    var packageInfo = await GetPackageInfoAsync(
+                        original.Id,
+                        original.Version,
+                        cacheContext,
+                        logger,
+                        cancellationToken);
+
                     if (packageInfo == null)
                     {
                         return null;
@@ -71,28 +86,33 @@ namespace NuGet.Protocol
                     var reader = await _nupkgDownloader.GetNuspecReaderFromNupkgAsync(
                         packageInfo.Identity,
                         packageInfo.ContentUri,
-                        CacheContext,
-                        Logger,
+                        cacheContext,
+                        logger,
                         cancellationToken);
 
                     return reader.GetIdentity();
                 });
         }
 
-        public override async Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
+        public override async Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(
+            string id,
+            NuGetVersion version,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
-            var packageInfo = await GetPackageInfoAsync(id, version, cancellationToken);
+            var packageInfo = await GetPackageInfoAsync(id, version, cacheContext, logger, cancellationToken);
             if (packageInfo == null)
             {
-                Logger.LogWarning($"Unable to find package {id}{version}");
+                logger.LogWarning($"Unable to find package {id}{version}");
                 return null;
             }
 
             var reader = await _nupkgDownloader.GetNuspecReaderFromNupkgAsync(
                 packageInfo.Identity,
                 packageInfo.ContentUri,
-                CacheContext,
-                Logger,
+                cacheContext,
+                logger,
                 cancellationToken);
 
             // Populate the package identity cache while we have the .nuspec open.
@@ -107,9 +127,11 @@ namespace NuGet.Protocol
             string id,
             NuGetVersion version,
             Stream destination,
+            SourceCacheContext cacheContext,
+            ILogger logger,
             CancellationToken token)
         {
-            var packageInfo = await GetPackageInfoAsync(id, version, token);
+            var packageInfo = await GetPackageInfoAsync(id, version, cacheContext, logger, token);
             if (packageInfo == null)
             {
                 return false;
@@ -119,18 +141,27 @@ namespace NuGet.Protocol
                 packageInfo.Identity,
                 packageInfo.ContentUri,
                 destination,
-                CacheContext,
-                Logger,
+                cacheContext,
+                logger,
                 token);
         }
 
-        private async Task<PackageInfo> GetPackageInfoAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
+        private async Task<PackageInfo> GetPackageInfoAsync(
+            string id,
+            NuGetVersion version,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
-            var packageInfos = await EnsurePackagesAsync(id, cancellationToken);
+            var packageInfos = await EnsurePackagesAsync(id, cacheContext, logger, cancellationToken);
             return packageInfos.FirstOrDefault(p => p.Identity.Version == version);
         }
 
-        private Task<IEnumerable<PackageInfo>> EnsurePackagesAsync(string id, CancellationToken cancellationToken)
+        private Task<IEnumerable<PackageInfo>> EnsurePackagesAsync(
+            string id,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
             Task<IEnumerable<PackageInfo>> task;
 
@@ -138,7 +169,7 @@ namespace NuGet.Protocol
             {
                 if (!_packageVersionsCache.TryGetValue(id, out task))
                 {
-                    task = FindPackagesByIdAsyncCore(id, cancellationToken);
+                    task = FindPackagesByIdAsyncCore(id, cacheContext, logger, cancellationToken);
                     _packageVersionsCache[id] = task;
                 }
             }
@@ -146,12 +177,16 @@ namespace NuGet.Protocol
             return task;
         }
 
-        private async Task<IEnumerable<PackageInfo>> FindPackagesByIdAsyncCore(string id, CancellationToken cancellationToken)
+        private async Task<IEnumerable<PackageInfo>> FindPackagesByIdAsyncCore(
+            string id,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
             for (var retry = 0; retry != 3; ++retry)
             {
                 var uri = _baseUri + "FindPackagesById()?id='" + id + "'";
-                var httpSourceCacheContext = HttpSourceCacheContext.Create(CacheContext, retry);
+                var httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, retry);
 
                 try
                 {
@@ -223,7 +258,7 @@ namespace NuGet.Protocol
 
                                 return Task.FromResult(true);
                             },
-                            Logger,
+                            logger,
                             cancellationToken);
                     }
 
@@ -234,13 +269,13 @@ namespace NuGet.Protocol
                     string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingFindPackagesById, nameof(FindPackagesByIdAsyncCore), uri)
                         + Environment.NewLine
                         + ExceptionUtilities.DisplayMessage(ex);
-                    Logger.LogMinimal(message);
+                    logger.LogMinimal(message);
                 }
                 catch (Exception ex) when (retry == 2)
                 {
                     // Fail silently by returning empty result list
                     var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToRetrievePackage, uri);
-                    Logger.LogError(message + Environment.NewLine + ex.Message);
+                    logger.LogError(message + Environment.NewLine + ex.Message);
 
                     throw new FatalProtocolException(message, ex);
                 }

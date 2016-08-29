@@ -51,7 +51,12 @@ namespace NuGet.DependencyResolver
 
         public bool IsHttp => _sourceRepository.PackageSource.IsHttp;
 
-        public async Task<LibraryIdentity> FindLibraryAsync(LibraryRange libraryRange, NuGetFramework targetFramework, CancellationToken cancellationToken)
+        public async Task<LibraryIdentity> FindLibraryAsync(
+            LibraryRange libraryRange,
+            NuGetFramework targetFramework,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
             await EnsureResource();
 
@@ -62,7 +67,11 @@ namespace NuGet.DependencyResolver
                 {
                     await _throttle.WaitAsync();
                 }
-                packageVersions = await _findPackagesByIdResource.GetAllVersionsAsync(libraryRange.Name, cancellationToken);
+                packageVersions = await _findPackagesByIdResource.GetAllVersionsAsync(
+                    libraryRange.Name,
+                    cacheContext,
+                    logger,
+                    cancellationToken);
             }
             catch (FatalProtocolException e) when (_ignoreFailedSources)
             {
@@ -85,6 +94,8 @@ namespace NuGet.DependencyResolver
                 var packageIdentity = await _findPackagesByIdResource.GetOriginalIdentityAsync(
                     libraryRange.Name,
                     packageVersion,
+                    cacheContext,
+                    logger,
                     cancellationToken);
 
                 return new LibraryIdentity
@@ -98,7 +109,12 @@ namespace NuGet.DependencyResolver
             return null;
         }
 
-        public async Task<IEnumerable<LibraryDependency>> GetDependenciesAsync(LibraryIdentity match, NuGetFramework targetFramework, CancellationToken cancellationToken)
+        public async Task<IEnumerable<LibraryDependency>> GetDependenciesAsync(
+            LibraryIdentity match,
+            NuGetFramework targetFramework,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
             await EnsureResource();
 
@@ -109,7 +125,12 @@ namespace NuGet.DependencyResolver
                 {
                     await _throttle.WaitAsync();
                 }
-                packageInfo = await _findPackagesByIdResource.GetDependencyInfoAsync(match.Name, match.Version, cancellationToken);
+                packageInfo = await _findPackagesByIdResource.GetDependencyInfoAsync(
+                    match.Name,
+                    match.Version,
+                    cacheContext,
+                    logger,
+                    cancellationToken);
             }
             catch (FatalProtocolException e) when (_ignoreFailedSources)
             {
@@ -127,7 +148,12 @@ namespace NuGet.DependencyResolver
             return GetDependencies(packageInfo, targetFramework);
         }
 
-        public async Task CopyToAsync(LibraryIdentity identity, Stream stream, CancellationToken cancellationToken)
+        public async Task CopyToAsync(
+            LibraryIdentity identity,
+            Stream stream,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
             await EnsureResource();
 
@@ -146,6 +172,8 @@ namespace NuGet.DependencyResolver
                     identity.Name,
                     identity.Version,
                     stream,
+                    cacheContext,
+                    logger,
                     CancellationToken.None);
             }
             catch (FatalProtocolException e) when (_ignoreFailedSources)
@@ -193,8 +221,6 @@ namespace NuGet.DependencyResolver
             if (_findPackagesByIdResource == null)
             {
                 var resource = await _sourceRepository.GetResourceAsync<FindPackageByIdResource>();
-                resource.Logger = _logger;
-                resource.CacheContext = _cacheContext;
 
                 lock (_lock)
                 {

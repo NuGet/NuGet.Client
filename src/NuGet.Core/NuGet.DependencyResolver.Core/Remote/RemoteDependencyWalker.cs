@@ -354,7 +354,12 @@ namespace NuGet.DependencyResolver
             else
             {
                 // Look up the dependencies from the source
-                dependencies = await match.Provider.GetDependenciesAsync(match.Library, framework, cancellationToken);
+                dependencies = await match.Provider.GetDependenciesAsync(
+                    match.Library,
+                    framework,
+                    _context.CacheContext,
+                    _context.Logger,
+                    cancellationToken);
             }
 
             return new GraphItem<RemoteResolveResult>(match.Library)
@@ -553,21 +558,44 @@ namespace NuGet.DependencyResolver
             if (libraryRange.VersionRange.IsFloating)
             {
                 // Don't optimize the non http path for floating versions or we'll miss things
-                return await FindLibrary(libraryRange, providers, provider => provider.FindLibraryAsync(libraryRange, framework, token));
+                return await FindLibrary(
+                    libraryRange,
+                    providers,
+                    provider => provider.FindLibraryAsync(
+                        libraryRange,
+                        framework,
+                        _context.CacheContext,
+                        _context.Logger,
+                        token));
             }
 
             // Try the non http sources first
-            var nonHttpMatch = await FindLibrary(libraryRange, providers.Where(p => !p.IsHttp), provider => provider.FindLibraryAsync(libraryRange, framework, token));
+            var nonHttpMatch = await FindLibrary(
+                libraryRange,
+                providers.Where(p => !p.IsHttp),
+                provider => provider.FindLibraryAsync(
+                    libraryRange,
+                    framework,
+                    _context.CacheContext,
+                    _context.Logger,
+                    token));
 
             // If we found an exact match then use it
-            if (nonHttpMatch != null
-                && nonHttpMatch.Library.Version.Equals(libraryRange.VersionRange.MinVersion))
+            if (nonHttpMatch != null && nonHttpMatch.Library.Version.Equals(libraryRange.VersionRange.MinVersion))
             {
                 return nonHttpMatch;
             }
 
             // Otherwise try the http sources
-            var httpMatch = await FindLibrary(libraryRange, providers.Where(p => p.IsHttp), provider => provider.FindLibraryAsync(libraryRange, framework, token));
+            var httpMatch = await FindLibrary(
+                libraryRange,
+                providers.Where(p => p.IsHttp),
+                provider => provider.FindLibraryAsync(
+                    libraryRange,
+                    framework,
+                    _context.CacheContext,
+                    _context.Logger,
+                    token));
 
             // Pick the best match of the 2
             if (libraryRange.VersionRange.IsBetter(

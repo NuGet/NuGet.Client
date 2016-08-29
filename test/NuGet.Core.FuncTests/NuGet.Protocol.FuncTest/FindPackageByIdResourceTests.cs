@@ -21,14 +21,18 @@ namespace NuGet.Protocol.FuncTest
             // Arrange
             var repo = Repository.Factory.GetCoreV3(packageSource);
             var findPackageByIdResource = await repo.GetResourceAsync<FindPackageByIdResource>();
+            var logger = new TestLogger();
 
             using (var context = new SourceCacheContext())
             {
                 context.NoCache = true;
-                findPackageByIdResource.CacheContext = context;
 
                 // Act
-                var packages = await findPackageByIdResource.GetAllVersionsAsync("owin", CancellationToken.None);
+                var packages = await findPackageByIdResource.GetAllVersionsAsync(
+                    "owin",
+                    context,
+                    logger,
+                    CancellationToken.None);
 
                 // Assert
                 Assert.Equal(1, packages.Count());
@@ -46,14 +50,18 @@ namespace NuGet.Protocol.FuncTest
             // Arrange
             var repo = Repository.Factory.GetCoreV3(packageSource);
             var findPackageByIdResource = await repo.GetResourceAsync<FindPackageByIdResource>();
+            var logger = new TestLogger();
 
             using (var context = new SourceCacheContext())
             {
                 context.NoCache = true;
-                findPackageByIdResource.CacheContext = context;
 
                 // Act
-                var packages = await findPackageByIdResource.GetAllVersionsAsync("costura.fody", CancellationToken.None);
+                var packages = await findPackageByIdResource.GetAllVersionsAsync(
+                    "costura.fody",
+                    context,
+                    logger,
+                    CancellationToken.None);
 
                 // Assert
                 Assert.Equal(1, packages.Count());
@@ -71,13 +79,18 @@ namespace NuGet.Protocol.FuncTest
             // Arrange
             var repo = Repository.Factory.GetCoreV3(packageSource);
             var findPackageByIdResource = await repo.GetResourceAsync<FindPackageByIdResource>();
+            var logger = new TestLogger();
+            
             using (var context = new SourceCacheContext())
             {
                 context.NoCache = true;
-                findPackageByIdResource.CacheContext = context;
 
                 // Act
-                var packages = await findPackageByIdResource.GetAllVersionsAsync("Newtonsoft.json", CancellationToken.None);
+                var packages = await findPackageByIdResource.GetAllVersionsAsync(
+                    "Newtonsoft.json",
+                    context,
+                    logger,
+                    CancellationToken.None);
 
                 // Assert
                 Assert.Equal(1, packages.Count());
@@ -97,14 +110,18 @@ namespace NuGet.Protocol.FuncTest
             source.Credentials = sourceCredential;
             var repo = Repository.Factory.GetCoreV2(source);
             var findPackageByIdResource = await repo.GetResourceAsync<FindPackageByIdResource>();
+            var logger = new TestLogger();
 
             using (var context = new SourceCacheContext())
             {
                 context.NoCache = true;
-                findPackageByIdResource.CacheContext = context;
 
                 // Act
-                var packages = await findPackageByIdResource.GetAllVersionsAsync("Newtonsoft.json", CancellationToken.None);
+                var packages = await findPackageByIdResource.GetAllVersionsAsync(
+                    "Newtonsoft.json",
+                    context,
+                    logger,
+                    CancellationToken.None);
 
                 // Assert
                 Assert.Equal(1, packages.Count());
@@ -124,13 +141,18 @@ namespace NuGet.Protocol.FuncTest
             source.Credentials = sourceCredential;
             var repo = Repository.Factory.GetCoreV2(source);
             var findPackageByIdResource = await repo.GetResourceAsync<FindPackageByIdResource>();
+            var logger = new TestLogger();
+
             using (var context = new SourceCacheContext())
             {
                 context.NoCache = true;
-                findPackageByIdResource.CacheContext = context;
 
                 // Act
-                var packages = await findPackageByIdResource.GetAllVersionsAsync("costura.fody", CancellationToken.None);
+                var packages = await findPackageByIdResource.GetAllVersionsAsync(
+                    "costura.fody",
+                    context,
+                    logger,
+                    CancellationToken.None);
 
                 // Assert
                 Assert.Equal(1, packages.Count());
@@ -150,13 +172,18 @@ namespace NuGet.Protocol.FuncTest
             source.Credentials = sourceCredential;
             var repo = Repository.Factory.GetCoreV2(source);
             var findPackageByIdResource = await repo.GetResourceAsync<FindPackageByIdResource>();
+            var logger = new TestLogger();
+
             using (var context = new SourceCacheContext())
             {
                 context.NoCache = true;
-                findPackageByIdResource.CacheContext = context;
 
                 // Act
-                var packages = await findPackageByIdResource.GetAllVersionsAsync("owin", CancellationToken.None);
+                var packages = await findPackageByIdResource.GetAllVersionsAsync(
+                    "owin",
+                    context,
+                    logger,
+                    CancellationToken.None);
 
                 // Assert
                 Assert.Equal(1, packages.Count());

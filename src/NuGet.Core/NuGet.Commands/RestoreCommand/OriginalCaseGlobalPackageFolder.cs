@@ -160,7 +160,12 @@ namespace NuGet.Commands
             else
             {
                 // Otherwise, get it from the provider.
-                await remoteMatch.Provider.CopyToAsync(remoteMatch.Library, destination, token);
+                await remoteMatch.Provider.CopyToAsync(
+                    remoteMatch.Library,
+                    destination,
+                    _request.CacheContext,
+                    _request.Log,
+                    token);
             }
         }
     }

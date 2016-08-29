@@ -2256,7 +2256,6 @@ namespace NuGet.PackageManagement
             }
 
             var logger = new ProjectContextLogger(nuGetProjectContext);
-            var buildIntegratedContext = new ExternalProjectReferenceContext(logger);
 
             var pathContext = NuGetPathContext.Create(Settings);
 
@@ -2268,6 +2267,8 @@ namespace NuGet.PackageManagement
             using (var cacheContext = new SourceCacheContext())
             {
                 cacheContext.MaxAge = DateTimeOffset.UtcNow;
+
+                var buildIntegratedContext = new ExternalProjectReferenceContext(logger);
 
                 var providers = RestoreCommandProviders.Create(
                     pathContext.UserPackageFolder,
@@ -2289,6 +2290,7 @@ namespace NuGet.PackageManagement
                         originalPackageSpec,
                         buildIntegratedContext,
                         providers,
+                        cacheContext,
                         token);
 
                     originalLockFile = originalRestoreResult.LockFile;
@@ -2318,6 +2320,7 @@ namespace NuGet.PackageManagement
                     packageSpec,
                     buildIntegratedContext,
                     providers,
+                    cacheContext,
                     token);
 
                 InstallationCompatibility.EnsurePackageCompatibility(

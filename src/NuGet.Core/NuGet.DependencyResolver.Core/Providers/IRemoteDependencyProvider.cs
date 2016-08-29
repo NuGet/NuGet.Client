@@ -5,8 +5,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.DependencyResolver
 {
@@ -14,10 +16,25 @@ namespace NuGet.DependencyResolver
     {
         bool IsHttp { get; }
 
-        Task<LibraryIdentity> FindLibraryAsync(LibraryRange libraryRange, NuGetFramework targetFramework, CancellationToken cancellationToken);
+        Task<LibraryIdentity> FindLibraryAsync(
+            LibraryRange libraryRange,
+            NuGetFramework targetFramework,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken);
 
-        Task<IEnumerable<LibraryDependency>> GetDependenciesAsync(LibraryIdentity match, NuGetFramework targetFramework, CancellationToken cancellationToken);
+        Task<IEnumerable<LibraryDependency>> GetDependenciesAsync(
+            LibraryIdentity match,
+            NuGetFramework targetFramework,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken);
 
-        Task CopyToAsync(LibraryIdentity match, Stream stream, CancellationToken cancellationToken);
+        Task CopyToAsync(
+            LibraryIdentity match,
+            Stream stream,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken);
     }
 }

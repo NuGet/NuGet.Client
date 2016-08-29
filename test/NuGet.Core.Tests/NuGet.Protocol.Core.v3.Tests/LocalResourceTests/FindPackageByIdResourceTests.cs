@@ -35,25 +35,35 @@ namespace NuGet.Protocol.Core.v3.Tests
 
                 var resourceV2 = new LocalV2FindPackageByIdResource(new PackageSource(rootV2));
                 var resourceV3 = new LocalV3FindPackageByIdResource(new PackageSource(rootV3));
-
-                resourceV2.Logger = testLogger;
-                resourceV3.Logger = testLogger;
-                using (var cacheContext1 = new SourceCacheContext())
-                using (var cacheContext2 = new SourceCacheContext())
+                
+                using (var cacheContext = new SourceCacheContext())
                 {
-                    resourceV2.CacheContext = cacheContext1;
-                    resourceV3.CacheContext = cacheContext2;
-
                     var bNonNorm = new PackageIdentity("B", NuGetVersion.Parse("1.0"));
 
                     // Act
-                    var versionsV2 = new HashSet<NuGetVersion>(await resourceV2.GetAllVersionsAsync("A", CancellationToken.None));
-                    var versionsV3 = new HashSet<NuGetVersion>(await resourceV3.GetAllVersionsAsync("A", CancellationToken.None));
+                    var versionsV2 = new HashSet<NuGetVersion>(await resourceV2.GetAllVersionsAsync(
+                        "A",
+                        cacheContext,
+                        testLogger,
+                        CancellationToken.None));
 
-                    var emptyV2 = (await resourceV2.GetAllVersionsAsync("c", CancellationToken.None))
+                    var versionsV3 = new HashSet<NuGetVersion>(await resourceV3.GetAllVersionsAsync(
+                        "A",
+                        cacheContext,
+                        testLogger,
+                        CancellationToken.None));
+
+                    var emptyV2 = (await resourceV2.GetAllVersionsAsync(
+                        "c",
+                        cacheContext,
+                        testLogger,
+                        CancellationToken.None))
                         .ToList();
 
-                    var emptyV3 = (await resourceV3.GetAllVersionsAsync("c", CancellationToken.None))
+                    var emptyV3 = (await resourceV3.GetAllVersionsAsync("c",
+                        cacheContext,
+                        testLogger,
+                        CancellationToken.None))
                         .ToList();
 
                     var v2Stream = new MemoryStream();
@@ -61,6 +71,8 @@ namespace NuGet.Protocol.Core.v3.Tests
                         bNonNorm.Id,
                         bNonNorm.Version,
                         v2Stream,
+                        cacheContext,
+                        testLogger,
                         CancellationToken.None);
 
                     var v3Stream = new MemoryStream();
@@ -68,13 +80,37 @@ namespace NuGet.Protocol.Core.v3.Tests
                         bNonNorm.Id,
                         bNonNorm.Version,
                         v3Stream,
+                        cacheContext,
+                        testLogger,
                         CancellationToken.None);
 
-                    var depV2 = await resourceV2.GetDependencyInfoAsync(bNonNorm.Id, bNonNorm.Version, CancellationToken.None);
-                    var depV3 = await resourceV3.GetDependencyInfoAsync(bNonNorm.Id, bNonNorm.Version, CancellationToken.None);
+                    var depV2 = await resourceV2.GetDependencyInfoAsync(
+                        bNonNorm.Id,
+                        bNonNorm.Version,
+                        cacheContext,
+                        testLogger,
+                        CancellationToken.None);
 
-                    var depEmptyV2 = await resourceV2.GetDependencyInfoAsync(bNonNorm.Id, NuGetVersion.Parse("2.9"), CancellationToken.None);
-                    var depEmptyV3 = await resourceV3.GetDependencyInfoAsync(bNonNorm.Id, NuGetVersion.Parse("2.9"), CancellationToken.None);
+                    var depV3 = await resourceV3.GetDependencyInfoAsync(
+                        bNonNorm.Id,
+                        bNonNorm.Version,
+                        cacheContext,
+                        testLogger,
+                        CancellationToken.None);
+
+                    var depEmptyV2 = await resourceV2.GetDependencyInfoAsync(
+                        bNonNorm.Id,
+                        NuGetVersion.Parse("2.9"),
+                        cacheContext,
+                        testLogger,
+                        CancellationToken.None);
+
+                    var depEmptyV3 = await resourceV3.GetDependencyInfoAsync(
+                        bNonNorm.Id,
+                        NuGetVersion.Parse("2.9"),
+                        cacheContext,
+                        testLogger,
+                        CancellationToken.None);
 
                     // Assert
                     Assert.True(versionsV2.SetEquals(versionsV3));

@@ -75,6 +75,7 @@ namespace NuGet.PackageManagement
                     project.PackageSpec,
                     context,
                     providers,
+                    cacheContext,
                     token);
 
                 // Throw before writing if this has been canceled
@@ -95,6 +96,7 @@ namespace NuGet.PackageManagement
             PackageSpec packageSpec,
             ExternalProjectReferenceContext context,
             RestoreCommandProviders providers,
+            SourceCacheContext cacheContext,
             CancellationToken token)
         {
             // Restoring packages
@@ -103,7 +105,7 @@ namespace NuGet.PackageManagement
                 Strings.BuildIntegratedPackageRestoreStarted,
                 project.ProjectName));
 
-            var request = new RestoreRequest(packageSpec, providers, logger);
+            var request = new RestoreRequest(packageSpec, providers, cacheContext, logger);
             request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
 
             // Add the existing lock file if it exists

@@ -8,7 +8,7 @@ using NuGet.Configuration;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Test.Utility;
+using NuGet.Protocol.Test;
 
 namespace NuGet.Commands.Test
 {
@@ -106,6 +106,7 @@ namespace NuGet.Commands.Test
                     sources: sources,
                     cacheContext: cacheContext,
                     log: log),
+                cacheContext,
                 log)
         {
         }

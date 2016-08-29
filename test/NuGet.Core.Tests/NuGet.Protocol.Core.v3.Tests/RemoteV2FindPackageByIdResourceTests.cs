@@ -28,15 +28,18 @@ namespace NuGet.Protocol.Tests
             responses.Add(serviceAddress + "FindPackagesById()?id='a'", "204");
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
+            var logger = new TestLogger();
 
             using (var cacheContext = new SourceCacheContext())
             {
                 var resource = await repo.GetResourceAsync<FindPackageByIdResource>();
-                resource.Logger = NullLogger.Instance;
-                resource.CacheContext = cacheContext;
 
                 // Act
-                var versions = await resource.GetAllVersionsAsync("a", CancellationToken.None);
+                var versions = await resource.GetAllVersionsAsync(
+                    "a",
+                    cacheContext,
+                    logger,
+                    CancellationToken.None);
 
                 // Assert
                 // Verify no items returned, and no exceptions were thrown above
@@ -80,17 +83,18 @@ namespace NuGet.Protocol.Tests
                 };
 
                 var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
+                var logger = new TestLogger();
 
                 using (var cacheContext = new SourceCacheContext())
                 {
                     var resource = await repo.GetResourceAsync<FindPackageByIdResource>();
-                    resource.Logger = NullLogger.Instance;
-                    resource.CacheContext = cacheContext;
 
                     // Act
                     var identity = await resource.GetOriginalIdentityAsync(
                         "XUNIT",
                         new NuGetVersion("2.2.0-BETA1-build3239"),
+                        cacheContext,
+                        logger,
                         CancellationToken.None);
 
                     // Assert
@@ -137,17 +141,18 @@ namespace NuGet.Protocol.Tests
                 };
 
                 var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
+                var logger = new TestLogger();
 
                 using (var cacheContext = new SourceCacheContext())
                 {
                     var resource = await repo.GetResourceAsync<FindPackageByIdResource>();
-                    resource.Logger = NullLogger.Instance;
-                    resource.CacheContext = cacheContext;
 
                     // Act
                     var identity = await resource.GetOriginalIdentityAsync(
                         "WINDOWSAZURE.STORAGE",
                         new NuGetVersion("6.2.2-PREVIEW"),
+                        cacheContext,
+                        logger,
                         CancellationToken.None);
 
                     // Assert

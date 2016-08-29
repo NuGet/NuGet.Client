@@ -4,7 +4,7 @@
 using System;
 using NuGet.Protocol.Core.Types;
 
-namespace NuGet.Protocol.Test.Utility
+namespace NuGet.Protocol.Test
 {
     /// <summary>
     /// This is a test source cache context that should be used in places where it is not convenient to dispose the

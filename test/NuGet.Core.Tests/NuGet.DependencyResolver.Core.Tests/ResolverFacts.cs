@@ -4,8 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
+using NuGet.DependencyResolver.Tests;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Xunit;
 
@@ -31,7 +34,7 @@ namespace NuGet.DependencyResolver.Core.Tests
                 Version = new NuGetVersion("1.0.0")
             });
 
-            var context = new RemoteWalkContext();
+            var context = new TestRemoteWalkContext();
             context.RemoteLibraryProviders.Add(slowProvider);
             context.RemoteLibraryProviders.Add(fastProvider);
 
@@ -71,7 +74,7 @@ namespace NuGet.DependencyResolver.Core.Tests
                 Version = new NuGetVersion("1.1.0")
             });
 
-            var context = new RemoteWalkContext();
+            var context = new TestRemoteWalkContext();
             context.RemoteLibraryProviders.Add(slowProvider);
             context.RemoteLibraryProviders.Add(fastProvider);
 
@@ -110,12 +113,22 @@ namespace NuGet.DependencyResolver.Core.Tests
 
             public bool IsHttp => true;
 
-            public Task CopyToAsync(LibraryIdentity match, Stream stream, CancellationToken cancellationToken)
+            public Task CopyToAsync(
+                LibraryIdentity match,
+                Stream stream,
+                SourceCacheContext cacheContext,
+                ILogger logger,
+                CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
             }
 
-            public async Task<LibraryIdentity> FindLibraryAsync(LibraryRange libraryRange, NuGetFramework targetFramework, CancellationToken cancellationToken)
+            public async Task<LibraryIdentity> FindLibraryAsync(
+                LibraryRange libraryRange,
+                NuGetFramework targetFramework,
+                SourceCacheContext cacheContext,
+                ILogger logger,
+                CancellationToken cancellationToken)
             {
                 if (_delay != TimeSpan.Zero)
                 {
@@ -125,7 +138,12 @@ namespace NuGet.DependencyResolver.Core.Tests
                 return _libraries.FindBestMatch(libraryRange.VersionRange, l => l?.Version);
             }
 
-            public Task<IEnumerable<LibraryDependency>> GetDependenciesAsync(LibraryIdentity match, NuGetFramework targetFramework, CancellationToken cancellationToken)
+            public Task<IEnumerable<LibraryDependency>> GetDependenciesAsync(
+                LibraryIdentity match,
+                NuGetFramework targetFramework,
+                SourceCacheContext cacheContext,
+                ILogger logger,
+                CancellationToken cancellationToken)
             {
                 return Task.FromResult(Enumerable.Empty<LibraryDependency>());
             }

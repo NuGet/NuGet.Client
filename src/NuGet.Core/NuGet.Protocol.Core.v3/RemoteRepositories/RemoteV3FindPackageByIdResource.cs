@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -34,15 +35,24 @@ namespace NuGet.Protocol
 
         public SourceRepository SourceRepository { get; }
         
-        public override async Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, CancellationToken cancellationToken)
+        public override async Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(
+            string id,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
-            var result = await EnsurePackagesAsync(id, cancellationToken);
+            var result = await EnsurePackagesAsync(id, logger, cancellationToken);
             return result.Select(item => item.Identity.Version);
         }
 
-        public override async Task<PackageIdentity> GetOriginalIdentityAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
+        public override async Task<PackageIdentity> GetOriginalIdentityAsync(
+            string id,
+            NuGetVersion version,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
-            var packageInfo = await GetPackageInfoAsync(id, version, cancellationToken);
+            var packageInfo = await GetPackageInfoAsync(id, version, logger, cancellationToken);
             if (packageInfo == null)
             {
                 return null;
@@ -51,9 +61,14 @@ namespace NuGet.Protocol
             return packageInfo.Identity;
         }
 
-        public override async Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
+        public override async Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(
+            string id,
+            NuGetVersion version,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
-            var packageInfo = await GetPackageInfoAsync(id, version, cancellationToken);
+            var packageInfo = await GetPackageInfoAsync(id, version, logger, cancellationToken);
             if (packageInfo == null)
             {
                 return null;
@@ -62,8 +77,8 @@ namespace NuGet.Protocol
             var reader = await _nupkgDownloader.GetNuspecReaderFromNupkgAsync(
                 packageInfo.Identity,
                 packageInfo.ContentUri,
-                CacheContext,
-                Logger,
+                cacheContext,
+                logger,
                 cancellationToken);
 
             return GetDependencyInfo(reader);
@@ -73,9 +88,11 @@ namespace NuGet.Protocol
             string id,
             NuGetVersion version,
             Stream destination,
+            SourceCacheContext cacheContext,
+            ILogger logger,
             CancellationToken cancellationToken)
         {
-            var packageInfo = await GetPackageInfoAsync(id, version, cancellationToken);
+            var packageInfo = await GetPackageInfoAsync(id, version, logger, cancellationToken);
             if (packageInfo == null)
             {
                 return false;
@@ -85,18 +102,25 @@ namespace NuGet.Protocol
                 packageInfo.Identity,
                 packageInfo.ContentUri,
                 destination,
-                CacheContext,
-                Logger,
+                cacheContext,
+                logger,
                 cancellationToken);
         }
 
-        private async Task<RemoteSourceDependencyInfo> GetPackageInfoAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
+        private async Task<RemoteSourceDependencyInfo> GetPackageInfoAsync(
+            string id,
+            NuGetVersion version,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
-            var packageInfos = await EnsurePackagesAsync(id, cancellationToken);
+            var packageInfos = await EnsurePackagesAsync(id, logger, cancellationToken);
             return packageInfos.FirstOrDefault(p => p.Identity.Version == version);
         }
 
-        private Task<IEnumerable<RemoteSourceDependencyInfo>> EnsurePackagesAsync(string id, CancellationToken cancellationToken)
+        private Task<IEnumerable<RemoteSourceDependencyInfo>> EnsurePackagesAsync(
+            string id,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
             Task<IEnumerable<RemoteSourceDependencyInfo>> task;
 
@@ -104,7 +128,7 @@ namespace NuGet.Protocol
             {
                 if (!_packageVersionsCache.TryGetValue(id, out task))
                 {
-                    task = FindPackagesByIdAsyncCore(id, cancellationToken);
+                    task = FindPackagesByIdAsyncCore(id, logger, cancellationToken);
                     _packageVersionsCache[id] = task;
                 }
             }
@@ -112,12 +136,15 @@ namespace NuGet.Protocol
             return task;
         }
 
-        private async Task<IEnumerable<RemoteSourceDependencyInfo>> FindPackagesByIdAsyncCore(string id, CancellationToken cancellationToken)
+        private async Task<IEnumerable<RemoteSourceDependencyInfo>> FindPackagesByIdAsyncCore(
+            string id,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
             // This is invoked from inside a lock.
             await EnsureDependencyProvider(cancellationToken);
 
-            return await _dependencyInfoResource.ResolvePackages(id, Logger, cancellationToken);
+            return await _dependencyInfoResource.ResolvePackages(id, logger, cancellationToken);
         }
 
         private async Task EnsureDependencyProvider(CancellationToken cancellationToken)

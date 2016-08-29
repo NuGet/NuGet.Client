@@ -5,7 +5,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -52,16 +51,18 @@ namespace NuGet.Protocol.Tests
                 };
 
                 var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
+                var logger = new TestLogger();
+
                 using (var cacheContext = new SourceCacheContext())
                 {
                     var resource = await repo.GetResourceAsync<FindPackageByIdResource>();
-                    resource.Logger = NullLogger.Instance;
-                    resource.CacheContext = cacheContext;
 
                     // Act
                     var identity = await resource.GetOriginalIdentityAsync(
                         "DEEPEQUAL",
                         new NuGetVersion("1.4.0.1-RC"),
+                        cacheContext,
+                        logger,
                         CancellationToken.None);
 
                     // Assert

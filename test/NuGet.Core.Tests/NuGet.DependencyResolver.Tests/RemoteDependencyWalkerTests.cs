@@ -4,8 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Xunit;
 
@@ -16,7 +18,7 @@ namespace NuGet.DependencyResolver.Tests
         [Fact]
         public async Task AllowPreleaseVersionNoConflict()
         {
-            var context = new RemoteWalkContext();
+            var context = new TestRemoteWalkContext();
             var provider = new DependencyProvider();
             provider.Package("A", "1.0-beta")
                     .DependsOn("B", "1.0")
@@ -44,7 +46,7 @@ namespace NuGet.DependencyResolver.Tests
         [Fact]
         public async Task CyclesAreDetected()
         {
-            var context = new RemoteWalkContext();
+            var context = new TestRemoteWalkContext();
             var provider = new DependencyProvider();
             provider.Package("A", "1.0")
                     .DependsOn("B", "2.0");
@@ -68,7 +70,7 @@ namespace NuGet.DependencyResolver.Tests
         [Fact]
         public async Task CyclesAreDetectedIf2VersionsOfTheSamePackageId()
         {
-            var context = new RemoteWalkContext();
+            var context = new TestRemoteWalkContext();
             var provider = new DependencyProvider();
             provider.Package("A", "1.0")
                     .DependsOn("B", "2.0");
@@ -92,7 +94,7 @@ namespace NuGet.DependencyResolver.Tests
         [Fact]
         public async Task DeepCycleCheck()
         {
-            var context = new RemoteWalkContext();
+            var context = new TestRemoteWalkContext();
             var provider = new DependencyProvider();
             provider.Package("A", "1.0")
                     .DependsOn("B", "2.0");
@@ -124,7 +126,7 @@ namespace NuGet.DependencyResolver.Tests
         [Fact]
         public async Task DependencyRangesButNoConflict()
         {
-            var context = new RemoteWalkContext();
+            var context = new TestRemoteWalkContext();
             var provider = new DependencyProvider();
             provider.Package("A", "1.0")
                     .DependsOn("B", "2.0")
@@ -157,7 +159,7 @@ namespace NuGet.DependencyResolver.Tests
         [Fact]
         public async Task SingleConflict()
         {
-            var context = new RemoteWalkContext();
+            var context = new TestRemoteWalkContext();
             var provider = new DependencyProvider();
             provider.Package("A", "1.0")
                     .DependsOn("B", "2.0")
@@ -191,7 +193,7 @@ namespace NuGet.DependencyResolver.Tests
         [Fact]
         public async Task SingleConflictWhereConflictingDependenyIsUnresolved()
         {
-            var context = new RemoteWalkContext();
+            var context = new TestRemoteWalkContext();
             var provider = new DependencyProvider();
             provider.Package("A", "1.0")
                     .DependsOn("B", "2.0")
@@ -224,7 +226,7 @@ namespace NuGet.DependencyResolver.Tests
         [Fact]
         public async Task StrictDependenciesButNoConflict()
         {
-            var context = new RemoteWalkContext();
+            var context = new TestRemoteWalkContext();
             var provider = new DependencyProvider();
             provider.Package("A", "1.0")
                     .DependsOn("B", "2.0")
@@ -251,7 +253,7 @@ namespace NuGet.DependencyResolver.Tests
         [Fact]
         public async Task ConflictAtDifferentLevel()
         {
-            var context = new RemoteWalkContext();
+            var context = new TestRemoteWalkContext();
             var provider = new DependencyProvider();
             provider.Package("A", "1.0")
                     .DependsOn("B", "2.0")
@@ -295,7 +297,7 @@ namespace NuGet.DependencyResolver.Tests
         [Fact]
         public async Task TryResolveConflicts_ThrowsIfPackageConstraintCannotBeResolved()
         {
-            var context = new RemoteWalkContext();
+            var context = new TestRemoteWalkContext();
             var provider = new DependencyProvider();
             provider.Package("Root", "1.0")
                     .DependsOn("A", "1.0")
@@ -329,7 +331,7 @@ namespace NuGet.DependencyResolver.Tests
         [Fact]
         public async Task TryResolveConflicts_WorksWhenVersionRangeIsNotSpecified()
         {
-            var context = new RemoteWalkContext();
+            var context = new TestRemoteWalkContext();
             var provider = new DependencyProvider();
             provider.Package("Root", "1.0")
                     .DependsOn("A", "1.0")
@@ -368,7 +370,7 @@ namespace NuGet.DependencyResolver.Tests
         [Fact]
         public async Task NearestWinsOverridesStrictDependency()
         {
-            var context = new RemoteWalkContext();
+            var context = new TestRemoteWalkContext();
             var provider = new DependencyProvider();
             provider.Package("A", "1.0")
                     .DependsOn("B", "2.0")
@@ -398,7 +400,7 @@ namespace NuGet.DependencyResolver.Tests
         [Fact]
         public async Task NearestWinsOverridesStrictDependencyButDowngradeWarns()
         {
-            var context = new RemoteWalkContext();
+            var context = new TestRemoteWalkContext();
             var provider = new DependencyProvider();
             provider.Package("A", "1.0")
                     .DependsOn("B", "2.0")
@@ -433,7 +435,7 @@ namespace NuGet.DependencyResolver.Tests
         [Fact]
         public async Task DowngradeSkippedIfEqual()
         {
-            var context = new RemoteWalkContext();
+            var context = new TestRemoteWalkContext();
             var provider = new DependencyProvider();
             provider.Package("A", "1.0")
                     .DependsOn("B", "2.0")
@@ -456,7 +458,7 @@ namespace NuGet.DependencyResolver.Tests
         [Fact]
         public async Task DowngradeAtRootIsDetected()
         {
-            var context = new RemoteWalkContext();
+            var context = new TestRemoteWalkContext();
             var provider = new DependencyProvider();
             provider.Package("A", "1.0")
                     .DependsOn("B", "2.0")
@@ -485,7 +487,7 @@ namespace NuGet.DependencyResolver.Tests
         [Fact]
         public async Task DowngradeNotAtRootIsDetected()
         {
-            var context = new RemoteWalkContext();
+            var context = new TestRemoteWalkContext();
             var provider = new DependencyProvider();
             provider.Package("A", "1.0")
                     .DependsOn("B", "2.0");
@@ -516,7 +518,7 @@ namespace NuGet.DependencyResolver.Tests
         [Fact]
         public async Task DowngradeOverddienByCousinCheck()
         {
-            var context = new RemoteWalkContext();
+            var context = new TestRemoteWalkContext();
             var provider = new DependencyProvider();
             provider.Package("A", "1.0")
                     .DependsOn("B", "1.0")
@@ -548,7 +550,7 @@ namespace NuGet.DependencyResolver.Tests
         [Fact]
         public async Task PotentialDowngradeThenUpgrade()
         {
-            var context = new RemoteWalkContext();
+            var context = new TestRemoteWalkContext();
             var provider = new DependencyProvider();
             provider.Package("A", "1.0")
                     .DependsOn("B", "1.2")
@@ -579,7 +581,7 @@ namespace NuGet.DependencyResolver.Tests
         [Fact]
         public async Task DowngradeThenUpgradeThenDowngrade()
         {
-            var context = new RemoteWalkContext();
+            var context = new TestRemoteWalkContext();
             var provider = new DependencyProvider();
             provider.Package("A", "1.0")
                     .DependsOn("B", "1.0")
@@ -613,7 +615,7 @@ namespace NuGet.DependencyResolver.Tests
         [Fact]
         public async Task UpgradeThenDowngradeThenEqual()
         {
-            var context = new RemoteWalkContext();
+            var context = new TestRemoteWalkContext();
             var provider = new DependencyProvider();
             provider.Package("A", "1.0")
                     .DependsOn("B", "2.0")
@@ -642,7 +644,7 @@ namespace NuGet.DependencyResolver.Tests
         [Fact]
         public async Task DoubleDowngrade()
         {
-            var context = new RemoteWalkContext();
+            var context = new TestRemoteWalkContext();
             var provider = new DependencyProvider();
             provider.Package("A", "1.0")
                     .DependsOn("B", "0.7")
@@ -823,19 +825,34 @@ namespace NuGet.DependencyResolver.Tests
                 }
             }
 
-            public Task CopyToAsync(LibraryIdentity match, Stream stream, CancellationToken cancellationToken)
+            public Task CopyToAsync(
+                LibraryIdentity match,
+                Stream stream,
+                SourceCacheContext cacheContext,
+                ILogger logger,
+                CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
             }
 
-            public Task<LibraryIdentity> FindLibraryAsync(LibraryRange libraryRange, NuGetFramework targetFramework, CancellationToken cancellationToken)
+            public Task<LibraryIdentity> FindLibraryAsync(
+                LibraryRange libraryRange,
+                NuGetFramework targetFramework,
+                SourceCacheContext cacheContext,
+                ILogger logger,
+                CancellationToken cancellationToken)
             {
                 var packages = _graph.Keys.Where(p => p.Name == libraryRange.Name);
 
                 return Task.FromResult(packages.FindBestMatch(libraryRange.VersionRange, i => i?.Version));
             }
 
-            public Task<IEnumerable<LibraryDependency>> GetDependenciesAsync(LibraryIdentity match, NuGetFramework targetFramework, CancellationToken cancellationToken)
+            public Task<IEnumerable<LibraryDependency>> GetDependenciesAsync(
+                LibraryIdentity match,
+                NuGetFramework targetFramework,
+                SourceCacheContext cacheContext,
+                ILogger logger,
+                CancellationToken cancellationToken)
             {
                 List<LibraryDependency> dependencies;
                 if (_graph.TryGetValue(match, out dependencies))
