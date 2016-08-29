@@ -23,11 +23,27 @@ namespace NuGet.Commands.Test
                   project,
                   sources,
                   packagesDirectory,
-                  new List<string>(),
+                  new TestSourceCacheContext(),
                   log)
         {
         }
-        
+
+        public TestRestoreRequest(
+            PackageSpec project,
+            IEnumerable<PackageSource> sources,
+            string packagesDirectory,
+            SourceCacheContext cacheContext,
+            ILogger log)
+            : this(
+                  project,
+                  sources,
+                  packagesDirectory,
+                  new List<string>(),
+                  cacheContext,
+                  log)
+        {
+        }
+
         public TestRestoreRequest(
             PackageSpec project,
             IEnumerable<PackageSource> sources,
@@ -36,25 +52,59 @@ namespace NuGet.Commands.Test
             ILogger log)
             : this(
                   project,
-                  sources.Select(source => Repository.Factory.GetCoreV3(source.Source)),
+                  sources,
                   packagesDirectory,
                   fallbackPackageFolders,
+                  new TestSourceCacheContext(),
                   log)
         {
         }
-        
+
+        public TestRestoreRequest(
+            PackageSpec project,
+            IEnumerable<PackageSource> sources,
+            string packagesDirectory,
+            IEnumerable<string> fallbackPackageFolders,
+            SourceCacheContext cacheContext,
+            ILogger log)
+            : this(
+                  project,
+                  sources.Select(source => Repository.Factory.GetCoreV3(source.Source)),
+                  packagesDirectory,
+                  fallbackPackageFolders,
+                  cacheContext,
+                  log)
+        {
+        }
+
         public TestRestoreRequest(
             PackageSpec project,
             IEnumerable<SourceRepository> sources,
             string packagesDirectory,
             IEnumerable<string> fallbackPackageFolders,
+            ILogger log) : this(
+                project,
+                sources,
+                packagesDirectory,
+                fallbackPackageFolders,
+                new TestSourceCacheContext(),
+                log)
+        {
+        }
+
+        public TestRestoreRequest(
+            PackageSpec project,
+            IEnumerable<SourceRepository> sources,
+            string packagesDirectory,
+            IEnumerable<string> fallbackPackageFolders,
+            SourceCacheContext cacheContext,
             ILogger log) : base(
                 project,
                 RestoreCommandProviders.Create(
                     packagesDirectory,
                     fallbackPackageFolderPaths: fallbackPackageFolders,
                     sources: sources,
-                    cacheContext: new TestSourceCacheContext(),
+                    cacheContext: cacheContext,
                     log: log),
                 log)
         {

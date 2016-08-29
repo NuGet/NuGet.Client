@@ -10,7 +10,7 @@ namespace NuGet.Protocol.Core.Types
     {
         private HttpSourceCacheContext(string rootTempFolder, TimeSpan maxAge, bool directDownload)
         {
-            if (maxAge == TimeSpan.Zero)
+            if (maxAge <= TimeSpan.Zero)
             {
                 if (rootTempFolder == null)
                 {
@@ -46,7 +46,7 @@ namespace NuGet.Protocol.Core.Types
                 throw new ArgumentNullException(nameof(cacheContext));
             }
 
-            if (retryCount == 0)
+            if (retryCount == 0 && cacheContext.MaxAgeTimeSpan > TimeSpan.Zero)
             {
                 return new HttpSourceCacheContext(
                     rootTempFolder: null,
