@@ -20,9 +20,9 @@ namespace NuGet.DependencyResolver
             Ambiguous
         }
 
-        public static AnalyzeResult<TItem> Analyze<TItem>(this GraphNode<TItem> root)
+        public static AnalyzeResult<RemoteResolveResult> Analyze(this GraphNode<RemoteResolveResult> root)
         {
-            var result = new AnalyzeResult<TItem>();
+            var result = new AnalyzeResult<RemoteResolveResult>();
 
             root.CheckCycleAndNearestWins(result.Downgrades, result.Cycles);
             root.TryResolveConflicts(result.VersionConflicts);
@@ -33,27 +33,34 @@ namespace NuGet.DependencyResolver
             return result;
         }
 
-        private static void CheckCycleAndNearestWins<TItem>(this GraphNode<TItem> root,
-                                                           List<DowngradeResult<TItem>> downgrades,
-                                                           List<GraphNode<TItem>> cycles)
+        private static void CheckCycleAndNearestWins(
+            this GraphNode<RemoteResolveResult> root,
+            List<DowngradeResult<RemoteResolveResult>> downgrades,
+            List<GraphNode<RemoteResolveResult>> cycles)
         {
-            // Cycle
-
+            // Cycle:
+            //
             // A -> B -> A (cycle)
-
-            // Downgrade
-
+            //
+            // Downgrade:
+            //
             // A -> B -> C -> D 2.0 (downgrade)
             //        -> D 1.0
+            //
+            // Potential downgrades that turns out to not be downgrades:
+            //
+            // 1. This should never happen in practice since B would have never been valid to begin with.
+            //
+            //    A -> B -> C -> D 2.0
+            //           -> D 1.0
+            //      -> D 2.0
+            //
+            // 2. This occurs if none of the sources have version C 1.0 so C 1.0 is bumped up to C 2.0.
+            // 
+            //   A -> B -> C 2.0
+            //     -> C 1.0
 
-            // Potential downgrade that turns out to not downgrade
-            // This should never happen in practice since B would have never been valid to begin with.
-
-            // A -> B -> C -> D 2.0
-            //        -> D 1.0
-            //   -> D 2.0
-
-            var workingDowngrades = new Dictionary<GraphNode<TItem>, GraphNode<TItem>>();
+            var workingDowngrades = new Dictionary<GraphNode<RemoteResolveResult>, GraphNode<RemoteResolveResult>>();
 
             root.ForEach(node =>
             {
@@ -86,6 +93,16 @@ namespace NuGet.DependencyResolver
                                 node.Key.VersionRange != null &&
                                 !RemoteDependencyWalker.IsGreaterThanOrEqualTo(sideNode.Key.VersionRange, node.Key.VersionRange))
                             {
+                                // Is the resolved version actually within node's version range? This happen if there
+                                // was a different request for a lower version of the library than this version range
+                                // allows but no matching library was found, so the library is bumped up into this
+                                // version range.
+                                var resolvedVersion = sideNode?.Item?.Data?.Match?.Library?.Version;
+                                if (resolvedVersion != null && node.Key.VersionRange.Satisfies(resolvedVersion))
+                                {
+                                    continue;
+                                }
+
                                 workingDowngrades[node] = sideNode;
                             }
                             else
@@ -101,7 +118,7 @@ namespace NuGet.DependencyResolver
                 node.OuterNode.InnerNodes.Remove(node);
             });
 
-            downgrades.AddRange(workingDowngrades.Select(p => new DowngradeResult<TItem>
+            downgrades.AddRange(workingDowngrades.Select(p => new DowngradeResult<RemoteResolveResult>
             {
                 DowngradedFrom = p.Key,
                 DowngradedTo = p.Value
@@ -143,7 +160,14 @@ namespace NuGet.DependencyResolver
 
         private static string PrettyPrint<TItem>(this GraphNode<TItem> node)
         {
-            return node.Key.Name + " " + node.Key.VersionRange?.ToNonSnapshotRange().PrettyPrint();
+            var key = node.Item?.Key ?? node.Key;
+
+            if (key.VersionRange == null)
+            {
+                return key.Name;
+            }
+
+            return key.Name + " " + key.VersionRange.ToNonSnapshotRange().PrettyPrint();
         }
 
         private static bool TryResolveConflicts<TItem>(this GraphNode<TItem> root, List<VersionConflictResult<TItem>> versionConflicts)
