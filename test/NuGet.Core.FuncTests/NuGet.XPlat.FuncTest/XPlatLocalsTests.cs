@@ -122,12 +122,12 @@ namespace NuGet.XPlat.FuncTest
                 }
                 else if (cacheType == "http-cache")
                 {
-                    // Only the http cache cache should be cleared
+                    // Only the http cache should be cleared
                     Assert.True(Directory.Exists(mockGlobalPackagesDirectory.FullName));
                     Assert.False(Directory.Exists(mockHttpCacheDirectory.FullName));
                     Assert.True(Directory.Exists(mockTmpCacheDirectory.FullName));
                 }
-                else
+                else if (cacheType == "temp")
                 {
                     // Only the temp cache should be cleared
                     Assert.True(Directory.Exists(mockGlobalPackagesDirectory.FullName));
@@ -139,7 +139,6 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Theory]
-        [InlineData("locals")]
         [InlineData("locals --list")]
         [InlineData("locals -l")]
         [InlineData("locals --clear")]
@@ -147,7 +146,9 @@ namespace NuGet.XPlat.FuncTest
         public static void Locals_Success_InvalidArguments_HelpMessage(string args)
         {
             // Arrange
-            var expectedResult = string.Concat("error: usage: NuGet locals <all | http-cache | global-packages | temp> [--clear | -c | --list | -l]",
+            var expectedResult = string.Concat("error: No Cache Type was specified. ", 
+                                               Environment.NewLine,
+                                               "error: usage: NuGet locals <all | http-cache | global-packages | temp> [--clear | -c | --list | -l]", 
                                                Environment.NewLine,
                                                "error: For more information, visit http://docs.nuget.org/docs/reference/command-line-reference");
 
@@ -194,6 +195,60 @@ namespace NuGet.XPlat.FuncTest
             // Arrange
             var expectedResult = string.Concat("Specify --help for a list of available options and commands.",
                                                Environment.NewLine, "error: Unrecognized option '", args.Split(null)[1], "'");
+
+            // Act
+            var result = CommandRunner.Run(
+              DotnetCliUtil.GetDotnetCli(),
+              Directory.GetCurrentDirectory(),
+              DotnetCliUtil.GetXplatDll() + " " + args,
+              waitForExit: true);
+
+            // Assert
+            DotnetCliUtil.VerifyResultFailure(result, expectedResult);
+        }
+
+        [Theory]
+        [InlineData("locals all")]
+        [InlineData("locals http-cache")]
+        [InlineData("locals global-packages")]
+        [InlineData("locals temp")]
+        public static void Locals_Success_NoFlags_HelpMessage(string args)
+        {
+            // Arrange
+            var expectedResult = string.Concat("error: Please specify an operation i.e. --list or --clear.",
+                                               Environment.NewLine,
+                                               "error: usage: NuGet locals <all | http-cache | global-packages | temp> [--clear | -c | --list | -l]",
+                                               Environment.NewLine,
+                                               "error: For more information, visit http://docs.nuget.org/docs/reference/command-line-reference");
+
+            // Act
+            var result = CommandRunner.Run(
+              DotnetCliUtil.GetDotnetCli(),
+              Directory.GetCurrentDirectory(),
+              DotnetCliUtil.GetXplatDll() + " " + args,
+              waitForExit: true);
+
+            // Assert
+            DotnetCliUtil.VerifyResultFailure(result, expectedResult);
+        }
+
+        [Theory]
+        [InlineData("locals -c -l all")]
+        [InlineData("locals -c -l global-packages")]
+        [InlineData("locals -c -l http-cache")]
+        [InlineData("locals -c -l temp")]
+        [InlineData("locals --clear --list all")]
+        [InlineData("locals --clear --list global-packages")]
+        [InlineData("locals --clear --list http-cache")]
+        [InlineData("locals --clear --list temp")]
+        public static void Locals_Success_BothFlags_HelpMessage(string args)
+        {
+            // Arrange
+            var expectedResult = string.Concat("error: Both operations, --list and --clear, are not supported in the same command. Please specify only one operation.",
+                                               Environment.NewLine,
+                                               "error: usage: NuGet locals <all | http-cache | global-packages | temp> [--clear | -c | --list | -l]",
+                                               Environment.NewLine,
+                                               "error: For more information, visit http://docs.nuget.org/docs/reference/command-line-reference");
 
             // Act
             var result = CommandRunner.Run(
