@@ -53,7 +53,7 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
                 var logger = new TestLogger();
-                var request = new RestoreRequest(
+                var request = new TestRestoreRequest(
                     spec1,
                     sources,
                     packagesDir.FullName,
@@ -149,7 +149,7 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
                 var logger = new TestLogger();
-                var request = new RestoreRequest(
+                var request = new TestRestoreRequest(
                     spec1,
                     sources,
                     packagesDir.FullName,
@@ -237,7 +237,7 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
                 var logger = new TestLogger();
-                var request = new RestoreRequest(
+                var request = new TestRestoreRequest(
                     spec1,
                     sources,
                     packagesDir.FullName,
@@ -330,7 +330,7 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
                 var logger = new TestLogger();
-                var request = new RestoreRequest(
+                var request = new TestRestoreRequest(
                     spec1,
                     sources,
                     packagesDir.FullName,
@@ -414,7 +414,7 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
                 var logger = new TestLogger();
-                var request = new RestoreRequest(
+                var request = new TestRestoreRequest(
                     spec1,
                     sources,
                     packagesDir.FullName,
@@ -488,7 +488,7 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
                 var logger = new TestLogger();
-                var request = new RestoreRequest(
+                var request = new TestRestoreRequest(
                     spec1,
                     sources,
                     packagesDir.FullName,

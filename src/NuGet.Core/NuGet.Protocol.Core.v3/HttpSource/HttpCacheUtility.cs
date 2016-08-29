@@ -23,20 +23,17 @@ namespace NuGet.Protocol
             string cacheKey,
             HttpSourceCacheContext context)
         {
-            var baseFolderName = RemoveInvalidFileNameChars(ComputeHash(sourceUri.OriginalString));
-            var baseFileName = RemoveInvalidFileNameChars(cacheKey) + ".dat";
-            var cacheFolder = Path.Combine(httpCacheDirectory, baseFolderName);
-            var cacheFile = Path.Combine(cacheFolder, baseFileName);
-            var newCacheFile = cacheFile + "-new";
-
-            var temporaryFile = Path.Combine(context.RootTempFolder, Path.GetRandomFileName());
-            var newTemporaryFile = Path.Combine(context.RootTempFolder, Path.GetRandomFileName());
-
             // When the MaxAge is TimeSpan.Zero, this means the caller is passing is using a temporary directory for
             // cache files, instead of the global HTTP cache used by default. Additionally, the cleaning up of this
             // directory is the responsibility of the caller.
-            if (!context.MaxAge.Equals(TimeSpan.Zero))
+            if (context.MaxAge > TimeSpan.Zero)
             {
+                var baseFolderName = RemoveInvalidFileNameChars(ComputeHash(sourceUri.OriginalString));
+                var baseFileName = RemoveInvalidFileNameChars(cacheKey) + ".dat";
+                var cacheFolder = Path.Combine(httpCacheDirectory, baseFolderName);
+                var cacheFile = Path.Combine(cacheFolder, baseFileName);
+                var newCacheFile = cacheFile + "-new";
+
                 return new HttpCacheResult(
                     context.MaxAge,
                     newCacheFile,
@@ -44,6 +41,9 @@ namespace NuGet.Protocol
             }
             else
             {
+                var temporaryFile = Path.Combine(context.RootTempFolder, Path.GetRandomFileName());
+                var newTemporaryFile = Path.Combine(context.RootTempFolder, Path.GetRandomFileName());
+
                 return new HttpCacheResult(
                     context.MaxAge,
                     newTemporaryFile,

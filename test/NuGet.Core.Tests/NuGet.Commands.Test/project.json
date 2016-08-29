@@ -7,6 +7,9 @@
     "NuGet.Test.Utility": {
       "target": "project"
     },
+    "NuGet.Commands.Test.Utility": {
+      "target": "project"
+    },
     "xunit": "2.1.0"
   },
   "frameworks": {

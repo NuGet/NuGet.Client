@@ -68,7 +68,7 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var command = new RestoreCommand(request);
@@ -137,7 +137,7 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var command = new RestoreCommand(request);
@@ -206,7 +206,7 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var command = new RestoreCommand(request);
@@ -281,7 +281,7 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
@@ -377,7 +377,7 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
@@ -476,7 +476,7 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
@@ -572,7 +572,7 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
@@ -661,7 +661,7 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var format = new LockFileFormat();
@@ -736,7 +736,7 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var format = new LockFileFormat();
@@ -807,7 +807,7 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var command = new RestoreCommand(request);
@@ -877,7 +877,7 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var command = new RestoreCommand(request);
@@ -947,7 +947,7 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var command = new RestoreCommand(request);
@@ -1024,7 +1024,7 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
@@ -1099,7 +1099,7 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
@@ -1177,7 +1177,7 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
@@ -1256,7 +1256,7 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
@@ -1336,7 +1336,7 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
@@ -1417,7 +1417,7 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
@@ -1500,7 +1500,7 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
@@ -1583,7 +1583,7 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
@@ -1660,7 +1660,7 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
@@ -1732,7 +1732,7 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
@@ -1787,7 +1787,7 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
@@ -1944,7 +1944,7 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
@@ -2001,7 +2001,7 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 

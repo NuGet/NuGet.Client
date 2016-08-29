@@ -79,7 +79,7 @@ namespace NuGet.Protocol.Core.Types
             return timeSpan;
         }
 
-        public string GeneratedTempFolder
+        public virtual string GeneratedTempFolder
         {
             get
             {

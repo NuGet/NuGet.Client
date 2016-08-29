@@ -271,7 +271,7 @@ namespace NuGet.Commands.Test
 
         private static RestoreRequest GetRestoreRequest(string packagesDirectory, TestLogger logger, params string[] fallbackDirectories)
         {
-            return new RestoreRequest(
+            return new TestRestoreRequest(
                 new PackageSpec(new JObject()),
                 Enumerable.Empty<PackageSource>(),
                 packagesDirectory,

@@ -3,94 +3,22 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.ProjectModel;
-using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Commands
 {
-    public class RestoreRequest : IDisposable
+    public class RestoreRequest
     {
         public static readonly int DefaultDegreeOfConcurrency = 16;
-        private readonly bool _disposeProviders;
-
-        /// <summary>
-        /// This overload should only be used by tests.
-        /// </summary>
-        public RestoreRequest(
-            PackageSpec project,
-            IEnumerable<PackageSource> sources,
-            string packagesDirectory,
-            ILogger log)
-            : this(
-                  project,
-                  sources,
-                  packagesDirectory,
-                  new List<string>(),
-                  log)
-        {
-        }
-
-        /// <summary>
-        /// This overload should only be used by tests.
-        /// </summary>
-        public RestoreRequest(
-            PackageSpec project,
-            IEnumerable<PackageSource> sources,
-            string packagesDirectory,
-            IEnumerable<string> fallbackPackageFolders,
-            ILogger log)
-            : this(
-                  project,
-                  sources.Select(source => Repository.Factory.GetCoreV3(source.Source)),
-                  packagesDirectory,
-                  fallbackPackageFolders,
-                  log)
-        {
-        }
         
-        /// <summary>
-        /// This overload should only be used by tests.
-        /// </summary>
-        public RestoreRequest(
-            PackageSpec project,
-            IEnumerable<SourceRepository> sources,
-            string packagesDirectory,
-            IEnumerable<string> fallbackPackageFolders,
-            ILogger log) : this(
-                project,
-                RestoreCommandProviders.Create(
-                    packagesDirectory,
-                    fallbackPackageFolderPaths: fallbackPackageFolders,
-                    sources: sources,
-                    cacheContext: new SourceCacheContext(),
-                    log: log),
-                log)
-        {
-        }
-
-        /// <summary>
-        /// This overload should only be used by tests.
-        /// </summary>
         public RestoreRequest(
             PackageSpec project,
             RestoreCommandProviders dependencyProviders,
             ILogger log)
-            : this(project, dependencyProviders, log, disposeProviders: true)
-        {
-        }
-
-        public RestoreRequest(
-            PackageSpec project,
-            RestoreCommandProviders dependencyProviders,
-            ILogger log,
-            bool disposeProviders)
         {
             if (project == null)
             {
@@ -118,8 +46,6 @@ namespace NuGet.Commands
             Log = log;
 
             DependencyProviders = dependencyProviders;
-
-            _disposeProviders = disposeProviders;
         }
 
         public ILogger Log { get; set; }
@@ -202,13 +128,5 @@ namespace NuGet.Commands
         /// This includes both remote and local package providers.
         /// </summary>
         public RestoreCommandProviders DependencyProviders { get; set; }
-
-        public void Dispose()
-        {
-            if (_disposeProviders)
-            {
-                DependencyProviders.Dispose();
-            }
-        }
     }
 }

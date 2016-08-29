@@ -91,8 +91,7 @@ namespace NuGet.Commands
             var request = new RestoreRequest(
                 project.PackageSpec,
                 sharedCache,
-                restoreContext.Log,
-                disposeProviders: false);
+                restoreContext.Log);
 
             restoreContext.ApplyStandardProperties(request);
 

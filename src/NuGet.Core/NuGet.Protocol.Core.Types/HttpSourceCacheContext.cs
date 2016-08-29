@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -9,6 +10,20 @@ namespace NuGet.Protocol.Core.Types
     {
         private HttpSourceCacheContext(string rootTempFolder, TimeSpan maxAge, bool directDownload)
         {
+            if (maxAge == TimeSpan.Zero)
+            {
+                if (rootTempFolder == null)
+                {
+                    throw new ArgumentNullException(nameof(rootTempFolder));
+                }
+            }
+            else
+            {
+                Debug.Assert(
+                    rootTempFolder == null,
+                    $"{nameof(rootTempFolder)} should be null when {nameof(maxAge)} is not zero.");
+            }
+
             RootTempFolder = rootTempFolder;
             MaxAge = maxAge;
             DirectDownload = directDownload;
@@ -34,9 +49,9 @@ namespace NuGet.Protocol.Core.Types
             if (retryCount == 0)
             {
                 return new HttpSourceCacheContext(
-                    cacheContext.GeneratedTempFolder,
-                    cacheContext.MaxAgeTimeSpan,
-                    cacheContext.DirectDownload);
+                    rootTempFolder: null,
+                    maxAge: cacheContext.MaxAgeTimeSpan,
+                    directDownload: cacheContext.DirectDownload);
             }
             else
             {
