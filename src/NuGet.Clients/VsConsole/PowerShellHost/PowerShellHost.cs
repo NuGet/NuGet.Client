@@ -69,6 +69,11 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         // store the current CancellationToken. This will be set on the private data
         private CancellationToken _token;
 
+        public PSLanguageMode LanguageMode
+        {
+            get; private set;
+        }
+
         protected PowerShellHost(string name, IRunspaceManager runspaceManager)
         {
             _runspaceManager = runspaceManager;
@@ -258,6 +263,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             var result = _runspaceManager.GetRunspace(console, _name);
                             Runspace = result.Item1;
                             _nugetHost = result.Item2;
+
+                            if (Runspace.LanguageMode != PSLanguageMode.FullLanguage)
+                            {
+                                console.Write(String.Format(CultureInfo.CurrentCulture, Resources.LanguageModeWarning, Runspace.LanguageMode.ToString()) + Environment.NewLine,
+                                    Colors.Black, Colors.Yellow);
+                            }
 
                             _initialized = true;
 

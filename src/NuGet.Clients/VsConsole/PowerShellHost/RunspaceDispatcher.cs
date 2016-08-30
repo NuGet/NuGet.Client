@@ -39,9 +39,15 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             get { return _runspace.RunspaceAvailability; }
         }
 
-        public RunspaceDispatcher(Runspace runspace)
+        public PSLanguageMode LanguageMode
+        {
+            get;
+        }
+
+        public RunspaceDispatcher(Runspace runspace, PSLanguageMode languageMode)
         {
             _runspace = runspace;
+            LanguageMode = languageMode;
         }
 
         public void MakeDefault()

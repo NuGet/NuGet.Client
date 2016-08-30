@@ -79,6 +79,15 @@ namespace NuGetConsole {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Warning: language mode for current session is {0}, it might impact powershell script running..
+        /// </summary>
+        public static string LanguageModeWarning {
+            get {
+                return ResourceManager.GetString("LanguageModeWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package Manager.
         /// </summary>
         public static string OutputConsolePaneName {

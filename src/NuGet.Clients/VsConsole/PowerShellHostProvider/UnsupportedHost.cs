@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Management.Automation;
 using System.Windows.Media;
 using NuGet.PackageManagement;
 
@@ -64,6 +65,11 @@ namespace NuGetConsole.Host.PowerShellProvider
 
         public void SetDefaultRunspace()
         {
+        }
+
+        public PSLanguageMode LanguageMode
+        {
+            get;
         }
 
         public PackageManagementContext PackageManagementContext

@@ -62,15 +62,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     ScopedItemOptions.AllScope | ScopedItemOptions.Constant)
                 );
 
-            // check language mode for current session
-            var languageMode = initialSessionState.LanguageMode;
-
-            if (languageMode != PSLanguageMode.FullLanguage)
-            {
-                console.Write(String.Format(CultureInfo.CurrentCulture, Resources.LanguageModeWarning, languageMode.ToString()) + Environment.NewLine,
-                    Colors.Black, Colors.Yellow);
-            }
-
             // this is used by the functional tests
             var sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
             var solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
@@ -97,7 +88,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             //
             Runspace.DefaultRunspace = runspace;
 
-            return Tuple.Create(new RunspaceDispatcher(runspace), host);
+            return Tuple.Create(new RunspaceDispatcher(runspace, initialSessionState.LanguageMode), host);
         }
 
         private static void SetupExecutionPolicy(RunspaceDispatcher runspace)

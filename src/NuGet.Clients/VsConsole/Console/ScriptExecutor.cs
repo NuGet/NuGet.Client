@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Media;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
@@ -18,6 +19,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGetConsole.Host.PowerShell;
 using EnvDTEProject = EnvDTE.Project;
 using Strings = NuGet.ProjectManagement.Strings;
 using Task = System.Threading.Tasks.Task;
@@ -173,11 +175,16 @@ namespace NuGetConsole
 
                 string toolsPath = Path.GetDirectoryName(fullScriptPath);
                 IPSNuGetProjectContext psNuGetProjectContext = nuGetProjectContext as IPSNuGetProjectContext;
+
                 if (psNuGetProjectContext != null
                     && psNuGetProjectContext.IsExecuting
                     && psNuGetProjectContext.CurrentPSCmdlet != null)
                 {
                     var psVariable = psNuGetProjectContext.CurrentPSCmdlet.SessionState.PSVariable;
+                    if (psNuGetProjectContext.CurrentPSCmdlet.SessionState.LanguageMode != System.Management.Automation.PSLanguageMode.FullLanguage)
+                    {
+                        nuGetProjectContext.Log(MessageLevel.Warning, String.Format(CultureInfo.CurrentCulture, Resources.LanguageModeWarning, psNuGetProjectContext.CurrentPSCmdlet.SessionState.LanguageMode.ToString()));
+                    }
 
                     // set temp variables to pass to the script
                     psVariable.Set("__rootPath", packageInstallPath);
@@ -248,6 +255,12 @@ namespace NuGetConsole
             object[] inputs = { packageInstallPath, toolsPath, package, envDTEProject };
             IConsole console = OutputConsoleProvider.CreateOutputConsole(requirePowerShellHost: true);
             var host = await Host.GetValueAsync();
+
+            if (host.LanguageMode != System.Management.Automation.PSLanguageMode.FullLanguage)
+            {
+                console.Write(String.Format(CultureInfo.CurrentCulture, Resources.LanguageModeWarning, host.LanguageMode.ToString()) + Environment.NewLine,
+                                     Colors.Black, Colors.Yellow);
+            }
 
             // Host.Execute calls powershell's pipeline.Invoke and blocks the calling thread
             // to switch to powershell pipeline execution thread. In order not to block the UI thread,

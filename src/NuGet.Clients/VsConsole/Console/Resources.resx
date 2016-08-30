@@ -123,6 +123,9 @@
   <data name="ExecutingScript" xml:space="preserve">
     <value>Executing script file '{0}'...</value>
   </data>
+  <data name="LanguageModeWarning" xml:space="preserve">
+    <value>Warning: language mode for current session is {0}, it might impact powershell script running.</value>
+  </data>
   <data name="OutputConsolePaneName" xml:space="preserve">
     <value>Package Manager</value>
   </data>
