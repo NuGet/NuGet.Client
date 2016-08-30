@@ -4,10 +4,12 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Reflection;
+using System.Windows.Media;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.PowerShell;
@@ -60,6 +62,15 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     ScopedItemOptions.AllScope | ScopedItemOptions.Constant)
                 );
 
+            // check language mode for current session
+            var languageMode = initialSessionState.LanguageMode;
+
+            if (languageMode != PSLanguageMode.FullLanguage)
+            {
+                console.Write(String.Format(CultureInfo.CurrentCulture, Resources.LanguageModeWarning, languageMode.ToString()) + Environment.NewLine,
+                    Colors.Black, Colors.Yellow);
+            }
+
             // this is used by the functional tests
             var sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
             var solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
@@ -86,7 +97,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             //
             Runspace.DefaultRunspace = runspace;
 
-            return Tuple.Create(new RunspaceDispatcher(runspace, console), host);
+            return Tuple.Create(new RunspaceDispatcher(runspace), host);
         }
 
         private static void SetupExecutionPolicy(RunspaceDispatcher runspace)
