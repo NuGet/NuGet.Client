@@ -135,7 +135,7 @@ namespace NuGet.ProjectManagement
             }
 
             // Sort dependencies
-            var sortedDependencies = SortPackagesByDependencyOrder(dependencies);
+            var sortedDependencies = TopologicalSortUtility.SortPackagesByDependencyOrder(dependencies);
 
             foreach (var dependency in sortedDependencies)
             {
@@ -145,49 +145,6 @@ namespace NuGet.ProjectManagement
             }
 
             return results;
-        }
-
-        /// <summary>
-        /// Order dependencies by children first.
-        /// </summary>
-        private static IReadOnlyList<PackageDependencyInfo> SortPackagesByDependencyOrder(
-            IEnumerable<PackageDependencyInfo> packages)
-        {
-            var sorted = new List<PackageDependencyInfo>();
-            var toSort = packages.Distinct().ToList();
-
-            while (toSort.Count > 0)
-            {
-                // Order packages by parent count, take the child with the lowest number of parents
-                // and remove it from the list
-                var nextPackage = toSort.OrderBy(package => GetParentCount(toSort, package.Id))
-                    .ThenBy(package => package.Id, StringComparer.OrdinalIgnoreCase).First();
-
-                sorted.Add(nextPackage);
-                toSort.Remove(nextPackage);
-            }
-
-            // the list is ordered by parents first, reverse to run children first
-            sorted.Reverse();
-
-            return sorted;
-        }
-
-        private static int GetParentCount(List<PackageDependencyInfo> packages, string id)
-        {
-            int count = 0;
-
-            foreach (var package in packages)
-            {
-                if (package.Dependencies != null
-                    && package.Dependencies.Any(dependency =>
-                        string.Equals(id, dependency.Id, StringComparison.OrdinalIgnoreCase)))
-                {
-                    count++;
-                }
-            }
-
-            return count;
         }
     }
 }

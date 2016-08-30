@@ -1624,6 +1624,138 @@ namespace NuGet.Commands.Test
             }
         }
 
+        [Fact]
+        public async Task IncludeType_TransitiveDependenciesWithTargets()
+        {
+            // Arrange
+            var logger = new TestLogger();
+
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var projectJson = @"{
+                        ""dependencies"": {
+                            ""packageX"": {
+                                ""version"": ""1.0.0""
+                            },
+                            ""packageY"": ""1.0.0"",
+                            ""packageZ"": ""1.0.0""
+                        },
+                        ""frameworks"": {
+                            ""net46"": {}
+                        },
+                         ""runtimes"": { ""any"": { } }
+                 }";
+
+                CreateXYZ(Path.Combine(workingDir, "repository"));
+
+                // Act
+                var result = await StandardSetup(workingDir, logger, projectJson);
+
+                var msbuildTargets = GetInstalledTargets(workingDir);
+                var buildTargets = msbuildTargets["TestProject"].ToList();
+
+                // Assert
+                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+                Assert.Equal(0, logger.Errors);
+                Assert.Equal(0, logger.Warnings);
+
+                Assert.Equal(3, buildTargets.Count);
+                Assert.Equal("packageZ", buildTargets[0]);
+                Assert.Equal("packageY", buildTargets[1]);
+                Assert.Equal("packageX", buildTargets[2]);
+            }
+        }
+
+        [Fact]
+        public async Task IncludeType_MultipleDependenciesWithTargets()
+        {
+            // Arrange
+            var logger = new TestLogger();
+
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var projectJson = @"{
+                        ""dependencies"": {
+                            ""packageX"": {
+                                ""version"": ""1.0.0""
+                            },
+                            ""packageY"": ""1.0.0"",
+                            ""packageZ"": ""1.0.0"",
+                            ""packageA"": ""1.0.0"",
+                            ""packageB"": ""1.0.0""
+                        },
+                        ""frameworks"": {
+                            ""net46"": {}
+                        },
+                         ""runtimes"": { ""any"": { } }
+                 }";
+
+                CreateXYZ(Path.Combine(workingDir, "repository"));
+
+                CreateAToB(Path.Combine(workingDir, "repository"));
+
+                // Act
+                var result = await StandardSetup(workingDir, logger, projectJson);
+
+                var msbuildTargets = GetInstalledTargets(workingDir);
+                var buildTargets = msbuildTargets["TestProject"].ToList();
+
+                // Assert
+                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+                Assert.Equal(0, logger.Errors);
+                Assert.Equal(0, logger.Warnings);
+
+                Assert.Equal(5, buildTargets.Count);
+                Assert.Equal("packageZ", buildTargets[0]);
+                Assert.Equal("packageY", buildTargets[1]);
+                Assert.Equal("packageX", buildTargets[2]);
+                Assert.Equal("packageB", buildTargets[3]);
+                Assert.Equal("packageA", buildTargets[4]);
+            }
+        }
+
+        [Fact]
+        public async Task IncludeType_DependenciesWithTargets()
+        {
+            // Arrange
+            var logger = new TestLogger();
+
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var projectJson = @"{
+                        ""dependencies"": {
+                            ""packageX"": {
+                                ""version"": ""1.0.0""
+                            },
+                            ""packageY"": ""1.0.0"",
+                            ""packageZ"": ""1.0.0""                            
+                        },
+                        ""frameworks"": {
+                            ""net46"": {}
+                        },
+                         ""runtimes"": { ""any"": { } }
+                 }";
+
+                CreateXyzIndividually(Path.Combine(workingDir, "repository"), string.Empty, string.Empty);
+
+                // Act
+                var result = await StandardSetup(workingDir, logger, projectJson);
+
+                var msbuildTargets = GetInstalledTargets(workingDir);
+                var buildTargets = msbuildTargets["TestProject"].ToList();
+
+                // Assert
+                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+                Assert.Equal(0, logger.Errors);
+                Assert.Equal(0, logger.Warnings);
+
+                Assert.Equal(3, buildTargets.Count);
+                Assert.Equal("packageZ", buildTargets[0]);
+                Assert.Equal("packageY", buildTargets[1]);
+                Assert.Equal("packageX", buildTargets[2]);
+            }
+        }
+
         private async Task<RestoreResult> ProjectToProjectSetup(
             string workingDir,
             NuGet.Common.ILogger logger,
@@ -1855,6 +1987,40 @@ namespace NuGet.Commands.Test
             var packages = new List<SimpleTestPackageContext>()
             {
                 x
+            };
+
+            SimpleTestPackageUtility.CreatePackages(packages, repositoryDir);
+        }
+
+        private static void CreateXyzIndividually(string repositoryDir, string include, string exclude)
+        {
+            var z = new SimpleTestPackageContext()
+            {
+                Id = "packageZ",
+                Version = "1.0.0",
+                Include = include,
+                Exclude = exclude
+            };
+
+            var y = new SimpleTestPackageContext()
+            {
+                Id = "packageY",
+                Version = "1.0.0",
+                Include = include,
+                Exclude = exclude
+            };
+
+            var x = new SimpleTestPackageContext()
+            {
+                Id = "packageX",
+                Version = "1.0.0",
+                Include = include,
+                Exclude = exclude
+            };
+
+            var packages = new List<SimpleTestPackageContext>()
+            {
+                x, y, z
             };
 
             SimpleTestPackageUtility.CreatePackages(packages, repositoryDir);

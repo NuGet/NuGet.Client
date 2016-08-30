@@ -10,9 +10,11 @@ using NuGet.ContentModel;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
+using NuGet.Versioning;
 
 namespace NuGet.Commands
 {
@@ -64,10 +66,6 @@ namespace NuGet.Commands
             // Since all targets and props are the same, any framework can be used.
             // There must be at least one framework here since there are target graphs (checked above)
             var combinedTargetsAndProps = buildAssetsByFramework.Values.First();
-
-            // Sort the results by string case to keep the results consistent across internal nuget changes
-            combinedTargetsAndProps.Props.Sort(StringComparer.Ordinal);
-            combinedTargetsAndProps.Targets.Sort(StringComparer.Ordinal);
 
             // Targets files contain a macro for the repository root. If only the user package folder was used
             // allow a replacement. If fallback folders were used the macro cannot be applied.
@@ -167,25 +165,29 @@ namespace NuGet.Commands
         /// <summary>
         /// Find all included msbuild assets for a graph.
         /// </summary>
-        private static Dictionary<LibraryIdentity, ContentItemGroup[]> GetMSBuildAssets(
+        private static Dictionary<PackageIdentity, ContentItemGroup[]> GetMSBuildAssets(
             RemoteWalkContext context,
             RestoreTargetGraph graph,
             PackageSpec project,
             Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>> includeFlagGraphs)
         {
-            var buildGroupSets = new Dictionary<LibraryIdentity, ContentItemGroup[]>();
+            var buildGroupSets = new Dictionary<PackageIdentity, ContentItemGroup[]>();
 
             var flattenedFlags = IncludeFlagUtils.FlattenDependencyTypes(includeFlagGraphs, project, graph);
 
+            // convert graph items to package dependency info list
+            var dependencies = ConvertToPackageDependencyInfo(graph.Flattened);
+
+            // sort graph nodes by dependencies order
+            var sortedItems = TopologicalSortUtility.SortPackagesByDependencyOrder(dependencies);
+
             // First find all msbuild items in the packages
-            foreach (var library in graph.Flattened
-                .Distinct()
-                .OrderBy(g => g.Data.Match.Library))
+            foreach (var library in sortedItems)
             {
                 var includeLibrary = true;
 
                 LibraryIncludeFlags libraryFlags;
-                if (flattenedFlags.TryGetValue(library.Key.Name, out libraryFlags))
+                if (flattenedFlags.TryGetValue(library.Id, out libraryFlags))
                 {
                     includeLibrary = libraryFlags.HasFlag(LibraryIncludeFlags.Build);
                 }
@@ -193,7 +195,7 @@ namespace NuGet.Commands
                 // Skip libraries that do not include build files such as transitive packages
                 if (includeLibrary)
                 {
-                    var packageIdentity = new PackageIdentity(library.Key.Name, library.Key.Version);
+                    var packageIdentity = new PackageIdentity(library.Id, library.Version);
                     IList<string> packageFiles;
                     context.PackageFileCache.TryGetValue(packageIdentity, out packageFiles);
 
@@ -207,12 +209,29 @@ namespace NuGet.Commands
                             .FindItemGroups(graph.Conventions.Patterns.MSBuildFiles)
                             .ToArray();
 
-                        buildGroupSets.Add(library.Key, buildGroupSet);
+                        buildGroupSets.Add(packageIdentity, buildGroupSet);
                     }
                 }
             }
 
             return buildGroupSets;
+        }
+
+        private static HashSet<PackageDependencyInfo> ConvertToPackageDependencyInfo(
+            ISet<GraphItem<RemoteResolveResult>> items)
+        {
+            var result = new HashSet<PackageDependencyInfo>(PackageIdentity.Comparer);
+            
+            foreach (var item in items)
+            {
+                var dependencies =
+                    item.Data?.Dependencies?.Select(
+                        dependency => new PackageDependency(dependency.Name, VersionRange.All));
+
+                result.Add(new PackageDependencyInfo(item.Key.Name, item.Key.Version, dependencies));
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -221,7 +240,7 @@ namespace NuGet.Commands
         /// </summary>
         private static void AddPropsAndTargets(
             IReadOnlyList<NuGetv3LocalRepository> repositories,
-            LibraryIdentity libraryIdentity,
+            PackageIdentity libraryIdentity,
             ContentItemGroup buildItems,
             TargetsAndProps targetsAndProps)
         {
@@ -230,22 +249,22 @@ namespace NuGet.Commands
             var items = buildItems.Items
                 .Where(item =>
                     Path.GetFileNameWithoutExtension(item.Path)
-                    .Equals(libraryIdentity.Name, StringComparison.OrdinalIgnoreCase))
+                    .Equals(libraryIdentity.Id, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
-            var packageInfo = NuGetv3LocalRepositoryUtility.GetPackage(repositories, libraryIdentity.Name, libraryIdentity.Version);
+            var packageInfo = NuGetv3LocalRepositoryUtility.GetPackage(repositories, libraryIdentity.Id, libraryIdentity.Version);
             var pathResolver = packageInfo.Repository.PathResolver;
 
             targetsAndProps.Targets.AddRange(items
                 .Where(c => Path.GetExtension(c.Path).Equals(".targets", StringComparison.OrdinalIgnoreCase))
                 .Select(c =>
-                    Path.Combine(pathResolver.GetInstallPath(libraryIdentity.Name, libraryIdentity.Version),
+                    Path.Combine(pathResolver.GetInstallPath(libraryIdentity.Id, libraryIdentity.Version),
                     c.Path.Replace('/', Path.DirectorySeparatorChar))));
 
             targetsAndProps.Props.AddRange(items
                 .Where(c => Path.GetExtension(c.Path).Equals(".props", StringComparison.OrdinalIgnoreCase))
                 .Select(c =>
-                    Path.Combine(pathResolver.GetInstallPath(libraryIdentity.Name, libraryIdentity.Version),
+                    Path.Combine(pathResolver.GetInstallPath(libraryIdentity.Id, libraryIdentity.Version),
                     c.Path.Replace('/', Path.DirectorySeparatorChar))));
         }
 
