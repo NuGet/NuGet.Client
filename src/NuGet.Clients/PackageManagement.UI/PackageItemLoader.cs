@@ -13,7 +13,7 @@ using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal class PackageItemLoader : IItemLoader<PackageItemListViewModel>
+    internal class PackageItemLoader : IPackageItemLoader
     {
         private readonly PackageLoadContext _context;
         private readonly string _searchText;
@@ -238,7 +238,7 @@ namespace NuGet.PackageManagement.UI
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadEnd);
         }
 
-        private async Task<SearchResult<IPackageSearchMetadata>> SearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
+        public async Task<SearchResult<IPackageSearchMetadata>> SearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
         {
             if (continuationToken != null)
             {
@@ -248,7 +248,7 @@ namespace NuGet.PackageManagement.UI
             return await _packageFeed.SearchAsync(_searchText, SearchFilter, cancellationToken);
         }
 
-        private async Task UpdateStateAndReportAsync(SearchResult<IPackageSearchMetadata> searchResult, IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
+        public async Task UpdateStateAndReportAsync(SearchResult<IPackageSearchMetadata> searchResult, IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
         {
             // cache installed packages here for future use
             _installedPackages = await _context.GetInstalledPackagesAsync();
