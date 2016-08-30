@@ -152,7 +152,7 @@ namespace NuGet.XPlat.FuncTest
         public static void Locals_Success_InvalidArguments_HelpMessage(string args)
         {
             // Arrange
-            var expectedResult = string.Concat("error: No Cache Type was specified. ",
+            var expectedResult = string.Concat("No Cache Type was specified. ",
                                                Environment.NewLine,
                                                "error: usage: NuGet locals <all | http-cache | global-packages | temp> [--clear | -c | --list | -l]",
                                                Environment.NewLine,
