@@ -22,7 +22,9 @@ param (
     [string]$DepBuildBranch="",
     [string]$DepCommitID="",
     [string]$DepBuildNumber="",
-    [switch]$CleanCache
+    [switch]$CleanCache,
+    [switch]$SkipVS14,
+    [switch]$SkipVS15
 )
 
 # For TeamCity - Incase any issue comes in this script fail the build. - Be default TeamCity returns exit code of 0 for all powershell even if it fails
@@ -35,6 +37,13 @@ trap {
 }
 
 . "$PSScriptRoot\..\..\build\common.ps1"
+
+# Adjust version skipping if only one version installed - if VS15 is not installed, no need to specify SkipVS15
+$VS14Installed = Test-MSBuildVersionPresent -MSBuildVersion "14"
+$SkipVS14 = $SkipVS14 -or -not $VS14Installed
+
+$VS15Installed = Test-MSBuildVersionPresent -MSBuildVersion "15"
+$SkipVS15 = $SkipVS15 -or -not $VS15Installed
 
 Write-Host ("`r`n" * 3)
 Trace-Log ('=' * 60)
@@ -75,22 +84,26 @@ Invoke-BuildStep 'Running NuGet.Core functional tests' { Test-FuncCoreProjects }
 Invoke-BuildStep 'Building NuGet.Clients projects - VS15 dependencies' {
         Build-ClientsProjects -MSBuildVersion "15"
     } `
+    -skip:$SkipVS15 `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Building NuGet.Clients projects - VS14 dependencies' {
         Build-ClientsProjects -MSBuildVersion "14"
     } `
+    -skip:$SkipVS14 `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Running NuGet.Clients functional tests - VS15 dependencies' {
         # We don't run command line tests on VS15 as we don't build a nuget.exe for this version
         Test-FuncClientsProjects -MSBuildVersion "15" -SkipProjects 'NuGet.CommandLine.FuncTest'
     } `
+    -skip:$SkipVS15 `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Running NuGet.Clients functional tests - VS14 dependencies' {
         Test-FuncClientsProjects -MSBuildVersion "14"
     } `
+    -skip:$SkipVS14 `
     -ev +BuildErrors
 
 Trace-Log ('-' * 60)
