@@ -1,6 +1,6 @@
 ﻿{
   "dependencies": {
-    "NuGet.Core": "2.14.0-rtm-828"
+    "NuGet.Core": "2.14.0-rtm-830"
   },
   "frameworks": {
     "net46": {}
