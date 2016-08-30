@@ -7,13 +7,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using Newtonsoft.Json.Linq;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.DependencyResolver;
+using NuGet.DependencyResolver.Tests;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
+using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -293,14 +296,17 @@ namespace NuGet.Commands.Test
                 .Setup(x => x.CopyToAsync(
                     It.IsAny<LibraryIdentity>(),
                     It.IsAny<Stream>(),
+                    It.IsAny<SourceCacheContext>(),
+                    It.IsAny<ILogger>(),
                     It.IsAny<CancellationToken>()))
-                .Callback<LibraryIdentity, Stream, CancellationToken>((_, destination, __) =>
-                {
-                    using (var package = File.OpenRead(packagePath.FullName))
+                .Callback<LibraryIdentity, Stream, SourceCacheContext, ILogger, CancellationToken>(
+                    (_, destination, __, ___, ____) =>
                     {
-                        package.CopyTo(destination);
-                    }
-                })
+                        using (var package = File.OpenRead(packagePath.FullName))
+                        {
+                            package.CopyTo(destination);
+                        }
+                    })
                 .Returns(Task.CompletedTask);
 
             var graph = RestoreTargetGraph.Create(
@@ -321,7 +327,7 @@ namespace NuGet.Commands.Test
                             }
                         }
                 },
-                new RemoteWalkContext(),
+                new TestRemoteWalkContext(),
                 logger,
                 FrameworkConstants.CommonFrameworks.NetStandard16);
 

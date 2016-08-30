@@ -8,6 +8,7 @@ using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.ProjectModel;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Commands
 {
@@ -18,6 +19,7 @@ namespace NuGet.Commands
         public RestoreRequest(
             PackageSpec project,
             RestoreCommandProviders dependencyProviders,
+            SourceCacheContext cacheContext,
             ILogger log)
         {
             if (project == null)
@@ -28,6 +30,11 @@ namespace NuGet.Commands
             if (dependencyProviders == null)
             {
                 throw new ArgumentNullException(nameof(dependencyProviders));
+            }
+
+            if (cacheContext == null)
+            {
+                throw new ArgumentNullException(nameof(cacheContext));
             }
 
             if (log == null)
@@ -43,10 +50,13 @@ namespace NuGet.Commands
             PackagesDirectory = dependencyProviders.GlobalPackages.RepositoryRoot;
             IsLowercasePackagesDirectory = true;
 
+            CacheContext = cacheContext;
             Log = log;
 
             DependencyProviders = dependencyProviders;
         }
+
+        public SourceCacheContext CacheContext { get; set; }
 
         public ILogger Log { get; set; }
 

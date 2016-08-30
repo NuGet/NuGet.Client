@@ -9,6 +9,7 @@ using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.DependencyResolver;
+using NuGet.DependencyResolver.Tests;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
@@ -435,7 +436,7 @@ namespace NuGet.PackageManagement.Test
 
                 var graph = RestoreTargetGraph.Create(
                     new[] { node },
-                    new RemoteWalkContext(),
+                    new TestRemoteWalkContext(),
                     NullLogger.Instance,
                     FrameworkConstants.CommonFrameworks.NetStandard10);
 

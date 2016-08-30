@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.ProjectModel;
 
 namespace NuGet.Commands
@@ -84,6 +83,7 @@ namespace NuGet.Commands
             var request = new RestoreRequest(
                 project,
                 sharedCache,
+                restoreContext.CacheContext,
                 restoreContext.Log);
 
             restoreContext.ApplyStandardProperties(request);

@@ -388,7 +388,7 @@ namespace NuGet.Commands
                     existingToolLockFile,
                     new Dictionary<NuGetFramework, RuntimeGraph>(),
                     _runtimeGraphCacheByPackage);
-                var projectRestoreCommand = new ProjectRestoreCommand(_logger, projectRestoreRequest);
+                var projectRestoreCommand = new ProjectRestoreCommand(projectRestoreRequest);
                 var result = await projectRestoreCommand.TryRestore(
                     tool.LibraryRange,
                     projectFrameworkRuntimePairs,
@@ -556,7 +556,7 @@ namespace NuGet.Commands
                 _request.ExistingLockFile,
                 _runtimeGraphCache,
                 _runtimeGraphCacheByPackage);
-            var projectRestoreCommand = new ProjectRestoreCommand(_logger, projectRestoreRequest);
+            var projectRestoreCommand = new ProjectRestoreCommand(projectRestoreRequest);
             var result = await projectRestoreCommand.TryRestore(
                 projectRange,
                 projectFrameworkRuntimePairs,
@@ -660,7 +660,9 @@ namespace NuGet.Commands
 
         private static RemoteWalkContext CreateRemoteWalkContext(RestoreRequest request)
         {
-            var context = new RemoteWalkContext();
+            var context = new RemoteWalkContext(
+                request.CacheContext,
+                request.Log);
 
             foreach (var provider in request.DependencyProviders.LocalProviders)
             {

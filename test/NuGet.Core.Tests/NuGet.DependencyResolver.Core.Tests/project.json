@@ -4,6 +4,15 @@
     "NuGet.DependencyResolver.Core": {
       "target": "project"
     },
+    "NuGet.DependencyResolver.Core.Tests.Utility": {
+      "target": "project"
+    },
+    "NuGet.Protocol.Test.Utility": {
+      "target": "project"
+    },
+    "NuGet.Test.Utility": {
+      "target": "project"
+    },
     "xunit": "2.1.0"
   },
   "frameworks": {

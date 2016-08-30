@@ -28,9 +28,9 @@ namespace NuGet.Commands
 
         private readonly ProjectRestoreRequest _request;
 
-        public ProjectRestoreCommand(ILogger logger, ProjectRestoreRequest request)
+        public ProjectRestoreCommand(ProjectRestoreRequest request)
         {
-            _logger = logger;
+            _logger = request.Log;
             _request = request;
         }
 
@@ -272,7 +272,12 @@ namespace NuGet.Commands
                 _request.XmlDocFileSaveMode);
 
             await PackageExtractor.InstallFromSourceAsync(
-                stream => installItem.Provider.CopyToAsync(installItem.Library, stream, token),
+                stream => installItem.Provider.CopyToAsync(
+                    installItem.Library,
+                    stream,
+                    _request.CacheContext,
+                    _logger,
+                    token),
                 versionFolderPathContext,
                 token);
         }

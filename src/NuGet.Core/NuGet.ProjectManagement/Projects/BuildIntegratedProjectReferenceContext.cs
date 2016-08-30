@@ -8,14 +8,6 @@ namespace NuGet.ProjectManagement
     public class ExternalProjectReferenceContext
     {
         /// <summary>
-        /// Create a new build integrated project reference context and cache.
-        /// </summary>
-        public ExternalProjectReferenceContext()
-            : this(NullLogger.Instance)
-        {
-        }
-
-        /// <summary>
         /// Create a new build integrated project reference context and caches.
         /// </summary>
         public ExternalProjectReferenceContext(ILogger logger)
@@ -32,34 +24,6 @@ namespace NuGet.ProjectManagement
 
             SpecCache = new Dictionary<string, PackageSpec>(
                 StringComparer.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
-        /// Create a new build integrated project reference context with the given caches.
-        /// </summary>
-        public ExternalProjectReferenceContext(
-            ILogger logger,
-            IDictionary<string, IReadOnlyList<ExternalProjectReference>> cache,
-            IDictionary<string, PackageSpec> specCache)
-        {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            if (cache == null)
-            {
-                throw new ArgumentNullException(nameof(cache));
-            }
-
-            if (specCache == null)
-            {
-                throw new ArgumentNullException(nameof(specCache));
-            }
-
-            Logger = logger;
-            Cache = cache;
-            SpecCache = specCache;
         }
 
         /// <summary>

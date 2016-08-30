@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -32,15 +33,24 @@ namespace NuGet.Protocol
             _source = rootDirInfo.FullName;
         }
 
-        public override Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, CancellationToken token)
+        public override Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(
+            string id,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken token)
         {
-            var infos = GetPackageInfos(id);
+            var infos = GetPackageInfos(id, logger);
             return Task.FromResult(infos.Select(p => p.Identity.Version));
         }
 
-        public override Task<PackageIdentity> GetOriginalIdentityAsync(string id, NuGetVersion version, CancellationToken token)
+        public override Task<PackageIdentity> GetOriginalIdentityAsync(
+            string id,
+            NuGetVersion version,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken token)
         {
-            var info = GetPackageInfo(id, version);
+            var info = GetPackageInfo(id, version, logger);
             if (info != null)
             {
                 return Task.FromResult(info.Identity);
@@ -53,9 +63,11 @@ namespace NuGet.Protocol
             string id,
             NuGetVersion version,
             Stream destination,
+            SourceCacheContext cacheContext,
+            ILogger logger,
             CancellationToken token)
         {
-            var info = GetPackageInfo(id, version);
+            var info = GetPackageInfo(id, version, logger);
 
             if (info != null)
             {
@@ -69,10 +81,15 @@ namespace NuGet.Protocol
             return false;
         }
 
-        public override Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(string id, NuGetVersion version, CancellationToken token)
+        public override Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(
+            string id,
+            NuGetVersion version,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken token)
         {
             FindPackageByIdDependencyInfo dependencyInfo = null;
-            var info = GetPackageInfo(id, version);
+            var info = GetPackageInfo(id, version, logger);
             if (info != null)
             {
                 dependencyInfo = GetDependencyInfo(info.Nuspec);
@@ -81,22 +98,22 @@ namespace NuGet.Protocol
             return Task.FromResult(dependencyInfo);
         }
 
-        private LocalPackageInfo GetPackageInfo(string id, NuGetVersion version)
+        private LocalPackageInfo GetPackageInfo(string id, NuGetVersion version, ILogger logger)
         {
-            return GetPackageInfos(id).FirstOrDefault(package => package.Identity.Version == version);
+            return GetPackageInfos(id, logger).FirstOrDefault(package => package.Identity.Version == version);
         }
 
-        private IReadOnlyList<LocalPackageInfo> GetPackageInfos(string id)
+        private IReadOnlyList<LocalPackageInfo> GetPackageInfos(string id, ILogger logger)
         {
-            return _packageInfoCache.GetOrAdd(id, (packageId) => GetPackageInfosCore(packageId));
+            return _packageInfoCache.GetOrAdd(id, (packageId) => GetPackageInfosCore(packageId, logger));
         }
 
-        private IReadOnlyList<LocalPackageInfo> GetPackageInfosCore(string id)
+        private IReadOnlyList<LocalPackageInfo> GetPackageInfosCore(string id, ILogger logger)
         {
             var result = new List<LocalPackageInfo>();
 
             // packages\{packageId}.{version}.nupkg
-            var nupkgFiles = LocalFolderUtility.GetNupkgsFromFlatFolder(_source, Logger)
+            var nupkgFiles = LocalFolderUtility.GetNupkgsFromFlatFolder(_source, logger)
                 .Where(path => LocalFolderUtility.IsPossiblePackageMatch(path, id));
 
             foreach (var nupkgInfo in nupkgFiles)

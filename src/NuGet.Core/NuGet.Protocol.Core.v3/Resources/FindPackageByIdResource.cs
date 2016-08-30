@@ -14,29 +14,38 @@ namespace NuGet.Protocol.Core.Types
 {
     public abstract class FindPackageByIdResource : INuGetResource
     {
-        public virtual SourceCacheContext CacheContext { get; set; }
-
-        public virtual ILogger Logger { get; set; } = new NullLogger();
-
-        public abstract Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, CancellationToken token);
+        public abstract Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(
+            string id,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken token);
 
         /// <summary>
         /// Gets the <see cref="FindPackageByIdDependencyInfo" /> for a specific package.
         /// </summary>
         /// <param name="id">The packag id.</param>
         /// <param name="version">The package version.</param>
+        /// <param name="cacheContext">The source cache context.</param>
+        /// <param name="logger">The logger.</param>
         /// <param name="token">The <see cref="CancellationToken" />.</param>
         /// <returns>
         /// A <see cref="Task" /> that on completion returns a <see cref="FindPackageByIdDependencyInfo" /> of the
         /// package, if found,
         /// <c>null</c> otherwise.
         /// </returns>
-        public abstract Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(string id, NuGetVersion version, CancellationToken token);
+        public abstract Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(
+            string id,
+            NuGetVersion version,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken token);
 
         public abstract Task<bool> CopyNupkgToStreamAsync(
             string id,
             NuGetVersion version,
             Stream destination,
+            SourceCacheContext cacheContext,
+            ILogger logger,
             CancellationToken token);
 
         /// <summary>
@@ -46,9 +55,16 @@ namespace NuGet.Protocol.Core.Types
         /// </summary>
         /// <param name="id">The package ID. This value is case insensitive.</param>
         /// <param name="version">The version.</param>
+        /// <param name="cacheContext">The source cache context.</param>
+        /// <param name="logger">The logger.</param>
         /// <param name="token">The cancellation token.</param>
         /// <returns>The package identity, with the ID having the case provided by the package author.</returns>
-        public abstract Task<PackageIdentity> GetOriginalIdentityAsync(string id, NuGetVersion version, CancellationToken token);
+        public abstract Task<PackageIdentity> GetOriginalIdentityAsync(
+            string id,
+            NuGetVersion version,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken token);
 
         /// <summary>
         /// Read dependency info from a nuspec.

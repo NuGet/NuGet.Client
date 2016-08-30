@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -42,18 +43,24 @@ namespace NuGet.Protocol
             _resolver = new VersionFolderPathResolver(_source);
         }
 
-        public override Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, CancellationToken token)
+        public override Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(
+            string id,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken token)
         {
-            return Task.FromResult(GetVersions(id).AsEnumerable());
+            return Task.FromResult(GetVersions(id, logger).AsEnumerable());
         }
 
         public override async Task<bool> CopyNupkgToStreamAsync(
             string id,
             NuGetVersion version,
             Stream destination,
+            SourceCacheContext cacheContext,
+            ILogger logger,
             CancellationToken token)
         {
-            var matchedVersion = GetVersion(id, version);
+            var matchedVersion = GetVersion(id, version, logger);
 
             if (matchedVersion != null)
             {
@@ -69,9 +76,14 @@ namespace NuGet.Protocol
             return false;
         }
 
-        public override Task<PackageIdentity> GetOriginalIdentityAsync(string id, NuGetVersion version, CancellationToken token)
+        public override Task<PackageIdentity> GetOriginalIdentityAsync(
+            string id,
+            NuGetVersion version,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken token)
         {
-            var matchedVersion = GetVersion(id, version);
+            var matchedVersion = GetVersion(id, version, logger);
             PackageIdentity outputIdentity = null;
             if (matchedVersion != null)
             {
@@ -89,9 +101,14 @@ namespace NuGet.Protocol
             return Task.FromResult(outputIdentity);
         }
 
-        public override Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(string id, NuGetVersion version, CancellationToken token)
+        public override Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(
+            string id,
+            NuGetVersion version,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            CancellationToken token)
         {
-            var matchedVersion = GetVersion(id, version);
+            var matchedVersion = GetVersion(id, version, logger);
             FindPackageByIdDependencyInfo dependencyInfo = null;
             if (matchedVersion != null)
             {
@@ -139,17 +156,17 @@ namespace NuGet.Protocol
             }
         }
 
-        private NuGetVersion GetVersion(string id, NuGetVersion version)
+        private NuGetVersion GetVersion(string id, NuGetVersion version, ILogger logger)
         {
-            return GetVersions(id).FirstOrDefault(v => v == version);
+            return GetVersions(id, logger).FirstOrDefault(v => v == version);
         }
 
-        private List<NuGetVersion> GetVersions(string id)
+        private List<NuGetVersion> GetVersions(string id, ILogger logger)
         {
-            return _cache.GetOrAdd(id, keyId => GetVersionsCore(keyId));
+            return _cache.GetOrAdd(id, keyId => GetVersionsCore(keyId, logger));
         }
 
-        private List<NuGetVersion> GetVersionsCore(string id)
+        private List<NuGetVersion> GetVersionsCore(string id, ILogger logger)
         {
             var versions = new List<NuGetVersion>();
             var idDir = new DirectoryInfo(_resolver.GetVersionListPath(id));
@@ -172,7 +189,7 @@ namespace NuGet.Protocol
                     NuGetVersion version;
                     if (!NuGetVersion.TryParse(versionPart, out version))
                     {
-                        Logger.LogWarning(string.Format(
+                        logger.LogWarning(string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.InvalidVersionFolder,
                             versionDir.FullName));
