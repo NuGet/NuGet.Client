@@ -139,6 +139,15 @@ namespace NuGetConsole.Host.PowerShell {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Warning: language mode for current session is {0}, it might impact powershell script running..
+        /// </summary>
+        internal static string LanguageModeWarning {
+            get {
+                return ResourceManager.GetString("LanguageModeWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package Manager Console Host Version {0}.
         /// </summary>
         internal static string PowerShellHostTitle {
