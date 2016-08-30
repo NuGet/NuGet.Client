@@ -4,6 +4,9 @@
     "NuGet.Commands": {
       "target": "project"
     },
+    "NuGet.Commands.Test.Utility": {
+      "target": "project"
+    },
     "NuGet.Test.Utility": {
       "target": "project"
     },

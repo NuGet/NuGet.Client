@@ -89,7 +89,7 @@ namespace NuGet.Commands
                 remoteProviders.Add(remoteProvider);
             }
 
-            return new RestoreCommandProviders(globalCache, fallbackFolders, localProviders, remoteProviders, cacheContext);
+            return new RestoreCommandProviders(globalCache, fallbackFolders, localProviders, remoteProviders);
         }
     }
 }

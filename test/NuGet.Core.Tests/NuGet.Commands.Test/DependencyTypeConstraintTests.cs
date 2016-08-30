@@ -59,7 +59,7 @@ namespace NuGet.Commands.Test
                 await GlobalFolderUtility.AddPackageToGlobalFolderAsync(project1PackagePath, packagesDir);
 
                 var logger = new TestLogger();
-                var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
 
                 request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
@@ -152,7 +152,7 @@ namespace NuGet.Commands.Test
                 await GlobalFolderUtility.AddPackageToGlobalFolderAsync(packageAPath, packagesDir);
 
                 var logger = new TestLogger();
-                var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
 
                 request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
@@ -258,7 +258,7 @@ namespace NuGet.Commands.Test
                 await GlobalFolderUtility.AddPackageToGlobalFolderAsync(packageAPath, packagesDir);
 
                 var logger = new TestLogger();
-                var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
 
                 request.ExternalProjects.Add(
                     new ExternalProjectReference("project1", spec1, project1CSProjPath, new string[] { "packageA" }));
@@ -372,7 +372,7 @@ namespace NuGet.Commands.Test
                 await GlobalFolderUtility.AddPackageToGlobalFolderAsync(packageAPath, packagesDir);
 
                 var logger = new TestLogger();
-                var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
 
                 request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
@@ -475,7 +475,7 @@ namespace NuGet.Commands.Test
                 await GlobalFolderUtility.AddPackageToGlobalFolderAsync(packageAPath, packagesDir);
 
                 var logger = new TestLogger();
-                var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
 
                 request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 

@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using NuGet.Commands.Test;
 using NuGet.Configuration;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
@@ -88,7 +89,7 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
@@ -141,7 +142,7 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger)
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
                 {
                     XmlDocFileSaveMode = Packaging.XmlDocFileSaveMode.None
                 };
@@ -192,7 +193,7 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
@@ -233,7 +234,7 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
@@ -284,7 +285,7 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
@@ -349,7 +350,7 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 // Set the lock file version to v1 to force a downgrade
@@ -417,7 +418,7 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
@@ -475,7 +476,7 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var request = new RestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();

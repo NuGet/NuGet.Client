@@ -11,7 +11,7 @@ namespace NuGet.Commands
     /// <summary>
     /// Feed providers
     /// </summary>
-    public class RestoreCommandProviders : IDisposable
+    public class RestoreCommandProviders
     {
         /// <summary>
         /// Providers used by the restore command. These can be shared across restores.
@@ -20,13 +20,11 @@ namespace NuGet.Commands
         /// <param name="fallbackPackageFolders">Path to any fallback package folders.</param>
         /// <param name="localProviders">This is typically just a provider for the global packages folder.</param>
         /// <param name="remoteProviders">All dependency providers.</param>
-        /// <param name="cacheContext">Web cache context.</param>
         public RestoreCommandProviders(
             NuGetv3LocalRepository globalPackages,
             IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders,
             IReadOnlyList<IRemoteDependencyProvider> localProviders,
-            IReadOnlyList<IRemoteDependencyProvider> remoteProviders,
-            SourceCacheContext cacheContext)
+            IReadOnlyList<IRemoteDependencyProvider> remoteProviders)
         {
             if (globalPackages == null)
             {
@@ -48,15 +46,9 @@ namespace NuGet.Commands
                 throw new ArgumentNullException(nameof(remoteProviders));
             }
 
-            if (cacheContext == null)
-            {
-                throw new ArgumentNullException(nameof(cacheContext));
-            }
-
             GlobalPackages = globalPackages;
             LocalProviders = localProviders;
             RemoteProviders = remoteProviders;
-            CacheContext = cacheContext;
             FallbackPackageFolders = fallbackPackageFolders;
         }
 
@@ -72,8 +64,6 @@ namespace NuGet.Commands
         public IReadOnlyList<IRemoteDependencyProvider> LocalProviders { get; }
 
         public IReadOnlyList<IRemoteDependencyProvider> RemoteProviders { get; }
-
-        public SourceCacheContext CacheContext { get; }
 
         public static RestoreCommandProviders Create(
             string globalFolderPath,
@@ -133,13 +123,7 @@ namespace NuGet.Commands
                 globalPackages,
                 fallbackPackageFolders,
                 localProviders,
-                remoteProviders,
-                cacheContext);
-        }
-
-        public void Dispose()
-        {
-            CacheContext.Dispose();
+                remoteProviders);
         }
     }
 }

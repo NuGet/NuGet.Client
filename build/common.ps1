@@ -428,59 +428,66 @@ Function Test-XProject {
 
             pushd $_
 
-            # Check if dnxcore50 exists in the project.json file
             $xtestProjectJson = Join-Path $_ "project.json"
             $xproject = gc $xtestProjectJson -raw | ConvertFrom-Json
-            if ($xproject.frameworks.'netcoreapp1.0') {
-                # Run tests for Core CLR
-                $opts = @()
-                if ($VerbosePreference) {
-                    $opts += '-v'
-                }
-                $opts += 'test', '--configuration', $Configuration, '--framework', 'netcoreapp1.0'
-                $opts += '-notrait', 'Platform=Linux', '-notrait', 'Platform=Darwin'
-                if ($VerbosePreference) {
-                    $opts += '-verbose'
-                }
 
-                Trace-Log "$DotNetExe $opts"
-                & $DotNetExe $opts
+            if ($xproject.dependencies.xunit) {
 
-                if ($LASTEXITCODE -ne 0) {
-                    Error-Log "Tests failed @""$_"" on CoreCLR. Code: $LASTEXITCODE"
-                }
-            }
-
-            # Run tests for CLR
-            if ($xproject.frameworks.net46) {
-                # Build
-                $opts = @()
-                if ($VerbosePreference) {
-                    $opts += '-v'
-                }
-                $opts += 'build', '--configuration', $Configuration, '--runtime', 'win7-x64'
-
-                Trace-Log "$DotNetExe $opts"
-                & $DotNetExe $opts
-
-                if ($LASTEXITCODE -ne 0) {
-                    Error-Log "Build failed @""$_"" on CLR. Code: $LASTEXITCODE"
-                }
-                else {
-                    $htmlOutput = Join-Path $_ "bin\$Configuration\net46\win7-x64\xunit.results.html"
-                    $desktopTestAssembly = Join-Path $_ "bin\$Configuration\net46\win7-x64\$directoryName.dll"
-                    $opts = $desktopTestAssembly, '-html', $htmlOutput
+                # Check if netcoreapp1.0 exists in the project.json file
+                if ($xproject.frameworks.'netcoreapp1.0') {
+                    # Run tests for Core CLR
+                    $opts = @()
+                    if ($VerbosePreference) {
+                        $opts += '-v'
+                    }
+                    $opts += 'test', '--configuration', $Configuration, '--framework', 'netcoreapp1.0'
                     $opts += '-notrait', 'Platform=Linux', '-notrait', 'Platform=Darwin'
                     if ($VerbosePreference) {
                         $opts += '-verbose'
                     }
-                    Trace-Log "$XunitConsole $opts"
 
-                    & $XunitConsole $opts
-                    if (-not $?) {
-                        Error-Log "Tests failed @""$_"" on CLR. Code: $LASTEXITCODE"
+                    Trace-Log "$DotNetExe $opts"
+                    & $DotNetExe $opts
+
+                    if ($LASTEXITCODE -ne 0) {
+                        Error-Log "Tests failed @""$_"" on CoreCLR. Code: $LASTEXITCODE"
                     }
                 }
+
+                # Run tests for CLR
+                if ($xproject.frameworks.net46) {
+                    # Build
+                    $opts = @()
+                    if ($VerbosePreference) {
+                        $opts += '-v'
+                    }
+                    $opts += 'build', '--configuration', $Configuration, '--runtime', 'win7-x64'
+
+                    Trace-Log "$DotNetExe $opts"
+                    & $DotNetExe $opts
+
+                    if ($LASTEXITCODE -ne 0) {
+                        Error-Log "Build failed @""$_"" on CLR. Code: $LASTEXITCODE"
+                    }
+                    else {
+                        $htmlOutput = Join-Path $_ "bin\$Configuration\net46\win7-x64\xunit.results.html"
+                        $desktopTestAssembly = Join-Path $_ "bin\$Configuration\net46\win7-x64\$directoryName.dll"
+                        $opts = $desktopTestAssembly, '-html', $htmlOutput
+                        $opts += '-notrait', 'Platform=Linux', '-notrait', 'Platform=Darwin'
+                        if ($VerbosePreference) {
+                            $opts += '-verbose'
+                        }
+                        Trace-Log "$XunitConsole $opts"
+
+                        & $XunitConsole $opts
+                        if (-not $?) {
+                            Error-Log "Tests failed @""$_"" on CLR. Code: $LASTEXITCODE"
+                        }
+                    }
+                }
+            }
+            else {
+                Trace-Log "Skipping non-test project in ""$_"""
             }
 
             popd

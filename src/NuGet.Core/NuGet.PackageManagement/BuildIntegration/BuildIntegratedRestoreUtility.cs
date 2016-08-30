@@ -103,42 +103,40 @@ namespace NuGet.PackageManagement
                 Strings.BuildIntegratedPackageRestoreStarted,
                 project.ProjectName));
 
-            using (var request = new RestoreRequest(packageSpec, providers, logger, disposeProviders: false))
+            var request = new RestoreRequest(packageSpec, providers, logger);
+            request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
+
+            // Add the existing lock file if it exists
+            var lockFilePath = ProjectJsonPathUtilities.GetLockFilePath(project.JsonConfigPath);
+            request.LockFilePath = lockFilePath;
+            request.ExistingLockFile = LockFileUtilities.GetLockFile(lockFilePath, logger);
+
+            // Find the full closure of project.json files and referenced projects
+            var projectReferences = await project.GetProjectReferenceClosureAsync(context);
+            request.ExternalProjects = projectReferences.ToList();
+
+            token.ThrowIfCancellationRequested();
+
+            var command = new RestoreCommand(request);
+
+            // Execute the restore
+            var result = await command.ExecuteAsync(token);
+
+            // Report a final message with the Success result
+            if (result.Success)
             {
-                request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
-
-                // Add the existing lock file if it exists
-                var lockFilePath = ProjectJsonPathUtilities.GetLockFilePath(project.JsonConfigPath);
-                request.LockFilePath = lockFilePath;
-                request.ExistingLockFile = LockFileUtilities.GetLockFile(lockFilePath, logger);
-
-                // Find the full closure of project.json files and referenced projects
-                var projectReferences = await project.GetProjectReferenceClosureAsync(context);
-                request.ExternalProjects = projectReferences.ToList();
-
-                token.ThrowIfCancellationRequested();
-
-                var command = new RestoreCommand(request);
-
-                // Execute the restore
-                var result = await command.ExecuteAsync(token);
-
-                // Report a final message with the Success result
-                if (result.Success)
-                {
-                    logger.LogMinimal(string.Format(CultureInfo.CurrentCulture,
-                        Strings.BuildIntegratedPackageRestoreSucceeded,
-                        project.ProjectName));
-                }
-                else
-                {
-                    logger.LogMinimal(string.Format(CultureInfo.CurrentCulture,
-                        Strings.BuildIntegratedPackageRestoreFailed,
-                        project.ProjectName));
-                }
-
-                return result;
+                logger.LogMinimal(string.Format(CultureInfo.CurrentCulture,
+                    Strings.BuildIntegratedPackageRestoreSucceeded,
+                    project.ProjectName));
             }
+            else
+            {
+                logger.LogMinimal(string.Format(CultureInfo.CurrentCulture,
+                    Strings.BuildIntegratedPackageRestoreFailed,
+                    project.ProjectName));
+            }
+
+            return result;
         }
 
         /// <summary>

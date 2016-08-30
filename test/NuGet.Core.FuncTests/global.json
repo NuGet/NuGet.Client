@@ -1,6 +1,7 @@
 {
   "projects": [
     "../../src/NuGet.Core",
+    "../../test/NuGet.Core.Tests",
     "../../lib"
   ]
 }
