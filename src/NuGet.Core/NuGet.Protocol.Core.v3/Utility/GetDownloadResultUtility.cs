@@ -28,17 +28,37 @@ namespace NuGet.Protocol
            ILogger logger,
            CancellationToken token)
         {
-            // This code should respect -NoCache option and not read packages from the global
-            // packages folder: https://github.com/NuGet/Home/issues/1406
-            var packageFromGlobalPackages = GlobalPackagesFolderUtility.GetPackage(
-                identity,
-                globalPackagesFolder);
-
-            if (packageFromGlobalPackages != null)
+            // Observe the NoCache argument.
+            var directDownload = downloadContext.DirectDownload;
+            DownloadResourceResult packageFromGlobalPackages = null;
+            try
             {
-                return packageFromGlobalPackages;
+                packageFromGlobalPackages = GlobalPackagesFolderUtility.GetPackage(
+                    identity,
+                    globalPackagesFolder);
+
+                if (packageFromGlobalPackages != null)
+                {
+                    if (!downloadContext.SourceCacheContext.NoCache)
+                    {
+                        return packageFromGlobalPackages;
+                    }
+                    else
+                    {
+                        // The package already exists in the global packages folder but the caller has requested NoCache,
+                        // which means the package in the global packages folder should not be used. In this particular
+                        // case, NoCache needs to imply DirectDownload.
+                        directDownload = true;
+                        packageFromGlobalPackages.Dispose();
+                    }
+                }
+            }
+            catch
+            {
+                packageFromGlobalPackages?.Dispose();
             }
 
+            // Get the package from the source.
             for (int i = 0; i < 3; i++)
             {
                 try
@@ -55,7 +75,7 @@ namespace NuGet.Protocol
                                 return new DownloadResourceResult(DownloadResourceResultStatus.NotFound);
                             }
 
-                            if (downloadContext.DirectDownload)
+                            if (directDownload)
                             {
                                 return await DirectDownloadAsync(
                                     identity,

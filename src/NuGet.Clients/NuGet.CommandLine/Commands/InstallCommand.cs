@@ -190,9 +190,7 @@ namespace NuGet.CommandLine
                 cacheContext.NoCache = NoCache;
                 cacheContext.DirectDownload = DirectDownload;
 
-                var downloadContext = new PackageDownloadContext(
-                    cacheContext,
-                    directDownloadDirectory: DirectDownload ? installPath : null);
+                var downloadContext = new PackageDownloadContext(cacheContext, installPath, DirectDownload);
 
                 await PackageRestoreManager.RestoreMissingPackagesAsync(
                     packageRestoreContext,
@@ -292,9 +290,7 @@ namespace NuGet.CommandLine
                     cacheContext.NoCache = NoCache;
                     cacheContext.DirectDownload = DirectDownload;
 
-                    var downloadContext = new PackageDownloadContext(
-                        cacheContext,
-                        directDownloadDirectory: DirectDownload ? installPath : null);
+                    var downloadContext = new PackageDownloadContext(cacheContext, installPath, DirectDownload);
 
                     await packageManager.InstallPackageAsync(
                         folderProject,

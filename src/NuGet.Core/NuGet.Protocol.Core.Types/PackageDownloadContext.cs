@@ -9,19 +9,30 @@ namespace NuGet.Protocol.Core.Types
     {
         public PackageDownloadContext(SourceCacheContext sourceCacheContext) : this(
             sourceCacheContext,
-            directDownloadDirectory: null)
+            directDownloadDirectory: null,
+            directDownload: false)
         {
         }
 
-        public PackageDownloadContext(SourceCacheContext sourceCacheContext, string directDownloadDirectory)
+        public PackageDownloadContext(
+            SourceCacheContext sourceCacheContext,
+            string directDownloadDirectory,
+            bool directDownload)
         {
             if (sourceCacheContext == null)
             {
                 throw new ArgumentNullException(nameof(sourceCacheContext));
             }
 
+            if (directDownloadDirectory == null && (directDownload || sourceCacheContext.NoCache))
+            {
+                // If NoCache is specified on the source cache context, it's possible that we will perform a direct
+                // download (even if the PackageDownloadContext.DirectDownload property is false).
+                throw new ArgumentNullException(nameof(directDownloadDirectory));
+            }
+
             SourceCacheContext = sourceCacheContext;
-            DirectDownload = directDownloadDirectory != null;
+            DirectDownload = directDownload;
             DirectDownloadDirectory = directDownloadDirectory;
         }
 
