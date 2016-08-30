@@ -28,8 +28,7 @@ namespace NuGet.XPlat.FuncTest
         /// </returns>
         public static string GetDotnetCli()
         {
-            var funcTestLocation = typeof(XPlatLocalsTests).GetTypeInfo().Assembly.Location;
-            var currentDirInfo = new DirectoryInfo(Path.GetDirectoryName(funcTestLocation));
+            var currentDirInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
             var parentDirInfo = currentDirInfo.Parent;
             while (parentDirInfo != null)
             {
@@ -106,8 +105,7 @@ namespace NuGet.XPlat.FuncTest
         /// </returns>
         public static string GetXplatDll()
         {
-            var funcTestLocation = typeof(XPlatLocalsTests).GetTypeInfo().Assembly.Location;
-            var currentDirInfo = new DirectoryInfo(Path.GetDirectoryName(funcTestLocation));
+            var currentDirInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
             var parentDirInfo = currentDirInfo.Parent;
             while (parentDirInfo != null)
             {
