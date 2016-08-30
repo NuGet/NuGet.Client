@@ -10,7 +10,6 @@ using System.IO;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Threading;
-using System.Windows.Media;
 using Microsoft.PowerShell;
 using NuGet;
 using NuGet.PackageManagement.VisualStudio;
@@ -33,7 +32,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private static bool IHaveTheLock;
 
         private readonly Runspace _runspace;
-        private readonly IConsole _console;
         private readonly SemaphoreSlim _dispatcherLock = new SemaphoreSlim(1, 1);
 
         public RunspaceAvailability RunspaceAvailability
@@ -41,10 +39,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             get { return _runspace.RunspaceAvailability; }
         }
 
-        public RunspaceDispatcher(Runspace runspace, IConsole console)
+        public RunspaceDispatcher(Runspace runspace)
         {
             _runspace = runspace;
-            _console = console;
         }
 
         public void MakeDefault()
@@ -92,8 +89,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 throw new ArgumentNullException("command");
             }
 
-            CheckLanguageMode(_runspace.InitialSessionState.LanguageMode);
-
             using (Pipeline pipeline = CreatePipeline(command, outputResults))
             {
                 return InvokeCore(pipeline, inputs);
@@ -114,8 +109,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             {
                 throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, CommonResources.Argument_Cannot_Be_Null_Or_Empty, command), "command");
             }
-
-            CheckLanguageMode(_runspace.InitialSessionState.LanguageMode);
 
             Pipeline pipeline = CreatePipeline(command, outputResults);
 
@@ -305,15 +298,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     _dispatcherLock.Release();
                     throw;
                 }
-            }
-        }
-
-        private void CheckLanguageMode(PSLanguageMode mode)
-        {
-            if (mode != PSLanguageMode.FullLanguage)
-            {
-                _console.Write(String.Format(CultureInfo.CurrentCulture, Resources.LanguageModeWarning, mode.ToString()) + Environment.NewLine,
-                    Colors.Black, Colors.Yellow);
             }
         }
     }
