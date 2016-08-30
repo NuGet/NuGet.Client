@@ -4,6 +4,6 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("VisualStudio2014")]
-[assembly: AssemblyDescription("This assembly contains types that are meant to be loaded only in Visual Studio 2014.")]
+[assembly: AssemblyTitle("VisualStudio15.Packages")]
+[assembly: AssemblyDescription("This assembly contains types that are meant to be loaded only in Visual Studio 15.")]
 [assembly: ComVisible(false)]
