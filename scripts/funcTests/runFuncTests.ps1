@@ -41,11 +41,6 @@ Trace-Log ('=' * 60)
 
 $startTime = [DateTime]::UtcNow
 
-$FuncScriptsRoot = Split-Path -Path $PSScriptRoot -Parent
-$NuGetClientRoot = Split-Path -Path $FuncScriptsRoot -Parent
-$FuncTestRoot = Join-Path $NuGetClientRoot "test\NuGet.Core.FuncTests"
-$SrcRoot = Join-Path $NuGetClientRoot "src\NuGet.Core"
-
 Write-Host "Dependent Build Details are as follows:"
 Write-Host "Branch: $DepBuildBranch"
 Write-Host "Commit ID: $DepCommitID"
@@ -58,28 +53,39 @@ Invoke-BuildStep 'Updating sub-modules' { Update-SubModules } `
     -skip:($SkipSubModules -or $Fast) `
     -ev +BuildErrors
 
-Invoke-BuildStep 'Cleaning package cache' { Clear-PackageCache } `
-    -skip:(-not $CleanCache) `
-    -ev +BuildErrors
-
 Invoke-BuildStep 'Installing NuGet.exe' { Install-NuGet } `
     -ev +BuildErrors
 
-Invoke-BuildStep 'Restoring solution packages' { Restore-SolutionPackages } `
+Invoke-BuildStep 'Cleaning package cache' { Clear-PackageCache } `
+    -skip:(-not $CleanCache) `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Installing dotnet CLI' { Install-DotnetCLI } `
     -ev +BuildErrors
 
+Invoke-BuildStep 'Restoring solution packages' { Restore-SolutionPackages } `
+    -ev +BuildErrors
+
 Invoke-BuildStep 'Restoring projects' { Restore-XProjects } `
     -ev +BuildErrors
 
-# Run tests
-Invoke-BuildStep 'Running tests' {
-    param($FuncTestRoot)
-    $xtests = Find-XProjects $FuncTestRoot
-    $xtests | Test-XProject
-} -args $FuncTestRoot -ev +BuildErrors
+Invoke-BuildStep 'Running NuGet.Core functional tests' { Test-FuncCoreProjects } `
+    -ev +BuildErrors
+
+Invoke-BuildStep 'Running NuGet.Clients functional tests - VS15 dependencies' {
+        param($Configuration)
+        # We don't run command line tests on VS15 as we don't build a nuget.exe for this version
+        Test-ClientsProjects -Configuration $Configuration -MSBuildVersion "15" -SkipProjects 'NuGet.CommandLine.FuncTest'
+    } `
+    -args $Configuration `
+    -ev +BuildErrors
+
+Invoke-BuildStep 'Running NuGet.Clients functional tests - VS14 dependencies' {
+        param($Configuration)
+        Test-ClientsProjects -Configuration $Configuration -MSBuildVersion "14"
+    } `
+    -args $Configuration `
+    -ev +BuildErrors
 
 Trace-Log ('-' * 60)
 
