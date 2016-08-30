@@ -268,14 +268,15 @@ namespace NuGet.PackageManagement.UI
         // Calculate the version to select among _versions and select it
         protected void SelectVersion()
         {
-            DisplayVersion versionToSelect = null;
-
-            if (_versions.Count > 0 && !_versions.Contains(SelectedVersion))
+            if (_versions.Count == 0)
+            {
+                SelectedVersion = null;
+            }
+            else if (!_versions.Contains(SelectedVersion))
             {
                 // it should always select the top version from versions list to install or update
                 // which has a valid version. If find none, then just set to null.
-                versionToSelect = _versions.FirstOrDefault(v => v != null && v.IsValidVersion);
-                SelectedVersion = versionToSelect;
+                SelectedVersion = _versions.FirstOrDefault(v => v != null && v.IsValidVersion);
             }
         }
 
