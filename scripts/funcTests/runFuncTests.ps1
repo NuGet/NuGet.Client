@@ -72,19 +72,25 @@ Invoke-BuildStep 'Restoring projects' { Restore-XProjects } `
 Invoke-BuildStep 'Running NuGet.Core functional tests' { Test-FuncCoreProjects } `
     -ev +BuildErrors
 
+Invoke-BuildStep 'Building NuGet.Clients projects - VS15 dependencies' {
+        Build-ClientsProjects -MSBuildVersion "15"
+    } `
+    -ev +BuildErrors
+
+Invoke-BuildStep 'Building NuGet.Clients projects - VS14 dependencies' {
+        Build-ClientsProjects -MSBuildVersion "14"
+    } `
+    -ev +BuildErrors
+
 Invoke-BuildStep 'Running NuGet.Clients functional tests - VS15 dependencies' {
-        param($Configuration)
         # We don't run command line tests on VS15 as we don't build a nuget.exe for this version
         Test-FuncClientsProjects -MSBuildVersion "15" -SkipProjects 'NuGet.CommandLine.FuncTest'
     } `
-    -args $Configuration `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Running NuGet.Clients functional tests - VS14 dependencies' {
-        param($Configuration)
         Test-FuncClientsProjects -MSBuildVersion "14"
     } `
-    -args $Configuration `
     -ev +BuildErrors
 
 Trace-Log ('-' * 60)

@@ -80,7 +80,4 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\..\build\common.targets" />
   <Import Project="..\..\..\build\test.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>xcopy /diy $(SolutionDir)test\TestExtensions\TestablePluginCredentialProvider\$(OutDir). $(TargetDir)TestableCredentialProvider</PostBuildEvent>
-  </PropertyGroup>
 </Project>
