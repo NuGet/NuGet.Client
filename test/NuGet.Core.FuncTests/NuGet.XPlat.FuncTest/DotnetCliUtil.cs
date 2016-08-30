@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using NuGet.Test.Utility;
 using Xunit;
@@ -11,8 +12,11 @@ namespace NuGet.XPlat.FuncTest
     {
         private const string _dotnetCliBinary = @"dotnet";
         private const string _dotnetCliExe = @"dotnet.exe";
+
         private static string _xplatDll = Path.Combine("NuGet.Core", "NuGet.CommandLine.XPlat", "bin",
                                                        "release", "netcoreapp1.0", "NuGet.CommandLine.XPlat.dll");
+
+        private static List<string> _fileNames = new List<string> { "file1.txt", "file2.txt" };
 
         /// <summary>
         /// Provides the path to dotnet cli on the test machine.
@@ -58,11 +62,37 @@ namespace NuGet.XPlat.FuncTest
         /// <param name="path">Path which needs to be populated with dummy files</param>
         public static void CreateTestFiles(string path)
         {
-            var fileNames = new List<string> { "file1.txt", "file2.txt" };
-            foreach (var fileName in fileNames)
+            foreach (var fileName in _fileNames)
             {
                 File.Create(Path.Combine(path, fileName)).Dispose();
             }
+        }
+
+        /// <summary>
+        /// Verifies the dummy text files at the specified path for testing nuget locals --clear
+        /// </summary>
+        /// <param name="path">Path which needs to be tested for the dummy files</param>
+        public static void VerifyClearSuccess(string path)
+        {
+            Assert.False(Directory.Exists(path));
+        }
+
+        /// <summary>
+        /// Verifies the dummy text files at the specified path for testing nuget locals --clear
+        /// </summary>
+        /// <param name="path">Path which needs to be tested for the dummy files</param>
+        public static void VerifyNoClear(string path)
+        {
+            Assert.True(Directory.Exists(path));
+            var files = Directory.GetFiles(path)
+                                 .Select(filepath => Path.GetFileName(filepath))
+                                 .ToArray();
+            foreach (var filename in _fileNames)
+            {
+                Assert.True(Array.Exists(files, element => element == filename));
+            }
+
+            Assert.Equal(files.Count(), _fileNames.Count);
         }
 
         /// <summary>

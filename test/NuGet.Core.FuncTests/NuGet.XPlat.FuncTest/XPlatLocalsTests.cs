@@ -115,24 +115,30 @@ namespace NuGet.XPlat.FuncTest
                 }
                 else if (cacheType == "global-packages")
                 {
-                    // Only the global packages cache should be cleared
-                    Assert.False(Directory.Exists(mockGlobalPackagesDirectory.FullName));
-                    Assert.True(Directory.Exists(mockHttpCacheDirectory.FullName));
-                    Assert.True(Directory.Exists(mockTmpCacheDirectory.FullName));
+                    // Global packages cache should be cleared
+                    DotnetCliUtil.VerifyClearSuccess(mockGlobalPackagesDirectory.FullName);
+
+                    // Http cache and Temp cahce should be untouched
+                    DotnetCliUtil.VerifyNoClear(mockHttpCacheDirectory.FullName);
+                    DotnetCliUtil.VerifyNoClear(mockTmpCacheDirectory.FullName);
                 }
                 else if (cacheType == "http-cache")
                 {
-                    // Only the http cache should be cleared
-                    Assert.True(Directory.Exists(mockGlobalPackagesDirectory.FullName));
-                    Assert.False(Directory.Exists(mockHttpCacheDirectory.FullName));
-                    Assert.True(Directory.Exists(mockTmpCacheDirectory.FullName));
+                    // Http cache should be cleared
+                    DotnetCliUtil.VerifyClearSuccess(mockHttpCacheDirectory.FullName);
+
+                    // Global packages cache and temp cache should be untouched
+                    DotnetCliUtil.VerifyNoClear(mockGlobalPackagesDirectory.FullName);
+                    DotnetCliUtil.VerifyNoClear(mockTmpCacheDirectory.FullName);
                 }
                 else if (cacheType == "temp")
                 {
-                    // Only the temp cache should be cleared
-                    Assert.True(Directory.Exists(mockGlobalPackagesDirectory.FullName));
-                    Assert.True(Directory.Exists(mockHttpCacheDirectory.FullName));
-                    Assert.False(Directory.Exists(mockTmpCacheDirectory.FullName));
+                    // Temp cache should be cleared
+                    DotnetCliUtil.VerifyClearSuccess(mockTmpCacheDirectory.FullName);
+
+                    // Global packages cache and Http cache should be un touched
+                    DotnetCliUtil.VerifyNoClear(mockGlobalPackagesDirectory.FullName);
+                    DotnetCliUtil.VerifyNoClear(mockHttpCacheDirectory.FullName);
                 }
                 DotnetCliUtil.VerifyResultSuccess(result, string.Empty);
             }
@@ -146,9 +152,9 @@ namespace NuGet.XPlat.FuncTest
         public static void Locals_Success_InvalidArguments_HelpMessage(string args)
         {
             // Arrange
-            var expectedResult = string.Concat("error: No Cache Type was specified. ", 
+            var expectedResult = string.Concat("error: No Cache Type was specified. ",
                                                Environment.NewLine,
-                                               "error: usage: NuGet locals <all | http-cache | global-packages | temp> [--clear | -c | --list | -l]", 
+                                               "error: usage: NuGet locals <all | http-cache | global-packages | temp> [--clear | -c | --list | -l]",
                                                Environment.NewLine,
                                                "error: For more information, visit http://docs.nuget.org/docs/reference/command-line-reference");
 
