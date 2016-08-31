@@ -22,7 +22,9 @@ param (
     [string]$DepBuildBranch="",
     [string]$DepCommitID="",
     [string]$DepBuildNumber="",
-    [switch]$CleanCache
+    [switch]$CleanCache,
+    [switch]$SkipVS14,
+    [switch]$SkipVS15
 )
 
 # For TeamCity - Incase any issue comes in this script fail the build. - Be default TeamCity returns exit code of 0 for all powershell even if it fails
@@ -36,15 +38,17 @@ trap {
 
 . "$PSScriptRoot\..\..\build\common.ps1"
 
+# Adjust version skipping if only one version installed - if VS15 is not installed, no need to specify SkipVS15
+$VS14Installed = Test-MSBuildVersionPresent -MSBuildVersion "14"
+$SkipVS14 = $SkipVS14 -or -not $VS14Installed
+
+$VS15Installed = Test-MSBuildVersionPresent -MSBuildVersion "15"
+$SkipVS15 = $SkipVS15 -or -not $VS15Installed
+
 Write-Host ("`r`n" * 3)
 Trace-Log ('=' * 60)
 
 $startTime = [DateTime]::UtcNow
-
-$FuncScriptsRoot = Split-Path -Path $PSScriptRoot -Parent
-$NuGetClientRoot = Split-Path -Path $FuncScriptsRoot -Parent
-$FuncTestRoot = Join-Path $NuGetClientRoot "test\NuGet.Core.FuncTests"
-$SrcRoot = Join-Path $NuGetClientRoot "src\NuGet.Core"
 
 Write-Host "Dependent Build Details are as follows:"
 Write-Host "Branch: $DepBuildBranch"
@@ -58,28 +62,49 @@ Invoke-BuildStep 'Updating sub-modules' { Update-SubModules } `
     -skip:($SkipSubModules -or $Fast) `
     -ev +BuildErrors
 
-Invoke-BuildStep 'Cleaning package cache' { Clear-PackageCache } `
-    -skip:(-not $CleanCache) `
-    -ev +BuildErrors
-
 Invoke-BuildStep 'Installing NuGet.exe' { Install-NuGet } `
     -ev +BuildErrors
 
-Invoke-BuildStep 'Restoring solution packages' { Restore-SolutionPackages } `
+Invoke-BuildStep 'Cleaning package cache' { Clear-PackageCache } `
+    -skip:(-not $CleanCache) `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Installing dotnet CLI' { Install-DotnetCLI } `
     -ev +BuildErrors
 
+Invoke-BuildStep 'Restoring solution packages' { Restore-SolutionPackages } `
+    -ev +BuildErrors
+
 Invoke-BuildStep 'Restoring projects' { Restore-XProjects } `
     -ev +BuildErrors
 
-# Run tests
-Invoke-BuildStep 'Running tests' {
-    param($FuncTestRoot)
-    $xtests = Find-XProjects $FuncTestRoot
-    $xtests | Test-XProject
-} -args $FuncTestRoot -ev +BuildErrors
+Invoke-BuildStep 'Running NuGet.Core functional tests' { Test-FuncCoreProjects } `
+    -ev +BuildErrors
+
+Invoke-BuildStep 'Building NuGet.Clients projects - VS15 dependencies' {
+        Build-ClientsProjects -MSBuildVersion "15"
+    } `
+    -skip:$SkipVS15 `
+    -ev +BuildErrors
+
+Invoke-BuildStep 'Building NuGet.Clients projects - VS14 dependencies' {
+        Build-ClientsProjects -MSBuildVersion "14"
+    } `
+    -skip:$SkipVS14 `
+    -ev +BuildErrors
+
+Invoke-BuildStep 'Running NuGet.Clients functional tests - VS15 dependencies' {
+        # We don't run command line tests on VS15 as we don't build a nuget.exe for this version
+        Test-FuncClientsProjects -MSBuildVersion "15" -SkipProjects 'NuGet.CommandLine.FuncTest'
+    } `
+    -skip:$SkipVS15 `
+    -ev +BuildErrors
+
+Invoke-BuildStep 'Running NuGet.Clients functional tests - VS14 dependencies' {
+        Test-FuncClientsProjects -MSBuildVersion "14"
+    } `
+    -skip:$SkipVS14 `
+    -ev +BuildErrors
 
 Trace-Log ('-' * 60)
 

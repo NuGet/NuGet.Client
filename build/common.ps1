@@ -499,11 +499,29 @@ Function Test-XProject {
 Function Test-CoreProjects {
     [CmdletBinding()]
     param(
-        [switch]$SkipRestore,
-        [switch]$Fast,
         [string]$Configuration = $DefaultConfiguration
     )
     $XProjectsLocation = Join-Path $NuGetClientRoot test\NuGet.Core.Tests
+
+    Test-CoreProjectsHelper -Configuration $Configuration -XProjectsLocation $XProjectsLocation
+}
+
+Function Test-FuncCoreProjects {
+    [CmdletBinding()]
+    param(
+        [string]$Configuration = $DefaultConfiguration
+    )
+    $XProjectsLocation = Join-Path $NuGetClientRoot test\NuGet.Core.FuncTests
+
+    Test-CoreProjectsHelper -Configuration $Configuration -XProjectsLocation $XProjectsLocation
+}
+
+Function Test-CoreProjectsHelper {
+    [CmdletBinding()]
+    param(
+        [string]$Configuration,
+        [string]$XProjectsLocation
+    )
 
     $xtests = Find-XProjects $XProjectsLocation
     $xtests | Test-XProject -Configuration $Configuration
@@ -570,12 +588,47 @@ Function Test-ClientsProjects {
         [string[]]$SkipProjects
     )
 
+    $TestProjectsLocation = Join-Path $NuGetClientRoot test\NuGet.Clients.Tests -Resolve
+
+    Test-ClientsProjectsHelper `
+        -Configuration $Configuration `
+        -MSBuildVersion $MSBuildVersion `
+        -SkipProjects $SkipProjects `
+        -TestProjectsLocation $TestProjectsLocation
+}
+
+Function Test-FuncClientsProjects {
+    [CmdletBinding()]
+    param(
+        [string]$Configuration = $DefaultConfiguration,
+        [string]$MSBuildVersion = $DefaultMSBuildVersion,
+        [string[]]$SkipProjects
+    )
+
+    $TestProjectsLocation = Join-Path $NuGetClientRoot test\NuGet.Clients.FuncTests -Resolve
+
+    Test-ClientsProjectsHelper `
+        -Configuration $Configuration `
+        -MSBuildVersion $MSBuildVersion `
+        -SkipProjects $SkipProjects `
+        -TestProjectsLocation $TestProjectsLocation
+}
+
+Function Test-ClientsProjectsHelper {
+    [CmdletBinding()]
+    param(
+        [string]$TestProjectsLocation,
+        [string]$Configuration,
+        [string]$MSBuildVersion,
+        [string[]]$SkipProjects
+    )
+
     if (-not $SkipProjects) {
         $SkipProjects = @()
     }
 
     $ExcludeFilter = ('WebAppTest', $SkipProjects) | %{ "$_.csproj" }
-    $TestProjectsLocation = Join-Path $NuGetClientRoot test\NuGet.Clients.Tests -Resolve
+
     $TestProjects = Get-ChildItem $TestProjectsLocation -Recurse -Filter '*.csproj' -Exclude $ExcludeFilter |
         %{ $_.FullName }
 
