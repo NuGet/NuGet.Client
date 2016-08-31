@@ -448,4 +448,8 @@
   <data name="Log_ReadingProject" xml:space="preserve">
     <value>Reading project file {0}.</value>
   </data>
+  <data name="LocalsCommand_Help" xml:space="preserve">
+    <value>usage: NuGet locals &lt;all | http-cache | global-packages | temp&gt; [--clear | -c | --list | -l]
+For more information, visit http://docs.nuget.org/docs/reference/command-line-reference</value>
+  </data>
 </root>

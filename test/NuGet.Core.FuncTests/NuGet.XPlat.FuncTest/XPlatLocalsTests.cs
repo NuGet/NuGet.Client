@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using NuGet.CommandLine.XPlat;
+using System.Collections.Generic;
+using System.IO;
+using NuGet.Common;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.XPlat.FuncTest
@@ -26,38 +29,144 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("locals global-packages -l")]
         [InlineData("locals --list global-packages")]
         [InlineData("locals -l global-packages")]
-        // [InlineData("locals --clear all")]
-        // [InlineData("locals -c all")]
-        public static void Locals_Succeeds(String args)
+        public static void Locals_List_Succeeds(string args)
         {
-            // Arrange
-            var log = new TestCommandOutputLogger();
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var mockGlobalPackagesDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"global-packages"));
+                var mockHttpCacheDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"http-cache"));
+                var mockTmpCacheDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"temp"));
 
-            // Act
-            var exitCode = Program.MainInternal(args.Split(null), log);
+                DotnetCliUtil.CreateTestFiles(mockGlobalPackagesDirectory.FullName);
+                DotnetCliUtil.CreateTestFiles(mockHttpCacheDirectory.FullName);
+                DotnetCliUtil.CreateTestFiles(mockTmpCacheDirectory.FullName);
 
-            // Assert
-            Assert.Equal(string.Empty, log.ShowErrors());
-            Assert.Equal(0, exitCode);
+                // Act
+                var result = CommandRunner.Run(
+                      DotnetCliUtil.GetDotnetCli(),
+                      Directory.GetCurrentDirectory(),
+                      DotnetCliUtil.GetXplatDll() + " " + args,
+                      waitForExit: true,
+                    environmentVariables: new Dictionary<string, string>
+                    {
+                        { "NUGET_PACKAGES", mockGlobalPackagesDirectory.FullName },
+                        { "NUGET_HTTP_CACHE_PATH", mockHttpCacheDirectory.FullName },
+                        { RuntimeEnvironmentHelper.IsWindows ? "TMP" : "TMPDIR", mockTmpCacheDirectory.FullName }
+                    });
+                // Unix uses TMPDIR as environment variable as opposed to TMP on windows
+
+                // Assert
+                DotnetCliUtil.VerifyResultSuccess(result, string.Empty);
+            }
         }
 
         [Theory]
-        [InlineData("locals")]
+        [InlineData("locals --clear all")]
+        [InlineData("locals -c all")]
+        [InlineData("locals http-cache --clear")]
+        [InlineData("locals http-cache -c")]
+        [InlineData("locals --clear http-cache")]
+        [InlineData("locals -c http-cache")]
+        [InlineData("locals temp --clear")]
+        [InlineData("locals temp -c")]
+        [InlineData("locals --clear temp")]
+        [InlineData("locals -c temp")]
+        [InlineData("locals global-packages --clear")]
+        [InlineData("locals global-packages -c")]
+        [InlineData("locals --clear global-packages")]
+        [InlineData("locals -c global-packages")]
+        public static void Locals_Clear_Succeeds(string args)
+        {
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var mockGlobalPackagesDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"global-packages"));
+                var mockHttpCacheDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"http-cache"));
+                var mockTmpDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"temp"));
+                var mockTmpCacheDirectory = Directory.CreateDirectory(Path.Combine(mockTmpDirectory.FullName, @"NuGetScratch"));
+
+                DotnetCliUtil.CreateTestFiles(mockGlobalPackagesDirectory.FullName);
+                DotnetCliUtil.CreateTestFiles(mockHttpCacheDirectory.FullName);
+                DotnetCliUtil.CreateTestFiles(mockTmpCacheDirectory.FullName);
+
+                var cacheType = args.Split(null)[1].StartsWith("-") ? args.Split(null)[2] : args.Split(null)[1];
+
+                // Act
+                var result = CommandRunner.Run(
+                      DotnetCliUtil.GetDotnetCli(),
+                      Directory.GetCurrentDirectory(),
+                      DotnetCliUtil.GetXplatDll() + " " + args,
+                      waitForExit: true,
+                    environmentVariables: new Dictionary<string, string>
+                    {
+                        { "NUGET_PACKAGES", mockGlobalPackagesDirectory.FullName },
+                        { "NUGET_HTTP_CACHE_PATH", mockHttpCacheDirectory.FullName },
+                        { RuntimeEnvironmentHelper.IsWindows ? "TMP" : "TMPDIR", mockTmpDirectory.FullName }
+                    });
+                // Unix uses TMPDIR as environment variable as opposed to TMP on windows
+
+                // Assert
+                if (cacheType == "all")
+                {
+                    DotnetCliUtil.VerifyClearSuccess(mockGlobalPackagesDirectory.FullName);
+                    DotnetCliUtil.VerifyClearSuccess(mockHttpCacheDirectory.FullName);
+                    DotnetCliUtil.VerifyClearSuccess(mockTmpCacheDirectory.FullName);
+                }
+                else if (cacheType == "global-packages")
+                {
+                    // Global packages cache should be cleared
+                    DotnetCliUtil.VerifyClearSuccess(mockGlobalPackagesDirectory.FullName);
+
+                    // Http cache and Temp cahce should be untouched
+                    DotnetCliUtil.VerifyNoClear(mockHttpCacheDirectory.FullName);
+                    DotnetCliUtil.VerifyNoClear(mockTmpCacheDirectory.FullName);
+                }
+                else if (cacheType == "http-cache")
+                {
+                    // Http cache should be cleared
+                    DotnetCliUtil.VerifyClearSuccess(mockHttpCacheDirectory.FullName);
+
+                    // Global packages cache and temp cache should be untouched
+                    DotnetCliUtil.VerifyNoClear(mockGlobalPackagesDirectory.FullName);
+                    DotnetCliUtil.VerifyNoClear(mockTmpCacheDirectory.FullName);
+                }
+                else if (cacheType == "temp")
+                {
+                    // Temp cache should be cleared
+                    DotnetCliUtil.VerifyClearSuccess(mockTmpCacheDirectory.FullName);
+
+                    // Global packages cache and Http cache should be un touched
+                    DotnetCliUtil.VerifyNoClear(mockGlobalPackagesDirectory.FullName);
+                    DotnetCliUtil.VerifyNoClear(mockHttpCacheDirectory.FullName);
+                }
+                DotnetCliUtil.VerifyResultSuccess(result, string.Empty);
+            }
+        }
+
+        [Theory]
         [InlineData("locals --list")]
         [InlineData("locals -l")]
         [InlineData("locals --clear")]
         [InlineData("locals -c")]
-        public static void Locals_Success_InvalidArguments_HelpMessage(String args)
+        public static void Locals_Success_InvalidArguments_HelpMessage(string args)
         {
             // Arrange
-            var log = new TestCommandOutputLogger();
+            var expectedResult = string.Concat("error: No Cache Type was specified.",
+                                               Environment.NewLine,
+                                               "error: usage: NuGet locals <all | http-cache | global-packages | temp> [--clear | -c | --list | -l]",
+                                               Environment.NewLine,
+                                               "error: For more information, visit http://docs.nuget.org/docs/reference/command-line-reference");
 
             // Act
-            var exitCode = Program.MainInternal(args.Split(null), log);
+            var result = CommandRunner.Run(
+              DotnetCliUtil.GetDotnetCli(),
+              Directory.GetCurrentDirectory(),
+              DotnetCliUtil.GetXplatDll() + " " + args,
+              waitForExit: true);
 
             // Assert
-            Assert.Equal("usage: NuGet locals <all | http-cache | global-packages | temp> [--clear | -c | --list | -l]" + Environment.NewLine + "For more information, visit http://docs.nuget.org/docs/reference/command-line-reference", log.ShowErrors());
-            Assert.Equal(1, exitCode);
+            DotnetCliUtil.VerifyResultFailure(result, expectedResult);
         }
 
         [Theory]
@@ -65,17 +174,21 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("locals -l unknownResource")]
         [InlineData("locals --clear unknownResource")]
         [InlineData("locals -c unknownResource")]
-        public static void Locals_Success_InvalidResourceName_HelpMessage(String args)
+        public static void Locals_Success_InvalidResourceName_HelpMessage(string args)
         {
             // Arrange
-            var log = new TestCommandOutputLogger();
+            var expectedResult = string.Concat("error: An invalid local resource name was provided. " +
+                                               "Please provide one of the following values: http-cache, temp, global-packages, all.");
 
             // Act
-            var exitCode = Program.MainInternal(args.Split(null), log);
+            var result = CommandRunner.Run(
+              DotnetCliUtil.GetDotnetCli(),
+              Directory.GetCurrentDirectory(),
+              DotnetCliUtil.GetXplatDll() + " " + args,
+              waitForExit: true);
 
             // Assert
-            Assert.Equal("An invalid local resource name was provided. Please provide one of the following values: http-cache, temp, global-packages, all.", log.ShowErrors());
-            Assert.Equal(1, exitCode);
+            DotnetCliUtil.VerifyResultFailure(result, expectedResult);
         }
 
         [Theory]
@@ -83,17 +196,75 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("locals -clear")]
         [InlineData("locals --l")]
         [InlineData("locals --c")]
-        public static void Locals_Success_InvalidFlags_HelpMessage(String args)
+        public static void Locals_Success_InvalidFlags_HelpMessage(string args)
         {
             // Arrange
-            var log = new TestCommandOutputLogger();
+            var expectedResult = string.Concat("Specify --help for a list of available options and commands.",
+                                               Environment.NewLine, "error: Unrecognized option '", args.Split(null)[1], "'");
 
             // Act
-            var exitCode = Program.MainInternal(args.Split(null), log);
+            var result = CommandRunner.Run(
+              DotnetCliUtil.GetDotnetCli(),
+              Directory.GetCurrentDirectory(),
+              DotnetCliUtil.GetXplatDll() + " " + args,
+              waitForExit: true);
 
             // Assert
-            Assert.Equal("Unrecognized option '" + args.Split(null)[1] + "'", log.ShowErrors());
-            Assert.Equal(1, exitCode);
+            DotnetCliUtil.VerifyResultFailure(result, expectedResult);
+        }
+
+        [Theory]
+        [InlineData("locals all")]
+        [InlineData("locals http-cache")]
+        [InlineData("locals global-packages")]
+        [InlineData("locals temp")]
+        public static void Locals_Success_NoFlags_HelpMessage(string args)
+        {
+            // Arrange
+            var expectedResult = string.Concat("error: Please specify an operation i.e. --list or --clear.",
+                                               Environment.NewLine,
+                                               "error: usage: NuGet locals <all | http-cache | global-packages | temp> [--clear | -c | --list | -l]",
+                                               Environment.NewLine,
+                                               "error: For more information, visit http://docs.nuget.org/docs/reference/command-line-reference");
+
+            // Act
+            var result = CommandRunner.Run(
+              DotnetCliUtil.GetDotnetCli(),
+              Directory.GetCurrentDirectory(),
+              DotnetCliUtil.GetXplatDll() + " " + args,
+              waitForExit: true);
+
+            // Assert
+            DotnetCliUtil.VerifyResultFailure(result, expectedResult);
+        }
+
+        [Theory]
+        [InlineData("locals -c -l all")]
+        [InlineData("locals -c -l global-packages")]
+        [InlineData("locals -c -l http-cache")]
+        [InlineData("locals -c -l temp")]
+        [InlineData("locals --clear --list all")]
+        [InlineData("locals --clear --list global-packages")]
+        [InlineData("locals --clear --list http-cache")]
+        [InlineData("locals --clear --list temp")]
+        public static void Locals_Success_BothFlags_HelpMessage(string args)
+        {
+            // Arrange
+            var expectedResult = string.Concat("error: Both operations, --list and --clear, are not supported in the same command. Please specify only one operation.",
+                                               Environment.NewLine,
+                                               "error: usage: NuGet locals <all | http-cache | global-packages | temp> [--clear | -c | --list | -l]",
+                                               Environment.NewLine,
+                                               "error: For more information, visit http://docs.nuget.org/docs/reference/command-line-reference");
+
+            // Act
+            var result = CommandRunner.Run(
+              DotnetCliUtil.GetDotnetCli(),
+              Directory.GetCurrentDirectory(),
+              DotnetCliUtil.GetXplatDll() + " " + args,
+              waitForExit: true);
+
+            // Assert
+            DotnetCliUtil.VerifyResultFailure(result, expectedResult);
         }
     }
 }

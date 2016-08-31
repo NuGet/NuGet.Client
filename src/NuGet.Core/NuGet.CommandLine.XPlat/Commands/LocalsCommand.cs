@@ -17,6 +17,7 @@ namespace NuGet.CommandLine.XPlat
             app.Command("locals", locals =>
             {
                 locals.Description = Strings.LocalsCommand_Description;
+                locals.HelpOption(XPlatUtility.HelpOption);
 
                 locals.Option(
                     CommandConstants.ForceEnglishOutputOption,
@@ -42,13 +43,21 @@ namespace NuGet.CommandLine.XPlat
                 {
                     var logger = getLogger();
                     var setting = Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null);
-                    if (((arguments.Values.Count < 1) || string.IsNullOrWhiteSpace(arguments.Values[0])) || (clear.HasValue() && list.HasValue()) || (!clear.HasValue() && !list.HasValue()))
+                    // Using both -clear and -list command options, or neither one of them, is not supported.
+                    // We use MinArgs = 0 even though the first argument is required,
+                    // to avoid throwing a command argument validation exception and
+                    // immediately show usage help for this command instead.
+                    if ((arguments.Values.Count < 1) || string.IsNullOrWhiteSpace(arguments.Values[0]))
                     {
-                        // Using both -clear and -list command options, or neither one of them, is not supported.
-                        // We use MinArgs = 0 even though the first argument is required,
-                        // to avoid throwing a command argument validation exception and
-                        // immediately show usage help for this command instead.
-                        throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_Help));
+                        throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_NoArguments));
+                    }
+                    else if (clear.HasValue() && list.HasValue())
+                    {
+                        throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_MultipleOperations));
+                    }
+                    else if (!clear.HasValue() && !list.HasValue())
+                    {
+                        throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_NoOperation));
                     }
                     else
                     {

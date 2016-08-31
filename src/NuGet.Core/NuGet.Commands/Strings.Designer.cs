@@ -294,6 +294,16 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to usage: NuGet locals &lt;all | http-cache | global-packages | temp&gt; [--clear | -c | --list | -l]
+        ///For more information, visit http://docs.nuget.org/docs/reference/command-line-reference.
+        /// </summary>
+        public static string LocalsCommand_Help {
+            get {
+                return ResourceManager.GetString("LocalsCommand_Help", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to An invalid local resource name was provided. Please provide one of the following values: http-cache, temp, global-packages, all..
         /// </summary>
         public static string LocalsCommand_InvalidLocalResourceName {

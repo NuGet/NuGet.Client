@@ -260,6 +260,39 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Both operations, --list and --clear, are not supported in the same command. Please specify only one operation.
+        ///usage: NuGet locals &lt;all | http-cache | global-packages | temp&gt; [--clear | -c | --list | -l]
+        ///For more information, visit http://docs.nuget.org/docs/reference/command-line-reference.
+        /// </summary>
+        public static string LocalsCommand_MultipleOperations {
+            get {
+                return ResourceManager.GetString("LocalsCommand_MultipleOperations", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to No Cache Type was specified.
+        ///usage: NuGet locals &lt;all | http-cache | global-packages | temp&gt; [--clear | -c | --list | -l]
+        ///For more information, visit http://docs.nuget.org/docs/reference/command-line-reference.
+        /// </summary>
+        public static string LocalsCommand_NoArguments {
+            get {
+                return ResourceManager.GetString("LocalsCommand_NoArguments", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Please specify an operation i.e. --list or --clear.
+        ///usage: NuGet locals &lt;all | http-cache | global-packages | temp&gt; [--clear | -c | --list | -l]
+        ///For more information, visit http://docs.nuget.org/docs/reference/command-line-reference.
+        /// </summary>
+        public static string LocalsCommand_NoOperation {
+            get {
+                return ResourceManager.GetString("LocalsCommand_NoOperation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Committing restore....
         /// </summary>
         public static string Log_Committing {
