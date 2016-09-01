@@ -64,7 +64,7 @@ namespace NuGet.Protocol
         /// </param>
         public HttpSourceCredentials(ICredentials credentials = null)
         {
-            _credentials = credentials;
+            Credentials = credentials;
         }
 
         /// <summary>

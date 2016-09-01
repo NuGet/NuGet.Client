@@ -52,9 +52,7 @@ namespace NuGet.Credentials
             }
 
             return Task.FromResult(
-                new CredentialResponse(
-                    CredentialCache.DefaultNetworkCredentials,
-                    CredentialStatus.Success));
+                new CredentialResponse(CredentialCache.DefaultNetworkCredentials));
         }
     }
 }
