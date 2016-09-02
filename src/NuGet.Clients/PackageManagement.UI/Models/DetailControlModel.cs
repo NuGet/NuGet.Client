@@ -272,7 +272,7 @@ namespace NuGet.PackageManagement.UI
             {
                 SelectedVersion = null;
             }
-            else if (!_versions.Contains(SelectedVersion))
+            else if (SelectedVersion == null || !_versions.Contains(SelectedVersion))
             {
                 // it should always select the top version from versions list to install or update
                 // which has a valid version. If find none, then just set to null.
