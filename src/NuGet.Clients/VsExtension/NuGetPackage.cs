@@ -409,6 +409,17 @@ namespace NuGetVSExtension
                     return new VisualStudioCredentialProvider(webProxy);
                 });
 
+            if (PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders)
+            {
+                TryAddCredentialProvider(
+                credentialProviders,
+                Resources.CredentialProviderFailed_DefaultCredentialsCredentialProvider,
+                () =>
+                {
+                    return new DefaultCredentialsCredentialProvider();
+                });
+            }
+
             // Initialize the credential service.
             var credentialService = new CredentialService(credentialProviders, nonInteractive: false);
 

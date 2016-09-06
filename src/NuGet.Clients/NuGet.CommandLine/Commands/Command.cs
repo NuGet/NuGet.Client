@@ -175,10 +175,17 @@ namespace NuGet.CommandLine
         {
             var extensionLocator = new ExtensionLocator();
             var providers = new List<Credentials.ICredentialProvider>();
-            var pluginProviders = new PluginCredentialProviderBuilder(extensionLocator, Settings).BuildAll();
+            var pluginProviders = new PluginCredentialProviderBuilder(extensionLocator, Settings).BuildAll().ToList();
 
             providers.Add(new CredentialProviderAdapter(new SettingsCredentialProvider(SourceProvider, Console)));
-            providers.AddRange(pluginProviders);
+            if (pluginProviders.Any())
+            {
+                providers.AddRange(pluginProviders);
+                if (PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders)
+                {
+                    providers.Add(new DefaultCredentialsCredentialProvider());
+                }
+            }
             providers.Add(new ConsoleCredentialProvider(Console));
 
             return providers;

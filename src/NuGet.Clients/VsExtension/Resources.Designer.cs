@@ -115,6 +115,15 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The default credentials credential provider failed to load..
+        /// </summary>
+        internal static string CredentialProviderFailed_DefaultCredentialsCredentialProvider {
+            get {
+                return ResourceManager.GetString("CredentialProviderFailed_DefaultCredentialsCredentialProvider", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The legacy NuGet credential provider failed to load..
         /// </summary>
         internal static string CredentialProviderFailed_LegacyCredentialProvider {
