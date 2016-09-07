@@ -1,85 +1,125 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-	<!--Build output setting-->
-	<PropertyGroup>
-		<EnlistmentRoot>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), 'build.ps1'))</EnlistmentRoot>
-		<EnlistmentRootSrc>$(EnlistmentRoot)\src</EnlistmentRootSrc>
+  <!-- Default project configuration -->
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">14.0</VisualStudioVersion>
+  </PropertyGroup>
 
-		<ArtifactRoot>$(EnlistmentRoot)\artifacts</ArtifactRoot>
-		<ArtifactRoot>$([System.IO.Path]::GetFullPath( $(ArtifactRoot) ))</ArtifactRoot>
+  <!--Build output setting-->
+  <PropertyGroup>
+    <EnlistmentRoot>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), 'build.ps1'))</EnlistmentRoot>
+    <EnlistmentRootSrc>$(EnlistmentRoot)\src</EnlistmentRootSrc>
 
-		<BaseIntermediateOutputPath>$(ArtifactRoot)\.obj</BaseIntermediateOutputPath>
-		<BaseIntermediateOutputPath>$([System.IO.Path]::GetFullPath( $(BaseIntermediateOutputPath) ))</BaseIntermediateOutputPath>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(EnlistmentRoot)\</SolutionDir>
 
-		<Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-		<VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">14.0</VisualStudioVersion>
+    <ArtifactRoot>$(EnlistmentRoot)\artifacts</ArtifactRoot>
+    <ArtifactRoot>$([System.IO.Path]::GetFullPath( $(ArtifactRoot) ))</ArtifactRoot>
 
-		<OutputPath>$(ArtifactRoot)\$(MSBuildProjectName)\$(VisualStudioVersion)\$(Configuration)</OutputPath>
-		<OutputPath>$([System.IO.Path]::GetFullPath( $(OutputPath) ))\</OutputPath>
+    <VisualStudioRegistryKey>HKEY_CURRENT_USER\Software\Microsoft\VisualStudio\$(VisualStudioVersion)_Config\InstallDir</VisualStudioRegistryKey>
+    <VisualStudioDefaultInstallDir>$(ProgramFiles)\Microsoft Visual Studio $(VisualStudioVersion)\Common7\IDE\</VisualStudioDefaultInstallDir>
+    <VisualStudioInstallDir>$([MSBuild]::GetRegistryValue($(VisualStudioRegistryKey), $(VisualStudioDefaultInstallDir))</VisualStudioInstallDir>
 
-		<AppxPackageDir>$(OutputPath)</AppxPackageDir>
+    <OutDirFx>$(VisualStudioVersion)\$(Configuration)\</OutDirFx>
+    <OutputPath>$(ArtifactRoot)\$(MSBuildProjectName)\$(OutDirFx)</OutputPath>
+    <OutputPath>$([System.IO.Path]::GetFullPath( $(OutputPath) ))\</OutputPath>
+    <OutDir>$(OutputPath)</OutDir>
 
-		<IntermediateOutputPath>$(BaseIntermediateOutputPath)\$(MSBuildProjectName)\$(VisualStudioVersion)\$(Configuration)</IntermediateOutputPath>
-		<IntermediateOutputPath>$([System.IO.Path]::GetFullPath( $(IntermediateOutputPath) ))\</IntermediateOutputPath>
+    <IntermediateOutputPath>$(ArtifactRoot)\$(MSBuildProjectName)\.obj\$(OutDirFx)</IntermediateOutputPath>
+    <IntermediateOutputPath>$([System.IO.Path]::GetFullPath( $(IntermediateOutputPath) ))\</IntermediateOutputPath>
 
-		<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(EnlistmentRoot)\</SolutionDir>
+    <AppxPackageDir>$(OutputPath)</AppxPackageDir>
+  </PropertyGroup>
 
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-	</PropertyGroup>
+  <!-- Common project build settings -->
+  <PropertyGroup>
+    <PlatformTarget>$(Platform)</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoWarn>1762</NoWarn>
+  </PropertyGroup>
 
-	<!--Semantic Version-->
-	<PropertyGroup>
-		<!--
-		  Semantic Version. See http://semver.org for full details.
-		  Update for every public release.
-		-->
-		<SemanticVersion>3.6.0</SemanticVersion>
-		<PreReleaseVersion>0</PreReleaseVersion>
-	</PropertyGroup>
+  <!-- DEBUG specific configuration settings -->
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Mono Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
 
-	<!--Setting the Pre-release/Build meta-data from CI if Version is set-->
-	<PropertyGroup Condition="'$(BuildNumber)' != ''">
-		<PreReleaseVersion>$(BuildNumber)</PreReleaseVersion>
-	</PropertyGroup>
+  <!-- RELEASE specific configuration settings -->
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' Or '$(Configuration)' == 'Mono Release' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
 
-	<!--Setting the product information for Beta builds-->
-	<PropertyGroup Condition="'$(ReleaseLabel)' != 'Release'">
-		<PreReleaseInformationVersion>-$(ReleaseLabel)-$(PreReleaseVersion)</PreReleaseInformationVersion>
-	</PropertyGroup>
+  <PropertyGroup Condition="'$(VisualStudioVersion)' == '14.0'">
+    <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
+    <DefineConstants>$(DefineConstants);VS14</DefineConstants>
+  </PropertyGroup>
 
-	<!-- Generate AssemblyFileVersion and AssemblyVersion attributes. -->
-	<PropertyGroup>
-	<!-- Turn on dynamic assembly attribute generation -->
-	<AssemblyAttributesPath>$(IntermediateOutputPath)AssemblyInfo.g.cs</AssemblyAttributesPath>
-	<GenerateAdditionalSources>true</GenerateAdditionalSources>
-	</PropertyGroup>
+  <PropertyGroup Condition="'$(VisualStudioVersion)' == '15.0'">
+    <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
+    <DefineConstants>$(DefineConstants);VS15</DefineConstants>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<!--
-		  AssemblyVersion and AssemblyFileVersion attributes are generated automatically for every build.
-		  NuGet package version is derived from AssemblyFileVersion.
-		-->
-		<AssemblyAttributes Include="AssemblyVersion">
-		  <_Parameter1>$(SemanticVersion).$(PreReleaseVersion)</_Parameter1>
-		</AssemblyAttributes>
-		<AssemblyAttributes Include="AssemblyFileVersion">
-		  <_Parameter1>$(SemanticVersion).$(PreReleaseVersion)</_Parameter1>
-		</AssemblyAttributes>
-		<AssemblyAttributes Include="AssemblyInformationalVersion">
-		  <_Parameter1>$(SemanticVersion)$(PreReleaseInformationVersion)</_Parameter1>
-		</AssemblyAttributes>
-		<AssemblyAttributes Include="AssemblyCompany">
-		  <_Parameter1>Microsoft Corporation</_Parameter1>
-		</AssemblyAttributes>
-		<AssemblyAttributes Include="AssemblyProduct">
-		  <_Parameter1>NuGet</_Parameter1>
-		</AssemblyAttributes>
-		<AssemblyAttributes Include="AssemblyCopyright">
-		  <_Parameter1>Microsoft Corporation. All rights reserved.</_Parameter1>
-		</AssemblyAttributes>
-		<AssemblyAttributes Include="System.Resources.NeutralResourcesLanguage">
-		  <_Parameter1>en-US</_Parameter1>
-		</AssemblyAttributes>
-	</ItemGroup>
+  <!--Semantic Version-->
+  <PropertyGroup>
+    <!--
+      Semantic Version. See http://semver.org for full details.
+      Update for every public release.
+    -->
+    <SemanticVersion>3.6.0</SemanticVersion>
+    <PreReleaseVersion>0</PreReleaseVersion>
+  </PropertyGroup>
+
+  <!--Setting the Pre-release/Build meta-data from CI if Version is set-->
+  <PropertyGroup Condition="'$(BuildNumber)' != ''">
+    <PreReleaseVersion>$(BuildNumber)</PreReleaseVersion>
+  </PropertyGroup>
+
+  <!--Setting the product information for Beta builds-->
+  <PropertyGroup Condition="'$(ReleaseLabel)' != 'Release'">
+    <PreReleaseInformationVersion>-$(ReleaseLabel)-$(PreReleaseVersion)</PreReleaseInformationVersion>
+  </PropertyGroup>
+
+  <!-- Generate AssemblyFileVersion and AssemblyVersion attributes. -->
+  <PropertyGroup>
+    <!-- Turn on dynamic assembly attribute generation -->
+    <AssemblyAttributesPath>$(IntermediateOutputPath)AssemblyInfo.g.cs</AssemblyAttributesPath>
+    <GenerateAdditionalSources>true</GenerateAdditionalSources>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      AssemblyVersion and AssemblyFileVersion attributes are generated automatically for every build.
+      NuGet package version is derived from AssemblyFileVersion.
+    -->
+    <AssemblyAttributes Include="AssemblyVersion">
+      <_Parameter1>$(SemanticVersion).$(PreReleaseVersion)</_Parameter1>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="AssemblyFileVersion">
+      <_Parameter1>$(SemanticVersion).$(PreReleaseVersion)</_Parameter1>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="AssemblyInformationalVersion">
+      <_Parameter1>$(SemanticVersion)$(PreReleaseInformationVersion)</_Parameter1>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="AssemblyCompany">
+      <_Parameter1>Microsoft Corporation</_Parameter1>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="AssemblyProduct">
+      <_Parameter1>NuGet</_Parameter1>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="AssemblyCopyright">
+      <_Parameter1>Microsoft Corporation. All rights reserved.</_Parameter1>
+    </AssemblyAttributes>
+    <AssemblyAttributes Include="System.Resources.NeutralResourcesLanguage">
+      <_Parameter1>en-US</_Parameter1>
+    </AssemblyAttributes>
+  </ItemGroup>
 </Project>

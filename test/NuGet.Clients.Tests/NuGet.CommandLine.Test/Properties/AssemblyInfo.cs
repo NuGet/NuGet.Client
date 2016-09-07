@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using Xunit;
 
-// General Information about an assembly is controlled through the following 
+// General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("NuGet.CommandLine.Test")]
@@ -13,8 +13,6 @@ using Xunit;
 
 // Exercises the new metadata-driven manifest authoring
 [assembly: AssemblyMetadata("owner", "Outercurve")]
-[assembly: AssemblyInformationalVersion("3.3.0")]
-[assembly: AssemblyCopyright(".NET Foundation")]
 
 // XUnit runner configuration: Disable parallel tests
 [assembly: CollectionBehavior(CollectionBehavior.CollectionPerAssembly, DisableTestParallelization = true, MaxParallelThreads = 1)]

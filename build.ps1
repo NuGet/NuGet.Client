@@ -1,3 +1,59 @@
+<#
+.SYNOPSIS
+Builds NuGet client solutions and runs unit-tests.
+
+.PARAMETER Configuration
+Build configuration (debug by default)
+
+.PARAMETER ReleaseLabel
+Release label to use for package and assemblies versioning (zlocal by default)
+
+.PARAMETER BuildNumber
+Build number to use for package and assemblies versioning (auto-generated if not provided)
+
+.PARAMETER SkipRestore
+Builds without restoring first
+
+.PARAMETER CleanCache
+Cleans NuGet packages cache before build
+
+.PARAMETER MSPFXPath
+Path to a code signing certificate for delay-sigining (optional)
+
+.PARAMETER NuGetPFXPath
+Path to a code signing certificate for delay-sigining (optional)
+
+.PARAMETER SkipXProj
+Skips building the NuGet.Core XProj projects
+
+.PARAMETER SkipVS14
+Skips building binaries targeting Visual Studio "14" (released as Visual Studio 2015)
+
+.PARAMETER SkipVS15
+Skips building binaries targeting Visual Studio "15"
+
+.PARAMETER SkipSubModules
+Skips updating submodules
+
+.PARAMETER SkipTests
+Skips building and running unit-tests
+
+.PARAMETER SkipILMerge
+Skips creating an ILMerged nuget.exe
+
+.PARAMETER Fast
+Combination of SkipTests, SkipSubModules, and SkipILMerge
+
+.EXAMPLE
+To run full clean build, e.g after switching branches:
+.\build.ps1 -CleanCache
+
+To run "incremental" fast build with no tests:
+.\build.ps1 -Fast
+
+To troubleshoot build issues:
+.\build.ps1 -Verbose -ErrorAction Stop
+#>
 [CmdletBinding(DefaultParameterSetName='RegularBuild')]
 param (
     [ValidateSet("debug", "release")]
@@ -47,10 +103,7 @@ $env:DOTNET_INSTALL_DIR=$CLIRoot
 $RunTests = (-not $SkipTests) -and (-not $Fast)
 
 # Adjust version skipping if only one version installed - if VS15 is not installed, no need to specify SkipVS15
-$VS14Installed = Test-MSBuildVersionPresent -MSBuildVersion "14"
 $SkipVS14 = $SkipVS14 -or -not $VS14Installed
-
-$VS15Installed = Test-MSBuildVersionPresent -MSBuildVersion "15"
 $SkipVS15 = $SkipVS15 -or -not $VS15Installed
 
 Write-Host ("`r`n" * 3)
@@ -108,18 +161,18 @@ Invoke-BuildStep 'Building NuGet.Core projects' {
     -ev +BuildErrors
 
 ## Building the VS15 Tooling solution
-Invoke-BuildStep 'Building NuGet.Clients projects - VS15 dependencies' {
+Invoke-BuildStep 'Building NuGet.Clients projects - VS15 Toolset' {
         param($Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore, $Fast)
-        Build-ClientsProjects $Configuration $ReleaseLabel $BuildNumber -MSBuildVersion "15" -SkipRestore:$SkipRestore -Fast:$Fast
+        Build-ClientsProjects $Configuration $ReleaseLabel $BuildNumber -ToolsetVersion 15 -SkipRestore:$SkipRestore -Fast:$Fast
     } `
     -args $Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore, $Fast `
     -skip:$SkipVS15 `
     -ev +BuildErrors
 
 ## Building the VS14 Tooling solution
-Invoke-BuildStep 'Building NuGet.Clients projects - VS14 dependencies' {
+Invoke-BuildStep 'Building NuGet.Clients projects - VS14 Toolset' {
         param($Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore, $Fast)
-        Build-ClientsProjects $Configuration $ReleaseLabel $BuildNumber -MSBuildVersion "14" -SkipRestore:$SkipRestore -Fast:$Fast
+        Build-ClientsProjects $Configuration $ReleaseLabel $BuildNumber -ToolsetVersion 14 -SkipRestore:$SkipRestore -Fast:$Fast
     } `
     -args $Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore, $Fast `
     -skip:$SkipVS14 `
@@ -128,7 +181,7 @@ Invoke-BuildStep 'Building NuGet.Clients projects - VS14 dependencies' {
 ## ILMerge the VS14 exe only
 Invoke-BuildStep 'Merging NuGet.exe' {
         param($Configuration, $MSPFXPath)
-        Invoke-ILMerge $Configuration "14" $MSPFXPath
+        Invoke-ILMerge $Configuration 14 $MSPFXPath
     } `
     -args $Configuration, $MSPFXPath `
     -skip:($SkipILMerge -or $Fast -or $SkipVS14) `
@@ -141,18 +194,18 @@ Invoke-BuildStep 'Running NuGet.Core tests' {
     -skip:(-not $RunTests) `
     -ev +BuildErrors
 
-Invoke-BuildStep 'Running NuGet.Clients tests - VS15 dependencies' {
+Invoke-BuildStep 'Running NuGet.Clients tests - VS15 Toolset' {
         param($Configuration)
         # We don't run command line tests on VS15 as we don't build a nuget.exe for this version
-        Test-ClientsProjects -Configuration $Configuration -MSBuildVersion "15" -SkipProjects 'NuGet.CommandLine.Test'
+        Test-ClientsProjects -Configuration $Configuration -ToolsetVersion 15 -SkipProjects 'NuGet.CommandLine.Test'
     } `
     -args $Configuration `
     -skip:((-not $RunTests) -or $SkipVS15) `
     -ev +BuildErrors
 
-Invoke-BuildStep 'Running NuGet.Clients tests - VS14 dependencies' {
+Invoke-BuildStep 'Running NuGet.Clients tests - VS14 Toolset' {
         param($Configuration)
-        Test-ClientsProjects -Configuration $Configuration -MSBuildVersion "14"
+        Test-ClientsProjects -Configuration $Configuration -ToolsetVersion 14
     } `
     -args $Configuration `
     -skip:((-not $RunTests) -or $SkipVS14) `
