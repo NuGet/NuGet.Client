@@ -148,7 +148,7 @@ namespace NuGet.Protocol
             {
                 if (currentURI.IsFile || currentURI.IsUnc)
                 {
-                    if (Directory.Exists(currentSource))
+                    if (Directory.Exists(UriUtility.GetLocalPath(currentSource)))
                     {
                         return true;
                     }
