@@ -11,8 +11,10 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.LibraryModel;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
@@ -27,6 +29,99 @@ namespace NuGet.Test
 {
     public class BuildIntegratedRestoreUtilityTests
     {
+        [Fact]
+        public void BuildIntegratedRestoreUtility_GetAddedPackages_WithBothLockFilesPresent()
+        {
+            // Arrange
+            var originalLockFile = new LockFile
+            {
+                Targets = new List<LockFileTarget>
+                {
+                    new LockFileTarget
+                    {
+                        Libraries = new List<LockFileTargetLibrary>
+                        {
+                            GetPackageLibrary("PackageA", "1.0.0"),
+                            GetPackageLibrary("PackageB", "2.0.0"), // Removed
+                            GetPackageLibrary("PackageD", "4.0.0"),
+                        }
+                    }
+                }
+            };
+
+            var updatedLockFile = new LockFile
+            {
+                Targets = new List<LockFileTarget>
+                {
+                    new LockFileTarget
+                    {
+                        Libraries = new List<LockFileTargetLibrary>
+                        {
+                            GetPackageLibrary("PackageA", "2.0.0"), // Updated
+                            GetPackageLibrary("PackageC", "3.0.0"), // Added
+                            GetPackageLibrary("PackageD", "4.0.0") // No change
+                        }
+                    }
+                }
+            };
+
+            // Act
+            var output = BuildIntegratedRestoreUtility
+                .GetAddedPackages(originalLockFile, updatedLockFile)
+                .OrderBy(x => x)
+                .ToList();
+
+            // Assert
+            Assert.Equal(2, output.Count);
+            Assert.Equal(new PackageIdentity("PackageA", new NuGetVersion("2.0.0")), output[0]);
+            Assert.Equal(new PackageIdentity("PackageC", new NuGetVersion("3.0.0")), output[1]);
+        }
+
+        [Fact]
+        public void BuildIntegratedRestoreUtility_GetAddedPackages_WithMissingOriginalLockFile()
+        {
+            // Arrange
+            LockFile originalLockFile = null;
+
+            var updatedLockFile = new LockFile
+            {
+                Targets = new List<LockFileTarget>
+                {
+                    new LockFileTarget
+                    {
+                        Libraries = new List<LockFileTargetLibrary>
+                        {
+                            GetPackageLibrary("PackageA", "2.0.0"),
+                            GetPackageLibrary("PackageC", "3.0.0"),
+                            GetPackageLibrary("PackageD", "4.0.0")
+                        }
+                    }
+                }
+            };
+
+            // Act
+            var output = BuildIntegratedRestoreUtility
+                .GetAddedPackages(originalLockFile, updatedLockFile)
+                .OrderBy(x => x)
+                .ToList();
+
+            // Assert
+            Assert.Equal(3, output.Count);
+            Assert.Equal(new PackageIdentity("PackageA", new NuGetVersion("2.0.0")), output[0]);
+            Assert.Equal(new PackageIdentity("PackageC", new NuGetVersion("3.0.0")), output[1]);
+            Assert.Equal(new PackageIdentity("PackageD", new NuGetVersion("4.0.0")), output[2]);
+        }
+
+        private static LockFileTargetLibrary GetPackageLibrary(string id, string version)
+        {
+            return new LockFileTargetLibrary
+            {
+                Name = id,
+                Version = NuGetVersion.Parse(version),
+                Type = LibraryType.Package
+            };
+        }
+
         [Fact]
         public void BuildIntegratedRestoreUtility_GetExternalClosure_Empty()
         {

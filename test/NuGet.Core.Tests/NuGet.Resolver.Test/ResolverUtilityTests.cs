@@ -4,17 +4,46 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Xunit;
-using NuGet.Configuration;
 
 namespace NuGet.Resolver.Test
 {
     public class ResolverUtilityTests
     {
+        [Fact]
+        public void ResolverUtility_TopologicalSort()
+        {
+            // Arrange
+            var packages = new List<ResolverPackage>()
+            {
+                CreatePackage("A", "1.0.0", "B", "1.0.0"),
+                CreatePackage("B", "1.0.0", "C", "1.0.0"),
+                CreatePackage("C", "1.0.0", "D", "1.0.0"),
+                CreatePackage("D", "1.0.0"),
+                CreatePackage("E1", "1.0.0"),
+                CreatePackage("E3", "1.0.0"),
+                CreatePackage("E2", "1.0.0")
+            };
+
+            // Act
+            var sorted = ResolverUtility.TopologicalSort(packages).ToList();
+
+            // Assert
+            Assert.Equal(7, sorted.Count);
+            Assert.Equal("D", sorted[0].Id);
+            Assert.Equal("C", sorted[1].Id);
+            Assert.Equal("B", sorted[2].Id);
+            Assert.Equal("A", sorted[3].Id);
+            Assert.Equal("E1", sorted[4].Id);
+            Assert.Equal("E2", sorted[5].Id);
+            Assert.Equal("E3", sorted[6].Id);
+        }
+
         [Fact]
         public void ResolverUtility_GetLowestDistanceFromTargetMultiplePaths()
         {

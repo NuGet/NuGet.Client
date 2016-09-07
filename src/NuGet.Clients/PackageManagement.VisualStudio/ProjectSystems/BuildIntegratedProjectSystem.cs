@@ -350,7 +350,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return pathToProject;
         }
 
-        public override async Threading.Task<bool> ExecuteInitScriptAsync(
+        public override async Task<bool> ExecuteInitScriptAsync(
             PackageIdentity identity,
             string packageInstallPath,
             INuGetProjectContext projectContext,
@@ -389,7 +389,6 @@ namespace NuGet.PackageManagement.VisualStudio
                                 packageInstallPath,
                                 initPS1RelativePath,
                                 EnvDTEProject,
-                                this,
                                 projectContext,
                                 throwOnFailure);
                         }

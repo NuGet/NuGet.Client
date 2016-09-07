@@ -211,7 +211,7 @@ namespace NuGet.Common
             FileSystemUtility.DeleteDirectory(path, recursive, NuGetProjectContext);
         }
 
-        public Task ExecuteScriptAsync(PackageIdentity identity, string packageInstallPath, string scriptRelativePath, NuGetProject nuGetProject, bool throwOnFailure)
+        public Task ExecuteScriptAsync(PackageIdentity identity, string packageInstallPath, string scriptRelativePath, bool throwOnFailure)
         {
             // No-op
             return Task.FromResult(0);
