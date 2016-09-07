@@ -264,7 +264,14 @@ namespace NuGet.CommandLine
             ApplyAction(p => p.AddOutputFiles(builder));
 
             // Add content files if there are any. They could come from a project or nuspec file
-            ApplyAction(p => p.AddFiles(builder, ContentItemType, ContentFolder));
+            // In order to be compliant with the documented behavior, if the nuspec file has an 
+            // empty <files> element, we do not add any content files at all. If the <files> element
+            // has one or more files specified, then those files are added to the package along with
+            // any files of type Content from the csproj file.
+            if (manifest == null || !manifest.HasFilesNode || manifest.Files.Count > 0)
+            {
+                ApplyAction(p => p.AddFiles(builder, ContentItemType, ContentFolder));
+            }
 
             // Add sources if this is a symbol package
             if (IncludeSymbols)
@@ -1151,7 +1158,7 @@ namespace NuGet.CommandLine
                 Packaging.Manifest manifest = Packaging.Manifest.ReadFrom(stream, GetPropertyValue, validateSchema: true);
                 builder.Populate(manifest.Metadata);
 
-                if (manifest.Files != null)
+                if (manifest.HasFilesNode)
                 {
                     basePath = String.IsNullOrEmpty(basePath) ? Path.GetDirectoryName(nuspecFile) : basePath;
                     builder.PopulateFiles(basePath, manifest.Files);
