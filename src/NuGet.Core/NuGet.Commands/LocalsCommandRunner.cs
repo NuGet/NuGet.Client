@@ -13,7 +13,7 @@ namespace NuGet.Commands
     /// <summary>
     /// Command Runner used to run the business logic for nuget locals command
     /// </summary>
-    public class LocalsCommandRunner
+    public class LocalsCommandRunner : ILocalsCommandRunner
     {
         private enum LocalResourceName
         {

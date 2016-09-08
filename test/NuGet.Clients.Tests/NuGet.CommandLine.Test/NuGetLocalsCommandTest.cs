@@ -1,4 +1,8 @@
 ﻿using System.IO;
+using Moq;
+using NuGet.CommandLine.Commands;
+using NuGet.Commands;
+using NuGet.Configuration;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -89,6 +93,87 @@ namespace NuGet.CommandLine.Test
 
             // Assert
             Util.VerifyResultSuccess(result, $"{args}: ");
+        }
+
+        [Theory]
+        [InlineData("all")]
+        [InlineData("http-cache")]
+        [InlineData("global-packages")]
+        [InlineData("temp")]
+        public async void LocalsCommand_ParsingValidation_WithNoConfigParam(string arg)
+        {
+            // Use a test directory to validate test key-value pairs within ISettings object passed to Runner
+            using (var mockCurrentDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                Util.CreateDummyConfigFile(mockCurrentDirectory.Path);
+                var mockLocalsCommandRunner = new Mock<ILocalsCommandRunner>();
+                var mockConsole = new Mock<IConsole>();
+                mockConsole.Setup(c => c.Verbosity).Returns(Verbosity.Detailed);
+                LocalsCommand localsCommand = new LocalsCommand();
+                localsCommand.LocalsCommandRunner = mockLocalsCommandRunner.Object;
+                localsCommand.Clear = false;
+                localsCommand.List = true;
+                localsCommand.Console = mockConsole.Object;
+                localsCommand.Arguments.Add(arg);
+                localsCommand.CurrentDirectory = mockCurrentDirectory.Path;
+                var defaultSettings = Configuration.Settings.LoadDefaultSettings(mockCurrentDirectory,
+                                                                                 configFileName: null,
+                                                                                 machineWideSettings: localsCommand.MachineWideSettings);
+
+                // Act
+                localsCommand.Execute();
+                await localsCommand.ExecuteCommandAsync();
+
+                // Assert
+                mockLocalsCommandRunner.Verify(mock => mock.ExecuteCommand(It.Is<LocalsArgs>(l => l.List && !l.Clear &&
+                                                                                             l.Arguments.Count == 1 && l.Arguments[0] == arg &&
+                                                                                             l.LogError == mockConsole.Object.LogError &&
+                                                                                             l.LogInformation == mockConsole.Object.LogInformation &&
+                                                                                             SettingsUtility.GetConfigValue(l.Settings, "foo", false, false) == SettingsUtility.GetConfigValue(defaultSettings, "foo", false, false) &&
+                                                                                             SettingsUtility.GetConfigValue(l.Settings, "kung foo", false, false) == SettingsUtility.GetConfigValue(defaultSettings, "kung foo", false, false))));
+            }
+        }
+
+        [Theory]
+        [InlineData("all")]
+        [InlineData("http-cache")]
+        [InlineData("global-packages")]
+        [InlineData("temp")]
+        public async void LocalsCommand_ParsingValidation_WithConfigParam(string arg)
+        {
+            // Use a test directory to validate test key-value pairs within ISettings object passed to Runner
+            using (var mockCurrentDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var dummyConfigPath = Util.CreateDummyConfigFile(mockCurrentDirectory.Path);
+                var mockLocalsCommandRunner = new Mock<ILocalsCommandRunner>();
+                var mockConsole = new Mock<IConsole>();
+                mockConsole.Setup(c => c.Verbosity).Returns(Verbosity.Detailed);
+                LocalsCommand localsCommand = new LocalsCommand();
+                localsCommand.LocalsCommandRunner = mockLocalsCommandRunner.Object;
+                localsCommand.Clear = true;
+                localsCommand.List = false;
+                localsCommand.Console = mockConsole.Object;
+                localsCommand.Arguments.Add(arg);
+                localsCommand.ConfigFile = dummyConfigPath;
+                localsCommand.CurrentDirectory = mockCurrentDirectory.Path;
+                var defaultSettings = Configuration.Settings.LoadDefaultSettings(mockCurrentDirectory,
+                                                                                 configFileName: null,
+                                                                                 machineWideSettings: localsCommand.MachineWideSettings);
+
+                // Act
+                localsCommand.Execute();
+                await localsCommand.ExecuteCommandAsync();
+
+                // Assert
+                mockLocalsCommandRunner.Verify(mock => mock.ExecuteCommand(It.Is<LocalsArgs>(l => !l.List && l.Clear &&
+                                                                                             l.Arguments.Count == 1 && l.Arguments[0] == arg &&
+                                                                                             l.LogError == mockConsole.Object.LogError &&
+                                                                                             l.LogInformation == mockConsole.Object.LogInformation &&
+                                                                                             SettingsUtility.GetConfigValue(l.Settings, "foo", false, false) == SettingsUtility.GetConfigValue(defaultSettings, "foo", false, false) &&
+                                                                                             SettingsUtility.GetConfigValue(l.Settings, "kung foo", false, false) == SettingsUtility.GetConfigValue(defaultSettings, "kung foo", false, false))));
+            }
         }
     }
 }

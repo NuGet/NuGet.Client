@@ -13,13 +13,18 @@ namespace NuGet.CommandLine.Commands
     public class LocalsCommand
         : Command
     {
+        // Default constructor used only for testing, since the Command Default Constructor is protected
+        public LocalsCommand() : base()
+        {
+        }
+
         [Option(typeof(NuGetCommand), "LocalsCommandClearDescription")]
         public bool Clear { get; set; }
 
         [Option(typeof(NuGetCommand), "LocalsCommandListDescription")]
         public bool List { get; set; }
 
-        public LocalsCommandRunner LocalsCommandRunner { get; set; }
+        public ILocalsCommandRunner LocalsCommandRunner { get; set; }
 
         public override Task ExecuteCommandAsync()
         {
@@ -36,7 +41,7 @@ namespace NuGet.CommandLine.Commands
                 return Task.FromResult(0);
             }
 
-            if(LocalsCommandRunner == null)
+            if (LocalsCommandRunner == null)
             {
                 LocalsCommandRunner = new LocalsCommandRunner();
             }
