@@ -93,7 +93,7 @@ namespace NuGet.CommandLine.Test
 
             return packageFileFullPath;
         }
-        
+
         public static string CreateTestPackage(
             string packageId,
             string version,
@@ -740,7 +740,7 @@ EndProject";
             IList<PackageIdentity> packages,
             string packagesDirectory)
         {
-            foreach(var package in packages)
+            foreach (var package in packages)
             {
                 VerifyPackageExists(package, packagesDirectory);
             }
@@ -1016,6 +1016,20 @@ EndProject");
         {
             // Simply test the extension as that is all we care about
             return string.Equals(Path.GetExtension(configFileName), ".json", StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static string CreateDummyConfigFile(string directoryPath)
+        {
+            string[] lines = {"<?xml version=\"1.0\" encoding=\"utf-8\"?>",
+                              "<configuration>",
+                              "<config>",
+                              "<add key=\"foo\" value=\"bar\" />",
+                              "<add key=\"kung foo\" value=\"panda\" />",
+                              "</config>",
+                              "</configuration>" };
+            var dummyConfigPath = Path.Combine(directoryPath, @"NuGet.config");
+            File.WriteAllLines(dummyConfigPath, lines);
+            return dummyConfigPath;
         }
     }
 }
