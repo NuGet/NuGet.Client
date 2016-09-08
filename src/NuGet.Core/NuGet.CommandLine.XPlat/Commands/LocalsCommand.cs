@@ -61,8 +61,9 @@ namespace NuGet.CommandLine.XPlat
                     }
                     else
                     {
-                        var localsCommandRunner = new LocalsCommandRunner(arguments.Values, setting, logger.LogInformation, logger.LogError, clear.HasValue(), list.HasValue());
-                        localsCommandRunner.ExecuteCommand();
+                        var localsArgs = new LocalsArgs(arguments.Values, setting, logger.LogInformation, logger.LogError, clear.HasValue(), list.HasValue());
+                        var localsCommandRunner = new LocalsCommandRunner();
+                        localsCommandRunner.ExecuteCommand(localsArgs);
                     }
 
                     return 0;

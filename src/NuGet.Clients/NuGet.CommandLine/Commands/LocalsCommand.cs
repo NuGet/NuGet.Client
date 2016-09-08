@@ -19,6 +19,8 @@ namespace NuGet.CommandLine.Commands
         [Option(typeof(NuGetCommand), "LocalsCommandListDescription")]
         public bool List { get; set; }
 
+        public LocalsCommandRunner LocalsCommandRunner { get; set; }
+
         public override Task ExecuteCommandAsync()
         {
             if ((!Arguments.Any() || string.IsNullOrWhiteSpace(Arguments[0]))
@@ -34,9 +36,12 @@ namespace NuGet.CommandLine.Commands
                 return Task.FromResult(0);
             }
 
-            var localsCommandRunner = new LocalsCommandRunner(Arguments, Settings, Console.LogInformation, Console.LogError, Clear, List);
-            localsCommandRunner.ExecuteCommand();
-
+            if(LocalsCommandRunner == null)
+            {
+                LocalsCommandRunner = new LocalsCommandRunner();
+            }
+            var localsArgs = new LocalsArgs(Arguments, Settings, Console.LogInformation, Console.LogError, Clear, List);
+            LocalsCommandRunner.ExecuteCommand(localsArgs);
             return Task.FromResult(0);
         }
     }
