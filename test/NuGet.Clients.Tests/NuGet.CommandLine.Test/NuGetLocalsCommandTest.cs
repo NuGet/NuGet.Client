@@ -158,9 +158,11 @@ namespace NuGet.CommandLine.Test
                 localsCommand.Arguments.Add(arg);
                 localsCommand.ConfigFile = dummyConfigPath;
                 localsCommand.CurrentDirectory = mockCurrentDirectory.Path;
-                var defaultSettings = Configuration.Settings.LoadDefaultSettings(mockCurrentDirectory,
-                                                                                 configFileName: null,
-                                                                                 machineWideSettings: localsCommand.MachineWideSettings);
+                var directory = Path.GetDirectoryName(dummyConfigPath);
+                var configFileName = Path.GetFileName(dummyConfigPath);
+                var defaultSettings = Configuration.Settings.LoadDefaultSettings(directory,
+                                                                                 configFileName,
+                                                                                 localsCommand.MachineWideSettings);
 
                 // Act
                 localsCommand.Execute();
