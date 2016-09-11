@@ -7,6 +7,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.RuntimeModel;
+using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
@@ -46,6 +47,7 @@ namespace NuGet.ProjectModel
             SetArrayValue(json, "contentFiles", packageSpec.ContentFiles);
             SetDictionaryValue(json, "packInclude", packageSpec.PackInclude);
             SetPackOptions(json, packageSpec);
+            SetMSBuildMetadata(json, packageSpec);
             SetDictionaryValues(json, "scripts", packageSpec.Scripts);
 
             if (packageSpec.Dependencies.Any())
@@ -82,12 +84,67 @@ namespace NuGet.ProjectModel
                     SetImports(frameworkObject, framework.Imports);
 
                     frameworks[framework.FrameworkName.GetShortFolderName()] = frameworkObject;
-                }                
+                }
 
                 SetValue(json, "frameworks", frameworks);
             }
 
             JsonRuntimeFormat.WriteRuntimeGraph(json, packageSpec.RuntimeGraph);
+        }
+
+        private static void SetMSBuildMetadata(JObject json, PackageSpec packageSpec)
+        {
+            var msbuildMetadata = packageSpec.RestoreMetadata;
+            if (msbuildMetadata == null)
+            {
+                return;
+            }
+
+            var rawMSBuildMetadata = new JObject();
+            SetValue(rawMSBuildMetadata, "projectUniqueName", msbuildMetadata.ProjectUniqueName);
+            SetValue(rawMSBuildMetadata, "projectName", msbuildMetadata.ProjectName);
+            SetValue(rawMSBuildMetadata, "projectPath", msbuildMetadata.ProjectPath);
+            SetValue(rawMSBuildMetadata, "projectJsonPath", msbuildMetadata.ProjectJsonPath);
+            SetValue(rawMSBuildMetadata, "outputPath", msbuildMetadata.OutputPath);
+
+            if (msbuildMetadata.OutputType != RestoreOutputType.Unknown)
+            {
+                SetValue(rawMSBuildMetadata, "outputType", msbuildMetadata.OutputType.ToString());
+            }
+
+            SetValue(rawMSBuildMetadata, "packagesPath", msbuildMetadata.PackagesPath);
+
+
+            SetArrayValue(rawMSBuildMetadata, "fallbackFolders", msbuildMetadata.FallbackFolders);
+
+            if (msbuildMetadata.Sources?.Count > 0)
+            {
+                var sourcesObj = new JObject();
+                rawMSBuildMetadata["sources"] = sourcesObj;
+
+                foreach (var source in msbuildMetadata.Sources)
+                {
+                    // "source": {}
+                    sourcesObj[source.Source] = new JObject();
+                }
+            }
+
+            if (msbuildMetadata.ProjectReferences?.Count > 0)
+            {
+                var projectReferencesObj = new JObject();
+                rawMSBuildMetadata["projectReferences"] = projectReferencesObj;
+
+                foreach (var project in msbuildMetadata.ProjectReferences)
+                {
+                    projectReferencesObj[project.ProjectUniqueName] = new JObject();
+                    projectReferencesObj[project.ProjectUniqueName]["projectPath"] = project.ProjectPath;
+                }
+            }
+
+            if (rawMSBuildMetadata.Count > 0)
+            {
+                SetValue(json, JsonPackageSpecReader.RestoreOptions, rawMSBuildMetadata);
+            }
         }
 
         private static void SetPackOptions(JObject json, PackageSpec packageSpec)
@@ -133,23 +190,62 @@ namespace NuGet.ProjectModel
             foreach (var dependency in libraryDependencies)
             {
                 JObject dependencyObject = new JObject();
+                var expandedMode = false;
 
-                SetValue(dependencyObject, "include", dependency.IncludeType.ToString());
-                if (!dependency.LibraryRange.VersionRange.Equals(new Versioning.VersionRange()))
+                if (dependency.IncludeType != LibraryIncludeFlags.All)
                 {
-                    SetValue(dependencyObject, "version", dependency.LibraryRange.VersionRange.ToNormalizedString());
+                    expandedMode = true;
+                    SetValue(dependencyObject, "include", dependency.IncludeType.ToString());
                 }
-                SetValue(dependencyObject, "suppressParent", dependency.SuppressParent.ToString());
-                SetValue(dependencyObject, "type", dependency.Type.ToString());
+
+                if (dependency.SuppressParent != LibraryIncludeFlagUtils.DefaultSuppressParent)
+                {
+                    expandedMode = true;
+                    SetValue(dependencyObject, "suppressParent", dependency.SuppressParent.ToString());
+                }
+
+                if (dependency.Type != LibraryDependencyType.Default)
+                {
+                    expandedMode = true;
+                    SetValue(dependencyObject, "type", dependency.Type.ToString());
+                }
+
+                if (dependency.LibraryRange.TypeConstraint != LibraryDependencyTarget.Reference
+                    && dependency.LibraryRange.TypeConstraint != (LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference))
+                {
+                    expandedMode = true;
+                    SetValue(dependencyObject, "target", dependency.LibraryRange.TypeConstraint.ToString());
+                }
+
+                var versionString = dependency.LibraryRange.VersionRange?.ToLegacyShortString()
+                    ?? VersionRange.All.ToNormalizedString();
+
+                if (expandedMode && !string.IsNullOrEmpty(versionString))
+                {
+                    SetValue(dependencyObject, "version", versionString);
+                }
 
                 if (dependency.LibraryRange.TypeConstraint != LibraryDependencyTarget.Reference)
                 {
-                    SetValue(dependencyObject, "target", dependency.LibraryRange.TypeConstraint.ToString());
-                    dependencies[dependency.Name] = dependencyObject;
+                    if (expandedMode)
+                    {
+                        dependencies[dependency.Name] = dependencyObject;
+                    }
+                    else
+                    {
+                        dependencies[dependency.Name] = versionString;
+                    }
                 }
                 else
                 {
-                    frameworkAssemblies[dependency.Name] = dependencyObject;
+                    if (expandedMode)
+                    {
+                        frameworkAssemblies[dependency.Name] = dependencyObject;
+                    }
+                    else
+                    {
+                        frameworkAssemblies[dependency.Name] = versionString;
+                    }
                 }
             }
 
@@ -165,12 +261,12 @@ namespace NuGet.ProjectModel
 
         private static void SetImports(JObject json, IReadOnlyList<NuGetFramework> frameworks)
         {
-            if (frameworks.Any())
+            if (frameworks?.Any() == true)
             {
                 JArray imports = new JArray();
                 foreach (var import in frameworks)
                 {
-                    imports.Add(import.Profile);
+                    imports.Add(import.GetShortFolderName());
                 }
                 json["imports"] = imports;
             }

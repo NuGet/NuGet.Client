@@ -34,10 +34,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <EmbeddedResource Include="GetProjectsReferencingProjectJsonFiles.targets">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="GetProjectsReferencingProjectJsonFilesEntryPoint.targets">
+    <EmbeddedResource Include="..\..\NuGet.Core\NuGet.Build.Tasks\NuGet.targets">
+      <Link>NuGet.targets</Link>
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
@@ -98,7 +96,6 @@
     <Compile Include="ExtensionLocator.cs" />
     <Compile Include="FileConflictAction.cs" />
     <Compile Include="ICommandManager.cs" />
-    <Compile Include="MSBuildCachedRequestProvider.cs" />
     <Compile Include="MSBuildTasks\ProjectReferencesTask.cs" />
     <Compile Include="MsBuildUtility.cs" />
     <Compile Include="NuGetCommand.Designer.cs">

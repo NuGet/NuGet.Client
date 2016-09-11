@@ -10,7 +10,7 @@ namespace NuGet.LibraryModel
 {
     public class LibraryDependencyTypeKeyword
     {
-        private static ConcurrentDictionary<string, LibraryDependencyTypeKeyword> _keywords = new ConcurrentDictionary<string, LibraryDependencyTypeKeyword>();
+        private static ConcurrentDictionary<string, LibraryDependencyTypeKeyword> _keywords = new ConcurrentDictionary<string, LibraryDependencyTypeKeyword>(StringComparer.OrdinalIgnoreCase);
 
         public static readonly LibraryDependencyTypeKeyword Default;
         public static readonly LibraryDependencyTypeKeyword Platform;
@@ -147,11 +147,11 @@ namespace NuGet.LibraryModel
         internal static LibraryDependencyTypeKeyword Parse(string keyword)
         {
             LibraryDependencyTypeKeyword value;
-            if (_keywords.TryGetValue(keyword, out value))
+            if (_keywords.TryGetValue(keyword?.Trim(), out value))
             {
                 return value;
             }
-            throw new Exception(string.Format("TODO: unknown keyword {0}", keyword));
+            throw new Exception(string.Format("Unsupported type: {0}", keyword));
         }
     }
 }

@@ -20,6 +20,7 @@ namespace NuGet.ProjectModel
     {
         public static readonly int Version = 2;
         public static readonly string LockFileName = "project.lock.json";
+        public static readonly string AssetsFileName = "project.assets.json";
 
         private static readonly char[] PathSplitChars = new[] { LockFile.DirectorySeparatorChar };
 

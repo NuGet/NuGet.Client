@@ -230,6 +230,44 @@ namespace NuGet.CommandLine.Test
         }
 
         /// <summary>
+        /// Create a project.json based project. Returns the path to the project file.
+        /// </summary>
+        public static string CreateUAPProject(string directory, string projectJsonContent)
+        {
+            return CreateUAPProject(directory, projectJsonContent, "a");
+        }
+
+        /// <summary>
+        /// Create a project.json based project. Returns the path to the project file.
+        /// </summary>
+        public static string CreateUAPProject(string directory, string projectJsonContent, string projectName)
+        {
+            return CreateUAPProject(directory, projectJsonContent, projectName, nugetConfigContent: null);
+        }
+
+        /// <summary>
+        /// Create a project.json based project. Returns the path to the project file.
+        /// </summary>
+        public static string CreateUAPProject(string directory, string projectJsonContent, string projectName, string nugetConfigContent)
+        {
+            Directory.CreateDirectory(directory);
+            var projectDir = directory;
+            var projectFile = Path.Combine(projectDir, projectName + ".csproj");
+            var projectJsonPath = Path.Combine(projectDir, "project.json");
+            var configPath = Path.Combine(projectDir, "NuGet.Config");
+
+            File.WriteAllText(projectJsonPath, projectJsonContent);
+            File.WriteAllText(projectFile, GetCSProjXML(projectName));
+
+            if (!string.IsNullOrEmpty(nugetConfigContent))
+            {
+                File.WriteAllText(configPath, nugetConfigContent);
+            }
+
+            return projectFile;
+        }
+
+        /// <summary>
         /// Creates a file with the specified content.
         /// </summary>
         /// <param name="directory">The directory of the created file.</param>

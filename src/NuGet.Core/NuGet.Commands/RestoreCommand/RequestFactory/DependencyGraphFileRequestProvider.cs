@@ -1,28 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using NuGet.Configuration;
 using NuGet.ProjectModel;
 
 namespace NuGet.Commands
 {
-    public class MSBuildP2PRestoreRequestProvider : MSBuildP2PRestoreRequestProviderBase, IRestoreRequestProvider
+    public class DependencyGraphFileRequestProvider : IRestoreRequestProvider
     {
-        public MSBuildP2PRestoreRequestProvider(RestoreCommandProvidersCache providerCache)
-            : base (providerCache)
+        private readonly RestoreCommandProvidersCache _providerCache;
+
+        public DependencyGraphFileRequestProvider(RestoreCommandProvidersCache providerCache)
         {
+            _providerCache = providerCache;
         }
 
         public virtual Task<IReadOnlyList<RestoreSummaryRequest>> CreateRequests(
             string inputPath,
             RestoreArgs restoreContext)
         {
-            var lines = File.ReadAllLines(inputPath);
-            var requests = GetRequestsFromGraph(restoreContext, lines);
+            var paths = new List<string>();
+            var requests = new List<RestoreSummaryRequest>();
 
-            return Task.FromResult<IReadOnlyList<RestoreSummaryRequest>>(requests);
+            var dgSpec = DependencyGraphSpec.Load(inputPath);
+            var dgProvider = new DependencyGraphSpecRequestProvider(_providerCache, dgSpec);
+
+            return dgProvider.CreateRequests(restoreContext);
         }
 
         public virtual Task<bool> Supports(string path)
@@ -32,7 +35,7 @@ namespace NuGet.Commands
                 throw new ArgumentNullException(nameof(path));
             }
 
-            // True if dir or project.json file
+            // True if .dg file
             var result = (File.Exists(path) && path.EndsWith(".dg", StringComparison.OrdinalIgnoreCase));
 
             return Task.FromResult(result);

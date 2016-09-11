@@ -46,6 +46,7 @@ namespace NuGet.CommandLine.Test.Caching
         public string IsolatedHttpCachePath { get; private set; }
         public string InputPackagesPath { get; private set; }
         public string ProjectJsonPath { get; private set; }
+        public string ProjectPath { get; private set; }
         public string PackagesConfigPath { get; private set; }
         public string OutputPackagesPath { get; private set; }
 
@@ -243,6 +244,7 @@ namespace NuGet.CommandLine.Test.Caching
 
             PackagesConfigPath = Path.Combine(WorkingPath, "packages.config");
             ProjectJsonPath = Path.Combine(WorkingPath, "project.json");
+            ProjectPath = Path.Combine(WorkingPath, "project.csproj");
 
             OutputPackagesPath = Path.Combine(WorkingPath, "packages");
             Directory.CreateDirectory(OutputPackagesPath);
@@ -299,6 +301,13 @@ namespace NuGet.CommandLine.Test.Caching
 }}";
 
             File.WriteAllText(ProjectJsonPath, content);
+        }
+
+        public void WriteProject()
+        {
+            var content = Util.GetCSProjXML("project");
+
+            File.WriteAllText(ProjectPath, content);
         }
 
         public async Task AddToGlobalPackagesFolderAsync(PackageIdentity identity, string packagePath)

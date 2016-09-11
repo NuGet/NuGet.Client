@@ -2,6 +2,7 @@
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.ProjectModel.Test

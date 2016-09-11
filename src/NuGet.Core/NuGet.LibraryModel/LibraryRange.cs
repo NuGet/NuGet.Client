@@ -26,7 +26,7 @@ namespace NuGet.LibraryModel
 
         public string Name { get; set; }
 
-        public VersionRange VersionRange { get; set; }
+        public VersionRange VersionRange { get; set; } = VersionRange.All;
 
         public LibraryDependencyTarget TypeConstraint { get; set; } = LibraryDependencyTarget.All;
 

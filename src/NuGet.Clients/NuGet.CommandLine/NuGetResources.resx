@@ -6080,7 +6080,7 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
     <value>Source parameter was not specified.</value>
   </data>
   <data name="Error_UnableToLocateRestoreTarget" xml:space="preserve">
-    <value>The folder '{0}' does not contain an msbuild solution, packages.config, or project.json file to restore.</value>
+    <value>The folder '{0}' does not contain an msbuild solution or packages.config file to restore.</value>
   </data>
   <data name="Error_UnableToLocateRestoreTarget_Because" xml:space="preserve">
     <value>Failed to find an msbuild solution, packages.config, or project.json file in the folder '{0}'.</value>
@@ -6101,5 +6101,8 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   </data>
   <data name="Error_MultipleTargetFrameworks" xml:space="preserve">
     <value>project.json cannot contain multiple Target Frameworks.</value>
+  </data>
+  <data name="Error_ProjectJsonNotAllowed" xml:space="preserve">
+    <value>Invalid input '{0}'. Provide the path of an msbuild solution file instead. Support for XProj and standalone project.json files has been removed, to continue working with legacy projects use NuGet 3.5.x from https://nuget.org/downloads</value>
   </data>
 </root>

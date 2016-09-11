@@ -204,6 +204,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Invalid input &apos;{0}&apos;. XProj support has been removed. Support for XProj and standalone project.json files has been removed, to continue working with legacy projects use NuGet 3.5.x from https://nuget.org/downloads.
+        /// </summary>
+        public static string Error_XPROJNotAllowed {
+            get {
+                return ResourceManager.GetString("Error_XPROJNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Failed to build &apos;{0}&apos;..
         /// </summary>
         public static string FailedToBuildProject {
@@ -227,6 +236,24 @@ namespace NuGet.Commands {
         public static string InputFileNotSpecified {
             get {
                 return ResourceManager.GetString("InputFileNotSpecified", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Invalid restore input. {0}.
+        /// </summary>
+        public static string InvalidRestoreInput {
+            get {
+                return ResourceManager.GetString("InvalidRestoreInput", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Invalid restore input. {0} Input files: {1}..
+        /// </summary>
+        public static string InvalidRestoreInputWithFiles {
+            get {
+                return ResourceManager.GetString("InvalidRestoreInputWithFiles", resourceCulture);
             }
         }
         
@@ -826,6 +853,24 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Missing required property &apos;{0}&apos;..
+        /// </summary>
+        public static string MissingRequiredProperty {
+            get {
+                return ResourceManager.GetString("MissingRequiredProperty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Missing required property &apos;{0}&apos; for project type &apos;{1}&apos;..
+        /// </summary>
+        public static string MissingRequiredPropertyForProjectType {
+            get {
+                return ResourceManager.GetString("MissingRequiredPropertyForProjectType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Packages containing MSBuild targets and props files cannot be fully installed in projects targeting multiple frameworks. The MSBuild targets and props files have been ignored..
         /// </summary>
         public static string MSBuildWarning_MultiTarget {
@@ -871,11 +916,101 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Persisting restore input to &apos;{0}&apos;..
+        /// </summary>
+        public static string PersistDGFile {
+            get {
+                return ResourceManager.GetString("PersistDGFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Invalid input combination. Property &apos;{0}&apos; is not allowed..
+        /// </summary>
+        public static string PropertyNotAllowed {
+            get {
+                return ResourceManager.GetString("PropertyNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Invalid input combination. Property &apos;{0}&apos; is not allowed for project type &apos;{1}&apos;..
+        /// </summary>
+        public static string PropertyNotAllowedForProjectType {
+            get {
+                return ResourceManager.GetString("PropertyNotAllowedForProjectType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to {0} (via {1}).
         /// </summary>
         public static string ResolverRequest_ToStringFormat {
             get {
                 return ResourceManager.GetString("ResolverRequest_ToStringFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Duplicate frameworks found: &apos;{0}&apos;..
+        /// </summary>
+        public static string SpecValidationDuplicateFrameworks {
+            get {
+                return ResourceManager.GetString("SpecValidationDuplicateFrameworks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Invalid target framework &apos;{0}&apos;..
+        /// </summary>
+        public static string SpecValidationInvalidFramework {
+            get {
+                return ResourceManager.GetString("SpecValidationInvalidFramework", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Missing dependency on &apos;{0}&apos;..
+        /// </summary>
+        public static string SpecValidationMissingDependency {
+            get {
+                return ResourceManager.GetString("SpecValidationMissingDependency", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Missing project &apos;{0}&apos;..
+        /// </summary>
+        public static string SpecValidationMissingProject {
+            get {
+                return ResourceManager.GetString("SpecValidationMissingProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to No target frameworks specified..
+        /// </summary>
+        public static string SpecValidationNoFrameworks {
+            get {
+                return ResourceManager.GetString("SpecValidationNoFrameworks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to UAP projects must contain exactly one target framework..
+        /// </summary>
+        public static string SpecValidationUAPSingleFramework {
+            get {
+                return ResourceManager.GetString("SpecValidationUAPSingleFramework", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Restore request does not contain any projects to restore..
+        /// </summary>
+        public static string SpecValidationZeroRestoreRequests {
+            get {
+                return ResourceManager.GetString("SpecValidationZeroRestoreRequests", resourceCulture);
             }
         }
         

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
@@ -19,6 +20,7 @@ namespace NuGet.ProjectModel
 {
     public class JsonPackageSpecReader
     {
+        public static readonly string RestoreOptions = "restore";
         public static readonly string PackOptions = "packOptions";
         public static readonly string PackageType = "packageType";
         public static readonly string Files = "files";
@@ -38,26 +40,39 @@ namespace NuGet.ProjectModel
 
         public static PackageSpec GetPackageSpec(string json, string name, string packageSpecPath)
         {
-            var ms = new MemoryStream(Encoding.UTF8.GetBytes(json));
-            return GetPackageSpec(ms, name, packageSpecPath, null);
+            using (var ms = new MemoryStream(Encoding.UTF8.GetBytes(json)))
+            {
+                return GetPackageSpec(ms, name, packageSpecPath, null);
+            }
+        }
+
+        public static PackageSpec GetPackageSpec(JObject json)
+        {
+            return GetPackageSpec(json, name: null, packageSpecPath: null, snapshotValue: null);
         }
 
         public static PackageSpec GetPackageSpec(Stream stream, string name, string packageSpecPath, string snapshotValue)
         {
             // Load the raw JSON into the package spec object
-            var reader = new JsonTextReader(new StreamReader(stream));
-
             JObject rawPackageSpec;
 
-            try
+            using (var reader = new JsonTextReader(new StreamReader(stream)))
             {
-                rawPackageSpec = JObject.Load(reader);
-            }
-            catch (JsonReaderException ex)
-            {
-                throw FileFormatException.Create(ex, packageSpecPath);
+                try
+                {
+                    rawPackageSpec = JObject.Load(reader);
+                }
+                catch (JsonReaderException ex)
+                {
+                    throw FileFormatException.Create(ex, packageSpecPath);
+                }
             }
 
+            return GetPackageSpec(rawPackageSpec, name, packageSpecPath, snapshotValue);
+        }
+
+        public static PackageSpec GetPackageSpec(JObject rawPackageSpec, string name, string packageSpecPath, string snapshotValue)
+        {
             var packageSpec = new PackageSpec(rawPackageSpec);
 
             // Parse properties we know about
@@ -66,7 +81,7 @@ namespace NuGet.ProjectModel
             var contentFiles = rawPackageSpec["contentFiles"];
 
             packageSpec.Name = name;
-            packageSpec.FilePath = Path.GetFullPath(packageSpecPath);
+            packageSpec.FilePath = name == null ? null : Path.GetFullPath(packageSpecPath);
 
             if (version == null)
             {
@@ -154,8 +169,23 @@ namespace NuGet.ProjectModel
 
             packageSpec.PackOptions = GetPackOptions(packageSpec, rawPackageSpec);
 
+            packageSpec.RestoreMetadata = GetMSBuildMetadata(packageSpec, rawPackageSpec);
+
             // Read the runtime graph
             packageSpec.RuntimeGraph = JsonRuntimeFormat.ReadRuntimeGraph(rawPackageSpec);
+
+            // Read the name/path if it exists
+            if (packageSpec.Name == null)
+            {
+                packageSpec.Name = packageSpec.RestoreMetadata?.ProjectName;
+            }
+
+            // Use the project.json path if one is set, otherwise use the project path
+            if (packageSpec.FilePath == null)
+            {
+                packageSpec.FilePath = packageSpec.RestoreMetadata?.ProjectJsonPath
+                    ?? packageSpec.RestoreMetadata?.ProjectPath;
+            }
 
             return packageSpec;
         }
@@ -177,6 +207,71 @@ namespace NuGet.ProjectModel
             }
 
             return new NuGetVersion(version);
+        }
+
+        private static ProjectRestoreMetadata GetMSBuildMetadata(PackageSpec packageSpec, JObject rawPackageSpec)
+        {
+            var rawMSBuildMetadata = rawPackageSpec.Value<JToken>(RestoreOptions) as JObject;
+            if (rawMSBuildMetadata == null)
+            {
+                return null;
+            }
+
+            var msbuildMetadata = new ProjectRestoreMetadata();
+
+            msbuildMetadata.ProjectUniqueName = rawMSBuildMetadata.GetValue<string>("projectUniqueName");
+            msbuildMetadata.OutputPath = rawMSBuildMetadata.GetValue<string>("outputPath");
+
+            var outputTypeString = rawMSBuildMetadata.GetValue<string>("outputType");
+
+            RestoreOutputType outputType;
+            if (!string.IsNullOrEmpty(outputTypeString) 
+                && Enum.TryParse<RestoreOutputType>(outputTypeString, ignoreCase: true, result: out outputType))
+            {
+                msbuildMetadata.OutputType = outputType;
+            }
+
+            msbuildMetadata.PackagesPath = rawMSBuildMetadata.GetValue<string>("packagesPath");
+            msbuildMetadata.ProjectJsonPath = rawMSBuildMetadata.GetValue<string>("projectJsonPath");
+            msbuildMetadata.ProjectName = rawMSBuildMetadata.GetValue<string>("projectName");
+            msbuildMetadata.ProjectPath = rawMSBuildMetadata.GetValue<string>("projectPath");
+
+            msbuildMetadata.Sources = new List<PackageSource>();
+
+            var sourcesObj = rawMSBuildMetadata.GetValue<JObject>("sources");
+            if (sourcesObj != null)
+            {
+                foreach (var prop in sourcesObj.Properties())
+                {
+                    msbuildMetadata.Sources.Add(new PackageSource(prop.Name));
+                }
+            }
+
+            var projectsObj = rawMSBuildMetadata.GetValue<JObject>("projectReferences");
+            if (projectsObj != null)
+            {
+                foreach (var prop in projectsObj.Properties())
+                {
+                    msbuildMetadata.ProjectReferences.Add(new ProjectRestoreReference()
+                    {
+                        ProjectUniqueName = prop.Name,
+                        ProjectPath = prop.Value.GetValue<string>("projectPath")
+                    });
+                }
+            }
+
+            msbuildMetadata.FallbackFolders = new List<string>();
+
+            var fallbackObj = rawMSBuildMetadata.GetValue<JArray>("fallbackFolders");
+            if (fallbackObj != null)
+            {
+                foreach (var fallbackFolder in fallbackObj.Select(t => t.Value<string>()))
+                {
+                    msbuildMetadata.FallbackFolders.Add(fallbackFolder);
+                }
+            }
+
+            return msbuildMetadata;
         }
 
         private static PackOptions GetPackOptions(PackageSpec packageSpec, JObject rawPackageSpec)

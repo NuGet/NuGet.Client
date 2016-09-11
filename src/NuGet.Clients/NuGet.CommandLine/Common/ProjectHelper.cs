@@ -15,7 +15,6 @@ namespace NuGet.Common
             ".vcxproj",
             ".jsproj",
             ".wixproj",
-            ".xproj",
             ".nuproj",
         };
 

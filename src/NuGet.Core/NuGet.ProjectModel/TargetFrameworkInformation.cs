@@ -28,5 +28,10 @@ namespace NuGet.ProjectModel
         {
             Dependencies = new List<LibraryDependency>();
         }
+
+        public override string ToString()
+        {
+            return FrameworkName.GetShortFolderName();
+        }
     }
 }

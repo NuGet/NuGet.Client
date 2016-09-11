@@ -18,10 +18,15 @@ namespace NuGet.ProjectModel
     {
         public static readonly string PackageSpecFileName = "project.json";
 
+        public PackageSpec(IList<TargetFrameworkInformation> frameworks)
+            : this(new JObject())
+        {
+            TargetFrameworks = frameworks;
+            Properties = new JObject();
+        }
+
         public PackageSpec(JObject rawProperties)
         {
-            Scripts = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
-            PackInclude = new Dictionary<string, string>();
             TargetFrameworks = new List<TargetFrameworkInformation>();
             Properties = rawProperties;
         }
@@ -82,25 +87,30 @@ namespace NuGet.ProjectModel
 
         public IList<string> ContentFiles { get; set; }
 
-        public IList<LibraryDependency> Dependencies { get; set; }
+        public IList<LibraryDependency> Dependencies { get; set; } = new List<LibraryDependency>();
 
-        public IList<ToolDependency> Tools { get; set; }
+        public IList<ToolDependency> Tools { get; set; } = new List<ToolDependency>();
 
-        public IDictionary<string, IEnumerable<string>> Scripts { get; private set; }
+        public IDictionary<string, IEnumerable<string>> Scripts { get; private set; } = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
 
-        public IDictionary<string, string> PackInclude { get; private set; }
+        public IDictionary<string, string> PackInclude { get; private set; } = new Dictionary<string, string>();
 
         public PackOptions PackOptions { get; set; }
 
-        public IList<TargetFrameworkInformation> TargetFrameworks { get; private set; }
+        public IList<TargetFrameworkInformation> TargetFrameworks { get; private set; } = new List<TargetFrameworkInformation>();
 
-        public RuntimeGraph RuntimeGraph { get; set; }
+        public RuntimeGraph RuntimeGraph { get; set; } = new RuntimeGraph();
+
+        /// <summary>
+        /// Additional MSBuild properties.
+        /// </summary>
+        /// <remarks>Optional. This is normally set for internal use only.</remarks>
+        public ProjectRestoreMetadata RestoreMetadata { get; set; }
 
         /// <summary>
         /// Gets a list of all properties found in the package spec, including
         /// those not recognized by the parser.
         /// </summary>
-        // TODO: Remove dependency on Newtonsoft.Json here.
         public JObject Properties { get; }
     }
 }

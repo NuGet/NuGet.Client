@@ -9,6 +9,7 @@ using System.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
+using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 
@@ -150,8 +151,14 @@ namespace NuGet.Commands
         {
             request.PackageSaveMode = PackageSaveMode;
 
-            var lockFilePath = ProjectJsonPathUtilities.GetLockFilePath(request.Project.FilePath);
-            request.LockFilePath = lockFilePath;
+            if (request.RestoreOutputType == RestoreOutputType.NETCore)
+            {
+                request.LockFilePath = Path.Combine(request.RestoreOutputPath, LockFileFormat.AssetsFileName);
+            }
+            else
+            {
+                request.LockFilePath = ProjectJsonPathUtilities.GetLockFilePath(request.Project.FilePath);
+            }
 
             request.MaxDegreeOfConcurrency =
                 DisableParallel ? 1 : RestoreRequest.DefaultDegreeOfConcurrency;

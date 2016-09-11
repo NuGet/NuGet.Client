@@ -69,9 +69,20 @@ namespace NuGet.Commands
             localRepositories.Add(_request.DependencyProviders.GlobalPackages);
             localRepositories.AddRange(_request.DependencyProviders.FallbackPackageFolders);
 
-            var projectLockFilePath = string.IsNullOrEmpty(_request.LockFilePath) ?
-                Path.Combine(_request.Project.BaseDirectory, LockFileFormat.LockFileName) :
-                _request.LockFilePath;
+            // Determine the lock file output path
+            var projectLockFilePath = _request.LockFilePath;
+
+            if (string.IsNullOrEmpty(projectLockFilePath))
+            {
+                if (_request.RestoreOutputType == RestoreOutputType.NETCore)
+                {
+                    projectLockFilePath = Path.Combine(_request.RestoreOutputPath, LockFileFormat.AssetsFileName);
+                }
+                else
+                {
+                    projectLockFilePath = Path.Combine(_request.Project.BaseDirectory, LockFileFormat.LockFileName);
+                }
+            }
 
             var contextForProject = CreateRemoteWalkContext(_request);
 

@@ -12,6 +12,7 @@ using System.Text;
 using Microsoft.Build.Evaluation;
 using NuGet.Commands;
 using NuGet.Common;
+using NuGet.ProjectModel;
 
 namespace NuGet.CommandLine
 {
@@ -19,18 +20,14 @@ namespace NuGet.CommandLine
     {
         internal const int MsBuildWaitTime = 2 * 60 * 1000; // 2 minutes in milliseconds
 
-        private const string GetProjectReferencesTarget =
-            "NuGet.CommandLine.GetProjectsReferencingProjectJsonFiles.targets";
-
-        private const string GetProjectReferencesEntryPointTarget =
-            "NuGet.CommandLine.GetProjectsReferencingProjectJsonFilesEntryPoint.targets";
+        private const string NuGetTargets =
+            "NuGet.CommandLine.NuGet.targets";
 
         private static readonly HashSet<string> _msbuildExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             ".csproj",
             ".vbproj",
             ".fsproj",
-            ".xproj",
             ".nuproj"
         };
 
@@ -73,7 +70,7 @@ namespace NuGet.CommandLine
         /// <summary>
         /// Returns the closure of project references for projects specified in <paramref name="projectPaths"/>.
         /// </summary>
-        public static MSBuildProjectReferenceProvider GetProjectReferences(
+        public static DependencyGraphSpec GetProjectReferences(
             string msbuildDirectory,
             string[] projectPaths,
             int timeOut)
@@ -91,28 +88,31 @@ namespace NuGet.CommandLine
 
             var nugetExePath = Assembly.GetEntryAssembly().Location;
 
+            // Check for the non-ILMerged path
+            var buildTasksPath = Path.Combine(Path.GetDirectoryName(nugetExePath), "NuGet.Build.Tasks.dll");
+
+            if (File.Exists(buildTasksPath))
+            {
+                nugetExePath = buildTasksPath;
+            }
+
             using (var entryPointTargetPath = new TempFile(".targets"))
-            using (var customAfterBuildTargetPath = new TempFile(".targets"))
             using (var resultsPath = new TempFile(".result"))
             {
-                ExtractResource(GetProjectReferencesEntryPointTarget, entryPointTargetPath);
-                ExtractResource(GetProjectReferencesTarget, customAfterBuildTargetPath);
+                ExtractResource(NuGetTargets, entryPointTargetPath);
 
                 var argumentBuilder = new StringBuilder(
-                    "/t:NuGet_GetProjectsReferencingProjectJson " +
+                    "/t:GenerateRestoreGraphFile " +
                     "/nologo /nr:false /v:q " +
                     "/p:BuildProjectReferences=false");
 
-                argumentBuilder.Append(" /p:NuGetTasksAssemblyPath=");
+                argumentBuilder.Append(" /p:RestoreTaskAssemblyFile=");
                 AppendQuoted(argumentBuilder, nugetExePath);
 
-                argumentBuilder.Append(" /p:NuGetCustomAfterBuildTargetPath=");
-                AppendQuoted(argumentBuilder, customAfterBuildTargetPath);
-
-                argumentBuilder.Append(" /p:ResultsFile=");
+                argumentBuilder.Append(" /p:RestoreGraphOutputPath=");
                 AppendQuoted(argumentBuilder, resultsPath);
 
-                argumentBuilder.Append(" /p:NuGet_ProjectReferenceToResolve=\"");
+                argumentBuilder.Append(" /p:RestoreGraphProjectInput=\"");
                 for (var i = 0; i < projectPaths.Length; i++)
                 {
                     argumentBuilder.Append(projectPaths[i])
@@ -158,14 +158,19 @@ namespace NuGet.CommandLine
                     }
                 }
 
-                var lines = new string[0];
+                DependencyGraphSpec spec = null;
 
                 if (File.Exists(resultsPath))
                 {
-                    lines = File.ReadAllLines(resultsPath);
+                    spec = DependencyGraphSpec.Load(resultsPath);
+                    File.Delete(resultsPath);
+                }
+                else
+                {
+                    spec = new DependencyGraphSpec();
                 }
 
-                return new MSBuildProjectReferenceProvider(lines);
+                return spec;
             }
         }
 

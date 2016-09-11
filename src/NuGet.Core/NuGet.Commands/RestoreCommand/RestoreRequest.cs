@@ -57,6 +57,8 @@ namespace NuGet.Commands
             DependencyProviders = dependencyProviders;
 
             // Default to the project folder
+
+            // Default to the project folder
             RestoreOutputPath = Path.GetDirectoryName(Project.FilePath);
         }
 
@@ -142,6 +144,7 @@ namespace NuGet.Commands
         /// This includes both remote and local package providers.
         /// </summary>
         public RestoreCommandProviders DependencyProviders { get; set; }
+
         /// <summary>
         /// Defines the paths and behavior for outputs
         /// </summary>

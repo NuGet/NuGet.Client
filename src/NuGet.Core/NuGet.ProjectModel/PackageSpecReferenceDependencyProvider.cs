@@ -79,6 +79,11 @@ namespace NuGet.ProjectModel
                 {
                     _externalProjectsByName.Add(project.ProjectName, project);
                 }
+
+                if (!_externalProjectsByName.ContainsKey(project.UniqueName))
+                {
+                    _externalProjectsByName.Add(project.UniqueName, project);
+                }
             }
         }
 

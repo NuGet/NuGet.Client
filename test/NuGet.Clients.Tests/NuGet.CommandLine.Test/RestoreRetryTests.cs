@@ -134,27 +134,23 @@ namespace NuGet.CommandLine.Test
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package = new ZipPackage(packageFileName);
 
-                Util.CreateFile(
-                    workingDirectory,
-                    "project.json",
-                    @"{
+                var projectJson = @"{
                     ""dependencies"": {
                         ""testPackage1"": ""1.1.0""
                     },
                     ""frameworks"": {
                                 ""net45"": { }
                                 }
-                  }");
+                  }";
 
-                Util.CreateFile(
-                    workingDirectory,
-                    "nuget.config",
-                        @"<?xml version=""1.0"" encoding=""utf-8""?>
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <configuration>
                           <config>
                             <add key=""globalPackagesFolder"" value=""globalPackages"" />
                           </config>
-                        </configuration>");
+                        </configuration>";
+
+                var projectFile = Util.CreateUAPProject(workingDirectory, projectJson, "a", config);
 
                 // Server setup
                 using (var server = new MockServer())
@@ -220,7 +216,8 @@ namespace NuGet.CommandLine.Test
 
                     // Act
                     var args = string.Format(
-                        "restore project.json -SolutionDirectory . -Source {0}nuget -NoCache",
+                        "restore {0} -SolutionDirectory . -Source {1}nuget -NoCache",
+                            projectFile,
                             server.Uri);
 
                     var timer = new Stopwatch();
@@ -273,27 +270,23 @@ namespace NuGet.CommandLine.Test
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package = new ZipPackage(packageFileName);
 
-                Util.CreateFile(
-                    workingDirectory,
-                    "project.json",
-                    @"{
+                var projectJsonContent = @"{
                     ""dependencies"": {
                         ""testPackage1"": ""1.1.0""
                     },
                     ""frameworks"": {
                                 ""net45"": { }
                                 }
-                  }");
+                  }";
 
-                Util.CreateFile(
-                    workingDirectory,
-                    "nuget.config",
-                        @"<?xml version=""1.0"" encoding=""utf-8""?>
+                var nugetConfigContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <configuration>
                           <config>
                             <add key=""globalPackagesFolder"" value=""globalPackages"" />
                           </config>
-                        </configuration>");
+                        </configuration>";
+
+                var projectFile = Util.CreateUAPProject(workingDirectory, projectJsonContent, "a", nugetConfigContent);
 
                 // Server setup
                 var indexJson = Util.CreateIndexJson();
@@ -371,7 +364,8 @@ namespace NuGet.CommandLine.Test
 
                     // Act
                     var args = string.Format(
-                        "restore project.json -SolutionDirectory . -Source {0}index.json -NoCache",
+                        "restore {0} -SolutionDirectory . -Source {1}index.json -NoCache",
+                            projectFile,
                             server.Uri);
 
                     var timer = new Stopwatch();

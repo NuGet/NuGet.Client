@@ -102,7 +102,7 @@ namespace NuGet.CommandLine.XPlat
 
                         // Ordered request providers
                         var providers = new List<IRestoreRequestProvider>();
-                        providers.Add(new MSBuildP2PRestoreRequestProvider(providerCache));
+                        providers.Add(new DependencyGraphFileRequestProvider(providerCache));
                         providers.Add(new ProjectJsonRestoreRequestProvider(providerCache));
 
                         ISettings defaultSettings = Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null);

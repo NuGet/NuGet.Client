@@ -22,7 +22,7 @@ namespace NuGet.RuntimeModel
         public IReadOnlyDictionary<string, RuntimeDescription> Runtimes { get; }
         public IReadOnlyDictionary<string, CompatibilityProfile> Supports { get; set; }
 
-        private RuntimeGraph()
+        public RuntimeGraph()
             : this(Enumerable.Empty<RuntimeDescription>(), Enumerable.Empty<CompatibilityProfile>())
         {
         }

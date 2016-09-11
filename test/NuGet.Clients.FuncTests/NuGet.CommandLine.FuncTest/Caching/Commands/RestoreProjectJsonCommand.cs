@@ -19,8 +19,9 @@ namespace NuGet.CommandLine.Test.Caching
         public string PrepareArguments(CachingTestContext context, PackageIdentity identity)
         {
             context.WriteProjectJson(identity);
+            context.WriteProject();
 
-            var args = $"restore {context.ProjectJsonPath}";
+            var args = $"restore {context.ProjectPath}";
 
             return context.FinishArguments(args);
         }

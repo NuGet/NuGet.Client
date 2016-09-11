@@ -21,12 +21,17 @@ namespace NuGet.Build.Tasks
         /// DG file entries
         /// </summary>
         [Required]
-        public string[] RestoreGraphItems { get; set; }
+        public ITaskItem[] RestoreGraphItems { get; set; }
 
         /// <summary>
         /// NuGet sources, ; delimited
         /// </summary>
         public string RestoreSources { get; set; }
+
+        /// <summary>
+        /// NuGet fallback folders
+        /// </summary>
+        public string RestoreFallbackFolders { get; set; }
 
         /// <summary>
         /// User packages folder
@@ -66,12 +71,19 @@ namespace NuGet.Build.Tasks
             // Log inputs
             log.LogDebug($"(in) RestoreSources '{RestoreSources}'");
             log.LogDebug($"(in) RestorePackagesPath '{RestorePackagesPath}'");
+            log.LogDebug($"(in) RestoreFallbackFolders '{RestoreFallbackFolders}'");
             log.LogDebug($"(in) RestoreDisableParallel '{RestoreDisableParallel}'");
             log.LogDebug($"(in) RestoreConfigFile '{RestoreConfigFile}'");
             log.LogDebug($"(in) RestoreNoCache '{RestoreNoCache}'");
             log.LogDebug($"(in) RestoreIgnoreFailedSources '{RestoreIgnoreFailedSources}'");
 
-            var graphLines = RestoreGraphItems;
+            // Convert to the internal wrapper
+            var wrappedItems = RestoreGraphItems.Select(GetMSBuildItem);
+
+            // Log the graph input
+            MSBuildRestoreUtility.Dump(wrappedItems, log);
+
+            //var graphLines = RestoreGraphItems;
             var providerCache = new RestoreCommandProvidersCache();
 
             using (var cacheContext = new SourceCacheContext())
@@ -81,7 +93,10 @@ namespace NuGet.Build.Tasks
 
                 // Pre-loaded request provider containing the graph file
                 var providers = new List<IPreLoadedRestoreRequestProvider>();
-                providers.Add(new PreLoadedRestoreRequestProvider(providerCache, graphLines));
+
+                var dgFile = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+
+                providers.Add(new DependencyGraphSpecRequestProvider(providerCache, dgFile));
 
                 var defaultSettings = Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null);
                 var sourceProvider = new CachingSourceProvider(new PackageSourceProvider(defaultSettings));
@@ -125,6 +140,11 @@ namespace NuGet.Build.Tasks
         private static string GetNullForEmpty(string s)
         {
             return string.IsNullOrEmpty(s) ? null : s;
+        }
+
+        private static MSBuildTaskItem GetMSBuildItem(ITaskItem item)
+        {
+            return new MSBuildTaskItem(item);
         }
     }
 }

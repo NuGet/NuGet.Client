@@ -64,23 +64,26 @@ namespace NuGet.RuntimeModel
 
         public static void WriteRuntimeGraph(JObject jObject, RuntimeGraph runtimeGraph)
         {
-            if (runtimeGraph.Runtimes.Any())
+            if (runtimeGraph != null)
             {
-                var runtimes = new JObject();
-                jObject["runtimes"] = runtimes;
-                foreach (var x in runtimeGraph.Runtimes.Values)
+                if (runtimeGraph.Runtimes.Any() == true)
                 {
-                    WriteRuntimeDescription(runtimes, x);
+                    var runtimes = new JObject();
+                    jObject["runtimes"] = runtimes;
+                    foreach (var x in runtimeGraph.Runtimes.Values)
+                    {
+                        WriteRuntimeDescription(runtimes, x);
+                    }
                 }
-            }
 
-            if (runtimeGraph.Supports.Any())
-            {
-                var supports = new JObject();
-                jObject["supports"] = supports;
-                foreach(var x in runtimeGraph.Supports.Values)
+                if (runtimeGraph.Supports.Any() == true)
                 {
-                    WriteCompatibilityProfile(supports, x);
+                    var supports = new JObject();
+                    jObject["supports"] = supports;
+                    foreach (var x in runtimeGraph.Supports.Values)
+                    {
+                        WriteCompatibilityProfile(supports, x);
+                    }
                 }
             }
         }
