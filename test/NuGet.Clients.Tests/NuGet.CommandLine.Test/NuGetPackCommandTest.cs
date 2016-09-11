@@ -794,6 +794,7 @@ namespace Proj2
             using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
+                var project1Path = Path.Combine(proj1Directory, "proj1.csproj");
                 var packagesDirectory = Path.Combine(proj1Directory, "packages");
                 // create project 1
                 Util.CreateFile(
@@ -846,7 +847,7 @@ namespace Proj1
                 var t = CommandRunner.Run(
                     nugetexe,
                     proj1Directory,
-                    "restore ",
+                    $"restore {project1Path}",
                     waitForExit: true);
 
                 // Act

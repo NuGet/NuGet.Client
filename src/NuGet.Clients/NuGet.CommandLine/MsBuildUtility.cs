@@ -23,17 +23,9 @@ namespace NuGet.CommandLine
         private const string NuGetTargets =
             "NuGet.CommandLine.NuGet.targets";
 
-        private static readonly HashSet<string> _msbuildExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ".csproj",
-            ".vbproj",
-            ".fsproj",
-            ".nuproj"
-        };
-
         public static bool IsMsBuildBasedProject(string projectFullPath)
         {
-            return _msbuildExtensions.Contains(Path.GetExtension(projectFullPath));
+            return projectFullPath.EndsWith("proj", StringComparison.OrdinalIgnoreCase);
         }
 
         public static int Build(string msbuildDirectory,

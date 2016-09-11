@@ -217,12 +217,27 @@ namespace NuGet.ProjectModel
                     SetValue(dependencyObject, "target", dependency.LibraryRange.TypeConstraint.ToString());
                 }
 
-                var versionString = dependency.LibraryRange.VersionRange?.ToLegacyShortString()
-                    ?? VersionRange.All.ToNormalizedString();
+                var versionRange = dependency.LibraryRange.VersionRange ?? VersionRange.All;
+                var versionString = versionRange.OriginalString;
 
-                if (expandedMode && !string.IsNullOrEmpty(versionString))
+                if (string.IsNullOrEmpty(versionString))
                 {
-                    SetValue(dependencyObject, "version", versionString);
+                    versionString = versionRange.ToNormalizedString();
+                }
+
+                if (expandedMode)
+                {
+                    if (VersionRange.All.Equals(versionRange)
+                        && !dependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package)
+                        && !dependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Reference)
+                        && !dependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.ExternalProject))
+                    {
+                        // Allow this specific case to skip the version property
+                    }
+                    else
+                    {
+                        SetValue(dependencyObject, "version", versionString);
+                    }
                 }
 
                 if (dependency.LibraryRange.TypeConstraint != LibraryDependencyTarget.Reference)

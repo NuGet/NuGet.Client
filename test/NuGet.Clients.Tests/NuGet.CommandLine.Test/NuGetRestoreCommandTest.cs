@@ -843,7 +843,7 @@ EndProject");
 
                 // Assert
                 Assert.Equal(1, r.Item1);
-                Assert.Contains("does not contain an msbuild solution, packages.config, or project.json file to restore", r.Item3);
+                Assert.Contains("does not contain an msbuild solution", r.Item3);
                 var packageFileA = Path.Combine(workingPath, @"packages\packageA.1.1.0\packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, @"packages\packageB.2.2.0\packageB.2.2.0.nupkg");
                 Assert.False(File.Exists(packageFileA));

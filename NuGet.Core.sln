@@ -136,8 +136,6 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Repositories.Test", "
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Commands.Test.Utility", "test\NuGet.Core.Tests\NuGet.Commands.Test.Utility\NuGet.Commands.Test.Utility.xproj", "{975924FA-3B4F-46AD-AA3B-F7C066D3955C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Build.Tasks.Pack", "src\NuGet.Core\NuGet.Build.Tasks.Pack\NuGet.Build.Tasks.Pack.xproj", "{E1E473C5-2954-45E4-AF95-287B506B696D}"
-EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.DependencyResolver.Core.Tests.Utility", "test\NuGet.Core.Tests\NuGet.DependencyResolver.Core.Tests.Utility\NuGet.DependencyResolver.Core.Tests.Utility.xproj", "{23C35C81-55E5-4E21-9E67-CCDEE901072B}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Build.Tasks.Pack", "src\NuGet.Core\NuGet.Build.Tasks.Pack\NuGet.Build.Tasks.Pack.xproj", "{E1E473C5-2954-45E4-AF95-287B506B696D}"

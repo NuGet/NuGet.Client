@@ -256,7 +256,10 @@ namespace NuGet.CommandLine.Test
             var projectJsonPath = Path.Combine(projectDir, "project.json");
             var configPath = Path.Combine(projectDir, "NuGet.Config");
 
-            File.WriteAllText(projectJsonPath, projectJsonContent);
+            // Clean up and validate json
+            var json = JObject.Parse(projectJsonContent);
+
+            File.WriteAllText(projectJsonPath, json.ToString());
             File.WriteAllText(projectFile, GetCSProjXML(projectName));
 
             if (!string.IsNullOrEmpty(nugetConfigContent))

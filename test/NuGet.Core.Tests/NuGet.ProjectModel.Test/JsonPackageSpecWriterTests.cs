@@ -49,9 +49,7 @@ namespace NuGet.ProjectModel.Test
   },
   ""dependencies"": {
     ""packageA"": {
-      ""include"": ""All"",
-      ""suppressParent"": ""Build, ContentFiles, Analyzers"",
-      ""type"": ""MainReference,MainSource"",
+      ""suppressParent"": ""All"",
       ""target"": ""Project""
     }
   },

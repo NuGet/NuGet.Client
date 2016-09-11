@@ -440,9 +440,7 @@ namespace NuGet.CommandLine
             }
 
             // Find P2P graph for v3 inputs.
-            var projectsWithPotentialP2PReferences = packageRestoreInputs.RestoreV3Context.Inputs
-                .Where(MsBuildUtility.IsMsBuildBasedProject)
-                .ToArray();
+            var projectsWithPotentialP2PReferences = packageRestoreInputs.RestoreV3Context.Inputs.ToArray();
 
             if (projectsWithPotentialP2PReferences.Length > 0)
             {
@@ -713,18 +711,7 @@ namespace NuGet.CommandLine
                 // project.json overrides packages.config
                 if (File.Exists(projectJsonPath))
                 {
-                    // project.json inputs are resolved again against the p2p file
-                    // and are matched with the solution there
-                    // For known msbuild project types use the project
-                    if (MsBuildUtility.IsMsBuildBasedProject(normalizedProjectFile))
-                    {
-                        restoreInputs.RestoreV3Context.Inputs.Add(normalizedProjectFile);
-                    }
-                    else
-                    {
-                        // For unknown types restore the project.json file without p2ps
-                        restoreInputs.RestoreV3Context.Inputs.Add(projectJsonPath);
-                    }
+                    restoreInputs.RestoreV3Context.Inputs.Add(normalizedProjectFile);
                 }
                 else if (File.Exists(packagesConfigFilePath))
                 {
