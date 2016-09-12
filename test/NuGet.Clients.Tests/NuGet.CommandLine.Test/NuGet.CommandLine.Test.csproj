@@ -58,6 +58,7 @@
     <Compile Include="ConsoleTest.cs" />
     <Compile Include="DefaultConfigurationFilePreserver.cs" />
     <Compile Include="LocalResourceUtilsTest.cs" />
+    <Compile Include="LocalsUtil.cs" />
     <Compile Include="MockServer.cs" />
     <Compile Include="MockServerResource.Designer.cs">
       <AutoGen>True</AutoGen>
