@@ -29,6 +29,9 @@ namespace NuGet.Build.Tasks
 
         public override bool Execute()
         {
+            var log = new MSBuildLogger(Log);
+            log.LogDebug($"(in) TargetFrameworks '{TargetFrameworks}'");
+
             var items = new List<ITaskItem>();
 
             var tfmStrings = TargetFrameworks.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);

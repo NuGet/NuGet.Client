@@ -41,6 +41,11 @@ namespace NuGet.Build.Tasks
 
         public override bool Execute()
         {
+            var log = new MSBuildLogger(Log);
+            log.LogDebug($"(in) ProjectUniqueName '{ProjectUniqueName}'");
+            log.LogDebug($"(in) TargetFrameworks '{TargetFrameworks}'");
+            log.LogDebug($"(in) PackageReferences '{string.Join(";", PackageReferences.Select(p => p.ItemSpec))}'");
+
             var entries = new List<ITaskItem>();
 
             foreach (var project in PackageReferences)
