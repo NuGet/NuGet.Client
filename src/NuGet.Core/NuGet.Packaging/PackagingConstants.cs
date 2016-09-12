@@ -6,6 +6,7 @@ namespace NuGet.Packaging
     public static class PackagingConstants
     {
         public static readonly string AnyFramework = "any";
+        public static readonly string AnyCodeLanguage = "any";
         public static readonly string AgnosticFramework = "agnostic";
 
         public static readonly string TargetFrameworkPropertyKey = "targetframework";
