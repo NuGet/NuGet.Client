@@ -13,10 +13,11 @@ using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 
 namespace NuGet.Build.Tasks
 {
-    public class GetProjectReferences : Task
+    public class GetPackageReferences : Task
     {
         /// <summary>
         /// Full path to the msbuild project.
@@ -25,7 +26,7 @@ namespace NuGet.Build.Tasks
         public string ProjectUniqueName { get; set; }
 
         [Required]
-        public ITaskItem[] ProjectReferences { get; set; }
+        public ITaskItem[] PackageReferences { get; set; }
 
         /// <summary>
         /// Target frameworks to apply this for. If empty this applies to all.
@@ -42,15 +43,20 @@ namespace NuGet.Build.Tasks
         {
             var entries = new List<ITaskItem>();
 
-            foreach (var project in ProjectReferences)
+            foreach (var project in PackageReferences)
             {
-                var referencePath = Path.GetFullPath(project.ItemSpec);
+                var parts = project.ItemSpec.Split('/');
+
+                if (parts.Length != 2)
+                {
+                    throw new InvalidDataException(project.ItemSpec);
+                }
 
                 var properties = new Dictionary<string, string>();
                 properties.Add("ProjectUniqueName", ProjectUniqueName);
-                properties.Add("Type", "ProjectReference");
-                properties.Add("ProjectPath", referencePath);
-                properties.Add("ProjectReferenceUniqueName", referencePath);
+                properties.Add("Type", "Dependency");
+                properties.Add("Id", parts[0]);
+                properties.Add("VersionRange", parts[1]);
 
                 if (!string.IsNullOrEmpty(TargetFrameworks))
                 {
