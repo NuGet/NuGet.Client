@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.IO;
 using Moq;
 using NuGet.CommandLine.Commands;
 using NuGet.Commands;
@@ -97,29 +100,32 @@ namespace NuGet.CommandLine.Test
 
         [Theory]
         [InlineData("all")]
+        [InlineData("temp")]
         [InlineData("http-cache")]
         [InlineData("global-packages")]
-        [InlineData("temp")]
         public async void LocalsCommand_ParsingValidation_WithNoConfigParam(string arg)
         {
             // Use a test directory to validate test key-value pairs within ISettings object passed to Runner
             using (var mockCurrentDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDummyConfigFile(mockCurrentDirectory.Path);
+                LocalsUtil.CreateDummyConfigFile(mockCurrentDirectory.Path);
                 var mockLocalsCommandRunner = new Mock<ILocalsCommandRunner>();
                 var mockConsole = new Mock<IConsole>();
                 mockConsole.Setup(c => c.Verbosity).Returns(Verbosity.Detailed);
-                LocalsCommand localsCommand = new LocalsCommand();
-                localsCommand.LocalsCommandRunner = mockLocalsCommandRunner.Object;
-                localsCommand.Clear = false;
-                localsCommand.List = true;
-                localsCommand.Console = mockConsole.Object;
+
+                var localsCommand = new LocalsCommand
+                {
+                    LocalsCommandRunner = mockLocalsCommandRunner.Object,
+                    Clear = false,
+                    List = true,
+                    Console = mockConsole.Object
+                };
                 localsCommand.Arguments.Add(arg);
                 localsCommand.CurrentDirectory = mockCurrentDirectory.Path;
                 var defaultSettings = Configuration.Settings.LoadDefaultSettings(mockCurrentDirectory,
-                                                                                 configFileName: null,
-                                                                                 machineWideSettings: localsCommand.MachineWideSettings);
+                                                                                 null,
+                                                                                 localsCommand.MachineWideSettings);
 
                 // Act
                 localsCommand.Execute();
@@ -137,24 +143,26 @@ namespace NuGet.CommandLine.Test
 
         [Theory]
         [InlineData("all")]
+        [InlineData("temp")]
         [InlineData("http-cache")]
         [InlineData("global-packages")]
-        [InlineData("temp")]
         public async void LocalsCommand_ParsingValidation_WithConfigParam(string arg)
         {
             // Use a test directory to validate test key-value pairs within ISettings object passed to Runner
             using (var mockCurrentDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                var dummyConfigPath = Util.CreateDummyConfigFile(mockCurrentDirectory.Path);
+                var dummyConfigPath = LocalsUtil.CreateDummyConfigFile(mockCurrentDirectory.Path);
                 var mockLocalsCommandRunner = new Mock<ILocalsCommandRunner>();
                 var mockConsole = new Mock<IConsole>();
                 mockConsole.Setup(c => c.Verbosity).Returns(Verbosity.Detailed);
-                LocalsCommand localsCommand = new LocalsCommand();
-                localsCommand.LocalsCommandRunner = mockLocalsCommandRunner.Object;
-                localsCommand.Clear = true;
-                localsCommand.List = false;
-                localsCommand.Console = mockConsole.Object;
+                var localsCommand = new LocalsCommand
+                {
+                    LocalsCommandRunner = mockLocalsCommandRunner.Object,
+                    Clear = true,
+                    List = false,
+                    Console = mockConsole.Object
+                };
                 localsCommand.Arguments.Add(arg);
                 localsCommand.ConfigFile = dummyConfigPath;
                 localsCommand.CurrentDirectory = mockCurrentDirectory.Path;
