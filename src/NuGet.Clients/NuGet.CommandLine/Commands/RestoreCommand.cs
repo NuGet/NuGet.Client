@@ -339,9 +339,7 @@ namespace NuGet.CommandLine
                 cacheContext.NoCache = NoCache;
                 cacheContext.DirectDownload = DirectDownload;
 
-                var downloadContext = new PackageDownloadContext(
-                    cacheContext,
-                    directDownloadDirectory: DirectDownload ? packagesFolderPath : null);
+                var downloadContext = new PackageDownloadContext(cacheContext, packagesFolderPath, DirectDownload);
 
                 var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
                     packageRestoreContext,
