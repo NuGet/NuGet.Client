@@ -12,6 +12,9 @@ namespace NuGet.XPlat.FuncTest
 {
     public class XPlatLocalsTests
     {
+        private static readonly string DotnetCli = DotnetCliUtil.GetDotnetCli();
+        private static readonly string XplatDll = DotnetCliUtil.GetXplatDll();
+
         [Theory]
         [InlineData("locals all --list")]
         [InlineData("locals all -l")]
@@ -31,6 +34,9 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("locals -l global-packages")]
         public static void Locals_List_Succeeds(string args)
         {
+            Assert.NotNull(DotnetCli);
+            Assert.NotNull(XplatDll);
+
             using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
@@ -44,9 +50,9 @@ namespace NuGet.XPlat.FuncTest
 
                 // Act
                 var result = CommandRunner.Run(
-                      DotnetCliUtil.GetDotnetCli(),
+                      DotnetCli,
                       Directory.GetCurrentDirectory(),
-                      DotnetCliUtil.GetXplatDll() + " " + args,
+                      $"{XplatDll} {args}",
                       waitForExit: true,
                     environmentVariables: new Dictionary<string, string>
                     {
@@ -78,6 +84,9 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("locals -c global-packages")]
         public static void Locals_Clear_Succeeds(string args)
         {
+            Assert.NotNull(DotnetCli);
+            Assert.NotNull(XplatDll);
+
             using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
@@ -94,9 +103,9 @@ namespace NuGet.XPlat.FuncTest
 
                 // Act
                 var result = CommandRunner.Run(
-                      DotnetCliUtil.GetDotnetCli(),
+                      DotnetCli,
                       Directory.GetCurrentDirectory(),
-                      DotnetCliUtil.GetXplatDll() + " " + args,
+                      $"{XplatDll} {args}",
                       waitForExit: true,
                     environmentVariables: new Dictionary<string, string>
                     {
@@ -151,6 +160,9 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("locals -c")]
         public static void Locals_Success_InvalidArguments_HelpMessage(string args)
         {
+            Assert.NotNull(DotnetCli);
+            Assert.NotNull(XplatDll);
+
             // Arrange
             var expectedResult = string.Concat("error: No Cache Type was specified.",
                                                Environment.NewLine,
@@ -160,9 +172,9 @@ namespace NuGet.XPlat.FuncTest
 
             // Act
             var result = CommandRunner.Run(
-              DotnetCliUtil.GetDotnetCli(),
+              DotnetCli,
               Directory.GetCurrentDirectory(),
-              DotnetCliUtil.GetXplatDll() + " " + args,
+              $"{XplatDll} {args}",
               waitForExit: true);
 
             // Assert
@@ -176,15 +188,18 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("locals -c unknownResource")]
         public static void Locals_Success_InvalidResourceName_HelpMessage(string args)
         {
+            Assert.NotNull(DotnetCli);
+            Assert.NotNull(XplatDll);
+
             // Arrange
             var expectedResult = string.Concat("error: An invalid local resource name was provided. " +
                                                "Please provide one of the following values: http-cache, temp, global-packages, all.");
 
             // Act
             var result = CommandRunner.Run(
-              DotnetCliUtil.GetDotnetCli(),
+              DotnetCli,
               Directory.GetCurrentDirectory(),
-              DotnetCliUtil.GetXplatDll() + " " + args,
+              $"{XplatDll} {args}",
               waitForExit: true);
 
             // Assert
@@ -198,15 +213,18 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("locals --c")]
         public static void Locals_Success_InvalidFlags_HelpMessage(string args)
         {
+            Assert.NotNull(DotnetCli);
+            Assert.NotNull(XplatDll);
+
             // Arrange
             var expectedResult = string.Concat("Specify --help for a list of available options and commands.",
                                                Environment.NewLine, "error: Unrecognized option '", args.Split(null)[1], "'");
 
             // Act
             var result = CommandRunner.Run(
-              DotnetCliUtil.GetDotnetCli(),
+              DotnetCli,
               Directory.GetCurrentDirectory(),
-              DotnetCliUtil.GetXplatDll() + " " + args,
+              $"{XplatDll} {args}",
               waitForExit: true);
 
             // Assert
@@ -220,6 +238,9 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("locals temp")]
         public static void Locals_Success_NoFlags_HelpMessage(string args)
         {
+            Assert.NotNull(DotnetCli);
+            Assert.NotNull(XplatDll);
+
             // Arrange
             var expectedResult = string.Concat("error: Please specify an operation i.e. --list or --clear.",
                                                Environment.NewLine,
@@ -229,9 +250,9 @@ namespace NuGet.XPlat.FuncTest
 
             // Act
             var result = CommandRunner.Run(
-              DotnetCliUtil.GetDotnetCli(),
+              DotnetCli,
               Directory.GetCurrentDirectory(),
-              DotnetCliUtil.GetXplatDll() + " " + args,
+              $"{XplatDll} {args}",
               waitForExit: true);
 
             // Assert
@@ -249,6 +270,9 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("locals --clear --list temp")]
         public static void Locals_Success_BothFlags_HelpMessage(string args)
         {
+            Assert.NotNull(DotnetCli);
+            Assert.NotNull(XplatDll);
+
             // Arrange
             var expectedResult = string.Concat("error: Both operations, --list and --clear, are not supported in the same command. Please specify only one operation.",
                                                Environment.NewLine,
@@ -258,9 +282,9 @@ namespace NuGet.XPlat.FuncTest
 
             // Act
             var result = CommandRunner.Run(
-              DotnetCliUtil.GetDotnetCli(),
+              DotnetCli,
               Directory.GetCurrentDirectory(),
-              DotnetCliUtil.GetXplatDll() + " " + args,
+              $"{XplatDll} {args}",
               waitForExit: true);
 
             // Assert

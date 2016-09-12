@@ -43,7 +43,10 @@ Function Reset-Colors {
     $host.ui.rawui.ForegroundColor = $OrigFgColor
 }
 
-### Functions ###
+function Format-TeamCityMessage([string]$Text) {
+    $Text.Replace("|", "||").Replace("'", "|'").Replace("[", "|[").Replace("]", "|]").Replace("`n", "|n").Replace("`r", "|r")
+}
+
 Function Trace-Log($TraceMessage = '') {
     Write-Host "[$(Trace-Time)]`t$TraceMessage" -ForegroundColor Cyan
 }
@@ -83,6 +86,7 @@ Function Format-ElapsedTime($ElapsedTime) {
 
 Function Invoke-BuildStep {
     [CmdletBinding()]
+    [Alias('ibs')]
     param(
         [Parameter(Mandatory=$True)]
         [string]$BuildStep,
@@ -102,6 +106,7 @@ Function Invoke-BuildStep {
         Trace-Log "[BEGIN] $BuildStep"
         $sw = [Diagnostics.Stopwatch]::StartNew()
         $completed = $false
+        $PwdBefore = $PWD
 
         try {
             Invoke-Command $Expression -ArgumentList $Arguments -ErrorVariable err
@@ -110,6 +115,9 @@ Function Invoke-BuildStep {
         finally {
             $sw.Stop()
             Reset-Colors
+            if ($PWD -ne $PwdBefore) {
+                cd $PwdBefore
+            }
             if (-not $err -and $completed) {
                 Trace-Log "[DONE +$(Format-ElapsedTime $sw.Elapsed)] $BuildStep"
             }
@@ -132,22 +140,33 @@ Function Invoke-BuildStep {
 
 Function Update-Submodules {
     [CmdletBinding()]
-    param()
-    $opts = 'submodule', 'update'
-    $opts += '--init'
-    if (-not $VerbosePreference) {
-        $opts += '--quiet'
+    param(
+        [switch]$Force
+    )
+
+    $SubmodulesDir = Join-Path $NuGetClientRoot submodules -Resolve
+    $Submodules = gci $SubmodulesDir -ea Ignore
+    if ($Force -or -not $Submodules) {
+        $opts = 'submodule', 'update'
+        $opts += '--init'
+        if (-not $VerbosePreference) {
+            $opts += '--quiet'
+        }
+
+        Trace-Log 'Updating and initializing submodules'
+        Trace-Log "git $opts"
+        & git $opts 2>&1
     }
-    Trace-Log 'Updating and initializing submodules'
-    Trace-Log "git $opts"
-    & git $opts 2>&1
 }
 
 # Downloads NuGet.exe if missing
 Function Install-NuGet {
     [CmdletBinding()]
-    param()
-    if (-not (Test-Path $NuGetExe)) {
+    param(
+        [switch]$Force
+    )
+
+    if ($Force -or -not (Test-Path $NuGetExe)) {
         Trace-Log 'Downloading nuget.exe'
         wget https://dist.nuget.org/win-x86-commandline/latest-prerelease/nuget.exe -OutFile $NuGetExe
     }
@@ -155,20 +174,24 @@ Function Install-NuGet {
 
 Function Install-DotnetCLI {
     [CmdletBinding()]
-    param()
-
-    Trace-Log 'Downloading Dotnet CLI'
-
-    New-Item -ItemType Directory -Force -Path $CLIRoot | Out-Null
+    param(
+        [switch]$Force
+    )
 
     $env:DOTNET_HOME=$CLIRoot
     $env:DOTNET_INSTALL_DIR=$NuGetClientRoot
 
-    $installDotnet = Join-Path $CLIRoot "dotnet-install.ps1"
+    if ($Force -or -not (Test-Path $DotNetExe)) {
+        Trace-Log 'Downloading Dotnet CLI'
 
-    wget 'https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0-preview2/scripts/obtain/dotnet-install.ps1' -OutFile $installDotnet
+        New-Item -ItemType Directory -Force -Path $CLIRoot | Out-Null
 
-    & $installDotnet -Channel preview -i $CLIRoot -Version 1.0.0-preview2-003121
+        $installDotnet = Join-Path $CLIRoot "dotnet-install.ps1"
+
+        wget 'https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0-preview2/scripts/obtain/dotnet-install.ps1' -OutFile $installDotnet
+
+        & $installDotnet -Channel preview -i $CLIRoot -Version 1.0.0-preview2-003121
+    }
 
     if (-not (Test-Path $DotNetExe)) {
         Error-Log "Unable to find dotnet.exe. The CLI install may have failed." -Fatal
@@ -178,11 +201,32 @@ Function Install-DotnetCLI {
     & $DotNetExe --info
 }
 
+Function Get-MSBuildRoot {
+    param(
+        [ValidateSet(14,15)]
+        [int]$MSBuildVersion,
+        [switch]$Default
+    )
+    # Willow install workaround
+    if (-not $Default -and $MSBuildVersion -eq 15 -and (Test-Path Env:\VS150COMNTOOLS)) {
+        # If VS "15" is installed get msbuild from VS install path
+        $MSBuildRoot = Join-Path $env:VS150COMNTOOLS ..\..\MSBuild
+    }
+
+    # If not found before
+    if (-not $MSBuildRoot -or -not (Test-Path $MSBuildRoot)) {
+        # Assume msbuild is installed at default location
+        $MSBuildRoot = Join-Path ${env:ProgramFiles(x86)} MSBuild
+    }
+
+    $MSBuildRoot
+}
+
 Function Get-MSBuildExe {
     param(
+        [ValidateSet(14,15)]
         [int]$MSBuildVersion
     )
-
     # Get the highest msbuild version if version was not specified
     if (-not $MSBuildVersion) {
         $MSBuildExe = Get-MSBuildExe 15
@@ -193,20 +237,8 @@ Function Get-MSBuildExe {
         return Get-MSBuildExe 14
     }
 
-    # Willow install workaround
-    if ($MSBuildVersion -eq 15 -and (Test-Path Env:\VS150COMNTOOLS)) {
-        # If VS "15" is installed get msbuild from VS install path
-        $MSBuildRoot = Join-Path $env:VS150COMNTOOLS ..\..\MSBuild\15.0
-    }
-
-    # If not found before
-    if (-not $MSBuildRoot -or -not (Test-Path $MSBuildRoot)) {
-        # Assume msbuild is installed at default location
-        $MSBuildRoot = Join-Path ${env:ProgramFiles(x86)} "MSBuild\${MSBuildVersion}.0"
-    }
-
-    $MSBuildExeRelPath = 'bin\msbuild.exe'
-    Join-Path $MSBuildRoot $MSBuildExeRelPath
+    $MSBuildRoot = Get-MSBuildRoot $MSBuildVersion
+    Join-Path $MSBuildRoot "${MSBuildVersion}.0\bin\msbuild.exe"
 }
 
 Function Test-MSBuildVersionPresent {
@@ -225,6 +257,22 @@ Set-Alias msbuild $MSBuildExe
 
 $VS14Installed = Test-MSBuildVersionPresent -MSBuildVersion 14
 $VS15Installed = Test-MSBuildVersionPresent -MSBuildVersion 15
+
+function Test-BuildEnvironment {
+    param(
+        [switch]$CI
+    )
+    $Installed = (Test-Path $DotNetExe) -and (Test-Path $NuGetExe)
+    if (-not $Installed) {
+        Error-Log 'Build environment is not configured. Please run configure.ps1 first.' -Fatal
+    }
+
+    if ($CI) {
+        # Explicitly add cli to environment PATH
+        # because dotnet-install script runs in configure.ps1 in previous build step
+        $env:path = "$CLIRoot;${env:path}"
+    }
+}
 
 function Enable-DelaySigningForDotNet {
     param(
@@ -370,22 +418,30 @@ Function Restore-SolutionPackages{
 
 # Restore nuget.core.sln projects
 Function Restore-XProjects {
+    [CmdletBinding()]
+    param(
+        [parameter(ValueFromPipeline=$True, Mandatory=$True, Position=0)]
+        [string[]]$XProjectLocations
+    )
+    end {
+        $xprojects = $Input | Join-Path -ChildPath project.json -Resolve
+        $xprojects | %{
+            $opts = 'restore', $_
+            if (-not $VerbosePreference) {
+                $opts += '--verbosity', 'minimal'
+            }
 
-    $opts = 'restore', "src\NuGet.Core", "test\NuGet.Core.Tests", "test\NuGet.Core.FuncTests"
-    if (-not $VerbosePreference) {
-        $opts += '--verbosity', 'minimal'
-    }
-
-    Trace-Log "Restoring packages for xprojs"
-    Trace-Log "$dotnetExe $opts"
-    & $dotnetExe $opts
-    if (-not $?) {
-        Error-Log "Restore failed @""$_"". Code: $LASTEXITCODE"
+            Trace-Log "$DotNetExe $opts"
+            & $DotNetExe $opts
+            if (-not $?) {
+                Error-Log "Restore failed @""$_"". Code: $LASTEXITCODE"
+            }
+        }
     }
 }
 
-Function Find-XProjects($XProjectsLocation) {
-    Get-ChildItem $XProjectsLocation -Recurse -Filter '*.xproj' |`
+Function Find-XProjects([string]$XProjectsLocation) {
+    Get-ChildItem $XProjectsLocation -Recurse -Filter '*.xproj' |
         %{ Split-Path $_.FullName -Parent }
 }
 
@@ -433,7 +489,36 @@ Function Invoke-DotnetPack {
             }
         }
     }
-    End { }
+}
+
+Function Publish-CoreProject {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$True)]
+        [string]$XProjectLocation,
+        [Parameter(Mandatory=$True)]
+        [string]$PublishLocation,
+        [string]$Configuration = $DefaultConfiguration
+    )
+    $opts = @()
+
+    if ($VerbosePreference) {
+        $opts += '-v'
+    }
+
+    $opts += 'publish', $XProjectLocation
+    $opts += '--configuration', $Configuration, '--framework', 'netcoreapp1.0'
+    $opts += '--no-build'
+
+    $OutputDir = Join-Path $PublishLocation "$Configuration\netcoreapp1.0"
+    $opts += '--output', $OutputDir
+
+    Trace-Log "$DotNetExe $opts"
+    & $DotNetExe $opts
+
+    if (-not $?) {
+        Error-Log "Publish project failed @""$XProjectLocation"". Code: $LASTEXITCODE"
+    }
 }
 
 Function Build-CoreProjects {
@@ -442,21 +527,106 @@ Function Build-CoreProjects {
         [string]$Configuration = $DefaultConfiguration,
         [string]$ReleaseLabel = $DefaultReleaseLabel,
         [int]$BuildNumber = (Get-BuildNumber),
-        [switch]$SkipRestore,
-        [switch]$Fast
+        [switch]$SkipRestore
     )
-    $XProjectsLocation = Join-Path $NuGetClientRoot src\NuGet.Core
+    $XProjectsLocation = Join-Path $NuGetClientRoot src\NuGet.Core -Resolve
+    $xprojects = Find-XProjects $XProjectsLocation
 
     if (-not $SkipRestore) {
-        Restore-XProjects $XProjectsLocation -Fast:$Fast
+        $xprojects | Restore-XProjects
     }
 
-    $xprojects = Find-XProjects $XProjectsLocation
     $xprojects | Invoke-DotnetPack -config $Configuration -label $ReleaseLabel -build $BuildNumber -out $Artifacts
 
     ## Moving nupkgs
-    Trace-Log "Moving the packages to $Nupkgs"
-    Get-ChildItem "${Artifacts}\*.nupkg" -Recurse | % { Move-Item $_ $Nupkgs -Force }
+    Trace-Log "Moving the packages to '$Nupkgs'"
+    Get-ChildItem "${Artifacts}\*.nupkg" -Recurse | Move-Item -Destination $Nupkgs -Force
+
+    $PublishLocation = Join-Path $Artifacts "NuGet.CommandLine.XPlat\publish"
+    Trace-Log "Publishing XPlat project to '$PublishLocation'"
+    $XPlatProject = Join-Path $NuGetClientRoot 'src\NuGet.Core\NuGet.CommandLine.XPlat'
+    Publish-CoreProject $XPlatProject $PublishLocation $Configuration
+}
+
+Function Test-XProjectCoreClr {
+    [CmdletBinding()]
+    param(
+        [string]$XProjectLocation,
+        [string]$Configuration = $DefaultConfiguration
+    )
+    $opts = @()
+
+    if ($VerbosePreference) {
+        $opts += '-v'
+    }
+
+    $opts += 'test', '--configuration', $Configuration, '--framework', 'netcoreapp1.0'
+    $opts += '-notrait', 'Platform=Linux', '-notrait', 'Platform=Darwin'
+
+    if ($VerbosePreference) {
+        $opts += '-verbose'
+    }
+
+    pushd $XProjectLocation
+
+    try {
+        Trace-Log "$DotNetExe $opts"
+        & $DotNetExe $opts
+    }
+    finally {
+        popd
+    }
+
+    if ($LASTEXITCODE -ne 0) {
+        Error-Log "Tests failed @""$XProjectLocation"" on CoreCLR. Code: $LASTEXITCODE"
+    }
+}
+
+Function Test-XProjectClr {
+    [CmdletBinding()]
+    param(
+        [string]$XProjectLocation,
+        [string]$Configuration = $DefaultConfiguration
+    )
+    # Build
+    $opts = @()
+
+    if ($VerbosePreference) {
+        $opts += '-v'
+    }
+
+    $opts += 'build', '--configuration', $Configuration, '--runtime', 'win7-x64'
+
+    pushd $XProjectLocation
+
+    try {
+        Trace-Log "$DotNetExe $opts"
+        & $DotNetExe $opts
+    }
+    finally {
+        popd
+    }
+
+    if ($LASTEXITCODE -ne 0) {
+        Error-Log "Build failed @""$_"" on CLR. Code: $LASTEXITCODE"
+    }
+    else {
+        $directoryName = Split-Path $_ -Leaf
+        $htmlOutput = Join-Path $XProjectLocation "bin\$Configuration\net46\win7-x64\xunit.results.html"
+        $desktopTestAssembly = Join-Path $XProjectLocation "bin\${Configuration}\net46\win7-x64\${directoryName}.dll"
+        $opts = $desktopTestAssembly, '-html', $htmlOutput
+        $opts += '-notrait', 'Platform=Linux', '-notrait', 'Platform=Darwin'
+
+        if ($VerbosePreference) {
+            $opts += '-verbose'
+        }
+
+        Trace-Log "$XunitConsole $opts"
+        & $XunitConsole $opts
+        if (-not $?) {
+            Error-Log "Tests failed @""$XProjectLocation"" on CLR. Code: $LASTEXITCODE"
+        }
+    }
 }
 
 Function Test-XProject {
@@ -468,75 +638,26 @@ Function Test-XProject {
     )
     Process {
         $XProjectLocations | Resolve-Path | %{
-            Trace-Log "Running tests in ""$_"""
-
-            $directoryName = Split-Path $_ -Leaf
-
-            pushd $_
-
-            $xtestProjectJson = Join-Path $_ "project.json"
+            $xtestProjectJson = Join-Path $_ project.json -Resolve
             $xproject = gc $xtestProjectJson -raw | ConvertFrom-Json
 
-            if ($xproject.dependencies.xunit) {
+            if ($xproject.testRunner) {
+                Trace-Log "Running tests in ""$_"""
 
                 # Check if netcoreapp1.0 exists in the project.json file
                 if ($xproject.frameworks.'netcoreapp1.0') {
                     # Run tests for Core CLR
-                    $opts = @()
-                    if ($VerbosePreference) {
-                        $opts += '-v'
-                    }
-                    $opts += 'test', '--configuration', $Configuration, '--framework', 'netcoreapp1.0'
-                    $opts += '-notrait', 'Platform=Linux', '-notrait', 'Platform=Darwin'
-                    if ($VerbosePreference) {
-                        $opts += '-verbose'
-                    }
-
-                    Trace-Log "$DotNetExe $opts"
-                    & $DotNetExe $opts
-
-                    if ($LASTEXITCODE -ne 0) {
-                        Error-Log "Tests failed @""$_"" on CoreCLR. Code: $LASTEXITCODE"
-                    }
+                    Test-XProjectCoreClr $_ $Configuration
                 }
 
                 # Run tests for CLR
                 if ($xproject.frameworks.net46) {
-                    # Build
-                    $opts = @()
-                    if ($VerbosePreference) {
-                        $opts += '-v'
-                    }
-                    $opts += 'build', '--configuration', $Configuration, '--runtime', 'win7-x64'
-
-                    Trace-Log "$DotNetExe $opts"
-                    & $DotNetExe $opts
-
-                    if ($LASTEXITCODE -ne 0) {
-                        Error-Log "Build failed @""$_"" on CLR. Code: $LASTEXITCODE"
-                    }
-                    else {
-                        $htmlOutput = Join-Path $_ "bin\$Configuration\net46\win7-x64\xunit.results.html"
-                        $desktopTestAssembly = Join-Path $_ "bin\$Configuration\net46\win7-x64\$directoryName.dll"
-                        $opts = $desktopTestAssembly, '-html', $htmlOutput
-                        $opts += '-notrait', 'Platform=Linux', '-notrait', 'Platform=Darwin'
-                        if ($VerbosePreference) {
-                            $opts += '-verbose'
-                        }
-                        Trace-Log "$XunitConsole $opts"
-
-                        & $XunitConsole $opts
-                        if (-not $?) {
-                            Error-Log "Tests failed @""$_"" on CLR. Code: $LASTEXITCODE"
-                        }
-                    }
+                    Test-XProjectClr $_ $Configuration
                 }
             }
             else {
                 Trace-Log "Skipping non-test project in ""$_"""
             }
-
-            popd
         }
     }
 }
@@ -547,8 +668,7 @@ Function Test-CoreProjects {
         [string]$Configuration = $DefaultConfiguration
     )
     $XProjectsLocation = Join-Path $NuGetClientRoot test\NuGet.Core.Tests
-
-    Test-CoreProjectsHelper -Configuration $Configuration -XProjectsLocation $XProjectsLocation
+    Test-CoreProjectsHelper $Configuration $XProjectsLocation
 }
 
 Function Test-FuncCoreProjects {
@@ -557,8 +677,7 @@ Function Test-FuncCoreProjects {
         [string]$Configuration = $DefaultConfiguration
     )
     $XProjectsLocation = Join-Path $NuGetClientRoot test\NuGet.Core.FuncTests
-
-    Test-CoreProjectsHelper -Configuration $Configuration -XProjectsLocation $XProjectsLocation
+    Test-CoreProjectsHelper $Configuration $XProjectsLocation
 }
 
 Function Test-CoreProjectsHelper {
@@ -567,8 +686,8 @@ Function Test-CoreProjectsHelper {
         [string]$Configuration,
         [string]$XProjectsLocation
     )
-
     $xtests = Find-XProjects $XProjectsLocation
+    $xtests | Restore-XProjects
     $xtests | Test-XProject -Configuration $Configuration
 }
 
@@ -580,8 +699,7 @@ Function Build-ClientsProjects {
         [int]$BuildNumber = (Get-BuildNumber),
         [ValidateSet(14,15)]
         [int]$ToolsetVersion = $DefaultMSBuildVersion,
-        [switch]$SkipRestore,
-        [switch]$Fast
+        [switch]$SkipRestore
     )
 
     $solutionPath = Join-Path $NuGetClientRoot NuGet.Clients.sln -Resolve
