@@ -79,15 +79,6 @@ namespace NuGet.Credentials {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Credential plugin {0} exited with error {1}..
-        /// </summary>
-        internal static string PluginException_Error_Format {
-            get {
-                return ResourceManager.GetString("PluginException_Error_Format", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Credential plugin {0} encountered exception {1}..
         /// </summary>
         internal static string PluginException_Exception_Format {
@@ -97,11 +88,11 @@ namespace NuGet.Credentials {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Credential plugin {0} returned {1} with an incorrect payload {2}..
+        ///   Looks up a localized string similar to Credential plugin {0} returned {1}, but the payload was not valid (username = {2}, password = {3}, authTypes = {4}, message = {5})..
         /// </summary>
-        internal static string PluginException_IncorrectPayload_Format {
+        internal static string PluginException_InvalidResponse_Format {
             get {
-                return ResourceManager.GetString("PluginException_IncorrectPayload_Format", resourceCulture);
+                return ResourceManager.GetString("PluginException_InvalidResponse_Format", resourceCulture);
             }
         }
         
@@ -129,6 +120,24 @@ namespace NuGet.Credentials {
         internal static string PluginException_Timeout_Format {
             get {
                 return ResourceManager.GetString("PluginException_Timeout_Format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Credential plugin {0} exited with unexpected error {1}..
+        /// </summary>
+        internal static string PluginException_UnexpectedStatus_Format {
+            get {
+                return ResourceManager.GetString("PluginException_UnexpectedStatus_Format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Credential plugin {0} returned {1} with an unreadable payload..
+        /// </summary>
+        internal static string PluginException_UnreadableResponse_Format {
+            get {
+                return ResourceManager.GetString("PluginException_UnreadableResponse_Format", resourceCulture);
             }
         }
         

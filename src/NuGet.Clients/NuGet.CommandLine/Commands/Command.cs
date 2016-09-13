@@ -175,7 +175,9 @@ namespace NuGet.CommandLine
         {
             var extensionLocator = new ExtensionLocator();
             var providers = new List<Credentials.ICredentialProvider>();
-            var pluginProviders = new PluginCredentialProviderBuilder(extensionLocator, Settings).BuildAll().ToList();
+            var pluginProviders = new PluginCredentialProviderBuilder(extensionLocator, Settings, Console)
+                .BuildAll(Verbosity.ToString())
+                .ToList();
 
             providers.Add(new CredentialProviderAdapter(new SettingsCredentialProvider(SourceProvider, Console)));
             if (pluginProviders.Any())
