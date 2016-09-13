@@ -9,6 +9,13 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("NuGet/Visual Studio interop assembly")]
 
 // The version of this assembly should never be changed.
+
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyCompany("Microsoft Corporation")]
+[assembly: AssemblyProduct("NuGet")]
+[assembly: AssemblyCopyright("Microsoft Corporation. All rights reserved.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyTrademark("")]
 [assembly: ComVisible(false)]
+
+[assembly: NeutralResourcesLanguage("en-US")]
