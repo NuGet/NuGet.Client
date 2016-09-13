@@ -63,6 +63,8 @@ namespace NuGet.Commands.Test
             project.RestoreMetadata.ProjectUniqueName = "a";
             project.RestoreMetadata.ProjectName = "a";
             project.RestoreMetadata.ProjectPath = Path.Combine(Directory.GetCurrentDirectory(), "a.csproj");
+            project.RestoreMetadata.OutputType = RestoreOutputType.UAP;
+            project.RestoreMetadata.ProjectJsonPath = Path.Combine(Directory.GetCurrentDirectory(), "project.json");
 
             spec.AddProject(project);
 
@@ -84,6 +86,8 @@ namespace NuGet.Commands.Test
             project.RestoreMetadata.ProjectUniqueName = "a";
             project.RestoreMetadata.ProjectName = "a";
             project.RestoreMetadata.ProjectPath = Path.Combine(Directory.GetCurrentDirectory(), "a.csproj");
+            project.RestoreMetadata.OutputType = RestoreOutputType.UAP;
+            project.RestoreMetadata.ProjectJsonPath = Path.Combine(Directory.GetCurrentDirectory(), "project.json");
 
             spec.AddProject(project);
 
@@ -117,6 +121,8 @@ namespace NuGet.Commands.Test
             project.RestoreMetadata.ProjectUniqueName = "a";
             project.RestoreMetadata.ProjectName = "a";
             project.RestoreMetadata.ProjectPath = Path.Combine(Directory.GetCurrentDirectory(), "a.csproj");
+            project.RestoreMetadata.OutputType = RestoreOutputType.UAP;
+            project.RestoreMetadata.ProjectJsonPath = Path.Combine(Directory.GetCurrentDirectory(), "project.json");
 
             spec.AddProject(project);
 

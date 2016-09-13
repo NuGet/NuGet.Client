@@ -89,9 +89,6 @@ namespace NuGet.Commands
             // Verify project metadata
             ValidateProjectMetadata(spec, files);
 
-            // Verify frameworks
-            ValidateFrameworks(spec, files);
-
             // Verify project references
             ValidateProjectReferences(spec, files);
 
@@ -147,6 +144,9 @@ namespace NuGet.Commands
 
         private static void ValidateProjectSpecNetCore(PackageSpec spec, IEnumerable<string> files)
         {
+            // Verify frameworks
+            ValidateFrameworks(spec, files);
+
             // NETCore may not specify a project.json file
             if (!string.IsNullOrEmpty(spec.RestoreMetadata.ProjectJsonPath))
             {
@@ -174,6 +174,9 @@ namespace NuGet.Commands
 
         private static void ValidateProjectSpecUAP(PackageSpec spec, IEnumerable<string> files)
         {
+            // Verify frameworks
+            ValidateFrameworks(spec, files);
+
             // UAP may contain only 1 framework
             if (spec.TargetFrameworks.Count != 1)
             {
