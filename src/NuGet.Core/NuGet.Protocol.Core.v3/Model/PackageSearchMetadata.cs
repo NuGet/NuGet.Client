@@ -42,6 +42,7 @@ namespace NuGet.Protocol
         public PackageIdentity Identity => new PackageIdentity(PackageId, Version);
 
         [JsonProperty(PropertyName = JsonProperties.LicenseUrl)]
+        [JsonConverter(typeof(SafeUriConverter))]
         public Uri LicenseUrl { get; private set; }
 
         [JsonProperty(PropertyName = JsonProperties.Owners)]
@@ -52,6 +53,7 @@ namespace NuGet.Protocol
         public string PackageId { get; private set; }
 
         [JsonProperty(PropertyName = JsonProperties.ProjectUrl)]
+        [JsonConverter(typeof(SafeUriConverter))]
         public Uri ProjectUrl { get; private set; }
 
         [JsonProperty(PropertyName = JsonProperties.Published)]
