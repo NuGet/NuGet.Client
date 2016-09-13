@@ -300,6 +300,7 @@ namespace NuGet.CommandLine.Test
         public void DeleteCommand_WithApiKeyFromConfig(string configKeyFormatString)
         {
             // Arrange
+            Util.ClearWebCache();
             var testApiKey = Guid.NewGuid().ToString();
 
             using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
@@ -340,7 +341,7 @@ namespace NuGet.CommandLine.Test
                     var config = $@"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
     <packageSources>
-        <add key='nuget.org' value='{server.Uri}index.json' protocolVersion='3' />
+        <add key='MockServer' value='{server.Uri}index.json' protocolVersion='3' />
     </packageSources>
     <apikeys>
         <add key='{configKey}' value='{Configuration.EncryptionUtility.EncryptString(testApiKey)}' />
@@ -357,7 +358,7 @@ namespace NuGet.CommandLine.Test
                         "testPackage1",
                         "1.1.0",
                         "-Source",
-                        "nuget.org",
+                        "MockServer",
                         "-ConfigFile",
                         configFileName,
                         "-NonInteractive"
