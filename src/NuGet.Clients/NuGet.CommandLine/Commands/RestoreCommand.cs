@@ -440,7 +440,12 @@ namespace NuGet.CommandLine
             }
 
             // Find P2P graph for v3 inputs.
-            var projectsWithPotentialP2PReferences = packageRestoreInputs.RestoreV3Context.Inputs.ToArray();
+            // Ignore xproj files as top level inputs
+            var projectsWithPotentialP2PReferences = packageRestoreInputs
+                .RestoreV3Context
+                .Inputs
+                .Where(path => !path.EndsWith(".xproj", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
 
             if (projectsWithPotentialP2PReferences.Length > 0)
             {

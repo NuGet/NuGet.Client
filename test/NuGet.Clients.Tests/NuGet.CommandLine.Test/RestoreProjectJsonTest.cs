@@ -2109,7 +2109,6 @@ namespace NuGet.CommandLine.Test
 
                 Util.CreateFile(workingPath, "test.csproj", Util.GetCSProjXML("test"));
 
-
                 string[] args = new string[] {
                     "restore",
                     "-Source",

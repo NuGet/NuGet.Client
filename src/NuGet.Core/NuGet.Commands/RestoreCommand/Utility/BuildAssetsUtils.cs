@@ -32,8 +32,10 @@ namespace NuGet.Commands
 
             if (request.RestoreOutputType == RestoreOutputType.NETCore)
             {
-                targetsPath = Path.Combine(request.RestoreOutputPath, $"project.generated.targets");
-                propsPath = Path.Combine(request.RestoreOutputPath, $"project.generated.props");
+                var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
+
+                targetsPath = Path.Combine(request.RestoreOutputPath, $"{projFileName}.nuget.g.targets");
+                propsPath = Path.Combine(request.RestoreOutputPath, $"{projFileName}.nuget.g.props");
             }
 
             // Non-Msbuild projects should skip targets and treat it as success
