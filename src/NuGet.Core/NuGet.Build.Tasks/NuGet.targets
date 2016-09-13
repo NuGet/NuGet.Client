@@ -17,8 +17,9 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="NuGet.Build.Tasks.RestoreTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetProjectJsonPathTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.WriteRestoreGraphTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
-  <UsingTask TaskName="NuGet.Build.Tasks.GetTargetFramework" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetProjectReferences" AssemblyFile="$(RestoreTaskAssemblyFile)" />
+  <UsingTask TaskName="NuGet.Build.Tasks.GetPackageReferences" AssemblyFile="$(RestoreTaskAssemblyFile)" />
+  <UsingTask TaskName="NuGet.Build.Tasks.GetTargetFrameworkItems" AssemblyFile="$(RestoreTaskAssemblyFile)" />
 
   <!--
     ============================================================
@@ -112,9 +113,6 @@ Copyright (c) .NET Foundation. All rights reserved.
           TaskParameter="TargetOutputs"
           ItemName="_RestoreGraphEntry" />
     </MsBuild>
-
-    <Message Text="Restore dg file output:" Importance="low" />
-    <Message Text="@(_RestoreGraphEntry->'Project: %(ProjectName)')" Importance="low" />
   </Target>
 
   <!--
@@ -147,6 +145,175 @@ Copyright (c) .NET Foundation. All rights reserved.
       DependsOnTargets="_SplitProjectReferencesByFileExistence"
       Returns="@(_RestoreGraphEntry)">
 
+    <!-- Determine the restore output path -->
+    <PropertyGroup>
+      <RestoreOutputPath Condition=" $(RestoreOutputPath) == '' " >$(BaseIntermediateOutputPath)</RestoreOutputPath>
+    </PropertyGroup>
+
+    <ConvertToAbsolutePath Paths="$(RestoreOutputPath)">
+      <Output TaskParameter="AbsolutePaths" PropertyName="RestoreOutputAbsolutePath" />
+    </ConvertToAbsolutePath>
+
+    <PropertyGroup>
+      <RestoreProjectGuid>$([System.Guid]::NewGuid())</RestoreProjectGuid>
+      <_ProjectRestoreType>Unknown</_ProjectRestoreType>
+      <_ProjectRestoreType Condition=" '$(CurrentProjectJsonPath)' != '' ">UAP</_ProjectRestoreType>
+      <_ProjectRestoreType Condition=" '$(TargetFrameworks)' != '' ">NETCore</_ProjectRestoreType>
+    </PropertyGroup>
+
+    <!-- Get project.json path -->
+    <GetProjectJsonPathTask ProjectPath="$(MSBuildProjectFullPath)">
+      <Output TaskParameter="ProjectJsonPath" PropertyName="CurrentProjectJsonPath" />
+    </GetProjectJsonPathTask>
+
+    <!-- Write properties for the top level entry point -->
+    <ItemGroup Condition=" '$(_ProjectRestoreType)' == 'NETCore' ">
+      <_RestoreGraphEntry Include="$(RestoreProjectGuid)">
+        <Type>ProjectSpec</Type>
+        <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>
+        <ProjectPath>$(MSBuildProjectFullPath)</ProjectPath>
+        <ProjectName>$(MSBuildProjectName)</ProjectName>
+        <Sources>$(RestoreSources)</Sources>
+        <FallbackFolders>$(RestoreFallbackFolders)</FallbackFolders>
+        <PackagesPath>$(RestorePackagesPath)</PackagesPath>
+        <FallbackFolders>$(RestoreFallbackFolders)</FallbackFolders>
+        <OutputType>$(_ProjectRestoreType)</OutputType>
+        <OutputPath>$(RestoreOutputAbsolutePath)</OutputPath>
+        <TargetFrameworks>$(TargetFrameworks)</TargetFrameworks>
+      </_RestoreGraphEntry>
+    </ItemGroup>
+
+    <!-- Use project.json -->
+    <ItemGroup Condition=" '$(_ProjectRestoreType)' != 'UAP' ">
+      <_RestoreGraphEntry Include="$(RestoreProjectGuid)">
+        <Type>ProjectSpec</Type>
+        <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>
+        <ProjectPath>$(MSBuildProjectFullPath)</ProjectPath>
+        <ProjectName>$(MSBuildProjectName)</ProjectName>
+        <Sources>$(RestoreSources)</Sources>
+        <FallbackFolders>$(RestoreFallbackFolders)</FallbackFolders>
+        <PackagesPath>$(RestorePackagesPath)</PackagesPath>
+        <FallbackFolders>$(RestoreFallbackFolders)</FallbackFolders>
+        <ProjectJsonPath>$(CurrentProjectJsonPath)</ProjectJsonPath>
+        <OutputType>$(_ProjectRestoreType)</OutputType>
+      </_RestoreGraphEntry>
+    </ItemGroup>
+
+    <!-- Non-NuGet type -->
+    <ItemGroup Condition=" '$(_ProjectRestoreType)' != 'Unknown' ">
+      <_RestoreGraphEntry Include="$(RestoreProjectGuid)">
+        <Type>ProjectSpec</Type>
+        <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>
+        <ProjectPath>$(MSBuildProjectFullPath)</ProjectPath>
+        <ProjectName>$(MSBuildProjectName)</ProjectName>
+        <OutputType>$(_ProjectRestoreType)</OutputType>
+        <TargetFrameworks>$(TargetFrameworkMoniker)</TargetFrameworks>
+      </_RestoreGraphEntry>
+    </ItemGroup>
+
+    <!-- Get dependencies -->
+    <CallTarget Targets="_GenerateRestoreGraphWalkPerFramework" Condition=" '$(_ProjectRestoreType)' != 'NETCore' " />
+    <CallTarget Targets="_GenerateRestoreProjectReferencePaths" Condition=" '$(_ProjectRestoreType)' != 'NETCore' " />
+
+    <!-- Loop on target frameworks -->
+    <GetTargetFrameworkItems
+      Condition=" '$(_ProjectRestoreType)' == 'NETCore' "
+      TargetFrameworks="$(TargetFrameworks)">
+      <Output
+        TaskParameter="TargetFrameworksOutput"
+        ItemName="_RestoreTargetFrameworksOutput" />
+    </GetTargetFrameworkItems>
+
+    <!-- Get project and package references  -->
+    <MSBuild
+      Condition=" '$(_ProjectRestoreType)' == 'NETCore' "
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="_GenerateRestoreGraphWalkPerFramework"
+      Properties="TargetFramework=%(_RestoreTargetFrameworksOutput.Identity)
+              %(_MSBuildProjectReferenceExistent.SetConfiguration);
+              %(_MSBuildProjectReferenceExistent.SetPlatform);
+              BuildProjectReferences=false;"
+      RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="_RestoreGraphEntry" />
+    </MSBuild>
+
+    <!-- Get complete set of project references  -->
+    <MSBuild
+      Condition=" '$(_ProjectRestoreType)' == 'NETCore' "
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="_GenerateRestoreProjectReferencePaths"
+      Properties="TargetFramework=%(_RestoreTargetFrameworksOutput.Identity)
+              %(_MSBuildProjectReferenceExistent.SetConfiguration);
+              %(_MSBuildProjectReferenceExistent.SetPlatform);
+              BuildProjectReferences=false;"
+      RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="ValidProjectInputForRestoreGraph" />
+    </MSBuild>
+
+    <!-- Recurse into referenced projects -->
+    <MSBuild
+      Projects="@(ValidProjectInputForRestoreGraph)"
+      Targets="_GenerateRestoreGraphWalk"
+      Properties="%(_MSBuildProjectReferenceExistent.SetConfiguration);
+            %(_MSBuildProjectReferenceExistent.SetPlatform);
+            BuildProjectReferences=false"
+      RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="_RestoreGraphEntry" />
+    </MSBuild>
+  </Target>
+
+  <!--
+    ============================================================
+    _GenerateRestoreGraphWalkPerFramework
+    Walk dependencies using $(TargetFramework)
+    ============================================================
+  -->
+  <Target Name="_GenerateRestoreGraphWalkPerFramework"
+    DependsOnTargets="_GenerateRestoreProjectReferencePaths"
+    Returns="@(_RestoreGraphEntry)">
+
+    <!-- Write out project references -->
+    <GetProjectReferences
+      ProjectUniqueName="$(MSBuildProjectFullPath)"
+      ProjectReferences="@(ValidProjectInputForRestoreGraph)"
+      TargetFrameworks="$(TargetFramework)">
+
+      <Output
+        TaskParameter="RestoreGraphItems"
+        ItemName="_RestoreGraphEntry" />
+    </GetProjectReferences>
+
+    <!-- Write out project references -->
+    <GetPackageReferences
+      ProjectUniqueName="$(MSBuildProjectFullPath)"
+      PackageReferences="@(PackageReference)"
+      TargetFrameworks="$(TargetFramework)">
+
+      <Output
+        TaskParameter="RestoreGraphItems"
+        ItemName="_RestoreGraphEntry" />
+    </GetPackageReferences>
+  </Target>
+
+  <!--
+    ============================================================
+    _GenerateRestoreProjectReferencePaths
+    Get absolute paths for all project references.
+    ============================================================
+  -->
+  <Target Name="_GenerateRestoreProjectReferencePaths"
+    DependsOnTargets="_SplitProjectReferencesByFileExistence"
+    Returns="@(ValidProjectInputForRestoreGraph)">
+
     <ItemGroup>
       <!-- Filter out project references that specify ReferenceOutputAssembly=false -->
       <ValidProjectInputForRestoreGraph Include="@(ProjectReference)"
@@ -160,79 +327,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <RestoreGraphProjectFullPathForOutput Include="$(RestoreGraphAbsoluteProjectPaths)" />
     </ItemGroup>
-
-    <!-- Determine the restore output path -->
-    <PropertyGroup>
-      <RestoreOutputPath Condition=" $(RestoreOutputPath) == '' " >$(BaseIntermediateOutputPath)</RestoreOutputPath>
-    </PropertyGroup>
-
-    <ConvertToAbsolutePath Paths="$(RestoreOutputPath)">
-      <Output TaskParameter="AbsolutePaths" PropertyName="RestoreOutputAbsolutePath" />
-    </ConvertToAbsolutePath>
-
-    <PropertyGroup>
-      <RestoreProjectGuid>$([System.Guid]::NewGuid())</RestoreProjectGuid>
-    </PropertyGroup>
-
-    <!-- Get project.json path -->
-    <GetProjectJsonPathTask ProjectPath="$(MSBuildProjectFullPath)">
-      <Output TaskParameter="ProjectJsonPath" PropertyName="CurrentProjectJsonPath" />
-    </GetProjectJsonPathTask>
-
-    <!-- Write properties for the top level entry point -->
-    <ItemGroup Condition=" '$(CurrentProjectJsonPath)' == '' ">
-      <_RestoreGraphEntry Include="$(RestoreProjectGuid)">
-        <Type>ProjectSpec</Type>
-        <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>
-        <ProjectPath>$(MSBuildProjectFullPath)</ProjectPath>
-        <ProjectName>$(MSBuildProjectName)</ProjectName>
-        <Sources>$(RestoreSources)</Sources>
-        <PackagesPath>$(RestorePackagesPath)</PackagesPath>
-        <FallbackFolders>$(RestoreFallbackFolders)</FallbackFolders>
-        <OutputType>netcore</OutputType>
-        <OutputPath>$(RestoreOutputAbsolutePath)</OutputPath>
-      </_RestoreGraphEntry>
-    </ItemGroup>
-
-    <!-- Use project.json -->
-    <ItemGroup Condition=" '$(CurrentProjectJsonPath)' != '' ">
-      <_RestoreGraphEntry Include="$(RestoreProjectGuid)">
-        <Type>ProjectSpec</Type>
-        <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>
-        <ProjectPath>$(MSBuildProjectFullPath)</ProjectPath>
-        <ProjectName>$(MSBuildProjectName)</ProjectName>
-        <Sources>$(RestoreSources)</Sources>
-        <PackagesPath>$(RestorePackagesPath)</PackagesPath>
-        <FallbackFolders>$(RestoreFallbackFolders)</FallbackFolders>
-        <ProjectJsonPath>$(CurrentProjectJsonPath)</ProjectJsonPath>
-        <OutputType>uap</OutputType>
-      </_RestoreGraphEntry>
-    </ItemGroup>
-
-    <!-- Write out project references -->
-    <GetProjectReferences
-      ProjectUniqueName="$(MSBuildProjectFullPath)"
-      ProjectReferences="@(ValidProjectInputForRestoreGraph)">
-
-      <Output
-        TaskParameter="RestoreGraphItems"
-        ItemName="_RestoreGraphEntry" />
-    </GetProjectReferences>
-
-    <!-- Recurse into referenced projects -->
-    <MSBuild
-      Projects="@(ValidProjectInputForRestoreGraph)"
-      Targets="_GenerateRestoreGraphWalk"
-      Properties="
-            %(_MSBuildProjectReferenceExistent.SetConfiguration);
-            %(_MSBuildProjectReferenceExistent.SetPlatform);
-            BuildProjectReferences=false"
-      RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
-
-      <Output
-          TaskParameter="TargetOutputs"
-          ItemName="_RestoreGraphEntry" />
-    </MSBuild>
   </Target>
 
   <!--
