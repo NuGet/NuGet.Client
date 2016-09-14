@@ -33,7 +33,7 @@ namespace NuGet.Test.Utility
             SolutionRoot = Path.Combine(WorkingDirectory.Path, "solution");
             UserPackagesFolder = Path.Combine(WorkingDirectory.Path, "globalPackages");
             PackagesV2 = Path.Combine(SolutionRoot, "packages");
-            NuGetConfig = Path.Combine(SolutionRoot, "NuGet.Config");
+            NuGetConfig = Path.Combine(WorkingDirectory, "NuGet.Config");
             PackageSource = Path.Combine(WorkingDirectory.Path, "source");
             FallbackFolder = Path.Combine(WorkingDirectory.Path, "fallback");
 
@@ -41,6 +41,8 @@ namespace NuGet.Test.Utility
             Directory.CreateDirectory(UserPackagesFolder);
             Directory.CreateDirectory(PackageSource);
             Directory.CreateDirectory(FallbackFolder);
+
+            CreateNuGetConfig();
         }
 
         private void CreateNuGetConfig()
@@ -78,8 +80,8 @@ namespace NuGet.Test.Utility
             var fallbackFolders = new XElement(XName.Get("fallbackPackageFolders"));
             configuration.Add(fallbackFolders);
             var fallbackEntry = new XElement(XName.Get("add"));
-            sourceEntry.Add(new XAttribute(XName.Get("key"), "shared"));
-            sourceEntry.Add(new XAttribute(XName.Get("value"), FallbackFolder));
+            fallbackEntry.Add(new XAttribute(XName.Get("key"), "shared"));
+            fallbackEntry.Add(new XAttribute(XName.Get("value"), FallbackFolder));
             fallbackFolders.Add(fallbackEntry);
 
             File.WriteAllText(NuGetConfig, doc.ToString());

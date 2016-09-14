@@ -154,17 +154,17 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="AbsolutePaths" PropertyName="RestoreOutputAbsolutePath" />
     </ConvertToAbsolutePath>
 
+    <!-- Get project.json path -->
+    <GetProjectJsonPathTask ProjectPath="$(MSBuildProjectFullPath)">
+      <Output TaskParameter="ProjectJsonPath" PropertyName="CurrentProjectJsonPath" />
+    </GetProjectJsonPathTask>
+
     <PropertyGroup>
       <RestoreProjectGuid>$([System.Guid]::NewGuid())</RestoreProjectGuid>
       <_ProjectRestoreType>Unknown</_ProjectRestoreType>
       <_ProjectRestoreType Condition=" '$(CurrentProjectJsonPath)' != '' ">UAP</_ProjectRestoreType>
       <_ProjectRestoreType Condition=" '$(TargetFrameworks)' != '' ">NETCore</_ProjectRestoreType>
     </PropertyGroup>
-
-    <!-- Get project.json path -->
-    <GetProjectJsonPathTask ProjectPath="$(MSBuildProjectFullPath)">
-      <Output TaskParameter="ProjectJsonPath" PropertyName="CurrentProjectJsonPath" />
-    </GetProjectJsonPathTask>
 
     <!-- Write properties for the top level entry point -->
     <ItemGroup Condition=" '$(_ProjectRestoreType)' == 'NETCore' ">
@@ -184,7 +184,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <!-- Use project.json -->
-    <ItemGroup Condition=" '$(_ProjectRestoreType)' != 'UAP' ">
+    <ItemGroup Condition=" '$(_ProjectRestoreType)' == 'UAP' ">
       <_RestoreGraphEntry Include="$(RestoreProjectGuid)">
         <Type>ProjectSpec</Type>
         <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>
@@ -200,7 +200,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <!-- Non-NuGet type -->
-    <ItemGroup Condition=" '$(_ProjectRestoreType)' != 'Unknown' ">
+    <ItemGroup Condition=" '$(_ProjectRestoreType)' == 'Unknown' ">
       <_RestoreGraphEntry Include="$(RestoreProjectGuid)">
         <Type>ProjectSpec</Type>
         <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>

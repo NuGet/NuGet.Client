@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
@@ -31,9 +32,24 @@ namespace NuGet.Commands.Test
                     Version = "1.0.0"
                 };
 
+                var projectJson = JObject.Parse(@"{
+                                                    'dependencies': {
+                                                    },
+                                                    'frameworks': {
+                                                        'net45': { }
+                                                  }
+                                               }");
+
+                var projectB = SimpleTestProjectContext.CreateUAP(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"),
+                    projectJson);
+
                 projectA.AddPackageToAllFrameworks(packageX);
 
                 solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
                 solution.Create(pathContext.SolutionRoot);
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3(
@@ -44,6 +60,9 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.True(File.Exists(Path.Combine(pathContext.SolutionRoot, "solution.sln")));
                 Assert.True(File.Exists(Path.Combine(pathContext.SolutionRoot, "a", "a.csproj")));
+                Assert.True(File.Exists(Path.Combine(pathContext.WorkingDirectory, "NuGet.Config")));
+                Assert.True(File.Exists(Path.Combine(pathContext.SolutionRoot, "b", "b.csproj")));
+                Assert.True(File.Exists(Path.Combine(pathContext.SolutionRoot, "b", "project.json")));
             }
         }
     }
