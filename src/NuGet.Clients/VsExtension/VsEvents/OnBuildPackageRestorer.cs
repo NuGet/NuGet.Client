@@ -23,6 +23,8 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
+using NuGet.ProjectModel;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using Task = System.Threading.Tasks.Task;
 
@@ -227,12 +229,16 @@ namespace NuGetVSExtension
                             isSolutionAvailable);
                     }
 
-                    // Call DNU to restore for BuildIntegratedProjectSystem projects
                     var buildEnabledProjects = projects.OfType<BuildIntegratedProjectSystem>();
-
                     await RestoreBuildIntegratedProjectsAsync(
                         solutionDirectory,
                         buildEnabledProjects.ToList(),
+                        forceRestore,
+                        isSolutionAvailable);
+
+                    var packageSpecProjects = projects.OfType<MSBuildShellOutNuGetProject>();
+                    await RestorePackageSpecProjectsAsync(
+                        packageSpecProjects,
                         forceRestore,
                         isSolutionAvailable);
 
@@ -242,6 +248,90 @@ namespace NuGetVSExtension
             {
                 PackageRestoreManager.PackageRestoredEvent -= PackageRestoreManager_PackageRestored;
                 PackageRestoreManager.PackageRestoreFailedEvent -= PackageRestoreManager_PackageRestoreFailedEvent;
+            }
+        }
+
+        private async Task RestorePackageSpecProjectsAsync(
+            IEnumerable<MSBuildShellOutNuGetProject> projects,
+            bool forceRestore,
+            bool isSolutionAvailable)
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            if (!projects.Any() || !IsConsentGranted(Settings))
+            {
+                return;
+            }
+
+            var waitDialogFactory
+                = ServiceLocator.GetGlobalService<SVsThreadedWaitDialogFactory,
+                    IVsThreadedWaitDialogFactory>();
+
+            // NOTE: During restore for build integrated projects,
+            //       We might show the dialog even if there are no packages to restore
+            // When both currentStep and totalSteps are 0, we get a marquee on the dialog
+            using (var threadedWaitDialogSession = waitDialogFactory.StartWaitDialog(
+                waitCaption: Resources.DialogTitle,
+                initialProgress: new ThreadedWaitDialogProgressData(Resources.RestoringPackages,
+                    string.Empty,
+                    string.Empty,
+                    isCancelable: true,
+                    currentStep: 0,
+                    totalSteps: 0)))
+            {
+                // Display the restore opt out message if it has not been shown yet
+                DisplayOptOutMessage();
+
+                Token = threadedWaitDialogSession.UserCancellationToken;
+                ThreadedWaitDialogProgress = threadedWaitDialogSession.Progress;
+                
+                // Switch back to the background thread for the restore work.
+                await TaskScheduler.Current;
+
+                var packageSources = SourceRepositoryProvider
+                    .GetRepositories()
+                    .Select(r => r.PackageSource)
+                    .ToList();
+
+                // Build the dependency graph spec
+                var dgSpec = new DependencyGraphSpec();
+                foreach (var project in projects)
+                {
+                    var packageSpec = project.GetPackageSpecForRestore();
+
+                    dgSpec.AddProject(packageSpec);
+                    dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
+                }
+
+                // Restore the dependency graph
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var pathContext = NuGetPathContext.Create(Settings);
+                    var providers = new List<IPreLoadedRestoreRequestProvider>();
+                    var providerCache = new RestoreCommandProvidersCache();
+                    providers.Add(new DependencyGraphSpecRequestProvider(providerCache, dgSpec));
+
+                    var sourceProvider = new CachingSourceProvider(new PackageSourceProvider(Settings));
+
+                    var restoreContext = new RestoreArgs
+                    {
+                        CacheContext = cacheContext,
+                        LockFileVersion = LockFileFormat.Version,
+                        ConfigFile = null,
+                        DisableParallel = false,
+                        GlobalPackagesFolder = pathContext.UserPackageFolder,
+                        Log = this,
+                        MachineWideSettings = new XPlatMachineWideSetting(),
+                        PreLoadedRequestProviders = providers,
+                        CachingSourceProvider = sourceProvider,
+                        Sources = packageSources.Select(p => p.Source).ToList()
+                    };
+
+                    var restoreSummaries = await RestoreRunner.Run(restoreContext);
+
+                    // Summary
+                    RestoreSummary.Log(this, restoreSummaries);
+                }
             }
         }
 

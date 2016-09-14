@@ -42,7 +42,6 @@ Microsoft.VisualStudio.Services.Client.dll
 Microsoft.VisualStudio.Services.Common.dll
 Microsoft.VisualStudio.Services.WebApi.dll
 Microsoft.WindowsAzure.Configuration.dll
-Newtonsoft.Json.dll
 System.dll
 System.IdentityModel.dll
 System.IdentityModel.Tokens.Jwt.dll
