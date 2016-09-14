@@ -77,8 +77,10 @@ namespace NuGetVSExtension
         }
 
         // The export from TeamExplorer uses a named contract, so we need to import this one separately.
-        [Import("VisualStudioAccountProvider", typeof(IVsCredentialProvider), AllowDefault = true)]
-        public IVsCredentialProvider VisualStudioAccountProvider { get; set; }
+        // To avoid conflicts with any third-party providers exported using the same contract name,
+        // an ImportMany is used instead of a single Import.
+        [ImportMany("VisualStudioAccountProvider", typeof(IVsCredentialProvider))]
+        public IEnumerable<Lazy<IVsCredentialProvider>> VisualStudioAccountProviders { get; set; }
 
         // This will import any third-party exports, excluding those with a named contract.
         [ImportMany(typeof(IVsCredentialProvider))]
@@ -95,31 +97,8 @@ namespace NuGetVSExtension
 
             _initializer();
 
-            if (VisualStudioAccountProvider != null)
-            {
-                results.Add(new VsCredentialProviderAdapter(VisualStudioAccountProvider));
-            }
-
-            if (ImportedProviders != null)
-            {
-                foreach (var importedProviderFactory in ImportedProviders)
-                {
-                    try
-                    {
-                        var importedProvider = importedProviderFactory.Value;
-                        results.Add(new VsCredentialProviderAdapter(importedProvider));
-                    }
-                    catch (Exception exception)
-                    {
-                        var targetAssemblyPath = exception.TargetSite.DeclaringType.Assembly.Location;
-
-                        _errorDelegate(
-                            exception,
-                            string.Format(Resources.CredentialProviderFailed_ImportedProvider, targetAssemblyPath)
-                            );
-                    }
-                }
-            }
+            TryImportCredentialProviders(results, VisualStudioAccountProviders);
+            TryImportCredentialProviders(results, ImportedProviders);
 
             // Dev15 + will provide a credential provider for VSTS.
             // If we are in Dev14, and no imported VSTS provider is found,
@@ -144,6 +123,32 @@ namespace NuGetVSExtension
             results.Sort((a, b) => a.GetType().FullName.CompareTo(b.GetType().FullName));
 
             return results;
+        }
+
+        private void TryImportCredentialProviders(
+            List<ICredentialProvider> importedProviders, 
+            IEnumerable<Lazy<IVsCredentialProvider>> credentialProviders)
+        {
+            if (credentialProviders != null)
+            {
+                foreach (var credentialProviderFactory in credentialProviders)
+                {
+                    try
+                    {
+                        var credentialProvider = credentialProviderFactory.Value;
+                        importedProviders.Add(new VsCredentialProviderAdapter(credentialProvider));
+                    }
+                    catch (Exception exception)
+                    {
+                        var targetAssemblyPath = exception.TargetSite.DeclaringType.Assembly.Location;
+
+                        _errorDelegate(
+                            exception,
+                            string.Format(Resources.CredentialProviderFailed_ImportedProvider, targetAssemblyPath)
+                            );
+                    }
+                }
+            }
         }
 
         private static bool HasImportedVstsProvider(IEnumerable<ICredentialProvider> results)

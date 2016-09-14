@@ -44,6 +44,14 @@ namespace NuGet.VsExtension.Test
         }
     }
 
+    internal class ThirdPartyCredentialProvider : IVsCredentialProvider
+    {
+        public Task<ICredentials> GetCredentialsAsync(Uri uri, IWebProxy proxy, bool isProxyRequest, bool isRetry, bool nonInteractive, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public class VsCredentialProviderImporterTests
     {
         private readonly StringBuilder _testErrorOutput = new StringBuilder();
@@ -111,12 +119,77 @@ namespace NuGet.VsExtension.Test
             _mockDte.Setup(x => x.Version).Returns("14.0.247200.00");
             var importer = GetTestableImporter();
             var testableProvider = new TeamSystem.NuGetCredentialProvider.VisualStudioAccountProvider();
-            importer.VisualStudioAccountProvider = testableProvider;
+            importer.VisualStudioAccountProviders = new List<Lazy<IVsCredentialProvider>>
+            {
+                new Lazy<IVsCredentialProvider>(() => testableProvider)
+            };
 
             // Act
             var results = importer.GetProviders();
 
             // Assert
+            Assert.DoesNotContain(_visualStudioAccountProvider, results);
+        }
+        
+        [Fact]
+        public void WhenMultipleProvidersMatchingVstsContractFound_ThenInsertAllAndDoNotInsertBuiltInProvider()
+        {
+            // Arrange
+            // This simulates the fact that a third-party credential provider could export using the same 
+            // contract name as the VisualStudioAccountProvider from TeamExplorer.
+            // When this happens, both should just happily load.
+            _mockDte.Setup(x => x.Version).Returns("14.0.247200.00");
+            var importer = GetTestableImporter();
+            var testableProvider = new TeamSystem.NuGetCredentialProvider.VisualStudioAccountProvider();
+            importer.VisualStudioAccountProviders = new List<Lazy<IVsCredentialProvider>>
+            {
+                new Lazy<IVsCredentialProvider>(() => testableProvider),
+                new Lazy<IVsCredentialProvider>(() => new NonFailingCredentialProvider())
+            };
+
+            // Act
+            var results = importer.GetProviders();
+
+            // Assert
+            // We expect 2 providers:
+            // The non-failing provider, and the built-in provider on dev14
+            Assert.Equal(2, results.Count);
+            Assert.DoesNotContain(_visualStudioAccountProvider, results);
+        }
+
+        [Fact]
+        public void ImportsAllFoundProviders()
+        {
+            // Arrange
+            // This test verifies the scenario where multiple credential providers are found, both third-party,
+            // as well as matching the contract name of the "VisualStudioAccountProvider".
+            // All of them should just happily import.
+            _mockDte.Setup(x => x.Version).Returns("14.0.247200.00");
+            var importer = GetTestableImporter();
+            var testableProvider = new TeamSystem.NuGetCredentialProvider.VisualStudioAccountProvider();
+            importer.VisualStudioAccountProviders = new List<Lazy<IVsCredentialProvider>>
+            {
+                new Lazy<IVsCredentialProvider>(() => testableProvider),
+                new Lazy<IVsCredentialProvider>(() => new NonFailingCredentialProvider()),
+                // This one will not be imported
+                new Lazy<IVsCredentialProvider>(() => new FailingCredentialProvider())
+            };
+            importer.ImportedProviders = new List<Lazy<IVsCredentialProvider>>
+            {
+                new Lazy<IVsCredentialProvider>(() => new ThirdPartyCredentialProvider()),
+                // This one will not be imported
+                new Lazy<IVsCredentialProvider>(() => new FailingCredentialProvider())
+            };
+
+            // Act
+            var results = importer.GetProviders();
+
+            // Assert
+            // We expect 3 providers:
+            // The 2 proviers matching the "VisualStudioAccountProvider" contract name,
+            // and the "third party" provider.
+            // The "failing" credential providers will not be imported, as they are failing :)
+            Assert.Equal(3, results.Count);
             Assert.DoesNotContain(_visualStudioAccountProvider, results);
         }
 
