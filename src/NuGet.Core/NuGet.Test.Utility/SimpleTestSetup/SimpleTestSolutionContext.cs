@@ -41,6 +41,8 @@ namespace NuGet.Test.Utility
 
         public void Save(string path)
         {
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+
             File.WriteAllText(path, GetContent().ToString());
         }
 
@@ -69,20 +71,7 @@ namespace NuGet.Test.Utility
         /// </summary>
         public void Create(string solutionFolder)
         {
-            Directory.CreateDirectory(solutionFolder);
-
-            foreach (var project in GetAllProjects())
-            {
-                var projectDir = Path.Combine(solutionFolder, project.ProjectName);
-                var projectPath = Path.Combine(projectDir, $"{project.ProjectName}.csproj");
-                var projectObjDir = Path.Combine(projectDir, "obj");
-
-                Directory.CreateDirectory(projectDir);
-                Directory.CreateDirectory(projectObjDir);
-
-                project.ProjectPath = projectPath;
-                project.OutputPath = projectObjDir;
-            }
+            Save();
 
             foreach (var project in GetAllProjects())
             {
@@ -91,6 +80,23 @@ namespace NuGet.Test.Utility
             }
         }
 
+        /// <summary>
+        /// Create all things needed for the solution
+        /// </summary>
+        public void Create(string solutionFolder, string repositoryPath)
+        {
+            Save();
+
+            foreach (var project in GetAllProjects())
+            {
+                // only save after updating everything
+                project.Save();
+            }
+        }
+
+        /// <summary>
+        /// All projects used in the solution
+        /// </summary>
         public HashSet<SimpleTestProjectContext> GetAllProjects()
         {
             var projects = new HashSet<SimpleTestProjectContext>();
@@ -102,7 +108,7 @@ namespace NuGet.Test.Utility
 
                 if (projects.Add(project))
                 {
-                    foreach (var dep in project.Frameworks.SelectMany(f => f.ProjectReferences))
+                    foreach (var dep in project.AllProjectReferences)
                     {
                         toWalk.Push(dep);
                     }
@@ -112,10 +118,13 @@ namespace NuGet.Test.Utility
             return projects;
         }
 
+        /// <summary>
+        /// All packages used in the solution
+        /// </summary>
         public HashSet<SimpleTestPackageContext> GetAllPackages()
         {
             var packages = new HashSet<SimpleTestPackageContext>();
-            var toWalk = new Stack<SimpleTestPackageContext>(GetAllProjects().SelectMany(p => p.Frameworks).SelectMany(f => f.PackageReferences));
+            var toWalk = new Stack<SimpleTestPackageContext>(GetAllProjects().SelectMany(p => p.AllPackageDependencies));
 
             while (toWalk.Count > 0)
             {

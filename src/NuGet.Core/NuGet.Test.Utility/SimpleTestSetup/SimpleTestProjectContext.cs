@@ -7,6 +7,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
+using Newtonsoft.Json.Linq;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
@@ -17,8 +19,22 @@ namespace NuGet.Test.Utility
 {
     public class SimpleTestProjectContext
     {
-        public SimpleTestProjectContext()
+        public SimpleTestProjectContext(string projectName, RestoreOutputType type, string solutionRoot)
         {
+            if (string.IsNullOrWhiteSpace(projectName))
+            {
+                throw new ArgumentException(nameof(projectName));
+            }
+
+            if (string.IsNullOrWhiteSpace(solutionRoot))
+            {
+                throw new ArgumentException(nameof(solutionRoot));
+            }
+
+            ProjectName = projectName;
+            ProjectPath = Path.Combine(solutionRoot, projectName, $"{projectName}.csproj");
+            OutputPath = Path.Combine(solutionRoot, projectName, "obj");
+            Type = type;
         }
 
         public string Version { get; set; } = "1.0.0";
@@ -28,12 +44,12 @@ namespace NuGet.Test.Utility
         /// <summary>
         /// MSBuild project name
         /// </summary>
-        public string ProjectName { get; set; } = "projectA";
+        public string ProjectName { get; set; }
 
         /// <summary>
         /// Project file full path.
         /// </summary>
-        public string ProjectPath { get; set; } = Path.Combine(Directory.GetCurrentDirectory(), $"projectA.csproj");
+        public string ProjectPath { get; set; }
 
         /// <summary>
         /// Base intermediate directory path
@@ -48,7 +64,12 @@ namespace NuGet.Test.Utility
         /// <summary>
         /// Project type
         /// </summary>
-        public RestoreOutputType Type { get; set; } = RestoreOutputType.NETCore;
+        public RestoreOutputType Type { get; set; }
+
+        /// <summary>
+        /// Project.json file
+        /// </summary>
+        public JObject ProjectJson { get; set; }
 
         /// <summary>
         /// Include attributes for the parent project referencing this one.
@@ -65,6 +86,63 @@ namespace NuGet.Test.Utility
         /// </summary>
         public string PrivateAssets { get; set; } = string.Empty;
 
+        /// <summary>
+        /// project.lock.json or project.assets.json
+        /// </summary>
+        public string AssetsFileOutputPath
+        {
+            get
+            {
+                switch (Type)
+                {
+                    case RestoreOutputType.NETCore:
+                        return Path.Combine(OutputPath, "project.assets.json");
+                    case RestoreOutputType.UAP:
+                        return Path.Combine(Path.GetDirectoryName(ProjectPath), ProjectJsonPathUtilities.GetProjectLockFileNameWithProjectName(Path.GetFileNameWithoutExtension(ProjectPath)));
+                    default:
+                        return null;
+                }
+            }
+        }
+
+        public LockFile AssetsFile
+        {
+            get
+            {
+                var path = AssetsFileOutputPath;
+
+                if (File.Exists(path))
+                {
+                    var format = new LockFileFormat();
+                    return format.Read(path);
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Package references from all TFMs
+        /// </summary>
+        public List<SimpleTestPackageContext> AllPackageDependencies
+        {
+            get
+            {
+                return Frameworks.SelectMany(f => f.PackageReferences).Distinct().ToList();
+            }
+        }
+
+        /// <summary>
+        /// Project references from all TFMs
+        /// </summary>
+        public List<SimpleTestProjectContext> AllProjectReferences
+        {
+            get
+            {
+                return Frameworks.SelectMany(f => f.ProjectReferences).Distinct().ToList();
+            }
+        }
+
         public void Save()
         {
             Save(ProjectPath);
@@ -72,14 +150,52 @@ namespace NuGet.Test.Utility
 
         public void Save(string path)
         {
+            var projectFile = new FileInfo(path);
+            projectFile.Directory.Create();
+
             var xml = GetXML();
-            xml.Save(path);
+
+            File.WriteAllText(path, xml.ToString());
+
+            if (ProjectJson != null)
+            {
+                var jsonPath = ProjectJsonPathUtilities.GetProjectConfigPath(
+                    projectFile.Directory.FullName,
+                    Path.GetFileNameWithoutExtension(ProjectPath));
+
+                File.WriteAllText(jsonPath, ProjectJson.ToString());
+            }
         }
 
-        public static SimpleTestProjectContext CreateForFrameworks(params NuGetFramework[] frameworks)
+        public static SimpleTestProjectContext CreateNETCore(
+            string projectName,
+            string solutionRoot,
+            params NuGetFramework[] frameworks)
         {
-            var context = new SimpleTestProjectContext();
+            var context = new SimpleTestProjectContext(projectName, RestoreOutputType.NETCore, solutionRoot);
             context.Frameworks.AddRange(frameworks.Select(e => new SimpleTestProjectFrameworkContext(e)));
+            return context;
+        }
+
+        public static SimpleTestProjectContext CreateNonNuGet(
+            string projectName,
+            string solutionRoot,
+            NuGetFramework framework)
+        {
+            var context = new SimpleTestProjectContext(projectName, RestoreOutputType.Unknown, solutionRoot);
+            context.Frameworks.Add(new SimpleTestProjectFrameworkContext(framework));
+            return context;
+        }
+
+        public static SimpleTestProjectContext CreateUAP(
+            string projectName,
+            string solutionRoot,
+            NuGetFramework framework,
+            JObject projectJson)
+        {
+            var context = new SimpleTestProjectContext(projectName, RestoreOutputType.UAP, solutionRoot);
+            context.Frameworks.Add(new SimpleTestProjectFrameworkContext(framework));
+            context.ProjectJson = projectJson;
             return context;
         }
 

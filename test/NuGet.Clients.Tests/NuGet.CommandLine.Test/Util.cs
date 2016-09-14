@@ -926,51 +926,6 @@ EndProject";
                  </Project>".Replace("$NAME$", projectName);
         }
 
-        /// <summary>
-        /// Create a NETCore project for net46 and netstandard1.6
-        /// </summary>
-        public static string GetNETCoreCSProjXML(string projectName)
-        {
-            return $@"<?xml version=""1.0"" encoding=""utf-8""?>
-                <Project ToolsVersion=""14.0"" DefaultTargets=""Build"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-                  <Import Project=""$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"" Condition=""Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"" />
-                  <PropertyGroup>
-                    <VersionPrefix>1.0.0</VersionPrefix>
-                    <DebugType>portable</DebugType>
-                    <TargetFrameworks>netstandard16;net46</TargetFrameworks>
-                  </PropertyGroup>
-                  <PropertyGroup>
-                    <Configuration Condition="" '$(Configuration)' == '' "">Debug</Configuration>
-                    <Platform Condition="" '$(Platform)' == '' "">AnyCPU</Platform>
-                    <ProjectGuid>29b6f645-ae2a-4653-a142-d0de9341adba</ProjectGuid>
-                    <OutputType>Library</OutputType>
-                    <AppDesignerFolder>Properties</AppDesignerFolder>
-                    <RootNamespace>{projectName}</RootNamespace>
-                    <AssemblyName>{projectName}</AssemblyName>
-                    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
-                    <FileAlignment>512</FileAlignment>
-                    <DebugSymbols>true</DebugSymbols>
-                    <DebugType>full</DebugType>
-                    <Optimize>false</Optimize>
-                    <OutputPath>bin\Debug\</OutputPath>
-                    <DefineConstants>DEBUG;TRACE</DefineConstants>
-                    <ErrorReport>prompt</ErrorReport>
-                    <WarningLevel>4</WarningLevel>
-                  </PropertyGroup>
-                  <ItemGroup>
-                    <Reference Include=""System""/>
-                    <Reference Include=""System.Core""/>
-                    <Reference Include=""System.Xml.Linq""/>
-                    <Reference Include=""System.Data.DataSetExtensions""/>
-                    <Reference Include=""Microsoft.CSharp""/>
-                    <Reference Include=""System.Data""/>
-                    <Reference Include=""System.Net.Http""/>
-                    <Reference Include=""System.Xml""/>
-                  </ItemGroup>
-                  <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
-                 </Project>";
-        }
-
         public static void ClearWebCache()
         {
             var nugetexe = Util.GetNuGetExePath();
