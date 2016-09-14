@@ -18,11 +18,11 @@ namespace NuGet.Commands.Test
             using (var pathContext = new SimpleTestPathContext())
             {
                 // Arrange && Act
-                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot.FullName);
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
 
                 var projectA = SimpleTestProjectContext.CreateNETCore(
                     "a",
-                    pathContext.SolutionRoot.FullName,
+                    pathContext.SolutionRoot,
                     NuGetFramework.Parse("net45"));
 
                 var packageX = new SimpleTestPackageContext()
@@ -34,16 +34,16 @@ namespace NuGet.Commands.Test
                 projectA.AddPackageToAllFrameworks(packageX);
 
                 solution.Projects.Add(projectA);
-                solution.Create(pathContext.SolutionRoot.FullName);
+                solution.Create(pathContext.SolutionRoot);
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3(
-                    pathContext.PackageSource.FullName,
+                    pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
 
                 // Assert
-                Assert.True(File.Exists(Path.Combine(pathContext.SolutionRoot.FullName, "solution.sln")));
-                Assert.True(File.Exists(Path.Combine(pathContext.SolutionRoot.FullName, "a", "a.csproj")));
+                Assert.True(File.Exists(Path.Combine(pathContext.SolutionRoot, "solution.sln")));
+                Assert.True(File.Exists(Path.Combine(pathContext.SolutionRoot, "a", "a.csproj")));
             }
         }
     }

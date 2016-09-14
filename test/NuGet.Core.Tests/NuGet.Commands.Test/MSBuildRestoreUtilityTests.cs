@@ -15,6 +15,87 @@ namespace NuGet.Commands.Test
     public class MSBuildRestoreUtilityTests
     {
         [Fact]
+        public void MSBuildRestoreUtility_GetPackageSpec_NetCoreVerifyIncludeFlags()
+        {
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var project1Root = Path.Combine(workingDir, "a");
+                var project1Path = Path.Combine(project1Root, "a.csproj");
+                var outputPath1 = Path.Combine(project1Root, "obj");
+
+                var items = new List<IDictionary<string, string>>();
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "a" },
+                    { "OutputType", "netcore" },
+                    { "OutputPath", outputPath1 },
+                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectPath", project1Path },
+                    { "TargetFrameworks", "net46" },
+                });
+
+                // Package references
+                // A net46 -> X
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "Dependency" },
+                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "Id", "x" },
+                    { "VersionRange", "1.0.0" },
+                    { "TargetFrameworks", "net46" },
+                    { "IncludeAssets", "build;compile" },
+                });
+
+                // A net46 -> Y
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "Dependency" },
+                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "Id", "y" },
+                    { "VersionRange", "1.0.0" },
+                    { "TargetFrameworks", "net46" },
+                    { "ExcludeAssets", "build;compile" },
+                });
+
+                // A net46 -> Z
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "Dependency" },
+                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "Id", "z" },
+                    { "VersionRange", "1.0.0" },
+                    { "TargetFrameworks", "net46" },
+                    { "PrivateAssets", "all" },
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var project1Spec = dgSpec.Projects.Single();
+                var x = project1Spec.GetTargetFramework(NuGetFramework.Parse("net46")).Dependencies.Single(e => e.Name == "x");
+                var y = project1Spec.GetTargetFramework(NuGetFramework.Parse("net46")).Dependencies.Single(e => e.Name == "y");
+                var z = project1Spec.GetTargetFramework(NuGetFramework.Parse("net46")).Dependencies.Single(e => e.Name == "z");
+
+                // Assert
+                // X
+                Assert.Equal((LibraryIncludeFlags.Build | LibraryIncludeFlags.Compile), x.IncludeType);
+                Assert.Equal((LibraryIncludeFlagUtils.DefaultSuppressParent), x.SuppressParent);
+
+                // Y
+                Assert.Equal(LibraryIncludeFlags.All & ~(LibraryIncludeFlags.Build | LibraryIncludeFlags.Compile), y.IncludeType);
+                Assert.Equal((LibraryIncludeFlagUtils.DefaultSuppressParent), y.SuppressParent);
+
+                // Z
+                Assert.Equal(LibraryIncludeFlags.All, z.IncludeType);
+                Assert.Equal(LibraryIncludeFlags.All, z.SuppressParent);
+            }
+        }
+
+        [Fact]
         public void MSBuildRestoreUtility_GetPackageSpec_NetCoreVerifyBasicMetadata()
         {
             using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())

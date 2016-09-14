@@ -202,9 +202,7 @@ namespace NuGet.Commands
                     versionRange: VersionRange.All,
                     typeConstraint: LibraryDependencyTarget.ExternalProject);
 
-                // TODO: include, suppressParent, exclude
-                dependency.IncludeType = LibraryIncludeFlags.All;
-                dependency.SuppressParent = LibraryIncludeFlagUtils.DefaultSuppressParent;
+                ApplyIncludeFlags(dependency, item);
 
                 var msbuildDependency = new ProjectRestoreReference()
                 {
@@ -264,9 +262,7 @@ namespace NuGet.Commands
                     versionRange: GetVersionRange(item),
                     typeConstraint: LibraryDependencyTarget.Package);
 
-                // TODO: include, suppressParent, exclude
-                dependency.IncludeType = LibraryIncludeFlags.All;
-                dependency.SuppressParent = LibraryIncludeFlagUtils.DefaultSuppressParent;
+                ApplyIncludeFlags(dependency, item);
 
                 var frameworks = GetFrameworks(item);
 
@@ -284,6 +280,39 @@ namespace NuGet.Commands
             }
         }
 
+        private static void ApplyIncludeFlags(LibraryDependency dependency, IMSBuildItem item)
+        {
+            var includeFlags = GetIncludeFlags(item.GetProperty("IncludeAssets"), LibraryIncludeFlags.All);
+            var excludeFlags = GetIncludeFlags(item.GetProperty("ExcludeAssets"), LibraryIncludeFlags.None);
+
+            dependency.IncludeType = includeFlags & ~excludeFlags;
+            dependency.SuppressParent = GetIncludeFlags(item.GetProperty("PrivateAssets"), LibraryIncludeFlagUtils.DefaultSuppressParent);
+        }
+
+        private static LibraryIncludeFlags GetIncludeFlags(string value, LibraryIncludeFlags defaultValue)
+        {
+            var parts = Split(value);
+
+            if (parts.Length > 0)
+            {
+                return LibraryIncludeFlagUtils.GetFlags(parts);
+            }
+            else
+            {
+                return defaultValue;
+            }
+        }
+
+        private static string[] Split(string s)
+        {
+            if (!string.IsNullOrEmpty(s))
+            {
+                return s.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            }
+
+            return new string[0];
+        }
+
         private static void AddFrameworkAssemblies(PackageSpec spec, IEnumerable<IMSBuildItem> items)
         {
             foreach (var item in GetItemByType(items, "FrameworkAssembly"))
@@ -295,9 +324,7 @@ namespace NuGet.Commands
                     versionRange: GetVersionRange(item),
                     typeConstraint: LibraryDependencyTarget.Reference);
 
-                // TODO: include, suppressParent, exclude
-                dependency.IncludeType = LibraryIncludeFlags.All;
-                dependency.SuppressParent = LibraryIncludeFlagUtils.DefaultSuppressParent;
+                ApplyIncludeFlags(dependency, item);
 
                 var frameworks = GetFrameworks(item);
 
@@ -420,6 +447,13 @@ namespace NuGet.Commands
                     NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp),
                     "nuget-dg",
                     $"{Guid.NewGuid()}.dg");
+
+                var envPath = Environment.GetEnvironmentVariable("NUGET_PERSIST_DG_PATH");
+
+                if (!string.IsNullOrEmpty(envPath))
+                {
+                    path = envPath;
+                }
 
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
 

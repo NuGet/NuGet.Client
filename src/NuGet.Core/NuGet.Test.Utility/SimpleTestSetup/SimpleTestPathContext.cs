@@ -14,33 +14,33 @@ namespace NuGet.Test.Utility
     {
         public TestDirectory WorkingDirectory { get; }
 
-        public DirectoryInfo SolutionRoot { get; }
+        public string SolutionRoot { get; }
 
-        public DirectoryInfo UserPackagesFolder { get; }
+        public string UserPackagesFolder { get; }
 
-        public DirectoryInfo PackagesV2 { get; }
+        public string PackagesV2 { get; }
 
-        public FileInfo NuGetConfig { get; }
+        public string NuGetConfig { get; }
 
-        public DirectoryInfo PackageSource { get; }
+        public string PackageSource { get; }
 
-        public DirectoryInfo FallbackFolder { get; }
+        public string FallbackFolder { get; }
 
         public SimpleTestPathContext()
         {
             WorkingDirectory = TestFileSystemUtility.CreateRandomTestFolder();
 
-            SolutionRoot = new DirectoryInfo(Path.Combine(WorkingDirectory.Path, "solution"));
-            UserPackagesFolder = new DirectoryInfo(Path.Combine(WorkingDirectory.Path, "globalPackages"));
-            PackagesV2 = new DirectoryInfo(Path.Combine(SolutionRoot.FullName, "packages"));
-            NuGetConfig = new FileInfo(Path.Combine(SolutionRoot.FullName, "NuGet.Config"));
-            PackageSource = new DirectoryInfo(Path.Combine(WorkingDirectory.Path, "source"));
-            FallbackFolder = new DirectoryInfo(Path.Combine(WorkingDirectory.Path, "fallback"));
+            SolutionRoot = Path.Combine(WorkingDirectory.Path, "solution");
+            UserPackagesFolder = Path.Combine(WorkingDirectory.Path, "globalPackages");
+            PackagesV2 = Path.Combine(SolutionRoot, "packages");
+            NuGetConfig = Path.Combine(SolutionRoot, "NuGet.Config");
+            PackageSource = Path.Combine(WorkingDirectory.Path, "source");
+            FallbackFolder = Path.Combine(WorkingDirectory.Path, "fallback");
 
-            SolutionRoot.Create();
-            UserPackagesFolder.Create();
-            PackageSource.Create();
-            FallbackFolder.Create();
+            Directory.CreateDirectory(SolutionRoot);
+            Directory.CreateDirectory(UserPackagesFolder);
+            Directory.CreateDirectory(PackageSource);
+            Directory.CreateDirectory(FallbackFolder);
         }
 
         private void CreateNuGetConfig()
@@ -54,12 +54,12 @@ namespace NuGet.Test.Utility
 
             var globalFolder = new XElement(XName.Get("add"));
             globalFolder.Add(new XAttribute(XName.Get("key"), "globalPackagesFolder"));
-            globalFolder.Add(new XAttribute(XName.Get("value"), UserPackagesFolder.FullName));
+            globalFolder.Add(new XAttribute(XName.Get("value"), UserPackagesFolder));
             config.Add(globalFolder);
 
             var solutionDir = new XElement(XName.Get("add"));
             solutionDir.Add(new XAttribute(XName.Get("key"), "repositoryPath"));
-            solutionDir.Add(new XAttribute(XName.Get("value"), PackagesV2.FullName));
+            solutionDir.Add(new XAttribute(XName.Get("value"), PackagesV2));
             config.Add(solutionDir);
 
             var packageSources = new XElement(XName.Get("packageSources"));
@@ -68,7 +68,7 @@ namespace NuGet.Test.Utility
 
             var sourceEntry = new XElement(XName.Get("add"));
             sourceEntry.Add(new XAttribute(XName.Get("key"), "source"));
-            sourceEntry.Add(new XAttribute(XName.Get("value"), PackageSource.FullName));
+            sourceEntry.Add(new XAttribute(XName.Get("value"), PackageSource));
             packageSources.Add(sourceEntry);
 
             var disabledSources = new XElement(XName.Get("disabledPackageSources"));
@@ -79,10 +79,10 @@ namespace NuGet.Test.Utility
             configuration.Add(fallbackFolders);
             var fallbackEntry = new XElement(XName.Get("add"));
             sourceEntry.Add(new XAttribute(XName.Get("key"), "shared"));
-            sourceEntry.Add(new XAttribute(XName.Get("value"), FallbackFolder.FullName));
+            sourceEntry.Add(new XAttribute(XName.Get("value"), FallbackFolder));
             fallbackFolders.Add(fallbackEntry);
 
-            File.WriteAllText(NuGetConfig.FullName, doc.ToString());
+            File.WriteAllText(NuGetConfig, doc.ToString());
         }
 
         public void Dispose()
