@@ -33,7 +33,7 @@ namespace NuGetVSExtension
         /// Dev14 in case a VSTS credential provider can not be imported.</param>
         /// <param name="errorDelegate">Used to write error messages to the user.</param>
         public VsCredentialProviderImporter(
-            DTE dte, 
+            DTE dte,
             Func<ICredentialProvider> fallbackProviderFactory,
             Action<Exception, string> errorDelegate)
             : this(dte, fallbackProviderFactory, errorDelegate, initializer: null)
@@ -49,7 +49,7 @@ namespace NuGetVSExtension
         /// <param name="errorDelegate">Used to write error messages to the user.</param>
         /// <param name="initializer">Init method used to supply MEF imports. Should only
         /// be supplied by tests.</param>
-        public VsCredentialProviderImporter (
+        public VsCredentialProviderImporter(
             DTE dte,
             Func<ICredentialProvider> fallbackProviderFactory,
             Action<Exception, string> errorDelegate,
@@ -76,6 +76,11 @@ namespace NuGetVSExtension
             _initializer = initializer ?? Initialize;
         }
 
+        // The export from TeamExplorer uses a named contract, so we need to import this one separately.
+        [Import("VisualStudioAccountProvider", typeof(IVsCredentialProvider), AllowDefault = true)]
+        public IVsCredentialProvider VisualStudioAccountProvider { get; set; }
+
+        // This will import any third-party exports, excluding those with a named contract.
         [ImportMany(typeof(IVsCredentialProvider))]
         public IEnumerable<Lazy<IVsCredentialProvider>> ImportedProviders { get; set; }
 
@@ -89,6 +94,11 @@ namespace NuGetVSExtension
             var results = new List<ICredentialProvider>();
 
             _initializer();
+
+            if (VisualStudioAccountProvider != null)
+            {
+                results.Add(new VsCredentialProviderAdapter(VisualStudioAccountProvider));
+            }
 
             if (ImportedProviders != null)
             {
@@ -129,7 +139,7 @@ namespace NuGetVSExtension
                     _errorDelegate(exception, Resources.CredentialProviderFailed_VisualStudioAccountProvider);
                 }
             }
-            
+
             // Ensure imported providers ordering is deterministic
             results.Sort((a, b) => a.GetType().FullName.CompareTo(b.GetType().FullName));
 

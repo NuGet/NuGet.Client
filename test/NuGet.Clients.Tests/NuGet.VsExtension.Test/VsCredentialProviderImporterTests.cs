@@ -111,7 +111,7 @@ namespace NuGet.VsExtension.Test
             _mockDte.Setup(x => x.Version).Returns("14.0.247200.00");
             var importer = GetTestableImporter();
             var testableProvider = new TeamSystem.NuGetCredentialProvider.VisualStudioAccountProvider();
-            importer.ImportedProviders = new List<Lazy<IVsCredentialProvider>> { new Lazy<IVsCredentialProvider>( () => testableProvider) };
+            importer.VisualStudioAccountProvider = testableProvider;
 
             // Act
             var results = importer.GetProviders();
