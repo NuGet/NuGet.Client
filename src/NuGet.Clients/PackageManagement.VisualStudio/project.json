@@ -3,6 +3,7 @@
     "NuGet.PackageManagement": "3.6.0-*",
     "NuGet.Protocol.VisualStudio": "3.6.0-*",
     "NuGet.Common": "3.6.0-*",
+    "NuGet.Build.Tasks": "3.6.0-*",
     "Microsoft.VisualStudio.Shell.Interop": "7.10.6071",
     "Microsoft.VisualStudio.Shell.Interop.10.0": "10.0.30319",
     "Microsoft.VisualStudio.Shell.Interop.11.0": "11.0.61030",

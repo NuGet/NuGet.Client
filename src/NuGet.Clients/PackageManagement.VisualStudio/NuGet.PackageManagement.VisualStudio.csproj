@@ -104,6 +104,7 @@
     <Compile Include="IDE\NuGetAndEnvDTEProjectCache.cs" />
     <Compile Include="IDE\EnvDTEProjectName.cs" />
     <Compile Include="IDE\IScriptExecutor.cs" />
+    <Compile Include="ProjectSystems\MSBuildShellOutNuGetProject.cs" />
     <Compile Include="Telemetry\ProjectTelemetryEvent.cs" />
     <Compile Include="IDE\PackageInitPS1State.cs" />
     <Compile Include="IDE\VsCommonOperations.cs" />
@@ -187,6 +188,9 @@
     <Compile Include="VSSettings.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="..\..\NuGet.Core\NuGet.Build.Tasks\NuGet.targets">
+      <Link>NuGet.targets</Link>
+    </EmbeddedResource>
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>

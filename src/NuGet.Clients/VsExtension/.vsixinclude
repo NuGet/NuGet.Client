@@ -15,6 +15,7 @@ NuGet.VisualStudio.Interop.dll
 NuGet.VisualStudio.Implementation.dll
 
 # MS delay signed assemblies
+NuGet.Build.Tasks.dll
 NuGet.Client.dll
 NuGet.Commands.dll
 NuGet.Common.dll
@@ -46,3 +47,4 @@ NuGet.Core.dll
 # 3rd party dlls to keep
 Lucene.Net.dll
 Microsoft.Web.XmlTransform.dll
+Newtonsoft.Json.dll
