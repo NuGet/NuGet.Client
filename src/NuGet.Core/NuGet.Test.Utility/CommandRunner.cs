@@ -87,7 +87,12 @@ namespace NuGet.Test.Utility
 
                 if (waitForExit)
                 {
+#if DEBUG
+                    var processExited = true;
+                    p.WaitForExit();
+#else
                     bool processExited = p.WaitForExit(timeOutInMilliseconds);
+#endif
                     if (!processExited)
                     {
                         p.Kill();

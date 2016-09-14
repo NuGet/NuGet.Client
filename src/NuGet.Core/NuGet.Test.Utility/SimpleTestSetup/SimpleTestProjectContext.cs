@@ -105,6 +105,39 @@ namespace NuGet.Test.Utility
             }
         }
 
+        public string TargetsOutput
+        {
+            get
+            {
+                switch (Type)
+                {
+                    case RestoreOutputType.NETCore:
+                        return Path.Combine(OutputPath, $"{Path.GetFileNameWithoutExtension(ProjectPath)}.nuget.g.targets");
+                    case RestoreOutputType.UAP:
+                        return Path.Combine(Path.GetDirectoryName(ProjectPath), $"{Path.GetFileNameWithoutExtension(ProjectPath)}.nuget.targets");
+                    default:
+                        return ProjectPath;
+                }
+            }
+        }
+
+        public string PropsOutput
+        {
+            get
+            {
+                switch (Type)
+                {
+                    case RestoreOutputType.NETCore:
+                        return Path.Combine(OutputPath, $"{Path.GetFileNameWithoutExtension(ProjectPath)}.nuget.g.props");
+                    case RestoreOutputType.UAP:
+                        return Path.Combine(Path.GetDirectoryName(ProjectPath), $"{Path.GetFileNameWithoutExtension(ProjectPath)}.nuget.props");
+                    default:
+                        return ProjectPath;
+                }
+            }
+        }
+
+
         public LockFile AssetsFile
         {
             get
@@ -118,6 +151,22 @@ namespace NuGet.Test.Utility
                 }
 
                 return null;
+            }
+        }
+
+        public void AddPackageToAllFrameworks(params SimpleTestPackageContext[] packages)
+        {
+            foreach (var framework in Frameworks)
+            {
+                framework.PackageReferences.AddRange(packages);
+            }
+        }
+
+        public void AddProjectToAllFrameworks(params SimpleTestProjectContext[] projects)
+        {
+            foreach (var framework in Frameworks)
+            {
+                framework.ProjectReferences.AddRange(projects);
             }
         }
 
@@ -340,7 +389,7 @@ namespace NuGet.Test.Utility
                 propertyGroup.Add(subItem);
             }
 
-            doc.Add(propertyGroup);
+            doc.Root.AddFirst(propertyGroup);
         }
 
         private static void AddItem(XDocument doc,
@@ -367,7 +416,7 @@ namespace NuGet.Test.Utility
             }
 
             propertyGroup.Add(entry);
-            doc.Add(propertyGroup);
+            doc.Root.Add(propertyGroup);
         }
     }
 }

@@ -14,15 +14,17 @@ namespace NuGet.Test.Utility
     /// </summary>
     public class SimpleTestSolutionContext
     {
-        public SimpleTestSolutionContext(params SimpleTestProjectContext[] projects)
+        public SimpleTestSolutionContext(string solutionRoot, params SimpleTestProjectContext[] projects)
         {
+            SolutionPath = Path.Combine(solutionRoot, "solution.sln");
+
             Projects.AddRange(projects);
         }
 
         /// <summary>
         /// Full path
         /// </summary>
-        public string SolutionPath { get; set; } = Path.Combine(Directory.GetCurrentDirectory(), $"solution.sln");
+        public string SolutionPath { get; set; }
 
         /// <summary>
         /// Projects
@@ -55,8 +57,7 @@ namespace NuGet.Test.Utility
 
             foreach (var project in Projects)
             {
-                sb.AppendLine("Project(\"{" + SolutionGuid.ToString() + "}" + $"\") = \"{project.ProjectName}\",");
-                sb.AppendLine("\"{" + project.ProjectPath +"}\", \"{" + project.ProjectGuid +"}\"");
+                sb.AppendLine("Project(\"{" + SolutionGuid.ToString() + "}" + $"\") = \"{project.ProjectName}\", " + "\"" + project.ProjectPath +"\", \"{" + project.ProjectGuid +"}\"");
                 sb.AppendLine("EndProject");
             }
 
@@ -70,20 +71,6 @@ namespace NuGet.Test.Utility
         /// Create an entire solution and projects, this will adjust the paths as needed
         /// </summary>
         public void Create(string solutionFolder)
-        {
-            Save();
-
-            foreach (var project in GetAllProjects())
-            {
-                // only save after updating everything
-                project.Save();
-            }
-        }
-
-        /// <summary>
-        /// Create all things needed for the solution
-        /// </summary>
-        public void Create(string solutionFolder, string repositoryPath)
         {
             Save();
 

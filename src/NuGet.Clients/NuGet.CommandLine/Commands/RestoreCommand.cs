@@ -442,8 +442,7 @@ namespace NuGet.CommandLine
             // Find P2P graph for v3 inputs.
             // Ignore xproj files as top level inputs
             var projectsWithPotentialP2PReferences = packageRestoreInputs
-                .RestoreV3Context
-                .Inputs
+                .ProjectFiles
                 .Where(path => !path.EndsWith(".xproj", StringComparison.OrdinalIgnoreCase))
                 .ToArray();
 
@@ -470,6 +469,24 @@ namespace NuGet.CommandLine
                     scaleTimeout);
 
                 packageRestoreInputs.ProjectReferenceLookup = referencesLookup;
+
+                // Check for packages.config from what is left
+                foreach (var projectFilePath in referencesLookup.Projects
+                    .Where(project => project.RestoreMetadata.OutputType == RestoreOutputType.Unknown)
+                    .Select(project => project.RestoreMetadata.ProjectPath))
+                {
+                    var packagesConfigPath = GetPackageReferenceFile(projectFilePath);
+                    if (File.Exists(packagesConfigPath))
+                    {
+                        // Check for packages.config, if it exists add it directly
+                        packageRestoreInputs.PackagesConfigFiles.Add(packagesConfigPath);
+                    }
+                }
+
+                // V3 restore for the rest
+                packageRestoreInputs.RestoreV3Context.Inputs.AddRange(referencesLookup.Projects
+                    .Where(project => project.RestoreMetadata.OutputType != RestoreOutputType.Unknown)
+                    .Select(project => project.RestoreMetadata.ProjectPath));
             }
 
             return packageRestoreInputs;
@@ -491,24 +508,7 @@ namespace NuGet.CommandLine
             }
             else if (projectFileName.EndsWith("proj", StringComparison.OrdinalIgnoreCase))
             {
-                // For msbuild files find the project.json or packages.config file,
-                // if neither exist skip it
-                var projectName = Path.GetFileNameWithoutExtension(projectFileName);
-                var dir = Path.GetDirectoryName(projectFilePath);
-
-                var projectJsonPath = ProjectJsonPathUtilities.GetProjectConfigPath(dir, projectName);
-                var packagesConfigPath = GetPackageReferenceFile(projectFilePath);
-
-                // Check for project.json
-                if (File.Exists(projectJsonPath))
-                {
-                    packageRestoreInputs.RestoreV3Context.Inputs.Add(projectFilePath);
-                }
-                else if (File.Exists(packagesConfigPath))
-                {
-                    // Check for packages.config, if it exists add it directly
-                    packageRestoreInputs.PackagesConfigFiles.Add(packagesConfigPath);
-                }
+                packageRestoreInputs.ProjectFiles.Add(projectFilePath);
             }
             else if (projectFileName.EndsWith(".dg", StringComparison.OrdinalIgnoreCase))
             {
@@ -705,23 +705,8 @@ namespace NuGet.CommandLine
 
                 var normalizedProjectFile = Path.GetFullPath(projectFile);
 
-                // packages.config
-                var packagesConfigFilePath = GetPackageReferenceFile(normalizedProjectFile);
-
-                // project.json
-                var dir = Path.GetDirectoryName(normalizedProjectFile);
-                var projectName = Path.GetFileNameWithoutExtension(normalizedProjectFile);
-                var projectJsonPath = ProjectJsonPathUtilities.GetProjectConfigPath(dir, projectName);
-
-                // project.json overrides packages.config
-                if (File.Exists(projectJsonPath))
-                {
-                    restoreInputs.RestoreV3Context.Inputs.Add(normalizedProjectFile);
-                }
-                else if (File.Exists(packagesConfigFilePath))
-                {
-                    restoreInputs.PackagesConfigFiles.Add(packagesConfigFilePath);
-                }
+                // Add everything
+                restoreInputs.ProjectFiles.Add(normalizedProjectFile);
             }
         }
 
@@ -741,6 +726,11 @@ namespace NuGet.CommandLine
             public DependencyGraphSpec ProjectReferenceLookup { get; set; }
 
             public RestoreArgs RestoreV3Context { get; set; } = new RestoreArgs();
+
+            /// <summary>
+            /// Project files, type to be determined.
+            /// </summary>
+            public HashSet<string> ProjectFiles { get; set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         }
     }
 }

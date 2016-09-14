@@ -30,10 +30,12 @@ namespace NuGet.Test.Utility
         public List<string> FrameworkAssemblyReferences { get; set; } = new List<string>();
 
         public SimpleTestProjectFrameworkContext()
+            : this(NuGetFramework.Parse("net461"), Enumerable.Empty<SimpleTestPackageContext>(), Enumerable.Empty<SimpleTestProjectContext>())
         {
         }
 
         public SimpleTestProjectFrameworkContext(NuGetFramework framework)
+            : this(framework, Enumerable.Empty<SimpleTestPackageContext>(), Enumerable.Empty<SimpleTestProjectContext>())
         {
         }
 
