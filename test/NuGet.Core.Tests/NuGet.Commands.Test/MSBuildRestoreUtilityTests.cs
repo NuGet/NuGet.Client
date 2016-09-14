@@ -104,6 +104,8 @@ namespace NuGet.Commands.Test
                 var project1Root = Path.Combine(workingDir, "a");
                 var project1Path = Path.Combine(project1Root, "a.csproj");
                 var outputPath1 = Path.Combine(project1Root, "obj");
+                var fallbackFolder = Path.Combine(project1Root, "fallback");
+                var packagesFolder = Path.Combine(project1Root, "packages");
 
                 var items = new List<IDictionary<string, string>>();
 
@@ -116,6 +118,9 @@ namespace NuGet.Commands.Test
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
                     { "TargetFrameworks", "net46;netstandard1.6" },
+                    { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
+                    { "FallbackFolders", fallbackFolder },
+                    { "PackagesPath", packagesFolder },
                 });
 
                 var wrappedItems = items.Select(CreateItems).ToList();
@@ -133,6 +138,10 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, project1Spec.RestoreMetadata.ProjectReferences.Count);
                 Assert.Null(project1Spec.RestoreMetadata.ProjectJsonPath);
                 Assert.Equal("net46|netstandard1.6", string.Join("|", project1Spec.TargetFrameworks.Select(e => e.FrameworkName.GetShortFolderName())));
+                Assert.Equal(outputPath1, project1Spec.RestoreMetadata.OutputPath);
+                Assert.Equal("https://nuget.org/a/index.json|https://nuget.org/b/index.json", string.Join("|", project1Spec.RestoreMetadata.Sources.Select(s => s.Source)));
+                Assert.Equal(fallbackFolder, string.Join("|", project1Spec.RestoreMetadata.FallbackFolders));
+                Assert.Equal(packagesFolder, string.Join("|", project1Spec.RestoreMetadata.PackagesPath));
             }
         }
 

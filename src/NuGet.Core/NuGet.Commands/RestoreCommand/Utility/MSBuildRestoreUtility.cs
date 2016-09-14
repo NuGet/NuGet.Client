@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
@@ -181,6 +182,19 @@ namespace NuGet.Commands
                 {
                     AddFrameworkAssemblies(result, items);
                     AddPackageReferences(result, items);
+                    result.RestoreMetadata.OutputPath = specItem.GetProperty("OutputPath");
+
+                    foreach (var source in Split(specItem.GetProperty("Sources")))
+                    {
+                        result.RestoreMetadata.Sources.Add(new PackageSource(source));
+                    }
+
+                    foreach (var folder in Split(specItem.GetProperty("FallbackFolders")))
+                    {
+                        result.RestoreMetadata.FallbackFolders.Add(folder);
+                    }
+
+                    result.RestoreMetadata.PackagesPath = specItem.GetProperty("PackagesPath");
                 }
             }
 

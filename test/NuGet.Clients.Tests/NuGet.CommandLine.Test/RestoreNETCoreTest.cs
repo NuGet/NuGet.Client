@@ -24,11 +24,11 @@ namespace NuGet.CommandLine.Test
             using (var pathContext = new SimpleTestPathContext())
             {
                 // Set up solution, project, and packages
-                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot.FullName);
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
 
                 var projectA = SimpleTestProjectContext.CreateNETCore(
                     "a",
-                    pathContext.SolutionRoot.FullName,
+                    pathContext.SolutionRoot,
                     NuGetFramework.Parse("net45"));
 
                 var packageX = new SimpleTestPackageContext()
@@ -40,28 +40,37 @@ namespace NuGet.CommandLine.Test
                 projectA.AddPackageToAllFrameworks(packageX);
 
                 solution.Projects.Add(projectA);
-                solution.Create(pathContext.SolutionRoot.FullName);
+                solution.Create(pathContext.SolutionRoot);
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3(
-                    pathContext.PackageSource.FullName,
+                    pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
 
                 string[] args = new string[] {
                     "restore",
-                    pathContext.SolutionRoot.FullName,
+                    pathContext.SolutionRoot,
                     "-Verbosity",
                     "detailed"
                 };
 
                 var nugetexe = Util.GetNuGetExePath();
 
+                // Store the dg file for debugging
+                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
+                var envVars = new Dictionary<string, string>()
+                {
+                    { "NUGET_PERSIST_DG", "true" },
+                    { "NUGET_PERSIST_DG_PATH", dgPath }
+                };
+
                 // Act
                 var r = CommandRunner.Run(
                     nugetexe,
                     pathContext.WorkingDirectory.Path,
                     string.Join(" ", args),
-                    waitForExit: true);
+                    waitForExit: true,
+                    environmentVariables: envVars);
 
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);

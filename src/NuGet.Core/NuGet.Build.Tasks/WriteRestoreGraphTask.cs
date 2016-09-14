@@ -37,6 +37,8 @@ namespace NuGet.Build.Tasks
             // Log the graph input
             // MSBuildRestoreUtility.Dump(wrappedItems, log);
 
+            System.Diagnostics.Debugger.Launch();
+
             // Create file
             var dgFile = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
 

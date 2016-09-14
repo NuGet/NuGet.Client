@@ -256,6 +256,7 @@ namespace NuGet.Test.Utility
             AddProperties(xml, new Dictionary<string, string>()
             {
                 { "ProjectGuid", "{" + ProjectGuid.ToString() + "}" },
+                { "BaseIntermediateOutputPath", OutputPath }
             });
 
             if (Type == RestoreOutputType.NETCore)
