@@ -69,5 +69,168 @@ namespace NuGet.Commands.Test
                 }
             }
         }
+
+        [Fact]
+        public void MSBuildRestoreResult_MultipleTFMs()
+        {
+            // Arrange
+            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var projectName = "testproject";
+
+                // Only run the test if globalPackagesFolder can be determined
+                // Because, globalPackagesFolder would be null if %USERPROFILE% was null
+
+                var targetsName = $"{projectName}.nuget.g.targets";
+                var targetsPath = Path.Combine(randomProjectDirectory, targetsName);
+
+                var propsName = $"{projectName}.nuget.g.props";
+                var propsPath = Path.Combine(randomProjectDirectory, propsName);
+
+                var targets = new Dictionary<string, IList<string>>();
+                targets.Add("net45", new List<string>() { "a.targets", "b.targets" });
+                targets.Add("netstandard16", new List<string>() { "c.targets" });
+                targets.Add("netStandard1.7", new List<string>() { });
+
+                var props = new Dictionary<string, IList<string>>();
+                props.Add("net45", new List<string>() { "a.props", "b.props" });
+                props.Add("netstandard16", new List<string>() { "c.props" });
+                props.Add("netStandard1.7", new List<string>() { });
+                props.Add("netStandard1.8", new List<string>() { });
+
+                var msBuildRestoreResult = new MSBuildRestoreResult(
+                  targetsPath,
+                  propsPath,
+                  globalPackagesFolder,
+                  props,
+                  targets);
+
+                // Act
+                msBuildRestoreResult.Commit(Common.NullLogger.Instance);
+
+                // Assert
+                Assert.True(File.Exists(targetsPath));
+                var targetsXML = XDocument.Load(targetsPath);
+
+                Assert.True(File.Exists(propsPath));
+                var propsXML = XDocument.Load(propsPath);
+
+                var targetItemGroups = targetsXML.Root.Elements().Where(e => e.Name.LocalName == "ImportGroup").ToList();
+
+                Assert.Equal(2, targetItemGroups.Count);
+                Assert.Equal("'$(TargetFramework)' == 'net45'", targetItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal("'$(TargetFramework)' == 'netstandard16'", targetItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
+
+                Assert.Equal(2, targetItemGroups[0].Elements().Count());
+                Assert.Equal("a.targets", targetItemGroups[0].Elements().ToList()[0].Attribute(XName.Get("Project")).Value);
+                Assert.Equal("b.targets", targetItemGroups[0].Elements().ToList()[1].Attribute(XName.Get("Project")).Value);
+
+                Assert.Equal(1, targetItemGroups[1].Elements().Count());
+                Assert.Equal("c.targets", targetItemGroups[1].Elements().ToList()[0].Attribute(XName.Get("Project")).Value);
+            }
+        }
+
+        [Fact]
+        public void MSBuildRestoreResult_SingleTFM()
+        {
+            // Arrange
+            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var projectName = "testproject";
+
+                // Only run the test if globalPackagesFolder can be determined
+                // Because, globalPackagesFolder would be null if %USERPROFILE% was null
+
+                var targetsName = $"{projectName}.nuget.g.targets";
+                var targetsPath = Path.Combine(randomProjectDirectory, targetsName);
+
+                var propsName = $"{projectName}.nuget.g.props";
+                var propsPath = Path.Combine(randomProjectDirectory, propsName);
+
+                var targets = new Dictionary<string, IList<string>>();
+                targets.Add("net45", new List<string>() { "a.targets", "b.targets" });
+
+                var props = new Dictionary<string, IList<string>>();
+                props.Add("net45", new List<string>() { "a.props", "b.props" });
+
+                var msBuildRestoreResult = new MSBuildRestoreResult(
+                  targetsPath,
+                  propsPath,
+                  globalPackagesFolder,
+                  props,
+                  targets);
+
+                // Act
+                msBuildRestoreResult.Commit(Common.NullLogger.Instance);
+
+                // Assert
+                Assert.True(File.Exists(targetsPath));
+                var targetsXML = XDocument.Load(targetsPath);
+
+                Assert.True(File.Exists(propsPath));
+                var propsXML = XDocument.Load(propsPath);
+
+                var targetItemGroups = targetsXML.Root.Elements().Where(e => e.Name.LocalName == "ImportGroup").ToList();
+
+                Assert.Equal(1, targetItemGroups.Count);
+                Assert.Equal("'$(TargetFramework)' == 'net45'", targetItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal(2, targetItemGroups[0].Elements().Count());
+                Assert.Equal("a.targets", targetItemGroups[0].Elements().ToList()[0].Attribute(XName.Get("Project")).Value);
+                Assert.Equal("b.targets", targetItemGroups[0].Elements().ToList()[1].Attribute(XName.Get("Project")).Value);
+            }
+        }
+
+        [Fact]
+        public void MSBuildRestoreResult_SingleTFM_NoConditionals()
+        {
+            // Arrange
+            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var projectName = "testproject";
+
+                // Only run the test if globalPackagesFolder can be determined
+                // Because, globalPackagesFolder would be null if %USERPROFILE% was null
+
+                var targetsName = $"{projectName}.nuget.g.targets";
+                var targetsPath = Path.Combine(randomProjectDirectory, targetsName);
+
+                var propsName = $"{projectName}.nuget.g.props";
+                var propsPath = Path.Combine(randomProjectDirectory, propsName);
+
+                var targets = new Dictionary<string, IList<string>>();
+                targets.Add("", new List<string>() { "a.targets", "b.targets" });
+
+                var props = new Dictionary<string, IList<string>>();
+                props.Add("", new List<string>() { "a.props", "b.props" });
+
+                var msBuildRestoreResult = new MSBuildRestoreResult(
+                  targetsPath,
+                  propsPath,
+                  globalPackagesFolder,
+                  props,
+                  targets);
+
+                // Act
+                msBuildRestoreResult.Commit(Common.NullLogger.Instance);
+
+                // Assert
+                Assert.True(File.Exists(targetsPath));
+                var targetsXML = XDocument.Load(targetsPath);
+
+                Assert.True(File.Exists(propsPath));
+                var propsXML = XDocument.Load(propsPath);
+
+                var targetItemGroups = targetsXML.Root.Elements().Where(e => e.Name.LocalName == "ImportGroup").ToList();
+
+                Assert.Equal(1, targetItemGroups.Count);
+                Assert.Equal(0, targetItemGroups[0].Attributes().Count());
+                Assert.Equal(2, targetItemGroups[0].Elements().Count());
+                Assert.Equal("a.targets", targetItemGroups[0].Elements().ToList()[0].Attribute(XName.Get("Project")).Value);
+                Assert.Equal("b.targets", targetItemGroups[0].Elements().ToList()[1].Attribute(XName.Get("Project")).Value);
+            }
+        }
     }
 }

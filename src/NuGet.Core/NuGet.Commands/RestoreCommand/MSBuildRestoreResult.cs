@@ -175,8 +175,6 @@ namespace NuGet.Commands
 
         private void GenerateImportsFile(string path, IDictionary<string, IList<string>> imports)
         {
-            var addTFMConditions = imports.Count > 1;
-
             var ns = XNamespace.Get("http://schemas.microsoft.com/developer/msbuild/2003");
             var doc = new XDocument(
                 new XDeclaration("1.0", "utf-8", "no"),
@@ -202,7 +200,7 @@ namespace NuGet.Commands
                                     new XAttribute("Condition", $"Exists('{GetImportPath(i)}')"))));
 
                     // Add a conditional TFM if multiple TFMs exist
-                    if (addTFMConditions)
+                    if (!string.IsNullOrEmpty(pair.Key))
                     {
                         itemGroup.Add(new XAttribute("Condition", $" '$(TargetFramework)' == '{framework}' "));
                     }
