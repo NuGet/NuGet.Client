@@ -82,11 +82,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public event EventHandler<ActionsExecutedEventArgs> ActionsExecuted;
 
-        public VSSolutionManager()
+        public VSSolutionManager([Import(typeof(SVsServiceProvider))] IServiceProvider serviceProvider)
         {
-            _dte = ServiceLocator.GetInstance<DTE>();
-            _vsSolution = ServiceLocator.GetGlobalService<SVsSolution, IVsSolution>();
-            _vsMonitorSelection = ServiceLocator.GetGlobalService<SVsShellMonitorSelection, IVsMonitorSelection>();
+            _dte = (DTE)serviceProvider.GetService(typeof(DTE));
+            _vsSolution = (IVsSolution)serviceProvider.GetService(typeof(SVsSolution));
+            _vsMonitorSelection = (IVsMonitorSelection)serviceProvider.GetService(typeof(SVsShellMonitorSelection));
 
             // Keep a reference to SolutionEvents so that it doesn't get GC'ed. Otherwise, we won't receive events.
             _solutionEvents = _dte.Events.SolutionEvents;
@@ -103,7 +103,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             UserAgent.SetUserAgentString(
-                new UserAgentStringBuilder().WithVisualStudioSKU(VSVersionHelper.GetFullVsVersionString()));
+                new UserAgentStringBuilder().WithVisualStudioSKU(VSVersionHelper.GetFullVsVersionString(_dte)));
 
             _solutionEvents.BeforeClosing += OnBeforeClosing;
             _solutionEvents.AfterClosing += OnAfterClosing;
