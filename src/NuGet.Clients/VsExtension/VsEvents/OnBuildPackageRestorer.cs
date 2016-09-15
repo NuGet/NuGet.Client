@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -15,16 +14,13 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
-using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
-using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using Task = System.Threading.Tasks.Task;
 
@@ -36,8 +32,8 @@ namespace NuGetVSExtension
 
         private readonly DTE _dte;
 
-        private Dictionary<string, BuildIntegratedProjectCacheEntry> _buildIntegratedCache
-            = new Dictionary<string, BuildIntegratedProjectCacheEntry>(StringComparer.Ordinal);
+        private Dictionary<string, DependencyGraphProjectCacheEntry> _dependencyGraphProjectCache
+            = new Dictionary<string, DependencyGraphProjectCacheEntry>(StringComparer.Ordinal);
 
         // The value of the "MSBuild project build output verbosity" setting 
         // of VS. From 0 (quiet) to 4 (Diagnostic).
@@ -162,9 +158,9 @@ namespace NuGetVSExtension
                 if (Action == vsBuildAction.vsBuildActionClean)
                 {
                     // Clear the project.json restore cache on clean to ensure that the next build restores again
-                    if (_buildIntegratedCache != null)
+                    if (_dependencyGraphProjectCache != null)
                     {
-                        _buildIntegratedCache.Clear();
+                        _dependencyGraphProjectCache.Clear();
                     }
 
                     return;
@@ -229,16 +225,12 @@ namespace NuGetVSExtension
                             isSolutionAvailable);
                     }
 
-                    var buildEnabledProjects = projects.OfType<BuildIntegratedProjectSystem>();
-                    await RestoreBuildIntegratedProjectsAsync(
-                        solutionDirectory,
-                        buildEnabledProjects.ToList(),
-                        forceRestore,
-                        isSolutionAvailable);
+                    var dependencyGraphProjects = projects
+                        .OfType<IDependencyGraphProject>()
+                        .ToList();
 
-                    var packageSpecProjects = projects.OfType<MSBuildShellOutNuGetProject>();
                     await RestorePackageSpecProjectsAsync(
-                        packageSpecProjects,
+                        dependencyGraphProjects,
                         forceRestore,
                         isSolutionAvailable);
 
@@ -248,90 +240,6 @@ namespace NuGetVSExtension
             {
                 PackageRestoreManager.PackageRestoredEvent -= PackageRestoreManager_PackageRestored;
                 PackageRestoreManager.PackageRestoreFailedEvent -= PackageRestoreManager_PackageRestoreFailedEvent;
-            }
-        }
-
-        private async Task RestorePackageSpecProjectsAsync(
-            IEnumerable<MSBuildShellOutNuGetProject> projects,
-            bool forceRestore,
-            bool isSolutionAvailable)
-        {
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            if (!projects.Any() || !IsConsentGranted(Settings))
-            {
-                return;
-            }
-
-            var waitDialogFactory
-                = ServiceLocator.GetGlobalService<SVsThreadedWaitDialogFactory,
-                    IVsThreadedWaitDialogFactory>();
-
-            // NOTE: During restore for build integrated projects,
-            //       We might show the dialog even if there are no packages to restore
-            // When both currentStep and totalSteps are 0, we get a marquee on the dialog
-            using (var threadedWaitDialogSession = waitDialogFactory.StartWaitDialog(
-                waitCaption: Resources.DialogTitle,
-                initialProgress: new ThreadedWaitDialogProgressData(Resources.RestoringPackages,
-                    string.Empty,
-                    string.Empty,
-                    isCancelable: true,
-                    currentStep: 0,
-                    totalSteps: 0)))
-            {
-                // Display the restore opt out message if it has not been shown yet
-                DisplayOptOutMessage();
-
-                Token = threadedWaitDialogSession.UserCancellationToken;
-                ThreadedWaitDialogProgress = threadedWaitDialogSession.Progress;
-                
-                // Switch back to the background thread for the restore work.
-                await TaskScheduler.Current;
-
-                var packageSources = SourceRepositoryProvider
-                    .GetRepositories()
-                    .Select(r => r.PackageSource)
-                    .ToList();
-
-                // Build the dependency graph spec
-                var dgSpec = new DependencyGraphSpec();
-                foreach (var project in projects)
-                {
-                    var packageSpec = project.GetPackageSpecForRestore();
-
-                    dgSpec.AddProject(packageSpec);
-                    dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
-                }
-
-                // Restore the dependency graph
-                using (var cacheContext = new SourceCacheContext())
-                {
-                    var pathContext = NuGetPathContext.Create(Settings);
-                    var providers = new List<IPreLoadedRestoreRequestProvider>();
-                    var providerCache = new RestoreCommandProvidersCache();
-                    providers.Add(new DependencyGraphSpecRequestProvider(providerCache, dgSpec));
-
-                    var sourceProvider = new CachingSourceProvider(new PackageSourceProvider(Settings));
-
-                    var restoreContext = new RestoreArgs
-                    {
-                        CacheContext = cacheContext,
-                        LockFileVersion = LockFileFormat.Version,
-                        ConfigFile = null,
-                        DisableParallel = false,
-                        GlobalPackagesFolder = pathContext.UserPackageFolder,
-                        Log = this,
-                        MachineWideSettings = new XPlatMachineWideSetting(),
-                        PreLoadedRequestProviders = providers,
-                        CachingSourceProvider = sourceProvider,
-                        Sources = packageSources.Select(p => p.Source).ToList()
-                    };
-
-                    var restoreSummaries = await RestoreRunner.Run(restoreContext);
-
-                    // Summary
-                    RestoreSummary.Log(this, restoreSummaries);
-                }
             }
         }
 
@@ -375,23 +283,21 @@ namespace NuGetVSExtension
                 WriteLine(VerbosityLevel.Quiet, Resources.PackageRestoreOptOutMessage);
             }
         }
-
-        /// <summary>
-        /// Restore projects with project.json and create the lock files.
-        /// </summary>
-        /// <param name="buildEnabledProjects">Projects containing project.json</param>
-        /// <param name="forceRestore">Force the restore to write out the lock files.
-        /// This is used for rebuilds.</param>
-        /// <returns></returns>
-        private async Task RestoreBuildIntegratedProjectsAsync(
-            string solutionDirectory,
-            List<BuildIntegratedProjectSystem> buildEnabledProjects,
+        
+        private async Task RestorePackageSpecProjectsAsync(
+            List<IDependencyGraphProject> projects,
             bool forceRestore,
             bool isSolutionAvailable)
         {
+            // Only continue if there are some projects.
+            if (!projects.Any())
+            {
+                return;
+            }
+
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            if (buildEnabledProjects.Any() && IsConsentGranted(Settings))
+            if (projects.Any() && IsConsentGranted(Settings))
             {
                 if (!isSolutionAvailable)
                 {
@@ -411,17 +317,24 @@ namespace NuGetVSExtension
                     }
                 }
 
-                var enabledSources = SourceRepositoryProvider.GetRepositories().ToList();
-
                 // Cache p2ps discovered from DTE 
-                var referenceContext = new ExternalProjectReferenceContext(logger: this);
+                var referenceContext = new ExternalProjectReferenceContext(
+                    _dependencyGraphProjectCache,
+                    logger: this);
+                var pathContext = NuGetPathContext.Create(Settings);
 
                 // No-op all project closures are up to date and all packages exist on disk.
-                if (await IsRestoreRequired(buildEnabledProjects, forceRestore, referenceContext))
+                if (await DependencyGraphRestoreUtility.IsRestoreRequiredAsync(
+                    projects,
+                    forceRestore,
+                    pathContext,
+                    referenceContext))
                 {
-                    var waitDialogFactory
-                        = ServiceLocator.GetGlobalService<SVsThreadedWaitDialogFactory,
-                            IVsThreadedWaitDialogFactory>();
+                    // Save the project between operations.
+                    _dependencyGraphProjectCache = referenceContext.ProjectCache;
+
+                    var waitDialogFactory = ServiceLocator
+                        .GetGlobalService<SVsThreadedWaitDialogFactory, IVsThreadedWaitDialogFactory>();
 
                     // NOTE: During restore for build integrated projects,
                     //       We might show the dialog even if there are no packages to restore
@@ -441,241 +354,21 @@ namespace NuGetVSExtension
                         Token = threadedWaitDialogSession.UserCancellationToken;
                         ThreadedWaitDialogProgress = threadedWaitDialogSession.Progress;
 
-                        using (var cacheContext = new SourceCacheContext())
-                        {
-                            // Cache resources between requests
-                            var providerCache = new RestoreCommandProvidersCache();
-                            var tasks = new List<Task<KeyValuePair<string, Exception>>>();
-                            var maxTasks = 4;
+                        // Switch back to the background thread for the restore work.
+                        await TaskScheduler.Current;
 
-                            // Restore packages and create the lock file for each project
-                            foreach (var project in buildEnabledProjects)
-                            {
-                                // Mark this as having missing packages so that we will not 
-                                // display a noop message in the summary
-                                _hasMissingPackages = true;
-                                _displayRestoreSummary = true;
+                        var sources = SourceRepositoryProvider
+                            .GetRepositories()
+                            .Select(s => s.PackageSource.Source)
+                            .ToList();
 
-                                if (tasks.Count >= maxTasks)
-                                {
-                                    await ProcessTask(tasks);
-                                }
-
-                                // Skip further restores if the user has clicked cancel
-                                if (!Token.IsCancellationRequested)
-                                {
-                                    var projectName = NuGetProject.GetUniqueNameOrName(project);
-
-                                    // Restore and create a project.lock.json file
-                                    tasks.Add(RestoreProject(projectName, async () =>
-                                        await BuildIntegratedProjectRestoreAsync(
-                                            project,
-                                            solutionDirectory,
-                                            enabledSources,
-                                            referenceContext,
-                                            cacheContext,
-                                            providerCache,
-                                            Token)));
-                                }
-                            }
-
-                            // Wait for the remaining tasks
-                            while (tasks.Count > 0)
-                            {
-                                await ProcessTask(tasks);
-                            }
-
-                            if (Token.IsCancellationRequested)
-                            {
-                                _canceled = true;
-                            }
-                        }
+                        await DependencyGraphRestoreUtility.RestoreAsync(
+                            projects,
+                            sources,
+                            Settings,
+                            referenceContext);
                     }
                 }
-            }
-        }
-
-        private async Task ProcessTask(List<Task<KeyValuePair<string, Exception>>> tasks)
-        {
-            var task = await Task.WhenAny(tasks);
-            tasks.Remove(task);
-
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            if (task.Result.Value != null)
-            {
-                // Allow other projects to be restored when a single project fails.
-                // If an unexpected exception occurs from the RestoreCommand
-                // log it to the console and error window.
-                LogException(task.Result.Value, logError: true);
-                _hasErrors = true;
-            }
-
-            WriteLine(
-                VerbosityLevel.Normal,
-                Resources.PackageRestoreFinishedForProject,
-                task.Result.Key);
-        }
-
-        private async Task<KeyValuePair<string, Exception>> RestoreProject(string projectName, Func<Task> action)
-        {
-            try
-            {
-                await action();
-            }
-            catch (Exception ex)
-            {
-                return new KeyValuePair<string, Exception>(projectName, ex);
-            }
-
-            return new KeyValuePair<string, Exception>(projectName, null);
-        }
-
-        /// <summary>
-        /// Determine if a full restore is required. For scenarios with no floating versions
-        /// where all packages are already on disk and no server requests are needed
-        /// we can skip the restore after some validation checks.
-        /// </summary>
-        private async Task<bool> IsRestoreRequired(
-            List<BuildIntegratedProjectSystem> projects,
-            bool forceRestore,
-            ExternalProjectReferenceContext referenceContext)
-        {
-            try
-            {
-                // Swap caches 
-                var oldCache = _buildIntegratedCache;
-                _buildIntegratedCache
-                    = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(
-                        projects,
-                        referenceContext);
-
-                if (forceRestore)
-                {
-                    // The cache has been updated, now skip the check since we are doing a restore anyways.
-                    return true;
-                }
-
-                if (BuildIntegratedRestoreUtility.CacheHasChanges(oldCache, _buildIntegratedCache))
-                {
-                    // A new project has been added
-                    return true;
-                }
-
-                // Read package folder locations
-                var nugetPaths = NuGetPathContext.Create(Settings);
-                var packageFolderPaths = new List<string>();
-
-                // Folder paths must be in order of priority
-                packageFolderPaths.Add(nugetPaths.UserPackageFolder);
-                packageFolderPaths.AddRange(nugetPaths.FallbackPackageFolders);
-
-                // Verify all packages exist and have the expected hashes
-                var restoreRequired = BuildIntegratedRestoreUtility.IsRestoreRequired(
-                    projects,
-                    packageFolderPaths,
-                    referenceContext);
-
-                if (restoreRequired)
-                {
-                    // The project.json file does not match the lock file
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.Fail("Unable to validate lock files.");
-
-                ActivityLog.LogError(LogEntrySource, ex.ToString());
-
-                WriteLine(VerbosityLevel.Diagnostic, "{0}", ex.ToString());
-
-                // If we are unable to validate, run a full restore
-                // This may occur if the lock files are corrupt
-                return true;
-            }
-
-            // Validation passed, no restore is needed
-            return false;
-        }
-
-        private async Task BuildIntegratedProjectRestoreAsync(
-            BuildIntegratedNuGetProject project,
-            string solutionDirectory,
-            List<SourceRepository> enabledSources,
-            ExternalProjectReferenceContext context,
-            SourceCacheContext cacheContext,
-            RestoreCommandProvidersCache providerCache,
-            CancellationToken token)
-        {
-            // Go off the UI thread to perform I/O operations
-            await TaskScheduler.Default;
-
-            var projectName = NuGetProject.GetUniqueNameOrName(project);
-
-            var pathContext = NuGetPathContext.Create(Settings);
-
-            providerCache.GetOrCreate(
-                pathContext.UserPackageFolder,
-                pathContext.FallbackPackageFolders,
-                enabledSources,
-                cacheContext,
-                context.Logger);
-
-            // Pass down the CancellationToken from the dialog
-            var restoreResult = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                context,
-                enabledSources,
-                pathContext.UserPackageFolder,
-                pathContext.FallbackPackageFolders,
-                token);
-
-            if (!restoreResult.Success)
-            {
-                // Mark this as having errors
-                _hasErrors = true;
-
-                // Invalidate cached results for the project. This will cause it to restore the next time.
-                _buildIntegratedCache.Remove(projectName);
-                await BuildIntegratedProjectReportErrorAsync(projectName, restoreResult, token);
-            }
-        }
-
-        private async Task BuildIntegratedProjectReportErrorAsync(string projectName,
-            RestoreResult restoreResult,
-            CancellationToken token)
-        {
-            Debug.Assert(!restoreResult.Success);
-
-            if (token.IsCancellationRequested)
-            {
-                // If an operation is canceled, a single message gets shown in the summary
-                // that package restore has been canceled. Do not report it as separate errors
-                _canceled = true;
-                return;
-            }
-
-            // HasErrors will be used to show a message in the output window, that, Package restore failed
-            // If Canceled is not already set to true
-            _hasErrors = true;
-
-            // Switch to main thread to update the error list window or output window
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            foreach (var libraryRange in restoreResult.GetAllUnresolved())
-            {
-                var message = string.Format(CultureInfo.CurrentCulture,
-                    Resources.BuildIntegratedPackageRestoreFailedForProject,
-                    projectName,
-                    libraryRange.ToString());
-
-                WriteLine(VerbosityLevel.Quiet, message);
-
-                MessageHelper.ShowError(_errorListProvider,
-                    TaskErrorCategory.Error,
-                    TaskPriority.High,
-                    message,
-                    hierarchyItem: null);
             }
         }
 
@@ -779,7 +472,7 @@ namespace NuGetVSExtension
 
                 if (!packages.Any())
                 {
-                    if (!isSolutionAvailable 
+                    if (!isSolutionAvailable
                         && GetProjectFolderPath().Any(p => CheckPackagesConfig(p.ProjectPath, p.ProjectName)))
                     {
                         MessageHelper.ShowError(_errorListProvider,

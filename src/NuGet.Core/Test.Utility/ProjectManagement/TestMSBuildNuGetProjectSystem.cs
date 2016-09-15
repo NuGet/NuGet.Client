@@ -16,6 +16,8 @@ namespace Test.Utility
     public class TestMSBuildNuGetProjectSystem : IMSBuildNuGetProjectSystem
     {
         private const string TestProjectName = "TestProjectName";
+        private const string TestProjectFileName = "Test.csproj";
+
         public Dictionary<string, string> References { get; }
         public HashSet<string> FrameworkReferences { get; }
         public HashSet<string> Files { get; }
@@ -26,8 +28,12 @@ namespace Test.Utility
         public int BindingRedirectsCallCount { get; private set; }
         public INuGetProjectContext NuGetProjectContext { get; private set; }
 
-        public TestMSBuildNuGetProjectSystem(NuGetFramework targetFramework, INuGetProjectContext nuGetProjectContext,
-            string projectFullPath = null, string projectName = null)
+        public TestMSBuildNuGetProjectSystem(
+            NuGetFramework targetFramework,
+            INuGetProjectContext nuGetProjectContext,
+            string projectFullPath = null,
+            string projectName = null,
+            string projectFileFullPath = null)
         {
             TargetFramework = targetFramework;
             References = new Dictionary<string, string>();
@@ -39,6 +45,7 @@ namespace Test.Utility
             ScriptsExecuted = new Dictionary<string, int>();
             ProcessedFiles = new HashSet<string>();
             ProjectName = projectName ?? TestProjectName;
+            ProjectFileFullPath = projectFileFullPath ?? Path.Combine(ProjectFullPath, ProjectName);
         }
 
         public void AddFile(string path, Stream stream)
@@ -93,6 +100,8 @@ namespace Test.Utility
         }
 
         public string ProjectFullPath { get; }
+
+        public string ProjectFileFullPath { get; }
 
         public string ProjectName { get; }
 

@@ -1483,10 +1483,11 @@ namespace NuGet.Test
             public List<TestExternalProjectReference> ProjectReferences { get; }
                 = new List<TestExternalProjectReference>();
 
-            public TestBuildIntegratedNuGetProject(string jsonConfig, IMSBuildNuGetProjectSystem msbuildProjectSystem)
-                : base(jsonConfig, $"{msbuildProjectSystem.ProjectFullPath}.{msbuildProjectSystem.ProjectName}.csproj", msbuildProjectSystem)
+            public TestBuildIntegratedNuGetProject(
+                string jsonConfig,
+                IMSBuildNuGetProjectSystem msbuildProjectSystem)
+                : base(jsonConfig, msbuildProjectSystem.ProjectFileFullPath, msbuildProjectSystem)
             {
-
             }
 
             public override Task<bool> ExecuteInitScriptAsync(

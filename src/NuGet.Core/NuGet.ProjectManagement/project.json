@@ -24,6 +24,9 @@
     "Microsoft.Web.Xdt": "2.1.1",
     "NuGet.ProjectModel": {
       "target": "project"
+    },
+    "NuGet.Commands": {
+      "target": "project"
     }
   },
   "frameworks": {

@@ -15,12 +15,10 @@ using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using Constants = NuGet.ProjectManagement.Constants;
 using EnvDTEProject = EnvDTE.Project;
 using EnvDTEProjectItems = EnvDTE.ProjectItems;
 using EnvDTEProperty = EnvDTE.Property;
-using Constants = NuGet.ProjectManagement.Constants;
-using MicrosoftBuildEvaluationProject = Microsoft.Build.Evaluation.Project;
-using MicrosoftBuildEvaluationProjectItem = Microsoft.Build.Evaluation.ProjectItem;
 using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -88,7 +86,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                if (String.IsNullOrEmpty(_projectFullPath))
+                if (string.IsNullOrEmpty(_projectFullPath))
                 {
                     ThreadHelper.JoinableTaskFactory.Run(async delegate
                     {
@@ -98,6 +96,29 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
 
                 return _projectFullPath;
+            }
+        }
+
+        private string _projectFileFullPath;
+
+        /// <summary>
+        /// This contains the directory and the file name of the project file.
+        /// </summary>
+        public string ProjectFileFullPath
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_projectFileFullPath))
+                {
+                    ThreadHelper.JoinableTaskFactory.Run(async delegate
+                    {
+                        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                        _projectFileFullPath = EnvDTEProjectUtility.GetFullProjectPath(EnvDTEProject);
+                    });
+                }
+
+                return _projectFileFullPath;
             }
         }
 

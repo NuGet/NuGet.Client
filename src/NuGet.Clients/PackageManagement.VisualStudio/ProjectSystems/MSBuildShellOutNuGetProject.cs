@@ -24,7 +24,12 @@ using EnvDTEProject = EnvDTE.Project;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    public class MSBuildShellOutNuGetProject : NuGetProject, INuGetIntegratedProject
+    /// <summary>
+    /// An implementation of <see cref="NuGetProject"/> that shells out to MSBuild to execute the NuGet.Build.Tasks
+    /// on an arbitrary project. The build task constructs the dependency graph spec on disk. This implementation
+    /// reads that file, extracting the needed information for restore.
+    /// </summary>
+    public class MSBuildShellOutNuGetProject : NuGetProject, INuGetIntegratedProject, IDependencyGraphProject
     {
         /// <summary>
         /// How long to wait for MSBuild to finish when shelling out. 2 minutes in milliseconds.
@@ -71,7 +76,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Cache the installed packages list. This is refreshed every time a restore happens.
         /// </summary>
         private readonly object _installedPackagesLock = new object();
-        private List<PackageReference> _installedPackages;
+        private List<PackageReference> _installedPackages = null;
 
         public static MSBuildShellOutNuGetProject Create(EnvDTEProject project)
         {
@@ -157,6 +162,14 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        public string MSBuildProjectPath => _projectFullPath;
+
+        /// <summary>
+        /// Making this timestamp as the current time means that a restore with this project in the graph
+        /// will never no-op. We do this to keep this work-around implementation simple.
+        /// </summary>
+        public DateTimeOffset LastModified => DateTimeOffset.Now;
+
         private static string GetMSBuildProperty(IVsBuildPropertyStorage buildPropertyStorage, string name)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -176,29 +189,16 @@ namespace NuGet.PackageManagement.VisualStudio
             return output;
         }
 
-        public PackageSpec GetPackageSpecForRestore()
-        {            
-            var dgSpec = MSBuildUtility.GetProjectReferences(
-                _msbuildPath,
-                new[] { _fullProjectPath },
-                MSBuildWaitTime);
+        public PackageSpec GetPackageSpecForRestore(ExternalProjectReferenceContext referenceContext)
+        {
+            var specs = GetSpecsAndInitializeInstalledPackages();
 
-            var packageSpec = dgSpec
-                .Projects
-                .FirstOrDefault(p => _fullProjectPath.Equals(
-                    p.RestoreMetadata.ProjectPath,
-                    StringComparison.OrdinalIgnoreCase));
-
-            // Set the output path, since shelling out to MSBuild does not set this.
-            packageSpec.RestoreMetadata.OutputPath = BaseIntermediateOutputPath;
-
-            // Update the list of references while we have the package spec.
-            lock (_installedPackagesLock)
+            if (specs.Package == null)
             {
-                _installedPackages = GetPackageReferences(packageSpec);
+                throw new InvalidOperationException($"No package spec was found for project '{_fullProjectPath}'.");
             }
 
-            return packageSpec;
+            return specs.Package;
         }
 
         public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
@@ -220,12 +220,48 @@ namespace NuGet.PackageManagement.VisualStudio
                     return installedPackages;
                 }
 
-                var packageSpec = GetPackageSpecForRestore();
-
-                _installedPackages = GetPackageReferences(packageSpec);
-
+                GetSpecsAndInitializeInstalledPackages();
                 return _installedPackages;
             }
+        }
+
+        private Specs GetSpecsAndInitializeInstalledPackages()
+        {
+            var dependencyGraphSpec = MSBuildUtility.GetProjectReferences(
+                _msbuildPath,
+                new[] { _fullProjectPath },
+                MSBuildWaitTime);
+
+            var packageSpec = dependencyGraphSpec
+                .Projects
+                .FirstOrDefault(p => _fullProjectPath.Equals(
+                    p.RestoreMetadata.ProjectPath,
+                    StringComparison.OrdinalIgnoreCase));
+
+            if (packageSpec != null)
+            {
+                // Set the output path, since shelling out to MSBuild does not set this.
+                packageSpec.RestoreMetadata.OutputPath = BaseIntermediateOutputPath;
+
+                // Update the list of references while we have the package spec.
+                lock (_installedPackagesLock)
+                {
+                    _installedPackages = GetPackageReferences(packageSpec);
+                }
+            }
+            else
+            {
+                lock (_installedPackagesLock)
+                {
+                    _installedPackages = new List<PackageReference>();
+                }
+            }
+
+            return new Specs
+            {
+                DependencyGraph = dependencyGraphSpec,
+                Package = packageSpec
+            };
         }
 
         private List<PackageReference> GetPackageReferences(PackageSpec packageSpec)
@@ -324,6 +360,54 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return null;
+        }
+
+        public bool IsRestoreRequired(
+            IEnumerable<VersionFolderPathResolver> pathResolvers,
+            ISet<PackageIdentity> packagesChecked,
+            ExternalProjectReferenceContext context)
+        {
+            // TODO: when the real implementation of NuGetProject for CPS PackageReference is completed, more
+            // sophisticated restore no-op detection logic is required. Always returning true means that every build
+            // will result in a restore.
+            return true;
+        }
+
+        public async Task<IReadOnlyList<ExternalProjectReference>> GetProjectReferenceClosureAsync(
+            ExternalProjectReferenceContext context)
+        {
+            await TaskScheduler.Default;
+
+            var specs = GetSpecsAndInitializeInstalledPackages();
+
+            var externalProjectReferences = new HashSet<ExternalProjectReference>();
+
+            foreach (var packageSpec in specs.DependencyGraph.Projects)
+            {
+                var projectReferences = packageSpec
+                    .RestoreMetadata
+                    .ProjectReferences
+                    .Select(r => r.ProjectUniqueName)
+                    .ToList();
+
+                var reference = new ExternalProjectReference(
+                    packageSpec.RestoreMetadata.ProjectPath,
+                    packageSpec,
+                    packageSpec.RestoreMetadata.ProjectPath,
+                    projectReferences);
+
+                externalProjectReferences.Add(reference);
+            }
+
+            return DependencyGraphProjectCacheUtility
+                .GetExternalClosure(_fullProjectPath, externalProjectReferences)
+                .ToList();
+        }
+
+        private class Specs
+        {
+            public DependencyGraphSpec DependencyGraph { get; set; }
+            public PackageSpec Package { get; set; }
         }
 
         private static class MSBuildUtility

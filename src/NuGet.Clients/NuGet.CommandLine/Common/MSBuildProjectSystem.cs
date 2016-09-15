@@ -14,9 +14,7 @@ namespace NuGet.Common
     public class MSBuildProjectSystem : MSBuildUser, IMSBuildNuGetProjectSystem
     {
         private const string TargetName = "EnsureNuGetPackageBuildImports";
-
-        private readonly string _projectDirectory;
-
+        
         public MSBuildProjectSystem(
             string msbuildDirectory,
             string projectFullPath,
@@ -24,8 +22,8 @@ namespace NuGet.Common
         {
             LoadAssemblies(msbuildDirectory);
 
-            _projectDirectory = Path.GetDirectoryName(projectFullPath);
-            ProjectFullPath = _projectDirectory;
+            ProjectFileFullPath = projectFullPath;
+            ProjectFullPath = Path.GetDirectoryName(projectFullPath);
             Project = GetProject(projectFullPath);
             ProjectName = Path.GetFileName(projectFullPath);
             ProjectUniqueName = projectFullPath;
@@ -42,6 +40,8 @@ namespace NuGet.Common
         public string ProjectName { get; }
 
         public string ProjectUniqueName { get; }
+
+        public string ProjectFileFullPath { get; }
 
         public NuGetFramework TargetFramework
         {
@@ -129,7 +129,7 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(targetFullPath));
             }
 
-            var targetRelativePath = NuGet.PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(_projectDirectory), targetFullPath);
+            var targetRelativePath = NuGet.PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(ProjectFullPath), targetFullPath);
             var imports = Project.Xml.Imports;
             bool notImported = true;
             if (imports != null)
@@ -169,7 +169,7 @@ namespace NuGet.Common
 
         public void AddReference(string referencePath)
         {
-            string fullPath = NuGet.PathUtility.GetAbsolutePath(_projectDirectory, referencePath);
+            string fullPath = NuGet.PathUtility.GetAbsolutePath(ProjectFullPath, referencePath);
             string relativePath = NuGet.PathUtility.GetRelativePath(Project.FullPath, fullPath);
             string assemblyFileName = Path.GetFileNameWithoutExtension(fullPath);
 
@@ -241,13 +241,13 @@ namespace NuGet.Common
 
         public IEnumerable<string> GetDirectories(string path)
         {
-            path = Path.Combine(_projectDirectory, path);
+            path = Path.Combine(ProjectFullPath, path);
             return Directory.EnumerateDirectories(path);
         }
 
         public IEnumerable<string> GetFiles(string path, string filter, bool recursive)
         {
-            path = Path.Combine(_projectDirectory, path);
+            path = Path.Combine(ProjectFullPath, path);
             return Directory.EnumerateFiles(path, filter, recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
         }
 
@@ -258,7 +258,7 @@ namespace NuGet.Common
                 var itemFileName = Path.GetFileName(projectItem.EvaluatedInclude);
                 if (string.Equals(fileName, itemFileName, StringComparison.OrdinalIgnoreCase))
                 {
-                    yield return Path.Combine(_projectDirectory, projectItem.EvaluatedInclude);
+                    yield return Path.Combine(ProjectFullPath, projectItem.EvaluatedInclude);
                 }
             }
         }
@@ -291,7 +291,7 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(targetFullPath));
             }
 
-            var targetRelativePath = NuGet.PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(_projectDirectory), targetFullPath);
+            var targetRelativePath = NuGet.PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(ProjectFullPath), targetFullPath);
             if (Project.Xml.Imports != null)
             {
                 // search for this import statement and remove it

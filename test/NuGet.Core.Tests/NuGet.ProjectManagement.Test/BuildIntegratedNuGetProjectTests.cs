@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
+using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
@@ -22,6 +24,99 @@ namespace ProjectManagement.Test
 {
     public class BuildIntegratedNuGetProjectTests
     {
+        [Fact]
+        public void BuildIntegratedNuGetProject_GetPackageSpecForRestore_NoReferences()
+        {
+            // Arrange
+            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var projectJsonPath = Path.Combine(randomProjectFolderPath, "project.json");
+                CreateConfigJson(projectJsonPath);
+
+                var projectTargetFramework = NuGetFramework.Parse("netcore50");
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
+                var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
+                var buildIntegratedProject = new BuildIntegratedNuGetProject(projectJsonPath, projectFilePath, msBuildNuGetProjectSystem);
+
+                var referenceContext = new ExternalProjectReferenceContext(new TestLogger());
+
+                // Act
+                var actual = buildIntegratedProject.GetPackageSpecForRestore(referenceContext);
+
+                // Assert
+                Assert.NotNull(actual);
+                Assert.Equal(msBuildNuGetProjectSystem.ProjectName, actual.Name);
+                Assert.Equal(projectJsonPath, actual.FilePath);
+                Assert.NotNull(actual.RestoreMetadata);
+                Assert.Equal(RestoreOutputType.UAP, actual.RestoreMetadata.OutputType);
+                Assert.Equal(projectFilePath, actual.RestoreMetadata.ProjectPath);
+                Assert.Equal(msBuildNuGetProjectSystem.ProjectName, actual.RestoreMetadata.ProjectName);
+                Assert.Equal(projectFilePath, actual.RestoreMetadata.ProjectUniqueName);
+                Assert.Equal(1, actual.TargetFrameworks.Count);
+                Assert.Equal(projectTargetFramework, actual.TargetFrameworks[0].FrameworkName);
+                Assert.Empty(actual.TargetFrameworks[0].Imports);
+
+                Assert.Empty(actual.Dependencies);
+                Assert.Empty(actual.TargetFrameworks[0].Dependencies);
+                Assert.Empty(actual.RestoreMetadata.ProjectReferences);
+            }
+        }
+
+        [Fact]
+        public void BuildIntegratedNuGetProject_GetPackageSpecForRestore_WithReferences()
+        {
+            // Arrange
+            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var projectJsonPath = Path.Combine(randomProjectFolderPath, "project.json");
+                CreateConfigJson(projectJsonPath);
+
+                var projectTargetFramework = NuGetFramework.Parse("netcore50");
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
+                var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
+                var buildIntegratedProject = new BuildIntegratedNuGetProject(projectJsonPath, projectFilePath, msBuildNuGetProjectSystem);
+
+                var referenceContext = new ExternalProjectReferenceContext(new TestLogger());
+                referenceContext.DirectReferenceCache[projectFilePath] = new List<ExternalProjectReference>
+                {
+                    new ExternalProjectReference(
+                        uniqueName: "uniqueName",
+                        packageSpecProjectName: null,
+                        packageSpecPath: null,
+                        msbuildProjectPath: "msbuildProjectPath",
+                        projectReferences: Enumerable.Empty<string>())
+                };
+
+                // Act
+                var actual = buildIntegratedProject.GetPackageSpecForRestore(referenceContext);
+
+                // Assert
+                Assert.NotNull(actual);
+                Assert.Equal(msBuildNuGetProjectSystem.ProjectName, actual.Name);
+                Assert.Equal(projectJsonPath, actual.FilePath);
+                Assert.NotNull(actual.RestoreMetadata);
+                Assert.Equal(RestoreOutputType.UAP, actual.RestoreMetadata.OutputType);
+                Assert.Equal(projectFilePath, actual.RestoreMetadata.ProjectPath);
+                Assert.Equal(msBuildNuGetProjectSystem.ProjectName, actual.RestoreMetadata.ProjectName);
+                Assert.Equal(projectFilePath, actual.RestoreMetadata.ProjectUniqueName);
+                Assert.Equal(1, actual.TargetFrameworks.Count);
+                Assert.Equal(projectTargetFramework, actual.TargetFrameworks[0].FrameworkName);
+                Assert.Empty(actual.TargetFrameworks[0].Imports);
+
+                Assert.Equal(1, actual.Dependencies.Count);
+                Assert.Equal("uniqueName", actual.Dependencies[0].Name);
+                Assert.Equal(LibraryDependencyTarget.ExternalProject, actual.Dependencies[0].LibraryRange.TypeConstraint);
+
+                Assert.Empty(actual.TargetFrameworks[0].Dependencies);
+
+                Assert.Equal(1, actual.RestoreMetadata.ProjectReferences.Count);
+                Assert.Equal("uniqueName", actual.RestoreMetadata.ProjectReferences[0].ProjectUniqueName);
+                Assert.Equal("msbuildProjectPath", actual.RestoreMetadata.ProjectReferences[0].ProjectPath);
+            }
+        }
+
         [Fact]
         public void BuildIntegratedNuGetProject_SortDependenciesWithProjects()
         {

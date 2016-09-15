@@ -15,6 +15,7 @@ namespace NuGet.ProjectManagement
         string ProjectName { get; }
         string ProjectUniqueName { get; }
         string ProjectFullPath { get; }
+        string ProjectFileFullPath { get; }
         INuGetProjectContext NuGetProjectContext { get; }
         void SetNuGetProjectContext(INuGetProjectContext nuGetProjectContext);
         void AddFile(string path, Stream stream);

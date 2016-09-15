@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
@@ -10,14 +11,15 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Frameworks;
+using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
-using System.Globalization;
 
 namespace NuGet.ProjectManagement.Projects
 {
@@ -25,14 +27,11 @@ namespace NuGet.ProjectManagement.Projects
     /// A NuGet integrated MSBuild project.k
     /// These projects contain a project.json
     /// </summary>
-    public class BuildIntegratedNuGetProject : NuGetProject, INuGetIntegratedProject
+    public class BuildIntegratedNuGetProject : NuGetProject, INuGetIntegratedProject, IDependencyGraphProject
     {
         private readonly FileInfo _jsonConfig;
         private readonly string _projectName;
-
-        /// <summary>
-        /// MSBuild project file path.
-        /// </summary>
+        
         public string MSBuildProjectPath { get; }
 
         /// <summary>
@@ -102,6 +101,84 @@ namespace NuGet.ProjectManagement.Projects
             };
 
             InternalMetadata.Add(NuGetProjectMetadataKeys.SupportedFrameworks, supported);
+        }
+
+        public bool IsRestoreRequired(
+            IEnumerable<VersionFolderPathResolver> pathResolvers,
+            ISet<PackageIdentity> packagesChecked,
+            ExternalProjectReferenceContext context)
+        {
+            var lockFilePath = ProjectJsonPathUtilities.GetLockFilePath(JsonConfigPath);
+
+            if (!File.Exists(lockFilePath))
+            {
+                // If the lock file does not exist a restore is needed
+                return true;
+            }
+
+            var lockFileFormat = new LockFileFormat();
+            LockFile lockFile;
+            try
+            {
+                lockFile = lockFileFormat.Read(lockFilePath, context.Logger);
+            }
+            catch
+            {
+                // If the lock file is invalid, then restore.
+                return true;
+            }
+            
+            var packageSpec = GetPackageSpecForRestore(context);
+
+            if (!lockFile.IsValidForPackageSpec(packageSpec, LockFileFormat.Version))
+            {
+                // The project.json file has been changed and the lock file needs to be updated.
+                return true;
+            }
+
+            // Verify all libraries are on disk
+            var packages = lockFile.Libraries.Where(library => library.Type == LibraryType.Package);
+
+            foreach (var library in packages)
+            {
+                var identity = new PackageIdentity(library.Name, library.Version);
+
+                // Each id/version only needs to be checked once
+                if (packagesChecked.Add(identity))
+                {
+                    var found = false;
+
+                    //  Check each package folder. These need to match the order used for restore.
+                    foreach (var resolver in pathResolvers)
+                    {
+                        // Verify the SHA for each package
+                        var hashPath = resolver.GetHashPath(library.Name, library.Version);
+
+                        if (File.Exists(hashPath))
+                        {
+                            found = true;
+                            var sha512 = File.ReadAllText(hashPath);
+
+                            if (library.Sha512 != sha512)
+                            {
+                                // A package has changed
+                                return true;
+                            }
+
+                            // Skip checking the rest of the package folders
+                            break;
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        // A package is missing
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
@@ -206,6 +283,44 @@ namespace NuGet.ProjectManagement.Projects
             }
         }
 
+        public PackageSpec GetPackageSpecForRestore(ExternalProjectReferenceContext referenceContext)
+        {
+            var packageSpec = PackageSpec;
+
+            var metadata = new ProjectRestoreMetadata();
+            packageSpec.RestoreMetadata = metadata;
+
+            metadata.OutputType = RestoreOutputType.UAP;
+            metadata.ProjectPath = MSBuildProjectPath;
+            metadata.ProjectJsonPath = packageSpec.FilePath;
+            metadata.ProjectName = packageSpec.Name;
+            metadata.ProjectUniqueName = MSBuildProjectPath;
+
+            IReadOnlyList<ExternalProjectReference> references = null;
+            if (referenceContext.DirectReferenceCache.TryGetValue(metadata.ProjectPath, out references))
+            {
+                foreach (var reference in references)
+                {
+                    MSBuildRestoreUtility.AddMSBuildProjectReference(
+                        packageSpec,
+                        new ProjectRestoreReference
+                        {
+                            ProjectUniqueName = reference.UniqueName,
+                            ProjectPath = reference.MSBuildProjectPath
+                        },
+                        new LibraryDependency
+                        {
+                            LibraryRange = new LibraryRange(
+                                reference.UniqueName,
+                                LibraryDependencyTarget.ExternalProject)
+                        });
+                }
+            }
+
+
+            return packageSpec;
+        }
+
         /// <summary>
         /// Project name
         /// </summary>
@@ -221,6 +336,21 @@ namespace NuGet.ProjectManagement.Projects
         /// The underlying msbuild project system
         /// </summary>
         public IMSBuildNuGetProjectSystem MSBuildNuGetProjectSystem { get; }
+
+        public DateTimeOffset LastModified
+        {
+            get
+            {
+                var output = DateTimeOffset.MinValue;
+
+                if (File.Exists(JsonConfigPath))
+                {
+                    output = File.GetLastWriteTimeUtc(JsonConfigPath);
+                }
+
+                return output;
+            }
+        }
 
         /// <summary>
         /// Script executor hook
