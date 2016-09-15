@@ -98,7 +98,7 @@ namespace NuGet.Test.Utility
                     case RestoreOutputType.NETCore:
                         return Path.Combine(OutputPath, "project.assets.json");
                     case RestoreOutputType.UAP:
-                        return Path.Combine(Path.GetDirectoryName(ProjectPath), ProjectJsonPathUtilities.GetProjectLockFileNameWithProjectName(Path.GetFileNameWithoutExtension(ProjectPath)));
+                        return Path.Combine(Path.GetDirectoryName(ProjectPath), "project.lock.json");
                     default:
                         return null;
                 }
