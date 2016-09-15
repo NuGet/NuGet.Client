@@ -961,6 +961,13 @@ EndProject
 Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj2"", ""proj2\proj2.csproj"", ""{42641DAE-D6C4-49D4-92EA-749D2573554A}""
 EndProject");
 
+            var include1 = proj1ConfigFileName;
+
+            if (string.IsNullOrEmpty(include1))
+            {
+                include1 = Guid.NewGuid().ToString();
+            }
+
             CreateFile(proj1Directory, "proj1.csproj",
                 $@"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
@@ -970,7 +977,7 @@ EndProject");
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
-    <None Include='{proj1ConfigFileName}' />
+    <None Include='{include1}' />
   </ItemGroup>
   <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
 </Project>");
@@ -983,6 +990,13 @@ EndProject");
                 });
             }
 
+            var include2 = proj2ConfigFileName;
+
+            if (string.IsNullOrEmpty(include2))
+            {
+                include2 = Guid.NewGuid().ToString();
+            }
+
             CreateFile(proj2Directory, "proj2.csproj",
                 $@"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
@@ -992,7 +1006,7 @@ EndProject");
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
-    <None Include='{proj2ConfigFileName}' />
+    <None Include='{include2}' />
   </ItemGroup>
   <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
 </Project>");

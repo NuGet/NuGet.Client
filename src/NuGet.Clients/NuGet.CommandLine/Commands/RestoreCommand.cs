@@ -439,6 +439,18 @@ namespace NuGet.CommandLine
                 }
             }
 
+            // Run inputs through msbuild to determine the 
+            // correct type and find dependencies as needed.
+            DetermineInputsFromMSBuild(packageRestoreInputs);
+
+            return packageRestoreInputs;
+        }
+
+        /// <summary>
+        /// Read project inputs using MSBuild
+        /// </summary>
+        private void DetermineInputsFromMSBuild(PackageRestoreInputs packageRestoreInputs)
+        {
             // Find P2P graph for v3 inputs.
             // Ignore xproj files as top level inputs
             var projectsWithPotentialP2PReferences = packageRestoreInputs
@@ -448,48 +460,139 @@ namespace NuGet.CommandLine
 
             if (projectsWithPotentialP2PReferences.Length > 0)
             {
-                int scaleTimeout;
+                DependencyGraphSpec dgFileOutput = null;
 
-                if (Project2ProjectTimeOut > 0)
+                try
                 {
-                    scaleTimeout = Project2ProjectTimeOut * 1000;
+                    dgFileOutput = GetDependencyGraphSpec(projectsWithPotentialP2PReferences);
                 }
-                else
+                catch (Exception ex)
                 {
-                    scaleTimeout = MsBuildUtility.MsBuildWaitTime *
-                        Math.Max(10, projectsWithPotentialP2PReferences.Length / 2) / 10;
-                }
+                    // At this point reading the project has failed, to keep backwards 
+                    // compatibility this should warn instead of error if
+                    // packages.config files exist, but no project.json files.
+                    // This will skip NETCore projects which is a problem, but there is
+                    // not a good way to know if they exist, or if this is an old type of 
+                    // project that the targets file cannot handle.
 
-                Console.LogVerbose($"MSBuild P2P timeout [ms]: {scaleTimeout}");
+                    // Log exception for debug
+                    Console.LogDebug(ex.ToString());
 
-                // Call MSBuild to resolve P2P references.
-                var referencesLookup = MsBuildUtility.GetProjectReferences(
-                    _msbuildDirectory.Value,
-                    projectsWithPotentialP2PReferences,
-                    scaleTimeout);
-
-                packageRestoreInputs.ProjectReferenceLookup = referencesLookup;
-
-                // Check for packages.config from what is left
-                foreach (var projectFilePath in referencesLookup.Projects
-                    .Where(project => project.RestoreMetadata.OutputType == RestoreOutputType.Unknown)
-                    .Select(project => project.RestoreMetadata.ProjectPath))
-                {
-                    var packagesConfigPath = GetPackageReferenceFile(projectFilePath);
-                    if (File.Exists(packagesConfigPath))
+                    // Check for packages.config but no project.json files
+                    if (projectsWithPotentialP2PReferences.Where(HasPackagesConfigFile).Any()
+                        && !projectsWithPotentialP2PReferences.Where(HasProjectJsonFile).Any())
                     {
-                        // Check for packages.config, if it exists add it directly
-                        packageRestoreInputs.PackagesConfigFiles.Add(packagesConfigPath);
+                        // warn to let the user know that NETCore will be skipped
+                        Console.LogWarning(LocalizedResourceManager.GetString("Warning_ReadingProjectsFailed"));
+
+                        // Add packages.config 
+                        packageRestoreInputs.PackagesConfigFiles
+                            .AddRange(projectsWithPotentialP2PReferences
+                            .Select(GetPackagesConfigFile)
+                            .Where(path => path != null));
+                    }
+                    else
+                    {
+                        // If there are project.json files or no packages.config files
+                        // continue to fail
+                        throw;
                     }
                 }
 
-                // V3 restore for the rest
-                packageRestoreInputs.RestoreV3Context.Inputs.AddRange(referencesLookup.Projects
-                    .Where(project => project.RestoreMetadata.OutputType != RestoreOutputType.Unknown)
-                    .Select(project => project.RestoreMetadata.ProjectPath));
+                // Process the DG file and add both v2 and v3 inputs
+                if (dgFileOutput != null)
+                {
+                    AddInputsFromDependencyGraphSpec(packageRestoreInputs, dgFileOutput);
+                }
+            }
+        }
+
+        private void AddInputsFromDependencyGraphSpec(PackageRestoreInputs packageRestoreInputs, DependencyGraphSpec dgFileOutput)
+        {
+            packageRestoreInputs.ProjectReferenceLookup = dgFileOutput;
+
+            // Get top level entries
+            var entryPointProjects = dgFileOutput
+                .Projects
+                .Where(project => dgFileOutput.Restore.Contains(project.RestoreMetadata.ProjectUniqueName, StringComparer.Ordinal))
+                .ToList();
+
+            // possible packages.config
+            // Compare paths case-insenstive here since we do not know how msbuild modified them
+            // find all projects that are not part of the v3 group
+            var v2RestoreProjects =
+                packageRestoreInputs.ProjectFiles
+                  .Where(path => !entryPointProjects.Any(project => path.Equals(project.RestoreMetadata.ProjectPath, StringComparison.OrdinalIgnoreCase)));
+        
+            packageRestoreInputs.PackagesConfigFiles
+                .AddRange(v2RestoreProjects
+                .Select(GetPackagesConfigFile)
+                .Where(path => path != null));
+
+            // NETCore or UAP
+            // Filter down to just the requested projects in the file
+            var v3RestoreProjects = dgFileOutput.Projects
+                .Where(project => (project.RestoreMetadata.OutputType == RestoreOutputType.NETCore
+                    || project.RestoreMetadata.OutputType == RestoreOutputType.UAP)
+                    && entryPointProjects.Contains(project));
+
+            packageRestoreInputs.RestoreV3Context.Inputs.AddRange(v3RestoreProjects
+                .Select(project => project.RestoreMetadata.ProjectPath));
+        }
+
+        private string GetPackagesConfigFile(string projectFilePath)
+        {
+            // Get possible packages.config path
+            var packagesConfigPath = GetPackageReferenceFile(projectFilePath);
+            if (File.Exists(packagesConfigPath))
+            {
+                return packagesConfigPath;
             }
 
-            return packageRestoreInputs;
+            return null;
+        }
+
+        private bool HasPackagesConfigFile(string projectFilePath)
+        {
+            // Get possible packages.config path
+            return GetPackagesConfigFile(projectFilePath) != null;
+        }
+
+        private bool HasProjectJsonFile(string projectFilePath)
+        {
+            // Get possible project.json path
+            var projectFileName = Path.GetFileName(projectFilePath);
+            var projectName = Path.GetFileNameWithoutExtension(projectFileName);
+            var dir = Path.GetDirectoryName(projectFilePath);
+            var projectJsonPath = ProjectJsonPathUtilities.GetProjectConfigPath(dir, projectName);
+
+            return File.Exists(projectJsonPath);
+        }
+
+        /// <summary>
+        ///  Create a dg v2 file using msbuild.
+        /// </summary>
+        private DependencyGraphSpec GetDependencyGraphSpec(string[] projectsWithPotentialP2PReferences)
+        {
+            int scaleTimeout;
+
+            if (Project2ProjectTimeOut > 0)
+            {
+                scaleTimeout = Project2ProjectTimeOut * 1000;
+            }
+            else
+            {
+                scaleTimeout = MsBuildUtility.MsBuildWaitTime *
+                    Math.Max(10, projectsWithPotentialP2PReferences.Length / 2) / 10;
+            }
+
+            Console.LogVerbose($"MSBuild P2P timeout [ms]: {scaleTimeout}");
+
+            // Call MSBuild to resolve P2P references.
+            return MsBuildUtility.GetProjectReferences(
+                _msbuildDirectory.Value,
+                projectsWithPotentialP2PReferences,
+                scaleTimeout);
         }
 
         /// <summary>

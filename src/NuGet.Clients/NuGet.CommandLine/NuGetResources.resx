@@ -6105,4 +6105,7 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="Error_ProjectJsonNotAllowed" xml:space="preserve">
     <value>Invalid input '{0}'. Provide the path of an msbuild solution file instead. Support for XProj and standalone project.json files has been removed, to continue working with legacy projects use NuGet 3.5.x from https://nuget.org/downloads</value>
   </data>
+  <data name="Warning_ReadingProjectsFailed" xml:space="preserve">
+    <value>Error reading msbuild project information, ensure that your input solution or project file is valid. NETCore and UAP projects will be skipped, only packages.config files will be restored.</value>
+  </data>
 </root>
