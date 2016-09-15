@@ -282,6 +282,8 @@ namespace NuGet.Test.Utility
 
                         var props = new Dictionary<string, string>();
 
+                        props.Add("Version", package.Version.ToString());
+
                         if (!string.IsNullOrEmpty(package.Include))
                         {
                             props.Add("IncludeAssets", package.Include);
@@ -300,7 +302,7 @@ namespace NuGet.Test.Utility
                         AddItem(
                             xml,
                             "PackageReference",
-                            $"{package.Id}/{package.Version.ToString()}",
+                            package.Id,
                             referenceFramework,
                             props);
                     }

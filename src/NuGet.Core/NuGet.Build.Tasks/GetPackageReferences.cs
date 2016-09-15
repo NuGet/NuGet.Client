@@ -5,15 +5,6 @@ using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Newtonsoft.Json;
-using NuGet.Commands;
-using NuGet.Common;
-using NuGet.Configuration;
-using NuGet.Frameworks;
-using NuGet.LibraryModel;
-using NuGet.ProjectModel;
-using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
-using NuGet.Versioning;
 
 namespace NuGet.Build.Tasks
 {
@@ -48,29 +39,22 @@ namespace NuGet.Build.Tasks
 
             var entries = new List<ITaskItem>();
 
-            foreach (var project in PackageReferences)
+            foreach (var msbuildItem in PackageReferences)
             {
-                var parts = project.ItemSpec.Split('/');
-
-                if (parts.Length != 2)
-                {
-                    throw new InvalidDataException(project.ItemSpec);
-                }
-
                 var properties = new Dictionary<string, string>();
                 properties.Add("ProjectUniqueName", ProjectUniqueName);
                 properties.Add("Type", "Dependency");
-                properties.Add("Id", parts[0]);
-                properties.Add("VersionRange", parts[1]);
+                properties.Add("Id", msbuildItem.ItemSpec);
+                BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "Version", "VersionRange");
 
                 if (!string.IsNullOrEmpty(TargetFrameworks))
                 {
                     properties.Add("TargetFrameworks", TargetFrameworks);
                 }
 
-                BuildTasksUtility.CopyPropertyIfExists(project, properties, "IncludeAssets");
-                BuildTasksUtility.CopyPropertyIfExists(project, properties, "ExcludeAssets");
-                BuildTasksUtility.CopyPropertyIfExists(project, properties, "PrivateAssets");
+                BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "IncludeAssets");
+                BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "ExcludeAssets");
+                BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "PrivateAssets");
 
                 entries.Add(new TaskItem(Guid.NewGuid().ToString(), properties));
             }

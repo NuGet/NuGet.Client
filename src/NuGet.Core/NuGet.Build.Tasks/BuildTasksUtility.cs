@@ -10,6 +10,11 @@ namespace NuGet.Build.Tasks
     {
         public static void CopyPropertyIfExists(ITaskItem item, IDictionary<string, string> properties, string key)
         {
+            CopyPropertyIfExists(item, properties, key, key);
+        }
+
+        public static void CopyPropertyIfExists(ITaskItem item, IDictionary<string, string> properties, string key, string toKey)
+        {
             var wrapper = new MSBuildTaskItem(item);
 
             var propertyValue = wrapper.GetProperty(key);
@@ -17,7 +22,7 @@ namespace NuGet.Build.Tasks
             if (!string.IsNullOrEmpty(propertyValue)
                 && !properties.ContainsKey(key))
             {
-                properties.Add(key, propertyValue);
+                properties.Add(toKey, propertyValue);
             }
         }
     }
