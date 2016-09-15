@@ -38,6 +38,8 @@ namespace NuGet.Test.Utility
         public List<SimpleTestPackageContext> Dependencies { get; set; } = new List<SimpleTestPackageContext>();
         public string Include { get; set; } = string.Empty;
         public string Exclude { get; set; } = string.Empty;
+        // Used by the parent project
+        public string PrivateAssets { get; set; } = string.Empty;
         public List<KeyValuePair<string, byte[]>> Files { get; set; } = new List<KeyValuePair<string, byte[]>>();
         public XDocument Nuspec { get; set; }
         public List<PackageType> PackageTypes { get; set; } = new List<PackageType>();

@@ -16976,6 +16976,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error reading msbuild project information, ensure that your input solution or project file is valid. NETCore and UAP projects will be skipped, only packages.config files will be restored..
+        /// </summary>
+        public static string Warning_ReadingProjectsFailed {
+            get {
+                return ResourceManager.GetString("Warning_ReadingProjectsFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Version &quot;{0}&quot; does not follow semantic versioning guidelines..
         /// </summary>
         public static string Warning_SemanticVersion {

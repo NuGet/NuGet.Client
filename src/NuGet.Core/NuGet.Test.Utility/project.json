@@ -21,6 +21,9 @@
     "NuGet.Packaging": {
       "target": "project"
     },
+    "NuGet.ProjectModel": {
+      "target": "project"
+    },
     "xunit": "2.1.0"
   },
   "frameworks": {

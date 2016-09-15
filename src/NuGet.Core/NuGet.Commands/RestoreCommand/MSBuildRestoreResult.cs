@@ -39,19 +39,19 @@ namespace NuGet.Commands
         /// <summary>
         /// Gets a list of MSBuild props files provided by packages during this restore
         /// </summary>
-        public IReadOnlyList<string> Props { get; }
+        public IDictionary<string, IList<string>> Props { get; }
 
         /// <summary>
         /// Gets a list of MSBuild targets files provided by packages during this restore
         /// </summary>
-        public IReadOnlyList<string> Targets { get; }
+        public IDictionary<string, IList<string>> Targets { get; }
 
         public MSBuildRestoreResult(string targetsPath, string propsPath, bool success)
             : this(targetsPath,
                   propsPath, 
                   repositoryRoot: string.Empty, 
-                  targets: new List<string>(),
-                  props: new List<string>(),
+                  targets: new Dictionary<string, IList<string>>(),
+                  props: new Dictionary<string, IList<string>>(),
                   success: success)
         {
         }
@@ -60,8 +60,8 @@ namespace NuGet.Commands
             string targetsPath,
             string propsPath,
             string repositoryRoot,
-            IReadOnlyList<string> props,
-            IReadOnlyList<string> targets)
+            IDictionary<string, IList<string>> props,
+            IDictionary<string, IList<string>> targets)
             : this(targetsPath, propsPath, repositoryRoot, props, targets, success: true)
         {
         }
@@ -70,8 +70,8 @@ namespace NuGet.Commands
             string targetsPath,
             string propsPath,
             string repositoryRoot,
-            IReadOnlyList<string> props,
-            IReadOnlyList<string> targets,
+            IDictionary<string, IList<string>> props,
+            IDictionary<string, IList<string>> targets,
             bool success)
         {
             Success = success;
@@ -110,7 +110,7 @@ namespace NuGet.Commands
             else
             {
                 // Generate the files as needed
-                if (Targets.Count > 0)
+                if (Targets.Any(pair => pair.Value.Count > 0))
                 {
                     log.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_GeneratingMsBuildFile, TargetsPath));
 
@@ -121,7 +121,7 @@ namespace NuGet.Commands
                     File.Delete(TargetsPath);
                 }
 
-                if (Props.Count > 0)
+                if (Props.Any(pair => pair.Value.Count > 0))
                 {
                     log.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_GeneratingMsBuildFile, PropsPath));
 
@@ -173,7 +173,7 @@ namespace NuGet.Commands
             }
         }
 
-        private void GenerateImportsFile(string path, IEnumerable<string> imports)
+        private void GenerateImportsFile(string path, IDictionary<string, IList<string>> imports)
         {
             var ns = XNamespace.Get("http://schemas.microsoft.com/developer/msbuild/2003");
             var doc = new XDocument(
@@ -184,12 +184,30 @@ namespace NuGet.Commands
 
                     new XElement(ns + "PropertyGroup",
                         new XAttribute("Condition", "'$(NuGetPackageRoot)' == ''"),
+                        new XElement(ns + "NuGetPackageRoot", ReplacePathsWithMacros(RepositoryRoot)))));
 
-                        new XElement(ns + "NuGetPackageRoot", ReplacePathsWithMacros(RepositoryRoot))),
-                    new XElement(ns + "ImportGroup", imports.Select(i =>
-                        new XElement(ns + "Import",
-                            new XAttribute("Project", GetImportPath(i)),
-                            new XAttribute("Condition", $"Exists('{GetImportPath(i)}')"))))));
+            // Add import groups
+            foreach (var pair in imports.OrderBy(e => e.Key, StringComparer.OrdinalIgnoreCase))
+            {
+                var framework = pair.Key;
+                var importsForGroup = pair.Value;
+
+                if (importsForGroup.Count > 0)
+                {
+                    var itemGroup = new XElement(ns + "ImportGroup", importsForGroup.Select(i =>
+                                new XElement(ns + "Import",
+                                    new XAttribute("Project", GetImportPath(i)),
+                                    new XAttribute("Condition", $"Exists('{GetImportPath(i)}')"))));
+
+                    // Add a conditional TFM if multiple TFMs exist
+                    if (!string.IsNullOrEmpty(pair.Key))
+                    {
+                        itemGroup.Add(new XAttribute("Condition", $" '$(TargetFramework)' == '{framework}' "));
+                    }
+
+                    doc.Root.Add(itemGroup);
+                }
+            }
 
             using (var output = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
             {

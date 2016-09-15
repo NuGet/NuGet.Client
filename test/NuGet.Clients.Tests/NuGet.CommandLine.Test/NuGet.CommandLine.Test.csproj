@@ -82,6 +82,7 @@
     <Compile Include="NuGetSetApiKeyTests.cs" />
     <Compile Include="NuGetUpdateCommandTests.cs" />
     <Compile Include="PortReserver.cs" />
+    <Compile Include="RestoreNETCoreTest.cs" />
     <Compile Include="RestoreProjectJsonTest.cs" />
     <Compile Include="NuGetSourcesCommandTest.cs" />
     <Compile Include="PackageCreator.cs" />

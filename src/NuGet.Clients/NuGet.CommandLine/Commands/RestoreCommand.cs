@@ -439,35 +439,160 @@ namespace NuGet.CommandLine
                 }
             }
 
+            // Run inputs through msbuild to determine the 
+            // correct type and find dependencies as needed.
+            DetermineInputsFromMSBuild(packageRestoreInputs);
+
+            return packageRestoreInputs;
+        }
+
+        /// <summary>
+        /// Read project inputs using MSBuild
+        /// </summary>
+        private void DetermineInputsFromMSBuild(PackageRestoreInputs packageRestoreInputs)
+        {
             // Find P2P graph for v3 inputs.
-            var projectsWithPotentialP2PReferences = packageRestoreInputs.RestoreV3Context.Inputs.ToArray();
+            // Ignore xproj files as top level inputs
+            var projectsWithPotentialP2PReferences = packageRestoreInputs
+                .ProjectFiles
+                .Where(path => !path.EndsWith(".xproj", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
 
             if (projectsWithPotentialP2PReferences.Length > 0)
             {
-                int scaleTimeout;
+                DependencyGraphSpec dgFileOutput = null;
 
-                if (Project2ProjectTimeOut > 0)
+                try
                 {
-                    scaleTimeout = Project2ProjectTimeOut * 1000;
+                    dgFileOutput = GetDependencyGraphSpec(projectsWithPotentialP2PReferences);
                 }
-                else
+                catch (Exception ex)
                 {
-                    scaleTimeout = MsBuildUtility.MsBuildWaitTime *
-                        Math.Max(10, projectsWithPotentialP2PReferences.Length / 2) / 10;
+                    // At this point reading the project has failed, to keep backwards 
+                    // compatibility this should warn instead of error if
+                    // packages.config files exist, but no project.json files.
+                    // This will skip NETCore projects which is a problem, but there is
+                    // not a good way to know if they exist, or if this is an old type of 
+                    // project that the targets file cannot handle.
+
+                    // Log exception for debug
+                    Console.LogDebug(ex.ToString());
+
+                    // Check for packages.config but no project.json files
+                    if (projectsWithPotentialP2PReferences.Where(HasPackagesConfigFile).Any()
+                        && !projectsWithPotentialP2PReferences.Where(HasProjectJsonFile).Any())
+                    {
+                        // warn to let the user know that NETCore will be skipped
+                        Console.LogWarning(LocalizedResourceManager.GetString("Warning_ReadingProjectsFailed"));
+
+                        // Add packages.config 
+                        packageRestoreInputs.PackagesConfigFiles
+                            .AddRange(projectsWithPotentialP2PReferences
+                            .Select(GetPackagesConfigFile)
+                            .Where(path => path != null));
+                    }
+                    else
+                    {
+                        // If there are project.json files or no packages.config files
+                        // continue to fail
+                        throw;
+                    }
                 }
 
-                Console.LogVerbose($"MSBuild P2P timeout [ms]: {scaleTimeout}");
+                // Process the DG file and add both v2 and v3 inputs
+                if (dgFileOutput != null)
+                {
+                    AddInputsFromDependencyGraphSpec(packageRestoreInputs, dgFileOutput);
+                }
+            }
+        }
 
-                // Call MSBuild to resolve P2P references.
-                var referencesLookup = MsBuildUtility.GetProjectReferences(
-                    _msbuildDirectory.Value,
-                    projectsWithPotentialP2PReferences,
-                    scaleTimeout);
+        private void AddInputsFromDependencyGraphSpec(PackageRestoreInputs packageRestoreInputs, DependencyGraphSpec dgFileOutput)
+        {
+            packageRestoreInputs.ProjectReferenceLookup = dgFileOutput;
 
-                packageRestoreInputs.ProjectReferenceLookup = referencesLookup;
+            // Get top level entries
+            var entryPointProjects = dgFileOutput
+                .Projects
+                .Where(project => dgFileOutput.Restore.Contains(project.RestoreMetadata.ProjectUniqueName, StringComparer.Ordinal))
+                .ToList();
+
+            // possible packages.config
+            // Compare paths case-insenstive here since we do not know how msbuild modified them
+            // find all projects that are not part of the v3 group
+            var v2RestoreProjects =
+                packageRestoreInputs.ProjectFiles
+                  .Where(path => !entryPointProjects.Any(project => path.Equals(project.RestoreMetadata.ProjectPath, StringComparison.OrdinalIgnoreCase)));
+        
+            packageRestoreInputs.PackagesConfigFiles
+                .AddRange(v2RestoreProjects
+                .Select(GetPackagesConfigFile)
+                .Where(path => path != null));
+
+            // NETCore or UAP
+            // Filter down to just the requested projects in the file
+            var v3RestoreProjects = dgFileOutput.Projects
+                .Where(project => (project.RestoreMetadata.OutputType == RestoreOutputType.NETCore
+                    || project.RestoreMetadata.OutputType == RestoreOutputType.UAP)
+                    && entryPointProjects.Contains(project));
+
+            packageRestoreInputs.RestoreV3Context.Inputs.AddRange(v3RestoreProjects
+                .Select(project => project.RestoreMetadata.ProjectPath));
+        }
+
+        private string GetPackagesConfigFile(string projectFilePath)
+        {
+            // Get possible packages.config path
+            var packagesConfigPath = GetPackageReferenceFile(projectFilePath);
+            if (File.Exists(packagesConfigPath))
+            {
+                return packagesConfigPath;
             }
 
-            return packageRestoreInputs;
+            return null;
+        }
+
+        private bool HasPackagesConfigFile(string projectFilePath)
+        {
+            // Get possible packages.config path
+            return GetPackagesConfigFile(projectFilePath) != null;
+        }
+
+        private bool HasProjectJsonFile(string projectFilePath)
+        {
+            // Get possible project.json path
+            var projectFileName = Path.GetFileName(projectFilePath);
+            var projectName = Path.GetFileNameWithoutExtension(projectFileName);
+            var dir = Path.GetDirectoryName(projectFilePath);
+            var projectJsonPath = ProjectJsonPathUtilities.GetProjectConfigPath(dir, projectName);
+
+            return File.Exists(projectJsonPath);
+        }
+
+        /// <summary>
+        ///  Create a dg v2 file using msbuild.
+        /// </summary>
+        private DependencyGraphSpec GetDependencyGraphSpec(string[] projectsWithPotentialP2PReferences)
+        {
+            int scaleTimeout;
+
+            if (Project2ProjectTimeOut > 0)
+            {
+                scaleTimeout = Project2ProjectTimeOut * 1000;
+            }
+            else
+            {
+                scaleTimeout = MsBuildUtility.MsBuildWaitTime *
+                    Math.Max(10, projectsWithPotentialP2PReferences.Length / 2) / 10;
+            }
+
+            Console.LogVerbose($"MSBuild P2P timeout [ms]: {scaleTimeout}");
+
+            // Call MSBuild to resolve P2P references.
+            return MsBuildUtility.GetProjectReferences(
+                _msbuildDirectory.Value,
+                projectsWithPotentialP2PReferences,
+                scaleTimeout);
         }
 
         /// <summary>
@@ -486,24 +611,7 @@ namespace NuGet.CommandLine
             }
             else if (projectFileName.EndsWith("proj", StringComparison.OrdinalIgnoreCase))
             {
-                // For msbuild files find the project.json or packages.config file,
-                // if neither exist skip it
-                var projectName = Path.GetFileNameWithoutExtension(projectFileName);
-                var dir = Path.GetDirectoryName(projectFilePath);
-
-                var projectJsonPath = ProjectJsonPathUtilities.GetProjectConfigPath(dir, projectName);
-                var packagesConfigPath = GetPackageReferenceFile(projectFilePath);
-
-                // Check for project.json
-                if (File.Exists(projectJsonPath))
-                {
-                    packageRestoreInputs.RestoreV3Context.Inputs.Add(projectFilePath);
-                }
-                else if (File.Exists(packagesConfigPath))
-                {
-                    // Check for packages.config, if it exists add it directly
-                    packageRestoreInputs.PackagesConfigFiles.Add(packagesConfigPath);
-                }
+                packageRestoreInputs.ProjectFiles.Add(projectFilePath);
             }
             else if (projectFileName.EndsWith(".dg", StringComparison.OrdinalIgnoreCase))
             {
@@ -700,23 +808,8 @@ namespace NuGet.CommandLine
 
                 var normalizedProjectFile = Path.GetFullPath(projectFile);
 
-                // packages.config
-                var packagesConfigFilePath = GetPackageReferenceFile(normalizedProjectFile);
-
-                // project.json
-                var dir = Path.GetDirectoryName(normalizedProjectFile);
-                var projectName = Path.GetFileNameWithoutExtension(normalizedProjectFile);
-                var projectJsonPath = ProjectJsonPathUtilities.GetProjectConfigPath(dir, projectName);
-
-                // project.json overrides packages.config
-                if (File.Exists(projectJsonPath))
-                {
-                    restoreInputs.RestoreV3Context.Inputs.Add(normalizedProjectFile);
-                }
-                else if (File.Exists(packagesConfigFilePath))
-                {
-                    restoreInputs.PackagesConfigFiles.Add(packagesConfigFilePath);
-                }
+                // Add everything
+                restoreInputs.ProjectFiles.Add(normalizedProjectFile);
             }
         }
 
@@ -736,6 +829,11 @@ namespace NuGet.CommandLine
             public DependencyGraphSpec ProjectReferenceLookup { get; set; }
 
             public RestoreArgs RestoreV3Context { get; set; } = new RestoreArgs();
+
+            /// <summary>
+            /// Project files, type to be determined.
+            /// </summary>
+            public HashSet<string> ProjectFiles { get; set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         }
     }
 }

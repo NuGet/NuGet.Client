@@ -54,5 +54,11 @@ namespace NuGet.ProjectModel
         /// Project reference metadata. This will be added to the non-msbuild dependency reference in the package spec.
         /// </summary>
         public IList<ProjectRestoreReference> ProjectReferences { get; set; } = new List<ProjectRestoreReference>();
+
+
+        /// <summary>
+        /// Original target frameworks strings. These are used to match msbuild conditionals to $(TargetFramework)
+        /// </summary>
+        public IList<string> OriginalTargetFrameworks { get; set; } = new List<string>();
     }
 }

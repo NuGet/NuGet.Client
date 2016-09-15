@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
@@ -91,6 +92,8 @@ namespace NuGet.Commands
 
             var graphSpec = new DependencyGraphSpec();
             var itemsById = new Dictionary<string, List<IMSBuildItem>>(StringComparer.Ordinal);
+            var restoreSpecs = new HashSet<string>(StringComparer.Ordinal);
+            var validForRestore = new HashSet<string>(StringComparer.Ordinal);
 
             // Sort items and add restore specs
             foreach (var item in items)
@@ -100,7 +103,7 @@ namespace NuGet.Commands
 
                 if ("restorespec".Equals(type, StringComparison.Ordinal))
                 {
-                    graphSpec.AddRestore(projectUniqueName);
+                    restoreSpecs.Add(projectUniqueName);
                 }
                 else if (!string.IsNullOrEmpty(projectUniqueName))
                 {
@@ -118,7 +121,19 @@ namespace NuGet.Commands
             // Add projects
             foreach (var spec in itemsById.Values.Select(GetPackageSpec))
             {
+                if (spec.RestoreMetadata.OutputType == RestoreOutputType.NETCore
+                    || spec.RestoreMetadata.OutputType == RestoreOutputType.UAP)
+                {
+                    validForRestore.Add(spec.RestoreMetadata.ProjectUniqueName);
+                }
+
                 graphSpec.AddProject(spec);
+            }
+
+            // Add UAP and NETCore projects to restore section
+            foreach (var projectUniqueName in restoreSpecs.Intersect(validForRestore))
+            {
+                graphSpec.AddRestore(projectUniqueName);
             }
 
             return graphSpec;
@@ -181,6 +196,25 @@ namespace NuGet.Commands
                 {
                     AddFrameworkAssemblies(result, items);
                     AddPackageReferences(result, items);
+                    result.RestoreMetadata.OutputPath = specItem.GetProperty("OutputPath");
+
+                    foreach (var source in Split(specItem.GetProperty("Sources")))
+                    {
+                        result.RestoreMetadata.Sources.Add(new PackageSource(source));
+                    }
+
+                    foreach (var folder in Split(specItem.GetProperty("FallbackFolders")))
+                    {
+                        result.RestoreMetadata.FallbackFolders.Add(folder);
+                    }
+
+                    result.RestoreMetadata.PackagesPath = specItem.GetProperty("PackagesPath");
+
+                    // Store the original framework strings for msbuild conditionals
+                    foreach (var originalFramework in GetFrameworksStrings(specItem))
+                    {
+                        result.RestoreMetadata.OriginalTargetFrameworks.Add(originalFramework);
+                    }
                 }
             }
 
@@ -202,9 +236,7 @@ namespace NuGet.Commands
                     versionRange: VersionRange.All,
                     typeConstraint: LibraryDependencyTarget.ExternalProject);
 
-                // TODO: include, suppressParent, exclude
-                dependency.IncludeType = LibraryIncludeFlags.All;
-                dependency.SuppressParent = LibraryIncludeFlagUtils.DefaultSuppressParent;
+                ApplyIncludeFlags(dependency, item);
 
                 var msbuildDependency = new ProjectRestoreReference()
                 {
@@ -264,9 +296,7 @@ namespace NuGet.Commands
                     versionRange: GetVersionRange(item),
                     typeConstraint: LibraryDependencyTarget.Package);
 
-                // TODO: include, suppressParent, exclude
-                dependency.IncludeType = LibraryIncludeFlags.All;
-                dependency.SuppressParent = LibraryIncludeFlagUtils.DefaultSuppressParent;
+                ApplyIncludeFlags(dependency, item);
 
                 var frameworks = GetFrameworks(item);
 
@@ -284,6 +314,39 @@ namespace NuGet.Commands
             }
         }
 
+        private static void ApplyIncludeFlags(LibraryDependency dependency, IMSBuildItem item)
+        {
+            var includeFlags = GetIncludeFlags(item.GetProperty("IncludeAssets"), LibraryIncludeFlags.All);
+            var excludeFlags = GetIncludeFlags(item.GetProperty("ExcludeAssets"), LibraryIncludeFlags.None);
+
+            dependency.IncludeType = includeFlags & ~excludeFlags;
+            dependency.SuppressParent = GetIncludeFlags(item.GetProperty("PrivateAssets"), LibraryIncludeFlagUtils.DefaultSuppressParent);
+        }
+
+        private static LibraryIncludeFlags GetIncludeFlags(string value, LibraryIncludeFlags defaultValue)
+        {
+            var parts = Split(value);
+
+            if (parts.Length > 0)
+            {
+                return LibraryIncludeFlagUtils.GetFlags(parts);
+            }
+            else
+            {
+                return defaultValue;
+            }
+        }
+
+        private static string[] Split(string s)
+        {
+            if (!string.IsNullOrEmpty(s))
+            {
+                return s.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            }
+
+            return new string[0];
+        }
+
         private static void AddFrameworkAssemblies(PackageSpec spec, IEnumerable<IMSBuildItem> items)
         {
             foreach (var item in GetItemByType(items, "FrameworkAssembly"))
@@ -295,9 +358,7 @@ namespace NuGet.Commands
                     versionRange: GetVersionRange(item),
                     typeConstraint: LibraryDependencyTarget.Reference);
 
-                // TODO: include, suppressParent, exclude
-                dependency.IncludeType = LibraryIncludeFlags.All;
-                dependency.SuppressParent = LibraryIncludeFlagUtils.DefaultSuppressParent;
+                ApplyIncludeFlags(dependency, item);
 
                 var frameworks = GetFrameworks(item);
 
@@ -374,12 +435,18 @@ namespace NuGet.Commands
 
         private static HashSet<NuGetFramework> GetFrameworks(IMSBuildItem item)
         {
-            var frameworks = new HashSet<NuGetFramework>();
+            return new HashSet<NuGetFramework>(
+                GetFrameworksStrings(item).Select(NuGetFramework.Parse));
+        }
+
+        private static HashSet<string> GetFrameworksStrings(IMSBuildItem item)
+        {
+            var frameworks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             var frameworksString = item.GetProperty("TargetFrameworks");
             if (!string.IsNullOrEmpty(frameworksString))
             {
-                frameworks.UnionWith(frameworksString.Split(';').Select(NuGetFramework.Parse));
+                frameworks.UnionWith(frameworksString.Split(';'));
             }
 
             return frameworks;
@@ -420,6 +487,13 @@ namespace NuGet.Commands
                     NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp),
                     "nuget-dg",
                     $"{Guid.NewGuid()}.dg");
+
+                var envPath = Environment.GetEnvironmentVariable("NUGET_PERSIST_DG_PATH");
+
+                if (!string.IsNullOrEmpty(envPath))
+                {
+                    path = envPath;
+                }
 
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
 

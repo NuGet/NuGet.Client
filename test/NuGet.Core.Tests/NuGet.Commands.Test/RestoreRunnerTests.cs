@@ -187,12 +187,14 @@ namespace NuGet.Commands.Test
             spec1.RestoreMetadata.ProjectUniqueName = "project1";
             spec1.RestoreMetadata.ProjectName = "project1";
             spec1.RestoreMetadata.OutputType = RestoreOutputType.NETCore;
+            spec1.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
 
             var spec2 = new PackageSpec(frameworks2);
             spec2.RestoreMetadata = new ProjectRestoreMetadata();
             spec2.RestoreMetadata.ProjectUniqueName = "project2";
             spec2.RestoreMetadata.ProjectName = "project2";
             spec2.RestoreMetadata.OutputType = RestoreOutputType.NETCore;
+            spec2.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
 
             var specs = new[] { spec1, spec2 };
 
@@ -226,6 +228,9 @@ namespace NuGet.Commands.Test
 
                 spec1.RestoreMetadata.OutputPath = objPath1;
                 spec2.RestoreMetadata.OutputPath = objPath2;
+
+                spec1.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
+                spec2.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
 
                 var lockPath1 = Path.Combine(objPath1, "project.assets.json");
                 var lockPath2 = Path.Combine(objPath2, "project.assets.json");
@@ -315,12 +320,14 @@ namespace NuGet.Commands.Test
             spec1.RestoreMetadata.ProjectUniqueName = "project1";
             spec1.RestoreMetadata.ProjectName = "project1";
             spec1.RestoreMetadata.OutputType = RestoreOutputType.NETCore;
+            spec1.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
 
             var spec2 = new PackageSpec(frameworks2);
             spec2.RestoreMetadata = new ProjectRestoreMetadata();
             spec2.RestoreMetadata.ProjectUniqueName = "project2";
             spec2.RestoreMetadata.ProjectName = "project2";
             spec2.RestoreMetadata.OutputType = RestoreOutputType.NETCore;
+            spec2.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
 
             var specs = new[] { spec1, spec2 };
 
@@ -354,6 +361,9 @@ namespace NuGet.Commands.Test
 
                 spec1.RestoreMetadata.OutputPath = objPath1;
                 spec2.RestoreMetadata.OutputPath = objPath2;
+
+                spec1.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
+                spec2.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
 
                 var lockPath1 = Path.Combine(objPath1, "project.assets.json");
                 var lockPath2 = Path.Combine(objPath2, "project.assets.json");
