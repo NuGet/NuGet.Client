@@ -62,7 +62,11 @@ namespace NuGet.PackageManagement.VisualStudio
                     envDTEProject.Name,
                     EnvDTEProjectUtility.GetCustomUniqueName(envDTEProject));
             }
-            else
+            else if ((result = GetMSBuildShellOutNuGetProject(envDTEProject)) != null)
+            {
+                // Use the NuGetProject result initialized in the condition.
+            }
+            else 
             {
                 var msBuildNuGetProjectSystem = MSBuildNuGetProjectSystemFactory.CreateMSBuildNuGetProjectSystem(
                     envDTEProject,
@@ -124,6 +128,48 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return result;
+        }
+
+        public static MSBuildShellOutNuGetProject GetMSBuildShellOutNuGetProject(EnvDTEProject project)
+        {
+            try
+            {
+                var hierarchy = VsHierarchyUtility.ToVsHierarchy(project);
+                
+                if (hierarchy == null)
+                {
+                    return null;
+                }
+
+                var buildPropertyStorage = hierarchy as IVsBuildPropertyStorage;
+
+                if (buildPropertyStorage == null)
+                {
+                    return null;
+                }
+
+                // The project must have the "TargetFrameworks" property.
+                string targetFrameworks;
+                var targetFrameworksResult = buildPropertyStorage.GetPropertyValue(
+                    "TargetFrameworks",
+                    string.Empty,
+                    (uint)_PersistStorageType.PST_PROJECT_FILE,
+                    out targetFrameworks);
+                
+                if (targetFrameworksResult != NuGetVSConstants.S_OK || string.IsNullOrWhiteSpace(targetFrameworks))
+                {
+                    return null;
+                }
+
+                return new MSBuildShellOutNuGetProject(project, buildPropertyStorage);
+            }
+            catch
+            {
+                // Ignore failures. If this method returns null, the problem falls into one of the other NuGet project
+                // types.
+            }
+
+            return null;
         }
 
         public static INuGetPackageManager GetProjectKProject(EnvDTEProject project)
