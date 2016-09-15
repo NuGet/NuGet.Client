@@ -32,12 +32,15 @@ namespace NuGet.Commands.Test
                     var propsName = $"{projectName}.nuget.props";
                     var propsPath = Path.Combine(randomProjectDirectory, propsName);
 
-                    var msBuildRestoreResult = new MSBuildRestoreResult(
+                    var targets = new Dictionary<string, IList<string>>();
+                    targets.Add(string.Empty, new List<string>() { "blah" });
+
+                      var msBuildRestoreResult = new MSBuildRestoreResult(
                         targetsPath,
                         propsPath,
                         globalPackagesFolder,
-                        new List<string>(),
-                        new List<string>() { "blah" });
+                        new Dictionary<string, IList<string>>(),
+                        targets);
 
                     // Assert
                     Assert.False(File.Exists(targetsPath));

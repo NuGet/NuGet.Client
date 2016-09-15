@@ -209,6 +209,12 @@ namespace NuGet.Commands
                     }
 
                     result.RestoreMetadata.PackagesPath = specItem.GetProperty("PackagesPath");
+
+                    // Store the original framework strings for msbuild conditionals
+                    foreach (var originalFramework in GetFrameworksStrings(specItem))
+                    {
+                        result.RestoreMetadata.OriginalTargetFrameworks.Add(originalFramework);
+                    }
                 }
             }
 
@@ -429,12 +435,18 @@ namespace NuGet.Commands
 
         private static HashSet<NuGetFramework> GetFrameworks(IMSBuildItem item)
         {
-            var frameworks = new HashSet<NuGetFramework>();
+            return new HashSet<NuGetFramework>(
+                GetFrameworksStrings(item).Select(NuGetFramework.Parse));
+        }
+
+        private static HashSet<string> GetFrameworksStrings(IMSBuildItem item)
+        {
+            var frameworks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             var frameworksString = item.GetProperty("TargetFrameworks");
             if (!string.IsNullOrEmpty(frameworksString))
             {
-                frameworks.UnionWith(frameworksString.Split(';').Select(NuGetFramework.Parse));
+                frameworks.UnionWith(frameworksString.Split(';'));
             }
 
             return frameworks;

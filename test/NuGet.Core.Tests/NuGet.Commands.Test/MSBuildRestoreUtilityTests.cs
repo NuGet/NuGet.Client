@@ -117,7 +117,7 @@ namespace NuGet.Commands.Test
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
-                    { "TargetFrameworks", "net46;netstandard1.6" },
+                    { "TargetFrameworks", "net46;netstandard16" },
                     { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
                     { "FallbackFolders", fallbackFolder },
                     { "PackagesPath", packagesFolder },
@@ -138,6 +138,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, project1Spec.RestoreMetadata.ProjectReferences.Count);
                 Assert.Null(project1Spec.RestoreMetadata.ProjectJsonPath);
                 Assert.Equal("net46|netstandard1.6", string.Join("|", project1Spec.TargetFrameworks.Select(e => e.FrameworkName.GetShortFolderName())));
+                Assert.Equal("net46|netstandard16", string.Join("|", project1Spec.RestoreMetadata.OriginalTargetFrameworks));
                 Assert.Equal(outputPath1, project1Spec.RestoreMetadata.OutputPath);
                 Assert.Equal("https://nuget.org/a/index.json|https://nuget.org/b/index.json", string.Join("|", project1Spec.RestoreMetadata.Sources.Select(s => s.Source)));
                 Assert.Equal(fallbackFolder, string.Join("|", project1Spec.RestoreMetadata.FallbackFolders));

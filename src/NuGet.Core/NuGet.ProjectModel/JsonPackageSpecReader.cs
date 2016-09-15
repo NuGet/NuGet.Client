@@ -271,6 +271,17 @@ namespace NuGet.ProjectModel
                 }
             }
 
+            msbuildMetadata.OriginalTargetFrameworks = new List<string>();
+
+            var originalFrameworksObj = rawMSBuildMetadata.GetValue<JArray>("originalTargetFrameworks");
+            if (originalFrameworksObj != null)
+            {
+                foreach (var orignalFramework in originalFrameworksObj.Select(t => t.Value<string>()))
+                {
+                    msbuildMetadata.OriginalTargetFrameworks.Add(orignalFramework);
+                }
+            }
+
             return msbuildMetadata;
         }
 

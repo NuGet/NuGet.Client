@@ -170,6 +170,18 @@ namespace NuGet.Commands
 
                 throw RestoreSpecException.Create(message, files);
             }
+
+            // Original frameworks must be set for netcore
+            if (spec.RestoreMetadata.OriginalTargetFrameworks.Count < 1)
+            {
+                var message = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.MissingRequiredPropertyForProjectType,
+                    nameof(spec.RestoreMetadata.OriginalTargetFrameworks),
+                    RestoreOutputType.NETCore.ToString());
+
+                throw RestoreSpecException.Create(message, files);
+            }
         }
 
         private static void ValidateProjectSpecUAP(PackageSpec spec, IEnumerable<string> files)

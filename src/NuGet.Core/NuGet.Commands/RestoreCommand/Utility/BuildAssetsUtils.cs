@@ -68,15 +68,38 @@ namespace NuGet.Commands
                 buildAssetsByFramework.Add(projectFramework, targetsAndProps);
             }
 
-            // Conditionals for targets and props by framework is not currently supported.
-            if (NeedsMSBuildConditionals(buildAssetsByFramework))
-            {
-                return new MSBuildRestoreResult(targetsPath, propsPath, success: false);
-            }
+            var props = new Dictionary<string, IList<string>>(StringComparer.OrdinalIgnoreCase);
+            var targets = new Dictionary<string, IList<string>>(StringComparer.OrdinalIgnoreCase);
 
-            // Since all targets and props are the same, any framework can be used.
-            // There must be at least one framework here since there are target graphs (checked above)
-            var combinedTargetsAndProps = buildAssetsByFramework.Values.First();
+            // Conditionals for targets and props are only supported by NETCore
+            if (project.RestoreMetadata?.OutputType == RestoreOutputType.NETCore)
+            {
+                foreach (var pair in buildAssetsByFramework)
+                {
+                    // There could be multiple string matches
+                    foreach (var match in GetMatchingFrameworkStrings(project, pair.Key))
+                    {
+                        // Add entries regardless of if imports exist,
+                        // this is needed to trigger conditionals
+                        if (!props.ContainsKey(match))
+                        {
+                            props.Add(match, pair.Value.Props);
+                        }
+
+                        if (!targets.ContainsKey(match))
+                        {
+                            targets.Add(match, pair.Value.Targets);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // Copy targets and props over, there can only be 1 tfm here
+                var targetsAndProps = buildAssetsByFramework.First();
+                props.Add(string.Empty, targetsAndProps.Value.Props);
+                targets.Add(string.Empty, targetsAndProps.Value.Targets);
+            }
 
             // Targets files contain a macro for the repository root. If only the user package folder was used
             // allow a replacement. If fallback folders were used the macro cannot be applied.
@@ -88,31 +111,25 @@ namespace NuGet.Commands
                 targetsPath,
                 propsPath,
                 repositoryRoot,
-                combinedTargetsAndProps.Props,
-                combinedTargetsAndProps.Targets);
+                props,
+                targets);
         }
 
-        /// <summary>
-        /// Verifies that all targets and props assets are the same across frameworks. If there is a mismatch
-        /// this will return false.
-        /// A single framework will always return true.
-        /// </summary>
-        private static bool NeedsMSBuildConditionals(Dictionary<NuGetFramework, TargetsAndProps> buildAssetsByFramework)
+        private static HashSet<string> GetMatchingFrameworkStrings(PackageSpec spec, NuGetFramework framework)
         {
-            if (buildAssetsByFramework.Count > 1)
-            {
-                var combinedAssets = buildAssetsByFramework.Select(entry =>
-                    entry.Value.Targets
-                        .Concat(entry.Value.Props)
-                        .OrderBy(s => s, StringComparer.Ordinal)
-                        .ToArray())
-                   .ToArray();
+            // Ignore case since msbuild does
+            var matches = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-                // Compare all groups to the first group
-                return combinedAssets.Skip(1).Any(group => !combinedAssets[0].SequenceEqual(group));
+            matches.UnionWith(spec.RestoreMetadata.OriginalTargetFrameworks
+                .Where(s => framework.Equals(NuGetFramework.Parse(s))));
+
+            // If there were no matches, use the generated name
+            if (matches.Count < 1)
+            {
+                matches.Add(framework.GetShortFolderName());
             }
 
-            return false;
+            return matches;
         }
 
         private static TargetsAndProps GetTargetsAndPropsForFramework(

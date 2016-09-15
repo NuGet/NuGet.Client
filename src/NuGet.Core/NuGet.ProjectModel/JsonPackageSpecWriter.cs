@@ -116,6 +116,7 @@ namespace NuGet.ProjectModel
 
 
             SetArrayValue(rawMSBuildMetadata, "fallbackFolders", msbuildMetadata.FallbackFolders);
+            SetArrayValue(rawMSBuildMetadata, "originalTargetFrameworks", msbuildMetadata.OriginalTargetFrameworks);
 
             if (msbuildMetadata.Sources?.Count > 0)
             {
