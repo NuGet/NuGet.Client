@@ -53,11 +53,13 @@ namespace NuGet.CommandLine.Test
 
                 Assert.Equal("1.0.0", targetB.Version.ToNormalizedString());
                 Assert.Equal("project", targetB.Type);
-                Assert.Equal(".NETFramework,Version=v4.5", targetB.Framework);
+
+                // This is not populated for unknown project types, but this may change in the future.
+                Assert.Null(targetB.Framework);
+                Assert.Null(libB.Path);
 
                 Assert.Equal("1.0.0", libB.Version.ToNormalizedString());
                 Assert.Equal("project", libB.Type);
-                Assert.Equal("../b/b.csproj", libB.Path);
                 Assert.Equal("../b/b.csproj", libB.MSBuildProject);
             }
         }

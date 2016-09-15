@@ -92,6 +92,8 @@ namespace NuGet.Commands
 
             var graphSpec = new DependencyGraphSpec();
             var itemsById = new Dictionary<string, List<IMSBuildItem>>(StringComparer.Ordinal);
+            var restoreSpecs = new HashSet<string>(StringComparer.Ordinal);
+            var validForRestore = new HashSet<string>(StringComparer.Ordinal);
 
             // Sort items and add restore specs
             foreach (var item in items)
@@ -101,7 +103,7 @@ namespace NuGet.Commands
 
                 if ("restorespec".Equals(type, StringComparison.Ordinal))
                 {
-                    graphSpec.AddRestore(projectUniqueName);
+                    restoreSpecs.Add(projectUniqueName);
                 }
                 else if (!string.IsNullOrEmpty(projectUniqueName))
                 {
@@ -119,7 +121,19 @@ namespace NuGet.Commands
             // Add projects
             foreach (var spec in itemsById.Values.Select(GetPackageSpec))
             {
+                if (spec.RestoreMetadata.OutputType == RestoreOutputType.NETCore
+                    || spec.RestoreMetadata.OutputType == RestoreOutputType.UAP)
+                {
+                    validForRestore.Add(spec.RestoreMetadata.ProjectUniqueName);
+                }
+
                 graphSpec.AddProject(spec);
+            }
+
+            // Add UAP and NETCore projects to restore section
+            foreach (var projectUniqueName in restoreSpecs.Intersect(validForRestore))
+            {
+                graphSpec.AddRestore(projectUniqueName);
             }
 
             return graphSpec;

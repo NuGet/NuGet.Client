@@ -85,10 +85,22 @@ namespace NuGet.Commands
         private static ExternalProjectReference GetExternalProject(PackageSpec rootProject)
         {
             var projectReferences = rootProject.RestoreMetadata?.ProjectReferences ?? new List<ProjectRestoreReference>();
+            var type = rootProject.RestoreMetadata?.OutputType ?? RestoreOutputType.Unknown;
+
+            // Leave the spec null for non-nuget projects.
+            // In the future additional P2P TFM checking could be handled by
+            // creating a spec for non-NuGet projects and including the TFM.
+            PackageSpec projectSpec = null;
+
+            if (type == RestoreOutputType.NETCore
+                || type == RestoreOutputType.UAP)
+            {
+                projectSpec = rootProject;
+            }
 
             return new ExternalProjectReference(
                 rootProject.RestoreMetadata.ProjectUniqueName,
-                rootProject,
+                projectSpec,
                 rootProject.RestoreMetadata?.ProjectPath,
                 projectReferences.Select(p => p.ProjectUniqueName));
         }
