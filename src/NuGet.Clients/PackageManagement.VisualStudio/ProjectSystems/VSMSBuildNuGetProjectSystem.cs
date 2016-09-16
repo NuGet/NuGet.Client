@@ -810,12 +810,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #endregion
 
-        public Task ExecuteScriptAsync(PackageIdentity identity, string packageInstallPath, string scriptRelativePath, NuGetProject nuGetProject, bool throwOnFailure)
+        public Task ExecuteScriptAsync(PackageIdentity identity, string packageInstallPath, string scriptRelativePath, bool throwOnFailure)
         {
             if (ScriptExecutor != null)
             {
-                return ScriptExecutor.ExecuteAsync(identity, packageInstallPath, scriptRelativePath, EnvDTEProject, nuGetProject, NuGetProjectContext, throwOnFailure);
+                return ScriptExecutor.ExecuteAsync(identity, packageInstallPath, scriptRelativePath, EnvDTEProject, NuGetProjectContext, throwOnFailure);
             }
+
             return Task.FromResult(false);
         }
 

@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
@@ -28,6 +29,7 @@ using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGetUIThreadHelper = NuGet.PackageManagement.UI.NuGetUIThreadHelper;
+using PathUtility = NuGet.ProjectManagement.PathUtility;
 using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
@@ -378,7 +380,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                     if (buildIntegratedProject != null)
                     {
-                        var packages = BuildIntegratedProjectUtility.GetOrderedProjectPackageDependencies(buildIntegratedProject);
+                        var packages = BuildIntegratedProjectUtility
+                            .GetOrderedProjectPackageDependencies(buildIntegratedProject);
+
                         sortedGlobalPackages.AddRange(packages);
                     }
                     else
@@ -469,19 +473,22 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     }
                 }
             }
-
-            // Prioritize packages.config folder paths over global folder paths for legacy.
-
+            
             // Order packages by dependency order
             var sortedPackages = ResolverUtility.TopologicalSort(packagesToSort);
             foreach (var package in sortedPackages)
             {
                 if (finishedPackages.Add(package))
                 {
-                    // Find the package path in the packages folder
-                    var pathToPackage = packagePathResolver.GetInstalledPath(package);
+                    // Find the package path in the packages folder.
+                    var installPath = packagePathResolver.GetInstalledPath(package);
 
-                    ExecuteInitPs1(pathToPackage, package);
+                    if (string.IsNullOrEmpty(installPath))
+                    {
+                        continue;  
+                    }
+
+                    ExecuteInitPs1(installPath, package);
                 }
             }
         }
@@ -497,52 +504,47 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             {
                 if (finishedPackages.Add(package))
                 {
-                    // Find the package path across all folders
-                    var pathToPackage = fallbackResolver.GetPackageDirectory(package.Id, package.Version);
+                    // Find the package in the global packages folder or any of the fallback folders.
+                    var installPath = fallbackResolver.GetPackageDirectory(package.Id, package.Version);
+                    if (installPath == null)
+                    {
+                        continue;
+                    }
 
-                    ExecuteInitPs1(pathToPackage, package);
+                    ExecuteInitPs1(installPath, package);
                 }
             }
         }
 
-        private void ExecuteInitPs1(string pathToPackage, PackageIdentity package)
+        private void ExecuteInitPs1(string installPath, PackageIdentity identity)
         {
             try
             {
-                if (!string.IsNullOrEmpty(pathToPackage))
+                var toolsPath = Path.Combine(installPath, "tools");
+                if (Directory.Exists(toolsPath))
                 {
-                    var toolsPath = Path.Combine(pathToPackage, "tools");
+                    AddPathToEnvironment(toolsPath);
+
                     var scriptPath = Path.Combine(toolsPath, PowerShellScripts.Init);
-
-                    if (Directory.Exists(toolsPath))
+                    if (File.Exists(scriptPath) &&
+                        _scriptExecutor.TryMarkVisited(identity, PackageInitPS1State.FoundAndExecuted))
                     {
-                        AddPathToEnvironment(toolsPath);
-                        if (File.Exists(scriptPath))
-                        {
-                            if (_scriptExecutor.TryMarkVisited(
-                                package,
-                                PackageInitPS1State.FoundAndExecuted))
-                            {
+                        var request = new ScriptExecutionRequest(scriptPath, identity, project: null);
 
+                        Runspace.Invoke(
+                            request.BuildCommand(),
+                            request.BuildInput(),
+                            outputResults: true);
 
-                                var scriptPackage = new ScriptPackage(
-                                    package.Id,
-                                    package.Version.ToString(),
-                                    pathToPackage);
-
-                                Runspace.ExecuteScript(pathToPackage, scriptPath, scriptPackage);
-                            }
-                        }
-                        else
-                        {
-                            _scriptExecutor.TryMarkVisited(package, PackageInitPS1State.NotFound);
-                        }
+                        return;
                     }
                 }
+
+                _scriptExecutor.TryMarkVisited(identity, PackageInitPS1State.NotFound);
             }
             catch (Exception ex)
             {
-                // if execution of Init scripts fails, do not let it crash our console
+                // If execution of an init.ps1 scripts fails, do not let it crash our console.
                 ReportError(ex);
 
                 ExceptionHelper.WriteToActivityLog(ex);
@@ -551,11 +553,16 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         private static void AddPathToEnvironment(string path)
         {
-            if (Directory.Exists(path))
+            var currentPath = Environment.GetEnvironmentVariable("path", EnvironmentVariableTarget.Process);
+
+            var currentPaths = new HashSet<string>(
+                currentPath.Split(Path.PathSeparator).Select(p => p.Trim()),
+                StringComparer.OrdinalIgnoreCase);
+
+            if (currentPaths.Add(path))
             {
-                string environmentPath = Environment.GetEnvironmentVariable("path", EnvironmentVariableTarget.Process);
-                environmentPath = environmentPath + ";" + path;
-                Environment.SetEnvironmentVariable("path", environmentPath, EnvironmentVariableTarget.Process);
+                var newPath = currentPath + Path.PathSeparator + path;
+                Environment.SetEnvironmentVariable("path", newPath, EnvironmentVariableTarget.Process);
             }
         }
 

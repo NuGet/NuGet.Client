@@ -6,12 +6,10 @@ using System.Collections.Concurrent;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
-using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.PowerShellCmdlets;
 using NuGet.PackageManagement.VisualStudio;
@@ -19,7 +17,6 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
-using Strings = NuGet.ProjectManagement.Strings;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGetConsole
@@ -29,7 +26,6 @@ namespace NuGetConsole
     {
         private AsyncLazy<IHost> Host { get; }
         private ISolutionManager SolutionManager { get; }  = ServiceLocator.GetInstance<ISolutionManager>();
-        private string SolutionDirectory { get; set; }
         private ISettings Settings { get; } = ServiceLocator.GetInstance<ISettings>();
         private ConcurrentDictionary<PackageIdentity, PackageInitPS1State> InitScriptExecutions
             = new ConcurrentDictionary<PackageIdentity, PackageInitPS1State>(PackageIdentityComparer.Default);
@@ -48,131 +44,30 @@ namespace NuGetConsole
 
         public void Reset()
         {
-            if (SolutionManager.IsSolutionAvailable)
-            {
-                SolutionDirectory = SolutionManager.SolutionDirectory;
-            }
-            else
-            {
-                SolutionDirectory = null;
-            }
-
             InitScriptExecutions.Clear();
         }
 
         public async Task<bool> ExecuteAsync(
-            PackageIdentity packageIdentity,
-            string packageInstallPath,
-            string scriptRelativePath,
-            EnvDTEProject envDTEProject,
-            NuGetProject nuGetProject,
+            PackageIdentity identity,
+            string installPath,
+            string relativeScriptPath,
+            EnvDTEProject project,
             INuGetProjectContext nuGetProjectContext,
             bool throwOnFailure)
         {
-            string scriptFullPath = Path.Combine(packageInstallPath, scriptRelativePath);
-            return await ExecuteCoreAsync(
-                packageIdentity,
-                scriptFullPath,
-                packageInstallPath,
-                envDTEProject,
-                nuGetProject,
-                nuGetProjectContext,
-                throwOnFailure);
-        }
+            var scriptPath = Path.Combine(installPath, relativeScriptPath);
 
-        public bool TryMarkVisited(PackageIdentity packageIdentity, PackageInitPS1State initPS1State)
-        {
-            return InitScriptExecutions.TryAdd(packageIdentity, initPS1State);
-        }
-
-        public async Task<bool> ExecuteInitScriptAsync(PackageIdentity packageIdentity)
-        {
-            var result = false;
-            // Reserve the key. We can remove if the package has not been restored.
-            if (TryMarkVisited(packageIdentity, PackageInitPS1State.NotFound))
+            if (File.Exists(scriptPath))
             {
-                var packageInstalledPath = GetPackageInstalledPath(packageIdentity);
-                if (!string.IsNullOrEmpty(packageInstalledPath))
-                {
-                    var initPS1Path = Path.Combine(packageInstalledPath, "tools", PowerShellScripts.Init);
-                    if (File.Exists(initPS1Path))
-                    {
-                        // Init.ps1 is present and will be executed.
-                        InitScriptExecutions.TryUpdate(
-                            packageIdentity,
-                            PackageInitPS1State.FoundAndExecuted,
-                            PackageInitPS1State.NotFound);
-
-                        var scriptPackage = new ScriptPackage(
-                            packageIdentity.Id,
-                            packageIdentity.Version.ToString(),
-                            packageInstalledPath);
-                        var toolsPath = Path.GetDirectoryName(initPS1Path);
-
-                        await ExecuteScriptCoreAsync(
-                            scriptPackage,
-                            packageInstalledPath,
-                            initPS1Path,
-                            toolsPath,
-                            envDTEProject: null);
-
-                        result = true;
-                    }
-                }
-                else
-                {
-                    // Package is not restored. Do not cache the results.
-                    PackageInitPS1State dummy;
-                    InitScriptExecutions.TryRemove(packageIdentity, out dummy);
-                    result = false;
-                }
-            }
-            else
-            {
-                // Key is already present. Simply access its value
-                result = (InitScriptExecutions[packageIdentity] == PackageInitPS1State.FoundAndExecuted);
-            }
-
-            return result;
-        }
-
-        private async Task<bool> ExecuteCoreAsync(
-            PackageIdentity packageIdentity,
-            string fullScriptPath,
-            string packageInstallPath,
-            EnvDTEProject envDTEProject,
-            NuGetProject nuGetProject,
-            INuGetProjectContext nuGetProjectContext,
-            bool throwOnFailure)
-        {
-            if (File.Exists(fullScriptPath))
-            {
-                if (fullScriptPath.EndsWith(PowerShellScripts.Init, StringComparison.OrdinalIgnoreCase)
-                    && !TryMarkVisited(packageIdentity, PackageInitPS1State.FoundAndExecuted))
+                if (scriptPath.EndsWith(PowerShellScripts.Init, StringComparison.OrdinalIgnoreCase)
+                    && !TryMarkVisited(identity, PackageInitPS1State.FoundAndExecuted))
                 {
                     return true;
                 }
 
-                ScriptPackage package = null;
-                if (envDTEProject != null)
-                {
-                    NuGetFramework targetFramework;
-                    nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.TargetFramework, out targetFramework);
+                var request = new ScriptExecutionRequest(scriptPath, identity, project);
 
-                    // targetFramework can be null for unknown project types
-                    string shortFramework = targetFramework?.GetShortFolderName() ?? string.Empty;
-
-                    nuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_TargetFrameworkInfoPrefix, packageIdentity,
-                        envDTEProject.Name, shortFramework);
-                }
-
-                if (packageIdentity != null)
-                {
-                    package = new ScriptPackage(packageIdentity.Id, packageIdentity.Version.ToString(), packageInstallPath);
-                }
-
-                string toolsPath = Path.GetDirectoryName(fullScriptPath);
-                IPSNuGetProjectContext psNuGetProjectContext = nuGetProjectContext as IPSNuGetProjectContext;
+                var psNuGetProjectContext = nuGetProjectContext as IPSNuGetProjectContext;
                 if (psNuGetProjectContext != null
                     && psNuGetProjectContext.IsExecuting
                     && psNuGetProjectContext.CurrentPSCmdlet != null)
@@ -180,26 +75,21 @@ namespace NuGetConsole
                     var psVariable = psNuGetProjectContext.CurrentPSCmdlet.SessionState.PSVariable;
 
                     // set temp variables to pass to the script
-                    psVariable.Set("__rootPath", packageInstallPath);
-                    psVariable.Set("__toolsPath", toolsPath);
-                    psVariable.Set("__package", package);
-                    psVariable.Set("__project", envDTEProject);
+                    psVariable.Set("__rootPath", request.InstallPath);
+                    psVariable.Set("__toolsPath", request.ToolsPath);
+                    psVariable.Set("__package", request.ScriptPackage);
+                    psVariable.Set("__project", request.Project);
 
-                    psNuGetProjectContext.ExecutePSScript(fullScriptPath, throwOnFailure);
+                    psNuGetProjectContext.ExecutePSScript(request.ScriptPath, throwOnFailure);
                 }
                 else
                 {
-                    string logMessage = String.Format(CultureInfo.CurrentCulture, Resources.ExecutingScript, fullScriptPath);
+                    string logMessage = string.Format(CultureInfo.CurrentCulture, Resources.ExecutingScript, scriptPath);
                     // logging to both the Output window and progress window.
                     nuGetProjectContext.Log(MessageLevel.Info, logMessage);
                     try
                     {
-                        await ExecuteScriptCoreAsync(
-                            package,
-                            packageInstallPath,
-                            fullScriptPath,
-                            toolsPath,
-                            envDTEProject);
+                        await ExecuteScriptCoreAsync(request);
                     }
                     catch (Exception ex)
                     {
@@ -216,36 +106,67 @@ namespace NuGetConsole
             }
             else
             {
-                if (fullScriptPath.EndsWith(PowerShellScripts.Init, StringComparison.OrdinalIgnoreCase))
+                if (scriptPath.EndsWith(PowerShellScripts.Init, StringComparison.OrdinalIgnoreCase))
                 {
-                    TryMarkVisited(packageIdentity, PackageInitPS1State.NotFound);
+                    TryMarkVisited(identity, PackageInitPS1State.NotFound);
                 }
             }
             return false;
         }
 
-        private string GetPackageInstalledPath(PackageIdentity packageIdentity)
+        public bool TryMarkVisited(PackageIdentity packageIdentity, PackageInitPS1State initPS1State)
         {
-            var nugetPaths = NuGetPathContext.Create(Settings);
-            var fallbackResolver = new FallbackPackagePathResolver(nugetPaths);
-            
-            // Verify the package exists and return the path. Return null otherwise.
-            return fallbackResolver.GetPackageDirectory(packageIdentity.Id, packageIdentity.Version);
+            return InitScriptExecutions.TryAdd(packageIdentity, initPS1State);
         }
 
-        private async Task ExecuteScriptCoreAsync(
-            ScriptPackage package,
-            string packageInstallPath,
-            string fullScriptPath,
-            string toolsPath,
-            EnvDTEProject envDTEProject)
+        public async Task<bool> ExecuteInitScriptAsync(PackageIdentity identity)
         {
-            string command = "$__pc_args=@(); $input|%{$__pc_args+=$_}; & "
-                             + PathUtility.EscapePSPath(fullScriptPath)
-                             + " $__pc_args[0] $__pc_args[1] $__pc_args[2] $__pc_args[3]; "
-                             + "Remove-Variable __pc_args -Scope 0";
+            var result = false;
+            // Reserve the key. We can remove if the package has not been restored.
+            if (TryMarkVisited(identity, PackageInitPS1State.NotFound))
+            {
+                var nugetPaths = NuGetPathContext.Create(Settings);
+                var fallbackResolver = new FallbackPackagePathResolver(nugetPaths);
+                var installPath = fallbackResolver.GetPackageDirectory(identity.Id, identity.Version);
 
-            object[] inputs = { packageInstallPath, toolsPath, package, envDTEProject };
+                if (!string.IsNullOrEmpty(installPath))
+                {
+                    var scriptPath = Path.Combine(installPath, "tools", PowerShellScripts.Init);
+
+                    if (File.Exists(scriptPath))
+                    {
+                        // Init.ps1 is present and will be executed.
+                        InitScriptExecutions.TryUpdate(
+                            identity,
+                            PackageInitPS1State.FoundAndExecuted,
+                            PackageInitPS1State.NotFound);
+
+                        var request = new ScriptExecutionRequest(scriptPath, identity, project: null);
+
+                        await ExecuteScriptCoreAsync(request);
+
+                        result = true;
+                    }
+                }
+                else
+                {
+                    // Package is not restored. Do not cache the results.
+                    PackageInitPS1State dummy;
+                    InitScriptExecutions.TryRemove(identity, out dummy);
+                    result = false;
+                }
+            }
+            else
+            {
+                // Key is already present. Simply access its value
+                result = (InitScriptExecutions[identity] == PackageInitPS1State.FoundAndExecuted);
+            }
+
+            return result;
+        }
+        
+        private async Task ExecuteScriptCoreAsync(ScriptExecutionRequest request)
+        {
             IConsole console = OutputConsoleProvider.CreateOutputConsole(requirePowerShellHost: true);
             var host = await Host.GetValueAsync();
 
@@ -253,7 +174,7 @@ namespace NuGetConsole
             // to switch to powershell pipeline execution thread. In order not to block the UI thread,
             // go off the UI thread. This is important, since, switches to UI thread,
             // using SwitchToMainThreadAsync will deadlock otherwise
-            await Task.Run(() => host.Execute(console, command, inputs));
+            await Task.Run(() => host.Execute(console, request.BuildCommand(), request.BuildInput()));
         }
 
         private async Task<IHost> GetHostAsync()

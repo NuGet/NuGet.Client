@@ -71,16 +71,6 @@ namespace NuGet.PackageManagement
             CancellationToken token);
 
         /// <summary>
-        /// Restores the missing packages for a project. Returns true if atleast one package was restored.
-        /// </summary>
-        /// <remarks>Best use case is 'nuget.exe restore packages.config'</remarks>
-        Task<PackageRestoreResult> RestoreMissingPackagesAsync(string solutionDirectory,
-            NuGetProject nuGetProject,
-            INuGetProjectContext nuGetProjectContext,
-            PackageDownloadContext downloadContext,
-            CancellationToken token);
-
-        /// <summary>
         /// Restores the package references if they are missing
         /// </summary>
         /// <param name="packages">

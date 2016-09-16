@@ -133,13 +133,13 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
 
-            // 20 requests that take 50ms each for a total of 1 second (plus noise).
-            var requestDuration = TimeSpan.FromMilliseconds(50);
+            // 20 requests that take 250ms each for a total of 5 seconds (plus noise).
+            var requestDuration = TimeSpan.FromMilliseconds(250);
             var maxTries = 20;
 
             // Make the request timeout longer than each request duration but less than the total
             // duration of all attempts.
-            var requestTimeout = TimeSpan.FromMilliseconds(500);
+            var requestTimeout = TimeSpan.FromMilliseconds(4000);
 
             int hits = 0;
             Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> handler = async (requestMessage, token) =>

@@ -523,11 +523,11 @@ namespace NuGetVSExtension
 
             var projectName = NuGetProject.GetUniqueNameOrName(project);
 
-            var nugetPathContext = NuGetPathContext.Create(Settings);
+            var pathContext = NuGetPathContext.Create(Settings);
 
             providerCache.GetOrCreate(
-                nugetPathContext.UserPackageFolder,
-                nugetPathContext.FallbackPackageFolders,
+                pathContext.UserPackageFolder,
+                pathContext.FallbackPackageFolders,
                 enabledSources,
                 cacheContext,
                 context.Logger);
@@ -536,8 +536,8 @@ namespace NuGetVSExtension
             var restoreResult = await BuildIntegratedRestoreUtility.RestoreAsync(project,
                 context,
                 enabledSources,
-                nugetPathContext.UserPackageFolder,
-                 nugetPathContext.FallbackPackageFolders,
+                pathContext.UserPackageFolder,
+                pathContext.FallbackPackageFolders,
                 token);
 
             if (!restoreResult.Success)

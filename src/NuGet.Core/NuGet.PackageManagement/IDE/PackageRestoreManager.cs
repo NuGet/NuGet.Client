@@ -10,7 +10,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
@@ -25,7 +27,7 @@ namespace NuGet.PackageManagement
 
         private ISourceRepositoryProvider SourceRepositoryProvider { get; }
         private ISolutionManager SolutionManager { get; }
-        private Configuration.ISettings Settings { get; }
+        private ISettings Settings { get; }
 
         public event EventHandler<PackagesMissingStatusEventArgs> PackagesMissingStatusChanged;
         public event EventHandler<PackageRestoredEventArgs> PackageRestoredEvent;
@@ -110,20 +112,10 @@ namespace NuGet.PackageManagement
         /// </returns>
         public async Task<IEnumerable<PackageRestoreData>> GetPackagesInSolutionAsync(string solutionDirectory, CancellationToken token)
         {
-            var packageReferences = await GetPackagesReferencesDictionaryAsync(token);
-            return GetPackages(solutionDirectory, packageReferences);
-        }
+            var packageReferencesDictionary = await GetPackagesReferencesDictionaryAsync(token);
 
-        private IEnumerable<PackageRestoreData> GetPackages(string solutionDirectory,
-            Dictionary<Packaging.PackageReference, List<string>> packageReferencesDictionary)
-        {
             var nuGetPackageManager = GetNuGetPackageManager(solutionDirectory);
-            return GetPackages(nuGetPackageManager, packageReferencesDictionary);
-        }
 
-        private static IEnumerable<PackageRestoreData> GetPackages(NuGetPackageManager nuGetPackageManager,
-            Dictionary<Packaging.PackageReference, List<string>> packageReferencesDictionary)
-        {
             var packages = new List<PackageRestoreData>();
 
             foreach (var packageReference in packageReferencesDictionary.Keys)
@@ -143,9 +135,9 @@ namespace NuGet.PackageManagement
             return packages;
         }
 
-        private async Task<Dictionary<Packaging.PackageReference, List<string>>> GetPackagesReferencesDictionaryAsync(CancellationToken token)
+        private async Task<Dictionary<PackageReference, List<string>>> GetPackagesReferencesDictionaryAsync(CancellationToken token)
         {
-            var packageReferencesDict = new Dictionary<Packaging.PackageReference, List<string>>(new PackageReferenceComparer());
+            var packageReferencesDict = new Dictionary<PackageReference, List<string>>(new PackageReferenceComparer());
             if (!SolutionManager.IsSolutionAvailable)
             {
                 return packageReferencesDict;
@@ -207,37 +199,6 @@ namespace NuGet.PackageManagement
             }
         }
 
-        /// <summary>
-        /// Restore missing packages for a project in the solution
-        /// </summary>
-        /// <param name="nuGetProject"></param>
-        /// <returns></returns>
-        public virtual async Task<PackageRestoreResult> RestoreMissingPackagesAsync(string solutionDirectory,
-            NuGetProject nuGetProject,
-            INuGetProjectContext nuGetProjectContext,
-            PackageDownloadContext downloadContext,
-            CancellationToken token)
-        {
-            if (nuGetProject == null)
-            {
-                throw new ArgumentNullException(nameof(nuGetProject));
-            }
-            var installedPackages = await nuGetProject.GetInstalledPackagesAsync(token);
-
-            var nuGetProjectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
-            var projectNames = new[] { nuGetProjectName };
-
-            // When this method is called, the step to compute if a package is missing is implicit. Assume it is true
-            var packages = installedPackages.Select(i => new PackageRestoreData(i, projectNames, isMissing: true));
-
-            return await RestoreMissingPackagesAsync(
-                solutionDirectory,
-                packages,
-                nuGetProjectContext,
-                downloadContext,
-                token);
-        }
-
         public virtual Task<PackageRestoreResult> RestoreMissingPackagesAsync(string solutionDirectory,
             IEnumerable<PackageRestoreData> packages,
             INuGetProjectContext nuGetProjectContext,
@@ -249,12 +210,18 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(packages));
             }
 
-            return RestoreMissingPackagesAsync(
-                GetNuGetPackageManager(solutionDirectory),
+            var nuGetPackageManager = GetNuGetPackageManager(solutionDirectory);
+
+            var packageRestoreContext = new PackageRestoreContext(
+                nuGetPackageManager,
                 packages,
-                nuGetProjectContext,
-                downloadContext,
-                token);
+                token,
+                PackageRestoredEvent,
+                PackageRestoreFailedEvent,
+                sourceRepositories: null,
+                maxNumberOfParallelTasks: PackageManagementConstants.DefaultMaxDegreeOfParallelism);
+
+            return RestoreMissingPackagesAsync(packageRestoreContext, nuGetProjectContext, downloadContext);
         }
 
         private NuGetPackageManager GetNuGetPackageManager(string solutionDirectory)
@@ -264,23 +231,6 @@ namespace NuGet.PackageManagement
                 SourceRepositoryProvider,
                 Settings,
                 packagesFolderPath);
-        }
-
-        public Task<PackageRestoreResult> RestoreMissingPackagesAsync(NuGetPackageManager nuGetPackageManager,
-            IEnumerable<PackageRestoreData> packages,
-            INuGetProjectContext nuGetProjectContext,
-            PackageDownloadContext downloadContext,
-            CancellationToken token)
-        {
-            var packageRestoreContext = new PackageRestoreContext(nuGetPackageManager,
-                packages,
-                token,
-                PackageRestoredEvent,
-                PackageRestoreFailedEvent,
-                sourceRepositories: null,
-                maxNumberOfParallelTasks: PackageManagementConstants.DefaultMaxDegreeOfParallelism);
-
-            return RestoreMissingPackagesAsync(packageRestoreContext, nuGetProjectContext, downloadContext);
         }
 
         /// <summary>
@@ -314,28 +264,27 @@ namespace NuGet.PackageManagement
             var missingPackages = packageRestoreContext.Packages.Where(p => p.IsMissing).ToList();
             if (!missingPackages.Any())
             {
-                return new PackageRestoreResult(true);
+                return new PackageRestoreResult(true, Enumerable.Empty<PackageIdentity>());
             }
 
-            bool packageRestoreResult = true;
             // It is possible that the dictionary passed in may not have used the PackageReferenceComparer.
             // So, just to be sure, create a hashset with the keys from the dictionary using the PackageReferenceComparer
             // Now, we are guaranteed to not restore the same package more than once
-            var hashSetOfMissingPackageReferences = new HashSet<Packaging.PackageReference>(missingPackages.Select(p => p.PackageReference), new PackageReferenceComparer());
+            var hashSetOfMissingPackageReferences = new HashSet<PackageReference>(missingPackages.Select(p => p.PackageReference), new PackageReferenceComparer());
 
             // Before starting to restore package, set the nuGetProjectContext such that satellite files are not copied yet
             // Satellite files will be copied as a post operation. This helps restore packages in parallel
             // and not have to determine if the package is a satellite package beforehand
-
             if (nuGetProjectContext.PackageExtractionContext == null)
             {
                 nuGetProjectContext.PackageExtractionContext = new PackageExtractionContext(new LoggerAdapter(nuGetProjectContext));
             }
+
             nuGetProjectContext.PackageExtractionContext.CopySatelliteFiles = false;
 
             packageRestoreContext.Token.ThrowIfCancellationRequested();
 
-            var restoreResults = await ThrottledPackageRestoreAsync(
+            var attemptedPackages = await ThrottledPackageRestoreAsync(
                 hashSetOfMissingPackageReferences,
                 packageRestoreContext,
                 nuGetProjectContext,
@@ -343,16 +292,14 @@ namespace NuGet.PackageManagement
 
             packageRestoreContext.Token.ThrowIfCancellationRequested();
 
-            await ThrottledCopySatelliteFilesAsync(hashSetOfMissingPackageReferences, packageRestoreContext, nuGetProjectContext);
-
-            packageRestoreResult &= restoreResults.All(r => r);
-
-            if (packageRestoreResult)
-            {
-                packageRestoreContext.SetRestored();
-            }
-
-            return new PackageRestoreResult(packageRestoreContext.WasRestored);
+            await ThrottledCopySatelliteFilesAsync(
+                hashSetOfMissingPackageReferences,
+                packageRestoreContext,
+                nuGetProjectContext);
+                        
+            return new PackageRestoreResult(
+                attemptedPackages.All(p => p.Restored),
+                attemptedPackages.Select(p => p.Package.PackageIdentity).ToList());
         }
 
         /// <summary>
@@ -365,13 +312,13 @@ namespace NuGet.PackageManagement
         /// that dequeue from the ConcurrentQueue and perform package restore. So, this method should pre-populate the
         /// queue and must not enqueued to by other methods
         /// </summary>
-        private static Task<bool[]> ThrottledPackageRestoreAsync(HashSet<PackageReference> packageReferences,
+        private static async Task<IEnumerable<AttemptedPackage>> ThrottledPackageRestoreAsync(HashSet<PackageReference> packageReferences,
             PackageRestoreContext packageRestoreContext,
             INuGetProjectContext nuGetProjectContext,
             PackageDownloadContext downloadContext)
         {
             var packageReferencesQueue = new ConcurrentQueue<PackageReference>(packageReferences);
-            var tasks = new List<Task<bool>>();
+            var tasks = new List<Task<List<AttemptedPackage>>>();
             for (var i = 0; i < Math.Min(packageRestoreContext.MaxNumberOfParallelTasks, packageReferences.Count); i++)
             {
                 tasks.Add(Task.Run(() => PackageRestoreRunnerAsync(
@@ -381,7 +328,7 @@ namespace NuGet.PackageManagement
                     downloadContext)));
             }
 
-            return Task.WhenAll(tasks);
+            return (await Task.WhenAll(tasks)).SelectMany(package => package);
         }
 
         /// <summary>
@@ -389,24 +336,28 @@ namespace NuGet.PackageManagement
         /// performs package restore
         /// Note that this method should only Dequeue from the concurrent queue and not Enqueue
         /// </summary>
-        private static async Task<bool> PackageRestoreRunnerAsync(ConcurrentQueue<PackageReference> packageReferencesQueue,
+        private static async Task<List<AttemptedPackage>> PackageRestoreRunnerAsync(
+            ConcurrentQueue<PackageReference> packageReferencesQueue,
             PackageRestoreContext packageRestoreContext,
             INuGetProjectContext nuGetProjectContext,
             PackageDownloadContext downloadContext)
         {
             PackageReference currentPackageReference = null;
-            var restoreResult = true;
+
+            var attemptedPackages = new List<AttemptedPackage>();
+
             while (packageReferencesQueue.TryDequeue(out currentPackageReference))
             {
-                var result = await RestorePackageAsync(
+                var attemptedPackage = await RestorePackageAsync(
                     currentPackageReference,
                     packageRestoreContext,
                     nuGetProjectContext,
                     downloadContext);
-                restoreResult &= result;
+
+                attemptedPackages.Add(attemptedPackage);
             }
 
-            return restoreResult;
+            return attemptedPackages;
         }
 
         /// <summary>
@@ -433,7 +384,8 @@ namespace NuGet.PackageManagement
             return Task.WhenAll(tasks);
         }
 
-        private static async Task<bool> RestorePackageAsync(PackageReference packageReference,
+        private static async Task<AttemptedPackage> RestorePackageAsync(
+            PackageReference packageReference,
             PackageRestoreContext packageRestoreContext,
             INuGetProjectContext nuGetProjectContext,
             PackageDownloadContext downloadContext)
@@ -481,7 +433,11 @@ namespace NuGet.PackageManagement
                 }
             }
 
-            return restored;
+            return new AttemptedPackage
+            {
+                Restored = restored,
+                Package = packageReference
+            };
         }
 
         /// <summary>
@@ -501,6 +457,12 @@ namespace NuGet.PackageManagement
                     nuGetProjectContext,
                     packageRestoreContext.Token);
             }
+        }
+
+        private class AttemptedPackage
+        {
+            public bool Restored { get; set; }
+            public PackageReference Package { get; set; }
         }
     }
 }

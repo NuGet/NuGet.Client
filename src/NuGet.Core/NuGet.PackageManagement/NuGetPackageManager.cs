@@ -2403,6 +2403,7 @@ namespace NuGet.PackageManagement
                 var logger = new ProjectContextLogger(nuGetProjectContext);
                 var referenceContext = new ExternalProjectReferenceContext(logger);
                 var pathContext = NuGetPathContext.Create(Settings);
+                var pathResolver = new FallbackPackagePathResolver(pathContext);
 
                 var now = DateTime.UtcNow;
                 Action<SourceCacheContext> cacheContextModifier = c => c.MaxAge = now;
@@ -2431,14 +2432,14 @@ namespace NuGet.PackageManagement
                 // Write out a message for each action
                 foreach (var action in actions)
                 {
-                    var identityString = String.Format(CultureInfo.InvariantCulture, "{0} {1}",
+                    var identityString = string.Format(CultureInfo.InvariantCulture, "{0} {1}",
                         action.PackageIdentity.Id,
                         action.PackageIdentity.Version.ToNormalizedString());
 
                     if (action.NuGetProjectActionType == NuGetProjectActionType.Install)
                     {
                         nuGetProjectContext.Log(
-                            ProjectManagement.MessageLevel.Info,
+                            MessageLevel.Info,
                             Strings.SuccessfullyInstalled,
                             identityString,
                             buildIntegratedProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
@@ -2447,40 +2448,23 @@ namespace NuGet.PackageManagement
                     {
                         // uninstall
                         nuGetProjectContext.Log(
-                            ProjectManagement.MessageLevel.Info,
+                            MessageLevel.Info,
                             Strings.SuccessfullyUninstalled,
                             identityString,
                             buildIntegratedProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
                     }
                 }
 
+
                 // Run init.ps1 scripts
-                var sortedPackages =
-                    BuildIntegratedProjectUtility.GetOrderedProjectPackageDependencies(buildIntegratedProject);
-
-                var addedPackages = new HashSet<PackageIdentity>(
-                    BuildIntegratedRestoreUtility.GetAddedPackages(
-                        projectAction.OriginalLockFile,
-                        restoreResult.LockFile),
-                    PackageIdentity.Comparer);
-
-                // Find all dependencies in sorted order, then using the order run init.ps1 for only the new packages.
-                foreach (var package in sortedPackages)
-                {
-                    if (addedPackages.Contains(package))
-                    {
-                        var packageInstallPath =
-                            BuildIntegratedProjectUtility.GetPackagePathFromGlobalSource(
-                                pathContext.UserPackageFolder,
-                                package);
-
-                        await buildIntegratedProject.ExecuteInitScriptAsync(
-                            package,
-                            packageInstallPath,
-                            nuGetProjectContext,
-                            false);
-                    }
-                }
+                var addedPackages = BuildIntegratedRestoreUtility.GetAddedPackages(
+                    projectAction.OriginalLockFile,
+                    restoreResult.LockFile);
+                await BuildIntegratedRestoreUtility.ExecuteInitPs1ScriptsAsync(
+                    buildIntegratedProject,
+                    addedPackages,
+                    pathResolver,
+                    nuGetProjectContext);
 
                 // find list of buildintegrated projects
                 var projects = SolutionManager.GetNuGetProjects().OfType<BuildIntegratedNuGetProject>().ToList();
@@ -2584,29 +2568,33 @@ namespace NuGet.PackageManagement
             {
                 //packagesPath is different for project.json vs Packages.config scenarios. So check if the project is a build-integrated project
                 var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
-                var readmeFilePath = String.Empty;
+                var readmeFilePath = string.Empty;
 
                 if (buildIntegratedProject != null)
                 {
-                    var packageFolderPath = BuildIntegratedProjectUtility.GetPackagePathFromGlobalSource(
-                                            Configuration.SettingsUtility.GetGlobalPackagesFolder(Settings),
-                                            nuGetProjectContext.ExecutionContext.DirectInstall);
+                    var pathContext = NuGetPathContext.Create(Settings);
+                    var pathResolver = new FallbackPackagePathResolver(pathContext);
+                    var identity = nuGetProjectContext.ExecutionContext.DirectInstall;
+                    var packageFolderPath = pathResolver.GetPackageDirectory(identity.Id, identity.Version);
 
-                    if (Directory.Exists(packageFolderPath))
+                    if (!string.IsNullOrEmpty(packageFolderPath))
                     {
-                        readmeFilePath = Path.Combine(packageFolderPath, ProjectManagement.Constants.ReadmeFileName);
+                        readmeFilePath = Path.Combine(packageFolderPath, Constants.ReadmeFileName);
                     }
                 }
                 else
                 {
                     var packagePath = PackagesFolderNuGetProject.GetInstalledPackageFilePath(executionContext.DirectInstall);
-                    if (File.Exists(packagePath))
+
+                    if (!string.IsNullOrEmpty(packagePath))
                     {
-                        readmeFilePath = Path.Combine(Path.GetDirectoryName(packagePath), ProjectManagement.Constants.ReadmeFileName);
+                        readmeFilePath = Path.Combine(Path.GetDirectoryName(packagePath), Constants.ReadmeFileName);
                     }
                 }
 
-                if (File.Exists(readmeFilePath) && !token.IsCancellationRequested)
+                if (!token.IsCancellationRequested &&
+                    !string.IsNullOrEmpty(readmeFilePath) &&
+                    File.Exists(readmeFilePath))
                 {
                     return executionContext.OpenFile(readmeFilePath);
                 }
