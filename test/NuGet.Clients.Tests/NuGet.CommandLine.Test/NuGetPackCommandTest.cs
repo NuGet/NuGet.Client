@@ -3063,9 +3063,9 @@ namespace Proj2
             }
         }
 
-        // Tests that pack works with -MSBuildVersion set to 12
-        [Fact]
-        public void PackCommand_WithMsBuild12()
+        // Tests that pack works with -MSBuildVersion set to 15.1
+        [Fact(Skip = "Re-enable this when MSBuild 15.1 is installed on CI machines")]
+        public void PackCommand_WithMsBuild151()
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -3164,7 +3164,7 @@ namespace Proj2
                 var r = CommandRunner.Run(
                     nugetexe,
                     proj2Directory,
-                    @"pack proj2.csproj -build -IncludeReferencedProjects -p Config=Release -MSBuildVersion 12",
+                    @"pack proj2.csproj -build -IncludeReferencedProjects -p Config=Release -MSBuildVersion 15.1",
                     waitForExit: true);
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
