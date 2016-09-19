@@ -70,7 +70,7 @@ namespace NuGet.CommandLine
                 throw new CommandLineException(NuGetResources.InvalidFile);
             }
 
-            _msbuildDirectory = new Lazy<string>(() => MsBuildUtility.GetMsbuildDirectory(MSBuildVersion, Console));
+            _msbuildDirectory = new Lazy<string>(() => MsBuildUtility.GetMsBuildDirectory(MSBuildVersion, Console));
             var context = new UpdateConsoleProjectContext(Console, FileConflictAction);
 
             string inputFileName = Path.GetFileName(inputFile);
