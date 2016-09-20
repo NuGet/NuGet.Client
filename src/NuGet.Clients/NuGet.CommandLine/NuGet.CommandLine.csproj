@@ -131,6 +131,7 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="NuGet.CommandLine.nuspec" />
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
