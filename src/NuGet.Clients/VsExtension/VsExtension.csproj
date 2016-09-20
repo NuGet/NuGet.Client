@@ -186,7 +186,7 @@
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
       <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\VisualStudio\NuGet.VisualStudio.csproj">
+    <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj">
       <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
       <Name>NuGet.VisualStudio</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
@@ -328,19 +328,13 @@
       <PublishDestination>$(ArtifactRoot)\$(VsixOutputDirName)</PublishDestination>
     </PropertyGroup>
     <Message Text="Publishing VSIX package files..." Importance="high" />
-    <Message Text="$(TargetVsixContainer) -> $(PublishDestination)" Importance="high" />
-    <Copy
-      SourceFiles="$(TargetVsixContainer)"
-      DestinationFolder="$(PublishDestination)"
-      OverwriteReadOnlyFiles="true" />
+    <Message Text="$(TargetVsixContainer) -&gt; $(PublishDestination)" Importance="high" />
+    <Copy SourceFiles="$(TargetVsixContainer)" DestinationFolder="$(PublishDestination)" OverwriteReadOnlyFiles="true" />
     <ItemGroup>
       <NuGetSymbolFiles Include="$(OutputPath)NuGet*.pdb" />
     </ItemGroup>
     <Message Text="Copying symbols file '%(NuGetSymbolFiles.Identity)'" Condition=" '@(NuGetSymbolFiles)' != '' " />
-    <Copy
-      SourceFiles="@(NuGetSymbolFiles)"
-      DestinationFolder="$(PublishDestination)\symbols"
-      OverwriteReadOnlyFiles="true" />
+    <Copy SourceFiles="@(NuGetSymbolFiles)" DestinationFolder="$(PublishDestination)\symbols" OverwriteReadOnlyFiles="true" />
   </Target>
   <Target Name="ReadVsixIncludeListFromFile">
     <ReadLinesFromFile File="@(VsixIncludeFile)">
