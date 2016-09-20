@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\..\Build\Common.props" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <ProjectGuid>{4003E1AB-70DE-4B9C-8999-96160EE91D84}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>NuGet.SolutionRestoreManager</RootNamespace>
+    <AssemblyName>NuGet.SolutionRestoreManager.Interop</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>7013ed3d</NuGetPackageImportStamp>
+    <CodeAnalysisRuleSet>..\..\..\NuGet.ruleset</CodeAnalysisRuleSet>
+    <ResolveNuGetPackages>true</ResolveNuGetPackages>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DocumentationFile>$(OutputPath)\NuGet.VisualStudio.SolutionRestoreManager.XML</DocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="install.ps1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="NuGet.SolutionRestoreManager.Interop.nuspec" />
+    <None Include="project.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="IVsProjectRestoreInfo.cs" />
+    <Compile Include="IVsSolutionRestoreService.cs" />
+    <Compile Include="IVsTargetFrameworkInfo.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(EnlistmentRoot)\build\common.targets" />
+  <Import Project="$(EnlistmentRoot)\build\sign.targets" />
+</Project>

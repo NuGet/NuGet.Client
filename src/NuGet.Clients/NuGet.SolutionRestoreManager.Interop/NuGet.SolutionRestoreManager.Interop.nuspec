@@ -1,0 +1,19 @@
+﻿<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+  <metadata>
+    <id>NuGet.SolutionRestoreManager.Interop</id>
+    <version>3.6.0</version>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <licenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt</licenseUrl>
+    <projectUrl>https://github.com/NuGet/NuGet.Client</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>APIs for invoking NuGet Restore Manager in Visual Studio.</description>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+  </metadata>
+  <files>
+     <file src="NuGet.SolutionRestoreManager.Interop.dll" target="lib\net46\NuGet.SolutionRestoreManager.Interop.dll" />
+     <file src="NuGet.SolutionRestoreManager.Interop.XML" target="lib\net46\NuGet.SolutionRestoreManager.Interop.XML" />
+     <file src="install.ps1" target="tools\install.ps1" />
+  </files>
+</package>

@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "System.Collections.Immutable": "1.2.0"
+  },
+  "frameworks": {
+    "net46": {}
+  },
+  "runtimes": {
+    "win-anycpu": {},
+    "win": {}
+  }
+}
