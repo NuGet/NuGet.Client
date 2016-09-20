@@ -22,7 +22,7 @@ namespace NuGet.Build.Tasks.Pack
         public ITaskItem PackItem { get; set; }
         public ITaskItem[] PackageFiles { get; set; }
         public ITaskItem[] PackageFilesToExclude { get; set; }
-        public ITaskItem[] TargetFrameworks { get; set; }
+        public string[] TargetFrameworks { get; set; }
         public string[] PackageTypes { get; set; }
         public string PackageId { get; set; }
         public string PackageVersion { get; set; }
@@ -36,7 +36,7 @@ namespace NuGet.Build.Tasks.Pack
         public string[] Tags { get; set; }
         public string ReleaseNotes { get; set; }
         public string Configuration { get; set; }
-        public string[] TargetPath { get; set; }
+        public string[] TargetPaths { get; set; }
         public string AssemblyName { get; set; }
         public string PackageOutputPath { get; set; }
         public bool IsTool { get; set; }
@@ -57,17 +57,10 @@ namespace NuGet.Build.Tasks.Pack
 
         public override bool Execute()
         {
-#if DEBUG
-            System.Diagnostics.Debugger.Launch();
-#endif
             var packArgs = GetPackArgs();
             var packageBuilder = GetPackageBuilder(packArgs);
-            var contentFiles = ProcessContentToIncludeInPackage();
+            var contentFiles = ProcessContentToIncludeInPackage(packArgs.CurrentDirectory);
             packArgs.PackTargetArgs.ContentFiles = contentFiles;
-            ProcessJsonFile(packageBuilder, packArgs.CurrentDirectory,
-                Path.GetFileName(packArgs.Path), isHostProject:true);
-            GetPackageReferences(packageBuilder);
-            GetReferences(packageBuilder);
             PackCommandRunner packRunner = new PackCommandRunner(packArgs, MSBuildProjectFactory.ProjectCreator, packageBuilder);
             packRunner.GenerateNugetPackage = ContinuePackingAfterGeneratingNuspec;
             packRunner.BuildPackage();
@@ -86,7 +79,7 @@ namespace NuGet.Build.Tasks.Pack
             packArgs.NoPackageAnalysis = NoPackageAnalysis;
             packArgs.PackTargetArgs = new MSBuildPackTargetArgs()
             {
-                TargetPath = TargetPath,
+                TargetPaths = TargetPaths,
                 Configuration = Configuration,
                 AssemblyName = AssemblyName
             };
@@ -120,7 +113,7 @@ namespace NuGet.Build.Tasks.Pack
             var nugetFrameworks = new HashSet<NuGetFramework>();
             if (TargetFrameworks != null)
             {
-                nugetFrameworks = new HashSet<NuGetFramework>(TargetFrameworks.Select(t => NuGetFramework.Parse(t.ItemSpec)));
+                nugetFrameworks = new HashSet<NuGetFramework>(TargetFrameworks.Select(t => NuGetFramework.Parse(t)));
             }
             return nugetFrameworks;
         } 
@@ -176,6 +169,7 @@ namespace NuGet.Build.Tasks.Pack
             }
             builder.PackageTypes = ParsePackageTypes();
             ParseProjectToProjectReferences(builder, packArgs);
+            GetPackageReferences(builder);
             return builder;
         }
 
@@ -200,53 +194,19 @@ namespace NuGet.Build.Tasks.Pack
             return listOfPackageTypes;
         }
 
-        private void ParseProjectToProjectReferences(PackageBuilder packageBuilder, PackArgs packArgs)
+        private LibraryDependency GetLibraryDependency(ITaskItem p2pReference, string packageId, string version)
         {
-            var dependencies = new HashSet<LibraryDependency>();
-            var projectReferences = new List<ProjectToProjectReference>();
-            if (ProjectReferences != null)
+            LibraryIncludeFlags includeFlags, privateAssetsFlag;
+            GetAssetMetadata(p2pReference, out includeFlags, out privateAssetsFlag);
+
+            LibraryRange libraryRange = new LibraryRange(packageId, VersionRange.Parse(version, true), LibraryDependencyTarget.All);
+            var libDependency = new LibraryDependency()
             {
-                foreach (var p2pReference in ProjectReferences)
-                {
-                    var typeOfReference = p2pReference.GetMetadata("Type");
-                    if (string.Equals(typeOfReference, "project", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // This is a project reference, and the DLL should be copied over to lib.
-                        projectReferences.Add(new ProjectToProjectReference()
-                        {
-                            TargetPath = p2pReference.GetMetadata("TargetPath"),
-                            AssemblyName = p2pReference.GetMetadata("AssemblyName")
-                        });
-                        string projectPath = p2pReference.GetMetadata("MSBuildProjectFullPath");
-                        ProcessJsonFile(packageBuilder, Path.GetDirectoryName(projectPath), Path.GetFileName(projectPath), isHostProject:false);
-                    }
-                    else if (string.Equals(typeOfReference, "package", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // This is to be treated as a nupkg dependency, add as library dependency.
-                        var packageId = p2pReference.GetMetadata("PackageId");
-                        LibraryIncludeFlags includeFlags, privateAssetsFlag;
-                        GetAssetMetadata(p2pReference, out includeFlags, out privateAssetsFlag);
-
-                        var version = p2pReference.GetMetadata("PackageVersion");
-                        //TODO: Do the work to get the version from AssemblyInfo.cs
-                        if (string.IsNullOrEmpty(version))
-                        {
-                            version = "1.0.0";
-                        }
-                        LibraryRange libraryRange = new LibraryRange(packageId, VersionRange.Parse(version), LibraryDependencyTarget.Package);
-                        var libDependency = new LibraryDependency()
-                        {
-                            LibraryRange = libraryRange,
-                            IncludeType = includeFlags,
-                            SuppressParent = privateAssetsFlag
-                        };
-                        LibraryDependency.AddLibraryDependency(libDependency, dependencies);
-                    }
-                }
-
-                PackCommandRunner.AddDependencyGroups(dependencies, NuGetFramework.AnyFramework, packageBuilder);
-                packArgs.PackTargetArgs.ProjectReferences = projectReferences;
-            }
+                LibraryRange = libraryRange,
+                IncludeType = includeFlags,
+                SuppressParent = privateAssetsFlag
+            };
+            return libDependency;
         }
 
         private void InitCurrentDirectoryAndFileName(PackArgs packArgs)
@@ -276,42 +236,8 @@ namespace NuGet.Build.Tasks.Pack
                 packArgs.PackTargetArgs.NuspecOutputPath = NuspecOutputPath;
             }
         }
-        private void ProcessJsonFile(PackageBuilder packageBuilder, string currentDirectory, string projectFileName, bool isHostProject)
-        {
-            string path = ProjectJsonPathUtilities.GetProjectConfigPath(currentDirectory, projectFileName);
-            if (!File.Exists(path))
-            {
-                return;
-            }
-            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read))
-            {
-                var spec = JsonPackageSpecReader.GetPackageSpec(stream, packageBuilder.Id, path, VersionSuffix);
-                if (spec.TargetFrameworks.Any())
-                {
-                    foreach (var framework in spec.TargetFrameworks)
-                    {
-                        if (framework.FrameworkName.IsUnsupported)
-                        {
-                            throw new Exception(String.Format(CultureInfo.CurrentCulture, NuGet.Commands.Strings.Error_InvalidTargetFramework, framework.FrameworkName));
-                        }
-                        if (isHostProject)
-                        {
-                            packageBuilder.TargetFrameworks.Add(framework.FrameworkName);
-                        }
-                        PackCommandRunner.AddDependencyGroups(framework.Dependencies.Concat(spec.Dependencies), framework.FrameworkName, packageBuilder);
-                    }
-                }
-                else
-                {
-                    if (spec.Dependencies.Any())
-                    {
-                        PackCommandRunner.AddDependencyGroups(spec.Dependencies, NuGetFramework.AnyFramework, packageBuilder);
-                    }
-                }
-            }
-        }
-
-        private Dictionary<string, HashSet<string>> ProcessContentToIncludeInPackage()
+        
+        private Dictionary<string, HashSet<string>> ProcessContentToIncludeInPackage(string currentProjectDirectory)
         {
             // This maps from source path on disk to target path inside the nupkg.
             var fileModel = new Dictionary<string, HashSet<string>>();
@@ -320,33 +246,73 @@ namespace NuGet.Build.Tasks.Pack
                 var excludeFiles = CalculateFilesToExcludeInPack();
                 foreach (var packageFile in PackageFiles)
                 {
-                    string[] targetPath = new string[] { PackagingConstants.Folders.Content, PackagingConstants.Folders.ContentFiles };
+                    string[] targetPaths;
                     var customMetadata = packageFile.CloneCustomMetadata();
                     var sourcePath = GetSourcePath(packageFile, customMetadata);
                     if (excludeFiles.Contains(sourcePath))
                     {
                         continue;
                     }
-                    if (customMetadata.Contains("PackagePath"))
-                    {
-                        targetPath = packageFile.GetMetadata("PackagePath").Split(';');
-                    }
+
+                    GetTargetPath(packageFile, customMetadata, sourcePath, currentProjectDirectory, out targetPaths);
 
                     if (fileModel.ContainsKey(sourcePath))
                     {
                         var setOfTargetPaths = fileModel[sourcePath];
-                        setOfTargetPaths.AddRange(targetPath);
+                        setOfTargetPaths.AddRange(targetPaths);
                     }
                     else
                     {
                         var setOfTargetPaths = new HashSet<string>();
-                        setOfTargetPaths.AddRange(targetPath);
+                        setOfTargetPaths.AddRange(targetPaths);
                         fileModel.Add(sourcePath, setOfTargetPaths);
                     }
                 }
             }
 
             return fileModel;
+        }
+
+
+        // The targetpaths returned from this function contain the directory in the nuget package where the file would go to. The filename is added later on to the target path.
+        private void GetTargetPath(ITaskItem packageFile, IDictionary customMetadata, string sourcePath, string currentProjectDirectory, out string[] targetPaths)
+        {
+            targetPaths = new string[] { PackagingConstants.Folders.Content, PackagingConstants.Folders.ContentFiles };
+            // if user specified a PackagePath, then use that. Look for any ** which are indicated by the RecrusiveDir metadata in msbuild.
+            if (customMetadata.Contains("PackagePath"))
+            {
+                targetPaths = packageFile.GetMetadata("PackagePath").Split(';');
+                var recursiveDir = packageFile.GetMetadata("RecursiveDir");
+                if (!string.IsNullOrEmpty(recursiveDir))
+                {
+                    var newTargetPaths = new string[targetPaths.Length];
+                    var i = 0;
+                    foreach (var targetPath in targetPaths)
+                    {
+                        newTargetPaths[i] = Path.Combine(targetPath, recursiveDir);
+                        i++;
+                    }
+                    targetPaths = newTargetPaths;
+                }
+            }
+            // this else if condition means the file is within the project directory and the target path should preserve this relative directory structure.
+            else if (sourcePath.StartsWith(currentProjectDirectory, StringComparison.CurrentCultureIgnoreCase) && 
+                !Path.GetFileName(sourcePath).Equals(packageFile.GetMetadata("Identity"), StringComparison.CurrentCultureIgnoreCase))
+            {
+                var newTargetPaths = new string[targetPaths.Length];
+                var i = 0;
+                var identity = packageFile.GetMetadata("Identity");
+                if (identity.EndsWith(Path.GetFileName(sourcePath), StringComparison.CurrentCultureIgnoreCase))
+                {
+                    identity = Path.GetDirectoryName(identity);
+                }
+                foreach (var targetPath in targetPaths)
+                {
+                    newTargetPaths[i] = Path.Combine(targetPath, identity);
+                    i++;
+                }
+                targetPaths = newTargetPaths;
+            }
         }
 
         private string GetSourcePath(ITaskItem packageFile, IDictionary customMetadata)
@@ -443,38 +409,98 @@ namespace NuGet.Build.Tasks.Pack
 
         private void GetPackageReferences(PackageBuilder packageBuilder)
         {
-            var dependencies = new HashSet<LibraryDependency>();
+            var dependencyByFramework = new Dictionary<NuGetFramework, HashSet<LibraryDependency>>();
             if (PackageReferences != null)
             {
                 foreach (var packageRef in PackageReferences)
                 {
+                    var dependencies = new HashSet<LibraryDependency>();
                     string packageId, version;
-                    ParsePackageReference(packageRef.ItemSpec, out packageId, out version);
-                    VersionRange verRange = null;
-                    LibraryIncludeFlags includeFlags, suppressParent;
-                    GetAssetMetadata(packageRef, out includeFlags, out suppressParent);
-                    if (!string.IsNullOrEmpty(version))
+                    string targetFramework = packageRef.GetMetadata("TargetFramework");
+                    NuGetFramework framework = NuGetFramework.Parse(targetFramework);
+                    if (dependencyByFramework.ContainsKey(framework))
                     {
-                        verRange = VersionRange.Parse(version, true);
+                        dependencies = dependencyByFramework[framework];
                     }
-                    var libraryRange = new LibraryRange(packageId, verRange, LibraryDependencyTarget.All);
-                    LibraryDependency libDependency = new LibraryDependency()
+                    else
                     {
-                        LibraryRange = libraryRange,
-                        IncludeType = includeFlags,
-                        SuppressParent = suppressParent
-                    };
+                        dependencyByFramework.Add(framework, dependencies);
+                    }
+
+                    ParsePackageReference(packageRef, out packageId, out version);
+                    var libDependency = GetLibraryDependency(packageRef, packageId, version);
+
                     LibraryDependency.AddLibraryDependency(libDependency, dependencies);
                 }
-                PackCommandRunner.AddDependencyGroups(dependencies, NuGetFramework.AnyFramework, packageBuilder);
+
+                foreach (var framework in dependencyByFramework.Keys)
+                {
+                    PackCommandRunner.AddDependencyGroups(dependencyByFramework[framework], framework, packageBuilder);
+                }
             }
         }
 
-        private void ParsePackageReference(string packageReference, out string packageId, out string version)
+        private void ParseProjectToProjectReferences(PackageBuilder packageBuilder, PackArgs packArgs)
         {
-            string[] args = packageReference.Split('/');
-            packageId = args[0];
-            version = args.Length > 1 ? args[1] : null;
+            var dependencyByFramework = new Dictionary<NuGetFramework, HashSet<LibraryDependency>>();
+            var projectReferences = new List<ProjectToProjectReference>();
+            if (ProjectReferences != null)
+            {
+                foreach (var p2pReference in ProjectReferences)
+                {
+                    var dependencies = new HashSet<LibraryDependency>();
+                    var typeOfReference = p2pReference.GetMetadata("Type");
+                    if (string.Equals(typeOfReference, "project", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // This is a project reference, and the DLL should be copied over to lib.
+                        projectReferences.Add(new ProjectToProjectReference()
+                        {
+                            TargetPath = p2pReference.GetMetadata("TargetPath"),
+                            AssemblyName = p2pReference.GetMetadata("AssemblyName")
+                        });
+                        string projectPath = p2pReference.GetMetadata("MSBuildProjectFullPath");
+                    }
+                    else if (string.Equals(typeOfReference, "package", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // This is to be treated as a nupkg dependency, add as library dependency.
+                        var packageId = p2pReference.GetMetadata("PackageId");
+                        var version = p2pReference.GetMetadata("PackageVersion");
+                        //TODO: Do the work to get the version from AssemblyInfo.cs
+                        if (string.IsNullOrEmpty(version))
+                        {
+                            version = "1.0.0";
+                        }
+                        var libDependency = GetLibraryDependency(p2pReference, packageId, version);
+                        var targetFramework = p2pReference.GetMetadata("TargetFramework");
+                        var nugetFramework = NuGetFramework.Parse(targetFramework);
+                        if (dependencyByFramework.ContainsKey(nugetFramework))
+                        {
+                            dependencies = dependencyByFramework[nugetFramework];
+                        }
+                        else
+                        {
+                            dependencyByFramework.Add(nugetFramework, dependencies);
+                        }
+                        LibraryDependency.AddLibraryDependency(libDependency, dependencies);
+                    }
+                }
+
+                foreach (var nugetFramework in dependencyByFramework.Keys)
+                {
+                    PackCommandRunner.AddDependencyGroups(dependencyByFramework[nugetFramework], nugetFramework, packageBuilder);
+                }
+                packArgs.PackTargetArgs.ProjectReferences = projectReferences;
+            }
+        }
+
+        private void ParsePackageReference(ITaskItem packageReference, out string packageId, out string version)
+        {
+            packageId = packageReference.ItemSpec;
+            version = packageReference.GetMetadata("Version");
+            if (string.IsNullOrEmpty(version))
+            {
+                throw new InvalidOperationException("Package Reference needs to have a valid version");
+            }
         }
 
         private void GetAssetMetadata(ITaskItem packageRef, out LibraryIncludeFlags include,

@@ -8,7 +8,7 @@ namespace NuGet.Commands
 {
     public class MSBuildPackTargetArgs
     {
-        public string[] TargetPath { get; set; }
+        public string[] TargetPaths { get; set; }
         public string AssemblyName { get; set; }
         public string Configuration { get; set; }
         public string NuspecOutputPath { get; set; }

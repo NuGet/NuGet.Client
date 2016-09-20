@@ -41,7 +41,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <ItemGroup>
     <_TargetFrameworks Include="$(TargetFrameworks.Split(';'))"></_TargetFrameworks>
   </ItemGroup>
-  
+
   <!--
     ============================================================
     Pack
@@ -123,7 +123,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <PackProjectInputFile>$(MSBuildProjectFullPath)</PackProjectInputFile>
     </PropertyGroup>
   </Target>
-  
+
   <Target Name="_WalkEachTargetPerFramework">
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
@@ -138,7 +138,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           TaskParameter="TargetOutputs"
           ItemName="_ProjectReferences" />
     </MSBuild>
-    
+
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GetPackageReferences"
@@ -168,7 +168,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       </_ProjectReferences>
     </ItemGroup>
   </Target>
-  
+
   <!--
     ============================================================
     _GetProjectToProjectReferences
@@ -205,7 +205,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </MSBuild>
   </Target>
 
-  
+
 
   <!--
     ============================================================
@@ -217,7 +217,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <_PackageFilesToExclude Include="@(Content)" Condition="'%(Content.Pack)' == 'false'"/>
     </ItemGroup>
-     <!-- Include PackageFiles and Content of the project being packed -->
+    <!-- Include PackageFiles and Content of the project being packed -->
     <ItemGroup>
       <_PackageFiles Include="@(Content)" Condition=" %(Content.Pack) != 'false' " />
       <_PackageFiles Include="@(Compile)" Condition=" %(Compile.Pack) == 'true' " />
@@ -225,7 +225,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  
+
   <!--
     ============================================================
     _GetSourceFilesForSymbols
@@ -238,7 +238,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-<!--
+  <!--
     ============================================================
     _GetPackageReferences
     Entry point for getting the package references for a project and it's references
@@ -257,5 +257,5 @@ Copyright (c) .NET Foundation. All rights reserved.
         <PrivateAssets>%(PackageReference.PrivateAssets)</PrivateAssets>
       </_PackageReferences>
     </ItemGroup>
-  </Target>  
+  </Target>
 </Project>

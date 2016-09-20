@@ -651,7 +651,7 @@ namespace NuGet.Commands
             {
                 foreach (var packageDependency in packageDependencies)
                 {
-                    var matchingDependency = dependencyGroup.Packages.Single(r => r.Id == packageDependency.Id);
+                    var matchingDependency = dependencyGroup.Packages.SingleOrDefault(r => r.Id == packageDependency.Id);
                     if (matchingDependency != null)
                     {
                         VersionRange newVersionRange = VersionRange.CommonSubSet(new VersionRange[]
@@ -668,6 +668,10 @@ namespace NuGet.Commands
                             //TODO: Throw the right exception message here
                             throw new Exception("Your package version constraints are messed up.");
                         }
+                    }
+                    else
+                    {
+                        dependencyGroup.Packages.Add(packageDependency);
                     }
                 }
             }

@@ -116,26 +116,8 @@ namespace NuGet.Commands
 
         private void AddOutputFiles(PackageBuilder builder)
         {
-            // Get the target framework of the project
-            NuGetFramework nugetFramework = null;
-            if (builder.TargetFrameworks.Any())
-            {
-                if (builder.TargetFrameworks.Count > 1)
-                {
-                    //TODO: throw a proper exception
-                    throw new Exception("only allowed to have one framework");
-                }
-                nugetFramework = builder.TargetFrameworks.First();
-            }
-            else
-            {
-                //TODO: throw a proper exception
-                //throw new Exception("should have atleast one framework in project.json");
-            }
-
             // Get the target file path
-            
-            foreach (string targetPath in PackTargetArgs.TargetPath)
+            foreach (string targetPath in PackTargetArgs.TargetPaths)
             {
                 var allowedOutputExtensions = _allowedOutputExtensions;
 
@@ -150,7 +132,7 @@ namespace NuGet.Commands
                 string targetFileName = PackTargetArgs.AssemblyName;
                 IList<string> filesToCopy = GetFiles(projectOutputDirectory, targetFileName, allowedOutputExtensions, SearchOption.AllDirectories);
 
-                AddReferencedProjectsToOutputFiles(projectOutputDirectory, allowedOutputExtensions, filesToCopy);
+                //AddReferencedProjectsToOutputFiles(projectOutputDirectory, allowedOutputExtensions, filesToCopy);
 
                 // By default we add all files in the project's output directory
                 foreach (var file in filesToCopy)
@@ -163,7 +145,7 @@ namespace NuGet.Commands
                         continue;
                     }
 
-                    string targetFolder;
+                    string targetFolder = ReferenceFolder;
 
                     if (IsTool)
                     {
@@ -189,12 +171,6 @@ namespace NuGet.Commands
                             }
                             targetFolder = Path.Combine(ReferenceFolder, shortFolderName);
                         }
-                        else
-                        {
-                            // This is the fallback case of getting the target framework from project.json
-                            string shortFolderName = nugetFramework.GetShortFolderName();
-                            targetFolder = Path.Combine(ReferenceFolder, shortFolderName);
-                        }
                     }
                     var packageFile = new ManifestFile()
                     {
@@ -213,7 +189,7 @@ namespace NuGet.Commands
 
         private void AddFileToBuilder(ManifestFile packageFile)
         {
-            if (!Files.Any(p => packageFile.Target.Equals(p.Target, StringComparison.OrdinalIgnoreCase)))
+            if (!Files.Any(p => packageFile.Target.Equals(p.Target, StringComparison.CurrentCultureIgnoreCase)))
             {
                 Files.Add(packageFile);
             }
