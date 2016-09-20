@@ -5743,6 +5743,65 @@ namespace NuGet.Test
             }
         }
 
+        [Fact]
+        public async Task TestPacMan_PreviewUpdatePackage_IgnoreDependency()
+        {
+            // Arrange
+
+            // Set up Package Source
+            var packages = new List<SourcePackageDependencyInfo>
+            {
+                new SourcePackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new[] { new Packaging.Core.PackageDependency("b", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
+                new SourcePackageDependencyInfo("a", new NuGetVersion(2, 0, 0), new[] { new Packaging.Core.PackageDependency("b", new VersionRange(new NuGetVersion(2, 0, 0))),  new Packaging.Core.PackageDependency("c", new VersionRange(new NuGetVersion(1, 0, 0)))}, true, null),
+                new SourcePackageDependencyInfo("b", new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null)
+            };
+
+            var sourceRepositoryProvider = CreateSource(packages);
+
+            // Set up NuGetProject
+            var fwk45 = NuGetFramework.Parse("net45");
+
+            var installedPackage1 = new PackageIdentity("a", new NuGetVersion(1, 0, 0));
+            var installedPackage2 = new PackageIdentity("b", new NuGetVersion(1, 0, 0));
+
+            var installedPackages = new List<NuGet.Packaging.PackageReference>
+            {
+                new NuGet.Packaging.PackageReference(installedPackage1, fwk45, true),
+                new NuGet.Packaging.PackageReference(installedPackage2, fwk45, true)
+            };
+
+            var nuGetProject = new TestNuGetProject(installedPackages);
+
+            // Create Package Manager
+            using (var solutionManager = new TestSolutionManager(true))
+            {
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    new Configuration.NullSettings(),
+                    solutionManager,
+                    new TestDeleteOnRestartManager());
+
+                // Main Act
+                var targetPackage = new PackageIdentity("a", new NuGetVersion(2, 0, 0));                
+
+                var result = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
+                    new List<PackageIdentity> { targetPackage },
+                    new List<NuGetProject> { nuGetProject },
+                    new ResolutionContext(DependencyBehavior.Ignore, false, true, VersionConstraints.None),
+                    new TestNuGetProjectContext(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None)).ToList();
+
+                // Assert
+                Assert.Equal(2, result.Count);
+                Assert.True(installedPackage1.Equals(result[0].PackageIdentity));
+                Assert.Equal(NuGetProjectActionType.Uninstall, result[0].NuGetProjectActionType);
+                Assert.True(targetPackage.Equals(result[1].PackageIdentity));
+                Assert.Equal(NuGetProjectActionType.Install, result[1].NuGetProjectActionType);
+            }
+        }
+
         private static void AddToPackagesFolder(PackageIdentity package, string root)
         {
             var dir = Path.Combine(root, $"{package.Id}.{package.Version.ToString()}");
