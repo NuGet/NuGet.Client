@@ -89,9 +89,9 @@ namespace NuGet.PackageManagement.UI
 
         // Load items using the specified loader
         internal void LoadItems(
-            IPackageItemLoader loader, 
-            string loadingMessage, 
-            INuGetUILogger logger, 
+            IPackageItemLoader loader,
+            string loadingMessage,
+            INuGetUILogger logger,
             Task<SearchResult<IPackageSearchMetadata>> searchResultTask)
         {
             _loader = loader;
@@ -102,7 +102,17 @@ namespace NuGet.PackageManagement.UI
             _loadingStatusBar.Reset(loadingMessage, loader.IsMultiSource);
 
             var selectedPackageItem = SelectedPackageItem;
-            ClearPackageList();
+            _itemsLock.Wait();
+
+            try
+            {
+                ClearPackageList();
+            }
+            finally
+            {
+                _itemsLock.Release();
+            }
+            
 
             _selectedCount = 0;
 
@@ -243,7 +253,7 @@ namespace NuGet.PackageManagement.UI
                 await currentLoader.LoadNextAsync(progress, token);
 
                 // run till first results are ready
-                while(currentLoader.State.LoadingStatus == LoadingStatus.Loading &&
+                while (currentLoader.State.LoadingStatus == LoadingStatus.Loading &&
                     currentLoader.State.ItemsCount == 0)
                 {
                     token.ThrowIfCancellationRequested();
@@ -280,7 +290,7 @@ namespace NuGet.PackageManagement.UI
                     // decide when to show status bar
                     var desiredVisibility = EvaluateStatusBarVisibility(loader, state);
 
-                    if (_loadingStatusBar.Visibility != Visibility.Visible 
+                    if (_loadingStatusBar.Visibility != Visibility.Visible
                         && desiredVisibility == Visibility.Visible)
                     {
                         _loadingStatusBar.Visibility = desiredVisibility;
@@ -374,18 +384,7 @@ namespace NuGet.PackageManagement.UI
                 package.PropertyChanged -= Package_PropertyChanged;
             }
 
-            _itemsLock.Wait();
-
-            try
-            {
-                Items.Clear();
-            }
-
-            finally
-            {
-                _itemsLock.Release();
-            }
-
+            Items.Clear();
             _loadingStatusBar.ItemsLoaded = 0;
         }
 
