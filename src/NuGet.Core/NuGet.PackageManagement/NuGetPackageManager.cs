@@ -897,13 +897,16 @@ namespace NuGet.PackageManagement
 
                 var installedPackagesInDependencyOrder = await GetInstalledPackagesInDependencyOrder(nuGetProject, token);
 
+                var isDependencyBehaviorIgnore = resolutionContext.DependencyBehavior == DependencyBehavior.Ignore;
+
                 nuGetProjectActions = GetProjectActionsForUpdate(
                     newListOfInstalledPackages,
                     installedPackagesInDependencyOrder,
                     prunedAvailablePackages,
                     nuGetProjectContext,
                     isReinstall,
-                    targetIds);
+                    targetIds,
+                    isDependencyBehaviorIgnore);
 
                 if (nuGetProjectActions.Count == 0)
                 {
@@ -964,7 +967,8 @@ namespace NuGet.PackageManagement
             IEnumerable<SourcePackageDependencyInfo> availablePackageDependencyInfoWithSourceSet,
             INuGetProjectContext nuGetProjectContext,
             bool isReinstall,
-            IEnumerable<string> targetIds)
+            IEnumerable<string> targetIds,
+            bool isDependencyBehaviorIgnore)
         {
             // Step-3 : Get the list of nuGetProjectActions to perform, install/uninstall on the nugetproject
             // based on newPackages obtained in Step-2 and project.GetInstalledPackages
@@ -978,7 +982,13 @@ namespace NuGet.PackageManagement
             // we are doing a reinstall of a specific package - we will also want to generate Project Actions for the dependencies
             if (isReinstall && targetIds.Any())
             {
-                var packageIdsToReinstall = GetDependencies(targetIds, newListOfInstalledPackages, availablePackageDependencyInfoWithSourceSet);
+                var packageIdsToReinstall = new HashSet<string>(targetIds, StringComparer.OrdinalIgnoreCase);
+
+                // Avoid getting dependencies if dependencyBehavior is set to ignore
+                if (!isDependencyBehaviorIgnore)
+                {
+                    packageIdsToReinstall = GetDependencies(targetIds, newListOfInstalledPackages, availablePackageDependencyInfoWithSourceSet);
+                }
 
                 newPackagesToUninstall = oldListOfInstalledPackages.Where(p => packageIdsToReinstall.Contains(p.Id));
                 newPackagesToInstall = newListOfInstalledPackages.Where(p => packageIdsToReinstall.Contains(p.Id));
@@ -1001,8 +1011,14 @@ namespace NuGet.PackageManagement
                     var newTargetIds = new HashSet<string>(newPackagesToUninstall.Select(p => p.Id), StringComparer.OrdinalIgnoreCase);
                     newTargetIds.AddRange(targetIds);
 
-                    // first, we will allow all the dependencies of the package(s) beging targeted
-                    var allowed = GetDependencies(newTargetIds, newListOfInstalledPackages, availablePackageDependencyInfoWithSourceSet);
+                    var allowed = newTargetIds;
+
+                    // Avoid getting dependencies if dependencyBehavior is set to ignore
+                    if (!isDependencyBehaviorIgnore)
+                    {
+                        // first, we will allow all the dependencies of the package(s) beging targeted
+                        allowed = GetDependencies(newTargetIds, newListOfInstalledPackages, availablePackageDependencyInfoWithSourceSet);
+                    }
 
                     // second, any package that is currently in the solution will also be allowed to change
                     // (note this logically doesn't include packages that have been force uninstalled from the project
