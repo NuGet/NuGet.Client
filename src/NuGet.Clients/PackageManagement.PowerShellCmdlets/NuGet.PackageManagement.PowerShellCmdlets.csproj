@@ -16,10 +16,19 @@
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
   </PropertyGroup>
+  <Choose>
+    <When Condition="'$(VisualStudioVersion)' == '14.0'">
+	  <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL"/>
+	  </ItemGroup>
+	</When>
+	<When Condition="'$(VisualStudioVersion)' == '15.0'">
+	  <ItemGroup>
+		<Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL"/>
+      </ItemGroup>
+    </When>
+  </Choose>
   <ItemGroup>
-    <Reference Include="Microsoft.VisualStudio.ComponentModelHost">
-      <HintPath>$(VisualStudioInstallDir)PublicAssemblies\Microsoft.VisualStudio.ComponentModelHost.dll</HintPath>
-    </Reference>
     <Reference Include="envdte, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
