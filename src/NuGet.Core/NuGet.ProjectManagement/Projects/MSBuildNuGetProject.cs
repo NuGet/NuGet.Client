@@ -10,9 +10,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using NuGet.Commands;
 using NuGet.Frameworks;
+using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.ProjectManagement
@@ -21,7 +24,7 @@ namespace NuGet.ProjectManagement
     /// This class represents a NuGetProject based on a .NET project. This also contains an instance of a
     /// FolderNuGetProject
     /// </summary>
-    public class MSBuildNuGetProject : NuGetProject
+    public class MSBuildNuGetProject : NuGetProject, IDependencyGraphProject
     {
         /// <summary>
         /// Event to be raised while installing a package
@@ -56,6 +59,9 @@ namespace NuGet.ProjectManagement
         public IMSBuildNuGetProjectSystem MSBuildNuGetProjectSystem { get; }
         public FolderNuGetProject FolderNuGetProject { get; }
         public PackagesConfigNuGetProject PackagesConfigNuGetProject { get; }
+
+        public string MSBuildProjectPath => MSBuildNuGetProjectSystem.ProjectFileFullPath;
+        public DateTimeOffset LastModified => DateTimeOffset.MinValue;
 
         private readonly IDictionary<FileTransformExtensions, IPackageFileTransformer> FileTransformers =
             new Dictionary<FileTransformExtensions, IPackageFileTransformer>
@@ -525,6 +531,53 @@ namespace NuGet.ProjectManagement
             return true;
         }
 
+        public PackageSpec GetPackageSpecForRestore(ExternalProjectReferenceContext referenceContext)
+        {
+            var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>
+            {
+                new TargetFrameworkInformation
+                {
+                    FrameworkName = MSBuildNuGetProjectSystem.TargetFramework
+                }
+            });
+            packageSpec.Name = MSBuildNuGetProjectSystem.ProjectName;
+            packageSpec.FilePath = MSBuildNuGetProjectSystem.ProjectFileFullPath;
+
+            // A packages.config project does not follow the typical restore flow so there is no need to add package
+            // dependencides to the package spec. Packages.config package restoration is done elsewhere.
+
+            var metadata = new ProjectRestoreMetadata();
+            packageSpec.RestoreMetadata = metadata;
+
+            metadata.OutputType = RestoreOutputType.Unknown;
+            metadata.ProjectPath = MSBuildNuGetProjectSystem.ProjectFileFullPath;
+            metadata.ProjectName = MSBuildNuGetProjectSystem.ProjectName;
+            metadata.ProjectUniqueName = MSBuildNuGetProjectSystem.ProjectFileFullPath;
+
+            IReadOnlyList<ExternalProjectReference> references = null;
+            if (referenceContext.DirectReferenceCache.TryGetValue(metadata.ProjectPath, out references))
+            {
+                foreach (var reference in references)
+                {
+                    MSBuildRestoreUtility.AddMSBuildProjectReference(
+                        packageSpec,
+                        new ProjectRestoreReference
+                        {
+                            ProjectUniqueName = reference.UniqueName,
+                            ProjectPath = reference.MSBuildProjectPath
+                        },
+                        new LibraryDependency
+                        {
+                            LibraryRange = new LibraryRange(
+                                reference.UniqueName,
+                                LibraryDependencyTarget.ExternalProject)
+                        });
+                }
+            }
+
+            return packageSpec;
+        }
+
         public override Task PostProcessAsync(INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             if (!IsBindingRedirectsDisabled(nuGetProjectContext))
@@ -565,6 +618,22 @@ namespace NuGet.ProjectManagement
                 {
                     { "configSections", (parent, element) => parent.AddFirst(element) }
                 };
+        }
+
+        public bool IsRestoreRequired(
+            IEnumerable<VersionFolderPathResolver> pathResolvers,
+            ISet<PackageIdentity> packagesChecked,
+            ExternalProjectReferenceContext context)
+        {
+            return false;
+        }
+
+        public virtual Task<IReadOnlyList<ExternalProjectReference>> GetProjectReferenceClosureAsync(
+            ExternalProjectReferenceContext context)
+        {
+            // This cannot be resolved with DTE currently, it is overridden at a higher level
+            return Task.FromResult<IReadOnlyList<ExternalProjectReference>>(
+                Enumerable.Empty<ExternalProjectReference>().ToList());
         }
     }
 

@@ -23,8 +23,7 @@ namespace NuGet.ProjectManagement
     {
         public string Root { get; set; }
         private PackagePathResolver PackagePathResolver { get; }
-
-
+        
         public FolderNuGetProject(string root)
             : this(root, new PackagePathResolver(root))
         {

@@ -2,16 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.LibraryModel;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -23,6 +26,166 @@ namespace ProjectManagement.Test
 {
     public class MSBuildNuGetProjectTests
     {
+        [Fact]
+        public void MSBuildNuGetProject_GetPackageSpecForRestore_NoReferences()
+        {
+            // Arrange
+            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var projectTargetFramework = NuGetFramework.Parse("net45");
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                    projectTargetFramework,
+                    testNuGetProjectContext);
+
+                var msBuildNuGetProject = new MSBuildNuGetProject(
+                    msBuildNuGetProjectSystem,
+                    randomPackagesFolderPath,
+                    randomPackagesConfigFolderPath);
+                
+                var referenceContext = new ExternalProjectReferenceContext(new TestLogger());
+
+                // Act
+                var actual = msBuildNuGetProject.GetPackageSpecForRestore(referenceContext);
+
+                // Assert
+                Assert.NotNull(actual);
+                Assert.Equal(msBuildNuGetProjectSystem.ProjectName, actual.Name);
+                Assert.Equal(msBuildNuGetProjectSystem.ProjectFileFullPath, actual.FilePath);
+                Assert.NotNull(actual.RestoreMetadata);
+                Assert.Equal(RestoreOutputType.Unknown, actual.RestoreMetadata.OutputType);
+                Assert.Equal(msBuildNuGetProjectSystem.ProjectFileFullPath, actual.RestoreMetadata.ProjectPath);
+                Assert.Equal(msBuildNuGetProjectSystem.ProjectName, actual.RestoreMetadata.ProjectName);
+                Assert.Equal(msBuildNuGetProjectSystem.ProjectFileFullPath, actual.RestoreMetadata.ProjectUniqueName);
+                Assert.Equal(1, actual.TargetFrameworks.Count);
+                Assert.Equal(projectTargetFramework, actual.TargetFrameworks[0].FrameworkName);
+                Assert.Null(actual.TargetFrameworks[0].Imports);
+
+                Assert.Empty(actual.Dependencies);
+                Assert.Empty(actual.TargetFrameworks[0].Dependencies);
+                Assert.Empty(actual.RestoreMetadata.ProjectReferences);
+            }
+        }
+
+        [Fact]
+        public void MSBuildNuGetProject_GetPackageSpecForRestore_WithReferences()
+        {
+            // Arrange
+            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var projectTargetFramework = NuGetFramework.Parse("net45");
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                    projectTargetFramework,
+                    testNuGetProjectContext);
+
+                var msBuildNuGetProject = new MSBuildNuGetProject(
+                    msBuildNuGetProjectSystem,
+                    randomPackagesFolderPath,
+                    randomPackagesConfigFolderPath);
+
+                var referenceContext = new ExternalProjectReferenceContext(new TestLogger());
+                var cacheKey = msBuildNuGetProjectSystem.ProjectFileFullPath;
+                referenceContext.DirectReferenceCache[cacheKey] = new List<ExternalProjectReference>
+                {
+                    new ExternalProjectReference(
+                        uniqueName: "uniqueName",
+                        packageSpecProjectName: null,
+                        packageSpecPath: null,
+                        msbuildProjectPath: "msbuildProjectPath",
+                        projectReferences: Enumerable.Empty<string>())
+                };
+
+                // Act
+                var actual = msBuildNuGetProject.GetPackageSpecForRestore(referenceContext);
+
+                // Assert
+                Assert.NotNull(actual);
+                Assert.Equal(msBuildNuGetProjectSystem.ProjectName, actual.Name);
+                Assert.Equal(msBuildNuGetProjectSystem.ProjectFileFullPath, actual.FilePath);
+                Assert.NotNull(actual.RestoreMetadata);
+                Assert.Equal(RestoreOutputType.Unknown, actual.RestoreMetadata.OutputType);
+                Assert.Equal(msBuildNuGetProjectSystem.ProjectFileFullPath, actual.RestoreMetadata.ProjectPath);
+                Assert.Equal(msBuildNuGetProjectSystem.ProjectName, actual.RestoreMetadata.ProjectName);
+                Assert.Equal(msBuildNuGetProjectSystem.ProjectFileFullPath, actual.RestoreMetadata.ProjectUniqueName);
+                Assert.Equal(1, actual.TargetFrameworks.Count);
+                Assert.Equal(projectTargetFramework, actual.TargetFrameworks[0].FrameworkName);
+                Assert.Null(actual.TargetFrameworks[0].Imports);
+
+                Assert.Equal(1, actual.Dependencies.Count);
+                Assert.Equal("uniqueName", actual.Dependencies[0].Name);
+                Assert.Equal(LibraryDependencyTarget.ExternalProject, actual.Dependencies[0].LibraryRange.TypeConstraint);
+
+                Assert.Empty(actual.TargetFrameworks[0].Dependencies);
+
+                Assert.Equal(1, actual.RestoreMetadata.ProjectReferences.Count);
+                Assert.Equal("uniqueName", actual.RestoreMetadata.ProjectReferences[0].ProjectUniqueName);
+                Assert.Equal("msbuildProjectPath", actual.RestoreMetadata.ProjectReferences[0].ProjectPath);
+            }
+        }
+
+        [Fact]
+        public void MSBuildNuGetProject_IsRestoreRequired_AlwaysReturnsFalse()
+        {
+            // Arrange
+            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var projectTargetFramework = NuGetFramework.Parse("net45");
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                    projectTargetFramework,
+                    testNuGetProjectContext);
+
+                var msBuildNuGetProject = new MSBuildNuGetProject(
+                    msBuildNuGetProjectSystem,
+                    randomPackagesFolderPath,
+                    randomPackagesConfigFolderPath);
+
+                var pathResolvers = Enumerable.Empty<VersionFolderPathResolver>();
+                var packagesChecked = new HashSet<PackageIdentity>();
+                var referenceContext = new ExternalProjectReferenceContext(new TestLogger());
+
+                // Act
+                var actual = msBuildNuGetProject.IsRestoreRequired(
+                    pathResolvers,
+                    packagesChecked,
+                    referenceContext);
+
+                // Assert
+                Assert.False(actual, "packages.config projects should never cause a dependency spec restore.");
+                Assert.Empty(packagesChecked);
+            }
+        }
+
+        [Fact]
+        public void MSBuildNuGetProject_LastModified_IsAlwaysMinDateTimeOffset()
+        {
+            // Arrange
+            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var projectTargetFramework = NuGetFramework.Parse("net45");
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                    projectTargetFramework,
+                    testNuGetProjectContext);
+
+                var msBuildNuGetProject = new MSBuildNuGetProject(
+                    msBuildNuGetProjectSystem,
+                    randomPackagesFolderPath,
+                    randomPackagesConfigFolderPath);
+                
+                // Act
+                var actual = msBuildNuGetProject.LastModified;
+
+                // Assert
+                Assert.Equal(DateTimeOffset.MinValue, actual);
+            }
+        }
+
         [Fact]
         public async Task TestMSBuildNuGetProjectEmptyPackageFoldersAreNotAdded()
         {
@@ -1784,3 +1947,4 @@ namespace ProjectManagement.Test
         }
     }
 }
+

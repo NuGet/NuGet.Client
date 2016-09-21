@@ -1,11 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using NuGet.Common;
 using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement
 {
-    public class ProjectContextLogger : NuGet.Common.ILogger
+    public class ProjectContextLogger : ILogger
     {
         private readonly INuGetProjectContext _projectContext;
 
@@ -16,7 +17,7 @@ namespace NuGet.PackageManagement
 
         public void LogDebug(string data)
         {
-            _projectContext.Log(ProjectManagement.MessageLevel.Debug, data);
+            _projectContext.Log(MessageLevel.Debug, data);
         }
 
         public void LogVerbose(string data)
@@ -27,12 +28,12 @@ namespace NuGet.PackageManagement
 
         public void LogError(string data)
         {
-            _projectContext.Log(ProjectManagement.MessageLevel.Error, data);
+            _projectContext.Log(MessageLevel.Error, data);
         }
 
         public void LogInformation(string data)
         {
-            _projectContext.Log(ProjectManagement.MessageLevel.Info, data);
+            _projectContext.Log(MessageLevel.Info, data);
         }
 
         public void LogMinimal(string data)
@@ -43,7 +44,7 @@ namespace NuGet.PackageManagement
 
         public void LogWarning(string data)
         {
-            _projectContext.Log(ProjectManagement.MessageLevel.Warning, data);
+            _projectContext.Log(MessageLevel.Warning, data);
         }
 
         public void LogInformationSummary(string data)

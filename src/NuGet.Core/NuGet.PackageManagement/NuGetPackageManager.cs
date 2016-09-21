@@ -45,7 +45,7 @@ namespace NuGet.PackageManagement
 
         private IDictionary<string, bool> _buildIntegratedProjectsUpdateDict;
 
-        private IReadOnlyDictionary<string, BuildIntegratedProjectCacheEntry> _buildIntegratedProjectsCache;
+        private IReadOnlyDictionary<string, DependencyGraphProjectCacheEntry> _buildIntegratedProjectsCache;
 
         public IDeleteOnRestartManager DeleteOnRestartManager { get; }
 
@@ -1879,25 +1879,29 @@ namespace NuGet.PackageManagement
                     SolutionManager.GetNuGetProjects().OfType<BuildIntegratedNuGetProject>().ToList();
 
                 _buildIntegratedProjectsCache =
-                    await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(allBuildIntegratedProjects,
+                    await DependencyGraphProjectCacheUtility.CreateDependencyGraphProjectCache(allBuildIntegratedProjects,
                         referenceContext);
 
-                var orderedChilds = new List<BuildIntegratedNuGetProject>();
-                var uniqueProjectNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var orderedChildren = new List<BuildIntegratedNuGetProject>();
+                var msbuildProjectPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
                 foreach (var project in buildIntegratedProjectsToUpdate)
                 {
-                    if (uniqueProjectNames.Add(project.ProjectName))
+                    if (msbuildProjectPaths.Add(project.MSBuildProjectPath))
                     {
-                        BuildIntegratedRestoreUtility.GetChildProjectsInClosure(project, allBuildIntegratedProjects,
-                                orderedChilds, uniqueProjectNames, _buildIntegratedProjectsCache);
+                        BuildIntegratedRestoreUtility.GetChildProjectsInClosure(
+                            project,
+                            allBuildIntegratedProjects,
+                            orderedChildren,
+                            msbuildProjectPaths,
+                            _buildIntegratedProjectsCache);
                     }
                 }
-                sortedProjectsToUpdate.AddRange(orderedChilds);
+                sortedProjectsToUpdate.AddRange(orderedChildren);
 
                 // cache these projects which will be used to avoid duplicate restore as part of parent projects
                 _buildIntegratedProjectsUpdateDict.AddRange(
-                    orderedChilds.Select(child => new KeyValuePair<string, bool>(child.ProjectName, false)));
+                    orderedChildren.Select(child => new KeyValuePair<string, bool>(child.MSBuildProjectPath, false)));
             }
 
             // execute all nuget project actions
@@ -2411,7 +2415,9 @@ namespace NuGet.PackageManagement
                 // Check if current project is there in update cache and needs revaluation
                 var isProjectUpdated = false;
                 if (_buildIntegratedProjectsUpdateDict != null &&
-                    _buildIntegratedProjectsUpdateDict.TryGetValue(buildIntegratedProject.ProjectName, out isProjectUpdated) &&
+                    _buildIntegratedProjectsUpdateDict.TryGetValue(
+                        buildIntegratedProject.MSBuildProjectPath,
+                        out isProjectUpdated) &&
                     isProjectUpdated)
                 {
                     await BuildIntegratedRestoreUtility.RestoreAsync(
@@ -2473,7 +2479,7 @@ namespace NuGet.PackageManagement
                 if (_buildIntegratedProjectsCache == null)
                 {
                     _buildIntegratedProjectsCache = await
-                        BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects,
+                        DependencyGraphProjectCacheUtility.CreateDependencyGraphProjectCache(projects,
                             referenceContext);
                 }
 
@@ -2485,10 +2491,11 @@ namespace NuGet.PackageManagement
 
                 foreach (var parent in parents)
                 {
-                    // if this parent exists in update cache, then update it's entry to be revaluated
-                    if (_buildIntegratedProjectsUpdateDict != null && _buildIntegratedProjectsUpdateDict.ContainsKey(parent.ProjectName))
+                    // if this parent exists in update cache, then update it's entry to be re-evaluated
+                    if (_buildIntegratedProjectsUpdateDict != null &&
+                        _buildIntegratedProjectsUpdateDict.ContainsKey(parent.MSBuildProjectPath))
                     {
-                        _buildIntegratedProjectsUpdateDict[parent.ProjectName] = true;
+                        _buildIntegratedProjectsUpdateDict[parent.MSBuildProjectPath] = true;
                     }
                     else
                     {
