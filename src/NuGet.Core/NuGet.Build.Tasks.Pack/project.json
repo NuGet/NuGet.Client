@@ -30,7 +30,8 @@
 
   "dependencies": {
     "NuGet.Commands": {
-      "target": "project"
+      "target": "project",
+      "type": "build"
     }
   },
 
@@ -57,10 +58,22 @@
         ]
       },
       "dependencies": {
-        "NETStandard.Library": "1.6.0",
-        "Microsoft.Build.Framework": "0.1.0-preview-00038-160914",
-        "Microsoft.Build.Tasks.Core": "0.1.0-preview-00038-160914",
-        "Microsoft.Build.Utilities.Core": "0.1.0-preview-00038-160914"
+        "NETStandard.Library": {
+          "version": "1.6.0",
+          "type": "build"
+        },
+        "Microsoft.Build.Framework": {
+          "type": "build",
+          "version": "0.1.0-preview-00038-160914"
+        },
+        "Microsoft.Build.Tasks.Core": {
+          "type": "build",
+          "version": "0.1.0-preview-00038-160914"
+        },
+        "Microsoft.Build.Utilities.Core": {
+          "type": "build",
+          "version": "0.1.0-preview-00038-160914"
+        }
       }
     }
   }
