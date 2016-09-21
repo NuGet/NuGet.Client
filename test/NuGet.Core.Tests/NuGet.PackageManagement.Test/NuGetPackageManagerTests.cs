@@ -5505,7 +5505,7 @@ namespace NuGet.Test
 
                 var result = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
                     new List<PackageIdentity> { targetPackage },
-                    new List<NuGetProject> { nuGetProject },
+                    nuGetProject,
                     new ResolutionContext(DependencyBehavior.Ignore, false, true, VersionConstraints.None),
                     new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories(),
