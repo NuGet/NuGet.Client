@@ -79,11 +79,11 @@ namespace NuGet.CommandLine.Test.Caching
         [InlineData(typeof(InstallPackagesConfigCommand), CachingType.Default, ServerType.V2, true, true)]
         [InlineData(typeof(InstallPackagesConfigCommand), CachingType.Default, ServerType.V3, true, true)]
         [InlineData(typeof(InstallPackagesConfigCommand), CachingType.NoCache, ServerType.V2, true, false)] // Should either fail or install?
-        [InlineData(typeof(InstallPackagesConfigCommand), CachingType.NoCache, ServerType.V3, true, true)] // Should fail?
+        [InlineData(typeof(InstallPackagesConfigCommand), CachingType.NoCache, ServerType.V3, true, false)] // Should either fail or install?
         [InlineData(typeof(InstallPackagesConfigCommand), CachingType.DirectDownload, ServerType.V2, true, true)]
         [InlineData(typeof(InstallPackagesConfigCommand), CachingType.DirectDownload, ServerType.V3, true, true)]
         [InlineData(typeof(InstallPackagesConfigCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V2, true, false)] // Should either fail or install?
-        [InlineData(typeof(InstallPackagesConfigCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V3, true, true)] // Should fail?
+        [InlineData(typeof(InstallPackagesConfigCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V3, true, false)] // Should either fail or install?
         [InlineData(typeof(InstallSpecificVersionCommand), CachingType.Default, ServerType.V2, true, true)]
         [InlineData(typeof(InstallSpecificVersionCommand), CachingType.Default, ServerType.V3, true, true)]
         [InlineData(typeof(InstallSpecificVersionCommand), CachingType.NoCache, ServerType.V2, false, false)]
@@ -95,11 +95,11 @@ namespace NuGet.CommandLine.Test.Caching
         [InlineData(typeof(RestorePackagesConfigCommand), CachingType.Default, ServerType.V2, true, true)]
         [InlineData(typeof(RestorePackagesConfigCommand), CachingType.Default, ServerType.V3, true, true)]
         [InlineData(typeof(RestorePackagesConfigCommand), CachingType.NoCache, ServerType.V2, false, false)]
-        [InlineData(typeof(RestorePackagesConfigCommand), CachingType.NoCache, ServerType.V3, true, true)] // Should fail?
+        [InlineData(typeof(RestorePackagesConfigCommand), CachingType.NoCache, ServerType.V3, false, false)]
         [InlineData(typeof(RestorePackagesConfigCommand), CachingType.DirectDownload, ServerType.V2, true, true)]
         [InlineData(typeof(RestorePackagesConfigCommand), CachingType.DirectDownload, ServerType.V3, true, true)]
         [InlineData(typeof(RestorePackagesConfigCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V2, false, false)]
-        [InlineData(typeof(RestorePackagesConfigCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V3, true, true)] // Should fail?
+        [InlineData(typeof(RestorePackagesConfigCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V3, false, false)]
         [InlineData(typeof(RestoreProjectJsonCommand), CachingType.Default, ServerType.V2, true, true)]
         [InlineData(typeof(RestoreProjectJsonCommand), CachingType.Default, ServerType.V3, true, true)]
         [InlineData(typeof(RestoreProjectJsonCommand), CachingType.NoCache, ServerType.V2, true, true)] // Should fail?
@@ -183,42 +183,42 @@ namespace NuGet.CommandLine.Test.Caching
         }
 
         /// <summary>
-        /// There is currently no way to disable getting the package from the global packages folder.
+        /// -NoCache disables reading from the global packages folder.
         /// </summary>
         [Theory]
-        [InlineData(typeof(InstallPackagesConfigCommand), CachingType.Default, ServerType.V2)]
-        [InlineData(typeof(InstallPackagesConfigCommand), CachingType.Default, ServerType.V3)]
-        [InlineData(typeof(InstallPackagesConfigCommand), CachingType.NoCache, ServerType.V2)]
-        [InlineData(typeof(InstallPackagesConfigCommand), CachingType.NoCache, ServerType.V3)]
-        [InlineData(typeof(InstallPackagesConfigCommand), CachingType.DirectDownload, ServerType.V2)]
-        [InlineData(typeof(InstallPackagesConfigCommand), CachingType.DirectDownload, ServerType.V3)]
-        [InlineData(typeof(InstallPackagesConfigCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V2)]
-        [InlineData(typeof(InstallPackagesConfigCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V3)]
-        [InlineData(typeof(InstallSpecificVersionCommand), CachingType.Default, ServerType.V2)]
-        [InlineData(typeof(InstallSpecificVersionCommand), CachingType.Default, ServerType.V3)]
-        [InlineData(typeof(InstallSpecificVersionCommand), CachingType.NoCache, ServerType.V2)]
-        [InlineData(typeof(InstallSpecificVersionCommand), CachingType.NoCache, ServerType.V3)]
-        [InlineData(typeof(InstallSpecificVersionCommand), CachingType.DirectDownload, ServerType.V2)]
-        [InlineData(typeof(InstallSpecificVersionCommand), CachingType.DirectDownload, ServerType.V3)]
-        [InlineData(typeof(InstallSpecificVersionCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V2)]
-        [InlineData(typeof(InstallSpecificVersionCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V3)]
-        [InlineData(typeof(RestorePackagesConfigCommand), CachingType.Default, ServerType.V2)]
-        [InlineData(typeof(RestorePackagesConfigCommand), CachingType.Default, ServerType.V3)]
-        [InlineData(typeof(RestorePackagesConfigCommand), CachingType.NoCache, ServerType.V2)]
-        [InlineData(typeof(RestorePackagesConfigCommand), CachingType.NoCache, ServerType.V3)]
-        [InlineData(typeof(RestorePackagesConfigCommand), CachingType.DirectDownload, ServerType.V2)]
-        [InlineData(typeof(RestorePackagesConfigCommand), CachingType.DirectDownload, ServerType.V3)]
-        [InlineData(typeof(RestorePackagesConfigCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V2)]
-        [InlineData(typeof(RestorePackagesConfigCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V3)]
-        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.Default, ServerType.V2)]
-        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.Default, ServerType.V3)]
-        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.NoCache, ServerType.V2)]
-        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.NoCache, ServerType.V3)]
-        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.DirectDownload, ServerType.V2)]
-        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.DirectDownload, ServerType.V3)]
-        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V2)]
-        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V3)]
-        public async Task NuGetExe_Caching_UsesGlobalPackagesFolderCopy(Type type, CachingType caching, ServerType server)
+        [InlineData(typeof(InstallPackagesConfigCommand), CachingType.Default, ServerType.V2, true)]
+        [InlineData(typeof(InstallPackagesConfigCommand), CachingType.Default, ServerType.V3, true)]
+        [InlineData(typeof(InstallPackagesConfigCommand), CachingType.NoCache, ServerType.V2, false)]
+        [InlineData(typeof(InstallPackagesConfigCommand), CachingType.NoCache, ServerType.V3, false)]
+        [InlineData(typeof(InstallPackagesConfigCommand), CachingType.DirectDownload, ServerType.V2, true)]
+        [InlineData(typeof(InstallPackagesConfigCommand), CachingType.DirectDownload, ServerType.V3, true)]
+        [InlineData(typeof(InstallPackagesConfigCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V2, false)]
+        [InlineData(typeof(InstallPackagesConfigCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V3, false)]
+        [InlineData(typeof(InstallSpecificVersionCommand), CachingType.Default, ServerType.V2, true)]
+        [InlineData(typeof(InstallSpecificVersionCommand), CachingType.Default, ServerType.V3, true)]
+        [InlineData(typeof(InstallSpecificVersionCommand), CachingType.NoCache, ServerType.V2, false)]
+        [InlineData(typeof(InstallSpecificVersionCommand), CachingType.NoCache, ServerType.V3, false)]
+        [InlineData(typeof(InstallSpecificVersionCommand), CachingType.DirectDownload, ServerType.V2, true)]
+        [InlineData(typeof(InstallSpecificVersionCommand), CachingType.DirectDownload, ServerType.V3, true)]
+        [InlineData(typeof(InstallSpecificVersionCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V2, false)]
+        [InlineData(typeof(InstallSpecificVersionCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V3, false)]
+        [InlineData(typeof(RestorePackagesConfigCommand), CachingType.Default, ServerType.V2, true)]
+        [InlineData(typeof(RestorePackagesConfigCommand), CachingType.Default, ServerType.V3, true)]
+        [InlineData(typeof(RestorePackagesConfigCommand), CachingType.NoCache, ServerType.V2, false)]
+        [InlineData(typeof(RestorePackagesConfigCommand), CachingType.NoCache, ServerType.V3, false)]
+        [InlineData(typeof(RestorePackagesConfigCommand), CachingType.DirectDownload, ServerType.V2, true)]
+        [InlineData(typeof(RestorePackagesConfigCommand), CachingType.DirectDownload, ServerType.V3, true)]
+        [InlineData(typeof(RestorePackagesConfigCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V2, false)]
+        [InlineData(typeof(RestorePackagesConfigCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V3, false)]
+        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.Default, ServerType.V2, true)]
+        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.Default, ServerType.V3, true)]
+        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.NoCache, ServerType.V2, true)]
+        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.NoCache, ServerType.V3, true)]
+        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.DirectDownload, ServerType.V2, true)]
+        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.DirectDownload, ServerType.V3, true)]
+        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V2, true)]
+        [InlineData(typeof(RestoreProjectJsonCommand), CachingType.NoCache | CachingType.DirectDownload, ServerType.V3, true)]
+        public async Task NuGetExe_Caching_UsesGlobalPackagesFolderCopy(Type type, CachingType caching, ServerType server, bool success)
         {
             // Arrange
             var nuGetExe = await GetNuGetExeAsync();
@@ -234,8 +234,8 @@ namespace NuGet.CommandLine.Test.Caching
             // Assert
             validations.Assert(CachingValidationType.CommandSucceeded, true);
             validations.Assert(CachingValidationType.PackageInstalled, true);
-            validations.Assert(CachingValidationType.PackageFromGlobalPackagesFolderUsed, true);
-            validations.Assert(CachingValidationType.PackageFromSourceNotUsed, true);
+            validations.Assert(CachingValidationType.PackageFromGlobalPackagesFolderUsed, success);
+            validations.Assert(CachingValidationType.PackageFromSourceNotUsed, success);
         }
 
         /// <summary>

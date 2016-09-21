@@ -263,7 +263,10 @@ namespace NuGet.PackageManagement
             using (var directDownloadDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             using (var cacheContext = new SourceCacheContext())
             {
-                var downloadContext = new PackageDownloadContext(cacheContext, directDownloadDirectory);
+                var downloadContext = new PackageDownloadContext(
+                    cacheContext,
+                    directDownloadDirectory,
+                    directDownload: true);
 
                 // Act
                 using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(

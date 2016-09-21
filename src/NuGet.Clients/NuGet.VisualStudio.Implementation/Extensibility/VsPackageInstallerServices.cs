@@ -12,6 +12,7 @@ using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
+using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
@@ -56,7 +57,9 @@ namespace NuGet.VisualStudio
                     {
                         InitializePackageManagerAndPackageFolderPath();
 
-                        var effectiveGlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(_settings);
+                        var pathContext = NuGetPathContext.Create(_settings);
+                        var pathResolver = new FallbackPackagePathResolver(pathContext);
+                        var globalPackagesFolderResolver = new VersionFolderPathResolver(pathContext.UserPackageFolder);
 
                         foreach (var project in _solutionManager.GetNuGetProjects())
                         {
@@ -64,7 +67,9 @@ namespace NuGet.VisualStudio
 
                             foreach (var package in installedPackages)
                             {
-                                if (!package.PackageIdentity.HasVersion)
+                                var identity = package.PackageIdentity;
+
+                                if (!identity.HasVersion)
                                 {
                                     // Currently we are not supporting floating versions 
                                     // because of that we will skip this package
@@ -75,17 +80,18 @@ namespace NuGet.VisualStudio
                                 string installPath;
                                 if (project is INuGetIntegratedProject)
                                 {
-                                    installPath = BuildIntegratedProjectUtility.GetPackagePathFromGlobalSource(
-                                        effectiveGlobalPackagesFolder,
-                                        package.PackageIdentity);
+                                    installPath = pathResolver.GetPackageDirectory(identity.Id, identity.Version) ??
+                                        globalPackagesFolderResolver.GetInstallPath(identity.Id, identity.Version);
                                 }
                                 else
                                 {
-                                    installPath = _packageManager.PackagesFolderNuGetProject.GetInstalledPath(
-                                        package.PackageIdentity);
+                                    installPath = _packageManager
+                                        .PackagesFolderNuGetProject
+                                        .GetInstalledPath(identity);
                                 }
 
                                 var metadata = new VsPackageMetadata(package.PackageIdentity, installPath);
+
                                 packages.Add(metadata);
                             }
                         }

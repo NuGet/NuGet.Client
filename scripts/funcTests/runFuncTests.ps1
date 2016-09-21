@@ -29,6 +29,10 @@ param (
 
 # For TeamCity - Incase any issue comes in this script fail the build. - Be default TeamCity returns exit code of 0 for all powershell even if it fails
 trap {
+    if ($env:TEAMCITY_VERSION) {
+        Write-Host "##teamcity[buildProblem description='$(Format-TeamCityMessage($_.ToString()))']"
+    }
+
     Write-Host "BUILD FAILED: $_" -ForegroundColor Red
     Write-Host "ERROR DETAILS:" -ForegroundColor Red
     Write-Host $_.Exception -ForegroundColor Red
@@ -36,13 +40,14 @@ trap {
     exit 1
 }
 
+function Format-TeamCityMessage([string]$Text) {
+    $Text.Replace("|", "||").Replace("'", "|'").Replace("[", "|[").Replace("]", "|]").Replace("`n", "|n").Replace("`r", "|r")
+}
+
 . "$PSScriptRoot\..\..\build\common.ps1"
 
 # Adjust version skipping if only one version installed - if VS15 is not installed, no need to specify SkipVS15
-$VS14Installed = Test-MSBuildVersionPresent -MSBuildVersion "14"
 $SkipVS14 = $SkipVS14 -or -not $VS14Installed
-
-$VS15Installed = Test-MSBuildVersionPresent -MSBuildVersion "15"
 $SkipVS15 = $SkipVS15 -or -not $VS15Installed
 
 Write-Host ("`r`n" * 3)
@@ -81,27 +86,27 @@ Invoke-BuildStep 'Restoring projects' { Restore-XProjects } `
 Invoke-BuildStep 'Running NuGet.Core functional tests' { Test-FuncCoreProjects } `
     -ev +BuildErrors
 
-Invoke-BuildStep 'Building NuGet.Clients projects - VS15 dependencies' {
-        Build-ClientsProjects -MSBuildVersion "15"
+Invoke-BuildStep 'Building NuGet.Clients projects - VS15 Toolset' {
+        Build-ClientsProjects -ToolsetVersion 15
     } `
     -skip:$SkipVS15 `
     -ev +BuildErrors
 
-Invoke-BuildStep 'Building NuGet.Clients projects - VS14 dependencies' {
-        Build-ClientsProjects -MSBuildVersion "14"
+Invoke-BuildStep 'Building NuGet.Clients projects - VS14 Toolset' {
+        Build-ClientsProjects -ToolsetVersion 14
     } `
     -skip:$SkipVS14 `
     -ev +BuildErrors
 
-Invoke-BuildStep 'Running NuGet.Clients functional tests - VS15 dependencies' {
+Invoke-BuildStep 'Running NuGet.Clients functional tests - VS15 Toolset' {
         # We don't run command line tests on VS15 as we don't build a nuget.exe for this version
-        Test-FuncClientsProjects -MSBuildVersion "15" -SkipProjects 'NuGet.CommandLine.FuncTest'
+        Test-FuncClientsProjects -ToolsetVersion 15 -SkipProjects 'NuGet.CommandLine.FuncTest'
     } `
     -skip:$SkipVS15 `
     -ev +BuildErrors
 
-Invoke-BuildStep 'Running NuGet.Clients functional tests - VS14 dependencies' {
-        Test-FuncClientsProjects -MSBuildVersion "14"
+Invoke-BuildStep 'Running NuGet.Clients functional tests - VS14 Toolset' {
+        Test-FuncClientsProjects -ToolsetVersion 14
     } `
     -skip:$SkipVS14 `
     -ev +BuildErrors
@@ -117,10 +122,7 @@ Trace-Log ('=' * 60)
 
 if ($BuildErrors) {
     $ErrorLines = $BuildErrors | %{ ">>> $($_.Exception.Message)" }
-    Error-Log "Build's completed with $($BuildErrors.Count) error(s):`r`n$($ErrorLines -join "`r`n")" -Fatal
+    Write-Error "Build's completed with $($BuildErrors.Count) error(s):`r`n$($ErrorLines -join "`r`n")" -ErrorAction Stop
 }
 
 Write-Host ("`r`n" * 3)
-
-# Return success
-exit 0

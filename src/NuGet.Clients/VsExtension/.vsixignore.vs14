@@ -45,6 +45,7 @@ Microsoft.TeamFoundation.WorkItemTracking.WebApi.dll
 Microsoft.Threading.Tasks.dll
 Microsoft.Threading.Tasks.Extensions.Desktop.dll
 Microsoft.Threading.Tasks.Extensions.dll
+Microsoft.VisualStudio.ProjectSystem.V14Only.dll
 Microsoft.VisualStudio.RemoteControl.dll
 Microsoft.VisualStudio.Services.Client.dll
 Microsoft.VisualStudio.Services.Common.dll

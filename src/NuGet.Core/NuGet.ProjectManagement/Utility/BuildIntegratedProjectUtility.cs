@@ -1,12 +1,10 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -20,17 +18,6 @@ namespace NuGet.ProjectManagement
     /// </summary>
     public static class BuildIntegratedProjectUtility
     {
-        /// <summary>
-        /// Get the root path of a package from the global folder.
-        /// </summary>
-        public static string GetPackagePathFromGlobalSource(
-            string effectiveGlobalPackagesFolder,
-            PackageIdentity identity)
-        {
-            var pathResolver = new VersionFolderPathResolver(effectiveGlobalPackagesFolder);
-            return pathResolver.GetInstallPath(identity.Id, identity.Version);
-        }
-
         /// <summary>
         /// Orders all package dependencies in a project.
         /// Project must be restored.

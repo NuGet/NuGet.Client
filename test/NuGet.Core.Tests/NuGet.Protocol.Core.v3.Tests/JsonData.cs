@@ -4065,5 +4065,28 @@ namespace NuGet.Protocol.Tests
 }";
         #endregion
 
+        #region BadProjectUrl
+        public const string badProjectUrlJsonData = @"{
+            ""@id"": ""https://api.nuget.org/v3/catalog0/data/2015.02.01.06.23.47/jquery.1.4.1.json"",
+            ""@type"": ""PackageDetails"",
+            ""authors"": ""John Resig"",
+            ""description"": ""jQuery is a fast and concise JavaScript Library that simplifies HTML document traversing, event handling, animating, and Ajax interactions for rapid web development"",
+            ""iconUrl"": """",
+            ""id"": ""jQuery"",
+            ""language"": ""en-US"",
+            ""licenseUrl"": """",
+            ""minClientVersion"": """",
+            ""projectUrl"": ""http://///bad url"",
+            ""published"": ""2011-02-09T07:04:06.707Z"",
+            ""requireLicenseAcceptance"": false,
+            ""summary"": ""jQuery is a fast and concise JavaScript Library that simplifies HTML document traversing, event handling, animating, and Ajax interactions for rapid web development"",
+            ""tags"": [
+              """"
+            ],
+            ""title"": """",
+            ""version"": ""1.4.1""
+          }";
+        #endregion
+
     }
 }

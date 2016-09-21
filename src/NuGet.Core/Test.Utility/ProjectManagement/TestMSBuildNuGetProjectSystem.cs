@@ -156,7 +156,7 @@ namespace Test.Utility
             BindingRedirectsCallCount++;
         }
 
-        public Task ExecuteScriptAsync(PackageIdentity identity, string packageInstallPath, string scriptRelativePath, NuGetProject nuGetProject, bool throwOnFailure)
+        public Task ExecuteScriptAsync(PackageIdentity identity, string packageInstallPath, string scriptRelativePath, bool throwOnFailure)
         {
             var scriptFullPath = Path.Combine(packageInstallPath, scriptRelativePath);
             if (!File.Exists(scriptFullPath) && throwOnFailure)

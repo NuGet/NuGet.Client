@@ -41,7 +41,8 @@ namespace NuGet.Protocol.Tests
             {
                 var downloadContext = new PackageDownloadContext(
                     cacheContext,
-                    downloadDirectory);
+                    downloadDirectory,
+                    directDownload: true);
 
                 // Act
                 using (var result = await GetDownloadResultUtility.GetDownloadResultAsync(
@@ -98,7 +99,8 @@ namespace NuGet.Protocol.Tests
             {
                 var downloadContext = new PackageDownloadContext(
                     cacheContext,
-                    downloadDirectory);
+                    downloadDirectory,
+                    directDownload: true);
 
                 // Act
                 using (var resultA = await GetDownloadResultUtility.GetDownloadResultAsync(
@@ -145,7 +147,8 @@ namespace NuGet.Protocol.Tests
             {
                 var downloadContext = new PackageDownloadContext(
                     cacheContext,
-                    downloadDirectory);
+                    downloadDirectory,
+                    directDownload: true);
 
                 var deletePathA = Path.Combine(downloadDirectory, "packageA.nugetdirectdownload");
                 File.WriteAllText(deletePathA, string.Empty);

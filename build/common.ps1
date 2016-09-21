@@ -1,7 +1,7 @@
 ### Constants ###
 $DefaultConfiguration = 'debug'
 $DefaultReleaseLabel = 'zlocal'
-$DefaultMSBuildVersion = '15'
+$DefaultMSBuildVersion = 15
 
 $NuGetClientRoot = Split-Path -Path $PSScriptRoot -Parent
 
@@ -15,8 +15,6 @@ $Nupkgs = Join-Path $NuGetClientRoot nupkgs
 $Artifacts = Join-Path $NuGetClientRoot artifacts
 
 $DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
-$MSBuildRoot = Join-Path ${env:ProgramFiles(x86)} 'MSBuild\'
-$MSBuildExeRelPath = 'bin\msbuild.exe'
 $NuGetExe = Join-Path $NuGetClientRoot '.nuget\nuget.exe'
 $XunitConsole = Join-Path $NuGetClientRoot 'packages\xunit.runner.console.2.1.0\tools\xunit.console.exe'
 $ILMerge = Join-Path $NuGetClientRoot 'packages\ILMerge.2.14.1208\tools\ILMerge.exe'
@@ -180,6 +178,54 @@ Function Install-DotnetCLI {
     & $DotNetExe --info
 }
 
+Function Get-MSBuildExe {
+    param(
+        [int]$MSBuildVersion
+    )
+
+    # Get the highest msbuild version if version was not specified
+    if (-not $MSBuildVersion) {
+        $MSBuildExe = Get-MSBuildExe 15
+        if (Test-Path $MSBuildExe) {
+            return $MSBuildExe
+        }
+
+        return Get-MSBuildExe 14
+    }
+
+    # Willow install workaround
+    if ($MSBuildVersion -eq 15 -and (Test-Path Env:\VS150COMNTOOLS)) {
+        # If VS "15" is installed get msbuild from VS install path
+        $MSBuildRoot = Join-Path $env:VS150COMNTOOLS ..\..\MSBuild\15.0
+    }
+
+    # If not found before
+    if (-not $MSBuildRoot -or -not (Test-Path $MSBuildRoot)) {
+        # Assume msbuild is installed at default location
+        $MSBuildRoot = Join-Path ${env:ProgramFiles(x86)} "MSBuild\${MSBuildVersion}.0"
+    }
+
+    $MSBuildExeRelPath = 'bin\msbuild.exe'
+    Join-Path $MSBuildRoot $MSBuildExeRelPath
+}
+
+Function Test-MSBuildVersionPresent {
+    [CmdletBinding()]
+    param(
+        [int]$MSBuildVersion = $DefaultMSBuildVersion
+    )
+
+    $MSBuildExe = Get-MSBuildExe $MSBuildVersion
+
+    Test-Path $MSBuildExe
+}
+
+$MSBuildExe = Get-MSBuildExe
+Set-Alias msbuild $MSBuildExe
+
+$VS14Installed = Test-MSBuildVersionPresent -MSBuildVersion 14
+$VS15Installed = Test-MSBuildVersionPresent -MSBuildVersion 15
+
 function Enable-DelaySigningForDotNet {
     param(
         $xproject,
@@ -305,6 +351,7 @@ Function Restore-SolutionPackages{
     else {
         $opts += $SolutionPath
     }
+
     if ($MSBuildVersion) {
         $opts += '-MSBuildVersion', $MSBuildVersion
     }
@@ -419,7 +466,6 @@ Function Test-XProject {
         [string[]]$XProjectLocations,
         [string]$Configuration = $DefaultConfiguration
     )
-    Begin {}
     Process {
         $XProjectLocations | Resolve-Path | %{
             Trace-Log "Running tests in ""$_"""
@@ -493,7 +539,6 @@ Function Test-XProject {
             popd
         }
     }
-    End {}
 }
 
 Function Test-CoreProjects {
@@ -527,51 +572,52 @@ Function Test-CoreProjectsHelper {
     $xtests | Test-XProject -Configuration $Configuration
 }
 
-Function Test-MSBuildVersionPresent {
-    [CmdletBinding()]
-    param(
-        [string]$MSBuildVersion
-    )
-
-   	$MSBuildExe = Get-MSBuildExe $MSBuildVersion
-
-    Test-Path $MSBuildExe
-}
-
-Function Get-MSBuildExe {
-    param(
-        [string]$MSBuildVersion
-    )
-
-    $MSBuildExe = Join-Path $MSBuildRoot ($MSBuildVersion + ".0")
-    Join-Path $MSBuildExe $MSBuildExeRelPath
-}
-
 Function Build-ClientsProjects {
     [CmdletBinding()]
     param(
         [string]$Configuration = $DefaultConfiguration,
         [string]$ReleaseLabel = $DefaultReleaseLabel,
         [int]$BuildNumber = (Get-BuildNumber),
-        [string]$MSBuildVersion = $DefaultMSBuildVersion,
+        [ValidateSet(14,15)]
+        [int]$ToolsetVersion = $DefaultMSBuildVersion,
         [switch]$SkipRestore,
         [switch]$Fast
     )
 
-    $solutionPath = Join-Path $NuGetClientRoot NuGet.Clients.sln
+    $solutionPath = Join-Path $NuGetClientRoot NuGet.Clients.sln -Resolve
+
     if (-not $SkipRestore) {
-        # Restore packages for NuGet.Tooling solution
-        Restore-SolutionPackages -path $solutionPath -MSBuildVersion $MSBuildVersion
+        # Override VisualStudioVersion for following solution restore operation.
+        # Needed to lock correct VS15/VS14 packages in the facade project.
+        $vsv = $env:VisualStudioVersion
+        $env:VisualStudioVersion = "${ToolsetVersion}.0"
+
+        # Restore packages for NuGet.Tooling solution using default msbuild
+        try {
+            Restore-SolutionPackages -path $solutionPath
+        }
+        finally {
+            $env:VisualStudioVersion = $vsv
+        }
     }
 
     # Build the solution
     $opts = , $solutionPath
-    $opts += "/p:Configuration=$Configuration;ReleaseLabel=$ReleaseLabel;BuildNumber=$(Format-BuildNumber $BuildNumber)"
+
+    if ($ToolsetVersion -eq 14) {
+        $opts += "/p:Configuration=$Configuration VS14"
+    }
+    else {
+        $opts += "/p:Configuration=$Configuration"
+    }
+
+    $opts += "/p:ReleaseLabel=$ReleaseLabel;BuildNumber=$(Format-BuildNumber $BuildNumber)"
+    $opts += "/p:VisualStudioVersion=${ToolsetVersion}.0"
+    $opts += "/tv:${ToolsetVersion}.0"
+
     if (-not $VerbosePreference) {
         $opts += '/verbosity:minimal'
     }
-
-    $MSBuildExe = Get-MSBuildExe $MSBuildVersion
 
     Trace-Log "$MSBuildExe $opts"
     & $MSBuildExe $opts
@@ -584,7 +630,8 @@ Function Test-ClientsProjects {
     [CmdletBinding()]
     param(
         [string]$Configuration = $DefaultConfiguration,
-        [string]$MSBuildVersion = $DefaultMSBuildVersion,
+        [ValidateSet(14,15)]
+        [int]$ToolsetVersion = $DefaultMSBuildVersion,
         [string[]]$SkipProjects
     )
 
@@ -592,7 +639,7 @@ Function Test-ClientsProjects {
 
     Test-ClientsProjectsHelper `
         -Configuration $Configuration `
-        -MSBuildVersion $MSBuildVersion `
+        -ToolsetVersion $ToolsetVersion `
         -SkipProjects $SkipProjects `
         -TestProjectsLocation $TestProjectsLocation
 }
@@ -601,7 +648,8 @@ Function Test-FuncClientsProjects {
     [CmdletBinding()]
     param(
         [string]$Configuration = $DefaultConfiguration,
-        [string]$MSBuildVersion = $DefaultMSBuildVersion,
+        [ValidateSet(14,15)]
+        [int]$ToolsetVersion = $DefaultMSBuildVersion,
         [string[]]$SkipProjects
     )
 
@@ -609,7 +657,7 @@ Function Test-FuncClientsProjects {
 
     Test-ClientsProjectsHelper `
         -Configuration $Configuration `
-        -MSBuildVersion $MSBuildVersion `
+        -ToolsetVersion $ToolsetVersion `
         -SkipProjects $SkipProjects `
         -TestProjectsLocation $TestProjectsLocation
 }
@@ -619,7 +667,7 @@ Function Test-ClientsProjectsHelper {
     param(
         [string]$TestProjectsLocation,
         [string]$Configuration,
-        [string]$MSBuildVersion,
+        [int]$ToolsetVersion,
         [string[]]$SkipProjects
     )
 
@@ -632,7 +680,7 @@ Function Test-ClientsProjectsHelper {
     $TestProjects = Get-ChildItem $TestProjectsLocation -Recurse -Filter '*.csproj' -Exclude $ExcludeFilter |
         %{ $_.FullName }
 
-    $TestProjects | Test-ClientProject -Configuration $Configuration -MSBuildVersion $MSBuildVersion
+    $TestProjects | Test-ClientProject -Configuration $Configuration -ToolsetVersion $ToolsetVersion
 }
 
 Function Test-ClientProject {
@@ -641,17 +689,19 @@ Function Test-ClientProject {
         [parameter(ValueFromPipeline=$True, Mandatory=$True, Position=0)]
         [string[]]$TestProjects,
         [string]$Configuration = $DefaultConfiguration,
-        [string]$MSBuildVersion = $DefaultMSBuildVersion
+        [ValidateSet(14,15)]
+        [int]$ToolsetVersion = $DefaultMSBuildVersion
     )
-    Begin {}
     Process{
         $TestProjects | %{
-            $opts = $_, "/t:RunTests", "/p:Configuration=$Configuration;RunTests=true"
+            $opts = , $_
+            $opts += "/t:RunTests", "/p:Configuration=$Configuration;RunTests=true"
+            $opts += "/p:VisualStudioVersion=${ToolsetVersion}.0"
+            $opts += "/tv:${ToolsetVersion}.0"
+
             if (-not $VerbosePreference) {
                 $opts += '/verbosity:minimal'
             }
-
-            $MSBuildExe = Get-MSBuildExe $MSBuildVersion
 
             Trace-Log "$MSBuildExe $opts"
             & $MSBuildExe $opts
@@ -671,17 +721,18 @@ Function Invoke-ILMerge {
     [CmdletBinding()]
     param(
         [string]$Configuration = $DefaultConfiguration,
-        [string]$MSBuildVersion = $DefaultMSBuildVersion,
+        [ValidateSet(14,15)]
+        [int]$ToolsetVersion = $DefaultMSBuildVersion,
         [string]$KeyFile
     )
     $nugetIntermediateExe='NuGet.intermediate.exe'
     $nugetIntermediatePdb='NuGet.intermediate.pdb'
     $nugetCore='NuGet.Core.dll'
-    $buildArtifactsFolder = [io.path]::combine($Artifacts, 'NuGet.CommandLine', ($MSBuildVersion + '.0'), $Configuration)
+    $buildArtifactsFolder = [io.path]::combine($Artifacts, 'NuGet.CommandLine', "${ToolsetVersion}.0", $Configuration)
     $ignoreList = Read-FileList (Join-Path $buildArtifactsFolder '.mergeignore')
     $buildArtifacts = Get-ChildItem $buildArtifactsFolder -Exclude $ignoreList | %{ $_.Name }
 
-    $outputFolder = [io.path]::combine($Artifacts, ('VS' + $MSBuildVersion))
+    $outputFolder = Join-Path $Artifacts "VS${ToolsetVersion}"
     if (-Not (Test-Path $outputFolder)) {
         New-Item -ItemType Directory -Path $outputFolder | Out-Null
     }
