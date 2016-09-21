@@ -86,7 +86,8 @@ trap {
 
     Write-Host "BUILD FAILED: $_" -ForegroundColor Red
     Write-Host "ERROR DETAILS:" -ForegroundColor Red
-    Write-Host $_.Exception -ForegroundColor Red
+    Write-Host "$($_.Exception.GetType().FullName): $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host $_.InvocationInfo.PositionMessage -ForegroundColor Red
     Write-Host ("`r`n" * 3)
     exit 1
 }
