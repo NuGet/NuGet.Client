@@ -42,6 +42,8 @@ namespace NuGet.PackageManagement.Telemetry
 
         public void EmitNuGetProject(EnvDTEProject vsProject, NuGetProject nuGetProject)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (vsProject == null)
             {
                 throw new ArgumentNullException(nameof(vsProject));
@@ -51,34 +53,23 @@ namespace NuGet.PackageManagement.Telemetry
             {
                 throw new ArgumentNullException(nameof(nuGetProject));
             }
-
-            // Fire and forget. Emit the events.
-            Task.Run(() => EmitNuGetProjectAsync(vsProject, nuGetProject));
-        }
-
-        private async Task EmitNuGetProjectAsync(EnvDTEProject vsProject, NuGetProject nuGetProject)
-        {
+            
             // Get the project details.
             ProjectDetails projectDetails = null;
             try
             {
-                projectDetails = ThreadHelper.JoinableTaskFactory.Run(async delegate
+                // Get the project name.
+                var name = vsProject.Name;
+
+                // Get the project ID.
+                var vsHierarchyItem = VsHierarchyUtility.GetHierarchyItemForProject(vsProject);
+                Guid id;
+                if (!vsHierarchyItem.TryGetProjectId(out id))
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    id = Guid.Empty;
+                }
 
-                    // Get the project name.
-                    var name = vsProject.Name;
-
-                    // Get the project ID.
-                    var vsHierarchyItem = VsHierarchyUtility.GetHierarchyItemForProject(vsProject);
-                    Guid id;
-                    if (!vsHierarchyItem.TryGetProjectId(out id))
-                    {
-                        id = Guid.Empty;
-                    }
-
-                    return new ProjectDetails(id, name);
-                });
+                projectDetails = new ProjectDetails(id, name);
             }
             catch (Exception ex)
             {
@@ -92,7 +83,13 @@ namespace NuGet.PackageManagement.Telemetry
 
                 return;
             }
-            
+
+            // Fire and forget. Emit the events.
+            Task.Run(() => EmitNuGetProjectAsync(projectDetails, nuGetProject));
+        }
+
+        private async Task EmitNuGetProjectAsync(ProjectDetails projectDetails, NuGetProject nuGetProject)
+        {
             // Emit the project information.
             try
             {
