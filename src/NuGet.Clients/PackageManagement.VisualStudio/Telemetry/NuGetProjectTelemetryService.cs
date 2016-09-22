@@ -109,6 +109,10 @@ namespace NuGet.PackageManagement.Telemetry
                 {
                     projectType = NuGetProjectType.XProjProjectJson;
                 }
+                else if(nuGetProject is MSBuildShellOutNuGetProject)
+                {
+                    projectType = NuGetProjectType.CPSBasedPackageRefs;
+                }
 
                 var projectInformation = new ProjectInformation(
                     NuGetVersion.Value,

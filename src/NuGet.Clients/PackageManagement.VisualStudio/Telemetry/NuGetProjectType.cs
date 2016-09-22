@@ -32,5 +32,15 @@ namespace NuGet.PackageManagement.Telemetry
         /// Corresponds to <see cref="ProjectKNuGetProjectBase"/>.
         /// </summary>
         XProjProjectJson = 4,
+
+        /// <summary>
+        /// Corresponds to <see cref="MSBuildShellOutNuGetProject"/>.
+        /// </summary>
+        CPSBasedPackageRefs = 5,
+
+        /// <summary>
+        /// It will be used for legacy project system with package references.
+        /// </summary>
+        LegacyProjectSystemWithPackageRefs = 6,
     }
 }
