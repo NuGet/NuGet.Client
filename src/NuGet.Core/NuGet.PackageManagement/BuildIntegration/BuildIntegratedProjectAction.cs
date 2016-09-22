@@ -78,14 +78,14 @@ namespace NuGet.PackageManagement
                 var added = BuildIntegratedRestoreUtility.GetAddedPackages(OriginalLockFile, RestoreResult.LockFile);
                 var removed = BuildIntegratedRestoreUtility.GetAddedPackages(RestoreResult.LockFile, OriginalLockFile);
 
-                foreach (var package in added)
-                {
-                    actions.Add(NuGetProjectAction.CreateInstallProjectAction(package, sourceRepository: null));
-                }
-
                 foreach (var package in removed)
                 {
-                    actions.Add(NuGetProjectAction.CreateUninstallProjectAction(package));
+                    actions.Add(NuGetProjectAction.CreateUninstallProjectAction(package, Project));
+                }
+
+                foreach (var package in added)
+                {
+                    actions.Add(NuGetProjectAction.CreateInstallProjectAction(package, sourceRepository: null, project: Project));
                 }
             }
 
