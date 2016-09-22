@@ -19,6 +19,320 @@ namespace NuGet.CommandLine.Test
     public class RestoreNetCoreTest
     {
         [Fact]
+        public async Task RestoreNetCore_VerifyBuildCrossTargeting_VerifyImportOrder()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageZ = new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "1.0.0"
+                };
+
+                var packageS = new SimpleTestPackageContext()
+                {
+                    Id = "s",
+                    Version = "1.0.0"
+                };
+
+                packageX.AddFile("buildCrossTargeting/x.targets");
+                packageZ.AddFile("buildCrossTargeting/z.targets");
+                packageS.AddFile("buildCrossTargeting/s.targets");
+
+                packageX.AddFile("buildCrossTargeting/x.props");
+                packageZ.AddFile("buildCrossTargeting/z.props");
+                packageS.AddFile("buildCrossTargeting/s.props");
+
+                packageX.AddFile("build/x.targets");
+                packageZ.AddFile("build/z.targets");
+                packageS.AddFile("build/s.targets");
+
+                packageX.AddFile("build/x.props");
+                packageZ.AddFile("build/z.props");
+                packageS.AddFile("build/s.props");
+
+                packageX.AddFile("lib/net45/test.dll");
+                packageX.AddFile("lib/net45/test.dll");
+                packageX.AddFile("lib/net45/test.dll");
+
+                // To avoid sorting on case accidently
+                // A -> X -> Z -> S
+                packageX.Dependencies.Add(packageZ);
+                packageZ.Dependencies.Add(packageS);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                projectA.AddPackageToAllFrameworks(packageZ);
+                projectA.AddPackageToAllFrameworks(packageS);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var r = RestoreSolution(pathContext);
+
+                // Assert
+                Assert.True(File.Exists(projectA.TargetsOutput), r.Item2);
+
+                var targetsXML = XDocument.Parse(File.ReadAllText(projectA.TargetsOutput));
+                var targetItemGroups = targetsXML.Root.Elements().Where(e => e.Name.LocalName == "ImportGroup").ToList();
+
+                var propsXML = XDocument.Parse(File.ReadAllText(projectA.PropsOutput));
+                var propsItemGroups = propsXML.Root.Elements().Where(e => e.Name.LocalName == "ImportGroup").ToList();
+
+                // CrossTargeting should be first
+                Assert.Equal(2, targetItemGroups.Count);
+                Assert.Equal("'$(IsCrossTargetingBuild)' == 'true'", targetItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal("'$(TargetFramework)' == 'net45'", targetItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
+
+                Assert.Equal(3, targetItemGroups[0].Elements().Count());
+                Assert.EndsWith("s.targets", targetItemGroups[0].Elements().ToList()[0].Attribute(XName.Get("Project")).Value);
+                Assert.EndsWith("z.targets", targetItemGroups[0].Elements().ToList()[1].Attribute(XName.Get("Project")).Value);
+                Assert.EndsWith("x.targets", targetItemGroups[0].Elements().ToList()[2].Attribute(XName.Get("Project")).Value);
+
+                Assert.Equal(3, targetItemGroups[1].Elements().Count());
+                Assert.EndsWith("s.targets", targetItemGroups[1].Elements().ToList()[0].Attribute(XName.Get("Project")).Value);
+                Assert.EndsWith("z.targets", targetItemGroups[1].Elements().ToList()[1].Attribute(XName.Get("Project")).Value);
+                Assert.EndsWith("x.targets", targetItemGroups[1].Elements().ToList()[2].Attribute(XName.Get("Project")).Value);
+
+                Assert.Equal(2, propsItemGroups.Count);
+                Assert.Equal("'$(IsCrossTargetingBuild)' == 'true'", propsItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal("'$(TargetFramework)' == 'net45'", propsItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
+
+                Assert.Equal(3, propsItemGroups[0].Elements().Count());
+                Assert.EndsWith("s.props", propsItemGroups[0].Elements().ToList()[0].Attribute(XName.Get("Project")).Value);
+                Assert.EndsWith("z.props", propsItemGroups[0].Elements().ToList()[1].Attribute(XName.Get("Project")).Value);
+                Assert.EndsWith("x.props", propsItemGroups[0].Elements().ToList()[2].Attribute(XName.Get("Project")).Value);
+
+                Assert.Equal(3, propsItemGroups[1].Elements().Count());
+                Assert.EndsWith("s.props", propsItemGroups[1].Elements().ToList()[0].Attribute(XName.Get("Project")).Value);
+                Assert.EndsWith("z.props", propsItemGroups[1].Elements().ToList()[1].Attribute(XName.Get("Project")).Value);
+                Assert.EndsWith("x.props", propsItemGroups[1].Elements().ToList()[2].Attribute(XName.Get("Project")).Value);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_VerifyBuildCrossTargeting_VerifyImportIsAdded()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                packageX.AddFile("buildCrossTargeting/x.targets");
+                packageX.AddFile("lib/net45/test.dll");
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var r = RestoreSolution(pathContext);
+
+                // Assert
+                Assert.True(File.Exists(projectA.TargetsOutput), r.Item2);
+
+                var targetsXML = XDocument.Parse(File.ReadAllText(projectA.TargetsOutput));
+                var targetItemGroups = targetsXML.Root.Elements().Where(e => e.Name.LocalName == "ImportGroup").ToList();
+
+                Assert.Equal(1, targetItemGroups.Count);
+                Assert.Equal("'$(IsCrossTargetingBuild)' == 'true'", targetItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal(1, targetItemGroups[0].Elements().Count());
+                Assert.EndsWith("x.targets", targetItemGroups[0].Elements().ToList()[0].Attribute(XName.Get("Project")).Value);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_VerifyBuildCrossTargeting_VerifyImportIsNotAddedForUAP()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectJson = JObject.Parse(@"{
+                                                    'dependencies': {
+                                                    },
+                                                    'frameworks': {
+                                                        'net45': {
+                                                            'x': '1.0.0'
+                                                    }
+                                                  }
+                                               }");
+
+                var projectA = SimpleTestProjectContext.CreateUAP(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"),
+                    projectJson);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                packageX.AddFile("buildCrossTargeting/x.targets");
+                packageX.AddFile("lib/net45/test.dll");
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var r = RestoreSolution(pathContext);
+
+                // Assert
+                Assert.False(File.Exists(projectA.TargetsOutput), r.Item2);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_VerifyBuildCrossTargeting_VerifyImportRequiresPackageName()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                packageX.AddFile("buildCrossTargeting/a.targets");
+                packageX.AddFile("buildCrossTargeting/a.props");
+                packageX.AddFile("buildCrossTargeting/a.txt");
+                packageX.AddFile("lib/net45/test.dll");
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var r = RestoreSolution(pathContext);
+
+                // Assert
+                Assert.False(File.Exists(projectA.TargetsOutput), r.Item2);
+                Assert.False(File.Exists(projectA.PropsOutput), r.Item2);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_VerifyBuildCrossTargeting_VerifyImportNotAllowedInSubFolder()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+
+                packageX.AddFile("buildCrossTargeting/net45/x.targets");
+                packageX.AddFile("buildCrossTargeting/net45/x.props");
+                packageX.AddFile("lib/net45/test.dll");
+
+                packageY.AddFile("buildCrossTargeting/a.targets");
+                packageY.AddFile("buildCrossTargeting/a.props");
+                packageY.AddFile("buildCrossTargeting/net45/y.targets");
+                packageY.AddFile("buildCrossTargeting/net45/y.props");
+                packageY.AddFile("lib/net45/test.dll");
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                projectA.AddPackageToAllFrameworks(packageY);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageY);
+
+                // Act
+                var r = RestoreSolution(pathContext);
+
+                // Assert
+                Assert.False(File.Exists(projectA.TargetsOutput), r.Item2);
+                Assert.False(File.Exists(projectA.PropsOutput), r.Item2);
+            }
+        }
+
+        [Fact]
         public async Task RestoreNetCore_ProjectToProject_Interweaving()
         {
             // Arrange
@@ -398,7 +712,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.Item2);
-                Assert.False(File.Exists(projectA.TargetsOutput), r.Item2);
+                Assert.True(File.Exists(projectA.TargetsOutput), r.Item2);
                 Assert.False(File.Exists(projectA.PropsOutput), r.Item2);
             }
         }

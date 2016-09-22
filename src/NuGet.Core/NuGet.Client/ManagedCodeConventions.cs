@@ -353,6 +353,11 @@ namespace NuGet.Client
             public PatternSet MSBuildFiles { get; }
 
             /// <summary>
+            /// Pattern used to identify MSBuild global targets and props files
+            /// </summary>
+            public PatternSet MSBuildCrossTargetingFiles { get; }
+
+            /// <summary>
             /// Pattern used to identify content files
             /// </summary>
             public PatternSet ContentFiles { get; }
@@ -442,6 +447,17 @@ namespace NuGet.Client
                     {
                         new PatternDefinition("build/{tfm}/{msbuild}", table: DotnetAnyTable),
                         new PatternDefinition("build/{msbuild}", table: null, defaults: DefaultTfmAny)
+                    });
+
+                MSBuildCrossTargetingFiles = new PatternSet(
+                    conventions.Properties,
+                    groupPatterns: new PatternDefinition[]
+                    {
+                        new PatternDefinition("buildCrossTargeting/{msbuild?}", table: null, defaults: DefaultTfmAny)
+                    },
+                    pathPatterns: new PatternDefinition[]
+                    {
+                        new PatternDefinition("buildCrossTargeting/{msbuild}", table: null, defaults: DefaultTfmAny)
                     });
 
                 ContentFiles = new PatternSet(

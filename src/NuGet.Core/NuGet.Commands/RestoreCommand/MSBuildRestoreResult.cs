@@ -199,10 +199,22 @@ namespace NuGet.Commands
                                     new XAttribute("Project", GetImportPath(i)),
                                     new XAttribute("Condition", $"Exists('{GetImportPath(i)}')"))));
 
-                    // Add a conditional TFM if multiple TFMs exist
+                    // Add a conditional statement if multiple TFMs exist or cross targeting is present
                     if (!string.IsNullOrEmpty(pair.Key))
                     {
-                        itemGroup.Add(new XAttribute("Condition", $" '$(TargetFramework)' == '{framework}' "));
+                        var conditionValue = string.Empty;
+
+                        // Check for the cross targeting condition
+                        if (BuildAssetsUtils.CrossTargetingCondition.Equals(pair.Key, StringComparison.Ordinal))
+                        {
+                            conditionValue = pair.Key;
+                        }
+                        else
+                        {
+                            conditionValue = $" '$(TargetFramework)' == '{framework}' ";
+                        }
+
+                        itemGroup.Add(new XAttribute("Condition", conditionValue));
                     }
 
                     doc.Root.Add(itemGroup);

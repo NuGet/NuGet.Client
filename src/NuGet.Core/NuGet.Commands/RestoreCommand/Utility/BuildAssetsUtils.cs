@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using NuGet.Client;
@@ -20,6 +21,8 @@ namespace NuGet.Commands
 {
     public static class BuildAssetsUtils
     {
+        internal static readonly string CrossTargetingCondition= " '$(IsCrossTargetingBuild)' == 'true' ";
+
         internal static MSBuildRestoreResult RestoreMSBuildFiles(PackageSpec project,
             IEnumerable<RestoreTargetGraph> targetGraphs,
             IReadOnlyList<NuGetv3LocalRepository> repositories,
@@ -32,7 +35,7 @@ namespace NuGet.Commands
 
             if (request.RestoreOutputType == RestoreOutputType.NETCore)
             {
-                var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
+                var projFileName = Path.GetFileNameWithoutExtension(request.Project.RestoreMetadata.ProjectPath);
 
                 targetsPath = Path.Combine(request.RestoreOutputPath, $"{projFileName}.nuget.g.targets");
                 propsPath = Path.Combine(request.RestoreOutputPath, $"{projFileName}.nuget.g.props");
@@ -74,6 +77,19 @@ namespace NuGet.Commands
             // Conditionals for targets and props are only supported by NETCore
             if (project.RestoreMetadata?.OutputType == RestoreOutputType.NETCore)
             {
+                // Find all global targets from buildCrossTargeting
+                var crossTargetingAssets = GetTargetsAndPropsForCrossTargeting(
+                        targetGraphs,
+                        repositories,
+                        context,
+                        request,
+                        includeFlagGraphs);
+
+                // Add targets/props under the condition they need
+                props.Add(CrossTargetingCondition, crossTargetingAssets.Props);
+                targets.Add(CrossTargetingCondition, crossTargetingAssets.Targets);
+
+                // Find TFM specific assets from the build folder
                 foreach (var pair in buildAssetsByFramework)
                 {
                     // There could be multiple string matches
@@ -148,7 +164,12 @@ namespace NuGet.Commands
                 .Single(g => string.IsNullOrEmpty(g.RuntimeIdentifier) && g.Framework.Equals(projectFramework));
 
             // Gather props and targets to write out
-            var buildGroupSets = GetMSBuildAssets(context, graph, request.Project, includeFlagGraphs);
+            var buildGroupSets = GetMSBuildAssets(
+                context,
+                graph,
+                request.Project,
+                includeFlagGraphs,
+                graph.Conventions.Patterns.MSBuildFiles);
 
             // Second find the nearest group for each framework
             foreach (var buildGroupSetsEntry in buildGroupSets)
@@ -168,6 +189,60 @@ namespace NuGet.Commands
                 if (buildItems != null)
                 {
                     AddPropsAndTargets(repositories, libraryIdentity, buildItems, result);
+                }
+            }
+
+            return result;
+        }
+
+        private static TargetsAndProps GetTargetsAndPropsForCrossTargeting(
+            IEnumerable<RestoreTargetGraph> targetGraphs,
+            IReadOnlyList<NuGetv3LocalRepository> repositories,
+            RemoteWalkContext context,
+            RestoreRequest request,
+            Dictionary<RestoreTargetGraph,
+            Dictionary<string, LibraryIncludeFlags>> includeFlagGraphs)
+        {
+            var result = new TargetsAndProps();
+
+            // Skip runtime graphs, msbuild targets may not come from RID specific packages
+            // Order the graphs by framework to make this deterministic for scenarios where
+            // TFMs disagree on the dependency order, there is little that can be done for
+            // conflicts where A->B for TFM1 and B->A for TFM2.
+            var ridlessGraphs = targetGraphs
+                .Where(g => string.IsNullOrEmpty(g.RuntimeIdentifier))
+                .OrderBy(g => g.Framework, new NuGetFrameworkSorter());
+
+            // Gather props and targets to write out
+            foreach (var graph in ridlessGraphs)
+            {
+                var globalGroupSets = GetMSBuildAssets(
+                    context,
+                    graph,
+                    request.Project,
+                    includeFlagGraphs,
+                    graph.Conventions.Patterns.MSBuildCrossTargetingFiles);
+
+                // Check if compatible build assets exist
+                foreach (var globalGroupEntry in globalGroupSets)
+                {
+                    var libraryIdentity = globalGroupEntry.Key;
+                    var buildGroupSet = globalGroupEntry.Value;
+
+                    Debug.Assert(buildGroupSet.Length < 2, "Unexpected number of build global asset groups");
+
+                    // There can only be one group since there are no TFMs here.
+                    if (buildGroupSet.Length == 1)
+                    {
+                        // Add all targets and props from buildCrossTargeting
+                        // Note: AddPropsAndTargets handles de-duping file paths. Since these non-TFM specific 
+                        // files are found for every TFM it is likely that there will be duplicates going in.
+                        AddPropsAndTargets(
+                                repositories,
+                                libraryIdentity,
+                                buildGroupSet[0],
+                                result);
+                    }
                 }
             }
 
@@ -197,7 +272,8 @@ namespace NuGet.Commands
             RemoteWalkContext context,
             RestoreTargetGraph graph,
             PackageSpec project,
-            Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>> includeFlagGraphs)
+            Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>> includeFlagGraphs,
+            PatternSet patternSet)
         {
             var buildGroupSets = new Dictionary<PackageIdentity, ContentItemGroup[]>();
 
@@ -234,7 +310,7 @@ namespace NuGet.Commands
 
                         // Find MSBuild groups
                         var buildGroupSet = contentItemCollection
-                            .FindItemGroups(graph.Conventions.Patterns.MSBuildFiles)
+                            .FindItemGroups(patternSet)
                             .ToArray();
 
                         buildGroupSets.Add(packageIdentity, buildGroupSet);
@@ -283,17 +359,35 @@ namespace NuGet.Commands
             var packageInfo = NuGetv3LocalRepositoryUtility.GetPackage(repositories, libraryIdentity.Id, libraryIdentity.Version);
             var pathResolver = packageInfo.Repository.PathResolver;
 
-            targetsAndProps.Targets.AddRange(items
+            var targets = items
                 .Where(c => Path.GetExtension(c.Path).Equals(".targets", StringComparison.OrdinalIgnoreCase))
                 .Select(c =>
                     Path.Combine(pathResolver.GetInstallPath(libraryIdentity.Id, libraryIdentity.Version),
-                    c.Path.Replace('/', Path.DirectorySeparatorChar))));
+                    c.Path.Replace('/', Path.DirectorySeparatorChar)));
 
-            targetsAndProps.Props.AddRange(items
+            // avoid duplicate targets
+            foreach (var target in targets)
+            {
+                if (!targetsAndProps.Targets.Contains(target, StringComparer.Ordinal))
+                {
+                    targetsAndProps.Targets.Add(target);
+                }
+            }
+
+            var props = items
                 .Where(c => Path.GetExtension(c.Path).Equals(".props", StringComparison.OrdinalIgnoreCase))
                 .Select(c =>
                     Path.Combine(pathResolver.GetInstallPath(libraryIdentity.Id, libraryIdentity.Version),
-                    c.Path.Replace('/', Path.DirectorySeparatorChar))));
+                    c.Path.Replace('/', Path.DirectorySeparatorChar)));
+
+            foreach (var prop in props)
+            {
+                // avoid duplicate props
+                if (!targetsAndProps.Props.Contains(prop, StringComparer.Ordinal))
+                {
+                    targetsAndProps.Props.Add(prop);
+                }
+            }
         }
 
         private class TargetsAndProps

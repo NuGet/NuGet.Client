@@ -71,6 +71,119 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
+        public void MSBuildRestoreResult_MultipleTFMs_CrossTargeting()
+        {
+            // Arrange
+            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var projectName = "testproject";
+
+                var targetsName = $"{projectName}.nuget.g.targets";
+                var targetsPath = Path.Combine(randomProjectDirectory, targetsName);
+
+                var propsName = $"{projectName}.nuget.g.props";
+                var propsPath = Path.Combine(randomProjectDirectory, propsName);
+
+                var targets = new Dictionary<string, IList<string>>();
+                targets.Add("net45", new List<string>() { "a.targets", "b.targets" });
+                targets.Add("netstandard16", new List<string>() { "c.targets" });
+                targets.Add("netStandard1.7", new List<string>() { });
+                targets.Add(" '$(IsCrossTargetingBuild)' == 'true' ", new List<string>() { "x.targets", "y.targets" });
+
+                var props = new Dictionary<string, IList<string>>();
+                props.Add("net45", new List<string>() { "a.props", "b.props" });
+                props.Add("netstandard16", new List<string>() { "c.props" });
+                props.Add("netStandard1.7", new List<string>() { });
+                props.Add("netStandard1.8", new List<string>() { });
+                props.Add(" '$(IsCrossTargetingBuild)' == 'true' ", new List<string>() { "z.props" });
+
+                var msBuildRestoreResult = new MSBuildRestoreResult(
+                  targetsPath,
+                  propsPath,
+                  globalPackagesFolder,
+                  props,
+                  targets);
+
+                // Act
+                msBuildRestoreResult.Commit(Common.NullLogger.Instance);
+
+                // Assert
+                Assert.True(File.Exists(targetsPath));
+                var targetsXML = XDocument.Load(targetsPath);
+
+                Assert.True(File.Exists(propsPath));
+                var propsXML = XDocument.Load(propsPath);
+
+                var targetItemGroups = targetsXML.Root.Elements().Where(e => e.Name.LocalName == "ImportGroup").ToList();
+                var propsItemGroups = propsXML.Root.Elements().Where(e => e.Name.LocalName == "ImportGroup").ToList();
+
+                Assert.Equal(3, targetItemGroups.Count);
+                Assert.Equal("'$(IsCrossTargetingBuild)' == 'true'", targetItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal("'$(TargetFramework)' == 'net45'", targetItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal("'$(TargetFramework)' == 'netstandard16'", targetItemGroups[2].Attribute(XName.Get("Condition")).Value.Trim());
+
+                Assert.Equal(2, targetItemGroups[0].Elements().Count());
+                Assert.Equal("x.targets", targetItemGroups[0].Elements().ToList()[0].Attribute(XName.Get("Project")).Value);
+                Assert.Equal("y.targets", targetItemGroups[0].Elements().ToList()[1].Attribute(XName.Get("Project")).Value);
+
+                Assert.Equal(2, targetItemGroups[1].Elements().Count());
+                Assert.Equal("a.targets", targetItemGroups[1].Elements().ToList()[0].Attribute(XName.Get("Project")).Value);
+                Assert.Equal("b.targets", targetItemGroups[1].Elements().ToList()[1].Attribute(XName.Get("Project")).Value);
+
+                Assert.Equal(1, targetItemGroups[2].Elements().Count());
+                Assert.Equal("c.targets", targetItemGroups[2].Elements().ToList()[0].Attribute(XName.Get("Project")).Value);
+
+                Assert.Equal(3, propsItemGroups.Count);
+                Assert.Equal("'$(IsCrossTargetingBuild)' == 'true'", propsItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
+
+                Assert.Equal(1, propsItemGroups[0].Elements().Count());
+                Assert.Equal("z.props", propsItemGroups[0].Elements().ToList()[0].Attribute(XName.Get("Project")).Value);
+            }
+        }
+
+        [Fact]
+        public void MSBuildRestoreResult_MultipleTFMs_CrossTargeting_EmptyGroups()
+        {
+            // Arrange
+            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var projectName = "testproject";
+
+                var targetsName = $"{projectName}.nuget.g.targets";
+                var targetsPath = Path.Combine(randomProjectDirectory, targetsName);
+
+                var propsName = $"{projectName}.nuget.g.props";
+                var propsPath = Path.Combine(randomProjectDirectory, propsName);
+
+                var targets = new Dictionary<string, IList<string>>();
+                targets.Add("net45", new List<string>() { });
+                targets.Add("netStandard1.7", new List<string>() { });
+                targets.Add(" '$(IsCrossTargetingBuild)' == 'true' ", new List<string>() { });
+
+                var props = new Dictionary<string, IList<string>>();
+                props.Add("net45", new List<string>() { });
+                props.Add("netStandard1.7", new List<string>() { });
+                props.Add(" '$(IsCrossTargetingBuild)' == 'true' ", new List<string>() { });
+
+                var msBuildRestoreResult = new MSBuildRestoreResult(
+                  targetsPath,
+                  propsPath,
+                  globalPackagesFolder,
+                  props,
+                  targets);
+
+                // Act
+                msBuildRestoreResult.Commit(Common.NullLogger.Instance);
+
+                // Assert
+                Assert.False(File.Exists(targetsPath));
+                Assert.False(File.Exists(propsPath));
+            }
+        }
+
+        [Fact]
         public void MSBuildRestoreResult_MultipleTFMs()
         {
             // Arrange
@@ -128,6 +241,40 @@ namespace NuGet.Commands.Test
 
                 Assert.Equal(1, targetItemGroups[1].Elements().Count());
                 Assert.Equal("c.targets", targetItemGroups[1].Elements().ToList()[0].Attribute(XName.Get("Project")).Value);
+            }
+        }
+
+        [Fact]
+        public void MSBuildRestoreResult_EmptyResult()
+        {
+            // Arrange
+            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var projectName = "testproject";
+
+                var targetsName = $"{projectName}.nuget.g.targets";
+                var targetsPath = Path.Combine(randomProjectDirectory, targetsName);
+
+                var propsName = $"{projectName}.nuget.g.props";
+                var propsPath = Path.Combine(randomProjectDirectory, propsName);
+
+                var targets = new Dictionary<string, IList<string>>();
+                var props = new Dictionary<string, IList<string>>();
+
+                var msBuildRestoreResult = new MSBuildRestoreResult(
+                  targetsPath,
+                  propsPath,
+                  globalPackagesFolder,
+                  props,
+                  targets);
+
+                // Act
+                msBuildRestoreResult.Commit(Common.NullLogger.Instance);
+
+                // Assert
+                Assert.False(File.Exists(targetsPath));
+                Assert.False(File.Exists(propsPath));
             }
         }
 
