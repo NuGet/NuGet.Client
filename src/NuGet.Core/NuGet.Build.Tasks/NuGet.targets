@@ -12,14 +12,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- Load NuGet.Build.Tasks.dll, this can be overridden to use a different version with $(RestoreTaskAssemblyFile) -->
   <PropertyGroup>
-    <RestoreTaskAssemblyFile Condition="$(RestoreTaskAssemblyFile) == ''">NuGet.Build.Tasks.dll</RestoreTaskAssemblyFile>
+    <RestoreTaskAssemblyFile Condition=" '$(RestoreTaskAssemblyFile)' == '' ">NuGet.Build.Tasks.dll</RestoreTaskAssemblyFile>
   </PropertyGroup>
   <UsingTask TaskName="NuGet.Build.Tasks.RestoreTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetProjectJsonPathTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.WriteRestoreGraphTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetProjectReferences" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetPackageReferences" AssemblyFile="$(RestoreTaskAssemblyFile)" />
-  <UsingTask TaskName="NuGet.Build.Tasks.GetTargetFrameworkItems" AssemblyFile="$(RestoreTaskAssemblyFile)" />
 
   <!--
     ============================================================
@@ -29,7 +28,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <Target Name="Restore" DependsOnTargets="_GenerateRestoreGraph">
     <RemoveDuplicates
-    Inputs="@(_RestoreGraphEntry)">
+      Inputs="@(_RestoreGraphEntry)">
       <Output
           TaskParameter="Filtered"
           ItemName="_RestoreGraphEntryFiltered"/>
@@ -122,7 +121,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GenerateRestoreSpecs"
-      DependsOnTargets="_SplitProjectReferencesByFileExistence"
       Returns="@(_RestoreGraphEntry)">
     <Message Text="Restore entry point $(MSBuildProjectFullPath)" Importance="low" />
 
@@ -142,7 +140,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GenerateRestoreGraphWalk"
-      DependsOnTargets="_SplitProjectReferencesByFileExistence"
       Returns="@(_RestoreGraphEntry)">
 
     <!-- Determine the restore output path -->
@@ -216,20 +213,23 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CallTarget Targets="_GenerateRestoreProjectReferencePaths" Condition=" '$(_ProjectRestoreType)' != 'NETCore' " />
 
     <!-- Loop on target frameworks -->
-    <GetTargetFrameworkItems
-      Condition=" '$(_ProjectRestoreType)' == 'NETCore' "
-      TargetFrameworks="$(TargetFrameworks)">
+    <ItemGroup Condition=" '$(_ProjectRestoreType)' == 'NETCore' ">
+      <_RestoreTargetFrameworksOutput Include="$(TargetFrameworks.Split(';'))" />
+    </ItemGroup>
+
+    <RemoveDuplicates
+      Inputs="@(_RestoreTargetFrameworksOutput)">
       <Output
-        TaskParameter="TargetFrameworksOutput"
-        ItemName="_RestoreTargetFrameworksOutput" />
-    </GetTargetFrameworkItems>
+          TaskParameter="Filtered"
+          ItemName="_RestoreTargetFrameworksOutputFiltered"/>
+    </RemoveDuplicates>
 
     <!-- Get project and package references  -->
     <MSBuild
       Condition=" '$(_ProjectRestoreType)' == 'NETCore' "
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GenerateRestoreGraphWalkPerFramework"
-      Properties="TargetFramework=%(_RestoreTargetFrameworksOutput.Identity)
+      Properties="TargetFramework=%(_RestoreTargetFrameworksOutputFiltered.Identity)
               %(_MSBuildProjectReferenceExistent.SetConfiguration);
               %(_MSBuildProjectReferenceExistent.SetPlatform);
               BuildProjectReferences=false;"
