@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.25612.2
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.PackageManagement.VisualStudio", "src\NuGet.Clients\PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj", "{306CDDFA-FF0B-4299-930C-9EC6C9308160}"
 EndProject
@@ -26,8 +26,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{3EF356B5-E2D3-45E3-B515-99F4611ACBDA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.Options", "src\NuGet.Clients\Options\NuGet.Options.csproj", "{53AB7187-CDF3-48B5-B90E-8919D3CB904D}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudio", "src\NuGet.Clients\VisualStudio\NuGet.VisualStudio.csproj", "{E5556BC6-A7FD-4D8E-8A7D-7648DF1D7471}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "functional", "functional", "{72887A16-F39B-4B21-9B76-33AE5004DE0B}"
 EndProject
@@ -109,6 +107,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FuncTests", "FuncTests", "{6043EF0C-9C45-4EE1-AB2D-A3F4936AB2BB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.CommandLine.FuncTest", "test\NuGet.Clients.FuncTests\NuGet.CommandLine.FuncTest\NuGet.CommandLine.FuncTest.csproj", "{DBFE233D-074A-4977-A9A0-37F6FF900475}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudio", "src\NuGet.Clients\NuGet.VisualStudio\NuGet.VisualStudio.csproj", "{E5556BC6-A7FD-4D8E-8A7D-7648DF1D7471}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.SolutionRestoreManager.Interop", "src\NuGet.Clients\NuGet.SolutionRestoreManager.Interop\NuGet.SolutionRestoreManager.Interop.csproj", "{4003E1AB-70DE-4B9C-8999-96160EE91D84}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -479,6 +481,27 @@ Global
 		{DBFE233D-074A-4977-A9A0-37F6FF900475}.Release VS14|Any CPU.ActiveCfg = Release|Any CPU
 		{DBFE233D-074A-4977-A9A0-37F6FF900475}.Release VS14|Any CPU.Build.0 = Release|Any CPU
 		{DBFE233D-074A-4977-A9A0-37F6FF900475}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DBFE233D-074A-4977-A9A0-37F6FF900475}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E5556BC6-A7FD-4D8E-8A7D-7648DF1D7471}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5556BC6-A7FD-4D8E-8A7D-7648DF1D7471}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5556BC6-A7FD-4D8E-8A7D-7648DF1D7471}.Mono Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5556BC6-A7FD-4D8E-8A7D-7648DF1D7471}.Mono Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5556BC6-A7FD-4D8E-8A7D-7648DF1D7471}.Mono Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5556BC6-A7FD-4D8E-8A7D-7648DF1D7471}.Mono Release|Any CPU.Build.0 = Release|Any CPU
+		{E5556BC6-A7FD-4D8E-8A7D-7648DF1D7471}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5556BC6-A7FD-4D8E-8A7D-7648DF1D7471}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4003E1AB-70DE-4B9C-8999-96160EE91D84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4003E1AB-70DE-4B9C-8999-96160EE91D84}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4003E1AB-70DE-4B9C-8999-96160EE91D84}.Debug VS14|Any CPU.ActiveCfg = Debug|Any CPU
+		{4003E1AB-70DE-4B9C-8999-96160EE91D84}.Debug VS14|Any CPU.Build.0 = Debug|Any CPU
+		{4003E1AB-70DE-4B9C-8999-96160EE91D84}.Mono Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4003E1AB-70DE-4B9C-8999-96160EE91D84}.Mono Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4003E1AB-70DE-4B9C-8999-96160EE91D84}.Mono Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{4003E1AB-70DE-4B9C-8999-96160EE91D84}.Mono Release|Any CPU.Build.0 = Debug|Any CPU
+		{4003E1AB-70DE-4B9C-8999-96160EE91D84}.Release VS14|Any CPU.ActiveCfg = Release|Any CPU
+		{4003E1AB-70DE-4B9C-8999-96160EE91D84}.Release VS14|Any CPU.Build.0 = Release|Any CPU
+		{4003E1AB-70DE-4B9C-8999-96160EE91D84}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{4003E1AB-70DE-4B9C-8999-96160EE91D84}.Release|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

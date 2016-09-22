@@ -1,6 +1,6 @@
-﻿{
+{
   "dependencies": {
-    "NuGet.Core": "2.14.0-rtm-832"
+    "System.Collections.Immutable": "1.2.0"
   },
   "frameworks": {
     "net46": {}

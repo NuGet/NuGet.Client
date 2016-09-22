@@ -12,7 +12,6 @@ using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGetConsole;
-using static NuGet.Commands.LocalsCommandRunner;
 
 namespace NuGet.Options
 {
@@ -22,6 +21,7 @@ namespace NuGet.Options
         private bool _initialized;
         private readonly IServiceProvider _serviceprovider;
         private readonly OutputConsoleLogger _outputConsoleLogger;
+        private readonly LocalsCommandRunner _localsCommandRunner;
 
         public GeneralOptionControl(IServiceProvider serviceProvider)
         {
@@ -34,6 +34,7 @@ namespace NuGet.Options
             _settings = ServiceLocator.GetInstance<Configuration.ISettings>();
             _serviceprovider = serviceProvider;
             _outputConsoleLogger = new OutputConsoleLogger(_serviceprovider);
+            _localsCommandRunner = new LocalsCommandRunner();
             Debug.Assert(_settings != null);
         }
 
@@ -120,13 +121,13 @@ namespace NuGet.Options
             updateLocalsCommandStatusText(string.Format(Resources.ShowMessage_LocalsCommandWorking), visibility: true);
             var arguments = new List<string> { "all" };
             var settings = ServiceLocator.GetInstance<ISettings>();
-            var logError = new Log(LogError);
-            var logInformation = new Log(LogInformation);
+            var logError = new LocalsArgs.Log(LogError);
+            var logInformation = new LocalsArgs.Log(LogInformation);
+            var localsArgs = new LocalsArgs(arguments, settings, logInformation, logError, clear: true, list: false);
             _outputConsoleLogger.Start();
-            var localsCommandRunner = new LocalsCommandRunner(arguments, settings, logInformation, logError, clear: true, list: false);
             try
             {
-                localsCommandRunner.ExecuteCommand();
+                _localsCommandRunner.ExecuteCommand(localsArgs);
                 updateLocalsCommandStatusText(string.Format(Resources.ShowMessage_LocalsCommandSuccess, DateTime.Now.ToString(Resources.Culture)), visibility: true);
             }
             catch (Exception ex)

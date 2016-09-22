@@ -93,7 +93,7 @@ namespace NuGet.CommandLine.Test
 
             return packageFileFullPath;
         }
-        
+
         public static string CreateTestPackage(
             string packageId,
             string version,
@@ -781,7 +781,7 @@ EndProject";
             IList<PackageIdentity> packages,
             string packagesDirectory)
         {
-            foreach(var package in packages)
+            foreach (var package in packages)
             {
                 VerifyPackageExists(package, packagesDirectory);
             }
