@@ -70,9 +70,6 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProjectSystem\ProjectHelper.cs" />
-    <Compile Include="Telemetry\ITelemetrySession.cs" />
-    <Compile Include="Telemetry\TelemetryEvent.cs" />
-    <Compile Include="Telemetry\TelemetrySession.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="project.json" />

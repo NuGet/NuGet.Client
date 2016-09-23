@@ -15,7 +15,6 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Configuration;
-using NuGet.PackageManagement.Telemetry;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
@@ -577,14 +576,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var newEnvDTEProjectName = new EnvDTEProjectName(envDTEProject);
 
             // Finally, try to add the project to the cache.
-            var added = _nuGetAndEnvDTEProjectCache.AddProject(newEnvDTEProjectName, envDTEProject, nuGetProject);
-            if (added)
-            {
-                // Emit project specific telemetry as we are adding the project to the cache.
-                // This ensures we do not emit the events over and over while the solution is
-                // open.
-                NuGetProjectTelemetryService.Instance.EmitNuGetProject(envDTEProject, nuGetProject);
-            }
+            _nuGetAndEnvDTEProjectCache.AddProject(newEnvDTEProjectName, envDTEProject, nuGetProject);
 
             if (string.IsNullOrEmpty(DefaultNuGetProjectName) ||
                 newEnvDTEProjectName.ShortName.Equals(DefaultNuGetProjectName, StringComparison.OrdinalIgnoreCase))
