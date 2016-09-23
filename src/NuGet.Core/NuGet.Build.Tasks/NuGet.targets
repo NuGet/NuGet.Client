@@ -54,17 +54,17 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <Target Name="_LoadRestoreGraphEntryPoints">
     <!-- Allow overriding items with RestoreGraphProjectInput -->
-    <ItemGroup Condition="@(RestoreGraphProjectInputItems) == ''">
+    <ItemGroup Condition=" @(RestoreGraphProjectInputItems) == '' ">
       <RestoreGraphProjectInputItems Include="$(RestoreGraphProjectInput)" />
     </ItemGroup>
 
     <!-- Solution case -->
-    <ItemGroup Condition="$(MSBuildProjectFullPath.EndsWith('.metaproj')) == 'true' AND @(RestoreGraphProjectInputItems) == ''">
+    <ItemGroup Condition=" $(MSBuildProjectFullPath.EndsWith('.metaproj')) == 'true' AND @(RestoreGraphProjectInputItems) == '' ">
       <RestoreGraphProjectInputItems Include="@(ProjectReference)" />
     </ItemGroup>
 
     <!-- Project case -->
-    <ItemGroup Condition="$(MSBuildProjectFullPath.EndsWith('.metaproj')) != 'true' AND @(RestoreGraphProjectInputItems) == ''">
+    <ItemGroup Condition=" $(MSBuildProjectFullPath.EndsWith('.metaproj')) != 'true' AND @(RestoreGraphProjectInputItems) == '' ">
       <RestoreGraphProjectInputItems Include="$(MSBuildProjectFullPath)" />
     </ItemGroup>
   </Target>
@@ -161,7 +161,27 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_ProjectRestoreType>Unknown</_ProjectRestoreType>
       <_ProjectRestoreType Condition=" '$(CurrentProjectJsonPath)' != '' ">UAP</_ProjectRestoreType>
       <_ProjectRestoreType Condition=" '$(TargetFrameworks)' != '' ">NETCore</_ProjectRestoreType>
+      <_ProjectRestoreType Condition=" '$(TargetFramework)' != '' AND @(PackageReference) != '' ">NETCore</_ProjectRestoreType>
     </PropertyGroup>
+
+    <!-- Loop on target frameworks, if no frameworks exist the targets below will
+         run once using an empty framework string -->
+    <ItemGroup Condition=" '$(_ProjectRestoreType)' == 'NETCore' AND '$(TargetFrameworks)' != '' ">
+      <_RestoreTargetFrameworksOutput Include="$(TargetFrameworks.Split(';'))" />
+    </ItemGroup>
+
+    <!-- Use $(TargetFramework) if $(TargetFrameworks) is empty  -->
+    <ItemGroup Condition=" '$(_ProjectRestoreType)' == 'NETCore' AND '$(TargetFrameworks)' == '' AND '$(TargetFramework)' != '' ">
+      <_RestoreTargetFrameworksOutput Include="$(TargetFramework)" />
+    </ItemGroup>
+
+    <!-- Remove duplicate frameworks -->
+    <RemoveDuplicates
+      Inputs="@(_RestoreTargetFrameworksOutput)">
+      <Output
+          TaskParameter="Filtered"
+          ItemName="_RestoreTargetFrameworksOutputFiltered"/>
+    </RemoveDuplicates>
 
     <!-- Write properties for the top level entry point -->
     <ItemGroup Condition=" '$(_ProjectRestoreType)' == 'NETCore' ">
@@ -176,7 +196,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <FallbackFolders>$(RestoreFallbackFolders)</FallbackFolders>
         <OutputType>$(_ProjectRestoreType)</OutputType>
         <OutputPath>$(RestoreOutputAbsolutePath)</OutputPath>
-        <TargetFrameworks>$(TargetFrameworks)</TargetFrameworks>
+        <TargetFrameworks>@(_RestoreTargetFrameworksOutputFiltered)</TargetFrameworks>
       </_RestoreGraphEntry>
     </ItemGroup>
 
@@ -208,28 +228,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       </_RestoreGraphEntry>
     </ItemGroup>
 
-    <!-- Get dependencies -->
-    <CallTarget Targets="_GenerateRestoreGraphWalkPerFramework" Condition=" '$(_ProjectRestoreType)' != 'NETCore' " />
-    <CallTarget Targets="_GenerateRestoreProjectReferencePaths" Condition=" '$(_ProjectRestoreType)' != 'NETCore' " />
-
-    <!-- Loop on target frameworks -->
-    <ItemGroup Condition=" '$(_ProjectRestoreType)' == 'NETCore' ">
-      <_RestoreTargetFrameworksOutput Include="$(TargetFrameworks.Split(';'))" />
-    </ItemGroup>
-
-    <RemoveDuplicates
-      Inputs="@(_RestoreTargetFrameworksOutput)">
-      <Output
-          TaskParameter="Filtered"
-          ItemName="_RestoreTargetFrameworksOutputFiltered"/>
-    </RemoveDuplicates>
-
     <!-- Get project and package references  -->
     <MSBuild
-      Condition=" '$(_ProjectRestoreType)' == 'NETCore' "
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GenerateRestoreGraphWalkPerFramework"
-      Properties="TargetFramework=%(_RestoreTargetFrameworksOutputFiltered.Identity)
+      Properties="TargetFramework=%(_RestoreTargetFrameworksOutputFiltered.Identity);
               %(_MSBuildProjectReferenceExistent.SetConfiguration);
               %(_MSBuildProjectReferenceExistent.SetPlatform);
               BuildProjectReferences=false;"
@@ -242,10 +245,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Get complete set of project references  -->
     <MSBuild
-      Condition=" '$(_ProjectRestoreType)' == 'NETCore' "
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GenerateRestoreProjectReferencePaths"
-      Properties="TargetFramework=%(_RestoreTargetFrameworksOutput.Identity)
+      Properties="TargetFramework=%(_RestoreTargetFrameworksOutputFiltered.Identity);
               %(_MSBuildProjectReferenceExistent.SetConfiguration);
               %(_MSBuildProjectReferenceExistent.SetPlatform);
               BuildProjectReferences=false;"
@@ -253,12 +255,12 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <Output
           TaskParameter="TargetOutputs"
-          ItemName="ValidProjectInputForRestoreGraph" />
+          ItemName="RestoreGraphProjectFullPathForOutput" />
     </MSBuild>
 
     <!-- Recurse into referenced projects -->
     <MSBuild
-      Projects="@(ValidProjectInputForRestoreGraph)"
+      Projects="@(RestoreGraphProjectFullPathForOutput)"
       Targets="_GenerateRestoreGraphWalk"
       Properties="%(_MSBuildProjectReferenceExistent.SetConfiguration);
             %(_MSBuildProjectReferenceExistent.SetPlatform);
@@ -284,7 +286,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Write out project references -->
     <GetProjectReferences
       ProjectUniqueName="$(MSBuildProjectFullPath)"
-      ProjectReferences="@(ValidProjectInputForRestoreGraph)"
+      ProjectReferences="@(RestoreGraphProjectFullPathForOutput)"
       TargetFrameworks="$(TargetFramework)">
 
       <Output
@@ -312,12 +314,12 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <Target Name="_GenerateRestoreProjectReferencePaths"
     DependsOnTargets="_SplitProjectReferencesByFileExistence"
-    Returns="@(ValidProjectInputForRestoreGraph)">
+    Returns="@(RestoreGraphProjectFullPathForOutput)">
 
     <ItemGroup>
       <!-- Filter out project references that specify ReferenceOutputAssembly=false -->
       <ValidProjectInputForRestoreGraph Include="@(ProjectReference)"
-          Condition=" %(ProjectReference.ReferenceOutputAssembly) == '' OR %(ProjectReference.ReferenceOutputAssembly) == 'true' " />
+          Condition=" '%(ProjectReference.ReferenceOutputAssembly)' == '' OR '%(ProjectReference.ReferenceOutputAssembly)' == 'true' " />
     </ItemGroup>
 
     <!-- Get the absolute paths to all projects -->

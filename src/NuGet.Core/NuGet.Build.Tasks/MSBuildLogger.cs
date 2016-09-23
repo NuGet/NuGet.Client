@@ -23,8 +23,7 @@ namespace NuGet.Build.Tasks
 
         public void LogError(string data)
         {
-            // Log errors as warnings. Then log the error summary as actual errors.
-            LogWarning(data);
+            _taskLogging.LogError(data);
         }
 
         public void LogErrorSummary(string data)
