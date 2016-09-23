@@ -9,10 +9,10 @@
     "Microsoft.VisualStudio.Shell.Interop.11.0": "11.0.61030",
     "Microsoft.VisualStudio.Shell.Interop.12.0": "12.0.30110",
     "Microsoft.Web.Xdt": "2.1.1",
-    "NuGet.Protocol.VisualStudio": "3.6.0-*",
-    "NuGet.ProjectManagement": "3.6.0-*",
-    "NuGet.PackageManagement": "3.6.0-*",
-    "Test.Utility": "3.6.0-*"
+    "NuGet.Protocol.VisualStudio": "3.6.0-beta1-*",
+    "NuGet.ProjectManagement": "3.6.0-beta1-*",
+    "NuGet.PackageManagement": "3.6.0-beta1-*",
+    "Test.Utility": "3.6.0-beta1-*"
   },
   "frameworks": {
     "net46": {}
