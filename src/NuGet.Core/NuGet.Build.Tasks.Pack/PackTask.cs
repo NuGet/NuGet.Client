@@ -294,7 +294,7 @@ namespace NuGet.Build.Tasks.Pack
                     {
                         if (targetPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
                         {
-                            newTargetPaths[i] = Path.Combine(targetPath, recursiveDir) + Path.DirectorySeparatorChar;
+                            newTargetPaths[i] = Path.Combine(targetPath, recursiveDir);
                         }
                         else
                         {
