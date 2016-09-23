@@ -4,13 +4,12 @@
   "packOptions": {
     "files": {
       "mappings": {
-        "build/net45/NuGet.Build.Tasks.Pack.targets": "Pack.targets",
-        "build/netstandard1.3/NuGet.Build.Tasks.Pack.targets": "Pack2.targets",
-        "build/net45/": {
-          "include" : ["bin/release/net45/*.dll", "bin/debug/net45/*.dll"]
+        "buildCrossTargeting/NuGet.Build.Tasks.Pack.targets": "Pack.targets",
+        "buildCrossTargeting/Desktop/": {
+          "include": [ "bin/release/net45/*.dll", "bin/debug/net45/*.dll" ]
         },
-        "build/netstandard1.3/": {
-          "include" : ["bin/release/netstandard1.3/*.dll", "bin/debug/netstandard1.3/*.dll"]
+        "buildCrossTargeting/CoreCLR/": {
+          "include": [ "bin/release/netstandard1.3/*.dll", "bin/debug/netstandard1.3/*.dll" ]
         }
       }
     }

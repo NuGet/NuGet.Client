@@ -57,6 +57,9 @@ namespace NuGet.Build.Tasks.Pack
 
         public override bool Execute()
         {
+#if DEBUG
+            System.Diagnostics.Debugger.Launch();
+#endif
             var packArgs = GetPackArgs();
             var packageBuilder = GetPackageBuilder(packArgs);
             var contentFiles = ProcessContentToIncludeInPackage(packArgs.CurrentDirectory);
@@ -277,7 +280,7 @@ namespace NuGet.Build.Tasks.Pack
         // The targetpaths returned from this function contain the directory in the nuget package where the file would go to. The filename is added later on to the target path.
         private void GetTargetPath(ITaskItem packageFile, IDictionary customMetadata, string sourcePath, string currentProjectDirectory, out string[] targetPaths)
         {
-            targetPaths = new string[] { PackagingConstants.Folders.Content, PackagingConstants.Folders.ContentFiles };
+            targetPaths = new string[] { PackagingConstants.Folders.Content + Path.DirectorySeparatorChar, PackagingConstants.Folders.ContentFiles + Path.DirectorySeparatorChar };
             // if user specified a PackagePath, then use that. Look for any ** which are indicated by the RecrusiveDir metadata in msbuild.
             if (customMetadata.Contains("PackagePath"))
             {
@@ -289,7 +292,15 @@ namespace NuGet.Build.Tasks.Pack
                     var i = 0;
                     foreach (var targetPath in targetPaths)
                     {
-                        newTargetPaths[i] = Path.Combine(targetPath, recursiveDir);
+                        if (targetPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                        {
+                            newTargetPaths[i] = Path.Combine(targetPath, recursiveDir) + Path.DirectorySeparatorChar;
+                        }
+                        else
+                        {
+                            newTargetPaths[i] = targetPath;
+                        }
+                        
                         i++;
                     }
                     targetPaths = newTargetPaths;
@@ -308,7 +319,7 @@ namespace NuGet.Build.Tasks.Pack
                 }
                 foreach (var targetPath in targetPaths)
                 {
-                    newTargetPaths[i] = Path.Combine(targetPath, identity);
+                    newTargetPaths[i] = Path.Combine(targetPath, identity) + Path.DirectorySeparatorChar;
                     i++;
                 }
                 targetPaths = newTargetPaths;

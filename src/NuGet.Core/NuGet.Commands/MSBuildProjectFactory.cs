@@ -224,7 +224,9 @@ namespace NuGet.Commands
                     var packageFile = new ManifestFile()
                     {
                         Source = sourcePath,
-                        Target = Path.Combine(target, Path.GetFileName(sourcePath))
+                        Target = target.EndsWith(Path.DirectorySeparatorChar.ToString()) || string.IsNullOrEmpty(target)
+                        ? Path.Combine(target, Path.GetFileName(sourcePath))
+                        : target
                     };
                     AddFileToBuilder(packageFile);
                 }

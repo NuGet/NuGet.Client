@@ -11,8 +11,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- Load NuGet.Build.Tasks.dll, this can be overridden to use a different version with $(RestoreTaskAssemblyFile) -->
-  <PropertyGroup>
-    <NugetTaskAssemblyFile Condition="$(NugetTaskAssemblyFile) == ''">NuGet.Build.Tasks.Pack.dll</NugetTaskAssemblyFile>
+  <PropertyGroup Condition="$(NugetTaskAssemblyFile) == ''">
+    <NugetTaskAssemblyFile Condition="$(MSBuildRuntimeType) == 'Core'">CoreCLR\\NuGet.Build.Tasks.Pack.dll</NugetTaskAssemblyFile>
+    <NugetTaskAssemblyFile Condition="$(MSBuildRuntimeType) != 'Core'">Desktop\\NuGet.Build.Tasks.Pack.dll</NugetTaskAssemblyFile>
   </PropertyGroup>
   <UsingTask TaskName="NuGet.Build.Tasks.Pack.PackTask" AssemblyFile="$(NugetTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.Pack.PackNuspecTask" AssemblyFile="$(NugetTaskAssemblyFile)" />
@@ -255,6 +256,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <IncludeAssets>%(PackageReference.IncludeAssets)</IncludeAssets>
         <ExcludeAssets>%(PackageReference.ExcludeAssets)</ExcludeAssets>
         <PrivateAssets>%(PackageReference.PrivateAssets)</PrivateAssets>
+        <Version>%(PackageReference.Version)</Version>
       </_PackageReferences>
     </ItemGroup>
   </Target>  
