@@ -31,12 +31,12 @@ namespace NuGet.Client.Test
 
             // Act
             var group = collection.FindBestItemGroup(criteria, conventions.Patterns.MSBuildCrossTargetingFiles);
-            var items = group.Items.OrderBy(item => item.Path).ToList();
+            var items = group.Items.OrderBy(item => item.Path, StringComparer.Ordinal).ToList();
 
             // Assert
             Assert.Equal(2, items.Count);
-            Assert.Equal("buildCrossTargeting/packageA.targets", items[0].Path);
-            Assert.Equal("buildCrossTargeting/packageA.props", items[1].Path);
+            Assert.Equal("buildCrossTargeting/packageA.props", items[0].Path);
+            Assert.Equal("buildCrossTargeting/packageA.targets", items[1].Path);
         }
 
         [Fact]
