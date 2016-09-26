@@ -20,6 +20,11 @@ namespace NuGet.Repositories
         private readonly ConcurrentDictionary<string, IEnumerable<LocalPackageInfo>> _cache
             = new ConcurrentDictionary<string, IEnumerable<LocalPackageInfo>>(StringComparer.OrdinalIgnoreCase);
 
+        private readonly List<LocalPackageInfo> _updateMeList = new List<LocalPackageInfo>();
+
+        private readonly ConcurrentDictionary<string, object> _idLocks
+            = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
         public VersionFolderPathResolver PathResolver { get; }
 
         public NuGetv3LocalRepository(string path)
@@ -55,44 +60,52 @@ namespace NuGet.Repositories
                 throw new ArgumentNullException(nameof(packageId));
             }
 
-            // packages\{packageId}\{version}\{packageId}.nuspec
-            return _cache.GetOrAdd(packageId, id =>
+            // Callers must wait until all clears have finished
+            lock (GetLockObj(packageId))
+            {
+                return _cache.GetOrAdd(packageId, id =>
                 {
-                    var packages = new List<LocalPackageInfo>();
-
-                    var packageIdRoot = PathResolver.GetVersionListPath(id);
-
-                    if (!Directory.Exists(packageIdRoot))
-                    {
-                        return packages;
-                    }
-
-                    foreach (var fullVersionDir in Directory.EnumerateDirectories(packageIdRoot))
-                    {
-                        var versionPart = fullVersionDir.Substring(packageIdRoot.Length).TrimStart(Path.DirectorySeparatorChar);
-
-                        // Get the version part and parse it
-                        NuGetVersion version;
-                        if (!NuGetVersion.TryParse(versionPart, out version))
-                        {
-                            continue;
-                        }
-
-                        var hashPath = PathResolver.GetHashPath(id, version);
-
-                        // The hash file is written last. If this file does not exist then the package is
-                        // incomplete and should not be used.
-                        if (File.Exists(hashPath))
-                        {
-                            var manifestPath = PathResolver.GetManifestFilePath(id, version);
-                            var zipPath = PathResolver.GetPackageFilePath(id, version);
-
-                            packages.Add(new LocalPackageInfo(id, version, fullVersionDir, manifestPath, zipPath));
-                        }
-                    }
-
-                    return packages;
+                    return GetPackages(id);
                 });
+            }
+        }
+
+        private List<LocalPackageInfo> GetPackages(string id)
+        {
+            var packages = new List<LocalPackageInfo>();
+
+            var packageIdRoot = PathResolver.GetVersionListPath(id);
+
+            if (!Directory.Exists(packageIdRoot))
+            {
+                return packages;
+            }
+
+            foreach (var fullVersionDir in Directory.EnumerateDirectories(packageIdRoot))
+            {
+                var versionPart = fullVersionDir.Substring(packageIdRoot.Length).TrimStart(Path.DirectorySeparatorChar);
+
+                // Get the version part and parse it
+                NuGetVersion version;
+                if (!NuGetVersion.TryParse(versionPart, out version))
+                {
+                    continue;
+                }
+
+                var hashPath = PathResolver.GetHashPath(id, version);
+
+                // The hash file is written last. If this file does not exist then the package is
+                // incomplete and should not be used.
+                if (File.Exists(hashPath))
+                {
+                    var manifestPath = PathResolver.GetManifestFilePath(id, version);
+                    var zipPath = PathResolver.GetPackageFilePath(id, version);
+
+                    packages.Add(new LocalPackageInfo(id, version, fullVersionDir, manifestPath, zipPath));
+                }
+            }
+
+            return packages;
         }
 
         /// <summary>
@@ -103,9 +116,18 @@ namespace NuGet.Repositories
         {
             foreach (var packageId in packageIds)
             {
-                IEnumerable<LocalPackageInfo> packages;
-                _cache.TryRemove(packageId, out packages);
+                // Clearers must wait for all requests to complete
+                lock (GetLockObj(packageId))
+                {
+                    IEnumerable<LocalPackageInfo> packages;
+                    _cache.TryRemove(packageId, out packages);
+                }
             }
+        }
+
+        private object GetLockObj(string privateId)
+        {
+            return _idLocks.GetOrAdd(privateId, new object());
         }
     }
 }

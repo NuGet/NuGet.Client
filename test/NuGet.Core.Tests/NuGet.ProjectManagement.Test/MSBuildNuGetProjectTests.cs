@@ -47,7 +47,7 @@ namespace ProjectManagement.Test
                 var referenceContext = new ExternalProjectReferenceContext(new TestLogger());
 
                 // Act
-                var actual = msBuildNuGetProject.GetPackageSpecsForRestore(referenceContext);
+                var actual = msBuildNuGetProject.GetPackageSpecsForRestore(referenceContext).SingleOrDefault();
 
                 // Assert
                 Assert.NotNull(actual);
@@ -99,7 +99,7 @@ namespace ProjectManagement.Test
                 };
 
                 // Act
-                var actual = msBuildNuGetProject.GetPackageSpecsForRestore(referenceContext);
+                var actual = msBuildNuGetProject.GetPackageSpecsForRestore(referenceContext).SingleOrDefault();
 
                 // Assert
                 Assert.NotNull(actual);

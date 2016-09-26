@@ -24,7 +24,8 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
-                pathContext.CleanUp = false;
+                // Create this many different tool versions and projects
+                int testCount = 100;
 
                 // Set up solution, project, and packages
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
@@ -35,15 +36,17 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.0"
                 };
 
+                var avoidVersion = $"{testCount + 100}.0.0";
+
                 var packageZ = new SimpleTestPackageContext()
                 {
                     Id = "z",
-                    Version = "20.0.0"
+                    Version = avoidVersion
                 };
 
                 var projects = new List<SimpleTestProjectContext>();
 
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < testCount; i++)
                 {
                     var project = SimpleTestProjectContext.CreateNETCore(
                         $"proj{i}",
@@ -55,7 +58,7 @@ namespace NuGet.CommandLine.Test
                     var packageZSub = new SimpleTestPackageContext()
                     {
                         Id = "z",
-                        Version = $"{i}.0.0"
+                        Version = $"{i+1}.0.0"
                     };
 
                     project.DotnetCLIToolReferences.Add(packageZSub);
@@ -75,18 +78,18 @@ namespace NuGet.CommandLine.Test
                     packageX,
                     packageZ);
 
-                var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "20.0.0", "netcoreapp1.0", "project.lock.json");
+                var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", avoidVersion, "netcoreapp1.0", "project.lock.json");
                 var zPath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z");
 
                 // Act
                 var r = RestoreSolution(pathContext);
 
                 // Assert
-                // Version 20 should not be used
+                // Version should not be used
                 Assert.False(File.Exists(path), r.Item2);
 
                 // Each project should have its own tool verion
-                Assert.Equal(10, Directory.GetDirectories(zPath).Length);
+                Assert.Equal(testCount, Directory.GetDirectories(zPath).Length);
             }
         }
 

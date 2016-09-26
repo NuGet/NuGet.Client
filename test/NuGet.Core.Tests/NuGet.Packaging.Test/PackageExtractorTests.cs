@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -17,6 +19,71 @@ namespace NuGet.Packaging.Test
 {
     public class PackageExtractorTests
     {
+        [Fact]
+        public async Task PackageExtractor_InstallFromSourceAsync_StressTest()
+        {
+            // Arrange
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var identity = new PackageIdentity("PackageA", new NuGetVersion("2.0.0"));
+
+                var sourcePath = Path.Combine(root, "source");
+                var packagesPath = Path.Combine(root, "packages");
+                await SimpleTestPackageUtility.CreateFolderFeedV3(sourcePath, identity);
+                var sourcePathResolver = new VersionFolderPathResolver(sourcePath);
+
+                var sem = new ManualResetEventSlim(false);
+                var installedBag = new ConcurrentBag<bool>();
+                var hashBag = new ConcurrentBag<bool>();
+                var tasks = new List<Task>();
+
+                var limit = 100;
+
+                for (int i = 0; i < limit; i++)
+                {
+                    var task = Task.Run(async () =>
+                    {
+                        using (var packageStream = File.OpenRead(sourcePathResolver.GetPackageFilePath(identity.Id, identity.Version)))
+                        {
+                            var pathContext = new VersionFolderPathContext(
+                                    identity,
+                                    packagesPath,
+                                    NullLogger.Instance,
+                                    packageSaveMode: PackageSaveMode.Nupkg,
+                                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
+
+                            var pathResolver = new VersionFolderPathResolver(packagesPath);
+                            var hashPath = pathResolver.GetHashPath(identity.Id, identity.Version);
+
+                            sem.Wait();
+
+                            var installed = await PackageExtractor.InstallFromSourceAsync(
+                                packageStream.CopyToAsync,
+                                pathContext,
+                                CancellationToken.None);
+
+                            var exists = File.Exists(hashPath);
+
+                            installedBag.Add(installed);
+                            hashBag.Add(exists);
+                        }
+                    });
+
+                    tasks.Add(task);
+                }
+
+                // Act
+                sem.Set();
+                await Task.WhenAll(tasks);
+
+                // Assert
+                Assert.Equal(limit, installedBag.Count);
+                Assert.Equal(limit, hashBag.Count);
+                Assert.Equal(1, installedBag.Count(b => b == true));
+                Assert.Equal(limit, hashBag.Count(b => b == true));
+            }
+        }
+
         [Fact]
         public async Task PackageExtractor_InstallFromSourceAsync_ReturnsFalseWhenAlreadyInstalled()
         {
