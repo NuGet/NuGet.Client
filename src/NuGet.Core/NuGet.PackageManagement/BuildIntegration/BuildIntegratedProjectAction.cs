@@ -80,12 +80,12 @@ namespace NuGet.PackageManagement
 
                 foreach (var package in removed)
                 {
-                    actions.Add(NuGetProjectAction.CreateUninstallProjectAction(package, Project));
+                    actions.Add(NuGetProjectAction.CreateUninstallProjectAction(package));
                 }
 
                 foreach (var package in added)
                 {
-                    actions.Add(NuGetProjectAction.CreateInstallProjectAction(package, sourceRepository: null, project: Project));
+                    actions.Add(NuGetProjectAction.CreateInstallProjectAction(package, sourceRepository: null));
                 }
             }
 
