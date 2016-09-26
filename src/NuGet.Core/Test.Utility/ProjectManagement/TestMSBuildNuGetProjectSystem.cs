@@ -25,6 +25,7 @@ namespace Test.Utility
         public Dictionary<string, int> ScriptsExecuted { get; }
         public int BindingRedirectsCallCount { get; private set; }
         public INuGetProjectContext NuGetProjectContext { get; private set; }
+        public int BatchCount { get; private set; }
 
         public TestMSBuildNuGetProjectSystem(NuGetFramework targetFramework, INuGetProjectContext nuGetProjectContext,
             string projectFullPath = null, string projectName = null)
@@ -193,6 +194,7 @@ namespace Test.Utility
 
         public void EndProcessing()
         {
+            ++BatchCount;
             ProcessedFiles = FilesInProcessing;
             FilesInProcessing = null;
         }
