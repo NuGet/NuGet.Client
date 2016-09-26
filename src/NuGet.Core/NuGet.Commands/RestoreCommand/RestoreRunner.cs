@@ -69,7 +69,8 @@ namespace NuGet.Commands
             foreach (var request in await CreatePreLoadedRequests(restoreContext))
             {
                 // De-dupe requests
-                if (uniqueRequest.Add(request.Request.LockFilePath))
+                if (request.Request.LockFilePath == null 
+                    || uniqueRequest.Add(request.Request.LockFilePath))
                 {
                     requests.Enqueue(request);
                 }

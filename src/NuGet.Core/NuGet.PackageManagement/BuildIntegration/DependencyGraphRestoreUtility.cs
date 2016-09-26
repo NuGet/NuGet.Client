@@ -83,6 +83,17 @@ namespace NuGet.PackageManagement
                 {
                     dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
                 }
+
+                // Add tool references for restore
+                var toolProvider = project as IDependencyGraphToolSpecProvider;
+                if (toolProvider != null)
+                {
+                    foreach (var toolSpec in toolProvider.GetDotnetCliToolSpecs())
+                    {
+                        dgSpec.AddProject(toolSpec);
+                        dgSpec.AddRestore(toolSpec.RestoreMetadata.ProjectUniqueName);
+                    }
+                }
             }
 
             using (var cacheContext = new SourceCacheContext())

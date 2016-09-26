@@ -21,7 +21,7 @@ namespace NuGet.Commands
 {
     public static class BuildAssetsUtils
     {
-        internal static readonly string CrossTargetingCondition= " '$(IsCrossTargetingBuild)' == 'true' ";
+        internal static readonly string CrossTargetingCondition = " '$(IsCrossTargetingBuild)' == 'true' ";
 
         internal static MSBuildRestoreResult RestoreMSBuildFiles(PackageSpec project,
             IEnumerable<RestoreTargetGraph> targetGraphs,
@@ -35,7 +35,7 @@ namespace NuGet.Commands
 
             if (request.RestoreOutputType == RestoreOutputType.NETCore)
             {
-                var projFileName = Path.GetFileNameWithoutExtension(request.Project.RestoreMetadata.ProjectPath);
+                var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
 
                 targetsPath = Path.Combine(request.RestoreOutputPath, $"{projFileName}.nuget.g.targets");
                 propsPath = Path.Combine(request.RestoreOutputPath, $"{projFileName}.nuget.g.props");
@@ -235,7 +235,7 @@ namespace NuGet.Commands
                     if (buildGroupSet.Length == 1)
                     {
                         // Add all targets and props from buildCrossTargeting
-                        // Note: AddPropsAndTargets handles de-duping file paths. Since these non-TFM specific 
+                        // Note: AddPropsAndTargets handles de-duping file paths. Since these non-TFM specific
                         // files are found for every TFM it is likely that there will be duplicates going in.
                         AddPropsAndTargets(
                                 repositories,
@@ -325,7 +325,7 @@ namespace NuGet.Commands
             ISet<GraphItem<RemoteResolveResult>> items)
         {
             var result = new HashSet<PackageDependencyInfo>(PackageIdentity.Comparer);
-            
+
             foreach (var item in items)
             {
                 var dependencies =

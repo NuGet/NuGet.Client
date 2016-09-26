@@ -81,31 +81,46 @@ namespace NuGet.Commands
                 throw RestoreSpecException.Create(message, files);
             }
 
-            // Track the project path
-            files.Push(restoreMetadata.ProjectPath);
-
             var outputType = spec.RestoreMetadata?.OutputType;
 
-            // Verify project metadata
+            // Verify required fields for all specs
             ValidateProjectMetadata(spec, files);
 
-            // Verify project references
-            ValidateProjectReferences(spec, files);
-
-            // Verify based on the type.
-            switch (outputType)
+            if (outputType == RestoreOutputType.Standalone)
             {
-                case RestoreOutputType.NETCore:
-                    ValidateProjectSpecNetCore(spec, files);
-                    break;
+                ValidateStandaloneSpec(spec, files);
+            }
+            else if (outputType == RestoreOutputType.DotnetCliTool)
+            {
+                // Verify tool properties
+                ValidateToolSpec(spec, files);
+            }
+            else
+            {
+                // Track the project path
+                files.Push(restoreMetadata.ProjectPath);
 
-                case RestoreOutputType.UAP:
-                    ValidateProjectSpecUAP(spec, files);
-                    break;
+                // Verify project metadata
+                ValidateProjectMSBuildMetadata(spec, files);
 
-                default:
-                    ValidateProjectSpecOther(spec, files);
-                    break;
+                // Verify project references
+                ValidateProjectReferences(spec, files);
+
+                // Verify based on the type.
+                switch (outputType)
+                {
+                    case RestoreOutputType.NETCore:
+                        ValidateProjectSpecNetCore(spec, files);
+                        break;
+
+                    case RestoreOutputType.UAP:
+                        ValidateProjectSpecUAP(spec, files);
+                        break;
+
+                    default:
+                        ValidateProjectSpecOther(spec, files);
+                        break;
+                }
             }
         }
 
@@ -216,6 +231,38 @@ namespace NuGet.Commands
                     Strings.PropertyNotAllowedForProjectType,
                     nameof(spec.RestoreMetadata.OutputPath),
                     RestoreOutputType.UAP.ToString());
+
+                throw RestoreSpecException.Create(message, files);
+            }
+        }
+
+        private static void ValidateStandaloneSpec(PackageSpec spec, IEnumerable<string> files)
+        {
+            // Output path must exist
+            if (string.IsNullOrEmpty(spec.RestoreMetadata.OutputPath))
+            {
+                var message = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.MissingRequiredPropertyForProjectType,
+                    nameof(spec.RestoreMetadata.OutputPath),
+                    RestoreOutputType.Standalone.ToString());
+
+                throw RestoreSpecException.Create(message, files);
+            }
+        }
+
+        private static void ValidateToolSpec(PackageSpec spec, IEnumerable<string> files)
+        {
+            var packageDependencies = GetAllDependencies(spec).ToList();
+
+            if (packageDependencies.Count != 1
+                || packageDependencies.All(e => e.LibraryRange.TypeConstraint != LibraryDependencyTarget.Package)
+                || spec.TargetFrameworks.Count != 1)
+            {
+                var message = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.InvalidRestoreInput,
+                    spec.Name);
 
                 throw RestoreSpecException.Create(message, files);
             }
@@ -335,7 +382,10 @@ namespace NuGet.Commands
 
                 throw RestoreSpecException.Create(message, files);
             }
+        }
 
+        private static void ValidateProjectMSBuildMetadata(PackageSpec spec, IEnumerable<string> files)
+        {
             // msbuild project path must be set
             if (string.IsNullOrEmpty(spec.RestoreMetadata.ProjectPath))
             {

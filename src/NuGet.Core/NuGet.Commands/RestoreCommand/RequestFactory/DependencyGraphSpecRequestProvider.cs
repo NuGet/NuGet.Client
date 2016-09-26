@@ -64,6 +64,7 @@ namespace NuGet.Commands
 
             // Create requests
             var requests = new List<RestoreSummaryRequest>();
+            var toolRequests = new List<RestoreSummaryRequest>();
 
             foreach (var projectNameToRestore in dgFile.Restore)
             {
@@ -76,8 +77,19 @@ namespace NuGet.Commands
 
                 var request = Create(rootProject, externalClosure, restoreContext, settingsOverride: _providerSettingsOverride);
 
-                requests.Add(request);
+                if (request.Request.RestoreOutputType == RestoreOutputType.DotnetCliTool)
+                {
+                    // Store tool requests to be filtered later
+                    toolRequests.Add(request);
+                }
+                else
+                {
+                    requests.Add(request);
+                }
             }
+
+            // Filter out duplicate tool restore requests
+            requests.AddRange(ToolRestoreUtility.GetSubSetRequests(toolRequests));
 
             return requests;
         }
@@ -93,7 +105,9 @@ namespace NuGet.Commands
             PackageSpec projectSpec = null;
 
             if (type == RestoreOutputType.NETCore
-                || type == RestoreOutputType.UAP)
+                || type == RestoreOutputType.UAP
+                || type == RestoreOutputType.DotnetCliTool
+                || type == RestoreOutputType.Standalone)
             {
                 projectSpec = rootProject;
             }

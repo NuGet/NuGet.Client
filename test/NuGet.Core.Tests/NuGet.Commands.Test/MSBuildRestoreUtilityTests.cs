@@ -15,6 +15,49 @@ namespace NuGet.Commands.Test
     public class MSBuildRestoreUtilityTests
     {
         [Fact]
+        public void MSBuildRestoreUtility_GetPackageSpec_Tool()
+        {
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var project1Root = Path.Combine(workingDir, "a");
+                var project1Path = Path.Combine(project1Root, "a.csproj");
+
+                var items = new List<IDictionary<string, string>>();
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "a" },
+                    { "OutputType", "DotnetCliTool" },
+                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectPath", project1Path },
+                    { "TargetFrameworks", "netcoreapp1.0" },
+                });
+
+                // Package reference
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "Dependency" },
+                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "Id", "x" },
+                    { "VersionRange", "1.0.0-beta.*" },
+                    { "TargetFrameworks", "netcoreapp1.0" },
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var project1Spec = dgSpec.Projects.Single(e => e.Name == "a");
+
+                // Assert
+                // Dependency counts
+                Assert.Equal(1, project1Spec.GetTargetFramework(NuGetFramework.Parse("netcoreapp1.0")).Dependencies.Count);
+            }
+        }
+
+        [Fact]
         public void MSBuildRestoreUtility_GetPackageSpec_NetCoreVerifyIncludeFlags()
         {
             using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())

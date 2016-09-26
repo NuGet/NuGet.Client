@@ -151,11 +151,13 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static JObject GetJson(DependencyGraphSpec spec)
+        public static JObject GetJson(DependencyGraphSpec spec)
         {
             var json = new JObject();
             var restoreObj = new JObject();
             var projectsObj = new JObject();
+            var toolsArray = new JArray();
+            json["format"] = 1;
             json["restore"] = restoreObj;
             json["projects"] = projectsObj;
 

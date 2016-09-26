@@ -65,7 +65,8 @@ namespace NuGet.CommandLine
         public static DependencyGraphSpec GetProjectReferences(
             string msbuildDirectory,
             string[] projectPaths,
-            int timeOut)
+            int timeOut,
+            IConsole console)
         {
             string msbuildPath = Path.Combine(msbuildDirectory, "msbuild.exe");
 
@@ -95,8 +96,28 @@ namespace NuGet.CommandLine
 
                 var argumentBuilder = new StringBuilder(
                     "/t:GenerateRestoreGraphFile " +
-                    "/nologo /nr:false /v:q " +
+                    "/nologo /nr:false " +
                     "/p:BuildProjectReferences=false");
+
+                // Set the msbuild verbosity level if specified
+                var msbuildVerbosity = Environment.GetEnvironmentVariable("NUGET_RESTORE_MSBUILD_VERBOSITY");
+
+                if (string.IsNullOrEmpty(msbuildVerbosity))
+                {
+                    argumentBuilder.Append(" /v:q ");
+                }
+                else
+                {
+                    argumentBuilder.Append($" /v:{msbuildVerbosity} ");
+                }
+
+                // Add additional args to msbuild if needed
+                var msbuildAdditionalArgs = Environment.GetEnvironmentVariable("NUGET_RESTORE_MSBUILD_ARGS");
+
+                if (!string.IsNullOrEmpty(msbuildAdditionalArgs))
+                {
+                    argumentBuilder.Append($" {msbuildAdditionalArgs} ");
+                }
 
                 argumentBuilder.Append(" /p:RestoreTaskAssemblyFile=");
                 AppendQuoted(argumentBuilder, nugetExePath);
@@ -121,6 +142,8 @@ namespace NuGet.CommandLine
                     Arguments = argumentBuilder.ToString(),
                     RedirectStandardError = true
                 };
+
+                console.LogDebug($"{processStartInfo.FileName} {processStartInfo.Arguments}");
 
                 using (var process = Process.Start(processStartInfo))
                 {

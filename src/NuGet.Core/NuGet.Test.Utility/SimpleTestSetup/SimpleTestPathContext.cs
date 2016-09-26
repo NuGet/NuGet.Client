@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -26,6 +27,8 @@ namespace NuGet.Test.Utility
 
         public string FallbackFolder { get; }
 
+        public bool CleanUp { get; set; } = true;
+
         public SimpleTestPathContext()
         {
             WorkingDirectory = TestFileSystemUtility.CreateRandomTestFolder();
@@ -43,6 +46,9 @@ namespace NuGet.Test.Utility
             Directory.CreateDirectory(FallbackFolder);
 
             CreateNuGetConfig();
+
+            // Record who wrote this out incase a test isn't cleaning up
+            File.WriteAllText(Path.Combine(WorkingDirectory, "testStack.txt"), Environment.StackTrace);
         }
 
         private void CreateNuGetConfig()
@@ -89,7 +95,10 @@ namespace NuGet.Test.Utility
 
         public void Dispose()
         {
-            WorkingDirectory.Dispose();
+            if (CleanUp)
+            {
+                WorkingDirectory.Dispose();
+            }
         }
     }
 }

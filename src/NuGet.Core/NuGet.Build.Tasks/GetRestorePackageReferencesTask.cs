@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -8,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace NuGet.Build.Tasks
 {
-    public class GetPackageReferences : Task
+    public class GetRestorePackageReferencesTask : Task
     {
         /// <summary>
         /// Full path to the msbuild project.

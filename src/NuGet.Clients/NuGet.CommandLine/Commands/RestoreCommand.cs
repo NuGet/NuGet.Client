@@ -590,7 +590,8 @@ namespace NuGet.CommandLine
             return MsBuildUtility.GetProjectReferences(
                 _msbuildDirectory.Value,
                 projectsWithPotentialP2PReferences,
-                scaleTimeout);
+                scaleTimeout,
+                Console);
         }
 
         /// <summary>

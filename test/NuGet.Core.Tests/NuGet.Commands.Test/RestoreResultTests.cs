@@ -28,7 +28,8 @@ namespace NuGet.Commands.Test
                     previousLockFile: null, // different lock file
                     lockFilePath: path,
                     msbuild: new MSBuildRestoreResult("project", td, true),
-                    toolRestoreResults: Enumerable.Empty<ToolRestoreResult>());
+                    toolRestoreResults: Enumerable.Empty<ToolRestoreResult>(),
+                    outputType: RestoreOutputType.Unknown);
                 
                 // Act
                 await result.CommitAsync(logger, CancellationToken.None);
@@ -58,7 +59,8 @@ namespace NuGet.Commands.Test
                     previousLockFile: new LockFile(), // same lock file
                     lockFilePath: path,
                     msbuild: new MSBuildRestoreResult("project", td, true),
-                    toolRestoreResults: Enumerable.Empty<ToolRestoreResult>());
+                    toolRestoreResults: Enumerable.Empty<ToolRestoreResult>(),
+                    outputType: RestoreOutputType.Unknown);
                 
                 // Act
                 await result.CommitAsync(logger, CancellationToken.None);
@@ -97,7 +99,8 @@ namespace NuGet.Commands.Test
                     previousLockFile: new LockFile(), // same lock file
                     lockFilePath: null,
                     msbuild: new MSBuildRestoreResult("project", td, true),
-                    toolRestoreResults: new[] { toolResult });
+                    toolRestoreResults: new[] { toolResult },
+                    outputType: RestoreOutputType.Unknown);
                 
                 // Act
                 await result.CommitAsync(logger, CancellationToken.None);
@@ -136,7 +139,8 @@ namespace NuGet.Commands.Test
                     previousLockFile: new LockFile(), // same lock file
                     lockFilePath: null,
                     msbuild: new MSBuildRestoreResult("project", td, true),
-                    toolRestoreResults: new[] { toolResult });
+                    toolRestoreResults: new[] { toolResult },
+                    outputType: RestoreOutputType.Unknown);
                 
                 // Act
                 await result.CommitAsync(logger, CancellationToken.None);

@@ -29,7 +29,7 @@ namespace NuGet.PackageManagement.VisualStudio
     /// on an arbitrary project. The build task constructs the dependency graph spec on disk. This implementation
     /// reads that file, extracting the needed information for restore.
     /// </summary>
-    public class MSBuildShellOutNuGetProject : NuGetProject, INuGetIntegratedProject, IDependencyGraphProject
+    public class MSBuildShellOutNuGetProject : NuGetProject, INuGetIntegratedProject, IDependencyGraphProject, IDependencyGraphToolSpecProvider
     {
         /// <summary>
         /// How long to wait for MSBuild to finish when shelling out. 2 minutes in milliseconds.
@@ -257,11 +257,18 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
             }
 
-            return new Specs
+            var spec = new Specs
             {
                 DependencyGraph = dependencyGraphSpec,
                 Package = packageSpec
             };
+
+            // The only tools in the dg file should be the top level dependencies, add all of them
+            spec.Tools.AddRange(dependencyGraphSpec
+                .Projects
+                .Where(p => p.RestoreMetadata.OutputType == RestoreOutputType.DotnetCliTool));
+
+            return spec;
         }
 
         private List<PackageReference> GetPackageReferences(PackageSpec packageSpec)
@@ -404,10 +411,16 @@ namespace NuGet.PackageManagement.VisualStudio
                 .ToList();
         }
 
+        public IReadOnlyList<PackageSpec> GetDotnetCliToolSpecs()
+        {
+            throw new NotImplementedException();
+        }
+
         private class Specs
         {
             public DependencyGraphSpec DependencyGraph { get; set; }
             public PackageSpec Package { get; set; }
+            public List<PackageSpec> Tools { get; set; } = new List<PackageSpec>();
         }
 
         private static class MSBuildUtility

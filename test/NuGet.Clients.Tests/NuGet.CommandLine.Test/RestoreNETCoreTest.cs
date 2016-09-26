@@ -19,6 +19,331 @@ namespace NuGet.CommandLine.Test
     public class RestoreNetCoreTest
     {
         [Fact]
+        public async Task RestoreNetCore_MultipleProjects_SameToolDifferentVersionsWithMultipleHits()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                pathContext.CleanUp = false;
+
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageZ = new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "20.0.0"
+                };
+
+                var projects = new List<SimpleTestProjectContext>();
+
+                for (int i = 0; i < 10; i++)
+                {
+                    var project = SimpleTestProjectContext.CreateNETCore(
+                        $"proj{i}",
+                        pathContext.SolutionRoot,
+                        NuGetFramework.Parse("net45"));
+
+                    project.AddPackageToAllFrameworks(packageX);
+
+                    var packageZSub = new SimpleTestPackageContext()
+                    {
+                        Id = "z",
+                        Version = $"{i}.0.0"
+                    };
+
+                    project.DotnetCLIToolReferences.Add(packageZSub);
+
+                    await SimpleTestPackageUtility.CreateFolderFeedV3(
+                        pathContext.PackageSource,
+                        PackageSaveMode.Defaultv3,
+                        packageZSub);
+
+                    solution.Projects.Add(project);
+                    solution.Create(pathContext.SolutionRoot);
+                }
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageZ);
+
+                var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "20.0.0", "netcoreapp1.0", "project.lock.json");
+                var zPath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z");
+
+                // Act
+                var r = RestoreSolution(pathContext);
+
+                // Assert
+                // Version 20 should not be used
+                Assert.False(File.Exists(path), r.Item2);
+
+                // Each project should have its own tool verion
+                Assert.Equal(10, Directory.GetDirectories(zPath).Length);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_MultipleProjects_SameToolDifferentVersions()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                pathContext.CleanUp = false;
+
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageZ = new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "20.0.0"
+                };
+
+                var projects = new List<SimpleTestProjectContext>();
+
+                for (int i = 0; i < 10; i++)
+                {
+                    var project = SimpleTestProjectContext.CreateNETCore(
+                        $"proj{i}",
+                        pathContext.SolutionRoot,
+                        NuGetFramework.Parse("net45"));
+
+                    project.AddPackageToAllFrameworks(packageX);
+                    project.DotnetCLIToolReferences.Add(new SimpleTestPackageContext()
+                    {
+                        Id = "z",
+                        Version = $"{i}.0.0"
+                    });
+
+                    solution.Projects.Add(project);
+                    solution.Create(pathContext.SolutionRoot);
+                }
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageZ);
+
+                var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "20.0.0", "netcoreapp1.0", "project.lock.json");
+                var zPath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z");
+
+                // Act
+                var r = RestoreSolution(pathContext);
+
+                // Assert
+                Assert.True(File.Exists(path), r.Item2);
+                Assert.Equal(1, Directory.GetDirectories(zPath).Length);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_MultipleProjects_SameTool()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                pathContext.CleanUp = false;
+
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageZ = new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "1.0.0"
+                };
+
+                var projects = new List<SimpleTestProjectContext>();
+
+                for (int i=0; i < 10; i++)
+                {
+                    var project = SimpleTestProjectContext.CreateNETCore(
+                        $"proj{i}",
+                        pathContext.SolutionRoot,
+                        NuGetFramework.Parse("net45"));
+
+                    project.AddPackageToAllFrameworks(packageX);
+                    project.DotnetCLIToolReferences.Add(new SimpleTestPackageContext()
+                    {
+                        Id = "z",
+                        Version = "1.0.0"
+                    });
+
+                    solution.Projects.Add(project);
+                    solution.Create(pathContext.SolutionRoot);
+                }
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageZ);
+
+                var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "1.0.0", "netcoreapp1.0", "project.lock.json");
+
+                // Act
+                var r = RestoreSolution(pathContext);
+
+                // Assert
+                Assert.True(File.Exists(path), r.Item2);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_SingleToolRestore()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                pathContext.CleanUp = false;
+
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageZ = new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "1.0.0"
+                };
+
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+
+                packageZ.Dependencies.Add(packageY);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                projectA.DotnetCLIToolReferences.Add(new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "1.0.0"
+                });
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageZ,
+                    packageY);
+
+                var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "1.0.0", "netcoreapp1.0", "project.lock.json");
+
+                // Act
+                var r = RestoreSolution(pathContext);
+
+                // Assert
+                Assert.True(File.Exists(path), r.Item2);
+            }
+        }
+
+        [Fact(Skip="Not supported")]
+        public async Task RestoreNetCore_SingleToolRestore_Noop()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageZ = new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "1.0.0"
+                };
+
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+
+                packageZ.Dependencies.Add(packageY);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                projectA.DotnetCLIToolReferences.Add(new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "1.0.0"
+                });
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageZ,
+                    packageY);
+
+                var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "1.0.0", "netcoreapp1.0", "project.lock.json");
+
+                // Act
+                var r = RestoreSolution(pathContext);
+
+                File.AppendAllText(path, "\n\n\n\n\n");
+
+                r = RestoreSolution(pathContext);
+
+                var text = File.ReadAllText(path);
+
+                // Assert
+                Assert.True(File.Exists(path), r.Item2);
+                Assert.EndsWith("\n\n\n\n\n", text);
+            }
+        }
+
+        [Fact]
         public async Task RestoreNetCore_VerifyBuildCrossTargeting_VerifyImportOrder()
         {
             // Arrange
@@ -1205,7 +1530,7 @@ namespace NuGet.CommandLine.Test
                 environmentVariables: envVars);
 
             // Assert
-            Assert.True(exitCode == r.Item1, r.Item2 + " " + r.Item3);
+            Assert.True(exitCode == r.Item1, r.Item3 + "\n\n" + r.Item2);
 
             return r;
         }

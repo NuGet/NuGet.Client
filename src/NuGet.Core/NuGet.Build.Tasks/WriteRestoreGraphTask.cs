@@ -35,7 +35,7 @@ namespace NuGet.Build.Tasks
             var wrappedItems = RestoreGraphItems.Select(GetMSBuildItem);
 
             // Log the graph input
-            MSBuildRestoreUtility.Dump(wrappedItems, log);
+            // MSBuildRestoreUtility.Dump(wrappedItems, log);
 
             // Create file
             var dgFile = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);

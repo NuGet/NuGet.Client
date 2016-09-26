@@ -32,6 +32,8 @@ namespace NuGet.Commands
 
         public IEnumerable<ToolRestoreResult> ToolRestoreResults { get; }
 
+        public RestoreOutputType OutputType { get; }
+
         /// <summary>
         /// Gets the lock file that was generated during the restore or, in the case of a locked lock file,
         /// was used to determine the packages to install during the restore.
@@ -51,7 +53,8 @@ namespace NuGet.Commands
             LockFile previousLockFile,
             string lockFilePath,
             MSBuildRestoreResult msbuild,
-            IEnumerable<ToolRestoreResult> toolRestoreResults)
+            IEnumerable<ToolRestoreResult> toolRestoreResults,
+            RestoreOutputType outputType)
         {
             Success = success;
             RestoreGraphs = restoreGraphs;
@@ -61,6 +64,7 @@ namespace NuGet.Commands
             MSBuild = msbuild;
             PreviousLockFile = previousLockFile;
             ToolRestoreResults = toolRestoreResults;
+            OutputType = outputType;
         }
 
         /// <summary>
@@ -110,12 +114,14 @@ namespace NuGet.Commands
             // Write the lock file
             var lockFileFormat = new LockFileFormat();
 
+            var isTool = OutputType == RestoreOutputType.DotnetCliTool;
+
             await CommitAsync(
                 lockFileFormat,
                 result: this,
                 log: log,
                 forceWrite: forceWrite,
-                toolCommit: false,
+                toolCommit: isTool,
                 token: token);
 
             foreach (var toolRestoreResult in ToolRestoreResults)
@@ -151,17 +157,20 @@ namespace NuGet.Commands
             {
                 if (toolCommit)
                 {
-                    log.LogDebug($"Writing tool lock file to disk. Path: {result.LockFilePath}");
+                    if (result.LockFilePath != null && result.LockFile != null)
+                    {
+                        log.LogDebug($"Writing tool lock file to disk. Path: {result.LockFilePath}");
 
-                    await ConcurrencyUtilities.ExecuteWithFileLockedAsync(
-                        result.LockFilePath,
-                        lockedToken =>
-                        {
-                            lockFileFormat.Write(result.LockFilePath, result.LockFile);
+                        await ConcurrencyUtilities.ExecuteWithFileLockedAsync(
+                            result.LockFilePath,
+                            lockedToken =>
+                            {
+                                lockFileFormat.Write(result.LockFilePath, result.LockFile);
 
-                            return Task.FromResult(0);
-                        },
-                        token);
+                                return Task.FromResult(0);
+                            },
+                            token);
+                    }
                 }
                 else
                 {

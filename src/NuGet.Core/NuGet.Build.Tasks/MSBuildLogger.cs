@@ -1,6 +1,5 @@
 ﻿using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using NuGet.Common;
 
 namespace NuGet.Build.Tasks
 {

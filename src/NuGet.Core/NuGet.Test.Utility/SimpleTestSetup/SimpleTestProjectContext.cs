@@ -67,6 +67,11 @@ namespace NuGet.Test.Utility
         public RestoreOutputType Type { get; set; }
 
         /// <summary>
+        /// Tool references
+        /// </summary>
+        public List<SimpleTestPackageContext> DotnetCLIToolReferences { get; set; } = new List<SimpleTestPackageContext>();
+
+        /// <summary>
         /// Project.json file
         /// </summary>
         public JObject ProjectJson { get; set; }
@@ -112,7 +117,7 @@ namespace NuGet.Test.Utility
                 switch (Type)
                 {
                     case RestoreOutputType.NETCore:
-                        return Path.Combine(OutputPath, $"{Path.GetFileNameWithoutExtension(ProjectPath)}.nuget.g.targets");
+                        return Path.Combine(OutputPath, $"{Path.GetFileName(ProjectPath)}.nuget.g.targets");
                     case RestoreOutputType.UAP:
                         return Path.Combine(Path.GetDirectoryName(ProjectPath), $"{Path.GetFileNameWithoutExtension(ProjectPath)}.nuget.targets");
                     default:
@@ -128,7 +133,7 @@ namespace NuGet.Test.Utility
                 switch (Type)
                 {
                     case RestoreOutputType.NETCore:
-                        return Path.Combine(OutputPath, $"{Path.GetFileNameWithoutExtension(ProjectPath)}.nuget.g.props");
+                        return Path.Combine(OutputPath, $"{Path.GetFileName(ProjectPath)}.nuget.g.props");
                     case RestoreOutputType.UAP:
                         return Path.Combine(Path.GetDirectoryName(ProjectPath), $"{Path.GetFileNameWithoutExtension(ProjectPath)}.nuget.props");
                     default:
@@ -343,6 +348,20 @@ namespace NuGet.Test.Utility
                             referenceFramework,
                             props);
                     }
+                }
+
+                // Add tool references
+                foreach (var tool in DotnetCLIToolReferences)
+                {
+                    var props = new Dictionary<string, string>();
+                    props.Add("Version", tool.Version.ToString());
+
+                    AddItem(
+                        xml,
+                        "DotnetCLIToolReference",
+                        $"{tool.Id}",
+                        NuGetFramework.AnyFramework,
+                        props);
                 }
             }
             else

@@ -15,6 +15,21 @@
         /// <summary>
         /// MSBuild style, project.assets.json is generated in the RestoreOutputPath folder
         /// </summary>
-        NETCore = 2
+        NETCore = 2,
+
+        /// <summary>
+        /// Tool
+        /// </summary>
+        DotnetCliTool = 3,
+
+        /// <summary>
+        /// Non-MSBuild project with no project dependencies.
+        /// </summary>
+        Standalone = 4,
+
+        /// <summary>
+        /// Packages.config project
+        /// </summary>
+        PackagesConfig = 5
     }
 }

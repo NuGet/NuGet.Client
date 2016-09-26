@@ -31,19 +31,12 @@ namespace NuGet.Build.Tasks
 
         public string GetProperty(string property)
         {
-            try
-            {
-                var val = Item.GetMetadata(property);
+            var val = Item.GetMetadata(property);
 
-                if (!string.IsNullOrEmpty(val))
-                {
-                    // Ignore empty strings
-                    return val;
-                }
-            }
-            catch
+            if (!string.IsNullOrEmpty(val))
             {
-                // Ignore errors
+                // Ignore empty strings
+                return val;
             }
 
             return null;

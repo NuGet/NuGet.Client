@@ -34,14 +34,22 @@ namespace NuGet.ProjectModel
                 versionString = versionString.ToLowerInvariant();
                 frameworkString = frameworkString.ToLowerInvariant();
             }
-            
+
+            var basePath = GetToolsBasePath();
+
             return Path.Combine(
-                _packagesDirectory,
-                ".tools",
+                basePath,
                 packageId,
                 versionString,
                 frameworkString,
                 LockFileFormat.LockFileName);
+        }
+
+        public string GetToolsBasePath()
+        {
+            return Path.Combine(
+                _packagesDirectory,
+                ".tools");
         }
     }
 }

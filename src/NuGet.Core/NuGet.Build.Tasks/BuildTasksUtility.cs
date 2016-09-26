@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Microsoft.Build.Framework;
 
 namespace NuGet.Build.Tasks
@@ -23,6 +20,15 @@ namespace NuGet.Build.Tasks
                 && !properties.ContainsKey(key))
             {
                 properties.Add(toKey, propertyValue);
+            }
+        }
+
+        public static void AddPropertyIfExists(IDictionary<string, string> properties, string key, string value)
+        {
+            if (!string.IsNullOrEmpty(value)
+                && !properties.ContainsKey(key))
+            {
+                properties.Add(key, value);
             }
         }
     }

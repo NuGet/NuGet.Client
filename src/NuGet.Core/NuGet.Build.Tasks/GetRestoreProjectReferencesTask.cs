@@ -5,18 +5,10 @@ using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Newtonsoft.Json;
-using NuGet.Commands;
-using NuGet.Common;
-using NuGet.Configuration;
-using NuGet.Frameworks;
-using NuGet.LibraryModel;
-using NuGet.ProjectModel;
-using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Build.Tasks
 {
-    public class GetProjectReferences : Task
+    public class GetRestoreProjectReferencesTask : Task
     {
         /// <summary>
         /// Full path to the msbuild project.

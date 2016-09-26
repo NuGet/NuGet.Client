@@ -94,6 +94,7 @@ namespace NuGet.Commands
             var itemsById = new Dictionary<string, List<IMSBuildItem>>(StringComparer.Ordinal);
             var restoreSpecs = new HashSet<string>(StringComparer.Ordinal);
             var validForRestore = new HashSet<string>(StringComparer.Ordinal);
+            var toolItems = new List<IMSBuildItem>();
 
             // Sort items and add restore specs
             foreach (var item in items)
@@ -122,7 +123,9 @@ namespace NuGet.Commands
             foreach (var spec in itemsById.Values.Select(GetPackageSpec))
             {
                 if (spec.RestoreMetadata.OutputType == RestoreOutputType.NETCore
-                    || spec.RestoreMetadata.OutputType == RestoreOutputType.UAP)
+                    || spec.RestoreMetadata.OutputType == RestoreOutputType.UAP
+                    || spec.RestoreMetadata.OutputType == RestoreOutputType.DotnetCliTool
+                    || spec.RestoreMetadata.OutputType == RestoreOutputType.Standalone)
                 {
                     validForRestore.Add(spec.RestoreMetadata.ProjectUniqueName);
                 }
@@ -130,7 +133,7 @@ namespace NuGet.Commands
                 graphSpec.AddProject(spec);
             }
 
-            // Add UAP and NETCore projects to restore section
+            // Add valid projects to restore section
             foreach (var projectUniqueName in restoreSpecs.Intersect(validForRestore))
             {
                 graphSpec.AddRestore(projectUniqueName);
@@ -191,8 +194,10 @@ namespace NuGet.Commands
                 // Read project references for all
                 AddProjectReferences(result, items);
 
-                // Read package references for netcore
-                if (restoreType == RestoreOutputType.NETCore)
+                // Read package references for netcore, tools, and standalone
+                if (restoreType == RestoreOutputType.NETCore
+                    || restoreType == RestoreOutputType.Standalone
+                    || restoreType == RestoreOutputType.DotnetCliTool)
                 {
                     AddFrameworkAssemblies(result, items);
                     AddPackageReferences(result, items);

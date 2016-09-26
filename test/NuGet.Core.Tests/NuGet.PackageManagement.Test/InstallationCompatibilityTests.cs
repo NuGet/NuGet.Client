@@ -15,6 +15,7 @@ using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test;
 using NuGet.Test.Utility;
@@ -448,7 +449,8 @@ namespace NuGet.PackageManagement.Test
                     null,
                     null,
                     null,
-                    null);
+                    null,
+                    RestoreOutputType.Unknown);
             }
         }
     }

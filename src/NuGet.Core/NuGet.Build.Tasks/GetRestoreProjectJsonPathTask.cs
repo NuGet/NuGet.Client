@@ -1,12 +1,12 @@
-﻿using Microsoft.Build.Framework;
+﻿using System.IO;
+using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Newtonsoft.Json;
 using NuGet.Common;
-using System.IO;
 
 namespace NuGet.Build.Tasks
 {
-    public class GetProjectJsonPathTask : Task
+    public class GetRestoreProjectJsonPathTask : Task
     {
         /// <summary>
         /// Full path to the msbuild project.

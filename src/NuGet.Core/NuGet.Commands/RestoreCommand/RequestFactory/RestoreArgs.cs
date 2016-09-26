@@ -151,11 +151,12 @@ namespace NuGet.Commands
         {
             request.PackageSaveMode = PackageSaveMode;
 
-            if (request.RestoreOutputType == RestoreOutputType.NETCore)
+            if (request.RestoreOutputType == RestoreOutputType.NETCore
+                || request.RestoreOutputType == RestoreOutputType.Standalone)
             {
                 request.LockFilePath = Path.Combine(request.RestoreOutputPath, LockFileFormat.AssetsFileName);
             }
-            else
+            else if (request.RestoreOutputType != RestoreOutputType.DotnetCliTool)
             {
                 request.LockFilePath = ProjectJsonPathUtilities.GetLockFilePath(request.Project.FilePath);
             }
