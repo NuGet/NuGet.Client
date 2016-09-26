@@ -272,7 +272,16 @@ namespace NuGet.PackageManagement.UI
             {
                 SelectedVersion = null;
             }
-            else if (SelectedVersion == null || !_versions.Contains(SelectedVersion))
+            // SelectedVersion should be updated if
+            // 1. its null or
+            // 2. current version set doesn't have existing selected version or
+            // 3. it's right after installing a new package which means selected version will be equals to installed one or
+            // 4. existing selected version is blocked by allowedVersions range of selected project(s).
+            else if (SelectedVersion == null ||
+                !_versions.Contains(SelectedVersion) ||
+                SelectedVersion.Version.Equals(_searchResultPackage.InstalledVersion) ||
+                (_versions.Any(v => v != null && !v.IsValidVersion) &&
+                    _versions.IndexOf(SelectedVersion) > _versions.IndexOf(_versions.FirstOrDefault(v => v != null && !v.IsValidVersion))))
             {
                 // it should always select the top version from versions list to install or update
                 // which has a valid version. If find none, then just set to null.
