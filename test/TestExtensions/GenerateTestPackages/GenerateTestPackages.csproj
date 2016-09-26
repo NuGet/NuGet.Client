@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <Import Project="..\..\..\Build\Common.props" Condition="Exists('..\..\..\Build\Common.props')" />
+  <Import Project="..\..\..\Build\Common.props" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <ProjectGuid>{61EC099A-8AC0-4CCC-AFA8-DF9806CBAFD1}</ProjectGuid>
@@ -49,4 +49,19 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(EnlistmentRoot)\build\common.targets" />
+  <Target Name="AfterBuild">
+  <!--
+    Publish test extension artifacts to a well-known location so that
+    Import-Module NuGet.Tests.psm1 is able to locate it.
+  -->
+    <PropertyGroup>
+      <PublishDestination>$(ArtifactRoot)\TestExtensions</PublishDestination>
+    </PropertyGroup>
+    <Message Text="Publishing test extension artifacts..." Importance="high" />
+    <Message Text="$(TargetPath) -> $(PublishDestination)" Importance="high" />
+    <Copy
+      SourceFiles="$(TargetPath)"
+      DestinationFolder="$(PublishDestination)"
+      OverwriteReadOnlyFiles="true" />
+  </Target>
 </Project>

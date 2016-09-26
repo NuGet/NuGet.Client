@@ -39,3 +39,18 @@ function ReplaceTextInFiles {
             }
     }
 }
+
+Function New-TempDir {
+    $TempDir = Join-Path $env:TEMP "nuget_$([System.Guid]::NewGuid())"
+    New-Item -ItemType Directory -Force -Path $TempDir | Out-Null
+    $TempDir
+}
+
+Function New-ZipArchive {
+    param(
+        [string]$SourceDirectory,
+        [string]$ZipFile
+    )
+    Add-Type -Assembly 'System.IO.Compression.FileSystem'
+    [System.IO.Compression.ZipFile]::CreateFromDirectory($SourceDirectory, $ZipFile, 'Optimal', $False)
+}

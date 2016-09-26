@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-Builds NuGet client solutions and runs unit-tests.
+Builds NuGet client solutions and creates output artifacts.
 
 .PARAMETER Configuration
 Build configuration (debug by default)
@@ -13,9 +13,6 @@ Build number to use for package and assemblies versioning (auto-generated if not
 
 .PARAMETER SkipRestore
 Builds without restoring first
-
-.PARAMETER CleanCache
-Cleans NuGet packages cache before build
 
 .PARAMETER MSPFXPath
 Path to a code signing certificate for delay-sigining (optional)
@@ -36,17 +33,26 @@ Skips building binaries targeting Visual Studio "15"
 Skips creating an ILMerged nuget.exe
 
 .PARAMETER Fast
-Runs incremental build.
+Runs minimal incremental build. ILMerge and end-to-end packaging steps skipped.
 
 .PARAMETER CI
 Indicates the build script is invoked from CI
 
 .EXAMPLE
-To run full clean build, e.g after switching branches:
 .\build.ps1
+To run full clean build, e.g after switching branches
 
-To troubleshoot build issues:
+.EXAMPLE
+.\build.ps1 -f
+Fast incremental build
+
+.EXAMPLE
+.\build.ps1 -s14 -s15
+To build core projects only
+
+.EXAMPLE
 .\build.ps1 -v -ea Stop
+To troubleshoot build issues
 #>
 [CmdletBinding()]
 param (
@@ -162,7 +168,27 @@ Invoke-BuildStep 'Merging NuGet.exe' {
         Invoke-ILMerge $Configuration 14 $MSPFXPath
     } `
     -args $Configuration, $MSPFXPath `
-    -skip:($SkipILMerge -or $SkipVS14) `
+    -skip:($Fast -or $SkipILMerge -or $SkipVS14) `
+    -ev +BuildErrors
+
+Invoke-BuildStep 'Creating the VS14 EndToEnd test package' {
+        param($Configuration)
+        $EndToEndScript = Join-Path $PSScriptRoot scripts\cibuild\CreateEndToEndTestPackage.ps1 -Resolve
+        $OutDir = Join-Path $Artifacts VS14
+        & $EndToEndScript -c $Configuration -tv 14 -out $OutDir
+    } `
+    -args $Configuration `
+    -skip:($Fast -or $SkipVS14) `
+    -ev +BuildErrors
+
+Invoke-BuildStep 'Creating the VS15 EndToEnd test package' {
+        param($Configuration)
+        $EndToEndScript = Join-Path $PSScriptRoot scripts\cibuild\CreateEndToEndTestPackage.ps1 -Resolve
+        $OutDir = Join-Path $Artifacts VS15
+        & $EndToEndScript -c $Configuration -tv 15 -out $OutDir
+    } `
+    -args $Configuration `
+    -skip:($Fast -or $SkipVS15) `
     -ev +BuildErrors
 
 Trace-Log ('-' * 60)

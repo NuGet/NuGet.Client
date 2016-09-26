@@ -43,14 +43,14 @@ $env:NuGetTestModeEnabled = "True"
 
 $msbuildPath = Join-Path $env:windir Microsoft.NET\Framework\v4.0.30319\msbuild
 $testExtensionNames = ( "GenerateTestPackages.exe", "API.Test.dll" )
-$testExtensionsRoot = Join-Path $nugetRoot "test\TestExtensions"
+$testExtensionsRoot = Join-Path $nugetRoot "artifacts\TestExtensions"
 
 $testExtensions = @()
 
 if ((Test-Path $testExtensionsRoot) -eq $True)
 {
     $testExtensions  = [System.Collections.ArrayList]($testExtensionNames |
-                            %{ Join-Path $testExtensionsRoot ([System.IO.Path]::GetFileNameWithoutExtension($_) + "\bin\Debug\" + $_) })
+                            %{ Join-Path $testExtensionsRoot $_ })
 }
 else
 {
@@ -87,16 +87,16 @@ else
 
 # Add intellisense for the test parameter
 Register-TabExpansion 'Run-Test' @{
-    'Test' = { 
+    'Test' = {
         # Load all of the test scripts
-        Get-ChildItem $testPath -Filter *.ps1 | %{ 
+        Get-ChildItem $testPath -Filter *.ps1 | %{
             . $_.FullName
         }
-    
+
         # Get all of the tests functions
         Get-ChildItem function:\Test* | %{ $_.Name.Substring(5) }
     }
-    'File' = { 
+    'File' = {
         # Get all of the tests files
         Get-ChildItem $testPath -Filter *.ps1 | Select-Object -ExpandProperty Name
     }
@@ -136,13 +136,13 @@ function global:Run-Test {
 
     # Close the solution after every test run
     [API.Test.VSSolutionHelper]::CloseSolution()
-    
+
     # Load the utility script since we need to use guid
     . $utilityPath
-    
+
     # Get a reference to the powershell window so we can set focus after the tests are over
     [API.Test.VSHelper]::StorePSWindow()
-    
+
     if ($RunId)
     {
         $testRunId = $RunId
@@ -155,38 +155,38 @@ function global:Run-Test {
     $testRunOutputPath = Join-Path $testOutputPath $testRunId
     $testLogFile = Join-Path $testRunOutputPath log.txt
     $testRealTimeResultsFile = Join-Path $testRunOutputPath Realtimeresults.txt
-    
+
     # Create the output folder
     mkdir $testRunOutputPath -ErrorAction Ignore | Out-Null
-       
+
     # Load all of the helper scripts from the current location
-    Get-ChildItem $currentPath -Filter *.ps1 | %{ 
+    Get-ChildItem $currentPath -Filter *.ps1 | %{
         . $_.FullName $testRunOutputPath $templatePath
     }
-    
+
     Write-Verbose "Loading scripts from `"$testPath`""
-    
+
     if (!$File) {
         $File = "*.ps1"
     }
 
-    if ($SourceNuGet -eq $null) 
+    if ($SourceNuGet -eq $null)
     {
         $SourceNuGet = "nuget.org"
     }
 
     # Load all of the test scripts
 	if (!$Exclude) {
-        Get-ChildItem $testPath -Filter $File | %{ 
+        Get-ChildItem $testPath -Filter $File | %{
         . $_.FullName
-		} 
+		}
 	}
 	else {
-	    Get-ChildItem $testPath -Exclude $Exclude | %{ 
+	    Get-ChildItem $testPath -Exclude $Exclude | %{
         . $_.FullName
-		} 
+		}
 	}
-        
+
     # If no tests were specified just run all
     if(!$test) {
         # Get all of the the tests functions
@@ -195,14 +195,14 @@ function global:Run-Test {
     }
     else {
         $tests = @(Get-ChildItem "function:\Test-$Test")
-        
+
         if($tests.Count -eq 0) {
             throw "The test `"$Test`" doesn't exist"
-        } 
+        }
     }
-    
+
     $results = @{}
-    
+
     # Add a reference to the msbuild assembly in case it isn't there
     Add-Type -AssemblyName "Microsoft.Build, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL"
 
@@ -214,13 +214,13 @@ function global:Run-Test {
     catch
     {
     }
-    
+
 	$startTime = Get-Date
     try {
-        # Run all tests        
+        # Run all tests
         $testIndex = 0
 
-        $tests | %{ 
+        $tests | %{
             $testIndex++
 
 
@@ -261,7 +261,7 @@ function global:Run-Test {
 
                 # set name to test name. If this is a test case, we will add that info to the name
                 $name = $testName
-                
+
                 $testCaseObject = $_
                 if($testCaseObject)
                 {
@@ -275,7 +275,7 @@ function global:Run-Test {
                     # Write to log file as we run tests
                     "$(Get-Date -format o) Running Test case $name... ($testCaseIndex / $($testCases.Count))" >> $testLogFile
                 }
-                
+
                 $repositoryPath = Join-Path $testRepositoryPath $name
 
                 $values = @{
@@ -284,10 +284,10 @@ function global:Run-Test {
                     RepositoryPath = Join-Path $repositoryPath Packages
                     NuGetExe = $nugetExePath
                 }
-                
+
                 $generatePackagesExitCode = 0
-                if (Test-Path $repositoryPath) {            
-                    pushd 
+                if (Test-Path $repositoryPath) {
+                    pushd
                     Set-Location $repositoryPath
                     # Generate any packages that might be in the repository dir
                     Get-ChildItem $repositoryPath\* -Include *.dgml,*.nuspec | %{
@@ -301,10 +301,10 @@ function global:Run-Test {
                         else {
                             Write-Host 'GenerateTestPackages.exe on ' $_.FullName ' succeeded'
                         }
-                    } 
+                    }
                     popd
                 }
-                
+
                 $context = New-Object PSObject -Property $values
 
                 # Some tests are flaky. We give failed tests another chance to succeed.
@@ -321,10 +321,10 @@ function global:Run-Test {
                             throw 'GenerateTestPackages.exe failed. Exit code is ' + $generatePackagesExitCode
                         }
                         $executionTime = measure-command { & $testObject $context $testCaseObject }
-                    
+
                         Write-Host -ForegroundColor DarkGreen "Test $name Passed"
-                    
-                        $results[$name] = New-Object PSObject -Property @{ 
+
+                        $results[$name] = New-Object PSObject -Property @{
                             Test = $name
                             Error = $null
                         }
@@ -334,7 +334,7 @@ function global:Run-Test {
                     catch {
                         if($_.Exception.Message.StartsWith("SKIP")) {
                             $message = $_.Exception.Message.Substring(5).Trim()
-                            $results[$name] = New-Object PSObject -Property @{ 
+                            $results[$name] = New-Object PSObject -Property @{
                                 Test = $name
                                 Error = $message
                                 Skipped = $true
@@ -344,7 +344,7 @@ function global:Run-Test {
                             $testSucceeded = $true
                         }
                         else {
-                            $results[$name] = New-Object PSObject -Property @{ 
+                            $results[$name] = New-Object PSObject -Property @{
                                 Test = $name
                                 Error = $_
                             }
@@ -353,7 +353,7 @@ function global:Run-Test {
                         }
                     }
                     finally {
-                        try {           
+                        try {
                             # Clear the cache after running each test
                             [NuGet.MachineCache]::Default.Clear()
                         }
@@ -386,17 +386,17 @@ function global:Run-Test {
             }
         }
     }
-    finally {        
+    finally {
 		$endTime = Get-Date
 		$totalTimeUsed = ($endTime - $startTime).TotalSeconds
 		"Total time used $totalTimeUsed seconds" >> $testLogFile
 
         # Deleting tests
         rm function:\Test*
-        
+
         # Set focus back to powershell
         [API.Test.VSHelper]::FocusStoredPSWindow()
-               
+
         Write-TestResults $testRunId $results.Values $testRunOutputPath $testLogFile $LaunchResultsOnFailure
 
         try
@@ -430,7 +430,7 @@ function Write-TestResults {
     $fail = 0
     $skipped = 0
 
-    $rows = $Results | % { 
+    $rows = $Results | % {
         if($_.Skipped) {
             $skipped++
         }
@@ -446,7 +446,7 @@ function Write-TestResults {
     Write-Host $resultMessage
     "$(Get-Date -format o) $resultMessage" >> $testLogFile
 
-    if (($fail -gt 0) -and $LaunchResultsOnFailure -and ($Results.Count -gt 1)) 
+    if (($fail -gt 0) -and $LaunchResultsOnFailure -and ($Results.Count -gt 1))
     {
         [System.Diagnostics.Process]::Start($HtmlResultPath)
     }
@@ -491,7 +491,7 @@ function Write-TextResults
         $Path
     )
 
-    $rows = $Results | % { 
+    $rows = $Results | % {
         Get-TextResultRow $_
     }
 
@@ -512,7 +512,7 @@ function Write-HtmlResults
             Test run {0} results
         </title>
         <style>
-            
+
         body
         {{
             font-family: Trebuchet MS;
@@ -547,7 +547,7 @@ function Write-HtmlResults
         h2
         {{
             padding: 0 0 10px 0;
-        }}  
+        }}
         table
         {{
             width: 90%;
@@ -558,18 +558,18 @@ function Write-HtmlResults
             padding: 4px;
             border:1px solid #CCC;
         }}
-        table th 
+        table th
         {{
             text-align:left;
             border:1px solid #CCC;
         }}
-        .Skipped 
+        .Skipped
         {{
             color:black;
             background-color:Yellow;
             font-weight:bold;
         }}
-        .Passed 
+        .Passed
         {{
         }}
         .Failed
@@ -613,12 +613,12 @@ function Write-HtmlResults
     <td class=`"{0}`">{3}</td>
     <td class=`"{0}`">{4}</td>
     </tr>"
-    
+
     $pass = 0
     $fail = 0
     $skipped = 0
 
-    $rows = $Results | % { 
+    $rows = $Results | % {
         $status = 'Passed'
         if($_.Skipped) {
             $status = 'Skipped'
@@ -631,10 +631,10 @@ function Write-HtmlResults
         else {
             $pass++
         }
-        
-        [String]::Format($testTemplate, 
-                         $status, 
-                         [System.Net.WebUtility]::HtmlEncode($_.Test), 
+
+        [String]::Format($testTemplate,
+                         $status,
+                         [System.Net.WebUtility]::HtmlEncode($_.Test),
                          [System.Net.WebUtility]::HtmlEncode($_.Error),
                          $_.Time.TotalSeconds,
                          $_.Retried)
