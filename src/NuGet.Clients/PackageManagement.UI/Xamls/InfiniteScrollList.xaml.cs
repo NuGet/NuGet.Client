@@ -102,7 +102,18 @@ namespace NuGet.PackageManagement.UI
             _loadingStatusBar.Reset(loadingMessage, loader.IsMultiSource);
 
             var selectedPackageItem = SelectedPackageItem;
-            ClearPackageList();
+            _itemsLock.Wait();
+
+            try
+            {
+                ClearPackageList();
+            }
+
+            finally
+            {
+                _itemsLock.Release();
+            }
+            
 
             _selectedCount = 0;
 
@@ -346,7 +357,7 @@ namespace NuGet.PackageManagement.UI
 
                     if (refresh)
                     {
-                        ClearPackageList(withLock: false);
+                        ClearPackageList();
                     }
 
                     // add newly loaded items
@@ -367,32 +378,14 @@ namespace NuGet.PackageManagement.UI
             });
         }
 
-        private void ClearPackageList(bool withLock = true)
+        private void ClearPackageList()
         {
             foreach (var package in PackageItems)
             {
                 package.PropertyChanged -= Package_PropertyChanged;
             }
 
-            if (withLock)
-            {
-                _itemsLock.Wait();
-
-                try
-                {
-                    Items.Clear();
-                }
-
-                finally
-                {
-                    _itemsLock.Release();
-                }
-            }
-            else
-            {
-                Items.Clear();
-            }
-
+            Items.Clear();
             _loadingStatusBar.ItemsLoaded = 0;
         }
 
