@@ -74,24 +74,18 @@ namespace NuGet.PackageManagement
 
             foreach (var project in projects)
             {
-                var packageSpec = project.GetPackageSpecForRestore(referenceContext);
+                var packageSpecs = project.GetPackageSpecsForRestore(referenceContext);
 
-                dgSpec.AddProject(packageSpec);
-
-                if (packageSpec.RestoreMetadata.OutputType == RestoreOutputType.NETCore ||
-                    packageSpec.RestoreMetadata.OutputType == RestoreOutputType.UAP)
+                foreach (var packageSpec in packageSpecs)
                 {
-                    dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
-                }
+                    dgSpec.AddProject(packageSpec);
 
-                // Add tool references for restore
-                var toolProvider = project as IDependencyGraphToolSpecProvider;
-                if (toolProvider != null)
-                {
-                    foreach (var toolSpec in toolProvider.GetDotnetCliToolSpecs())
+                    if (packageSpec.RestoreMetadata.OutputType == RestoreOutputType.NETCore ||
+                        packageSpec.RestoreMetadata.OutputType == RestoreOutputType.UAP ||
+                        packageSpec.RestoreMetadata.OutputType == RestoreOutputType.DotnetCliTool ||
+                        packageSpec.RestoreMetadata.OutputType == RestoreOutputType.Standalone)
                     {
-                        dgSpec.AddProject(toolSpec);
-                        dgSpec.AddRestore(toolSpec.RestoreMetadata.ProjectUniqueName);
+                        dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
                     }
                 }
             }

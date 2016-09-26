@@ -27,7 +27,7 @@ namespace NuGet.ProjectManagement
         /// </summary>
         DateTimeOffset LastModified { get; }
 
-        PackageSpec GetPackageSpecForRestore(ExternalProjectReferenceContext context);
+        IReadOnlyList<PackageSpec> GetPackageSpecsForRestore(ExternalProjectReferenceContext context);
 
         bool IsRestoreRequired(
             IEnumerable<VersionFolderPathResolver> pathResolvers,

@@ -29,7 +29,7 @@ namespace NuGet.PackageManagement.VisualStudio
     /// on an arbitrary project. The build task constructs the dependency graph spec on disk. This implementation
     /// reads that file, extracting the needed information for restore.
     /// </summary>
-    public class MSBuildShellOutNuGetProject : NuGetProject, INuGetIntegratedProject, IDependencyGraphProject, IDependencyGraphToolSpecProvider
+    public class MSBuildShellOutNuGetProject : NuGetProject, INuGetIntegratedProject, IDependencyGraphProject
     {
         /// <summary>
         /// How long to wait for MSBuild to finish when shelling out. 2 minutes in milliseconds.
@@ -189,7 +189,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return output;
         }
 
-        public PackageSpec GetPackageSpecForRestore(ExternalProjectReferenceContext referenceContext)
+        public IReadOnlyList<PackageSpec> GetPackageSpecsForRestore(ExternalProjectReferenceContext referenceContext)
         {
             var specs = GetSpecsAndInitializeInstalledPackages();
 
@@ -198,7 +198,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new InvalidOperationException($"No package spec was found for project '{_fullProjectPath}'.");
             }
 
-            return specs.Package;
+            return specs.Tools.Concat(new[] { specs.Package }).ToList();
         }
 
         public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
@@ -409,11 +409,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return DependencyGraphProjectCacheUtility
                 .GetExternalClosure(_fullProjectPath, externalProjectReferences)
                 .ToList();
-        }
-
-        public IReadOnlyList<PackageSpec> GetDotnetCliToolSpecs()
-        {
-            throw new NotImplementedException();
         }
 
         private class Specs

@@ -127,53 +127,59 @@ namespace NuGet.ProjectManagement.Projects
                 // If the lock file is invalid, then restore.
                 return true;
             }
-            
-            var packageSpec = GetPackageSpecForRestore(context);
 
-            if (!lockFile.IsValidForPackageSpec(packageSpec, LockFileFormat.Version))
+            // Ignore tools here
+            var packageSpecs = GetPackageSpecsForRestore(context)
+                .Where(p => p.RestoreMetadata.OutputType == RestoreOutputType.UAP
+                    || p.RestoreMetadata.OutputType == RestoreOutputType.NETCore);
+
+            foreach (var packageSpec in packageSpecs)
             {
-                // The project.json file has been changed and the lock file needs to be updated.
-                return true;
-            }
-
-            // Verify all libraries are on disk
-            var packages = lockFile.Libraries.Where(library => library.Type == LibraryType.Package);
-
-            foreach (var library in packages)
-            {
-                var identity = new PackageIdentity(library.Name, library.Version);
-
-                // Each id/version only needs to be checked once
-                if (packagesChecked.Add(identity))
+                if (!lockFile.IsValidForPackageSpec(packageSpec, LockFileFormat.Version))
                 {
-                    var found = false;
+                    // The project.json file has been changed and the lock file needs to be updated.
+                    return true;
+                }
 
-                    //  Check each package folder. These need to match the order used for restore.
-                    foreach (var resolver in pathResolvers)
+                // Verify all libraries are on disk
+                var packages = lockFile.Libraries.Where(library => library.Type == LibraryType.Package);
+
+                foreach (var library in packages)
+                {
+                    var identity = new PackageIdentity(library.Name, library.Version);
+
+                    // Each id/version only needs to be checked once
+                    if (packagesChecked.Add(identity))
                     {
-                        // Verify the SHA for each package
-                        var hashPath = resolver.GetHashPath(library.Name, library.Version);
+                        var found = false;
 
-                        if (File.Exists(hashPath))
+                        //  Check each package folder. These need to match the order used for restore.
+                        foreach (var resolver in pathResolvers)
                         {
-                            found = true;
-                            var sha512 = File.ReadAllText(hashPath);
+                            // Verify the SHA for each package
+                            var hashPath = resolver.GetHashPath(library.Name, library.Version);
 
-                            if (library.Sha512 != sha512)
+                            if (File.Exists(hashPath))
                             {
-                                // A package has changed
-                                return true;
+                                found = true;
+                                var sha512 = File.ReadAllText(hashPath);
+
+                                if (library.Sha512 != sha512)
+                                {
+                                    // A package has changed
+                                    return true;
+                                }
+
+                                // Skip checking the rest of the package folders
+                                break;
                             }
-
-                            // Skip checking the rest of the package folders
-                            break;
                         }
-                    }
 
-                    if (!found)
-                    {
-                        // A package is missing
-                        return true;
+                        if (!found)
+                        {
+                            // A package is missing
+                            return true;
+                        }
                     }
                 }
             }
@@ -283,7 +289,7 @@ namespace NuGet.ProjectManagement.Projects
             }
         }
 
-        public PackageSpec GetPackageSpecForRestore(ExternalProjectReferenceContext referenceContext)
+        public IReadOnlyList<PackageSpec> GetPackageSpecsForRestore(ExternalProjectReferenceContext referenceContext)
         {
             var packageSpec = PackageSpec;
 
@@ -317,8 +323,7 @@ namespace NuGet.ProjectManagement.Projects
                 }
             }
 
-
-            return packageSpec;
+            return new List<PackageSpec>() { packageSpec };
         }
 
         /// <summary>

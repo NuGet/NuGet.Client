@@ -531,7 +531,7 @@ namespace NuGet.ProjectManagement
             return true;
         }
 
-        public PackageSpec GetPackageSpecForRestore(ExternalProjectReferenceContext referenceContext)
+        public IReadOnlyList<PackageSpec> GetPackageSpecsForRestore(ExternalProjectReferenceContext referenceContext)
         {
             var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>
             {
@@ -575,7 +575,7 @@ namespace NuGet.ProjectManagement
                 }
             }
 
-            return packageSpec;
+            return new List<PackageSpec>() { packageSpec };
         }
 
         public override Task PostProcessAsync(INuGetProjectContext nuGetProjectContext, CancellationToken token)
