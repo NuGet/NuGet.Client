@@ -1,9 +1,11 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Versioning;
 using NuGet.Configuration;
 
 namespace NuGet.CommandLine
@@ -16,6 +18,12 @@ namespace NuGet.CommandLine
         private const string NuGetCommandLinePackageId = "NuGet.CommandLine";
         private const string NuGetExe = "NuGet.exe";
 
+        private string _assemblyLocation;
+        private readonly Lazy<string> _lazyAssemblyLocation = new Lazy<string>(() =>
+        {
+            var assembly = typeof(SelfUpdater).Assembly;
+            return assembly.Location;
+        });
         private readonly IPackageRepositoryFactory _repositoryFactory;
 
         public SelfUpdater(IPackageRepositoryFactory repositoryFactory)
@@ -29,14 +37,30 @@ namespace NuGet.CommandLine
 
         public IConsole Console { get; set; }
 
-        public void UpdateSelf()
+        /// <summary>
+        /// This property is used only for testing (so that the self updater does not replace the running test
+        /// assembly).
+        /// </summary>
+        public string AssemblyLocation
+        {
+            get
+            {
+                return _assemblyLocation ?? _lazyAssemblyLocation.Value;
+            }
+            set
+            {
+                _assemblyLocation = value;
+            }
+        }
+
+        public void UpdateSelf(bool prerelease)
         {
             Assembly assembly = typeof(SelfUpdater).Assembly;
             var version = GetNuGetVersion(assembly) ?? new SemanticVersion(assembly.GetName().Version);
-            SelfUpdate(assembly.Location, version);
+            SelfUpdate(AssemblyLocation, prerelease, version);
         }
 
-        internal void SelfUpdate(string exePath, SemanticVersion version)
+        internal void SelfUpdate(string exePath, bool prerelease, SemanticVersion version)
         {
             Console.WriteLine(LocalizedResourceManager.GetString("UpdateCommandCheckingForUpdates"), NuGetConstants.V2FeedUrl);
 
@@ -44,7 +68,7 @@ namespace NuGet.CommandLine
             IPackageRepository packageRepository = _repositoryFactory.CreateRepository(NuGetConstants.V2FeedUrl);
             IPackage package = packageRepository.GetUpdates(
                 new [] { new PackageName(NuGetCommandLinePackageId, version) },
-                includePrerelease: true, 
+                includePrerelease: prerelease, 
                 includeAllVersions: false, 
                 targetFrameworks: null,
                 versionConstraints: null).FirstOrDefault();

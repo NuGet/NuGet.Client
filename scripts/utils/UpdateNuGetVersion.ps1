@@ -63,6 +63,7 @@ $miscFiles = @(
     "src\NuGet.Clients\VsExtension\source.extension.dev15.vsixmanifest",
     "src\NuGet.Clients\VsExtension\NuGetPackage.cs",
     "build\common.props",
+    "build\common.ps1",
     ".teamcity.properties",
     "appveyor.yml"
 )
