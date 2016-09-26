@@ -32,79 +32,59 @@ Skips building binaries targeting Visual Studio "14" (released as Visual Studio 
 .PARAMETER SkipVS15
 Skips building binaries targeting Visual Studio "15"
 
-.PARAMETER SkipSubModules
-Skips updating submodules
-
-.PARAMETER SkipTests
-Skips building and running unit-tests
-
 .PARAMETER SkipILMerge
 Skips creating an ILMerged nuget.exe
 
 .PARAMETER Fast
-Combination of SkipTests, SkipSubModules, and SkipILMerge
+Runs incremental build.
+
+.PARAMETER CI
+Indicates the build script is invoked from CI
 
 .EXAMPLE
 To run full clean build, e.g after switching branches:
-.\build.ps1 -CleanCache
-
-To run "incremental" fast build with no tests:
-.\build.ps1 -Fast
+.\build.ps1
 
 To troubleshoot build issues:
-.\build.ps1 -Verbose -ErrorAction Stop
+.\build.ps1 -v -ea Stop
 #>
-[CmdletBinding(DefaultParameterSetName='RegularBuild')]
+[CmdletBinding()]
 param (
     [ValidateSet("debug", "release")]
-    [string]$Configuration = 'debug',
+    [Alias('c')]
+    [string]$Configuration,
     [ValidateSet("release","rtm", "rc", "rc1", "beta", "beta1", "beta2", "final", "xprivate", "zlocal")]
+    [Alias('l')]
     [string]$ReleaseLabel = 'zlocal',
+    [Alias('n')]
     [int]$BuildNumber,
+    [Alias('sr')]
     [switch]$SkipRestore,
-    [switch]$CleanCache,
+    [Alias('mspfx')]
     [string]$MSPFXPath,
+    [Alias('nugetpfx')]
     [string]$NuGetPFXPath,
+    [Alias('sx')]
     [switch]$SkipXProj,
+    [Alias('s14')]
     [switch]$SkipVS14,
+    [Alias('s15')]
     [switch]$SkipVS15,
-    [Parameter(ParameterSetName='RegularBuild')]
-    [switch]$SkipSubModules,
-    [Parameter(ParameterSetName='RegularBuild')]
-    [switch]$SkipTests,
-    [Parameter(ParameterSetName='RegularBuild')]
+    [Alias('si')]
     [switch]$SkipILMerge,
-    [Parameter(ParameterSetName='FastBuild')]
-    [switch]$Fast
+    [Alias('f')]
+    [switch]$Fast,
+    [switch]$CI
 )
-
-# For TeamCity - Incase any issue comes in this script fail the build. - Be default TeamCity returns exit code of 0 for all powershell even if it fails
-trap {
-    if ($env:TEAMCITY_VERSION) {
-        Write-Host "##teamcity[buildProblem description='$(Format-TeamCityMessage($_.ToString()))']"
-    }
-
-    Write-Host "BUILD FAILED: $_" -ForegroundColor Red
-    Write-Host "ERROR DETAILS:" -ForegroundColor Red
-    Write-Host $_.Exception -ForegroundColor Red
-    Write-Host ("`r`n" * 3)
-    exit 1
-}
-
-function Format-TeamCityMessage([string]$Text) {
-    $Text.Replace("|", "||").Replace("'", "|'").Replace("[", "|[").Replace("]", "|]").Replace("`n", "|n").Replace("`r", "|r")
-}
-
-$CLIRoot=$PSScriptRoot
-$env:DOTNET_INSTALL_DIR=$CLIRoot
 
 . "$PSScriptRoot\build\common.ps1"
 
-$RunTests = (-not $SkipTests) -and (-not $Fast)
-
-# Adjust version skipping if only one version installed - if VS15 is not installed, no need to specify SkipVS15
-$SkipVS14 = $SkipVS14 -or -not $VS14Installed
-$SkipVS15 = $SkipVS15 -or -not $VS15Installed
+if (-not $Configuration) {
+    $Configuration = switch ($CI.IsPresent) {
+        $True   { 'Release' } # CI build is Release by default
+        $False  { 'Debug' } # Local builds are Debug by default
+    }
+}
 
 Write-Host ("`r`n" * 3)
 Trace-Log ('=' * 60)
@@ -115,28 +95,26 @@ if (-not $BuildNumber) {
 }
 Trace-Log "Build #$BuildNumber started at $startTime"
 
+Test-BuildEnvironment -CI:$CI
+
+# Adjust version skipping if only one version installed - if VS15 is not installed, no need to specify SkipVS15
+if (-not $SkipVS14 -and -not $VS14Installed) {
+    Warning-Log "VS14 build is requested but it appears not to be installed."
+    $SkipVS14 = $True
+}
+
+if (-not $SkipVS15 -and -not $VS15Installed) {
+    Warning-Log "VS15 build is requested but it appears not to be installed."
+    $SkipVS15 = $True
+}
+
 $BuildErrors = @()
 
-Invoke-BuildStep 'Updating sub-modules' { Update-SubModules } `
-    -skip:($SkipSubModules -or $Fast) `
-    -ev +BuildErrors
-
-Invoke-BuildStep 'Cleaning artifacts' { Clear-Artifacts } `
-    -skip:$SkipXProj `
-    -ev +BuildErrors
-
-Invoke-BuildStep 'Cleaning nupkgs' { Clear-Nupkgs } `
-    -skip:$SkipXProj `
-    -ev +BuildErrors
-
-Invoke-BuildStep 'Installing NuGet.exe' { Install-NuGet } `
-    -ev +BuildErrors
-
-Invoke-BuildStep 'Cleaning package cache' { Clear-PackageCache } `
-    -skip:(-not $CleanCache) `
-    -ev +BuildErrors
-
-Invoke-BuildStep 'Installing dotnet CLI' { Install-DotnetCLI } `
+Invoke-BuildStep 'Cleaning artifacts' {
+        Clear-Artifacts
+        Clear-Nupkgs
+    } `
+    -skip:($Fast -or $SkipXProj) `
     -ev +BuildErrors
 
 # Restoring tools required for build
@@ -144,7 +122,7 @@ Invoke-BuildStep 'Restoring solution packages' { Restore-SolutionPackages } `
     -skip:$SkipRestore `
     -ev +BuildErrors
 
-Invoke-BuildStep 'Enabling delayed signing' {
+Invoke-BuildStep 'Enabling delay-signing' {
         param($MSPFXPath, $NuGetPFXPath)
         Enable-DelaySigning $MSPFXPath $NuGetPFXPath
     } `
@@ -153,28 +131,28 @@ Invoke-BuildStep 'Enabling delayed signing' {
     -ev +BuildErrors
 
 Invoke-BuildStep 'Building NuGet.Core projects' {
-        param($Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore, $Fast)
-        Build-CoreProjects $Configuration $ReleaseLabel $BuildNumber -SkipRestore:$SkipRestore -Fast:$Fast
+        param($Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore)
+        Build-CoreProjects $Configuration $ReleaseLabel $BuildNumber -SkipRestore:$SkipRestore
     } `
-    -args $Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore, $Fast `
+    -args $Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore `
     -skip:$SkipXProj `
     -ev +BuildErrors
 
 ## Building the VS15 Tooling solution
 Invoke-BuildStep 'Building NuGet.Clients projects - VS15 Toolset' {
-        param($Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore, $Fast)
-        Build-ClientsProjects $Configuration $ReleaseLabel $BuildNumber -ToolsetVersion 15 -SkipRestore:$SkipRestore -Fast:$Fast
+        param($Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore)
+        Build-ClientsProjects $Configuration $ReleaseLabel $BuildNumber -ToolsetVersion 15 -SkipRestore:$SkipRestore
     } `
-    -args $Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore, $Fast `
+    -args $Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore `
     -skip:$SkipVS15 `
     -ev +BuildErrors
 
 ## Building the VS14 Tooling solution
 Invoke-BuildStep 'Building NuGet.Clients projects - VS14 Toolset' {
-        param($Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore, $Fast)
-        Build-ClientsProjects $Configuration $ReleaseLabel $BuildNumber -ToolsetVersion 14 -SkipRestore:$SkipRestore -Fast:$Fast
+        param($Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore)
+        Build-ClientsProjects $Configuration $ReleaseLabel $BuildNumber -ToolsetVersion 14 -SkipRestore:$SkipRestore
     } `
-    -args $Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore, $Fast `
+    -args $Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore `
     -skip:$SkipVS14 `
     -ev +BuildErrors
 
@@ -184,31 +162,7 @@ Invoke-BuildStep 'Merging NuGet.exe' {
         Invoke-ILMerge $Configuration 14 $MSPFXPath
     } `
     -args $Configuration, $MSPFXPath `
-    -skip:($SkipILMerge -or $Fast -or $SkipVS14) `
-    -ev +BuildErrors
-
-Invoke-BuildStep 'Running NuGet.Core tests' {
-        Test-CoreProjects -Configuration $Configuration
-    } `
-    -args $Configuration `
-    -skip:(-not $RunTests) `
-    -ev +BuildErrors
-
-Invoke-BuildStep 'Running NuGet.Clients tests - VS15 Toolset' {
-        param($Configuration)
-        # We don't run command line tests on VS15 as we don't build a nuget.exe for this version
-        Test-ClientsProjects -Configuration $Configuration -ToolsetVersion 15 -SkipProjects 'NuGet.CommandLine.Test'
-    } `
-    -args $Configuration `
-    -skip:((-not $RunTests) -or $SkipVS15) `
-    -ev +BuildErrors
-
-Invoke-BuildStep 'Running NuGet.Clients tests - VS14 Toolset' {
-        param($Configuration)
-        Test-ClientsProjects -Configuration $Configuration -ToolsetVersion 14
-    } `
-    -args $Configuration `
-    -skip:((-not $RunTests) -or $SkipVS14) `
+    -skip:($SkipILMerge -or $SkipVS14) `
     -ev +BuildErrors
 
 Trace-Log ('-' * 60)

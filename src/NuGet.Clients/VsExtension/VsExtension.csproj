@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props')" />
-  <Import Project="..\..\..\build\common.props" Condition="Exists('..\..\..\build\common.props')" />
+  <Import Project="..\..\..\build\common.props" />
   <PropertyGroup>
-
     <NuGetPackageImportStamp>d386b432</NuGetPackageImportStamp>
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
     <PackagesDirectory>$(UserProfile)\.nuget\packages</PackagesDirectory>
@@ -223,6 +222,18 @@
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
+  <Choose>
+    <When Condition="'$(VisualStudioVersion)' == '14.0'">
+	  <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL"/>
+	  </ItemGroup>
+	</When>
+	<When Condition="'$(VisualStudioVersion)' == '15.0'">
+	  <ItemGroup>
+		<Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL"/>
+      </ItemGroup>
+    </When>
+  </Choose>
   <ItemGroup>
     <Reference Include="EnvDTE, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>False</EmbedInteropTypes>
@@ -232,10 +243,6 @@
     </Reference>
     <Reference Include="Microsoft.CSharp">
       <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.ComponentModelHost">
-      <Private>False</Private>
-      <HintPath>$(VisualStudioInstallDir)PublicAssemblies\Microsoft.VisualStudio.ComponentModelHost.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.Shell.Interop.14.0.DesignTime, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <EmbedInteropTypes>True</EmbedInteropTypes>

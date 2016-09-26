@@ -59,16 +59,14 @@ namespace NuGet.PackageManagement.Telemetry
         private async Task EmitNuGetProjectAsync(EnvDTEProject vsProject, NuGetProject nuGetProject)
         {
             // Get the project details.
-            ProjectDetails projectDetails = null;
+            var projectUniqueName = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
+            var projectId = Guid.Empty;
             try
             {
-                projectDetails = ThreadHelper.JoinableTaskFactory.Run(async delegate
+                projectId = await ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
                 {
                     await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                    // Get the project name.
-                    var name = vsProject.Name;
-
+                    
                     // Get the project ID.
                     var vsHierarchyItem = VsHierarchyUtility.GetHierarchyItemForProject(vsProject);
                     Guid id;
@@ -77,7 +75,7 @@ namespace NuGet.PackageManagement.Telemetry
                         id = Guid.Empty;
                     }
 
-                    return new ProjectDetails(id, name);
+                    return id;
                 });
             }
             catch (Exception ex)
@@ -116,7 +114,7 @@ namespace NuGet.PackageManagement.Telemetry
 
                 var projectInformation = new ProjectInformation(
                     NuGetVersion.Value,
-                    projectDetails.Id,
+                    projectId,
                     projectType);
 
                 _nuGetTelemetryService.EmitProjectInformation(projectInformation);
@@ -124,7 +122,7 @@ namespace NuGet.PackageManagement.Telemetry
             catch (Exception ex)
             {
                 var message =
-                    $"Failed to emit project information for project '{projectDetails.Name}'. Exception:" +
+                    $"Failed to emit project information for project '{projectUniqueName}'. Exception:" +
                     Environment.NewLine +
                     ex.ToString();
 
@@ -140,7 +138,7 @@ namespace NuGet.PackageManagement.Telemetry
 
                 var projectDependencyStatistics = new ProjectDependencyStatistics(
                     NuGetVersion.Value,
-                    projectDetails.Id,
+                    projectId,
                     installedPackagesCount);
 
                 _nuGetTelemetryService.EmitProjectDependencyStatistics(projectDependencyStatistics);
@@ -148,25 +146,13 @@ namespace NuGet.PackageManagement.Telemetry
             catch (Exception ex)
             {
                 var message =
-                    $"Failed to emit project dependency statistics for project '{projectDetails.Name}'. Exception:" +
+                    $"Failed to emit project dependency statistics for project '{projectUniqueName}'. Exception:" +
                     Environment.NewLine +
                     ex.ToString();
 
                 ActivityLog.LogWarning(message, ExceptionHelper.LogEntrySource);
                 Debug.Fail(message);
             }
-        }
-
-        private class ProjectDetails
-        {
-            public ProjectDetails(Guid id, string name)
-            {
-                Id = id;
-                Name = name;
-            }
-
-            public Guid Id { get; }
-            public string Name { get; }
         }
     }
 }
