@@ -206,12 +206,6 @@ namespace ProjectManagement.Test
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext);
                 var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, randomPackagesFolderPath, randomPackagesConfigFolderPath);
 
-                // Pre-Assert
-                // Check that the packages.config file does not exist
-                Assert.False(File.Exists(randomPackagesConfigPath));
-                // Check that there are no packages returned by PackagesConfigProject
-                var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
-                Assert.Equal(0, packagesInPackagesConfig.Count);
                 Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
                 Assert.Equal(0, msBuildNuGetProjectSystem.BatchCount);
 
@@ -224,12 +218,6 @@ namespace ProjectManagement.Test
                 }
 
                 // Assert
-                // Check that the packages.config file exists after the installation
-                Assert.True(File.Exists(randomPackagesConfigPath));
-                // Check the number of packages and packages returned by PackagesConfigProject after the installation
-                packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
-                Assert.Equal(1, packagesInPackagesConfig.Count);
-                // Check that the reference has been added to MSBuildNuGetProjectSystem
                 Assert.Equal(2, msBuildNuGetProjectSystem.References.Count);
                 Assert.Equal(1, msBuildNuGetProjectSystem.BatchCount);
                 Assert.Equal("a.dll", msBuildNuGetProjectSystem.References.First().Key);
@@ -261,12 +249,6 @@ namespace ProjectManagement.Test
 
                 msBuildNuGetProjectSystem.AddReferenceAction = (string referenceName) => { throw new InvalidOperationException(); };
 
-                // Pre-Assert
-                // Check that the packages.config file does not exist
-                Assert.False(File.Exists(randomPackagesConfigPath));
-                // Check that there are no packages returned by PackagesConfigProject
-                var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
-                Assert.Equal(0, packagesInPackagesConfig.Count);
                 Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
                 Assert.Equal(0, msBuildNuGetProjectSystem.BatchCount);
 
@@ -282,9 +264,6 @@ namespace ProjectManagement.Test
                 }
 
                 // Assert
-                Assert.False(File.Exists(randomPackagesConfigPath));
-                packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
-                Assert.Equal(0, packagesInPackagesConfig.Count);
                 Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
                 Assert.Equal(1, msBuildNuGetProjectSystem.BatchCount);
             }
@@ -308,45 +287,20 @@ namespace ProjectManagement.Test
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext);
                 var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, randomPackagesFolderPath, randomPackagesConfigFolderPath);
 
-                // Pre-Assert
-                // Check that the packages.config file does not exist
-                Assert.False(File.Exists(randomPackagesConfigPath));
-                // Check that there are no packages returned by PackagesConfigProject
-                var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
-                Assert.Equal(0, packagesInPackagesConfig.Count);
-                Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
-                Assert.Equal(0, msBuildNuGetProjectSystem.BatchCount);
-
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyTestPackageWithMultipleReferences(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
                 using (var packageStream = GetDownloadResourceResult(packageFileInfo))
                 {
-                    // Act
                     await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
                 }
 
-                // Assert
-                // Check that the packages.config file exists after the installation
-                Assert.True(File.Exists(randomPackagesConfigPath));
-                // Check the number of packages and packages returned by PackagesConfigProject after the installation
-                packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
-                Assert.Equal(1, packagesInPackagesConfig.Count);
-                // Check that the reference has been added to MSBuildNuGetProjectSystem
                 Assert.Equal(2, msBuildNuGetProjectSystem.References.Count);
                 Assert.Equal(1, msBuildNuGetProjectSystem.BatchCount);
-                Assert.Equal("a.dll", msBuildNuGetProjectSystem.References.First().Key);
-                Assert.Equal("b.dll", msBuildNuGetProjectSystem.References.Skip(1).First().Key);
-                Assert.Equal(Path.Combine(msBuildNuGetProject.FolderNuGetProject.GetInstalledPath(packageIdentity),
-                    "lib\\net45\\a.dll"), msBuildNuGetProjectSystem.References.First().Value);
-                Assert.Equal(Path.Combine(msBuildNuGetProject.FolderNuGetProject.GetInstalledPath(packageIdentity),
-                    "lib\\net45\\b.dll"), msBuildNuGetProjectSystem.References.Skip(1).First().Value);
 
-                // Main Act
+                // Act
                 await msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
-                // Check the number of packages and packages returned by PackagesConfigProject after the installation
-                packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
-                Assert.Equal(0, packagesInPackagesConfig.Count);
-                // Check that the reference has been added to MSBuildNuGetProjectSystem
+
+                // Assert
                 Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
                 Assert.Equal(2, msBuildNuGetProjectSystem.BatchCount);
             }
@@ -372,48 +326,23 @@ namespace ProjectManagement.Test
 
                 msBuildNuGetProjectSystem.RemoveReferenceAction = (string referenceName) => { throw new InvalidOperationException(); };
 
-                // Pre-Assert
-                // Check that the packages.config file does not exist
-                Assert.False(File.Exists(randomPackagesConfigPath));
-                // Check that there are no packages returned by PackagesConfigProject
-                var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
-                Assert.Equal(0, packagesInPackagesConfig.Count);
-                Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
-                Assert.Equal(0, msBuildNuGetProjectSystem.BatchCount);
-
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyTestPackageWithMultipleReferences(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
                 using (var packageStream = GetDownloadResourceResult(packageFileInfo))
                 {
-                    // Act
                     await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
                 }
 
-                // Assert
-                // Check that the packages.config file exists after the installation
-                Assert.True(File.Exists(randomPackagesConfigPath));
-                // Check the number of packages and packages returned by PackagesConfigProject after the installation
-                packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
-                Assert.Equal(1, packagesInPackagesConfig.Count);
-                // Check that the reference has been added to MSBuildNuGetProjectSystem
                 Assert.Equal(2, msBuildNuGetProjectSystem.References.Count);
                 Assert.Equal(1, msBuildNuGetProjectSystem.BatchCount);
-                Assert.Equal("a.dll", msBuildNuGetProjectSystem.References.First().Key);
-                Assert.Equal("b.dll", msBuildNuGetProjectSystem.References.Skip(1).First().Key);
-                Assert.Equal(Path.Combine(msBuildNuGetProject.FolderNuGetProject.GetInstalledPath(packageIdentity),
-                    "lib\\net45\\a.dll"), msBuildNuGetProjectSystem.References.First().Value);
-                Assert.Equal(Path.Combine(msBuildNuGetProject.FolderNuGetProject.GetInstalledPath(packageIdentity),
-                    "lib\\net45\\b.dll"), msBuildNuGetProjectSystem.References.Skip(1).First().Value);
 
-                // Main Act
+                // Act
                 await Assert.ThrowsAsync<InvalidOperationException>(async () =>
                 {
                     await msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
                 });
 
-                // Check the number of packages and packages returned by PackagesConfigProject after the installation
-                packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
-                Assert.Equal(0, packagesInPackagesConfig.Count);
+                // Assert
                 Assert.Equal(2, msBuildNuGetProjectSystem.References.Count);
                 Assert.Equal(2, msBuildNuGetProjectSystem.BatchCount);
             }
