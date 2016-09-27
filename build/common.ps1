@@ -306,7 +306,7 @@ function Enable-DelaySigningForDotNet {
 
 Function Save-ProjectFile ($xproject, $fileName) {
     Trace-Log "Saving project to '$fileName'"
-    $xproject | ConvertTo-Json -Depth 999 | Out-File $fileName
+    $xproject | ConvertTo-Json -Depth 100 | Out-File $fileName
 }
 
 # Enables delay signed build
