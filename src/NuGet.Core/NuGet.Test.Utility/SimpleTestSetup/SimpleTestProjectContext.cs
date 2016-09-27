@@ -57,6 +57,11 @@ namespace NuGet.Test.Utility
         public string OutputPath { get; set; }
 
         /// <summary>
+        /// Additional MSBuild properties
+        /// </summary>
+        public Dictionary<string, string> Properties { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
         /// Target frameworks containing dependencies.
         /// </summary>
         public List<SimpleTestProjectFrameworkContext> Frameworks { get; set; } = new List<SimpleTestProjectFrameworkContext>();
@@ -263,6 +268,8 @@ namespace NuGet.Test.Utility
                 { "ProjectGuid", "{" + ProjectGuid.ToString() + "}" },
                 { "BaseIntermediateOutputPath", OutputPath }
             });
+
+            AddProperties(xml, Properties);
 
             if (Type == RestoreOutputType.NETCore)
             {

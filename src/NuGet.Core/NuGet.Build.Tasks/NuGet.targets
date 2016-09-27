@@ -274,6 +274,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         <OutputType>$(_ProjectRestoreType)</OutputType>
         <OutputPath>$(RestoreOutputAbsolutePath)</OutputPath>
         <TargetFrameworks>@(_RestoreTargetFrameworksOutputFiltered)</TargetFrameworks>
+        <RuntimeIdentifiers>$(RuntimeIdentifiers)</RuntimeIdentifiers>
+        <RuntimeSupports>$(RuntimeSupports)</RuntimeSupports>
       </_RestoreGraphEntry>
     </ItemGroup>
 

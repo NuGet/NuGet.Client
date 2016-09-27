@@ -8,6 +8,7 @@ using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
+using NuGet.RuntimeModel;
 using NuGet.Versioning;
 
 namespace NuGet.Commands
@@ -221,9 +222,31 @@ namespace NuGet.Commands
                         result.RestoreMetadata.OriginalTargetFrameworks.Add(originalFramework);
                     }
                 }
+
+                if (restoreType == RestoreOutputType.NETCore
+                    || restoreType == RestoreOutputType.Standalone)
+                {
+                    // Add RIDs and Supports
+                    result.RuntimeGraph = GetRuntimeGraph(specItem);
+                }
             }
 
             return result;
+        }
+
+        private static RuntimeGraph GetRuntimeGraph(IMSBuildItem specItem)
+        {
+            var runtimes = Split(specItem.GetProperty("RuntimeIdentifiers"))
+                .Distinct(StringComparer.Ordinal)
+                .Select(rid => new RuntimeDescription(rid))
+                .ToList();
+
+            var supports = Split(specItem.GetProperty("RuntimeSupports"))
+                .Distinct(StringComparer.Ordinal)
+                .Select(s => new CompatibilityProfile(s))
+                .ToList();
+
+            return new RuntimeGraph(runtimes, supports);
         }
 
         private static void AddProjectReferences(PackageSpec spec, IEnumerable<IMSBuildItem> items)

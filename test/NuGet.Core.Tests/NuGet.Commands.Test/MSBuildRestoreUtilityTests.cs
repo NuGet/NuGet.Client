@@ -186,6 +186,94 @@ namespace NuGet.Commands.Test
                 Assert.Equal("https://nuget.org/a/index.json|https://nuget.org/b/index.json", string.Join("|", project1Spec.RestoreMetadata.Sources.Select(s => s.Source)));
                 Assert.Equal(fallbackFolder, string.Join("|", project1Spec.RestoreMetadata.FallbackFolders));
                 Assert.Equal(packagesFolder, string.Join("|", project1Spec.RestoreMetadata.PackagesPath));
+                Assert.Equal(0, project1Spec.RuntimeGraph.Runtimes.Count);
+                Assert.Equal(0, project1Spec.RuntimeGraph.Supports.Count);
+            }
+        }
+
+        [Fact]
+        public void MSBuildRestoreUtility_GetPackageSpec_NetCoreVerifyRuntimes()
+        {
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var project1Root = Path.Combine(workingDir, "a");
+                var project1Path = Path.Combine(project1Root, "a.csproj");
+                var outputPath1 = Path.Combine(project1Root, "obj");
+                var fallbackFolder = Path.Combine(project1Root, "fallback");
+                var packagesFolder = Path.Combine(project1Root, "packages");
+
+                var items = new List<IDictionary<string, string>>();
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "a" },
+                    { "OutputType", "netcore" },
+                    { "OutputPath", outputPath1 },
+                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectPath", project1Path },
+                    { "TargetFrameworks", "net46;netstandard16" },
+                    { "RuntimeIdentifiers", "win7-x86;linux-x64" },
+                    { "RuntimeSupports", "net46.app;win8.app" },
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var project1Spec = dgSpec.Projects.Single();
+
+                // Assert
+                Assert.Equal(2, project1Spec.RuntimeGraph.Runtimes.Count);
+                Assert.Equal(2, project1Spec.RuntimeGraph.Supports.Count);
+                Assert.Equal("win7-x86", project1Spec.RuntimeGraph.Runtimes["win7-x86"].RuntimeIdentifier);
+                Assert.Equal("linux-x64", project1Spec.RuntimeGraph.Runtimes["linux-x64"].RuntimeIdentifier);
+                Assert.Equal("net46.app", project1Spec.RuntimeGraph.Supports["net46.app"].Name);
+                Assert.Equal("win8.app", project1Spec.RuntimeGraph.Supports["win8.app"].Name);
+            }
+        }
+
+        [Fact]
+        public void MSBuildRestoreUtility_GetPackageSpec_NetCoreVerifyRuntimes_Duplicates()
+        {
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var project1Root = Path.Combine(workingDir, "a");
+                var project1Path = Path.Combine(project1Root, "a.csproj");
+                var outputPath1 = Path.Combine(project1Root, "obj");
+                var fallbackFolder = Path.Combine(project1Root, "fallback");
+                var packagesFolder = Path.Combine(project1Root, "packages");
+
+                var items = new List<IDictionary<string, string>>();
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "a" },
+                    { "OutputType", "netcore" },
+                    { "OutputPath", outputPath1 },
+                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectPath", project1Path },
+                    { "TargetFrameworks", "net46;netstandard16" },
+                    { "RuntimeIdentifiers", "win7-x86;linux-x64;win7-x86;linux-x64" },
+                    { "RuntimeSupports", "net46.app;win8.app;net46.app;win8.app" },
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var project1Spec = dgSpec.Projects.Single();
+
+                // Assert
+                Assert.Equal(2, project1Spec.RuntimeGraph.Runtimes.Count);
+                Assert.Equal(2, project1Spec.RuntimeGraph.Supports.Count);
+                Assert.Equal("win7-x86", project1Spec.RuntimeGraph.Runtimes["win7-x86"].RuntimeIdentifier);
+                Assert.Equal("linux-x64", project1Spec.RuntimeGraph.Runtimes["linux-x64"].RuntimeIdentifier);
+                Assert.Equal("net46.app", project1Spec.RuntimeGraph.Supports["net46.app"].Name);
+                Assert.Equal("win8.app", project1Spec.RuntimeGraph.Supports["win8.app"].Name);
             }
         }
 
