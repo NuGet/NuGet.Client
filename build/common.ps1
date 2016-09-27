@@ -3,6 +3,10 @@ $DefaultConfiguration = 'debug'
 $DefaultReleaseLabel = 'zlocal'
 $DefaultMSBuildVersion = '15'
 
+# The pack version can be inferred from the .nuspec files on disk. This is only necessary as long
+# as the following issue is open: https://github.com/NuGet/Home/issues/3530
+$PackageReleaseVersion = "3.5.0"
+
 $NuGetClientRoot = Split-Path -Path $PSScriptRoot -Parent
 
 # allow this to work for scripts/funcTests
@@ -13,6 +17,7 @@ if ((Split-Path -Path $PSScriptRoot -Leaf) -eq "scripts") {
 $CLIRoot = Join-Path $NuGetClientRoot 'cli'
 $Nupkgs = Join-Path $NuGetClientRoot nupkgs
 $Artifacts = Join-Path $NuGetClientRoot artifacts
+$ReleaseNupkgs = Join-Path $Artifacts ReleaseNupkgs
 
 $DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
 $MSBuildRoot = Join-Path ${env:ProgramFiles(x86)} 'MSBuild\'
@@ -265,10 +270,10 @@ Function Format-BuildNumber([int]$BuildNumber) {
 Function Clear-PackageCache {
     [CmdletBinding()]
     param()
-    Trace-Log 'Cleaning package cache (except the web cache)'
+    Trace-Log 'Cleaning local caches (except the HTTP cache)'
 
     & nuget locals packages-cache -clear -verbosity detailed
-    #& nuget locals global-packages -clear -verbosity detailed
+    & nuget locals global-packages -clear -verbosity detailed
     & nuget locals temp -clear -verbosity detailed
 }
 
@@ -354,7 +359,9 @@ Function Invoke-DotnetPack {
         [Alias('build')]
         [int]$BuildNumber,
         [Alias('out')]
-        [string]$Output
+        [string]$NupkgOutput,
+        [Alias('buildbase')]
+        [string]$BuildBasePath
     )
     Begin {
         $BuildNumber = Format-BuildNumber $BuildNumber
@@ -363,21 +370,39 @@ Function Invoke-DotnetPack {
         $env:DOTNET_ASSEMBLY_FILE_VERSION=$BuildNumber
     }
     Process {
-        $XProjectLocations | %{
+        $XProjectLocations | % {
+            $projectName = Split-Path $_ -Leaf
+
             $opts = @()
+
             if ($VerbosePreference) {
                 $opts += '-v'
             }
+
             $opts += 'pack', $_, '--configuration', $Configuration
 
-            if ($Output) {
-                $opts += '--output', (Join-Path $Output (Split-Path $_ -Leaf))
+            $versionSuffix = ''
+
+            if ($ReleaseLabel -And $BuildNumber) {
+                $versionSuffix = "$ReleaseLabel-$BuildNumber"
+            } elseif ($ReleaseLabel -Ne 'rtm') {
+                $versionSuffix = $ReleaseLabel
             }
 
-            if($ReleaseLabel -ne 'Release') {
-                $opts += '--version-suffix', "${ReleaseLabel}-${BuildNumber}"
+            if ($versionSuffix) {
+                $opts += '--version-suffix', $versionSuffix
             }
+
+            if ($NupkgOutput) {
+                $opts += '--output', $NupkgOutput
+            }
+
+            if ($BuildBasePath) {
+                $opts += '--build-base-path', $BuildBasePath
+            }
+
             $opts += '--serviceable'
+
             Trace-Log "$DotNetExe $opts"
 
             & $DotNetExe $opts
@@ -405,11 +430,13 @@ Function Build-CoreProjects {
     }
 
     $xprojects = Find-XProjects $XProjectsLocation
-    $xprojects | Invoke-DotnetPack -config $Configuration -label $ReleaseLabel -build $BuildNumber -out $Artifacts
 
-    ## Moving nupkgs
-    Trace-Log "Moving the packages to $Nupkgs"
-    Get-ChildItem "${Artifacts}\*.nupkg" -Recurse | % { Move-Item $_ $Nupkgs -Force }
+    # Build .nupkgs for MyGet (which have release label and build number)
+    $xprojects | Invoke-DotnetPack -config $Configuration -label $ReleaseLabel -build $BuildNumber -out $Nupkgs -buildbase $Artifacts
+
+    # Build .nupkgs for release (which have no build number). This will re-use the build from the last
+    # step because the -buildbase parameter is the same.
+    $xprojects | Invoke-DotnetPack -config $Configuration -label $ReleaseLabel -out $ReleaseNupkgs -buildbase $Artifacts
 }
 
 Function Test-XProject {
@@ -538,8 +565,104 @@ Function Build-ClientsProjects {
     }
 
     # Build the solution
-    $opts = , $solutionPath
+    Build-ClientsProjectHelper `
+        -SolutionOrProject $solutionPath `
+        -Configuration $Configuration `
+        -ReleaseLabel $ReleaseLabel `
+        -BuildNumber $BuildNumber `
+        -MSBuildVersion $MSBuildVersion `
+        -IsSolution
+}
+
+Function Build-ClientsPackages {
+    [CmdletBinding()]
+    param(
+        [string]$Configuration = $DefaultConfiguration,
+        [string]$ReleaseLabel = $DefaultReleaseLabel,
+        [int]$BuildNumber = (Get-BuildNumber),
+        [int]$MSBuildVersion = $DefaultMSBuildVersion,
+        [string]$KeyFile
+    )
+
+    $exeProjectDir = [io.path]::combine($NuGetClientRoot, "src", "NuGet.Clients", "NuGet.CommandLine")
+    $exeProject = Join-Path $exeProjectDir "NuGet.CommandLine.csproj"
+    $exeNuspec = Join-Path $exeProjectDir "NuGet.CommandLine.nuspec"
+    $exeInputDir = [io.path]::combine($Artifacts, "NuGet.CommandLine", "${MSBuildVersion}.0", $Configuration)
+    $exeOutputDir = Join-Path $Artifacts "VS${MSBuildVersion}"
+
+    # Build and pack the NuGet.CommandLine project with the build number and release label.
+    Build-ClientsProjectHelper `
+        -SolutionOrProject $exeProject `
+        -Configuration $Configuration `
+        -ReleaseLabel $ReleaseLabel `
+        -BuildNumber $BuildNumber `
+        -MSBuildVersion $MSBuildVersion `
+        -Rebuild
+
+    Invoke-ILMerge `
+        -InputDir $exeInputDir `
+        -OutputDir $exeOutputDir `
+        -Configuration $Configuration `
+        -KeyFile $KeyFile
+
+    $opts = 'pack', $exeNuspec
+    $opts += '-BasePath', $exeOutputDir
+    $opts += '-OutputDirectory', $Nupkgs
+    $opts += '-Symbols'
+    $opts += '-Version', "$PackageReleaseVersion-$ReleaseLabel-$BuildNumber"
+    & $NuGetExe $opts
+
+    # Build and pack the NuGet.CommandLine project with just the release label.
+    Build-ClientsProjectHelper `
+        -SolutionOrProject $exeProject `
+        -Configuration $Configuration `
+        -ReleaseLabel $ReleaseLabel `
+        -BuildNumber $BuildNumber `
+        -MSBuildVersion $MSBuildVersion `
+        -ExcludeBuildNumber `
+        -Rebuild
+
+    Invoke-ILMerge `
+        -InputDir $exeInputDir `
+        -OutputDir $exeOutputDir `
+        -Configuration $Configuration `
+        -KeyFile $KeyFile
+
+    $opts = 'pack', $exeNuspec
+    $opts += '-BasePath', $exeOutputDir
+    $opts += '-OutputDirectory', $ReleaseNupkgs
+    $opts += '-Symbols'
+    if ($ReleaseLabel -Ne 'rtm') {
+        $opts += '-Version', "$PackageReleaseVersion-$ReleaseLabel"
+    } else {
+        $opts += '-Version', $PackageReleaseVersion
+    }
+    & $NuGetExe $opts
+}
+
+Function Build-ClientsProjectHelper {
+    param(
+        [string]$SolutionOrProject,
+        [string]$Configuration = $DefaultConfiguration,
+        [string]$ReleaseLabel = $DefaultReleaseLabel,
+        [int]$BuildNumber = (Get-BuildNumber),
+        [int]$MSBuildVersion = $DefaultMSBuildVersion,
+        [switch]$IsSolution,
+        [switch]$ExcludeBuildNumber,
+        [switch]$Rebuild
+    )
+
+    $opts = , $SolutionOrProject
+    if ($Rebuild) {
+        $opts += "/t:Rebuild"
+    }
+
     $opts += "/p:Configuration=$Configuration;ReleaseLabel=$ReleaseLabel;BuildNumber=$(Format-BuildNumber $BuildNumber)"
+
+    if ($ExcludeBuildNumber) {
+        $opts += "/p:ExcludeBuildNumber=true"
+    }
+
     if (-not $VerbosePreference) {
         $opts += '/verbosity:minimal'
     }
@@ -605,23 +728,19 @@ Function Read-FileList($FilePath) {
 Function Invoke-ILMerge {
     [CmdletBinding()]
     param(
+        [string]$InputDir,
+        [string]$OutputDir,
         [string]$Configuration = $DefaultConfiguration,
-        [string]$MSBuildVersion = $DefaultMSBuildVersion,
         [string]$KeyFile
     )
+
     $nugetIntermediateExe='NuGet.intermediate.exe'
     $nugetIntermediatePdb='NuGet.intermediate.pdb'
     $nugetCore='NuGet.Core.dll'
-    $buildArtifactsFolder = [io.path]::combine($Artifacts, 'NuGet.CommandLine', ($MSBuildVersion + '.0'), $Configuration)
-    $ignoreList = Read-FileList (Join-Path $buildArtifactsFolder '.mergeignore')
-    $buildArtifacts = Get-ChildItem $buildArtifactsFolder -Exclude $ignoreList | %{ $_.Name }
+    $ignoreList = Read-FileList (Join-Path $InputDir '.mergeignore')
+    $buildArtifacts = Get-ChildItem $InputDir -Exclude $ignoreList | %{ $_.Name }
 
-    $outputFolder = [io.path]::combine($Artifacts, ('VS' + $MSBuildVersion))
-    if (-Not (Test-Path $outputFolder)) {
-        New-Item -ItemType Directory -Path $outputFolder | Out-Null
-    }
-    
-    $includeList = Read-FileList (Join-Path $buildArtifactsFolder '.mergeinclude')
+    $includeList = Read-FileList (Join-Path $InputDir '.mergeinclude')
     $notInList = $buildArtifacts | ?{ -not ($includeList -contains $_) }
     if ($notInList) {
         Error-Log "Found build artifacts NOT listed in include list: $($notInList -join ', ')"
@@ -631,11 +750,11 @@ Function Invoke-ILMerge {
         Error-Log "Missing build artifacts listed in include list: $($notFound -join ', ')"
     }
 
-    $nugetIntermediateExePath="$outputFolder\$nugetIntermediateExe"
+    $nugetIntermediateExePath="$OutputDir\$nugetIntermediateExe"
 
     Trace-Log 'Creating the intermediate ilmerged nuget.exe'
-    $opts = , "$buildArtifactsFolder\NuGet.exe"
-    $opts += "/lib:$buildArtifactsFolder"
+    $opts = , "$InputDir\NuGet.exe"
+    $opts += "/lib:$InputDir"
     $opts += $buildArtifacts
     $opts += "/out:$nugetIntermediateExePath"
     $opts += "/internalize"
@@ -652,14 +771,14 @@ Function Invoke-ILMerge {
     }
 
     $opts2 = , "$nugetIntermediateExePath"
-    $opts2 += "/lib:$buildArtifactsFolder"
+    $opts2 += "/lib:$InputDir"
     $opts2 += $nugetCore
     if ($KeyFile) {
         $opts2 += "/delaysign"
         $opts2 += "/keyfile:$KeyFile"
     }
 
-    $opts2 += "/out:$outputFolder\NuGet.exe"
+    $opts2 += "/out:$OutputDir\NuGet.exe"
 
     if ($VerbosePreference) {
         $opts2 += '/log'
@@ -673,5 +792,5 @@ Function Invoke-ILMerge {
     }
 
     Remove-Item $nugetIntermediateExePath
-    Remove-Item $outputFolder\$nugetIntermediatePdb
+    Remove-Item $OutputDir\$nugetIntermediatePdb
 }

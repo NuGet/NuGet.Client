@@ -125,12 +125,11 @@ Invoke-BuildStep 'Building NuGet.Clients projects - VS14 dependencies' {
     -skip:$SkipVS14 `
     -ev +BuildErrors
 
-## ILMerge the VS14 exe only
-Invoke-BuildStep 'Merging NuGet.exe' {
-        param($Configuration, $MSPFXPath)
-        Invoke-ILMerge $Configuration "14" $MSPFXPath
+Invoke-BuildStep 'Creating NuGet.Clients packages - VS14 Toolset' {
+        param($Configuration, $ReleaseLabel, $BuildNumber, $MSPFXPath)
+        Build-ClientsPackages $Configuration $ReleaseLabel $BuildNumber -MSBuildVersion "14" -KeyFile $MSPFXPath
     } `
-    -args $Configuration, $MSPFXPath `
+    -args $Configuration, $ReleaseLabel, $BuildNumber, $MSPFXPath `
     -skip:($SkipILMerge -or $Fast -or $SkipVS14) `
     -ev +BuildErrors
 

@@ -59,7 +59,7 @@ namespace NuGet.CommandLine
             if (Self)
             {
                 var selfUpdater = new SelfUpdater(RepositoryFactory) { Console = Console };
-                selfUpdater.UpdateSelf();
+                selfUpdater.UpdateSelf(Prerelease);
                 return;
             }
 
