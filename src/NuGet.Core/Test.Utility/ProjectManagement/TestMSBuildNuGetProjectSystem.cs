@@ -25,6 +25,9 @@ namespace Test.Utility
         public Dictionary<string, int> ScriptsExecuted { get; }
         public int BindingRedirectsCallCount { get; private set; }
         public INuGetProjectContext NuGetProjectContext { get; private set; }
+        public int BatchCount { get; private set; }
+        public Action<string> AddReferenceAction { get; set; }
+        public Action<string> RemoveReferenceAction { get; set; }
 
         public TestMSBuildNuGetProjectSystem(NuGetFramework targetFramework, INuGetProjectContext nuGetProjectContext,
             string projectFullPath = null, string projectName = null)
@@ -39,6 +42,8 @@ namespace Test.Utility
             ScriptsExecuted = new Dictionary<string, int>();
             ProcessedFiles = new HashSet<string>();
             ProjectName = projectName ?? TestProjectName;
+            AddReferenceAction = AddReferenceImplementation;
+            RemoveReferenceAction = RemoveReferenceImplementation;
         }
 
         public void AddFile(string path, Stream stream)
@@ -74,12 +79,7 @@ namespace Test.Utility
 
         public void AddReference(string referencePath)
         {
-            var referenceAssemblyName = Path.GetFileName(referencePath);
-            if (References.ContainsKey(referenceAssemblyName))
-            {
-                throw new InvalidOperationException("Cannot add existing reference. That would be a COMException in VS");
-            }
-            References.Add(referenceAssemblyName, referencePath);
+            AddReferenceAction(referencePath);
         }
 
         public void RemoveFile(string path)
@@ -113,10 +113,7 @@ namespace Test.Utility
 
         public void RemoveReference(string name)
         {
-            if (References.ContainsKey(name))
-            {
-                References.Remove(name);
-            }
+            RemoveReferenceAction(name);
         }
 
         public NuGetFramework TargetFramework { get; }
@@ -193,6 +190,7 @@ namespace Test.Utility
 
         public void EndProcessing()
         {
+            ++BatchCount;
             ProcessedFiles = FilesInProcessing;
             FilesInProcessing = null;
         }
@@ -219,6 +217,24 @@ namespace Test.Utility
         public IEnumerable<string> GetDirectories(string path)
         {
             return GetFiles(path, "*.*", recursive: true);
+        }
+
+        private void AddReferenceImplementation(string referencePath)
+        {
+            var referenceAssemblyName = Path.GetFileName(referencePath);
+            if (References.ContainsKey(referenceAssemblyName))
+            {
+                throw new InvalidOperationException("Cannot add existing reference. That would be a COMException in VS");
+            }
+            References.Add(referenceAssemblyName, referencePath);
+        }
+
+        private void RemoveReferenceImplementation(string name)
+        {
+            if (References.ContainsKey(name))
+            {
+                References.Remove(name);
+            }
         }
     }
 }

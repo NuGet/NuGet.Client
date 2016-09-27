@@ -189,6 +189,166 @@ namespace ProjectManagement.Test
         }
 
         [Fact]
+        public async Task TestMSBuildNuGetProjectInstallReferencesEventBatching()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
+
+            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+                var token = CancellationToken.None;
+
+                var projectTargetFramework = NuGetFramework.Parse("net45");
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext);
+                var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, randomPackagesFolderPath, randomPackagesConfigFolderPath);
+
+                Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
+                Assert.Equal(0, msBuildNuGetProjectSystem.BatchCount);
+
+                var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyTestPackageWithMultipleReferences(randomTestPackageSourcePath,
+                    packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
+                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                {
+                    // Act
+                    await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
+                }
+
+                // Assert
+                Assert.Equal(2, msBuildNuGetProjectSystem.References.Count);
+                Assert.Equal(1, msBuildNuGetProjectSystem.BatchCount);
+                Assert.Equal("a.dll", msBuildNuGetProjectSystem.References.First().Key);
+                Assert.Equal("b.dll", msBuildNuGetProjectSystem.References.Skip(1).First().Key);
+                Assert.Equal(Path.Combine(msBuildNuGetProject.FolderNuGetProject.GetInstalledPath(packageIdentity),
+                    "lib\\net45\\a.dll"), msBuildNuGetProjectSystem.References.First().Value);
+                Assert.Equal(Path.Combine(msBuildNuGetProject.FolderNuGetProject.GetInstalledPath(packageIdentity),
+                    "lib\\net45\\b.dll"), msBuildNuGetProjectSystem.References.Skip(1).First().Value);
+            }
+        }
+
+        [Fact]
+        public async Task TestMSBuildNuGetProjectInstallReferencesFailureEventBatching()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
+
+            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+                var token = CancellationToken.None;
+
+                var projectTargetFramework = NuGetFramework.Parse("net45");
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext);
+                var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, randomPackagesFolderPath, randomPackagesConfigFolderPath);
+
+                msBuildNuGetProjectSystem.AddReferenceAction = (string referenceName) => { throw new InvalidOperationException(); };
+
+                Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
+                Assert.Equal(0, msBuildNuGetProjectSystem.BatchCount);
+
+                var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyTestPackageWithMultipleReferences(randomTestPackageSourcePath,
+                    packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
+                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                {
+                    // Act
+                    await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                    {
+                        await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
+                    });
+                }
+
+                // Assert
+                Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
+                Assert.Equal(1, msBuildNuGetProjectSystem.BatchCount);
+            }
+        }
+
+        [Fact]
+        public async Task TestMSBuildNuGetProjectUninstallReferencesEventBatching()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
+
+            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+                var token = CancellationToken.None;
+
+                var projectTargetFramework = NuGetFramework.Parse("net45");
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext);
+                var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, randomPackagesFolderPath, randomPackagesConfigFolderPath);
+
+                var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyTestPackageWithMultipleReferences(randomTestPackageSourcePath,
+                    packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
+                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                {
+                    await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
+                }
+
+                Assert.Equal(2, msBuildNuGetProjectSystem.References.Count);
+                Assert.Equal(1, msBuildNuGetProjectSystem.BatchCount);
+
+                // Act
+                await msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
+
+                // Assert
+                Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
+                Assert.Equal(2, msBuildNuGetProjectSystem.BatchCount);
+            }
+        }
+
+        [Fact]
+        public async Task TestMSBuildNuGetProjectUninstallReferencesFailureEventBatching()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
+
+            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+                var token = CancellationToken.None;
+
+                var projectTargetFramework = NuGetFramework.Parse("net45");
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext);
+                var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, randomPackagesFolderPath, randomPackagesConfigFolderPath);
+
+                msBuildNuGetProjectSystem.RemoveReferenceAction = (string referenceName) => { throw new InvalidOperationException(); };
+
+                var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyTestPackageWithMultipleReferences(randomTestPackageSourcePath,
+                    packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
+                using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+                {
+                    await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
+                }
+
+                Assert.Equal(2, msBuildNuGetProjectSystem.References.Count);
+                Assert.Equal(1, msBuildNuGetProjectSystem.BatchCount);
+
+                // Act
+                await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                {
+                    await msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
+                });
+
+                // Assert
+                Assert.Equal(2, msBuildNuGetProjectSystem.References.Count);
+                Assert.Equal(2, msBuildNuGetProjectSystem.BatchCount);
+            }
+        }
+
+        [Fact]
         public async Task TestMSBuildNuGetProjectInstallSkipAssemblyReferences()
         {
             // Arrange
