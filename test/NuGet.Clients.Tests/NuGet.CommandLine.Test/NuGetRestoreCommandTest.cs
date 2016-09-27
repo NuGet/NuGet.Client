@@ -5,13 +5,16 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using Xunit;
+
 
 namespace NuGet.CommandLine.Test
 {
@@ -172,14 +175,14 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.Equal(0, r.Item1);
-                var packageFileA = Path.Combine(workingPath, @"outputDir\packageA.1.1.0\packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(workingPath, @"outputDir\packageB.2.2.0\packageB.2.2.0.nupkg");
+                var packageFileA = Path.Combine(workingPath, @"outputDir", "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(workingPath, @"outputDir", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
         }
 
-        [Fact(Skip="Inconsistent")]
+        [Fact(Skip = "Inconsistent")]
         public void RestoreCommand_NoCancelledOrNotFoundMessages()
         {
             // Arrange
@@ -194,7 +197,7 @@ namespace NuGet.CommandLine.Test
 
                 var packagesPath = Path.Combine(workingPath, "packages");
                 Directory.CreateDirectory(packagesPath);
-                
+
                 var packageA = new ZipPackage(Util.CreateTestPackage("PackageA", "1.1.0", sourcePath));
                 var packageB = new ZipPackage(Util.CreateTestPackage("PackageB", "2.2.0", sourcePath));
 
@@ -242,7 +245,7 @@ namespace NuGet.CommandLine.Test
                     Assert.DoesNotContain("cancel", result.Item2, StringComparison.OrdinalIgnoreCase);
                     Assert.DoesNotContain("not found", result.Item2, StringComparison.OrdinalIgnoreCase);
                     Assert.Equal(0, result.Item1);
-                    Assert.True(File.Exists(Path.Combine(packagesPath, @"PackageA.1.1.0\PackageA.1.1.0.nupkg")));
+                    Assert.True(File.Exists(Path.Combine(packagesPath, @"PackageA.1.1.0", "PackageA.1.1.0.nupkg")));
                 }
             }
         }
@@ -268,8 +271,8 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.Equal(0, r.Item1);
-                var packageFileA = Path.Combine(workingPath, @"packages\packageA.1.1.0\packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(workingPath, @"packages\packageB.2.2.0\packageB.2.2.0.nupkg");
+                var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
@@ -332,8 +335,8 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.Equal(0, r.Item1);
-                var packageFileA = Path.Combine(workingPath, @"packages\packageA.1.1.0\packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(workingPath, @"packages\packageB.2.2.0\packageB.2.2.0.nupkg");
+                var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
@@ -430,8 +433,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 
                 // Assert
                 Assert.Equal(0, r.Item1);
-                var packageFileA = Path.Combine(workingPath, @"packages\packageA.1.1.0\packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(workingPath, @"packages\packageB.2.2.0\packageB.2.2.0.nupkg");
+                var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
@@ -458,8 +461,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 
                 // Assert
                 Assert.Equal(0, r.Item1);
-                var packageFileA = Path.Combine(workingPath, @"packages\packageA.1.1.0\packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(workingPath, @"packages\packageB.2.2.0\packageB.2.2.0.nupkg");
+                var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
@@ -517,7 +520,7 @@ EndProject");
 
                 // Assert
                 Assert.Equal(0, r.Item1);
-                var packageFileA = Path.Combine(workingPath, @"packages\packageA.1.1.0\packageA.1.1.0.nupkg");
+                var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
             }
         }
@@ -543,11 +546,13 @@ EndProject");
   <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
+                var repoPath = (RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows) ?
+                    @"../Packages2" : @"$\..\..\Packages2";
                 Util.CreateFile(Path.Combine(workingPath, ".nuget"), "nuget.config",
-@"<?xml version=""1.0"" encoding=""utf-8""?>
+$@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <config>
-    <add key=""repositorypath"" value=""$\..\..\Packages2"" />
+    <add key=""repositorypath"" value=""{repoPath}"" />
   </config>
 </configuration>");
 
@@ -561,9 +566,9 @@ EndProject");
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
-                var packageFileA = Path.Combine(workingPath, @"packages2\packageA.1.1.0\packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(workingPath, @"packages2\packageB.2.2.0\packageB.2.2.0.nupkg");
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                var packageFileA = Path.Combine(workingPath, @"packages2", "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(workingPath, @"packages2", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
@@ -607,8 +612,8 @@ EndProject");
                     NuGetResources.RestoreCommandPackageRestoreOptOutMessage,
                     NuGet.Resources.NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
                 Assert.Contains(optOutMessage, r.Item2);
-                var packageFileA = Path.Combine(workingPath, @"packages\packageA.1.1.0\packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(workingPath, @"packages\packageB.2.2.0\packageB.2.2.0.nupkg");
+                var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
@@ -647,8 +652,8 @@ EndProject");
                     NuGetResources.RestoreCommandPackageRestoreOptOutMessage,
                     NuGet.Resources.NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
                 Assert.DoesNotContain(optOutMessage, r.Item2);
-                var packageFileA = Path.Combine(workingPath, @"packages\packageA.1.1.0\packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(workingPath, @"packages\packageB.2.2.0\packageB.2.2.0.nupkg");
+                var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
@@ -678,8 +683,8 @@ EndProject");
 
                 // Assert
                 Assert.Equal(0, r.Item1);
-                var packageFileA = Path.Combine(workingPath, @"packages\packageA.1.1.0\packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(workingPath, @"packages\packageB.2.2.0\packageB.2.2.0.nupkg");
+                var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
@@ -768,8 +773,8 @@ EndProject");
                 // Assert
                 Assert.Equal(1, r.Item1);
                 Assert.Contains("This folder contains more than one solution file.", r.Item3);
-                var packageFileA = Path.Combine(workingPath, @"packages\packageA.1.1.0\packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(workingPath, @"packages\packageB.2.2.0\packageB.2.2.0.nupkg");
+                var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.False(File.Exists(packageFileA));
                 Assert.False(File.Exists(packageFileB));
             }
@@ -841,8 +846,8 @@ EndProject");
                 // Assert
                 Assert.Equal(1, r.Item1);
                 Assert.Contains("does not contain an msbuild solution, packages.config, or project.json file to restore", r.Item3);
-                var packageFileA = Path.Combine(workingPath, @"packages\packageA.1.1.0\packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(workingPath, @"packages\packageB.2.2.0\packageB.2.2.0.nupkg");
+                var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.False(File.Exists(packageFileA));
                 Assert.False(File.Exists(packageFileB));
             }
@@ -908,7 +913,7 @@ EndProject");
 
                 // Assert
                 Assert.Equal(0, r.Item1);
-                var packageFileA = Path.Combine(workingPath, @"packages\packageA.1.1.0\packageA.1.1.0.nupkg");
+                var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
             }
         }
@@ -922,17 +927,17 @@ EndProject");
         [InlineData(PackageSaveMode.Defaultv2, PackageSaveMode.Nupkg)]
         [InlineData(PackageSaveMode.Defaultv2, PackageSaveMode.Nuspec)]
         [InlineData(PackageSaveMode.Defaultv2, PackageSaveMode.Nupkg | PackageSaveMode.Nuspec)]
-        
+
         [InlineData(PackageSaveMode.Nupkg, PackageSaveMode.Defaultv2)]
         [InlineData(PackageSaveMode.Nupkg, PackageSaveMode.Nupkg)]
         [InlineData(PackageSaveMode.Nupkg, PackageSaveMode.Nuspec)]
         [InlineData(PackageSaveMode.Nupkg, PackageSaveMode.Nupkg | PackageSaveMode.Nuspec)]
-        
+
         [InlineData(PackageSaveMode.Nuspec, PackageSaveMode.Defaultv2)]
         [InlineData(PackageSaveMode.Nuspec, PackageSaveMode.Nupkg)]
         [InlineData(PackageSaveMode.Nuspec, PackageSaveMode.Nuspec)]
         [InlineData(PackageSaveMode.Nuspec, PackageSaveMode.Nupkg | PackageSaveMode.Nuspec)]
-        
+
         [InlineData(PackageSaveMode.Nupkg | PackageSaveMode.Nuspec, PackageSaveMode.Defaultv2)]
         [InlineData(PackageSaveMode.Nupkg | PackageSaveMode.Nuspec, PackageSaveMode.Nupkg)]
         [InlineData(PackageSaveMode.Nupkg | PackageSaveMode.Nuspec, PackageSaveMode.Nuspec)]
@@ -953,12 +958,12 @@ EndProject");
                 var expectedNuspecFileBExists = false;
                 var expectedContentBExists = false;
 
-                var packageFileA = Path.Combine(workingPath, @"packages\packageA.1.1.0\packageA.1.1.0.nupkg");
-                var nuspecFileA = Path.Combine(workingPath, @"packages\packageA.1.1.0\packageA.nuspec");
-                var contentFileA = Path.Combine(workingPath, @"packages\packageA.1.1.0\content\test1.txt");
-                var packageFileB = Path.Combine(workingPath, @"packages\packageB.2.2.0\packageB.2.2.0.nupkg");
-                var nuspecFileB = Path.Combine(workingPath, @"packages\packageB.2.2.0\packageB.nuspec");
-                var contentFileB = Path.Combine(workingPath, @"packages\packageB.2.2.0\content\test1.txt");
+                var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var nuspecFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.nuspec");
+                var contentFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "content", "test1.txt");
+                var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
+                var nuspecFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.nuspec");
+                var contentFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "content", "test1.txt");
 
                 // Act & Assert
                 // None of the files should exist before any restore.
@@ -984,7 +989,7 @@ EndProject");
 
                 expectedContentAExists = true;
                 expectedContentBExists = true;
-                
+
                 var packageSaveMode1 = firstRestore == PackageSaveMode.Defaultv2 ?
                     string.Empty :
                     " -PackageSaveMode " + firstRestore.ToString().Replace(", ", ";");
@@ -1091,7 +1096,7 @@ EndProject");
 
                     server.Start();
 
-                    Util.CreateNuGetConfig(workingDirectory, new List<string>() { } );
+                    Util.CreateNuGetConfig(workingDirectory, new List<string>() { });
 
                     // Act
                     var args = "restore packages.config -PackagesDirectory . -Source " + server.Uri + "nuget";
@@ -1141,12 +1146,13 @@ EndProject");
 }");
                 var nugetConfigDir = Path.Combine(workingPath, ".nuget");
 
-
+                var repoPath = (RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows) ?
+                   @"../../GlobalPackages2" : @"..\..\GlobalPackages2";
                 Util.CreateFile(nugetConfigDir, "nuget.config",
-@"<?xml version=""1.0"" encoding=""utf-8""?>
+$@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <config>
-    <add key=""globalPackagesFolder"" value=""..\..\GlobalPackages2"" />
+    <add key=""globalPackagesFolder"" value=""{repoPath}"" />
   </config>
 </configuration>");
 
@@ -1171,11 +1177,11 @@ EndProject");
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
                 var packageFileA = Path.Combine(
                     nugetConfigDir,
-                    @"..\..\GlobalPackages2\packageA\1.1.0\packageA.1.1.0.nupkg");
+                    @"..", "..", "GlobalPackages2", "packageA", "1.1.0", "packageA.1.1.0.nupkg");
 
                 var packageFileB = Path.Combine(
                     nugetConfigDir,
-                    @"..\..\GlobalPackages2\packageB\2.2.0\packageB.2.2.0.nupkg");
+                    @"..", "..", "GlobalPackages2", "packageB", "2.2.0", "packageB.2.2.0.nupkg");
 
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
@@ -1423,8 +1429,8 @@ EndProject";
 
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
-                var packageFileA = Path.Combine(randomSolutionFolder, @"packages\packageA.1.1.0\packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(randomSolutionFolder, @"packages\packageB.2.2.0\packageB.2.2.0.nupkg");
+                var packageFileA = Path.Combine(randomSolutionFolder, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(randomSolutionFolder, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
@@ -1495,8 +1501,8 @@ EndProject";
 
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
-                var packageFileA = Path.Combine(randomSolutionFolder, @"packages\packageA.1.1.0\packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(randomSolutionFolder, @"packages\packageB.2.2.0\packageB.2.2.0.nupkg");
+                var packageFileA = Path.Combine(randomSolutionFolder, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(randomSolutionFolder, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
@@ -1568,8 +1574,8 @@ EndProject";
 
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
-                var packageFileA = Path.Combine(randomSolutionFolder, @"packages\packageA.1.1.0\packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(randomSolutionFolder, @"packages\packageB.2.2.0\packageB.2.2.0.nupkg");
+                var packageFileA = Path.Combine(randomSolutionFolder, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(randomSolutionFolder, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
@@ -1652,25 +1658,25 @@ EndProject";
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 Assert.True(File.Exists(Path.Combine(randomSolutionFolder,
-                    @"packages\packageA.1.0.0\packageA.1.0.0.nupkg")));
+                    @"packages", "packageA.1.0.0", "packageA.1.0.0.nupkg")));
 
                 Assert.True(File.Exists(Path.Combine(randomSolutionFolder,
-                    @"packages\packageA.2.0.0\packageA.2.0.0.nupkg")));
+                    @"packages", "packageA.2.0.0", "packageA.2.0.0.nupkg")));
 
                 Assert.True(File.Exists(Path.Combine(randomSolutionFolder,
-                    @"packages\packageA.3.0.0\packageA.3.0.0.nupkg")));
+                    @"packages", "packageA.3.0.0", "packageA.3.0.0.nupkg")));
 
                 Assert.True(File.Exists(Path.Combine(randomSolutionFolder,
-                    @"packages\packageB.1.0.0\packageB.1.0.0.nupkg")));
+                    @"packages", "packageB.1.0.0", "packageB.1.0.0.nupkg")));
 
                 Assert.True(File.Exists(Path.Combine(randomSolutionFolder,
-                    @"packages\packageB.2.0.0\packageB.2.0.0.nupkg")));
+                    @"packages", "packageB.2.0.0", "packageB.2.0.0.nupkg")));
 
                 Assert.True(File.Exists(Path.Combine(randomSolutionFolder,
-                    @"packages\packageB.3.0.0\packageB.3.0.0.nupkg")));
+                    @"packages", "packageB.3.0.0", "packageB.3.0.0.nupkg")));
 
                 Assert.True(File.Exists(Path.Combine(randomSolutionFolder,
-                    @"packages\packageC.1.0.0\packageC.1.0.0.nupkg")));
+                    @"packages", "packageC.1.0.0", "packageC.1.0.0.nupkg")));
             }
         }
 
@@ -1782,7 +1788,6 @@ EndProject";
 
                 // Assert
                 Assert.Equal(0, r.Item1);
-
                 var dllPath = Path.Combine(workingPath, "outputDir", "packageA.1.1.0", "lib", "net45", "A.dll");
                 var dllFileInfo = new FileInfo(dllPath);
                 Assert.True(File.Exists(dllFileInfo.FullName));
@@ -1795,11 +1800,13 @@ EndProject";
         /// and B\B.csproj. B.csproj depends on ..\A\A.Util\A.Util.csproj.
         /// </summary>
         [Fact]
-        public void RestoreCommand_FromSolutionFile_ProjectsInParentDir() {
+        public void RestoreCommand_FromSolutionFile_ProjectsInParentDir()
+        {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var basePath = TestFileSystemUtility.CreateRandomTestFolder()) {
+            using (var basePath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
                 Directory.CreateDirectory(Path.Combine(basePath, "A"));
                 Directory.CreateDirectory(Path.Combine(basePath, "A", "A.Util"));
                 Directory.CreateDirectory(Path.Combine(basePath, "B"));
@@ -1906,5 +1913,142 @@ EndProject");
                 Assert.Contains("packageB", bLibraryNames);
             }
         }
+<<<<<<< HEAD
+=======
+
+        [Fact]
+        public void RestoreCommand_SourceLoggingFileSource()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+            var identity = new Packaging.Core.PackageIdentity("packageA", new Versioning.NuGetVersion("1.1.0"));
+
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                Directory.CreateDirectory(repositoryPath);
+                Util.CreateTestPackage(identity.Id, identity.Version.ToNormalizedString(), repositoryPath);
+                Util.CreateFile(workingPath, "packages.config",
+@"<packages>
+  <package id=""" + identity.Id + @""" version=""" + identity.Version.ToNormalizedString() + @""" targetFramework=""net45"" />
+</packages>");
+
+                string[] args = new string[] { "restore", "-PackagesDirectory", "outputDir", "-Source", repositoryPath, "-Verbosity detailed" };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+                var target = new PackagePathResolver(Path.Combine(workingPath, @"outputDir"), true);
+                var packageFilePath = target.GetInstalledPackageFilePath(identity);
+
+                Assert.True(File.Exists(packageFilePath));
+                Assert.Contains(" from source ", r.Item2); // source logging present in verbose log
+            }
+        }
+
+        [Fact]
+        public void RestoreCommand_SourceLoggingFromV3FeedNoGlobalPackageCache()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+            var identity = new Packaging.Core.PackageIdentity("Newtonsoft.Json", new Versioning.NuGetVersion("7.0.1"));
+            var source = @"https://api.nuget.org/v3/index.json";
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Overriding globalPackages folder
+                Util.CreateFile(workingPath, "nuget.config",
+@"<configuration> 
+  <config> 
+    <add key=""globalPackagesFolder"" value=""globalPackages"" /> 
+  </config> 
+</configuration>");
+                Util.CreateFile(workingPath, "packages.config",
+@"<packages>
+  <package id=""" + identity.Id + @""" version=""" + identity.Version.ToNormalizedString() + @""" targetFramework=""net45"" />
+</packages>");
+
+                string[] args = new string[] { "restore", "-PackagesDirectory", "outputDir", "-Source ", source, "-Verbosity detailed" };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+                var target = new PackagePathResolver(Path.Combine(workingPath, @"outputDir"), true);
+                var packageFilePath = target.GetInstalledPackageFilePath(identity);
+                Assert.True(File.Exists(packageFilePath));
+
+                Assert.Contains(" from source ", r.Item2); // source logging present in verbose log
+
+                // verify sorce logging reported the correct source
+                var match = Regex.Match(r.Item2, @" from source '(.*)'");
+                Assert.True(match.Success);
+                Assert.Contains(source, match.Groups[1].Value);
+            }
+        }
+
+        [Fact]
+        public void RestoreCommand_SourceLoggingFromGlobalPackageCache()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+            var identity = new Packaging.Core.PackageIdentity("Newtonsoft.Json", new Versioning.NuGetVersion("7.0.1"));
+
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Overriding globalPackages folder
+                Util.CreateFile(workingPath, "nuget.config",
+@"<configuration> 
+  <config> 
+    <add key=""globalPackagesFolder"" value=""globalPackages"" /> 
+  </config> 
+</configuration>");
+                Util.CreateFile(workingPath, "packages.config",
+@"<packages>
+  <package id=""" + identity.Id + @""" version=""" + identity.Version.ToNormalizedString() + @""" targetFramework=""net45"" />
+</packages>");
+                var globalPackagesFolder = Path.Combine(workingPath, @"globalPackages");
+                // Prime Cache
+                string[] args1 = new string[] { "restore", "-PackagesDirectory", "primeOutputDir", "-Source https://api.nuget.org/v3/index.json", "-Verbosity detailed" };
+                CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args1),
+                    waitForExit: true);
+                //Verify primed
+                Assert.True(File.Exists(Path.Combine(globalPackagesFolder, @"newtonsoft.json", "7.0.1", "newtonsoft.json.7.0.1.nupkg")));
+
+                // Act
+                string[] args2 = new string[] { "restore", "-PackagesDirectory", "outputDir", "-Source https://api.nuget.org/v3/index.json", "-Verbosity detailed" };
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args2),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+                var target = new PackagePathResolver(Path.Combine(workingPath, @"outputDir"), true);
+                var packageFilePath = target.GetInstalledPackageFilePath(identity);
+                Assert.True(File.Exists(packageFilePath));
+                Assert.Contains(" from source ", r.Item2); // source logging present in verbose log
+
+                //verify source logging reported the globalPacakges folder
+                var match = Regex.Match(r.Item2, @" from source '(.*)'");
+                Assert.True(match.Success);
+                Assert.Contains(globalPackagesFolder, match.Groups[1].Value);
+            }
+        }
+>>>>>>> e149cd6... Fix Mono Pack and restore test
     }
 }
