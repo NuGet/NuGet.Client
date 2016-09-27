@@ -15,7 +15,7 @@
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+  <PropertyGroup>
     <DocumentationFile>$(OutputPath)\NuGet.SolutionRestoreManager.Interop.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
