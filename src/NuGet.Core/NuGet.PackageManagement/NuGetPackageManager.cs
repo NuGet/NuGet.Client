@@ -1732,11 +1732,6 @@ namespace NuGet.PackageManagement
 
                     if (msbuildProject != null)
                     {
-                        // Leaving it as comment for future reference
-                        // Don't use batch API for whole install or uninstall which also includes adding/ removing references
-                        // from project, since it could then create problems while adding binding redirects.
-                        // msbuildProject.MSBuildNuGetProjectSystem.BeginProcessing();
-
                         // raise Nuget batch start event
                         var batchId = Guid.NewGuid().ToString();
                         string name;
