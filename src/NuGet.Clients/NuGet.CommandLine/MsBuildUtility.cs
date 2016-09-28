@@ -42,7 +42,7 @@ namespace NuGet.CommandLine
         public static int Build(string msbuildDirectory,
                                     string args)
         {
-            string msbuildPath = GetMSbuild(msbuildDirectory);
+            string msbuildPath = GetMsbuild(msbuildDirectory);
 
             if (!File.Exists(msbuildPath))
             {
@@ -78,7 +78,7 @@ namespace NuGet.CommandLine
             string[] projectPaths,
             int timeOut)
         {
-            string msbuildPath = GetMSbuild(msbuildDirectory);
+            string msbuildPath = GetMsbuild(msbuildDirectory);
 
             if (!File.Exists(msbuildPath))
             {
@@ -602,7 +602,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        private static string GetMSbuild(string msbuildDirectory)
+        private static string GetMsbuild(string msbuildDirectory)
         {
             if (RuntimeEnvironmentHelper.IsMono)
             {
