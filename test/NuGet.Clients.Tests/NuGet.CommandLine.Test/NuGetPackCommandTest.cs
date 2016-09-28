@@ -26,7 +26,7 @@ namespace NuGet.CommandLine.Test
             {
                 // Arrange
                 Util.CreateFile(
-                    Path.Combine(workingDirectory, "contentFiles","any","any"),
+                    Path.Combine(workingDirectory, "contentFiles", "any", "any"),
                     "image.jpg",
                     "");
                 Util.CreateFile(
@@ -94,8 +94,8 @@ namespace NuGet.CommandLine.Test
 </dependencies>".Replace("\r\n", "\n"), actual);
 
                     var files = package.GetFiles().Select(f => f.Path).ToArray();
-                    Assert.Contains(Path.Combine("Content","image.jpg"), files);
-                    Assert.Contains(Path.Combine("Content","other","image2.jpg"), files);
+                    Assert.Contains(Path.Combine("Content", "image.jpg"), files);
+                    Assert.Contains(Path.Combine("Content", "other", "image2.jpg"), files);
                 }
             }
         }
@@ -114,7 +114,7 @@ namespace NuGet.CommandLine.Test
                     "");
 
                 Directory.CreateDirectory(
-                    Path.Combine(workingDirectory, "bin","Debug"));
+                    Path.Combine(workingDirectory, "bin", "Debug"));
 
                 Util.CreateFile(
                     workingDirectory,
@@ -366,7 +366,7 @@ namespace NuGet.CommandLine.Test
                 string id = Path.GetFileName(workingDirectory);
 
                 Util.CreateFile(
-                    Path.Combine(workingDirectory, "ref","uap10.0"),
+                    Path.Combine(workingDirectory, "ref", "uap10.0"),
                     "a.dll",
                     string.Empty);
 
@@ -376,12 +376,12 @@ namespace NuGet.CommandLine.Test
                     string.Empty);
 
                 Util.CreateFile(
-                    Path.Combine(workingDirectory, "runtimes","win-x86","lib","uap10.0"),
+                    Path.Combine(workingDirectory, "runtimes", "win-x86", "lib", "uap10.0"),
                     "a.dll",
                     string.Empty);
 
                 Util.CreateFile(
-                    Path.Combine(workingDirectory, "lib","uap10.0"),
+                    Path.Combine(workingDirectory, "lib", "uap10.0"),
                     "a.dll",
                     string.Empty);
 
@@ -440,12 +440,12 @@ namespace NuGet.CommandLine.Test
                 string id = Path.GetFileName(workingDirectory);
 
                 Util.CreateFile(
-                    Path.Combine(workingDirectory, "bin","Debug","uap10.0"),
+                    Path.Combine(workingDirectory, "bin", "Debug", "uap10.0"),
                     id + ".dll",
                     string.Empty);
 
                 Util.CreateFile(
-                    Path.Combine(workingDirectory, "bin","Debug","native"),
+                    Path.Combine(workingDirectory, "bin", "Debug", "native"),
                     id + ".dll",
                     string.Empty);
 
@@ -504,7 +504,7 @@ namespace NuGet.CommandLine.Test
             {
                 // Arrange
                 Util.CreateFile(
-                    Path.Combine(workingDirectory, "analyzers","cs","code"),
+                    Path.Combine(workingDirectory, "analyzers", "cs", "code"),
                     "a.dll",
                     "");
 
@@ -560,7 +560,7 @@ namespace NuGet.CommandLine.Test
                 string id = Path.GetFileName(workingDirectory);
 
                 Util.CreateFile(
-                    Path.Combine(workingDirectory, "bin","Debug","native"),
+                    Path.Combine(workingDirectory, "bin", "Debug", "native"),
                     id + ".dll",
                     string.Empty);
 
@@ -618,7 +618,7 @@ namespace NuGet.CommandLine.Test
                     "");
 
                 Util.CreateFile(
-                    Path.Combine(workingDirectory, "contentFiles","cs","net45"),
+                    Path.Combine(workingDirectory, "contentFiles", "cs", "net45"),
                     "code.cs",
                     "");
 
@@ -1688,14 +1688,11 @@ namespace Proj2
         {
             var nugetexe = Util.GetNuGetExePath();
 
+            suffix = suffix.Replace('\\', Path.DirectorySeparatorChar);
             using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 CreateTestProject(workingDirectory, "proj1", new string[] { });
-                if(!RuntimeEnvironmentHelper.IsWindows && RuntimeEnvironmentHelper.IsMono)
-                {
-                    suffix = suffix.Replace('\\', Path.DirectorySeparatorChar);
-                }
 
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
                 var outputDirectory = Path.Combine(workingDirectory, "path with spaces");
@@ -2305,7 +2302,7 @@ namespace Proj1
         {
             var nugetexe = Util.GetNuGetExePath();
             var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
- 
+
             try
             {
                 Directory.CreateDirectory(workingDirectory);
@@ -2313,7 +2310,7 @@ namespace Proj1
                 var packagesFolder = Path.Combine(proj1Directory, "packages");
                 Directory.CreateDirectory(proj1Directory);
                 Directory.CreateDirectory(packagesFolder);
- 
+
                 // create project 1
                 Util.CreateFile(
                     proj1Directory,
@@ -2376,7 +2373,7 @@ namespace Proj1
                                       new VersionRange(new NuGetVersion("1.5.0"), includeMinVersion: false))
                             })
                     };
-                Util.CreateTestPackage("testPackage1", "1.1.0", packagesFolder, new List<NuGetFramework>() { new NuGetFramework("net45") }, packageDependencies );
+                Util.CreateTestPackage("testPackage1", "1.1.0", packagesFolder, new List<NuGetFramework>() { new NuGetFramework("net45") }, packageDependencies);
                 Util.CreateTestPackage("testPackage2", "1.2.0", packagesFolder);
                 Util.CreateTestPackage("testPackage3", "1.3.0", packagesFolder);
                 Util.CreateTestPackage("testPackage4", "1.4.0", packagesFolder);
@@ -2386,12 +2383,12 @@ namespace Proj1
                     proj1Directory,
                     "proj1_file2.txt",
                     "file2");
- 
+
                 Util.CreateFile(
                     proj1Directory,
                     "test.sln",
                     "# test solution");
- 
+
                 // Act                 
                 var r = CommandRunner.Run(
                     nugetexe,
@@ -2399,12 +2396,12 @@ namespace Proj1
                     "pack proj1.csproj -build -IncludeReferencedProjects",
                     waitForExit: true);
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
- 
+
                 // Assert
                 var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
                 Assert.Equal(1, package.DependencySets.Count());
                 var dependencySet = package.DependencySets.First();
- 
+
                 // Verify that testPackage2 is added as dependency in addition to testPackage1. 
                 // testPackage3 and testPackage4 are not added because they are already referenced by testPackage1 with the correct version range.
                 Assert.Equal(4, dependencySet.Dependencies.Count);
@@ -2422,7 +2419,7 @@ namespace Proj1
                 Directory.Delete(workingDirectory, true);
             }
         }
- 
+
         // Test that NuGet packages of the project are added as dependencies 
         // even if there is already an indirect depenency, provided that the 
         // project requires a higher version number than the indirect dependency.
@@ -2432,7 +2429,7 @@ namespace Proj1
         {
             var nugetexe = Util.GetNuGetExePath();
             var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
- 
+
             try
             {
                 Directory.CreateDirectory(workingDirectory);
@@ -2440,7 +2437,7 @@ namespace Proj1
                 var packagesFolder = Path.Combine(proj1Directory, "packages");
                 Directory.CreateDirectory(proj1Directory);
                 Directory.CreateDirectory(packagesFolder);
- 
+
                 // create project 1
                 Util.CreateFile(
                     proj1Directory,
@@ -2504,12 +2501,12 @@ namespace Proj1
                     proj1Directory,
                     "proj1_file2.txt",
                     "file2");
- 
+
                 Util.CreateFile(
                     proj1Directory,
                     "test.sln",
                     "# test solution");
- 
+
                 // Act                 
                 var r = CommandRunner.Run(
                     nugetexe,
@@ -2517,15 +2514,15 @@ namespace Proj1
                     "pack proj1.csproj -build -IncludeReferencedProjects",
                     waitForExit: true);
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
- 
+
                 // Assert
                 var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
                 Assert.Equal(1, package.DependencySets.Count());
                 var dependencySet = package.DependencySets.First();
- 
+
                 // Verify that testPackage1 is added as dependency in addition to testPackage3. 
                 // testPackage2 is not added because it is already referenced by testPackage3 with the correct version range.
-                Assert.Equal(2, dependencySet.Dependencies.Count);                
+                Assert.Equal(2, dependencySet.Dependencies.Count);
                 var dependency1 = dependencySet.Dependencies.Single(d => d.Id == "testPackage1");
                 Assert.Equal("1.1.0", dependency1.VersionSpec.ToString());
                 var dependency2 = dependencySet.Dependencies.Single(d => d.Id == "testPackage3");
@@ -2536,7 +2533,7 @@ namespace Proj1
                 Directory.Delete(workingDirectory, true);
             }
         }
- 
+
 
         // Test that nuget displays warnings when dependency version is not specified
         // in nuspec.
@@ -3564,12 +3561,12 @@ stuff \n <<".Replace("\r\n", "\n");
                 string id = Path.GetFileName(workingDirectory);
 
                 Util.CreateFile(
-                    Path.Combine(workingDirectory, "someDirName", id, "bin","Debug","netcoreapp1.0"),
+                    Path.Combine(workingDirectory, "someDirName", id, "bin", "Debug", "netcoreapp1.0"),
                     id + ".dll",
                     string.Empty);
 
                 Util.CreateFile(
-                    Path.Combine(workingDirectory, "someDirName", id, "bin","Debug","netcoreapp1.0","win7-x64"),
+                    Path.Combine(workingDirectory, "someDirName", id, "bin", "Debug", "netcoreapp1.0", "win7-x64"),
                     id + ".dll",
                     string.Empty);
 
@@ -3735,7 +3732,7 @@ stuff \n <<".Replace("\r\n", "\n");
                 var path = Path.Combine(workingDirectory, Path.GetFileName(workingDirectory) + ".1.0.0.nupkg");
                 var package = new OptimizedZipPackage(path);
                 var files = package.GetFiles().Select(f => f.Path).OrderBy(s => s).ToArray();
-               
+
                 Assert.Equal(
                     files,
                     new string[]
@@ -3743,7 +3740,7 @@ stuff \n <<".Replace("\r\n", "\n");
                             Path.Combine("lib","netcoreapp1.0" , dllName + extension),
                             Path.Combine("lib","netcoreapp1.0","win7-x64", dllName + extension),
                     });
-                
+
                 Assert.False(r.Item2.Contains("Assembly outside lib folder"));
             }
         }
@@ -3905,7 +3902,7 @@ stuff \n <<".Replace("\r\n", "\n");
                 var r = CommandRunner.Run(
                     nugetexe,
                     rootDir,
-                    $"pack {Path.Combine(proj1Directory,"project.json")} -build -basepath {Path.Combine(proj1Directory,"buildDir")} -outputdir {Path.Combine(proj1Directory,"outDir")}",
+                    $"pack {Path.Combine(proj1Directory, "project.json")} -build -basepath {Path.Combine(proj1Directory, "buildDir")} -outputdir {Path.Combine(proj1Directory, "outDir")}",
                     waitForExit: true);
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
@@ -3968,7 +3965,7 @@ stuff \n <<".Replace("\r\n", "\n");
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingDirectory,
-                    $"pack {Path.Combine("proj1","project.json")} -build -basepath buildDir -outputdir {Path.Combine("proj1","outDir")}",
+                    $"pack {Path.Combine("proj1", "project.json")} -build -basepath buildDir -outputdir {Path.Combine("proj1", "outDir")}",
                     waitForExit: true);
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
