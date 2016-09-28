@@ -42,7 +42,7 @@ namespace NuGet.ProjectModel
                 packageId,
                 versionString,
                 frameworkString,
-                LockFileFormat.LockFileName);
+                LockFileFormat.AssetsFileName);
         }
 
         public string GetToolsBasePath()

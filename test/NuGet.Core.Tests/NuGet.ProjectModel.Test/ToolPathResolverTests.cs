@@ -21,7 +21,7 @@ namespace NuGet.ProjectModel.Test
                 "packagea",
                 "3.1.4-beta",
                 "netstandard1.3",
-                "project.lock.json");
+                "project.assets.json");
 
             // Act
             var actual = target.GetLockFilePath(
@@ -44,7 +44,7 @@ namespace NuGet.ProjectModel.Test
                 "PackageA",
                 "3.1.4-BETA",
                 "netstandard1.3",
-                "project.lock.json");
+                "project.assets.json");
 
             // Act
             var actual = target.GetLockFilePath(

@@ -215,7 +215,7 @@ namespace NuGet.CommandLine.Test
                     packageX,
                     packageZ);
 
-                var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", avoidVersion, "netcoreapp1.0", "project.lock.json");
+                var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", avoidVersion, "netcoreapp1.0", "project.assets.json");
                 var zPath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z");
 
                 // Act
@@ -279,7 +279,7 @@ namespace NuGet.CommandLine.Test
                     packageX,
                     packageZ);
 
-                var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "20.0.0", "netcoreapp1.0", "project.lock.json");
+                var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "20.0.0", "netcoreapp1.0", "project.assets.json");
                 var zPath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z");
 
                 // Act
@@ -340,7 +340,7 @@ namespace NuGet.CommandLine.Test
                     packageX,
                     packageZ);
 
-                var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "1.0.0", "netcoreapp1.0", "project.lock.json");
+                var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "1.0.0", "netcoreapp1.0", "project.assets.json");
 
                 // Act
                 var r = RestoreSolution(pathContext);
@@ -404,7 +404,7 @@ namespace NuGet.CommandLine.Test
                     packageZ,
                     packageY);
 
-                var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "1.0.0", "netcoreapp1.0", "project.lock.json");
+                var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "1.0.0", "netcoreapp1.0", "project.assets.json");
 
                 // Act
                 var r = RestoreSolution(pathContext);
@@ -466,7 +466,7 @@ namespace NuGet.CommandLine.Test
                     packageZ,
                     packageY);
 
-                var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "1.0.0", "netcoreapp1.0", "project.lock.json");
+                var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "1.0.0", "netcoreapp1.0", "project.assets.json");
 
                 // Act
                 var r = RestoreSolution(pathContext);

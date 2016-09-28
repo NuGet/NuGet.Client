@@ -267,7 +267,7 @@ namespace NuGet.Commands.Test
             Assert.Equal("PackageA/1.0.0-Beta", packageLibrary.Path);
             Assert.Equal("project", projectLibrary.Path);
             Assert.Equal(
-                "fake/.tools/PackageA/1.0.0-Beta/netcoreapp1.0/project.lock.json",
+                "fake/.tools/PackageA/1.0.0-Beta/netcoreapp1.0/project.assets.json",
                 PathUtility.GetPathWithForwardSlashes(toolRestoreResult.LockFilePath));
 
         }
