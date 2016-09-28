@@ -30,7 +30,7 @@ namespace NuGet.Packaging.Test
 
             builder.Authors.Add("testAuthor");
 
-            var dependencies = new List<PackageDependency>();
+            var dependencies = new HashSet<PackageDependency>();
             dependencies.Add(new PackageDependency("packageB", VersionRange.Parse("1.0.0"), null, new[] { "z" }));
             dependencies.Add(new PackageDependency(
                 "packageC",
@@ -91,7 +91,7 @@ namespace NuGet.Packaging.Test
             };
             builder.Authors.Add("testAuthor");
 
-            var dependencies = new List<PackageDependency>();
+            var dependencies = new HashSet<PackageDependency>();
             dependencies.Add(new PackageDependency("packageB", VersionRange.Parse("1.0.0"), null, new[] { "z" }));
             dependencies.Add(new PackageDependency(
                 "packageC",
@@ -144,10 +144,10 @@ namespace NuGet.Packaging.Test
             };
             builder.Authors.Add("testAuthor");
 
-            var dependencies45 = new List<PackageDependency>();
+            var dependencies45 = new HashSet<PackageDependency>();
             dependencies45.Add(new PackageDependency("packageB", VersionRange.Parse("1.0.0"), null, new[] { "z" }));
 
-            var dependencies46 = new List<PackageDependency>();
+            var dependencies46 = new HashSet<PackageDependency>();
             dependencies46.Add(new PackageDependency(
                 "packageC",
                 VersionRange.Parse("1.0.0"),
@@ -397,9 +397,9 @@ namespace NuGet.Packaging.Test
             };
             builder.Authors.Add("testAuthor");
 
-            var dependencies = new PackageDependency[] {
+            var dependencies = new HashSet<PackageDependency>(new PackageDependency[] {
                         new PackageDependency("B")
-                    };
+                    });
 
             builder.DependencyGroups.Add(new PackageDependencyGroup(NuGetFramework.AnyFramework, dependencies));
             var ms = new MemoryStream();
@@ -438,9 +438,9 @@ namespace NuGet.Packaging.Test
             builder.Authors.Add("testAuthor");
 
             var fx = new NuGetFramework("Silverlight", new Version("4.0"));
-            var dependencies = new PackageDependency[] {
+            var dependencies = new HashSet<PackageDependency>(new PackageDependency[] {
                         new PackageDependency("B", null)
-                    };
+                    });
             builder.DependencyGroups.Add(new PackageDependencyGroup(fx, dependencies));
 
             var ms = new MemoryStream();
@@ -1088,9 +1088,9 @@ namespace NuGet.Packaging.Test
             builder.Tags.Add("t1");
             builder.Tags.Add("t2");
             builder.Tags.Add("t3");
-            var dependencies = new PackageDependency[] {
+            var dependencies = new HashSet<PackageDependency>(new PackageDependency[] {
                         new PackageDependency("    X     ")
-                    };
+                    });
             builder.DependencyGroups.Add(new PackageDependencyGroup(NuGetFramework.AnyFramework, dependencies));
             var ms = new MemoryStream();
 
@@ -1132,10 +1132,10 @@ namespace NuGet.Packaging.Test
             };
             builder.Authors.Add("JohnDoe");
 
-            var dependencySet = new PackageDependencyGroup(NuGetFramework.AnyFramework, new[] {
+            var dependencySet = new PackageDependencyGroup(NuGetFramework.AnyFramework, new HashSet<PackageDependency>(new[] {
                         new PackageDependency("B", new VersionRange(NuGetVersion.Parse("1.0"), true)),
                         new PackageDependency("C", new VersionRange(NuGetVersion.Parse("1.0"), false, NuGetVersion.Parse("5.0")))
-            });
+            }));
 
             //var dependencySet = new PackageDependencyGroup(NuGetFramework.AnyFramework, new[] {
             //            new PackageDependency("B", new VersionSpec
@@ -1196,10 +1196,10 @@ namespace NuGet.Packaging.Test
             };
             builder.Authors.Add("JohnDoe");
 
-            var dependencySet = new PackageDependencyGroup(NuGetFramework.AnyFramework, new[] {
+            var dependencySet = new PackageDependencyGroup(NuGetFramework.AnyFramework, new HashSet<PackageDependency>(new[] {
                         new PackageDependency("B", new VersionRange(NuGetVersion.Parse("1.0"), true)),
                         new PackageDependency("B", new VersionRange(NuGetVersion.Parse("1.0"), false, NuGetVersion.Parse("5.0")))
-            });
+            }));
 
             builder.DependencyGroups.Add(dependencySet);
 
@@ -1222,9 +1222,9 @@ namespace NuGet.Packaging.Test
             };
             builder.Authors.Add("JohnDoe");
 
-            var dependencySet = new PackageDependencyGroup(NuGetFramework.AnyFramework, new[] {
+            var dependencySet = new PackageDependencyGroup(NuGetFramework.AnyFramework, new HashSet<PackageDependency>(new[] {
                         new PackageDependency("B", new VersionRange(NuGetVersion.Parse("1.0"), true, NuGetVersion.Parse("1.0")))
-                    });
+                    }));
 
             builder.DependencyGroups.Add(dependencySet);
 
@@ -1265,9 +1265,9 @@ namespace NuGet.Packaging.Test
             };
             builder.Authors.Add("JohnDoe");
 
-            var dependencySet = new PackageDependencyGroup(NuGetFramework.AnyFramework, new[] {
+            var dependencySet = new PackageDependencyGroup(NuGetFramework.AnyFramework, new HashSet<PackageDependency>(new[] {
                         new PackageDependency("B", new VersionRange(NuGetVersion.Parse("2.0"), true, NuGetVersion.Parse("1.0")))
-                    });
+                    }));
 
             builder.DependencyGroups.Add(dependencySet);
 
@@ -2027,10 +2027,10 @@ Description is required.");
         {
             // Arrange
             var badDependency = new PackageDependency("A", versionRange);
-            var dependencies = new[] {
+            var dependencies = new HashSet<PackageDependency>(new[] {
                         badDependency,
                         new PackageDependency("B", new VersionRange()),
-                    };
+                    });
             var packageVersion = NuGetVersion.Parse("1.0.0");
 
             var dependencySets = new PackageDependencyGroup[] {
@@ -2049,10 +2049,10 @@ Description is required.");
         public void ValidateDependenciesDoesNotThrowIfDependencyForAPrereleaseVersionIsPrerelease(VersionRange versionRange)
         {
             // Arrange
-            var dependencies = new[] {
+            var dependencies = new HashSet<PackageDependency>(new[] {
                         new PackageDependency("A", versionRange),
                         new PackageDependency("B", new VersionRange()),
-                    };
+                    });
             var packageVersion = NuGetVersion.Parse("1.0.0-beta");
 
             var dependencySets = new PackageDependencyGroup[] {
@@ -2071,10 +2071,10 @@ Description is required.");
         public void ValidateDependenciesDoesNotThrowIfDependencyForAStableVersionIsStable()
         {
             // Arrange
-            var dependencies = new[] {
+            var dependencies = new HashSet<PackageDependency>(new[] {
                         new PackageDependency("A", new VersionRange(NuGetVersion.Parse("1.0.0"))),
                         new PackageDependency("B", new VersionRange(NuGetVersion.Parse("1.0.1"), true, NuGetVersion.Parse("1.2.3"))),
-                    };
+                    });
             var packageVersion = NuGetVersion.Parse("1.0.0");
 
             var dependencySets = new PackageDependencyGroup[] {
@@ -2196,9 +2196,9 @@ Enabling license acceptance requires a license url.");
             };
             builder.Authors.Add("Me");
 
-            var dependencies = new PackageDependency[] {
+            var dependencies = new HashSet<PackageDependency>(new PackageDependency[] {
                         new PackageDependency("X")
-                    };
+                    });
             builder.DependencyGroups.Add(new PackageDependencyGroup(NuGetFramework.AnyFramework, dependencies));
 
             // Act & Assert            
@@ -2217,7 +2217,7 @@ Enabling license acceptance requires a license url.");
             };
             builder.Authors.Add("Me");
 
-            builder.DependencyGroups.Add(new PackageDependencyGroup(NuGetFramework.AnyFramework, new[] { new PackageDependency("brainf%2ack") }));
+            builder.DependencyGroups.Add(new PackageDependencyGroup(NuGetFramework.AnyFramework, new HashSet<PackageDependency>(new[] { new PackageDependency("brainf%2ack") })));
 
             // Act & Assert            
             ExceptionAssert.ThrowsArgumentException(() => builder.Save(new MemoryStream()), "The package ID 'brainf%2ack' contains invalid characters. Examples of valid package IDs include 'MyPackage' and 'MyPackage.Sample'.");

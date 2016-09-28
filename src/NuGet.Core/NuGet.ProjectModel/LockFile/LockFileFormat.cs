@@ -301,7 +301,7 @@ namespace NuGet.ProjectModel
             library.Type = ReadProperty<string>(jObject, TypeProperty);
             library.Framework = ReadProperty<string>(jObject, FrameworkProperty);
 
-            library.Dependencies = ReadObject(json[DependenciesProperty] as JObject, ReadPackageDependency);
+            library.Dependencies = new HashSet<PackageDependency>(ReadObject(json[DependenciesProperty] as JObject, ReadPackageDependency));
             library.FrameworkAssemblies = ReadArray(json[FrameworkAssembliesProperty] as JArray, ReadString);
             library.RuntimeAssemblies = ReadObject(json[RuntimeProperty] as JObject, ReadFileItem);
             library.CompileTimeAssemblies = ReadObject(json[CompileProperty] as JObject, ReadFileItem);
@@ -415,7 +415,7 @@ namespace NuGet.ProjectModel
             var targetFramework = string.Equals(property, "*") ? null : new NuGetFramework(property);
             return new PackageDependencyGroup(
                 targetFramework,
-                ReadObject(json as JObject, ReadPackageDependency));
+                new HashSet<PackageDependency>(ReadObject(json as JObject, ReadPackageDependency)));
         }
 
         private static JProperty WritePackageDependencyGroup(PackageDependencyGroup item)

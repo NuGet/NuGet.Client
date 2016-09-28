@@ -55,6 +55,7 @@ namespace NuGet.Packaging
             MinClientVersionString = copy.MinClientVersion?.ToString();
             ContentFiles = copy.ContentFiles;
             DevelopmentDependency = copy.DevelopmentDependency;
+            Repository = copy.Repository;
         }
 
         [ManifestVersion(5)]
@@ -170,6 +171,8 @@ namespace NuGet.Packaging
 
         public bool Serviceable { get; set; }
 
+        public RepositoryMetadata Repository { get; set; }
+
         private IEnumerable<PackageDependencyGroup> _dependencyGroups = new List<PackageDependencyGroup>();
         public IEnumerable<PackageDependencyGroup> DependencyGroups
         {
@@ -238,7 +241,7 @@ namespace NuGet.Packaging
 
             // group the dependency sets with the same target framework together.
             var dependencySetGroups = dependencyGroups.GroupBy(set => set.TargetFramework);
-            var groupedDependencySets = dependencySetGroups.Select(group => new PackageDependencyGroup(group.Key, group.SelectMany(g => g.Packages)))
+            var groupedDependencySets = dependencySetGroups.Select(group => new PackageDependencyGroup(group.Key, new HashSet<PackageDependency>(group.SelectMany(g => g.Packages))))
                                                             .ToList();
             // move the group with the any target framework (if any) to the front just for nicer display in UI
             int anyTargetFrameworkIndex = groupedDependencySets.FindIndex(set => set.TargetFramework.IsAny);
@@ -254,20 +257,21 @@ namespace NuGet.Packaging
 
         private static PackageDependencyGroup CreatePackageDependencyGroup(PackageDependencyGroup dependencyGroup)
         {
-            IEnumerable<PackageDependency> dependencies;
+            ISet<PackageDependency> dependencies;
 
             if (dependencyGroup.Packages == null)
             {
-                dependencies = Enumerable.Empty<PackageDependency>();
+                dependencies = new HashSet<PackageDependency>();
             }
             else
             {
-                dependencies = dependencyGroup.Packages.Select(dependency =>
+                var dependenciesList = dependencyGroup.Packages.Select(dependency =>
                     new PackageDependency(
                         dependency.Id.SafeTrim(),
                         dependency.VersionRange,
                         dependency.Include,
                         dependency.Exclude)).ToList();
+                dependencies = new HashSet<PackageDependency>(dependenciesList);
             }
 
             return new PackageDependencyGroup(dependencyGroup.TargetFramework, dependencies);

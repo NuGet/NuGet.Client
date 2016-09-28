@@ -1,0 +1,79 @@
+﻿{
+  "version": "3.6.0-*",
+  "description": "NuGet 3 pack for dotnet CLI",
+  "packOptions": {
+    "files": {
+      "mappings": {
+        "buildCrossTargeting/NuGet.Build.Tasks.Pack.targets": "Pack.targets",
+        "buildCrossTargeting/Desktop/": {
+          "include": [ "bin/release/net45/*.dll", "bin/debug/net45/*.dll" ]
+        },
+        "buildCrossTargeting/CoreCLR/": {
+          "include": [ "bin/release/netstandard1.3/*.dll", "bin/debug/netstandard1.3/*.dll" ]
+        }
+      }
+    }
+  },
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "xmlDoc": true,
+    "nowarn": [
+      "CS1591"
+    ],
+    "compile": {
+      "include": [
+        "../../../Shared/*.cs"
+      ]
+    }
+  },
+
+  "dependencies": {
+    "NuGet.Commands": {
+      "target": "project",
+      "type": "build"
+    }
+  },
+
+  "frameworks": {
+    "net45": {
+      "define": [
+        "IS_DESKTOP"
+      ],
+      "dependencies": {
+      },
+      "frameworkAssemblies": {
+        "Microsoft.Build.Utilities.v4.0": {
+          "type": "build"
+        },
+        "Microsoft.Build.Framework": {
+          "type": "build"
+        }
+      }
+    },
+    "netstandard1.3": {
+      "buildOptions": {
+        "define": [
+          "IS_CORECLR"
+        ]
+      },
+      "dependencies": {
+        "NETStandard.Library": {
+          "version": "1.6.0",
+          "type": "build"
+        },
+        "Microsoft.Build.Framework": {
+          "type": "build",
+          "version": "0.1.0-preview-00038-160914"
+        },
+        "Microsoft.Build.Tasks.Core": {
+          "type": "build",
+          "version": "0.1.0-preview-00038-160914"
+        },
+        "Microsoft.Build.Utilities.Core": {
+          "type": "build",
+          "version": "0.1.0-preview-00038-160914"
+        }
+      }
+    }
+  }
+}

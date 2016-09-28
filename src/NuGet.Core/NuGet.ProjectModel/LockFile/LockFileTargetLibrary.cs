@@ -20,7 +20,7 @@ namespace NuGet.ProjectModel
 
         public string Type { get; set; }
 
-        public IList<PackageDependency> Dependencies { get; set; } = new List<PackageDependency>();
+        public ISet<PackageDependency> Dependencies { get; set; } = new HashSet<PackageDependency>();
 
         public IList<string> FrameworkAssemblies { get; set; } = new List<string>();
 
