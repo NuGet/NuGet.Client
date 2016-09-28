@@ -8,8 +8,8 @@ using System.Threading;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
-using NuGet.Configuration;
 using NuGet.PackageManagement;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 
@@ -20,7 +20,7 @@ namespace NuGet.VisualStudio
     {
         private ISourceRepositoryProvider _sourceRepositoryProvider;
         private Configuration.ISettings _settings;
-        private ISolutionManager _solutionManager;
+        private IVsSolutionManager _solutionManager;
         private IDeleteOnRestartManager _deleteOnRestartManager;
 
         private JoinableTaskFactory PumpingJTF { get; }
@@ -29,7 +29,7 @@ namespace NuGet.VisualStudio
         public VsPackageUninstaller(
             ISourceRepositoryProvider sourceRepositoryProvider,
             Configuration.ISettings settings,
-            ISolutionManager solutionManager,
+            IVsSolutionManager solutionManager,
             IDeleteOnRestartManager deleteOnRestartManager)
         {
             _sourceRepositoryProvider = sourceRepositoryProvider;
@@ -65,7 +65,7 @@ namespace NuGet.VisualStudio
                     VSAPIProjectContext projectContext = new VSAPIProjectContext();
 
                     // find the project
-                    NuGetProject nuGetProject = await PackageManagementHelpers.GetProjectAsync(_solutionManager, project, projectContext);
+                    NuGetProject nuGetProject = await _solutionManager.GetOrCreateProjectAsync(project, projectContext);
 
                     // uninstall the package
                     await packageManager.UninstallPackageAsync(nuGetProject, packageId, uninstallContext, projectContext, CancellationToken.None);

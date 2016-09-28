@@ -12,8 +12,8 @@ using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
-using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -24,7 +24,7 @@ namespace NuGet.VisualStudio
     [Export(typeof(IVsPackageInstallerServices))]
     public class VsPackageInstallerServices : IVsPackageInstallerServices
     {
-        private readonly ISolutionManager _solutionManager;
+        private readonly IVsSolutionManager _solutionManager;
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly IDeleteOnRestartManager _deleteOnRestartManager;
         private readonly Configuration.ISettings _settings;
@@ -33,7 +33,7 @@ namespace NuGet.VisualStudio
 
         [ImportingConstructor]
         public VsPackageInstallerServices(
-            ISolutionManager solutionManager,
+            IVsSolutionManager solutionManager,
             ISourceRepositoryProvider sourceRepositoryProvider,
             Configuration.ISettings settings,
             IDeleteOnRestartManager deleteOnRestartManager)
@@ -116,8 +116,7 @@ namespace NuGet.VisualStudio
             {
                 InitializePackageManagerAndPackageFolderPath();
 
-                var nuGetProject = await PackageManagementHelpers.GetProjectAsync(
-                                    _solutionManager,
+                var nuGetProject = await _solutionManager.GetOrCreateProjectAsync(
                                     project,
                                     new VSAPIProjectContext());
 
@@ -144,8 +143,7 @@ namespace NuGet.VisualStudio
                     {
                         InitializePackageManagerAndPackageFolderPath();
 
-                        var nuGetProject = await PackageManagementHelpers.GetProjectAsync(
-                                            _solutionManager,
+                        var nuGetProject = await _solutionManager.GetOrCreateProjectAsync(
                                             project,
                                             new VSAPIProjectContext());
 
