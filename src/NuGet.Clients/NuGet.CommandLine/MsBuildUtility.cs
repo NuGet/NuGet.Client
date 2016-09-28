@@ -42,7 +42,7 @@ namespace NuGet.CommandLine
         public static int Build(string msbuildDirectory,
                                     string args)
         {
-            string msbuildPath = Path.Combine(msbuildDirectory, "msbuild.exe");
+            string msbuildPath = GetMsbuild(msbuildDirectory);
 
             if (!File.Exists(msbuildPath))
             {
@@ -78,7 +78,7 @@ namespace NuGet.CommandLine
             string[] projectPaths,
             int timeOut)
         {
-            string msbuildPath = Path.Combine(msbuildDirectory, "msbuild.exe");
+            string msbuildPath = GetMsbuild(msbuildDirectory);
 
             if (!File.Exists(msbuildPath))
             {
@@ -112,14 +112,43 @@ namespace NuGet.CommandLine
                 argumentBuilder.Append(" /p:ResultsFile=");
                 AppendQuoted(argumentBuilder, resultsPath);
 
-                argumentBuilder.Append(" /p:NuGet_ProjectReferenceToResolve=\"");
-                for (var i = 0; i < projectPaths.Length; i++)
+                bool isMono = RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows;
+
+                // /p: foo = "bar;baz" doesn't work on bash.
+                // /p: foo = /"bar/;baz/" works.
+                // Need to escape quotes and semicolon on bash.
+                if (isMono)
                 {
-                    argumentBuilder.Append(projectPaths[i])
-                        .Append(";");
+                    argumentBuilder.Append(" /p:NuGet_ProjectReferenceToResolve=\\\"");
+                }
+                else
+                {
+                    argumentBuilder.Append(" /p:NuGet_ProjectReferenceToResolve=\"");
                 }
 
-                argumentBuilder.Append("\" ");
+                for (var i = 0; i < projectPaths.Length; i++)
+                {
+                    if (isMono)
+                    {
+                        argumentBuilder.Append(projectPaths[i])
+                            .Append("\\;");
+                    }
+                    else
+                    {
+                        argumentBuilder.Append(projectPaths[i])
+                            .Append(";");
+                    }
+                }
+
+                if (isMono)
+                {
+                    argumentBuilder.Append("\\\" ");
+                }
+                else
+                {
+                    argumentBuilder.Append("\" ");
+                }
+
                 AppendQuoted(argumentBuilder, entryPointTargetPath);
 
                 var processStartInfo = new ProcessStartInfo
@@ -571,6 +600,45 @@ namespace NuGet.CommandLine
                     }
                 }
             }
+        }
+
+        private static string GetMsbuild(string msbuildDirectory)
+        {
+            if (RuntimeEnvironmentHelper.IsMono)
+            {
+                // Try to find msbuild or xbuild in $Path.
+                string[] pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(new[] { Path.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
+
+                if (pathDirs != null)
+                {
+                    foreach (var exeName in new[] { "msbuild", "xbuild" })
+                    {
+                        var exePath = pathDirs.Select(dir => Path.Combine(dir, exeName)).FirstOrDefault(File.Exists);
+                        if (exePath != null)
+                        {
+                            return exePath;
+                        }
+                    }
+                }
+
+                // Try to find msbuild.exe from hard code path.
+                var path = new[] { CommandLineConstants.MsbuildPathOnMac15, CommandLineConstants.MsbuildPathOnMac14 }.
+                    Select(p => Path.Combine(p, "msbuild.exe")).FirstOrDefault(File.Exists);
+                
+                if (path != null)
+                {
+                    return path;
+                }
+                else
+                {
+                    return Path.Combine(msbuildDirectory, "xbuild.exe");
+                }
+            }
+            else
+            {
+                return Path.Combine(msbuildDirectory, "msbuild.exe");
+            }
+
         }
     }
 }
