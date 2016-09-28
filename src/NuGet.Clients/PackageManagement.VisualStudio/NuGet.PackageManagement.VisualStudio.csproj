@@ -88,9 +88,17 @@
   <ItemGroup>
     <Compile Include="BindingRedirectBehavior.cs" />
     <Compile Include="CommonResources.cs" />
-    <Compile Include="IDE\NuGetAndEnvDTEProjectCache.cs" />
-    <Compile Include="IDE\EnvDTEProjectName.cs" />
+    <Compile Include="IDE\IVsSolutionManager.cs" />
+    <Compile Include="ProjectSystems\CpsPackageReferenceProject.cs" />
+    <Compile Include="ProjectSystems\IProjectSystemProvider.cs" />
+    <Compile Include="ProjectSystems\MSBuildNuGetProjectProvider.cs" />
+    <Compile Include="ProjectSystems\ProjectKNuGetProjectProvider.cs" />
+    <Compile Include="ProjectSystems\ProjectSystemCache.cs" />
+    <Compile Include="ProjectSystems\ProjectNames.cs" />
     <Compile Include="IDE\IScriptExecutor.cs" />
+    <Compile Include="ProjectSystems\IProjectSystemCache.cs" />
+    <Compile Include="ProjectSystems\CpsPackageReferenceProjectProvider.cs" />
+    <Compile Include="ProjectSystems\ProjectSystemProviderContext.cs" />
     <Compile Include="ScriptExecutionRequest.cs" />
     <Compile Include="ProjectSystems\VSMSBuildNuGetProject.cs" />
     <Compile Include="Telemetry\ProjectTelemetryEvent.cs" />
@@ -157,7 +165,7 @@
     <Compile Include="Utility\VCProjectHelper.cs" />
     <Compile Include="Utility\VSVersionHelper.cs" />
     <Compile Include="VSMachineWideSettings.cs" />
-    <Compile Include="VSNuGetProjectFactory.cs" />
+    <Compile Include="ProjectSystems\NuGetProjectFactory.cs" />
     <Compile Include="ProjectSystems\VSMSBuildNuGetProjectSystem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Strings.Designer.cs">

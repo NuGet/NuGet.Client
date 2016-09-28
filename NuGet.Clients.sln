@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.25802.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.PackageManagement.VisualStudio", "src\NuGet.Clients\PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj", "{306CDDFA-FF0B-4299-930C-9EC6C9308160}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VsExtension", "src\NuGet.Clients\VsExtension\VsExtension.csproj", "{D0F9864B-D782-4471-81A2-29555E5DC0D7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.Tools", "src\NuGet.Clients\VsExtension\NuGet.Tools.csproj", "{D0F9864B-D782-4471-81A2-29555E5DC0D7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudio.Interop", "src\NuGet.Clients\VisualStudio.Interop\NuGet.VisualStudio.Interop.csproj", "{7DB43FE1-75E1-49F9-B2C8-06A552BA2144}"
 EndProject
@@ -116,6 +116,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestableVSCredentialProvide
 	ProjectSection(ProjectDependencies) = postProject
 		{E5556BC6-A7FD-4D8E-8A7D-7648DF1D7471} = {E5556BC6-A7FD-4D8E-8A7D-7648DF1D7471}
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.SolutionRestoreManager", "src\NuGet.Clients\NuGet.SolutionRestoreManager\NuGet.SolutionRestoreManager.csproj", "{06662133-1292-4918-90F3-36C930C0B16F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -510,6 +512,18 @@ Global
 		{7D0DDCB8-E362-4283-8AC8-3FF1E9B0263E}.Release VS14|Any CPU.Build.0 = Release|Any CPU
 		{7D0DDCB8-E362-4283-8AC8-3FF1E9B0263E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7D0DDCB8-E362-4283-8AC8-3FF1E9B0263E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06662133-1292-4918-90F3-36C930C0B16F}.Debug VS14|Any CPU.ActiveCfg = Debug|Any CPU
+		{06662133-1292-4918-90F3-36C930C0B16F}.Debug VS14|Any CPU.Build.0 = Debug|Any CPU
+		{06662133-1292-4918-90F3-36C930C0B16F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06662133-1292-4918-90F3-36C930C0B16F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06662133-1292-4918-90F3-36C930C0B16F}.Mono Debug|Any CPU.ActiveCfg = Mono Release|Any CPU
+		{06662133-1292-4918-90F3-36C930C0B16F}.Mono Debug|Any CPU.Build.0 = Mono Release|Any CPU
+		{06662133-1292-4918-90F3-36C930C0B16F}.Mono Release|Any CPU.ActiveCfg = Mono Release|Any CPU
+		{06662133-1292-4918-90F3-36C930C0B16F}.Mono Release|Any CPU.Build.0 = Mono Release|Any CPU
+		{06662133-1292-4918-90F3-36C930C0B16F}.Release VS14|Any CPU.ActiveCfg = Release|Any CPU
+		{06662133-1292-4918-90F3-36C930C0B16F}.Release VS14|Any CPU.Build.0 = Release|Any CPU
+		{06662133-1292-4918-90F3-36C930C0B16F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06662133-1292-4918-90F3-36C930C0B16F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -47,40 +47,54 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        public static async Task<TService> GetInstanceSafeAsync<TService>() where TService : class
+        {
+            try
+            {
+                return await GetInstanceAsync<TService>();
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
         public static TService GetInstance<TService>() where TService : class
         {
-            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                {
-                    // VS Threading Rule #1
-                    // Access to ServiceProvider and a lot of casts are performed in this method,
-                    // and so this method can RPC into main thread. Switch to main thread explictly, since method has STA requirement
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(GetInstanceAsync<TService>);
+        }
 
-                    // Special case IServiceProvider
-                    if (typeof(TService) == typeof(IServiceProvider))
-                    {
-                        var serviceProvider = await GetServiceProviderAsync();
-                        return (TService)serviceProvider;
-                    }
+        public static async Task<TService> GetInstanceAsync<TService>() where TService : class
+        {
+            // VS Threading Rule #1
+            // Access to ServiceProvider and a lot of casts are performed in this method,
+            // and so this method can RPC into main thread. Switch to main thread explictly, since method has STA requirement
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    // then try to find the service as a component model, then try dte then lastly try global service
-                    // Per bug #2072, avoid calling GetGlobalService() from within the Initialize() method of NuGetPackage class.
-                    // Doing so is illegal and may cause VS to hang. As a result of that, we defer calling GetGlobalService to the last option.
-                    var serviceFromDTE = await GetDTEServiceAsync<TService>();
-                    if (serviceFromDTE != null)
-                    {
-                        return serviceFromDTE;
-                    }
+            // Special case IServiceProvider
+            if (typeof(TService) == typeof(IServiceProvider))
+            {
+                var serviceProvider = await GetServiceProviderAsync();
+                return (TService)serviceProvider;
+            }
 
-                    var serviceFromComponentModel = await GetComponentModelServiceAsync<TService>();
-                    if (serviceFromComponentModel != null)
-                    {
-                        return serviceFromComponentModel;
-                    }
+            // then try to find the service as a component model, then try dte then lastly try global service
+            // Per bug #2072, avoid calling GetGlobalService() from within the Initialize() method of NuGetPackage class.
+            // Doing so is illegal and may cause VS to hang. As a result of that, we defer calling GetGlobalService to the last option.
+            var serviceFromDTE = await GetDTEServiceAsync<TService>();
+            if (serviceFromDTE != null)
+            {
+                return serviceFromDTE;
+            }
 
-                    var globalService = await GetGlobalServiceAsync<TService, TService>();
-                    return globalService;
-                });
+            var serviceFromComponentModel = await GetComponentModelServiceAsync<TService>();
+            if (serviceFromComponentModel != null)
+            {
+                return serviceFromComponentModel;
+            }
+
+            var globalService = await GetGlobalServiceAsync<TService, TService>();
+            return globalService;
         }
 
         public static TInterface GetGlobalService<TService, TInterface>() where TInterface : class

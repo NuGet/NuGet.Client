@@ -30,5 +30,6 @@
     <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="NuGet.VisualStudio.Interop" Path="|NuGet.VisualStudio.Interop|" AssemblyName="|NuGet.VisualStudio.Interop;AssemblyName|" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="NuGet.VisualStudio.Implementation" Path="|NuGet.VisualStudio.Implementation|" />
     <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="NuGet.VisualStudio" Path="|NuGet.VisualStudio|" AssemblyName="|NuGet.VisualStudio;AssemblyName|" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="NuGet.SolutionRestoreManager" Path="|NuGet.SolutionRestoreManager|" />
   </Assets>
 </PackageManifest>

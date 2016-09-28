@@ -15,6 +15,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.TemplateWizard;
 using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -38,7 +39,7 @@ namespace NuGet.VisualStudio
         private DTE _dte;
         private readonly IVsPackageInstallerServices _packageServices;
         private readonly IOutputConsoleProvider _consoleProvider;
-        private readonly ISolutionManager _solutionManager;
+        private readonly IVsSolutionManager _solutionManager;
         private readonly PreinstalledPackageInstaller _preinstalledPackageInstaller;
         private readonly Configuration.ISettings _settings;
         private readonly ISourceRepositoryProvider _sourceProvider;
@@ -50,7 +51,7 @@ namespace NuGet.VisualStudio
             IVsPackageInstaller installer,
             IVsPackageInstallerServices packageServices,
             IOutputConsoleProvider consoleProvider,
-            ISolutionManager solutionManager,
+            IVsSolutionManager solutionManager,
             Configuration.ISettings settings,
             ISourceRepositoryProvider sourceProvider
             )

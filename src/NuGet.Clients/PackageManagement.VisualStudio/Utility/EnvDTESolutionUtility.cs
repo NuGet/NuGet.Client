@@ -97,5 +97,28 @@ namespace NuGet.PackageManagement.VisualStudio
 
             return resultantEnvDTEProjects;
         }
+
+        public static IDictionary<string, EnvDTEProject> GetPathToDTEProjectLookup(Solution solution)
+        {
+            var pathToProject = new Dictionary<string, EnvDTEProject>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var solutionProjectObj in solution.Projects)
+            {
+                var solutionProject = solutionProjectObj as EnvDTEProject;
+
+                if (solutionProject != null)
+                {
+                    var solutionProjectPath = EnvDTEProjectUtility.GetFullProjectPath(solutionProject);
+
+                    if (!string.IsNullOrEmpty(solutionProjectPath)
+                        && !pathToProject.ContainsKey(solutionProjectPath))
+                    {
+                        pathToProject.Add(solutionProjectPath, solutionProject);
+                    }
+                }
+            }
+
+            return pathToProject;
+        }
     }
 }

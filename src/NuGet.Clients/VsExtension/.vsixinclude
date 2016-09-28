@@ -7,6 +7,7 @@ NuGet.Credentials.dll
 NuGet.Options.dll
 NuGet.PackageManagement.PowerShellCmdlets.dll
 NuGet.PackageManagement.VisualStudio.dll
+NuGet.SolutionRestoreManager.dll
 NuGet.TeamFoundationServer.dll
 NuGet.Tools.dll
 NuGet.VisualStudio.dll

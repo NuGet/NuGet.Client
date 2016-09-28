@@ -64,3 +64,5 @@ System.Security.dll
 System.Web.Http.dll
 System.Xml.dll
 System.Xml.Linq.dll
+
+NuGet.SolutionRestoreManager.Interop.dll

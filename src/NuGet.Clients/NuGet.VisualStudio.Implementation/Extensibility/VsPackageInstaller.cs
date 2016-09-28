@@ -15,7 +15,6 @@ using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
-using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
@@ -30,7 +29,7 @@ namespace NuGet.VisualStudio
     {
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly Configuration.ISettings _settings;
-        private readonly ISolutionManager _solutionManager;
+        private readonly IVsSolutionManager _solutionManager;
         private readonly INuGetProjectContext _projectContext;
         private readonly IVsPackageInstallerServices _packageServices;
         private readonly IDeleteOnRestartManager _deleteOnRestartManager;
@@ -41,7 +40,7 @@ namespace NuGet.VisualStudio
         public VsPackageInstaller(
             ISourceRepositoryProvider sourceRepositoryProvider,
             Configuration.ISettings settings,
-            ISolutionManager solutionManager,
+            IVsSolutionManager solutionManager,
             IVsPackageInstallerServices packageServices,
             IDeleteOnRestartManager deleteOnRestartManager)
         {
@@ -455,7 +454,7 @@ namespace NuGet.VisualStudio
                 var packageManager = CreatePackageManager(repoProvider);
 
                 // find the project
-                var nuGetProject = await PackageManagementHelpers.GetProjectAsync(_solutionManager, project, projectContext);
+                var nuGetProject = await _solutionManager.GetOrCreateProjectAsync(project, projectContext);
 
                 // install the package
                 foreach (PackageIdentity package in packages)
