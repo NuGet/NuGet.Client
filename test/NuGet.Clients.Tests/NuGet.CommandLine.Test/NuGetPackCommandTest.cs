@@ -418,10 +418,10 @@ namespace NuGet.CommandLine.Test
                     files,
                     new string[]
                     {
-                            Path.Combine("lib","uap10.0","a.dll"),
-                            Path.Combine("native","a.dll"),
-                            Path.Combine("ref","uap10.0","a.dll"),
-                            Path.Combine("runtimes","win-x86","lib","uap10.0","a.dll"),
+                            Path.Combine("lib", "uap10.0", "a.dll"),
+                            Path.Combine("native", "a.dll"),
+                            Path.Combine("ref", "uap10.0", "a.dll"),
+                            Path.Combine("runtimes", "win-x86", "lib", "uap10.0", "a.dll"),
                     });
 
                 Assert.False(r.Item2.Contains("Assembly outside lib folder"));
@@ -1682,6 +1682,7 @@ namespace Proj2
         [Theory]
         [InlineData("")]
         [InlineData(@"\\")]
+        [InlineData(@"\")]
         [InlineData("\\.")]
         // [InlineData("\\")] This suffix is not expected to work see https://github.com/NuGet/home/issues/1817
         public void PackCommand_OutputDirectorySuffixes(string suffix)
