@@ -487,8 +487,8 @@ namespace NuGet.CommandLine.Test
                     files,
                     new string[]
                     {
-                            Path.Combine("lib","native", id + ".dll"),
-                            Path.Combine("lib","uap10.0" , id + ".dll"),
+                            Path.Combine("lib", "native", id + ".dll"),
+                            Path.Combine("lib", "uap10.0" , id + ".dll"),
                     });
 
                 Assert.False(r.Item2.Contains("Assembly outside lib folder"));
@@ -541,7 +541,7 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(
                     new string[]
                     {
-                        Path.Combine("analyzers","cs","code","a.dll"),
+                        Path.Combine("analyzers", "cs", "code", "a.dll"),
                     },
                     files);
 
@@ -597,7 +597,7 @@ namespace NuGet.CommandLine.Test
                     files,
                     new string[]
                     {
-                            Path.Combine("lib","native" ,id + ".dll")
+                            Path.Combine("lib", "native" ,id + ".dll")
                     });
 
                 Assert.False(r.Item2.Contains("Assembly outside lib folder"));
@@ -668,8 +668,8 @@ namespace NuGet.CommandLine.Test
                         files,
                         new string[]
                         {
-                        Path.Combine("contentFiles","any","any","image.jpg"),
-                        Path.Combine("contentFiles","cs","net45","code.cs"),
+                        Path.Combine("contentFiles", "any", "any", "image.jpg"),
+                        Path.Combine("contentFiles", "cs", "net45", "code.cs"),
                         });
 
                     Assert.Equal(
@@ -778,9 +778,9 @@ namespace Proj2
                     files,
                     new string[]
                     {
-                        Path.Combine("content","proj1_file2.txt"),
-                        Path.Combine("lib","net40","proj1.dll"),
-                        Path.Combine("lib","net40","proj2.dll")
+                        Path.Combine("content", "proj1_file2.txt"),
+                        Path.Combine("lib", "net40", "proj1.dll"),
+                        Path.Combine("lib", "net40", "proj2.dll")
                     });
             }
         }
@@ -867,7 +867,7 @@ namespace Proj1
                     files,
                     new string[]
                     {
-                        Path.Combine("lib","netstandard1.3","proj1.dll")
+                        Path.Combine("lib", "netstandard1.3", "proj1.dll")
                     });
             }
         }
@@ -1050,13 +1050,13 @@ namespace Proj2
                     files,
                     new string[]
                     {
-                        Path.Combine("content","proj1_file2.txt"),
-                        Path.Combine("lib","net40","proj1.dll"),
-                        Path.Combine("lib","net40","proj1.pdb"),
-                        Path.Combine("lib","net40","proj2.dll"),
-                        Path.Combine("lib","net40","proj2.pdb"),
-                        Path.Combine("src","proj1","proj1_file1.cs"),
-                        Path.Combine("src","proj2","proj2_file1.cs"),
+                        Path.Combine("content", "proj1_file2.txt"),
+                        Path.Combine("lib", "net40", "proj1.dll"),
+                        Path.Combine("lib", "net40", "proj1.pdb"),
+                        Path.Combine("lib", "net40", "proj2.dll"),
+                        Path.Combine("lib", "net40", "proj2.pdb"),
+                        Path.Combine("src", "proj1", "proj1_file1.cs"),
+                        Path.Combine("src", "proj2", "proj2_file1.cs"),
                     });
             }
         }
@@ -1155,9 +1155,9 @@ namespace Proj2
                     files,
                     new string[]
                     {
-                        Path.Combine("lib","net40","proj1.dll"),
-                        Path.Combine("lib","net40","proj3.dll"),
-                        Path.Combine("lib","net40","proj7.dll")
+                        Path.Combine("lib", "net40", "proj1.dll"),
+                        Path.Combine("lib", "net40", "proj3.dll"),
+                        Path.Combine("lib", "net40", "proj7.dll")
                     });
 
                 // proj2 and proj6 are added as dependencies.
@@ -1269,9 +1269,9 @@ namespace Proj2
                     files,
                     new string[]
                     {
-                        Path.Combine("lib","net40","proj1.dll"),
-                        Path.Combine("lib","net40","proj3.dll"),
-                        Path.Combine("lib","net40","proj7.dll")
+                        Path.Combine("lib", "net40", "proj1.dll"),
+                        Path.Combine("lib", "net40", "proj3.dll"),
+                        Path.Combine("lib", "net40", "proj7.dll")
                     });
 
                 // proj2 and proj6 are added as dependencies.
@@ -1379,9 +1379,9 @@ namespace Proj2
                     files,
                     new string[]
                     {
-                        Path.Combine("lib","net40","proj1.dll"),
-                        Path.Combine("lib","net40","proj3.dll"),
-                        Path.Combine("lib","net40","proj7.dll")
+                        Path.Combine("lib", "net40", "proj1.dll"),
+                        Path.Combine("lib", "net40", "proj3.dll"),
+                        Path.Combine("lib", "net40", "proj7.dll")
                     });
 
                 // proj2 and proj6 are added as dependencies.
@@ -1491,9 +1491,9 @@ namespace Proj2
                     files,
                     new string[]
                     {
-                        Path.Combine("lib","net40","proj1.dll"),
-                        Path.Combine("lib","net40","proj3.dll"),
-                        Path.Combine("lib","net40","proj7.dll")
+                        Path.Combine("lib", "net40", "proj1.dll"),
+                        Path.Combine("lib", "net40", "proj3.dll"),
+                        Path.Combine("lib", "net40", "proj7.dll")
                     });
 
                 // proj2 and proj6 are added as dependencies.
@@ -1664,7 +1664,7 @@ namespace Proj2
                     files,
                     new string[]
                     {
-                        Path.Combine("lib","net40","proj1.dll")
+                        Path.Combine("lib", "net40", "proj1.dll")
                     });
 
                 // proj2 is added as dependencies.
@@ -1719,7 +1719,7 @@ namespace Proj2
                     files,
                     new string[]
                     {
-                        Path.Combine("lib","net40","proj1.dll")
+                        Path.Combine("lib", "net40", "proj1.dll")
                     });
             }
         }
@@ -1768,9 +1768,9 @@ namespace Proj2
                     files,
                     new string[]
                     {
-                       Path.Combine("lib","net40","proj1.dll"),
-                       Path.Combine("lib","net40","proj2.dll"),
-                       Path.Combine("lib","net40","proj3.dll")
+                       Path.Combine("lib", "net40", "proj1.dll"),
+                       Path.Combine("lib", "net40", "proj2.dll"),
+                       Path.Combine("lib", "net40", "proj3.dll")
                     });
             }
         }
@@ -1811,8 +1811,8 @@ namespace Proj2
                     files,
                     new string[]
                     {
-                        Path.Combine("lib","net40","proj1.dll"),
-                        Path.Combine("lib","net40","proj2.dll")
+                        Path.Combine("lib", "net40", "proj1.dll"),
+                        Path.Combine("lib", "net40", "proj2.dll")
                     });
             }
         }
@@ -1940,7 +1940,7 @@ namespace Proj2
                     files,
                     new string[]
                     {
-                        Path.Combine("lib","net40","proj2.dll")
+                        Path.Combine("lib", "net40", "proj2.dll")
                     });
             }
         }
@@ -2058,9 +2058,9 @@ namespace Proj2
                     files,
                     new string[]
                     {
-                        Path.Combine("content","proj1_file2.txt"),
-                        Path.Combine("lib","net40","proj1.dll"),
-                        Path.Combine("lib","net40","proj2.dll")
+                        Path.Combine("content", "proj1_file2.txt"),
+                        Path.Combine("lib", "net40", "proj1.dll"),
+                        Path.Combine("lib", "net40", "proj2.dll")
                     });
             }
         }
@@ -2116,7 +2116,7 @@ namespace Proj2
                     files,
                     new string[]
                     {
-                        Path.Combine("Content","package","include.me")
+                        Path.Combine("Content", "package", "include.me")
                     });
             }
         }
@@ -2855,9 +2855,9 @@ namespace Proj2
                     files,
                     new string[]
                     {
-                        Path.Combine("content","proj1_file2.txt"),
-                        Path.Combine("lib","net40","proj1.dll"),
-                        Path.Combine("lib","net40","proj2.dll")
+                        Path.Combine("content", "proj1_file2.txt"),
+                        Path.Combine("lib", "net40", "proj1.dll"),
+                        Path.Combine("lib", "net40", "proj2.dll")
                     });
             }
         }
@@ -2979,9 +2979,9 @@ namespace Proj2
                     files,
                     new string[]
                     {
-                        Path.Combine("content","proj1_file2.txt"),
-                        Path.Combine("lib","net40","proj1.dll"),
-                        Path.Combine("lib","net40","proj2.dll")
+                        Path.Combine("content", "proj1_file2.txt"),
+                        Path.Combine("lib", "net40", "proj1.dll"),
+                        Path.Combine("lib", "net40", "proj2.dll")
                     });
             }
         }
@@ -3381,9 +3381,9 @@ stuff \n <<".Replace("\r\n", "\n");
                     Assert.Equal(
                         new string[]
                         {
-                            Path.Combine("contentFiles","file2.txt"),
-                            Path.Combine("contentFiles","image1.jpg"),
-                            Path.Combine("contentFiles","image2.jpg"),
+                            Path.Combine("contentFiles", "file2.txt"),
+                            Path.Combine("contentFiles", "image1.jpg"),
+                            Path.Combine("contentFiles", "image2.jpg"),
                         },
                         files);
                 }
@@ -3478,10 +3478,10 @@ stuff \n <<".Replace("\r\n", "\n");
                     Assert.Equal(
                         new string[]
                         {
-                            Path.Combine("map1","image1.jpg"),
-                            Path.Combine("map1","image2.jpg"),
-                            Path.Combine("map1","image3.jpg"),
-                            Path.Combine("map2","file2.txt"),
+                            Path.Combine("map1", "image1.jpg"),
+                            Path.Combine("map1", "image2.jpg"),
+                            Path.Combine("map1", "image3.jpg"),
+                            Path.Combine("map2", "file2.txt"),
                         },
                         files);
                 }
@@ -3609,8 +3609,8 @@ stuff \n <<".Replace("\r\n", "\n");
                     files,
                     new string[]
                     {
-                            Path.Combine("lib","netcoreapp1.0" ,id + ".dll"),
-                            Path.Combine("lib","netcoreapp1.0","win7-x64" ,id + ".dll"),
+                            Path.Combine("lib", "netcoreapp1.0", id + ".dll"),
+                            Path.Combine("lib", "netcoreapp1.0", "win7-x64", id + ".dll"),
                     });
 
                 Assert.False(r.Item2.Contains("Assembly outside lib folder"));
@@ -3738,8 +3738,8 @@ stuff \n <<".Replace("\r\n", "\n");
                     files,
                     new string[]
                     {
-                            Path.Combine("lib","netcoreapp1.0" , dllName + extension),
-                            Path.Combine("lib","netcoreapp1.0","win7-x64", dllName + extension),
+                            Path.Combine("lib", "netcoreapp1.0" , dllName + extension),
+                            Path.Combine("lib", "netcoreapp1.0", "win7-x64", dllName + extension),
                     });
 
                 Assert.False(r.Item2.Contains("Assembly outside lib folder"));
@@ -3852,7 +3852,7 @@ stuff \n <<".Replace("\r\n", "\n");
                     files,
                     new string[]
                     {
-                        Path.Combine("lib","net46","proj1.dll"),
+                        Path.Combine("lib", "net46", "proj1.dll"),
                     });
             }
         }
@@ -3916,7 +3916,7 @@ stuff \n <<".Replace("\r\n", "\n");
                     files,
                     new string[]
                     {
-                        Path.Combine("lib","net46","proj1.dll")
+                        Path.Combine("lib", "net46", "proj1.dll")
                     });
             }
         }
@@ -3979,7 +3979,7 @@ stuff \n <<".Replace("\r\n", "\n");
                     files,
                     new string[]
                     {
-                        Path.Combine("lib","net46","proj1.dll")
+                        Path.Combine("lib", "net46", "proj1.dll")
                     });
             }
         }
