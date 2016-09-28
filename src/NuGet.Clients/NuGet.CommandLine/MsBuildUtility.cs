@@ -622,7 +622,7 @@ namespace NuGet.CommandLine
                 }
 
                 // Try to find msbuild.exe from hard code path.
-                var path = new[] { CommandLineConstants.MsbuildPathOnMac15, CommandLineConstants.MsbuildPathOnMac15 }.
+                var path = new[] { CommandLineConstants.MsbuildPathOnMac15, CommandLineConstants.MsbuildPathOnMac14 }.
                     Select(p => Path.Combine(p, "msbuild.exe")).FirstOrDefault(File.Exists);
                 
                 if (path != null)
