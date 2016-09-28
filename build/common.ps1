@@ -462,9 +462,7 @@ Function Invoke-DotnetPack {
         [Alias('build')]
         [int]$BuildNumber,
         [Alias('out')]
-        [string]$NupkgOutput,
-        [Alias('buildbase')]
-        [string]$BuildBasePath
+        [string]$NupkgOutput
     )
     Begin {
         $BuildNumber = Format-BuildNumber $BuildNumber
@@ -500,10 +498,7 @@ Function Invoke-DotnetPack {
                 $opts += '--output', $NupkgOutput
             }
 
-            if ($BuildBasePath) {
-                $opts += '--build-base-path', $BuildBasePath
-            }
-
+            $opts += '--build-base-path', $Artifacts
             $opts += '--serviceable'
 
             Trace-Log "$DotNetExe $opts"
@@ -523,7 +518,6 @@ Function Publish-CoreProject {
         [string]$XProjectLocation,
         [Parameter(Mandatory=$True)]
         [string]$PublishLocation,
-        [string]$BuildBasePath,
         [string]$Configuration = $DefaultConfiguration
     )
     $opts = @()
@@ -536,8 +530,7 @@ Function Publish-CoreProject {
     $opts += '--configuration', $Configuration, '--framework', 'netcoreapp1.0'
     $opts += '--no-build'
 
-    $opts += '--build-base-path'
-    $opts += $BuildBasePath
+    $opts += '--build-base-path', $Artifacts
 
     $OutputDir = Join-Path $PublishLocation "$Configuration\netcoreapp1.0"
     $opts += '--output', $OutputDir
@@ -566,17 +559,17 @@ Function Build-CoreProjects {
     }
 
     # Build .nupkgs for MyGet (which have release label and build number)
-    $xprojects | Invoke-DotnetPack -config $Configuration -label $ReleaseLabel -build $BuildNumber -out $Nupkgs -buildbase $Artifacts
+    $xprojects | Invoke-DotnetPack -config $Configuration -label $ReleaseLabel -build $BuildNumber -out $Nupkgs
 
     # Build .nupkgs for release (which have no build number). This will re-use the build from the last
-    # step because the -buildbase parameter is the same.
-    $xprojects | Invoke-DotnetPack -config $Configuration -label $ReleaseLabel -out $ReleaseNupkgs -buildbase $Artifacts
+    # step because the --build-base-path is the same.
+    $xprojects | Invoke-DotnetPack -config $Configuration -label $ReleaseLabel -out $ReleaseNupkgs
 
     # Publish NuGet.CommandLine.XPlat
     $PublishLocation = Join-Path $Artifacts "NuGet.CommandLine.XPlat\publish"
     Trace-Log "Publishing XPlat project to '$PublishLocation'"
     $XPlatProject = Join-Path $NuGetClientRoot 'src\NuGet.Core\NuGet.CommandLine.XPlat'
-    Publish-CoreProject $XPlatProject $PublishLocation $Artifacts $Configuration
+    Publish-CoreProject $XPlatProject $PublishLocation $Configuration
 }
 
 Function Test-XProjectCoreClr {
@@ -789,8 +782,6 @@ Function Build-ClientsPackages {
     Invoke-ILMerge `
         -InputDir $exeInputDir `
         -OutputDir $exeOutputDir `
-        -Configuration $Configuration `
-        -ToolsetVersion "${ToolsetVersion}.0" `
         -KeyFile $KeyFile
 
     $opts = 'pack', $exeNuspec
@@ -813,8 +804,6 @@ Function Build-ClientsPackages {
     Invoke-ILMerge `
         -InputDir $exeInputDir `
         -OutputDir $exeOutputDir `
-        -Configuration $Configuration `
-        -ToolsetVersion "${ToolsetVersion}.0" `
         -KeyFile $KeyFile
 
     $opts = 'pack', $exeNuspec
@@ -971,9 +960,6 @@ Function Invoke-ILMerge {
     param(
         [string]$InputDir,
         [string]$OutputDir,
-        [string]$Configuration = $DefaultConfiguration,
-        [ValidateSet(14,15)]
-        [int]$ToolsetVersion = $DefaultMSBuildVersion,
         [string]$KeyFile
     )
 

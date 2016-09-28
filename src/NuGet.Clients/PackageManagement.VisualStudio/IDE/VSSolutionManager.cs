@@ -578,8 +578,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // Finally, try to add the project to the cache.
             var added = _nuGetAndEnvDTEProjectCache.AddProject(newEnvDTEProjectName, envDTEProject, nuGetProject);
-
-            /* TODO: Enable this in such a way that it does not effect project load time.
+            
             if (added)
             {
                 // Emit project specific telemetry as we are adding the project to the cache.
@@ -587,7 +586,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 // open.
                 NuGetProjectTelemetryService.Instance.EmitNuGetProject(envDTEProject, nuGetProject);
             }
-            */
 
             if (string.IsNullOrEmpty(DefaultNuGetProjectName) ||
                 newEnvDTEProjectName.ShortName.Equals(DefaultNuGetProjectName, StringComparison.OrdinalIgnoreCase))
