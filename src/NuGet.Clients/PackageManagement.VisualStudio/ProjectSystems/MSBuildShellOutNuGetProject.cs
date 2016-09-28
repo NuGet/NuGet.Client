@@ -420,8 +420,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static class MSBuildUtility
         {
-            private const string NuGetTargets = @"NuGet.PackageManagement.VisualStudio.NuGet.targets";
-
             public static DependencyGraphSpec GetProjectReferences(
                 string msbuildPath,
                 string[] projectPaths,
@@ -445,15 +443,40 @@ namespace NuGet.PackageManagement.VisualStudio
                     throw new InvalidOperationException("NuGet.Build.Tasks.dll could not be found.");
                 }
 
-                using (var entryPointTargetPath = new TempFile(".targets"))
+                // The targets file should be part of the VSIX
+                var entryPointTargetPath = Path.Combine(buildTasksDirectory, "NuGet.targets");
+
+                if (!File.Exists(entryPointTargetPath))
+                {
+                    throw new InvalidOperationException($"{entryPointTargetPath} could not be found.");
+                }
+
                 using (var resultsPath = new TempFile(".result"))
                 {
-                    ExtractResource(NuGetTargets, entryPointTargetPath);
-
                     var argumentBuilder = new StringBuilder(
                         "/t:GenerateRestoreGraphFile " +
-                        "/nologo /nr:false /v:q " +
+                        "/nologo /nr:false " +
                         "/p:BuildProjectReferences=false");
+
+                    // Set the msbuild verbosity level if specified
+                    var msbuildVerbosity = Environment.GetEnvironmentVariable("NUGET_RESTORE_MSBUILD_VERBOSITY");
+
+                    if (string.IsNullOrEmpty(msbuildVerbosity))
+                    {
+                        argumentBuilder.Append(" /v:q ");
+                    }
+                    else
+                    {
+                        argumentBuilder.Append($" /v:{msbuildVerbosity} ");
+                    }
+
+                    // Add additional args to msbuild if needed
+                    var msbuildAdditionalArgs = Environment.GetEnvironmentVariable("NUGET_RESTORE_MSBUILD_ARGS");
+
+                    if (!string.IsNullOrEmpty(msbuildAdditionalArgs))
+                    {
+                        argumentBuilder.Append($" {msbuildAdditionalArgs} ");
+                    }
 
                     argumentBuilder.Append(" /p:RestoreTaskAssemblyFile=");
                     AppendQuoted(argumentBuilder, buildTasksPath);

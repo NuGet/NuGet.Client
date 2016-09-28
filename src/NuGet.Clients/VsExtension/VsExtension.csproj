@@ -74,6 +74,12 @@
     <Compile Include="VsUtility.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\..\NuGet.Core\NuGet.Build.Tasks\NuGet.targets">
+      <Link>NuGet.targets</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="..\VsConsole\PowerShellHost\Scripts\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt">
       <Link>Modules\NuGet\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt</Link>
       <IncludeInVSIX>true</IncludeInVSIX>

@@ -186,9 +186,6 @@
     <Compile Include="VSSettings.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="..\..\NuGet.Core\NuGet.Build.Tasks\NuGet.targets">
-      <Link>NuGet.targets</Link>
-    </EmbeddedResource>
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
