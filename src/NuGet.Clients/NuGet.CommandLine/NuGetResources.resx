@@ -6111,4 +6111,7 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="MsbuildLoadToolSetError" xml:space="preserve">
     <value>Failed to load msbuild Toolset</value>
   </data>
+  <data name="MsbuildLoadToolSetError" xml:space="preserve">
+    <value>Failed to load msbuild Toolset</value>
+  </data>
 </root>
