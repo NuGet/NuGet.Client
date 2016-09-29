@@ -378,6 +378,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Specifies the path of MSBuild to be used with this command. This command will takes precedence over MSbuildVersion, nuget will always pick MSbuild from this specified path..
+        /// </summary>
+        internal static string CommandMSBuildPath {
+            get {
+                return ResourceManager.GetString("CommandMSBuildPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Specifies the version of MSBuild to be used with this command. Supported values are 4, 12, 14. By default the MSBuild in your path is picked, otherwise it defaults to the highest installed version of MSBuild..
         /// </summary>
         internal static string CommandMSBuildVersion {
