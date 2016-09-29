@@ -4040,6 +4040,83 @@ stuff \n <<".Replace("\r\n", "\n");
             }
         }
 
+        [Fact]
+        public void PackCommand_PackAndBuildAProjectToTestMSBuildCommandLineParamsEscaping()
+        {
+            // This test was added as a result of issue : https://github.com/NuGet/Home/issues/3432
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var proj1SolutionDirectory = Path.Combine(workingDirectory, "Project One With Space");
+                var proj1ProjectDirectory = Path.Combine(proj1SolutionDirectory, "Project One With Space");
+                Util.CreateFile(
+                    proj1SolutionDirectory,
+                    "proj1.sln",
+                    "# test solution");
+                // create project 1
+                Util.CreateFile(
+                    proj1ProjectDirectory,
+                    "proj1.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <Import Project=""$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"" Condition=""Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')""/>
+  <PropertyGroup>
+    <Configuration Condition="" '$(Configuration)' == '' "">Debug</Configuration>
+    <OutputType>Library</OutputType>
+    <OutputPath>out\$(Configuration)\</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include=""proj1_file1.cs"" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include=""proj1_file2.txt"" />
+  </ItemGroup>
+  <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
+</Project>");
+                Util.CreateFile(
+                    proj1ProjectDirectory,
+                    "proj1_file1.cs",
+@"using System;
+
+namespace Proj1
+{
+    public class Class1
+    {
+        public int A { get; set; }
+    }
+}");
+                Util.CreateFile(
+                    proj1ProjectDirectory,
+                    "proj1_file2.txt",
+                    "file2");
+
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj1ProjectDirectory,
+                    @"pack proj1.csproj -build -IncludeReferencedProjects -Properties Configuration=Release",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                Assert.True(Directory.Exists(Path.Combine(proj1ProjectDirectory, "out\\Release")));
+                Assert.True(File.Exists(Path.Combine(proj1ProjectDirectory, "out\\Release\\proj1.dll")));
+                var package = new OptimizedZipPackage(Path.Combine(proj1ProjectDirectory, "proj1.0.0.0.nupkg"));
+                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                Array.Sort(files);
+                Assert.Equal(
+                    files,
+                    new string[]
+                    {
+                        Path.Combine("content", "proj1_file2.txt"),
+                        Path.Combine("lib", "net40", "proj1.dll")
+                    });
+            }
+        }
+
         private class PackageDepencyComparer : IEqualityComparer<PackageDependency>
         {
             public bool Equals(PackageDependency x, PackageDependency y)
