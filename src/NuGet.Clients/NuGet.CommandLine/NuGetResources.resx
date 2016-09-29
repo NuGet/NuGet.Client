@@ -6102,4 +6102,16 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="Error_MultipleTargetFrameworks" xml:space="preserve">
     <value>project.json cannot contain multiple Target Frameworks.</value>
   </data>
+  <data name="MsbuildLoadToolSetError" xml:space="preserve">
+    <value>Failed to load msbuild Toolset</value>
+  </data>
+  <data name="Warning_MsbuildPath" xml:space="preserve">
+    <value>MsbuildPath : {0} is using, ignore MsBuildVersion: {1}. </value>
+  </data>
+  <data name="MSbuildFromPath" xml:space="preserve">
+    <value>Using Msbuild from '{0}'.</value>
+  </data>
+  <data name="MsbuildPathNotExist" xml:space="preserve">
+    <value>MSBuildPath : {0}  doesn't not exist.</value>
+  </data>
 </root>

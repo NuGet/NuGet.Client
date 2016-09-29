@@ -362,6 +362,39 @@ namespace NuGet.CommandLine
             return selectedToolset;
         }
 
+        public static Lazy<string> GetMsbuildDirectoryFromMsbuildPath(string msbuildPath, string msbuildVersion, IConsole console)
+        {
+            if (msbuildPath != null)
+            {
+                if (msbuildVersion != null)
+                {
+                    console?.WriteWarning(LocalizedResourceManager.GetString(
+                        nameof(NuGetResources.Warning_MsbuildPath)),
+                        msbuildPath, msbuildVersion);
+                }
+
+                console?.WriteLine(LocalizedResourceManager.GetString(
+                               nameof(NuGetResources.MSbuildFromPath)),
+                           msbuildPath);
+
+                if (!Directory.Exists(msbuildPath))
+                {
+                    var message = string.Format(
+                        CultureInfo.CurrentCulture,
+                        LocalizedResourceManager.GetString(
+                            nameof(NuGetResources.MsbuildPathNotExist)),
+                        msbuildPath);
+
+                    throw new CommandLineException(message);
+                }
+                return new Lazy<string>(() => msbuildPath);
+            }
+            else
+            {
+                return new Lazy<string>(() => GetMsbuildDirectory(msbuildVersion, console));
+            }
+        }
+
         /// <summary>
         /// Returns the msbuild directory. If <paramref name="userVersion"/> is null, then the directory containing
         /// the highest installed msbuild version is returned. Otherwise, the directory containing msbuild

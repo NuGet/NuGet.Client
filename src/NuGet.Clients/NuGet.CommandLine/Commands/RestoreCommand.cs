@@ -39,6 +39,9 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "CommandMSBuildVersion")]
         public string MSBuildVersion { get; set; }
 
+        [Option(typeof(NuGetCommand), "CommandMSBuildPath")]
+        public string MSBuildPath { get; set; }
+
         [ImportingConstructor]
         public RestoreCommand()
             : base(MachineCache.Default)
@@ -59,7 +62,7 @@ namespace NuGet.CommandLine
 
             var restoreSummaries = new List<RestoreSummary>();
 
-            _msbuildDirectory = new Lazy<string>(() => MsBuildUtility.GetMsbuildDirectory(MSBuildVersion, Console));
+            _msbuildDirectory = MsBuildUtility.GetMsbuildDirectoryFromMsbuildPath(MSBuildPath, MSBuildVersion, Console);
 
             if (!string.IsNullOrEmpty(PackagesDirectory))
             {

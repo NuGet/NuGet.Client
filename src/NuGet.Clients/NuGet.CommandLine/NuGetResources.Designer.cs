@@ -6046,6 +6046,33 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to load msbuild Toolset.
+        /// </summary>
+        public static string MsbuildLoadToolSetError
+        {
+            get {
+                return ResourceManager.GetString("MsbuildLoadToolSetError", resourceCulture);
+            }
+        }
+
+        ///   Looks up a localized string similar to Using Msbuild from &apos;{0}&apos;..
+        /// </summary>
+        public static string MSbuildFromPath {
+            get {
+                return ResourceManager.GetString("MSbuildFromPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to MSBuildPath : {0}  doesn&apos;t not exist..
+        /// </summary>
+        public static string MsbuildPathNotExist {
+            get {
+                return ResourceManager.GetString("MsbuildPathNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Found multiple project files for &apos;{0}&apos;..
         /// </summary>
         public static string MultipleProjectFilesFound {
@@ -16837,6 +16864,15 @@ namespace NuGet.CommandLine {
         public static string Warning_InvalidPackageSaveMode_trk {
             get {
                 return ResourceManager.GetString("Warning_InvalidPackageSaveMode_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to MsbuildPath : {0} is using, ignore MsBuildVersion: {1}. .
+        /// </summary>
+        public static string Warning_MsbuildPath {
+            get {
+                return ResourceManager.GetString("Warning_MsbuildPath", resourceCulture);
             }
         }
         

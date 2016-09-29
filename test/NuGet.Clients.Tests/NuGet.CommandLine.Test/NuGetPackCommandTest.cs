@@ -2984,6 +2984,378 @@ namespace Proj2
         }
 
         [Fact]
+        public void PackCommand_WithMsBuildPath()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+                var proj2Directory = Path.Combine(workingDirectory, "proj2");
+
+                // create project 1
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
+    <OutputPath>debug_out</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" + "\"'$(Config)'=='Release'\"" + @">
+    <OutputPath>release_out</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include='proj1_file1.cs' />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include='proj1_file2.txt' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1_file1.cs",
+@"using System;
+
+namespace Proj1
+{
+    public class Class1
+    {
+        public string F(int a)
+        {
+            return a.ToString();
+        }
+    }
+}");
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1_file2.txt",
+                    "file2");
+
+                // Create project 2, which references project 1
+                Util.CreateFile(
+                    proj2Directory,
+                    "proj2.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
+    <OutputPath>debug_out</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" + "\"'$(Config)'=='Release'\"" + @">
+    <OutputPath>release_out</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include='..\proj1\proj1.csproj' />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include='proj2_file1.cs' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+                Util.CreateFile(
+                    proj2Directory,
+                    "proj2_file1.cs",
+@"using System;
+
+namespace Proj2
+{
+    public class Class1
+    {
+        public string F2(int a)
+        {
+            return a.ToString();
+        }
+    }
+}");
+                var msbuildPath = @"C:\Program Files (x86)\MSBuild\14.0\Bin";
+                var os = Environment.GetEnvironmentVariable("OSTYPE");
+                if (RuntimeEnvironmentHelper.IsMono && os != null && os.StartsWith("darwin"))
+                {
+                    msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/14.1/bin/";
+                }
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj2Directory,
+                    $@"pack proj2.csproj -build -IncludeReferencedProjects -p Config=Release -MSBuildPath ""{msbuildPath}"" ",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+
+                // Verify that proj1 was not built using the default config "Debug".
+                Assert.False(Directory.Exists(Path.Combine(proj1Directory, "debug_out")));
+                Assert.True(r.Item2.Contains($"Using Msbuild from '{msbuildPath}'."));
+
+                var package = new OptimizedZipPackage(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg"));
+                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                Array.Sort(files);
+                Assert.Equal(
+                    files,
+                    new string[]
+                    {
+                        Path.Combine("content", "proj1_file2.txt"),
+                        Path.Combine("lib", "net40", "proj1.dll"),
+                        Path.Combine("lib", "net40", "proj2.dll")
+                    });
+            }
+        }
+
+        [Fact]
+        public void PackCommand_WithMsBuildPathAndMsbuildVersion()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+                var proj2Directory = Path.Combine(workingDirectory, "proj2");
+
+                // create project 1
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
+    <OutputPath>debug_out</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" + "\"'$(Config)'=='Release'\"" + @">
+    <OutputPath>release_out</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include='proj1_file1.cs' />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include='proj1_file2.txt' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1_file1.cs",
+@"using System;
+
+namespace Proj1
+{
+    public class Class1
+    {
+        public string F(int a)
+        {
+            return a.ToString();
+        }
+    }
+}");
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1_file2.txt",
+                    "file2");
+
+                // Create project 2, which references project 1
+                Util.CreateFile(
+                    proj2Directory,
+                    "proj2.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
+    <OutputPath>debug_out</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" + "\"'$(Config)'=='Release'\"" + @">
+    <OutputPath>release_out</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include='..\proj1\proj1.csproj' />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include='proj2_file1.cs' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+                Util.CreateFile(
+                    proj2Directory,
+                    "proj2_file1.cs",
+@"using System;
+
+namespace Proj2
+{
+    public class Class1
+    {
+        public string F2(int a)
+        {
+            return a.ToString();
+        }
+    }
+}");
+                var msbuildPath = @"C:\Program Files (x86)\MSBuild\14.0\Bin";
+                var os = Environment.GetEnvironmentVariable("OSTYPE");
+                if (RuntimeEnvironmentHelper.IsMono && os != null && os.StartsWith("darwin"))
+                {
+                    msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/14.1/bin/";
+                }
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj2Directory,
+                    $@"pack proj2.csproj -build -IncludeReferencedProjects -p Config=Release -MSBuildPath ""{msbuildPath}"" -MSBuildVersion 12 ",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+
+                // Verify that proj1 was not built using the default config "Debug".
+                Assert.False(Directory.Exists(Path.Combine(proj1Directory, "debug_out")));
+                Assert.True(r.Item2.Contains($"Using Msbuild from '{msbuildPath}'."));
+                Assert.True(r.Item2.Contains($"MsbuildPath : {msbuildPath} is using, ignore MsBuildVersion: 12."));
+
+                var package = new OptimizedZipPackage(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg"));
+                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                Array.Sort(files);
+                Assert.Equal(
+                    files,
+                    new string[]
+                    {
+                        Path.Combine("content", "proj1_file2.txt"),
+                        Path.Combine("lib", "net40", "proj1.dll"),
+                        Path.Combine("lib", "net40", "proj2.dll")
+                    });
+            }
+        }
+
+        [Fact]
+        public void PackCommand_WithNonExistMsBuildPath()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+                var proj2Directory = Path.Combine(workingDirectory, "proj2");
+
+                // create project 1
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
+    <OutputPath>debug_out</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" + "\"'$(Config)'=='Release'\"" + @">
+    <OutputPath>release_out</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include='proj1_file1.cs' />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include='proj1_file2.txt' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1_file1.cs",
+@"using System;
+
+namespace Proj1
+{
+    public class Class1
+    {
+        public string F(int a)
+        {
+            return a.ToString();
+        }
+    }
+}");
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1_file2.txt",
+                    "file2");
+
+                // Create project 2, which references project 1
+                Util.CreateFile(
+                    proj2Directory,
+                    "proj2.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
+    <OutputPath>debug_out</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" + "\"'$(Config)'=='Release'\"" + @">
+    <OutputPath>release_out</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include='..\proj1\proj1.csproj' />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include='proj2_file1.cs' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+                Util.CreateFile(
+                    proj2Directory,
+                    "proj2_file1.cs",
+@"using System;
+
+namespace Proj2
+{
+    public class Class1
+    {
+        public string F2(int a)
+        {
+            return a.ToString();
+        }
+    }
+}");
+                var msbuildPath = @"\\not exist path";
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj2Directory,
+                    $@"pack proj2.csproj -build -IncludeReferencedProjects -p Config=Release -MSBuildPath ""{msbuildPath}"" ",
+                    waitForExit: true);
+                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+
+                Assert.True(r.Item3.Contains($"MSBuildPath : {msbuildPath}  doesn't not exist."));
+            }
+        }
+
+        [Fact]
         public void PackCommand_VersionSuffixIsAssigned()
         {
             var nugetexe = Util.GetNuGetExePath();
