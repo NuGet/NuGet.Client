@@ -100,6 +100,18 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
+    _GenerateRestoreGraphProjectEntry
+    Top level entry point within a project.
+    ============================================================
+  -->
+  <Target Name="_GenerateRestoreGraphProjectEntry"
+          DependsOnTargets="_GenerateRestoreSpecs;_GenerateDotnetCliToolReferenceSpecs;_GenerateRestoreGraphWalk"
+          Returns="@(_RestoreGraphEntry)">
+    <!-- Returns restore graph entries for the project and all dependencies -->
+  </Target>
+
+    <!--
+    ============================================================
     _GenerateRestoreGraph
     Entry point for creating the project to project restore graph.
     ============================================================
@@ -108,14 +120,18 @@ Copyright (c) .NET Foundation. All rights reserved.
     <Message Text="Generating dg file" Importance="low" />
     <Message Text="%(RestoreGraphProjectInputItems.Identity)" Importance="low" />
 
-    <!-- Mark entry points -->
+    <!-- Generate a restore graph for each entry point project -->
+    
+    <!-- Standalone mode -->
     <MsBuild
+        Condition=" '$(RestoreUseCustomAfterTargets)' == 'true' "
         Projects="@(RestoreGraphProjectInputItems)"
-        Targets="_GenerateRestoreSpecs"
+        Targets="_GenerateRestoreGraphProjectEntry"
         BuildInParallel="false"
         Properties="
                 %(_MSBuildProjectReferenceExistent.SetConfiguration);
                 %(_MSBuildProjectReferenceExistent.SetPlatform);
+                CustomAfterMicrosoftCommonCrossTargetingTargets=$(MSBuildThisFileFullPath);
                 CustomAfterMicrosoftCommonTargets=$(MSBuildThisFileFullPath);
                 BuildProjectReferences=false;"
         RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
@@ -125,32 +141,15 @@ Copyright (c) .NET Foundation. All rights reserved.
           ItemName="_RestoreGraphEntry" />
     </MsBuild>
 
-    <!-- Collect tool references -->
+    <!-- Using targets imported with ImportsAfter -->
     <MsBuild
+        Condition=" '$(RestoreUseCustomAfterTargets)' != 'true' "
         Projects="@(RestoreGraphProjectInputItems)"
-        Targets="_GenerateDotnetCliToolReferenceSpecs"
+        Targets="_GenerateRestoreGraphProjectEntry"
         BuildInParallel="false"
         Properties="
                 %(_MSBuildProjectReferenceExistent.SetConfiguration);
                 %(_MSBuildProjectReferenceExistent.SetPlatform);
-                CustomAfterMicrosoftCommonTargets=$(MSBuildThisFileFullPath);
-                BuildProjectReferences=false;"
-        RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
-
-      <Output
-          TaskParameter="TargetOutputs"
-          ItemName="_RestoreGraphEntry" />
-    </MsBuild>
-
-    <!-- Walk the project references for each project -->
-    <MsBuild
-        Projects="@(RestoreGraphProjectInputItems)"
-        Targets="_GenerateRestoreGraphWalk"
-        BuildInParallel="false"
-        Properties="
-                %(_MSBuildProjectReferenceExistent.SetConfiguration);
-                %(_MSBuildProjectReferenceExistent.SetPlatform);
-                CustomAfterMicrosoftCommonTargets=$(MSBuildThisFileFullPath);
                 BuildProjectReferences=false;"
         RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
 

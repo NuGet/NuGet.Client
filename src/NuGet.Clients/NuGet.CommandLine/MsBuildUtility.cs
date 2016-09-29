@@ -96,7 +96,7 @@ namespace NuGet.CommandLine
 
                 var argumentBuilder = new StringBuilder(
                     "/t:GenerateRestoreGraphFile " +
-                    "/nologo /nr:false " +
+                    "/nologo /nr:false /p:RestoreUseCustomAfterTargets=true " +
                     "/p:BuildProjectReferences=false");
 
                 // Set the msbuild verbosity level if specified
