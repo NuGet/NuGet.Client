@@ -279,7 +279,7 @@ function New-NativeWinStoreApplication
 
     try
     {
-        if (Get-VSVersion -eq '12.0' -or Get-VSVersion -eq '14.0')
+        if (Get-VSVersion -eq '12.0' )
         {
             New-Project CppWinStoreApplicationBlue $ProjectName $SolutionFolder
         }
