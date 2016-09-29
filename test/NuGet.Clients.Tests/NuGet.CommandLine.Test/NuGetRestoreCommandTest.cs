@@ -471,6 +471,102 @@ Microsoft Visual Studio Solution File, Format Version 12.00
             }
         }
 
+        [Fact]
+        public void RestoreCommand_FromSolutionFileWithMsbuildPath()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+
+            var msbuildPath = @"C:\Program Files (x86)\MSBuild\14.0\Bin";
+            var os = Environment.GetEnvironmentVariable("OSTYPE");
+            if (RuntimeEnvironmentHelper.IsMono && os != null && os.StartsWith("darwin"))
+            {
+                msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/14.1/bin/";
+            }
+
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, "packages.config", "packages.config");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    "restore -Source " + repositoryPath + $@" -MSBuildPath ""{msbuildPath}"" ",
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+                Assert.True(r.Item2.Contains($"Using Msbuild from '{msbuildPath}'."));
+                var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
+                Assert.True(File.Exists(packageFileA));
+                Assert.True(File.Exists(packageFileB));
+            }
+        }
+
+        [Fact]
+        public void RestoreCommand_FromSolutionFileWithNonExistMsBuildPath()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+            var msbuildPath = @"\\not exist path";
+
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, "packages.config", "packages.config");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    "restore -Source " + repositoryPath + $@" -MSBuildPath ""{msbuildPath}"" ",
+                    waitForExit: true);
+
+                // Assert
+                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(r.Item3.Contains($"MSBuildPath : {msbuildPath}  doesn't not exist."));
+            }
+        }
+
+        [Fact]
+        public void RestoreCommand_FromSolutionFileWithMsbuildPathAndMsbuildVersion()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+
+            var msbuildPath = @"C:\Program Files (x86)\MSBuild\14.0\Bin";
+            var os = Environment.GetEnvironmentVariable("OSTYPE");
+            if (RuntimeEnvironmentHelper.IsMono && os != null && os.StartsWith("darwin"))
+            {
+                msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/14.1/bin/";
+            }
+
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, "packages.config", "packages.config");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    "restore -Source " + repositoryPath + $@" -MSBuildPath ""{msbuildPath}"" -MSBuildVersion 12",
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+                Assert.True(r.Item2.Contains($"Using Msbuild from '{msbuildPath}'."));
+                Assert.True(r.Item2.Contains($"MsbuildPath : {msbuildPath} is using, ignore MsBuildVersion: 12."));
+
+                var packageFileA = Path.Combine(workingPath, @"packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
+                Assert.True(File.Exists(packageFileA));
+                Assert.True(File.Exists(packageFileB));
+            }
+        }
+
         // Tests that if the project file cannot be loaded, i.e. InvalidProjectFileException is thrown,
         // Then packages listed in packages.config file will be restored.
         [Fact]
