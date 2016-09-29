@@ -270,7 +270,10 @@ namespace NuGet.Protocol.Core.Types
         {
             var serviceEndpointUrl = GetServiceEndpointUrl(source, string.Empty);
             await _httpSource.ProcessResponseAsync(
-                new HttpSourceRequest(() => CreateRequest(serviceEndpointUrl, pathToPackage, apiKey, logger)),
+                new HttpSourceRequest(() => CreateRequest(serviceEndpointUrl, pathToPackage, apiKey, logger))
+                {
+                    RequestTimeout = requestTimeout
+                },
                 response =>
                 {
                     response.EnsureSuccessStatusCode();
