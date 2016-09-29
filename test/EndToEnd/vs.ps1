@@ -214,11 +214,11 @@ function New-JavaScriptApplication
 
     try 
     {
-        if (Get-VSVersion -eq '12.0')
+        if ((Get-VSVersion) -eq '12.0')
         {
             New-Project WinJSBlue $ProjectName $SolutionFolder
         }
-        elseif (Get-VSVersion -eq '14.0')
+        elseif ((Get-VSVersion) -eq '14.0')
         {
             New-Project WinJS_Dev14 $ProjectName $SolutionFolder
         }
@@ -279,11 +279,11 @@ function New-NativeWinStoreApplication
 
     try
     {
-        if (Get-VSVersion -eq '12.0' )
+        if ((Get-VSVersion) -eq '12.0' )
         {
             New-Project CppWinStoreApplicationBlue $ProjectName $SolutionFolder
         }
-        elseif (Get-VSVersion -eq '14.0')
+        elseif ((Get-VSVersion) -eq '14.0')
         {
             New-Project CppWinStoreApplication_Dev14 $ProjectName $SolutionFolder
         }
@@ -421,7 +421,7 @@ function New-WindowsPhoneClassLibrary {
     )
 
     try {
-        if (Get-VSVersion -eq '14.0') {
+        if ((Get-VSVersion) -eq '14.0') {
             New-Project WindowsPhoneClassLibrary81 $ProjectName $SolutionFolder
         }
         else {
