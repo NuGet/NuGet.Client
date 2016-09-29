@@ -75,6 +75,9 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "CommandMSBuildVersion")]
         public string MSBuildVersion { get; set; }
 
+        [Option(typeof(NuGetCommand), "CommandMSBuildPath")]
+        public string MSBuildPath { get; set; }
+
         // TODO: Temporarily hide the real ConfigFile parameter from the help text.
         // When we fix #3230, we should remove this property.
         public new string ConfigFile { get; set; }
@@ -88,7 +91,8 @@ namespace NuGet.CommandLine
             packArgs.BasePath = BasePath;
 
             // The directory that contains msbuild
-            packArgs.MsBuildDirectory = new Lazy<string>(() => MsBuildUtility.GetMsbuildDirectory(MSBuildVersion, Console));
+            packArgs.MsBuildDirectory = MSBuildPath != null ? new Lazy<string>(() => MSBuildPath) 
+                : new Lazy<string>(() => MsBuildUtility.GetMsbuildDirectory(MSBuildVersion, Console));
 
             // Get the input file
             packArgs.Path = PackCommandRunner.GetInputFile(packArgs);

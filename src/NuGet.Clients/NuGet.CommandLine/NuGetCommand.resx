@@ -5330,4 +5330,7 @@ nuget locals global-packages -list</value>
   <data name="CommandDirectDownload" xml:space="preserve">
     <value>Download directly without populating any caches with metadata or binaries.</value>
   </data>
+  <data name="CommandMSBuildPath" xml:space="preserve">
+    <value>Msbuild Path</value>
+  </data>
 </root>
