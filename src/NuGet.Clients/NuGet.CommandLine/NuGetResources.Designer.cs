@@ -5686,6 +5686,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Can&apos;t load Msbuild ToolSet..
+        /// </summary>
+        public static string LoadMsbuildToolSetError {
+            get {
+                return ResourceManager.GetString("LoadMsbuildToolSetError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Local resources cleared..
         /// </summary>
         public static string LocalsCommand_ClearedSuccessful {
