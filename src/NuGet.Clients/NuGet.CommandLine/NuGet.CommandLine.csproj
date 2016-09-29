@@ -102,6 +102,7 @@
     <Compile Include="ICommandManager.cs" />
     <Compile Include="MSBuildCachedRequestProvider.cs" />
     <Compile Include="MSBuildTasks\ProjectReferencesTask.cs" />
+    <Compile Include="MsbuildToolSet.cs" />
     <Compile Include="MsBuildUtility.cs" />
     <Compile Include="NuGetCommand.Designer.cs">
       <AutoGen>True</AutoGen>
