@@ -77,7 +77,7 @@ namespace NuGet.CommandLine
         {
             LoadAssemblies(msbuildDirectory);
 
-            // create project            
+            // create project
             var project = Activator.CreateInstance(
                 _projectType,
                 path,
@@ -136,7 +136,7 @@ namespace NuGet.CommandLine
                     console.Verbosity = Verbosity.Quiet;
                     break;
                 }
-            }                
+            }
         }
 
         private string TargetPath
@@ -757,7 +757,7 @@ namespace NuGet.CommandLine
                 nugetFramework = TargetFramework != null ? NuGetFramework.Parse(TargetFramework.FullName) : null;
             }
 
-            string projectOutputDirectory = Path.GetDirectoryName(TargetPath);
+            var projectOutputDirectory = Path.GetDirectoryName(TargetPath);
             string targetFileName;
 
             if (Directory.Exists(TargetPath))

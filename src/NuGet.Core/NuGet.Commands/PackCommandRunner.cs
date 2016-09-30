@@ -219,10 +219,10 @@ namespace NuGet.Commands
 
             if (!Directory.Exists(projectOutputDirectory))
             {
-                throw new Exception("No build found in " + projectOutputDirectory + ". Use the -Build option or build the project.");
+                throw new Exception(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnableToLocateBuildOutput, projectOutputDirectory));
             }
 
-            NuGetFramework targetFramework = NuGetFramework.AnyFramework;
+            var targetFramework = NuGetFramework.AnyFramework;
             var targetFileName = Path.GetFileNameWithoutExtension(targetPath);
             var outputFileNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
