@@ -1124,7 +1124,7 @@ namespace Proj2
                 var files = package.GetFiles().Select(file => file.Path).ToArray();
                 Array.Sort(files);
 
-                string symbolsFileName = RuntimeEnvironmentHelper.IsMono ? "A.dll.mdb" : "A.pdb";
+                var symbolsFileName = RuntimeEnvironmentHelper.IsMono ? "A.dll.mdb" : "A.pdb";
 
                 Assert.Equal(
                     new string[]
@@ -1184,7 +1184,7 @@ public class B
                 var files = package.GetFiles().Select(file => file.Path).ToArray();
                 Array.Sort(files);
 
-                string symbolsFileName = RuntimeEnvironmentHelper.IsMono ? "A.exe.mdb" : "A.pdb";
+                var symbolsFileName = RuntimeEnvironmentHelper.IsMono ? "A.exe.mdb" : "A.pdb";
 
                 Assert.Equal(
                     new string[]
