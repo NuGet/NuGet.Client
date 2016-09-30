@@ -201,26 +201,35 @@ namespace NuGet.CommandLine.Test
                 ex.Message);
         }
 
-        [Fact]
-        public void TestGetMsbuildDirectoryForMonoOnMac()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("15")]
+        [InlineData("15.0")]
+        [InlineData("14")]
+        public void TestGetMsbuildDirectoryForMonoOnMac(string version)
         {
             var os = Environment.GetEnvironmentVariable("OSTYPE");
             if (RuntimeEnvironmentHelper.IsMono && os != null && os.StartsWith("darwin"))
             {
-                // Act
-                var directory15version = MsBuildUtility.GetMsbuildDirectory("15.0", null);
-                var directory15 = MsBuildUtility.GetMsbuildDirectory("15", null);
-                var directory14 = MsBuildUtility.GetMsbuildDirectory("14.1", null);
-                var directory = MsBuildUtility.GetMsbuildDirectory(null, null);
+                // Act;
+                var directory = MsBuildUtility.GetMsbuildDirectory(version, null);
 
                 var msbuild14 = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/14.1/bin/";
                 var msbuild15 = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
-                
+
                 // Assert
-                Assert.Equal(directory15version, msbuild15);
-                Assert.Equal(directory15, msbuild15);
-                Assert.Equal(directory14, msbuild14);
-                Assert.True(new List<string> { msbuild14, msbuild15 }.Contains(directory));
+                if (version == "15.0" || version == "15")
+                {
+                    Assert.Equal(directory, msbuild15);
+                }
+                else if (version == "14.1")
+                {
+                    Assert.Equal(directory, msbuild14);
+                }
+                else if (version == null)
+                {
+                    Assert.True(new List<string> { msbuild14, msbuild15 }.Contains(directory));
+                }
             }
         }
     }

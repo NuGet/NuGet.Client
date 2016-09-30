@@ -452,7 +452,7 @@ namespace NuGet.CommandLine
             {
                 List<MsbuildToolSet> installedToolsets = new List<MsbuildToolSet>();
                 var assembly = Assembly.Load(
-                        "Microsoft.Build, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
+                        "Microsoft.Build, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
                 Type projectCollectionType = assembly.GetType(
                    "Microsoft.Build.Evaluation.ProjectCollection",
                    throwOnError: true);
@@ -729,18 +729,5 @@ namespace NuGet.CommandLine
 
             return escaped;
         }
-    }
-
-    public class MsbuildToolSet
-    {
-        public MsbuildToolSet(string toolsVersion, string toolsPath)
-        {
-            ToolsPath = toolsPath;
-            ToolsVersion = toolsVersion;
-        }
-
-        public string ToolsPath { get; }
-
-        public string ToolsVersion { get; }
     }
 }
