@@ -219,7 +219,7 @@ namespace NuGet.Commands
 
             if (!Directory.Exists(projectOutputDirectory))
             {
-                throw new Exception(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnableToLocateBuildOutput, projectOutputDirectory));
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnableToLocateBuildOutput, projectOutputDirectory));
             }
 
             var targetFramework = NuGetFramework.AnyFramework;
