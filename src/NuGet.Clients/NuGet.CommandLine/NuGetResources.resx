@@ -6108,4 +6108,7 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="Warning_ReadingProjectsFailed" xml:space="preserve">
     <value>Error reading msbuild project information, ensure that your input solution or project file is valid. NETCore and UAP projects will be skipped, only packages.config files will be restored.</value>
   </data>
+  <data name="MsbuildLoadToolSetError" xml:space="preserve">
+    <value>Failed to load msbuild Toolset</value>
+  </data>
 </root>

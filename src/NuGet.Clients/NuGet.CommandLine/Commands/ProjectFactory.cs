@@ -402,14 +402,8 @@ namespace NuGet.CommandLine
             string properties = string.Empty;
             foreach (var property in ProjectProperties)
             {
-                if (property.Value.Contains(" "))
-                {
-                    properties += $" /p:{property.Key}=\"{property.Value}\"";
-                }
-                else
-                {
-                    properties += $" /p:{property.Key}={property.Value}";
-                }
+                string escapedValue = MsBuildUtility.Escape(property.Value);
+                properties += $" /p:{property.Key}={escapedValue}";
             }
 
             int result = MsBuildUtility.Build(_msbuildDirectory, $"\"{_project.FullPath}\" {properties} /toolsversion:{_project.ToolsVersion}");
