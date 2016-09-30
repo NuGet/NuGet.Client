@@ -6046,6 +6046,24 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Using Msbuild from &apos;{0}&apos;..
+        /// </summary>
+        public static string MSbuildFromPath {
+            get {
+                return ResourceManager.GetString("MSbuildFromPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to MSBuildPath : {0}  doesn&apos;t not exist..
+        /// </summary>
+        public static string MsbuildPathNotExist {
+            get {
+                return ResourceManager.GetString("MsbuildPathNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Found multiple project files for &apos;{0}&apos;..
         /// </summary>
         public static string MultipleProjectFilesFound {

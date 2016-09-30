@@ -62,13 +62,7 @@ namespace NuGet.CommandLine
 
             var restoreSummaries = new List<RestoreSummary>();
 
-            if (MSBuildVersion != null && MSBuildPath != null)
-            {
-                Console.WriteWarning(LocalizedResourceManager.GetString("Warning_MsbuildPath"));
-            }
-
-            _msbuildDirectory = MSBuildPath != null ? new Lazy<string>(() => MSBuildPath) 
-                : new Lazy<string>(() => MsBuildUtility.GetMsbuildDirectory(MSBuildVersion, Console));
+            _msbuildDirectory = MsBuildUtility.GetMsbuildDirectoryFromMsbuildPath(MSBuildPath, MSBuildVersion, Console);
 
             if (!string.IsNullOrEmpty(PackagesDirectory))
             {

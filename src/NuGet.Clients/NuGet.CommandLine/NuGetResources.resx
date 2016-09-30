@@ -6105,4 +6105,10 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="Warning_MsbuildPath" xml:space="preserve">
     <value>MsbuildPath : {0} is using, ignore MsBuildVersion: {1}. </value>
   </data>
+  <data name="MSbuildFromPath" xml:space="preserve">
+    <value>Using Msbuild from '{0}'.</value>
+  </data>
+  <data name="MsbuildPathNotExist" xml:space="preserve">
+    <value>MSBuildPath : {0}  doesn't not exist.</value>
+  </data>
 </root>
