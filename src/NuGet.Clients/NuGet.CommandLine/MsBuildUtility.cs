@@ -406,6 +406,7 @@ namespace NuGet.CommandLine
                 console?.WriteLine(LocalizedResourceManager.GetString(
                                nameof(NuGetResources.MSbuildFromPath)),
                            msbuildPath);
+
                 if (!Directory.Exists(msbuildPath))
                 {
                     var message = string.Format(
