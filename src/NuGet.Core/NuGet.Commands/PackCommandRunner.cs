@@ -233,14 +233,14 @@ namespace NuGet.Commands
                 $"{targetFileName}.runtimeconfig.json"
             };
 
-            if (IncludeSymbols)
+            if (includeSymbols)
             {
                 outputFileNames.Add($"{targetFileName}.pdb");
                 outputFileNames.Add($"{targetFileName}.dll.mdb");
                 outputFileNames.Add($"{targetFileName}.exe.mdb");
             }
 
-            foreach (var file in GetFiles(projectOutputDirectory, targetFileName, outputFileNames))
+            foreach (var file in GetFiles(projectOutputDirectory, outputFileNames))
             {
                 var targetFolder = Path.GetDirectoryName(file).Replace(projectOutputDirectory + Path.DirectorySeparatorChar, "");
                 var packageFile = new PhysicalPackageFile
@@ -261,9 +261,9 @@ namespace NuGet.Commands
             }
         }
 
-        private static IEnumerable<string> GetFiles(string path, ISet<string> fileNames, SearchOption searchOption)
+        private static IEnumerable<string> GetFiles(string path, ISet<string> fileNames)
         {
-            return Directory.EnumerateFiles(path, "*", searchOption)
+            return Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories)
                 .Where(filePath => fileNames.Contains(Path.GetFileName(filePath)));
         }
 
