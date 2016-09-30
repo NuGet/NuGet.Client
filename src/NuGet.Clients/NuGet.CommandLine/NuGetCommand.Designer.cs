@@ -378,7 +378,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Msbuild Path.
+        ///   Looks up a localized string similar to Specifies the path of MSBuild to be used with this command. This command will takes precedence over MSbuildVersion, nuget will always pick MSbuild from this specified path..
         /// </summary>
         internal static string CommandMSBuildPath {
             get {

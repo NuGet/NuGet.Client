@@ -16841,6 +16841,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to MsbuildPath : {0} is using, ignore MsBuildVersion: {1}. .
+        /// </summary>
+        public static string Warning_MsbuildPath {
+            get {
+                return ResourceManager.GetString("Warning_MsbuildPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Option &apos;NoPrompt&apos; has been deprecated. Use &apos;NonInteractive&apos; instead..
         /// </summary>
         public static string Warning_NoPromptDeprecated {

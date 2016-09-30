@@ -90,6 +90,11 @@ namespace NuGet.CommandLine
             packArgs.OutputDirectory = OutputDirectory;
             packArgs.BasePath = BasePath;
 
+            if (MSBuildVersion != null && MSBuildPath != null)
+            {
+                Console.WriteWarning(LocalizedResourceManager.GetString("Warning_MsbuildPath"));
+            }
+
             // The directory that contains msbuild
             packArgs.MsBuildDirectory = MSBuildPath != null ? new Lazy<string>(() => MSBuildPath) 
                 : new Lazy<string>(() => MsBuildUtility.GetMsbuildDirectory(MSBuildVersion, Console));
