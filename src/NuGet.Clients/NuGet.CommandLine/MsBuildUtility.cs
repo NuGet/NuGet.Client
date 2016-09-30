@@ -10,7 +10,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.Build.Evaluation;
 using NuGet.Commands;
 using NuGet.Common;
 
@@ -344,11 +343,11 @@ namespace NuGet.CommandLine
         /// <returns>The matching toolset.</returns>
         /// <remarks>This method is not intended to be called directly. It's marked public so that it
         /// can be called by unit tests.</remarks>
-        public static Tuple<string, string> SelectMsbuildToolset(
+        public static MsbuildToolSet SelectMsbuildToolset(
             Version msbuildVersion,
-            IEnumerable<Tuple<string, string>> installedToolsets)
+            IEnumerable<MsbuildToolSet> installedToolsets)
         {
-            Tuple<string, string> selectedToolset;
+            MsbuildToolSet selectedToolset;
             if (msbuildVersion == null)
             {
                 // MSBuild does not exist in PATH. In this case, the highest installed version is used
@@ -360,7 +359,7 @@ namespace NuGet.CommandLine
                 selectedToolset = installedToolsets.FirstOrDefault(
                     toolset =>
                     {
-                        var v = SafeParseVersion(toolset.Item1);
+                        var v = SafeParseVersion(toolset.ToolsVersion);
                         return v.Major == msbuildVersion.Major && v.Minor == v.Minor;
                     });
 
@@ -370,7 +369,7 @@ namespace NuGet.CommandLine
                     selectedToolset = installedToolsets.FirstOrDefault(
                         toolset =>
                         {
-                            var v = SafeParseVersion(toolset.Item1);
+                            var v = SafeParseVersion(toolset.ToolsVersion);
                             return v.Major == msbuildVersion.Major;
                         });
                 }
@@ -404,6 +403,7 @@ namespace NuGet.CommandLine
         public static string GetMsbuildDirectory(string userVersion, IConsole console)
         {
             // Try to find msbuild for mono from hard code path.
+            // Mono always tell user we are on unix even user is on Mac.
             if (RuntimeEnvironmentHelper.IsMono)
             {
                 if (userVersion != null)
@@ -417,8 +417,9 @@ namespace NuGet.CommandLine
                 }
                 else
                 {
-                    var path = new[] { new Tuple<string, string>("15.0", CommandLineConstants.MsbuildPathOnMac15),
-                       new Tuple<string, string>("14.1", CommandLineConstants.MsbuildPathOnMac14) }.FirstOrDefault(p => Directory.Exists(p.Item2));
+                    var path = new[] { new MsbuildToolSet("15.0", CommandLineConstants.MsbuildPathOnMac15),
+                       new MsbuildToolSet("14.1", CommandLineConstants.MsbuildPathOnMac14) }
+                    .FirstOrDefault(p => Directory.Exists(p.ToolsPath));
 
                     if (path != null)
                     {
@@ -429,27 +430,27 @@ namespace NuGet.CommandLine
                                 console.WriteLine(
                                     LocalizedResourceManager.GetString(
                                         nameof(NuGetResources.MSBuildAutoDetection_Verbose)),
-                                    path.Item1,
-                                    path.Item2);
+                                    path.ToolsVersion,
+                                    path.ToolsPath);
                             }
                             else
                             {
                                 console.WriteLine(
                                     LocalizedResourceManager.GetString(
                                         nameof(NuGetResources.MSBuildAutoDetection)),
-                                    path.Item1,
-                                    path.Item2);
+                                    path.ToolsVersion,
+                                    path.ToolsPath);
                             }
                         }
 
-                        return path.Item2;
+                        return path.ToolsPath;
                     }
                 }
             }
 
             try
             {
-                List<Tuple<string, string>> installedToolsets = new List<Tuple<string, string>>();
+                List<MsbuildToolSet> installedToolsets = new List<MsbuildToolSet>();
                 var assembly = Assembly.Load(
                         "Microsoft.Build, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
                 Type projectCollectionType = assembly.GetType(
@@ -464,10 +465,10 @@ namespace NuGet.CommandLine
 
                     foreach (dynamic item in installed)
                     {
-                        installedToolsets.Add(new Tuple<string, string>(item.ToolsVersion, item.ToolsPath));
+                        installedToolsets.Add(new MsbuildToolSet(item.ToolsVersion, item.ToolsPath));
                     }
 
-                    installedToolsets = installedToolsets.OrderByDescending(toolset => SafeParseVersion(toolset.Item1)).ToList();
+                    installedToolsets = installedToolsets.OrderByDescending(toolset => SafeParseVersion(toolset.ToolsVersion)).ToList();
                 }
 
                 return GetMsbuildDirectoryInternal(userVersion, console, installedToolsets);
@@ -475,7 +476,7 @@ namespace NuGet.CommandLine
             catch (Exception e)
             {
                 throw new CommandLineException(LocalizedResourceManager.GetString(
-                            nameof(NuGetResources.LoadMsbuildToolSetError)), e);
+                            nameof(NuGetResources.MsbuildLoadToolSetError)), e);
             }
         }
 
@@ -484,7 +485,7 @@ namespace NuGet.CommandLine
         public static string GetMsbuildDirectoryInternal(
             string userVersion,
             IConsole console,
-            IEnumerable<Tuple<string, string>> installedToolsets)
+            IEnumerable<MsbuildToolSet> installedToolsets)
         {
             if (string.IsNullOrEmpty(userVersion))
             {
@@ -498,20 +499,20 @@ namespace NuGet.CommandLine
                         console.WriteLine(
                             LocalizedResourceManager.GetString(
                                 nameof(NuGetResources.MSBuildAutoDetection_Verbose)),
-                            toolset.Item1,
-                            toolset.Item2);
+                            toolset.ToolsVersion,
+                            toolset.ToolsPath);
                     }
                     else
                     {
                         console.WriteLine(
                             LocalizedResourceManager.GetString(
                                 nameof(NuGetResources.MSBuildAutoDetection)),
-                            toolset.Item1,
-                            toolset.Item2);
+                            toolset.ToolsVersion,
+                            toolset.ToolsPath);
                     }
                 }
 
-                return toolset.Item2;
+                return toolset.ToolsPath;
             }
             else
             {
@@ -531,14 +532,14 @@ namespace NuGet.CommandLine
                 toolset =>
                 {
                     // first match by string comparison
-                    if (string.Equals(userVersionString, toolset.Item1, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(userVersionString, toolset.ToolsVersion, StringComparison.OrdinalIgnoreCase))
                     {
                         return true;
                     }
 
                     // then match by Major & Minor version numbers.
                     Version toolsVersion;
-                    if (hasNumericVersion && Version.TryParse(toolset.Item1, out toolsVersion))
+                    if (hasNumericVersion && Version.TryParse(toolset.ToolsVersion, out toolsVersion))
                     {
                         return (toolsVersion.Major == ver.Major &&
                             toolsVersion.Minor == ver.Minor);
@@ -558,7 +559,7 @@ namespace NuGet.CommandLine
                     throw new CommandLineException(message);
                 }
 
-                return selectedToolset.Item2;
+                return selectedToolset.ToolsPath;
             }
         }
 
@@ -728,5 +729,18 @@ namespace NuGet.CommandLine
 
             return escaped;
         }
+    }
+
+    public class MsbuildToolSet
+    {
+        public MsbuildToolSet(string toolsVersion, string toolsPath)
+        {
+            ToolsPath = toolsPath;
+            ToolsVersion = toolsVersion;
+        }
+
+        public string ToolsPath { get; }
+
+        public string ToolsVersion { get; }
     }
 }

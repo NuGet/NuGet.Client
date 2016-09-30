@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System;
 using Xunit;
+using NuGet.Common;
 
 namespace NuGet.CommandLine.Test
 {
@@ -10,11 +11,11 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void HighestVersionSelectedIfMSBuildVersionIsNull()
         {
-            var toolsetV14 = new Tuple<string, string>("14.0", "v14path");
-            var toolsetV12 = new Tuple<string, string>("12.0", "v12path");
-            var toolsetV4 = new Tuple<string, string>("4.0", "v4path");
+            var toolsetV14 = new MsbuildToolSet("14.0", "v14path");
+            var toolsetV12 = new MsbuildToolSet("12.0", "v12path");
+            var toolsetV4 = new MsbuildToolSet("4.0", "v4path");
 
-            var installedToolsets = new List<Tuple<string, string>> {
+            var installedToolsets = new List<MsbuildToolSet> {
                     toolsetV14, toolsetV12, toolsetV4
                 };
 
@@ -29,12 +30,12 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void VersionSelectedThatMatchesMSBuildVersion()
         {
-            var toolsetV14 = new Tuple<string, string>("14.0", "v14path");
-            var toolsetV12_5 = new Tuple<string, string>("12.5", "v12_5path");
-            var toolsetV12 = new Tuple<string, string>("12.0", "v12path");
-            var toolsetV4 = new Tuple<string, string>("4.0", "v4path");
+            var toolsetV14 = new MsbuildToolSet("14.0", "v14path");
+            var toolsetV12_5 = new MsbuildToolSet("12.5", "v12_5path");
+            var toolsetV12 = new MsbuildToolSet("12.0", "v12path");
+            var toolsetV4 = new MsbuildToolSet("4.0", "v4path");
 
-            var installedToolsets = new List<Tuple<string, string>> {
+            var installedToolsets = new List<MsbuildToolSet> {
                     toolsetV14, toolsetV12_5, toolsetV12, toolsetV4
                 };
 
@@ -51,11 +52,11 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void VersionSelectedThatMatchesMSBuildVersionMajor()
         {
-            var toolsetV14 = new Tuple<string, string>("14.0", "v14path");
-            var toolsetV12 = new Tuple<string, string>("12.0", "v12path");
-            var toolsetV4 = new Tuple<string, string>("4.0", "v4path");
+            var toolsetV14 = new MsbuildToolSet("14.0", "v14path");
+            var toolsetV12 = new MsbuildToolSet("12.0", "v12path");
+            var toolsetV4 = new MsbuildToolSet("4.0", "v4path");
 
-            var installedToolsets = new List<Tuple<string, string>> {
+            var installedToolsets = new List<MsbuildToolSet> {
                     toolsetV14, toolsetV12, toolsetV4
                 };
 
@@ -71,11 +72,11 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void HighestVersionSelectedIfNoVersionMatch()
         {
-            var toolsetV14 = new Tuple<string, string>("14.0", "v14path");
-            var toolsetV12 = new Tuple<string, string>("12.0", "v12path");
-            var toolsetV4 = new Tuple<string, string>("4.0", "v4path");
+            var toolsetV14 = new MsbuildToolSet("14.0", "v14path");
+            var toolsetV12 = new MsbuildToolSet("12.0", "v12path");
+            var toolsetV4 = new MsbuildToolSet("4.0", "v4path");
 
-            var installedToolsets = new List<Tuple<string, string>> {
+            var installedToolsets = new List<MsbuildToolSet> {
                     toolsetV14, toolsetV12, toolsetV4
                 };
 
@@ -92,11 +93,11 @@ namespace NuGet.CommandLine.Test
         public void TestVersionMatch()
         {
             // Arrange
-            var toolsetV14 = new Tuple<string, string>("14.0", "v14path");
-            var toolsetV12 = new Tuple<string, string>("12.0", "v12path");
-            var toolsetV4 = new Tuple<string, string>("4.0", "v4path");
+            var toolsetV14 = new MsbuildToolSet("14.0", "v14path");
+            var toolsetV12 = new MsbuildToolSet("12.0", "v12path");
+            var toolsetV4 = new MsbuildToolSet("4.0", "v4path");
 
-            var installedToolsets = new List<Tuple<string, string>> {
+            var installedToolsets = new List<MsbuildToolSet> {
                     toolsetV14, toolsetV12, toolsetV4
                 };
 
@@ -107,18 +108,18 @@ namespace NuGet.CommandLine.Test
                 installedToolsets: installedToolsets);
 
             // Assert
-            Assert.Equal(directory, toolsetV12.Item2);
+            Assert.Equal(directory, toolsetV12.ToolsPath);
         }
 
         // Tests that, when userVersion is just a number, it can be matched with version userVersion + ".0".
         [Fact]
         public void TestVersionMatchByNumber()
         {
-            var toolsetV14 = new Tuple<string, string>("14.0", "v14path");
-            var toolsetV12 = new Tuple<string, string>("12.0", "v12path");
-            var toolsetV4 = new Tuple<string, string>("4.0", "v4path");
+            var toolsetV14 = new MsbuildToolSet("14.0", "v14path");
+            var toolsetV12 = new MsbuildToolSet("12.0", "v12path");
+            var toolsetV4 = new MsbuildToolSet("4.0", "v4path");
 
-            var installedToolsets = new List<Tuple<string, string>> {
+            var installedToolsets = new List<MsbuildToolSet> {
                     toolsetV14, toolsetV12, toolsetV4
                 };
 
@@ -129,7 +130,7 @@ namespace NuGet.CommandLine.Test
                     installedToolsets: installedToolsets);
 
             // Assert
-            Assert.Equal(directory, toolsetV12.Item2);
+            Assert.Equal(directory, toolsetV12.ToolsPath);
         }
 
 
@@ -144,11 +145,11 @@ namespace NuGet.CommandLine.Test
         public void TestVersionMatchByString(string userVersion, string expectedDirectory)
         {
             // Arrange
-            var toolsetV14 = new Tuple<string, string>("14.0", "v14path");
-            var toolsetV12 = new Tuple<string, string>("12.0", "v12path");
-            var toolsetFoo4 = new Tuple<string, string>("Foo4.0", "foo4path");
+            var toolsetV14 = new MsbuildToolSet("14.0", "v14path");
+            var toolsetV12 = new MsbuildToolSet("12.0", "v12path");
+            var toolsetFoo4 = new MsbuildToolSet("Foo4.0", "foo4path");
 
-            var installedToolsets = new List<Tuple<string, string>> {
+            var installedToolsets = new List<MsbuildToolSet> {
                     toolsetV14, toolsetV12, toolsetFoo4
                 };
 
@@ -177,11 +178,11 @@ namespace NuGet.CommandLine.Test
         [InlineData("0")]
         public void TestVersionMatchByStringFailure(string userVersion)
         {
-            var toolsetV14 = new Tuple<string, string>("14.0", "v14path");
-            var toolsetV12 = new Tuple<string, string>("12.0", "v12path");
-            var toolsetFoo4 = new Tuple<string, string>("Foo4.0", "foo4path");
+            var toolsetV14 = new MsbuildToolSet("14.0", "v14path");
+            var toolsetV12 = new MsbuildToolSet("12.0", "v12path");
+            var toolsetFoo4 = new MsbuildToolSet("Foo4.0", "foo4path");
 
-            var installedToolsets = new List<Tuple<string, string>> {
+            var installedToolsets = new List<MsbuildToolSet> {
                     toolsetV14, toolsetV12, toolsetFoo4
                 };
 
@@ -198,6 +199,29 @@ namespace NuGet.CommandLine.Test
             Assert.Equal(
                 $"Cannot find the specified version of msbuild: '{userVersion}'",
                 ex.Message);
+        }
+
+        [Fact]
+        public void TestGetMsbuildDirectoryForMonoOnMac()
+        {
+            var os = Environment.GetEnvironmentVariable("OSTYPE");
+            if (RuntimeEnvironmentHelper.IsMono && os != null && os.StartsWith("darwin"))
+            {
+                // Act
+                var directory15version = MsBuildUtility.GetMsbuildDirectory("15.0", null);
+                var directory15 = MsBuildUtility.GetMsbuildDirectory("15", null);
+                var directory14 = MsBuildUtility.GetMsbuildDirectory("14.1", null);
+                var directory = MsBuildUtility.GetMsbuildDirectory(null, null);
+
+                var msbuild14 = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/14.1/bin/";
+                var msbuild15 = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
+                
+                // Assert
+                Assert.Equal(directory15version, msbuild15);
+                Assert.Equal(directory15, msbuild15);
+                Assert.Equal(directory14, msbuild14);
+                Assert.True(new List<string> { msbuild14, msbuild15 }.Contains(directory));
+            }
         }
     }
 }

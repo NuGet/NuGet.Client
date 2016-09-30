@@ -5686,15 +5686,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Can&apos;t load Msbuild ToolSet..
-        /// </summary>
-        public static string LoadMsbuildToolSetError {
-            get {
-                return ResourceManager.GetString("LoadMsbuildToolSetError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Local resources cleared..
         /// </summary>
         public static string LocalsCommand_ClearedSuccessful {
@@ -6051,6 +6042,15 @@ namespace NuGet.CommandLine {
         public static string MsBuildDoesNotExistAtPath {
             get {
                 return ResourceManager.GetString("MsBuildDoesNotExistAtPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to load msbuild Toolset.
+        /// </summary>
+        public static string MsbuildLoadToolSetError {
+            get {
+                return ResourceManager.GetString("MsbuildLoadToolSetError", resourceCulture);
             }
         }
         
