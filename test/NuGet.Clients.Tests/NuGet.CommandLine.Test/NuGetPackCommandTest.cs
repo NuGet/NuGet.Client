@@ -1080,7 +1080,7 @@ namespace Proj2
         }
 
         [Fact]
-        public void PackCommand_IncludeDllSymbols()
+        public void PackCommand_IncludesDllSymbols()
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -1138,7 +1138,7 @@ namespace Proj2
         }
 
         [Fact]
-        public void PackCommand_IncludeExeSymbols()
+        public void PackCommand_IncludesExeSymbols()
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -1198,7 +1198,7 @@ public class B
         }
 
         [Fact]
-        public void PackCommand_IncludeDocCommentsXmlFile()
+        public void PackCommand_IncludesDocCommentsXmlFile()
         {
             var nugetexe = Util.GetNuGetExePath();
 
