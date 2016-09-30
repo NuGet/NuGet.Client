@@ -1049,15 +1049,30 @@ namespace Proj2
                 var package = new OptimizedZipPackage(Path.Combine(proj2Directory, "proj2.0.0.0.symbols.nupkg"));
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);
+
+                string proj1SymbolsFileName;
+                string proj2SymbolsFileName;
+
+                if (RuntimeEnvironmentHelper.IsMono)
+                {
+                    proj1SymbolsFileName = "proj1.dll.mdb";
+                    proj2SymbolsFileName = "proj2.dll.mdb";
+                }
+                else
+                {
+                    proj1SymbolsFileName = "proj1.pdb";
+                    proj2SymbolsFileName = "proj2.pdb";
+                }
+
                 Assert.Equal(
                     files,
                     new string[]
                     {
                         Path.Combine("content", "proj1_file2.txt"),
                         Path.Combine("lib", "net40", "proj1.dll"),
-                        Path.Combine("lib", "net40", "proj1.pdb"),
+                        Path.Combine("lib", "net40", proj1SymbolsFileName),
                         Path.Combine("lib", "net40", "proj2.dll"),
-                        Path.Combine("lib", "net40", "proj2.pdb"),
+                        Path.Combine("lib", "net40", proj2SymbolsFileName),
                         Path.Combine("src", "proj1", "proj1_file1.cs"),
                         Path.Combine("src", "proj2", "proj2_file1.cs"),
                     });
