@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using System;
-using Xunit;
+﻿using System;
+using System.Collections.Generic;
 using NuGet.Common;
+using Xunit;
 
 namespace NuGet.CommandLine.Test
 {
