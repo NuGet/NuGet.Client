@@ -788,6 +788,9 @@ namespace Proj2
         [Fact]
         public void PackCommand_PclProjectWithProjectJsonAndTargetsNetStandard()
         {
+            // Skip this test on Mono
+            if (RuntimeEnvironmentHelper.IsMono) return;
+
             // This bug tests issue: https://github.com/NuGet/Home/issues/3108
             var nugetexe = Util.GetNuGetExePath();
 
@@ -3552,6 +3555,9 @@ stuff \n <<".Replace("\r\n", "\n");
         [Fact]
         public void PackCommand_PackJsonCorrectLibPathInNupkg()
         {
+            // Skip this test on Mono
+            if (RuntimeEnvironmentHelper.IsMono) return;
+
             var nugetexe = Util.GetNuGetExePath();
 
             using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
@@ -3676,6 +3682,9 @@ stuff \n <<".Replace("\r\n", "\n");
         [InlineData(".exe")]
         public void PackCommand_PackJsonCorrectLibPathInNupkgWithOutputName(string extension)
         {
+            // Skip this test on Mono
+            if (RuntimeEnvironmentHelper.IsMono) return;
+
             var nugetexe = Util.GetNuGetExePath();
 
             using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
@@ -3859,6 +3868,9 @@ stuff \n <<".Replace("\r\n", "\n");
         [Fact]
         public void PackCommand_BuildProjectJsonWithFullBasePath()
         {
+            // Skip this test on Mono
+            if (RuntimeEnvironmentHelper.IsMono) return;
+
             var nugetexe = Util.GetNuGetExePath();
 
             using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
@@ -3923,6 +3935,9 @@ stuff \n <<".Replace("\r\n", "\n");
         [Fact]
         public void PackCommand_BuildProjectJsonWithRelativeBasePath()
         {
+            // Skip this test on Mono
+            if (RuntimeEnvironmentHelper.IsMono) return;
+
             var nugetexe = Util.GetNuGetExePath();
 
             using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
