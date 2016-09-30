@@ -217,15 +217,13 @@ namespace NuGet.Commands
                 projectOutputDirectory = targetPath.Substring(0, targetPath.IndexOf(configFolderPath) + configFolderPath.Length);
             }
 
-            NuGetFramework targetFramework = NuGetFramework.AnyFramework;
-
-            var targetFileName = Path.GetFileNameWithoutExtension(targetPath);
-
             if (!Directory.Exists(projectOutputDirectory))
             {
                 throw new Exception("No build found in " + projectOutputDirectory + ". Use the -Build option or build the project.");
             }
 
+            NuGetFramework targetFramework = NuGetFramework.AnyFramework;
+            var targetFileName = Path.GetFileNameWithoutExtension(targetPath);
             var outputFileNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 $"{targetFileName}.dll",
