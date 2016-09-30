@@ -454,5 +454,6 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   </data>
   <data name="Error_UnableToLocateBuildOutput" xml:space="preserve">
     <value>No build found in {0}. Use the -Build option or build the project.</value>
+    <comment>{0} is the project output directory</comment>
   </data>
 </root>
