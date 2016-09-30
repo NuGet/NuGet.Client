@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace NuGet.Test.Utility
 {
@@ -58,32 +59,13 @@ namespace NuGet.Test.Utility
             {
                 p = new Process();
 
-                p.OutputDataReceived += (o, e) =>
-                {
-                    if (e.Data != null)
-                    {
-                        output.AppendLine(e.Data);
-                    }
-                };
-
-                p.ErrorDataReceived += (o, e) =>
-                {
-                    if (e.Data != null)
-                    {
-                        errors.AppendLine(e.Data);
-                    }
-                };
-
                 p.StartInfo = psi;
                 p.Start();
 
-                p.BeginErrorReadLine();
-                p.BeginOutputReadLine();
+                var outputTask = ConsumeStreamReaderAsync(p.StandardOutput, output);
+                var errorTask = ConsumeStreamReaderAsync(p.StandardError, errors);
 
-                if (inputAction != null)
-                {
-                    inputAction(p.StandardInput);
-                }
+                inputAction?.Invoke(p.StandardInput);
 
                 if (waitForExit)
                 {
@@ -91,8 +73,9 @@ namespace NuGet.Test.Utility
                     var processExited = true;
                     p.WaitForExit();
 #else
-                    bool processExited = p.WaitForExit(timeOutInMilliseconds);
+                    var processExited = p.WaitForExit(timeOutInMilliseconds);
 #endif
+                    Task.WaitAll(outputTask, errorTask);
                     if (!processExited)
                     {
                         p.Kill();
@@ -117,6 +100,17 @@ namespace NuGet.Test.Utility
             }
 
             return new CommandRunnerResult(p, exitCode, output, errors);
+        }
+
+        private static async Task ConsumeStreamReaderAsync(StreamReader reader, LockedStringBuilder lines)
+        {
+            await Task.Yield();
+
+            string line;
+            while ((line = await reader.ReadLineAsync()) != null)
+            {
+                lines.AppendLine(line);
+            }
         }
     }
 }

@@ -52,6 +52,7 @@
     <Compile Include="Caching\Tests\PopulatesDestinationFolderTest.cs" />
     <Compile Include="Caching\Tests\UsesGlobalPackagesFolderCopyTest.cs" />
     <Compile Include="Caching\Tests\AllowsMissingPackageOnSourceTest.cs" />
+    <Compile Include="CommandRunnerTest.cs" />
     <Compile Include="Commands\PushCommandTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
