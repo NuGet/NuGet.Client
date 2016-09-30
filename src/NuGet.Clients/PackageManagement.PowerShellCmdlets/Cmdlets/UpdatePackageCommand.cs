@@ -161,8 +161,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             try
             {
-                var isPackageInstalled = await PreviewAndExecuteUpdateActionsforSinglePackage();
-                if (!isPackageInstalled)
+                var isPackageInstalled = await IsPackageInstalledAsync(Id);
+
+                if (isPackageInstalled)
+                {
+                    await PreviewAndExecuteUpdateActionsForSinglePackage();
+                }
+                else
                 {
                     Log(MessageLevel.Error, Resources.Cmdlet_PackageNotInstalledInAnyProject, Id);
                 }
@@ -180,15 +185,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Preview update actions for single package
         /// </summary>
-        /// <param name="project"></param>
         /// <returns></returns>
-        private async Task<bool> PreviewAndExecuteUpdateActionsforSinglePackage()
+        private async Task PreviewAndExecuteUpdateActionsForSinglePackage()
         {
             var actions = Enumerable.Empty<NuGetProjectAction>();
-
-            // Check if the package is installed or not.
-            // Used to throw an error message indicating that the package was not installed to begin with.
-            var isInstalled = await IsPackageInstalled(Id);
 
             // If -Version switch is specified
             if (!string.IsNullOrEmpty(Version))
@@ -215,20 +215,18 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
 
             await ExecuteActions(actions);
-
-            return isInstalled;
         }
 
         /// <summary>
         /// Method checks if the package to be updated is installed in any package or not.
         /// </summary>
         /// <param name="packageId">Id of the package to be updated/checked</param>
-        /// <returns><code>bool</code> indicating wether the package is installed on any package or not</returns>
-        private async Task<bool> IsPackageInstalled(string packageId)
+        /// <returns><code>bool</code> indicating whether the package is already installed, on any project, or not</returns>
+        private async Task<bool> IsPackageInstalledAsync(string packageId)
         {
             foreach (var project in Projects)
             {
-                var installedPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
+                var installedPackages = await project.GetInstalledPackagesAsync(Token);
                 if (installedPackages.Select(installedPackage => installedPackage.PackageIdentity.Id)
                                      .Any(installedPackageId => installedPackageId.Equals(packageId, StringComparison.OrdinalIgnoreCase)))
                 {
