@@ -96,6 +96,13 @@ namespace NuGet.Build.Tasks
 
                 var dgFile = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
 
+                if (dgFile.Restore.Count < 1)
+                {
+                    // Restore will fail if given no inputs, but here we should skip it and provide a friendly message.
+                    log.LogMinimal("Nothing to do. None of the projects specified contain packages to restore.");
+                    return true;
+                }
+
                 providers.Add(new DependencyGraphSpecRequestProvider(providerCache, dgFile));
 
                 var defaultSettings = Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null);

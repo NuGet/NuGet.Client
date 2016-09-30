@@ -162,7 +162,7 @@ namespace NuGet.CommandLine.Test
             using (var pathContext = new SimpleTestPathContext())
             {
                 // Create this many different tool versions and projects
-                int testCount = 100;
+                int testCount = 10;
 
                 // Set up solution, project, and packages
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
@@ -1384,6 +1384,29 @@ namespace NuGet.CommandLine.Test
                 Assert.False(File.Exists(projectA.PropsOutput), r.Item2);
 
                 Assert.Equal(NuGetFramework.Parse("net45"), projectA.AssetsFile.Targets.Single().TargetFramework);
+            }
+        }
+
+        [Fact]
+        public void RestoreNetCore_SingleProject_NonNuGet()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNonNuGet(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act && Assert
+                // Verify this is a noop and not a failure
+                var r = RestoreSolution(pathContext);
             }
         }
 

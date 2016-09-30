@@ -94,6 +94,8 @@ namespace NuGet.CommandLine
             {
                 ExtractResource(NuGetTargets, entryPointTargetPath);
 
+                // Use RestoreUseCustomAfterTargets=true to allow recursion
+                // for scenarios where NuGet is not part of ImportsAfter.
                 var argumentBuilder = new StringBuilder(
                     "/t:GenerateRestoreGraphFile " +
                     "/nologo /nr:false /p:RestoreUseCustomAfterTargets=true " +
@@ -119,12 +121,19 @@ namespace NuGet.CommandLine
                     argumentBuilder.Append($" {msbuildAdditionalArgs} ");
                 }
 
+                // Override the target under ImportsAfter with the current NuGet.targets version.
+                argumentBuilder.Append(" /p:NuGetRestoreTargets=");
+                AppendQuoted(argumentBuilder, entryPointTargetPath);
+
+                // Set path to nuget.exe or the build task
                 argumentBuilder.Append(" /p:RestoreTaskAssemblyFile=");
                 AppendQuoted(argumentBuilder, nugetExePath);
 
+                // dg file output path
                 argumentBuilder.Append(" /p:RestoreGraphOutputPath=");
                 AppendQuoted(argumentBuilder, resultsPath);
 
+                // Projects to restore
                 argumentBuilder.Append(" /p:RestoreGraphProjectInput=\"");
                 for (var i = 0; i < projectPaths.Length; i++)
                 {

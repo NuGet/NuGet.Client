@@ -77,6 +77,30 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
+    GenerateRestoreGraphFile
+    Writes the output of _GenerateRestoreGraph to disk
+    ============================================================
+  -->
+  <Target Name="GenerateRestoreGraphFile" DependsOnTargets="_GenerateRestoreGraph">
+    <!-- Validate  -->
+    <Error Condition="$(RestoreGraphOutputPath) == ''" Text="Missing RestoreGraphOutputPath property!" />
+
+    <!-- Drop any duplicate items -->
+    <RemoveDuplicates
+        Inputs="@(_RestoreGraphEntry)">
+      <Output
+          TaskParameter="Filtered"
+          ItemName="_RestoreGraphEntryFiltered" />
+    </RemoveDuplicates>
+
+    <!-- Write file -->
+    <WriteRestoreGraphTask
+      RestoreGraphItems="@(_RestoreGraphEntryFiltered)"
+      RestoreGraphOutputPath="$(RestoreGraphOutputPath)" />
+  </Target>
+
+  <!--
+    ============================================================
     _LoadRestoreGraphEntryPoints
     Find project entry points and load them into items.
     ============================================================
@@ -98,18 +122,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <!--
-    ============================================================
-    _GenerateRestoreGraphProjectEntry
-    Top level entry point within a project.
-    ============================================================
-  -->
-  <Target Name="_GenerateRestoreGraphProjectEntry"
-          DependsOnTargets="_GenerateRestoreSpecs;_GenerateDotnetCliToolReferenceSpecs;_GenerateRestoreGraphWalk"
-          Returns="@(_RestoreGraphEntry)">
-    <!-- Returns restore graph entries for the project and all dependencies -->
-  </Target>
-
     <!--
     ============================================================
     _GenerateRestoreGraph
@@ -121,25 +133,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <Message Text="%(RestoreGraphProjectInputItems.Identity)" Importance="low" />
 
     <!-- Generate a restore graph for each entry point project -->
-    
-    <!-- Standalone mode -->
-    <MsBuild
-        Condition=" '$(RestoreUseCustomAfterTargets)' == 'true' "
-        Projects="@(RestoreGraphProjectInputItems)"
-        Targets="_GenerateRestoreGraphProjectEntry"
-        BuildInParallel="false"
-        Properties="
-                %(_MSBuildProjectReferenceExistent.SetConfiguration);
-                %(_MSBuildProjectReferenceExistent.SetPlatform);
-                CustomAfterMicrosoftCommonCrossTargetingTargets=$(MSBuildThisFileFullPath);
-                CustomAfterMicrosoftCommonTargets=$(MSBuildThisFileFullPath);
-                BuildProjectReferences=false;"
-        RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
-
-      <Output
-          TaskParameter="TargetOutputs"
-          ItemName="_RestoreGraphEntry" />
-    </MsBuild>
 
     <!-- Using targets imported with ImportsAfter -->
     <MsBuild
@@ -150,6 +143,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         Properties="
                 %(_MSBuildProjectReferenceExistent.SetConfiguration);
                 %(_MSBuildProjectReferenceExistent.SetPlatform);
+                RestoreUseCustomAfterTargets=$(RestoreUseCustomAfterTargets);
+                NuGetRestoreTargets=$(MSBuildThisFileFullPath);
                 BuildProjectReferences=false;"
         RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
 
@@ -157,6 +152,44 @@ Copyright (c) .NET Foundation. All rights reserved.
           TaskParameter="TargetOutputs"
           ItemName="_RestoreGraphEntry" />
     </MsBuild>
+
+    <!-- Standalone mode
+      This is used by NuGet.exe or to directly override NuGet.targets with the current file.
+      Override the ImportAfter targets with NuGetRestoreTargets if they exist.
+      Set CustomAfterMicrosoftCommonCrossTargetingTargets and CustomAfterMicrosoftCommonTargets
+      for both the inner and outer builds.
+    -->
+    <MsBuild
+        Condition=" '$(RestoreUseCustomAfterTargets)' == 'true' "
+        Projects="@(RestoreGraphProjectInputItems)"
+        Targets="_GenerateRestoreGraphProjectEntry"
+        BuildInParallel="false"
+        Properties="
+                %(_MSBuildProjectReferenceExistent.SetConfiguration);
+                %(_MSBuildProjectReferenceExistent.SetPlatform);
+                CustomAfterMicrosoftCommonCrossTargetingTargets=$(MSBuildThisFileFullPath);
+                CustomAfterMicrosoftCommonTargets=$(MSBuildThisFileFullPath);
+                RestoreUseCustomAfterTargets=$(RestoreUseCustomAfterTargets);
+                NuGetRestoreTargets=$(MSBuildThisFileFullPath);
+                BuildProjectReferences=false;"
+        RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="_RestoreGraphEntry" />
+    </MsBuild>
+  </Target>
+
+  <!--
+    ============================================================
+    _GenerateRestoreGraphProjectEntry
+    Top level entry point within a project.
+    ============================================================
+  -->
+  <Target Name="_GenerateRestoreGraphProjectEntry"
+          DependsOnTargets="_GenerateRestoreSpecs;_GenerateDotnetCliToolReferenceSpecs;_GenerateRestoreGraphWalk"
+          Returns="@(_RestoreGraphEntry)">
+    <!-- Returns restore graph entries for the project and all dependencies -->
   </Target>
 
   <!--
@@ -378,6 +411,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       Properties="TargetFramework=%(_RestoreTargetFrameworksOutputFiltered.Identity);
               %(_MSBuildProjectReferenceExistent.SetConfiguration);
               %(_MSBuildProjectReferenceExistent.SetPlatform);
+              RestoreUseCustomAfterTargets=$(RestoreUseCustomAfterTargets);
+              NuGetRestoreTargets=$(MSBuildThisFileFullPath);
               BuildProjectReferences=false;"
       RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
 
@@ -403,6 +438,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       Targets="_GenerateRestoreGraphWalk"
       Properties="%(_MSBuildProjectReferenceExistent.SetConfiguration);
             %(_MSBuildProjectReferenceExistent.SetPlatform);
+            RestoreUseCustomAfterTargets=$(RestoreUseCustomAfterTargets);
+            NuGetRestoreTargets=$(MSBuildThisFileFullPath);
             BuildProjectReferences=false"
       RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
 
@@ -482,29 +519,5 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <RestoreGraphProjectFullPathForOutput Include="$(RestoreGraphAbsoluteProjectPaths)" />
     </ItemGroup>
-  </Target>
-
-  <!--
-    ============================================================
-    GenerateRestoreGraphFile
-    Writes the output of _GenerateRestoreGraph to disk
-    ============================================================
-  -->
-  <Target Name="GenerateRestoreGraphFile" DependsOnTargets="_GenerateRestoreGraph">
-    <!-- Validate  -->
-    <Error Condition="$(RestoreGraphOutputPath) == ''" Text="Missing RestoreGraphOutputPath property!" />
-
-    <!-- Drop any duplicate items -->
-    <RemoveDuplicates
-        Inputs="@(_RestoreGraphEntry)">
-      <Output
-          TaskParameter="Filtered"
-          ItemName="_RestoreGraphEntryFiltered" />
-    </RemoveDuplicates>
-
-    <!-- Write file -->
-    <WriteRestoreGraphTask
-      RestoreGraphItems="@(_RestoreGraphEntryFiltered)"
-      RestoreGraphOutputPath="$(RestoreGraphOutputPath)" />
   </Target>
 </Project>
