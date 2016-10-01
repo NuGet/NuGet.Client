@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.Build.Evaluation;
 using NuGet.Commands;
 using NuGet.Common;
@@ -600,6 +601,66 @@ namespace NuGet.CommandLine
                     }
                 }
             }
+        }
+
+        private static string GetMsbuild(string msbuildDirectory)
+        {
+            if (RuntimeEnvironmentHelper.IsMono)
+            {
+                // Try to find msbuild or xbuild in $Path.
+                string[] pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(new[] { Path.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
+
+                if (pathDirs?.Length > 0)
+                {
+                    foreach (var exeName in new[] { "msbuild", "xbuild" })
+                    {
+                        var exePath = pathDirs.Select(dir => Path.Combine(dir, exeName)).FirstOrDefault(File.Exists);
+                        if (exePath != null)
+                        {
+                            return exePath;
+                        }
+                    }
+                }
+
+                // Try to find msbuild.exe from hard code path.
+                var path = new[] { CommandLineConstants.MsbuildPathOnMac15, CommandLineConstants.MsbuildPathOnMac14 }.
+                    Select(p => Path.Combine(p, "msbuild.exe")).FirstOrDefault(File.Exists);
+
+                if (path != null)
+                {
+                    return path;
+                }
+                else
+                {
+                    return Path.Combine(msbuildDirectory, "xbuild.exe");
+                }
+            }
+            else
+            {
+                return Path.Combine(msbuildDirectory, "msbuild.exe");
+            }
+
+        }
+
+        /// <summary>
+        /// Escapes a string so that it can be safely passed as a command line argument when starting a msbuild process.
+        /// Source: http://stackoverflow.com/a/12364234
+        /// </summary>
+        public static string Escape(string argument)
+        {
+            if (argument == string.Empty)
+            {
+                return "\"\"";
+            }
+
+            var escaped = Regex.Replace(argument, @"(\\*)""", @"$1\$0");
+
+            escaped = Regex.Replace(
+                escaped,
+                @"^(.*\s.*?)(\\*)$", @"""$1$2$2""",
+                RegexOptions.Singleline);
+
+            return escaped;
         }
     }
 }
