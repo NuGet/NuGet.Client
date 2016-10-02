@@ -413,4 +413,8 @@
     <value>Failed to find a project to restore in the folder '{0}'.</value>
     <comment>{0} is the folder that could not be accessed. The underlying failure is available in the inner exception message.</comment>
   </data>
+  <data name="Error_UnableToLocateBuildOutput" xml:space="preserve">
+    <value>No build found in {0}. Use the -Build option or build the project.</value>
+    <comment>{0} is the project output directory</comment>
+  </data>
 </root>
