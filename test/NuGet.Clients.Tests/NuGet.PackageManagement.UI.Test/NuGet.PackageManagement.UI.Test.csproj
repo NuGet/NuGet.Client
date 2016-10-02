@@ -45,13 +45,13 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.VisualStudio\NuGet.VisualStudio.csproj">
+      <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
+      <Name>NuGet.VisualStudio</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\src\NuGet.Clients\PackageManagement.UI\NuGet.PackageManagement.UI.csproj">
       <Project>{538adefd-2170-40a9-a2c5-ec8369cfe490}</Project>
       <Name>NuGet.PackageManagement.UI</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\src\NuGet.Clients\VisualStudio\NuGet.VisualStudio.csproj">
-      <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
-      <Name>NuGet.VisualStudio</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
