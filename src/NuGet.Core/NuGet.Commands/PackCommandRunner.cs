@@ -217,40 +217,38 @@ namespace NuGet.Commands
                 projectOutputDirectory = targetPath.Substring(0, targetPath.IndexOf(configFolderPath) + configFolderPath.Length);
             }
 
-            NuGetFramework targetFramework = NuGetFramework.AnyFramework;
+            if (!Directory.Exists(projectOutputDirectory))
+            {
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_UnableToLocateBuildOutput, projectOutputDirectory));
+            }
 
-            // List of extensions to allow in the output path
-            var allowedOutputExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
-                ".dll",
-                ".exe",
-                ".xml",
-                ".winmd",
-                ".runtimeconfig.json",
-
+            var targetFramework = NuGetFramework.AnyFramework;
+            var targetFileName = Path.GetFileNameWithoutExtension(targetPath);
+            var outputFileNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                $"{targetFileName}.dll",
+                $"{targetFileName}.exe",
+                $"{targetFileName}.xml",
+                $"{targetFileName}.winmd",
+                $"{targetFileName}.runtimeconfig.json"
             };
 
             if (includeSymbols)
             {
-                // Include pdbs for symbol packages
-                allowedOutputExtensions.Add(".pdb");
+                outputFileNames.Add($"{targetFileName}.pdb");
+                outputFileNames.Add($"{targetFileName}.dll.mdb");
+                outputFileNames.Add($"{targetFileName}.exe.mdb");
             }
 
-            var targetFileName = Path.GetFileNameWithoutExtension(targetPath);
-
-            if (!Directory.Exists(projectOutputDirectory))
-            {
-                throw new Exception("No build found in " + projectOutputDirectory + ". Use the -Build option or build the project.");
-            }
-
-            foreach (var file in GetFiles(projectOutputDirectory, targetFileName, allowedOutputExtensions))
+            foreach (var file in GetFiles(projectOutputDirectory, outputFileNames))
             {
                 var targetFolder = Path.GetDirectoryName(file).Replace(projectOutputDirectory + Path.DirectorySeparatorChar, "");
-
                 var packageFile = new PhysicalPackageFile
                 {
                     SourcePath = file,
                     TargetPath = Path.Combine("lib", targetFolder, Path.GetFileName(file))
                 };
+
                 AddFileToBuilder(builder, packageFile);
             }
         }
@@ -263,9 +261,10 @@ namespace NuGet.Commands
             }
         }
 
-        private static IEnumerable<string> GetFiles(string path, string fileNameWithoutExtension, HashSet<string> allowedExtensions)
+        private static IEnumerable<string> GetFiles(string path, ISet<string> fileNames)
         {
-            return allowedExtensions.Select(extension => Directory.GetFiles(path, fileNameWithoutExtension + extension, SearchOption.AllDirectories)).SelectMany(a => a);
+            return Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories)
+                .Where(filePath => fileNames.Contains(Path.GetFileName(filePath)));
         }
 
         private PackageBuilder CreatePackageBuilderFromProjectJson(string path, Func<string, string> propertyProvider)

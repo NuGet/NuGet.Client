@@ -415,14 +415,14 @@ namespace NuGet.CommandLine.Test
                 var files = package.GetFiles().Select(f => f.Path).OrderBy(s => s).ToArray();
 
                 Assert.Equal(
-                    files,
                     new string[]
                     {
                             Path.Combine("lib", "uap10.0", "a.dll"),
                             Path.Combine("native", "a.dll"),
                             Path.Combine("ref", "uap10.0", "a.dll"),
                             Path.Combine("runtimes", "win-x86", "lib", "uap10.0", "a.dll"),
-                    });
+                    },
+                    files);
 
                 Assert.False(r.Item2.Contains("Assembly outside lib folder"));
             }
@@ -484,12 +484,12 @@ namespace NuGet.CommandLine.Test
                 var files = package.GetFiles().Select(f => f.Path).OrderBy(s => s).ToArray();
 
                 Assert.Equal(
-                    files,
                     new string[]
                     {
                             Path.Combine("lib", "native", id + ".dll"),
                             Path.Combine("lib", "uap10.0" , id + ".dll"),
-                    });
+                    },
+                    files);
 
                 Assert.False(r.Item2.Contains("Assembly outside lib folder"));
             }
@@ -594,11 +594,11 @@ namespace NuGet.CommandLine.Test
                 Array.Sort(files);
 
                 Assert.Equal(
-                    files,
                     new string[]
                     {
                             Path.Combine("lib", "native" ,id + ".dll")
-                    });
+                    },
+                    files);
 
                 Assert.False(r.Item2.Contains("Assembly outside lib folder"));
             }
@@ -665,12 +665,12 @@ namespace NuGet.CommandLine.Test
                     Array.Sort(files);
 
                     Assert.Equal(
-                        files,
                         new string[]
                         {
-                        Path.Combine("contentFiles", "any", "any", "image.jpg"),
-                        Path.Combine("contentFiles", "cs", "net45", "code.cs"),
-                        });
+                            Path.Combine("contentFiles", "any", "any", "image.jpg"),
+                            Path.Combine("contentFiles", "cs", "net45", "code.cs"),
+                        },
+                        files);
 
                     Assert.Equal(
                         @"<contentFiles xmlns=""http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd"">
@@ -775,13 +775,13 @@ namespace Proj2
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);
                 Assert.Equal(
-                    files,
                     new string[]
                     {
                         Path.Combine("content", "proj1_file2.txt"),
                         Path.Combine("lib", "net40", "proj1.dll"),
                         Path.Combine("lib", "net40", "proj2.dll")
-                    });
+                    },
+                    files);
             }
         }
 
@@ -867,11 +867,11 @@ namespace Proj1
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);
                 Assert.Equal(
-                    files,
                     new string[]
                     {
                         Path.Combine("lib", "netstandard1.3", "proj1.dll")
-                    });
+                    },
+                    files);
             }
         }
 
@@ -1049,18 +1049,213 @@ namespace Proj2
                 var package = new OptimizedZipPackage(Path.Combine(proj2Directory, "proj2.0.0.0.symbols.nupkg"));
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);
+
+                string proj1SymbolsFileName;
+                string proj2SymbolsFileName;
+
+                if (RuntimeEnvironmentHelper.IsMono)
+                {
+                    proj1SymbolsFileName = "proj1.dll.mdb";
+                    proj2SymbolsFileName = "proj2.dll.mdb";
+                }
+                else
+                {
+                    proj1SymbolsFileName = "proj1.pdb";
+                    proj2SymbolsFileName = "proj2.pdb";
+                }
+
                 Assert.Equal(
-                    files,
                     new string[]
                     {
                         Path.Combine("content", "proj1_file2.txt"),
                         Path.Combine("lib", "net40", "proj1.dll"),
-                        Path.Combine("lib", "net40", "proj1.pdb"),
+                        Path.Combine("lib", "net40", proj1SymbolsFileName),
                         Path.Combine("lib", "net40", "proj2.dll"),
-                        Path.Combine("lib", "net40", "proj2.pdb"),
+                        Path.Combine("lib", "net40", proj2SymbolsFileName),
                         Path.Combine("src", "proj1", "proj1_file1.cs"),
                         Path.Combine("src", "proj2", "proj2_file1.cs"),
-                    });
+                    },
+                    files);
+            }
+        }
+
+        [Fact]
+        public void PackCommand_IncludesDllSymbols()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var projDirectory = Path.Combine(workingDirectory, "A");
+
+                Util.CreateFile(
+                    projDirectory,
+                    "A.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include='B.cs' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+                Util.CreateFile(
+                    projDirectory,
+                    "B.cs",
+@"public class B
+{
+    public int C { get; set; }
+}");
+
+                // Act
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    projDirectory,
+                    "pack A.csproj -build -symbols",
+                    waitForExit: true);
+                Assert.True(result.Item1 == 0, result.Item2 + " " + result.Item3);
+
+                // Assert
+                var package = new OptimizedZipPackage(Path.Combine(projDirectory, "A.0.0.0.symbols.nupkg"));
+                var files = package.GetFiles().Select(file => file.Path).ToArray();
+                Array.Sort(files);
+
+                var symbolsFileName = RuntimeEnvironmentHelper.IsMono ? "A.dll.mdb" : "A.pdb";
+
+                Assert.Equal(
+                    new string[]
+                    {
+                        Path.Combine("lib", "net40", "A.dll"),
+                        Path.Combine("lib", "net40", symbolsFileName),
+                        Path.Combine("src", "B.cs")
+                    },
+                    files);
+            }
+        }
+
+        [Fact]
+        public void PackCommand_IncludesExeSymbols()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var projDirectory = Path.Combine(workingDirectory, "A");
+
+                Util.CreateFile(
+                    projDirectory,
+                    "A.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>exe</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include='B.cs' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+                Util.CreateFile(
+                    projDirectory,
+                    "B.cs",
+@"using System;
+
+public class B
+{
+    public static void Main() { }
+}");
+
+                // Act
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    projDirectory,
+                    "pack A.csproj -build -symbols",
+                    waitForExit: true);
+                Assert.True(result.Item1 == 0, result.Item2 + " " + result.Item3);
+
+                // Assert
+                var package = new OptimizedZipPackage(Path.Combine(projDirectory, "A.0.0.0.symbols.nupkg"));
+                var files = package.GetFiles().Select(file => file.Path).ToArray();
+                Array.Sort(files);
+
+                var symbolsFileName = RuntimeEnvironmentHelper.IsMono ? "A.exe.mdb" : "A.pdb";
+
+                Assert.Equal(
+                    new string[]
+                    {
+                        Path.Combine("lib", "net40", "A.exe"),
+                        Path.Combine("lib", "net40", symbolsFileName),
+                        Path.Combine("src", "B.cs")
+                    },
+                    files);
+            }
+        }
+
+        [Fact]
+        public void PackCommand_IncludesDocCommentsXmlFile()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var projDirectory = Path.Combine(workingDirectory, "A");
+
+                Util.CreateFile(
+                    projDirectory,
+                    "A.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <DocumentationFile>out\A.xml</DocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include='B.cs' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+                Util.CreateFile(
+                    projDirectory,
+                    "B.cs",
+@"/// <summary>
+/// B
+/// </summary>
+public class B
+{
+    /// <summary>
+    /// C
+    /// </summary>
+    public int C { get; set; }
+}");
+
+                // Act
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    projDirectory,
+                    "pack A.csproj -build",
+                    waitForExit: true);
+                Assert.True(result.Item1 == 0, result.Item2 + " " + result.Item3);
+
+                // Assert
+                var package = new OptimizedZipPackage(Path.Combine(projDirectory, "A.0.0.0.nupkg"));
+                var files = package.GetFiles().Select(file => file.Path).ToArray();
+                Array.Sort(files);
+
+                Assert.Equal(
+                    new string[]
+                    {
+                        Path.Combine("lib", "net40", "A.dll"),
+                        Path.Combine("lib", "net40", "A.xml"),
+                    },
+                    files);
             }
         }
 
@@ -1155,23 +1350,23 @@ namespace Proj2
 
                 // proj3 and proj7 are included in the package.
                 Assert.Equal(
-                    files,
                     new string[]
                     {
                         Path.Combine("lib", "net40", "proj1.dll"),
                         Path.Combine("lib", "net40", "proj3.dll"),
                         Path.Combine("lib", "net40", "proj7.dll")
-                    });
+                    },
+                    files);
 
                 // proj2 and proj6 are added as dependencies.
                 var dependencies = package.DependencySets.First().Dependencies.OrderBy(d => d.Id);
                 Assert.Equal(
-                    dependencies,
                     new PackageDependency[]
                     {
                         new PackageDependency("proj2", VersionUtility.ParseVersionSpec("1.0.0")),
                         new PackageDependency("proj6", VersionUtility.ParseVersionSpec("2.0.0"))
                     },
+                    dependencies,
                     new PackageDepencyComparer());
             }
         }
@@ -1269,13 +1464,13 @@ namespace Proj2
 
                 // proj3 and proj7 are included in the package.
                 Assert.Equal(
-                    files,
                     new string[]
                     {
                         Path.Combine("lib", "net40", "proj1.dll"),
                         Path.Combine("lib", "net40", "proj3.dll"),
                         Path.Combine("lib", "net40", "proj7.dll")
-                    });
+                    },
+                    files);
 
                 // proj2 and proj6 are added as dependencies.
                 var dependencies = package.DependencySets.First().Dependencies.OrderBy(d => d.Id);
@@ -1379,23 +1574,23 @@ namespace Proj2
 
                 // proj3 and proj7 are included in the package.
                 Assert.Equal(
-                    files,
                     new string[]
                     {
                         Path.Combine("lib", "net40", "proj1.dll"),
                         Path.Combine("lib", "net40", "proj3.dll"),
                         Path.Combine("lib", "net40", "proj7.dll")
-                    });
+                    },
+                    files);
 
                 // proj2 and proj6 are added as dependencies.
                 var dependencies = package.DependencySets.First().Dependencies.OrderBy(d => d.Id);
                 Assert.Equal(
-                    dependencies,
                     new PackageDependency[]
                     {
                         new PackageDependency("proj2", VersionUtility.ParseVersionSpec("1.0.0")),
                         new PackageDependency("proj6", VersionUtility.ParseVersionSpec("2.0.0"))
                     },
+                    dependencies,
                     new PackageDepencyComparer());
             }
         }
@@ -1491,23 +1686,23 @@ namespace Proj2
 
                 // proj3 and proj7 are included in the package.
                 Assert.Equal(
-                    files,
                     new string[]
                     {
                         Path.Combine("lib", "net40", "proj1.dll"),
                         Path.Combine("lib", "net40", "proj3.dll"),
                         Path.Combine("lib", "net40", "proj7.dll")
-                    });
+                    },
+                    files);
 
                 // proj2 and proj6 are added as dependencies.
                 var dependencies = package.DependencySets.First().Dependencies.OrderBy(d => d.Id);
                 Assert.Equal(
-                    dependencies,
                     new PackageDependency[]
                     {
                         new PackageDependency("proj2", VersionUtility.ParseVersionSpec("1.0.0")),
                         new PackageDependency("proj6", VersionUtility.ParseVersionSpec("2.0.0"))
                     },
+                    dependencies,
                     new PackageDepencyComparer());
             }
         }
@@ -1604,12 +1799,12 @@ namespace Proj2
                 // proj2 and proj6 are added as dependencies.
                 var dependencies = package.DependencySets.First().Dependencies.OrderBy(d => d.Id);
                 Assert.Equal(
-                    dependencies.OrderBy(d => d.ToString()),
                     new PackageDependency[]
                     {
                         new PackageDependency("proj2", VersionUtility.ParseVersionSpec("1.0.0")),
                         new PackageDependency(prefixTokenValue + "proj6", VersionUtility.ParseVersionSpec("2.0.0"))
                     }.OrderBy(d => d.ToString()),
+                    dependencies.OrderBy(d => d.ToString()),
                     new PackageDepencyComparer());
             }
         }
@@ -1664,20 +1859,20 @@ namespace Proj2
                 Array.Sort(files);
 
                 Assert.Equal(
-                    files,
                     new string[]
                     {
                         Path.Combine("lib", "net40", "proj1.dll")
-                    });
+                    },
+                    files);
 
                 // proj2 is added as dependencies.
                 var dependencies = package.DependencySets.First().Dependencies.OrderBy(d => d.Id);
                 Assert.Equal(
-                    dependencies,
                     new PackageDependency[]
                     {
                         new PackageDependency("proj2", VersionUtility.ParseVersionSpec("1.2.0"))
                     },
+                    dependencies,
                     new PackageDepencyComparer());
             }
         }
@@ -1718,11 +1913,11 @@ namespace Proj2
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
 
                 Assert.Equal(
-                    files,
                     new string[]
                     {
                         Path.Combine("lib", "net40", "proj1.dll")
-                    });
+                    },
+                    files);
             }
         }
 
@@ -1767,13 +1962,13 @@ namespace Proj2
                 Array.Sort(files);
 
                 Assert.Equal(
-                    files,
                     new string[]
                     {
                        Path.Combine("lib", "net40", "proj1.dll"),
                        Path.Combine("lib", "net40", "proj2.dll"),
                        Path.Combine("lib", "net40", "proj3.dll")
-                    });
+                    },
+                    files);
             }
         }
 
@@ -1810,12 +2005,12 @@ namespace Proj2
                 Array.Sort(files);
 
                 Assert.Equal(
-                    files,
                     new string[]
                     {
                         Path.Combine("lib", "net40", "proj1.dll"),
                         Path.Combine("lib", "net40", "proj2.dll")
-                    });
+                    },
+                    files);
             }
         }
 
@@ -1939,11 +2134,11 @@ namespace Proj2
                 Array.Sort(files);
 
                 Assert.Equal(
-                    files,
                     new string[]
                     {
                         Path.Combine("lib", "net40", "proj2.dll")
-                    });
+                    },
+                    files);
             }
         }
 
@@ -2057,13 +2252,13 @@ namespace Proj2
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);
                 Assert.Equal(
-                    files,
                     new string[]
                     {
                         Path.Combine("content", "proj1_file2.txt"),
                         Path.Combine("lib", "net40", "proj1.dll"),
                         Path.Combine("lib", "net40", "proj2.dll")
-                    });
+                    },
+                    files);
             }
         }
 
@@ -2115,11 +2310,11 @@ namespace Proj2
                 Array.Sort(files);
 
                 Assert.Equal(
-                    files,
                     new string[]
                     {
                         Path.Combine("Content", "package", "include.me")
-                    });
+                    },
+                    files);
             }
         }
 
@@ -2854,13 +3049,13 @@ namespace Proj2
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);
                 Assert.Equal(
-                    files,
                     new string[]
                     {
                         Path.Combine("content", "proj1_file2.txt"),
                         Path.Combine("lib", "net40", "proj1.dll"),
                         Path.Combine("lib", "net40", "proj2.dll")
-                    });
+                    },
+                    files);
             }
         }
 
@@ -2978,13 +3173,13 @@ namespace Proj2
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);
                 Assert.Equal(
-                    files,
                     new string[]
                     {
                         Path.Combine("content", "proj1_file2.txt"),
                         Path.Combine("lib", "net40", "proj1.dll"),
                         Path.Combine("lib", "net40", "proj2.dll")
-                    });
+                    },
+                    files);
             }
         }
 
@@ -3379,7 +3574,7 @@ namespace Proj2
 
                 // Assert
                 var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0-alpha.nupkg"));
-                Assert.Equal(package.Version.ToString(), "0.0.0-alpha");
+                Assert.Equal("0.0.0-alpha", package.Version.ToString());
             }
         }
 
@@ -3983,12 +4178,12 @@ stuff \n <<".Replace("\r\n", "\n");
                 var files = package.GetFiles().Select(f => f.Path).OrderBy(s => s).ToArray();
 
                 Assert.Equal(
-                    files,
                     new string[]
                     {
                             Path.Combine("lib", "netcoreapp1.0", id + ".dll"),
                             Path.Combine("lib", "netcoreapp1.0", "win7-x64", id + ".dll"),
-                    });
+                    },
+                    files);
 
                 Assert.False(r.Item2.Contains("Assembly outside lib folder"));
             }
@@ -4115,12 +4310,12 @@ stuff \n <<".Replace("\r\n", "\n");
                 var files = package.GetFiles().Select(f => f.Path).OrderBy(s => s).ToArray();
 
                 Assert.Equal(
-                    files,
                     new string[]
                     {
                             Path.Combine("lib", "netcoreapp1.0" , dllName + extension),
                             Path.Combine("lib", "netcoreapp1.0", "win7-x64", dllName + extension),
-                    });
+                    },
+                    files);
 
                 Assert.False(r.Item2.Contains("Assembly outside lib folder"));
             }
@@ -4229,11 +4424,11 @@ stuff \n <<".Replace("\r\n", "\n");
                 Array.Sort(files);
 
                 Assert.Equal(
-                    files,
                     new string[]
                     {
                         Path.Combine("lib", "net46", "proj1.dll"),
-                    });
+                    },
+                    files);
             }
         }
 
@@ -4296,11 +4491,11 @@ stuff \n <<".Replace("\r\n", "\n");
                 Array.Sort(files);
 
                 Assert.Equal(
-                    files,
                     new string[]
                     {
                         Path.Combine("lib", "net46", "proj1.dll")
-                    });
+                    },
+                    files);
             }
         }
 
@@ -4362,11 +4557,11 @@ stuff \n <<".Replace("\r\n", "\n");
                 Array.Sort(files);
 
                 Assert.Equal(
-                    files,
                     new string[]
                     {
                         Path.Combine("lib", "net46", "proj1.dll")
-                    });
+                    },
+                    files);
             }
         }
 
@@ -4495,12 +4690,12 @@ namespace Proj1
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);
                 Assert.Equal(
-                    files,
                     new string[]
                     {
                         Path.Combine("content", "proj1_file2.txt"),
                         Path.Combine("lib", "net40", "proj1.dll")
-                    });
+                    },
+                    files);
             }
         }
 
