@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging;
-using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -32,7 +30,7 @@ namespace NuGet.Protocol
 
             var packages = (set[JsonProperties.Dependencies] as JArray ?? Enumerable.Empty<JToken>())
                 .Select(LoadDependency);
-            return new PackageDependencyGroup(framework, new HashSet<PackageDependency>(packages));
+            return new PackageDependencyGroup(framework, packages);
         }
 
         private static Packaging.Core.PackageDependency LoadDependency(JToken dependency)

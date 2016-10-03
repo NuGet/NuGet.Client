@@ -83,7 +83,7 @@ namespace NuGet.Protocol
                 {
                     var currentFramework = GetFramework(dependencyGroupObj);
 
-                    var groupDependencies = new HashSet<PackageDependency>();
+                    var groupDependencies = new List<PackageDependency>();
 
                     JToken dependenciesObj;
 

@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
+using NuGet.Build.Tasks;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Packaging;
@@ -57,9 +58,6 @@ namespace NuGet.Build.Tasks.Pack
 
         public override bool Execute()
         {
-#if DEBUG
-            System.Diagnostics.Debugger.Launch();
-#endif
             var packArgs = GetPackArgs();
             var packageBuilder = GetPackageBuilder(packArgs);
             var contentFiles = ProcessContentToIncludeInPackage(packArgs.CurrentDirectory);
@@ -399,7 +397,7 @@ namespace NuGet.Build.Tasks.Pack
                         {
                             LibraryRange = library
                         };
-                        LibraryDependency.AddLibraryDependency(dependency, dependencies);
+                        PackCommandRunner.AddLibraryDependency(dependency, dependencies);
                     }
                     else if(customMetadata.Contains("HintPath"))
                     {
@@ -441,7 +439,7 @@ namespace NuGet.Build.Tasks.Pack
                     ParsePackageReference(packageRef, out packageId, out version);
                     var libDependency = GetLibraryDependency(packageRef, packageId, version);
 
-                    LibraryDependency.AddLibraryDependency(libDependency, dependencies);
+                    PackCommandRunner.AddLibraryDependency(libDependency, dependencies);
                 }
 
                 foreach (var framework in dependencyByFramework.Keys)
@@ -492,7 +490,7 @@ namespace NuGet.Build.Tasks.Pack
                         {
                             dependencyByFramework.Add(nugetFramework, dependencies);
                         }
-                        LibraryDependency.AddLibraryDependency(libDependency, dependencies);
+                        PackCommandRunner.AddLibraryDependency(libDependency, dependencies);
                     }
                 }
 
@@ -510,7 +508,7 @@ namespace NuGet.Build.Tasks.Pack
             version = packageReference.GetMetadata("Version");
             if (string.IsNullOrEmpty(version))
             {
-                throw new InvalidOperationException("Package Reference needs to have a valid version");
+                throw new InvalidOperationException($"PackageReference {packageId} needs to have a valid version");
             }
         }
 

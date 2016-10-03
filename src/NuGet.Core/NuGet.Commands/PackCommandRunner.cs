@@ -649,31 +649,14 @@ namespace NuGet.Commands
             var dependencyGroup = builder.DependencyGroups.FirstOrDefault(r => r.TargetFramework.Equals(framework));
             if (dependencyGroup != null)
             {
+                var existingDependencies = new HashSet<PackageDependency>(dependencyGroup.Packages);
                 foreach (var packageDependency in packageDependencies)
                 {
-                    var matchingDependency = dependencyGroup.Packages.SingleOrDefault(r => r.Id == packageDependency.Id);
-                    if (matchingDependency != null)
-                    {
-                        VersionRange newVersionRange = VersionRange.CommonSubSet(new VersionRange[]
-                        {
-                            matchingDependency.VersionRange, packageDependency.VersionRange
-                        });
-                        if (!newVersionRange.Equals(VersionRange.None))
-                        {
-                            dependencyGroup.Packages.Remove(matchingDependency);
-                            dependencyGroup.Packages.Add(new PackageDependency(matchingDependency.Id, newVersionRange, packageDependency.Include, packageDependency.Exclude));
-                        }
-                        else
-                        {
-                            //TODO: Throw the right exception message here
-                            throw new Exception("Your package version constraints are messed up.");
-                        }
-                    }
-                    else
-                    {
-                        dependencyGroup.Packages.Add(packageDependency);
-                    }
+                    PackCommandRunner.AddPackageDependency(packageDependency, existingDependencies);
                 }
+                var newDependencyGroup = new PackageDependencyGroup(framework, existingDependencies);
+                builder.DependencyGroups.Remove(dependencyGroup);
+                builder.DependencyGroups.Add(newDependencyGroup);
             }
             else
             {
@@ -1128,6 +1111,62 @@ namespace NuGet.Commands
         private void WriteLine(string message, object arg = null)
         {
             _packArgs.Logger.LogInformation(String.Format(CultureInfo.CurrentCulture, message, arg?.ToString()));
+        }
+
+        public static void AddLibraryDependency(LibraryDependency dependency, ISet<LibraryDependency> list)
+        {
+            if (list.Any(r => r.Name == dependency.Name))
+            {
+                var matchingDependency = list.Single(r => r.Name == dependency.Name);
+                VersionRange newVersionRange = VersionRange.CommonSubSet(new VersionRange[]
+                {
+                            matchingDependency.LibraryRange.VersionRange, dependency.LibraryRange.VersionRange
+                });
+                if (!newVersionRange.Equals(VersionRange.None))
+                {
+                    list.Remove(matchingDependency);
+                    list.Add(new LibraryDependency()
+                    {
+                        LibraryRange = new LibraryRange(matchingDependency.Name, newVersionRange, LibraryDependencyTarget.All),
+                        IncludeType = dependency.IncludeType & matchingDependency.IncludeType,
+                        SuppressParent = dependency.SuppressParent & matchingDependency.SuppressParent
+
+                    });
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Package version constraints for {dependency.Name} return a version range that is empty.");
+                }
+            }
+            else
+            {
+                list.Add(dependency);
+            }
+        }
+
+        public static void AddPackageDependency(PackageDependency dependency, ISet<PackageDependency> set)
+        {
+            var matchingDependency = set.SingleOrDefault(r => r.Id == dependency.Id);
+            if (matchingDependency != null)
+            {
+                VersionRange newVersionRange = VersionRange.CommonSubSet(new VersionRange[]
+                {
+                            matchingDependency.VersionRange, dependency.VersionRange
+                });
+                if (!newVersionRange.Equals(VersionRange.None))
+                {
+                    set.Remove(matchingDependency);
+                    set.Add(new PackageDependency(dependency.Id, newVersionRange, dependency.Include, dependency.Exclude));
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Package version constraints for {dependency.Id} return a version range that is empty.");
+                }
+            }
+            else
+            {
+                set.Add(dependency);
+            }
         }
     }
 }

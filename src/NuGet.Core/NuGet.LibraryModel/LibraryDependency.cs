@@ -42,37 +42,5 @@ namespace NuGet.LibraryModel
         {
             return Type.Contains(flag);
         }
-
-        public static void AddLibraryDependency(LibraryDependency dependency, ISet<LibraryDependency> list)
-        {
-            if (list.Any(r => r.Name == dependency.Name))
-            {
-                var matchingDependency = list.Single(r => r.Name == dependency.Name);
-                VersionRange newVersionRange = VersionRange.CommonSubSet(new VersionRange[]
-                {
-                            matchingDependency.LibraryRange.VersionRange, dependency.LibraryRange.VersionRange
-                });
-                if (!newVersionRange.Equals(VersionRange.None))
-                {
-                    list.Remove(matchingDependency);
-                    list.Add(new LibraryDependency()
-                    {
-                        LibraryRange = new LibraryRange(matchingDependency.Name, newVersionRange, LibraryDependencyTarget.All),
-                        IncludeType = dependency.IncludeType,
-                        SuppressParent = dependency.SuppressParent
-
-                    });
-                }
-                else
-                {
-                    //TODO: Add right exception message here
-                    throw new Exception("Your package version constraints are messed up.");
-                }
-            }
-            else
-            {
-                list.Add(dependency);
-            }
-        }
     }
 }

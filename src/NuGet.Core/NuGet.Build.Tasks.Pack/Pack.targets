@@ -10,10 +10,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!-- Load NuGet.Build.Tasks.dll, this can be overridden to use a different version with $(RestoreTaskAssemblyFile) -->
+  <!-- Load NuGet.Build.Tasks.Pack.dll, this can be overridden to use a different version with $(NugetTaskAssemblyFile) -->
   <PropertyGroup Condition="$(NugetTaskAssemblyFile) == ''">
-    <NugetTaskAssemblyFile Condition="$(MSBuildRuntimeType) == 'Core'">CoreCLR\\NuGet.Build.Tasks.Pack.dll</NugetTaskAssemblyFile>
-    <NugetTaskAssemblyFile Condition="$(MSBuildRuntimeType) != 'Core'">Desktop\\NuGet.Build.Tasks.Pack.dll</NugetTaskAssemblyFile>
+    <NugetTaskAssemblyFile Condition="'$(MSBuildRuntimeType)' == 'Core'">CoreCLR\NuGet.Build.Tasks.Pack.dll</NugetTaskAssemblyFile>
+    <NugetTaskAssemblyFile Condition="'$(MSBuildRuntimeType)' != 'Core'">Desktop\NuGet.Build.Tasks.Pack.dll</NugetTaskAssemblyFile>
   </PropertyGroup>
   <UsingTask TaskName="NuGet.Build.Tasks.Pack.PackTask" AssemblyFile="$(NugetTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.Pack.PackNuspecTask" AssemblyFile="$(NugetTaskAssemblyFile)" />
@@ -21,7 +21,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
     <PackageVersion Condition=" '$(PackageVersion)' == '' ">$(Version)</PackageVersion>
-    <PackageOutputPath Condition=" '$(PackageOutputPath )' == '' ">$(TargetDir)</PackageOutputPath>
+    <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$(TargetDir)</PackageOutputPath>
     <IncludeContentInPack Condition="'$(IncludeContentInPack)'==''">true</IncludeContentInPack>
     <GenerateNuspecDependsOn>_LoadPackInputItems; _WalkEachTargetPerFramework; _GetPackageFilesFromReferencedProjects; _GetSourceFilesForSymbols; _GetTargetPaths</GenerateNuspecDependsOn>
     <Description Condition="'$(Description)'==''">Package Description</Description>
@@ -33,10 +33,10 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup Condition="'$(NoBuild)' != 'true' ">
     <GenerateNuspecDependsOn>Build;$(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
   </PropertyGroup>
-  <PropertyGroup Condition="$(NuspecFile) == ''">
+  <PropertyGroup Condition="'$(NuspecFile)' == ''">
     <PackDependsOn>GenerateNuspec</PackDependsOn>
   </PropertyGroup>
-  <PropertyGroup Condition="$(NuspecFile) != ''">
+  <PropertyGroup Condition="'$(NuspecFile)' != ''">
     <PackDependsOn>PackUsingNuspec</PackDependsOn>
   </PropertyGroup>
   <ItemGroup>

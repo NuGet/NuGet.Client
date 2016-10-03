@@ -214,7 +214,7 @@ namespace NuGet.Protocol
                 }
                 else
                 {
-                    var results = new Dictionary<NuGetFramework, HashSet<PackageDependency>>(new NuGetFrameworkFullComparer());
+                    var results = new Dictionary<NuGetFramework, List<PackageDependency>>(new NuGetFrameworkFullComparer());
 
                     foreach (var set in Dependencies.Split('|'))
                     {
@@ -254,10 +254,10 @@ namespace NuGet.Protocol
                             }
 
                             // Group dependencies by target framework
-                            HashSet<PackageDependency> deps = null;
+                            List<PackageDependency> deps = null;
                             if (!results.TryGetValue(framework, out deps))
                             {
-                                deps = new HashSet<PackageDependency>();
+                                deps = new List<PackageDependency>();
                                 results.Add(framework, deps);
                             }
 

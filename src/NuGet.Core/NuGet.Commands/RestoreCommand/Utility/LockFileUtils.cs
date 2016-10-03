@@ -101,7 +101,7 @@ namespace NuGet.Commands
 
                     if (set != null)
                     {
-                        lockFileLib.Dependencies = new HashSet<PackageDependency>(set);
+                        lockFileLib.Dependencies = set.ToList();
                     }
                 }
             }
@@ -109,10 +109,10 @@ namespace NuGet.Commands
             {
                 // Filter the dependency set down to packages and projects.
                 // Framework references will not be displayed
-                lockFileLib.Dependencies = new HashSet<PackageDependency>(dependencies
-                    .Where(
-                        ld => ld.LibraryRange.TypeConstraintAllowsAnyOf(LibraryDependencyTarget.PackageProjectExternal))
-                    .Select(ld => new PackageDependency(ld.Name, ld.LibraryRange.VersionRange)));
+                lockFileLib.Dependencies = dependencies
+                    .Where(ld => ld.LibraryRange.TypeConstraintAllowsAnyOf(LibraryDependencyTarget.PackageProjectExternal))
+                    .Select(ld => new PackageDependency(ld.Name, ld.LibraryRange.VersionRange))
+                    .ToList();
             }
 
             var referenceSet = nuspec.GetReferenceGroups().GetNearest(framework);

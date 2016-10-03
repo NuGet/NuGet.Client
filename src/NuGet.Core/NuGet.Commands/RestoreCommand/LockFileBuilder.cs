@@ -220,12 +220,13 @@ namespace NuGet.Commands
                             // Include dependencies with no constraints, or package/project/external
                             // Exclude suppressed dependencies, the top level project is not written 
                             // as a target so the node depth does not matter.
-                            Dependencies = new HashSet<PackageDependency>(graphItem.Data.Dependencies
+                            Dependencies = graphItem.Data.Dependencies
                                 .Where(
                                     d => (d.LibraryRange.TypeConstraintAllowsAnyOf(
                                         LibraryDependencyTarget.PackageProjectExternal))
                                          && d.SuppressParent != LibraryIncludeFlags.All)
-                                .Select(d => GetDependencyVersionRange(d)))
+                                .Select(d => GetDependencyVersionRange(d))
+                                .ToList()
                         };
 
                         object compileAssetObject;

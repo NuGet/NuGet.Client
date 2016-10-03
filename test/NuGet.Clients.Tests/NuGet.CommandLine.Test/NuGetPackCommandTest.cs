@@ -2362,7 +2362,7 @@ namespace Proj1
                     {
                         new PackageDependencyGroup(
                             new NuGetFramework("net45"),
-                            new HashSet<Packaging.Core.PackageDependency>(new List<Packaging.Core.PackageDependency>()
+                            new List<Packaging.Core.PackageDependency>()
                             {
                                 new Packaging.Core.PackageDependency(
                                       "testPackage2",
@@ -2375,7 +2375,7 @@ namespace Proj1
                                 new Packaging.Core.PackageDependency(
                                       "testPackage5",
                                       new VersionRange(new NuGetVersion("1.5.0"), includeMinVersion: false))
-                            }))
+                            })
                     };
                 Util.CreateTestPackage("testPackage1", "1.1.0", packagesFolder, new List<NuGetFramework>() { new NuGetFramework("net45") }, packageDependencies);
                 Util.CreateTestPackage("testPackage2", "1.2.0", packagesFolder);
@@ -2489,7 +2489,7 @@ namespace Proj1
                     {
                         new PackageDependencyGroup(
                             new NuGetFramework("net45"),
-                            new HashSet<Packaging.Core.PackageDependency>(new List<Packaging.Core.PackageDependency>()
+                            new List<Packaging.Core.PackageDependency>()
                             {
                                 new Packaging.Core.PackageDependency(
                                       "testPackage1",
@@ -2497,7 +2497,7 @@ namespace Proj1
                                 new Packaging.Core.PackageDependency(
                                       "testPackage2",
                                       new VersionRange(new NuGetVersion("1.2.0"), includeMinVersion: true))
-                            }))
+                            })
                     };
                 Util.CreateTestPackage("testPackage3", "1.3.0", packagesFolder, new List<NuGetFramework>() { new NuGetFramework("net45") }, packageDependencies);
 
