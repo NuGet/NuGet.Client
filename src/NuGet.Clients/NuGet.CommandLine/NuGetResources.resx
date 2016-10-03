@@ -6120,4 +6120,7 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="MsbuildPathNotExist" xml:space="preserve">
     <value>MSBuildPath : {0}  doesn't not exist.</value>
   </data>
+  <data name="MsbuildLoadToolSetError" xml:space="preserve">
+    <value>Failed to load msbuild Toolset</value>
+  </data>
 </root>
