@@ -27,7 +27,8 @@ namespace NuGet.Credentials
         public static PluginException CreateUnexpectedStatusMessage(
             string path, PluginCredentialResponseExitCode status)
         {
-            return new PluginUnexpectedStatusException(string.Format(Resources.PluginException_UnexpectedStatus_Format, path, status));
+            return new PluginUnexpectedStatusException(
+                string.Format(Resources.PluginException_UnexpectedStatus_Format, path, status));
         }
     }
 }

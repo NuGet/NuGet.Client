@@ -20,7 +20,10 @@ namespace NuGet.Credentials
         private readonly IExtensionLocator _extensionLocator;
         private readonly Common.ILogger _logger;
 
-        public PluginCredentialProviderBuilder(IExtensionLocator extensionLocator, Configuration.ISettings settings, Common.ILogger logger)
+        public PluginCredentialProviderBuilder(
+            IExtensionLocator extensionLocator,
+            Configuration.ISettings settings,
+            Common.ILogger logger)
             : this(extensionLocator, settings, logger, new EnvironmentVariableWrapper())
         {
         }
