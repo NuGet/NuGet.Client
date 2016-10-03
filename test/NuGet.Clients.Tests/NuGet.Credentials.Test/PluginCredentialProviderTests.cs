@@ -12,13 +12,14 @@ namespace NuGet.Credentials.Test
     public class PluginCredentialProviderTests
     {
         private const string DefaultTestStdOut = @"{""username"":""u"", ""password"":""p"", ""Message"":""""}";
+        private const string DefaultVerbosity = "Detailed";
         private string _testStdOut;
 
-        public Mock<PluginCredentialProvider> CreateMockProvider(int testStatusCode = 0, string testStdOut = DefaultTestStdOut)
+        public Mock<PluginCredentialProvider> CreateMockProvider(int testStatusCode = 0, string testStdOut = DefaultTestStdOut, string verbosity = DefaultVerbosity)
         {
             _testStdOut = testStdOut;
             var mockLogger = new Mock<Common.ILogger>();
-            var mockProvider = new Mock<PluginCredentialProvider>(mockLogger.Object, @"c:\path\plugin.exe", 10, "Normal") { CallBase = true };
+            var mockProvider = new Mock<PluginCredentialProvider>(mockLogger.Object, @"c:\path\plugin.exe", 10, verbosity) { CallBase = true };
             mockProvider.Setup(x => x.Execute(It.IsAny<ProcessStartInfo>(), It.IsAny<CancellationToken>(), out testStdOut))
                 .Returns(testStatusCode);
             return mockProvider;
@@ -78,7 +79,65 @@ namespace NuGet.Credentials.Test
 
             // Assert
             mockProvider.Verify(x => x.Execute(
-                It.Is<ProcessStartInfo>(p => p.Arguments == "-uri http://host/ -isRetry -nonInteractive -verbosity normal"),
+                It.Is<ProcessStartInfo>(p => p.Arguments == "-uri http://host/ -isRetry -nonInteractive -verbosity detailed"),
+                It.IsAny<CancellationToken>(),
+                out _testStdOut));
+        }
+
+        [Theory, InlineData("Silent"), InlineData("Detailed")]
+        public async Task PassVerbosityParameter(string verbosity)
+        {
+            // Arrange
+            var mockProvider = CreateMockProvider(verbosity: verbosity);
+            var uri = new Uri("http://host/");
+            var proxy = null as IWebProxy;
+            var type = CredentialRequestType.Unauthorized;
+            var message = null as string;
+            var isRetry = true;
+            var nonInteractive = true;
+
+            // Act
+            var result = await mockProvider.Object.GetAsync(
+                uri,
+                proxy,
+                type,
+                message,
+                isRetry,
+                nonInteractive,
+                CancellationToken.None);
+
+            // Assert
+            mockProvider.Verify(x => x.Execute(
+                It.Is<ProcessStartInfo>(p => p.Arguments == $"-uri http://host/ -isRetry -nonInteractive -verbosity {verbosity.ToLower()}"),
+                It.IsAny<CancellationToken>(),
+                out _testStdOut));
+        }
+
+        [Fact]
+        public async Task WhenVerbosityNormal_DoNotPassVerbosityParameter()
+        {
+            // Arrange
+            var mockProvider = CreateMockProvider(verbosity: "Normal");
+            var uri = new Uri("http://host/");
+            var proxy = null as IWebProxy;
+            var type = CredentialRequestType.Unauthorized;
+            var message = null as string;
+            var isRetry = true;
+            var nonInteractive = true;
+
+            // Act
+            var result = await mockProvider.Object.GetAsync(
+                uri,
+                proxy,
+                type,
+                message,
+                isRetry,
+                nonInteractive,
+                CancellationToken.None);
+
+            // Assert
+            mockProvider.Verify(x => x.Execute(
+                It.Is<ProcessStartInfo>(p => p.Arguments == "-uri http://host/ -isRetry -nonInteractive"),
                 It.IsAny<CancellationToken>(),
                 out _testStdOut));
         }
@@ -107,7 +166,7 @@ namespace NuGet.Credentials.Test
 
             // Assert
             mockProvider.Verify(x => x.Execute(
-                It.Is<ProcessStartInfo>(p => p.Arguments == "-uri http://host/ -isRetry -nonInteractive -verbosity normal"),
+                It.Is<ProcessStartInfo>(p => p.Arguments == "-uri http://host/ -isRetry -nonInteractive -verbosity detailed"),
                 It.IsAny<CancellationToken>(),
                 out _testStdOut));
         }
@@ -384,7 +443,7 @@ namespace NuGet.Credentials.Test
             var nonInteractive = true;
 
             // Act & Assert
-            var exception = await Assert.ThrowsAsync<PluginException>(() => mockProvider.Object.GetAsync(
+            var exception = await Assert.ThrowsAsync<PluginUnexpectedStatusException>(() => mockProvider.Object.GetAsync(
                 uri,
                 proxy,
                 type,
@@ -393,7 +452,6 @@ namespace NuGet.Credentials.Test
                 nonInteractive,
                 CancellationToken.None));
 
-            Assert.IsAssignableFrom<PluginException>(exception);
             Assert.Contains(
                 @"Credential plugin c:\path\plugin.exe exited with unexpected error 10.",
                 exception.Message);
@@ -401,15 +459,15 @@ namespace NuGet.Credentials.Test
 
         [Fact]
 
-        public async Task OnProviderFailure_RetryWithoutVerbosityFlag()
+        public async Task OnPluginUnexpectedStatusException_RetryWithoutVerbosityFlag()
         {
             // Arrange
             var mockLogger = new Mock<Common.ILogger>();
-            var mockProvider = new Mock<PluginCredentialProvider>(mockLogger.Object, @"c:\path\plugin.exe", 10, "Normal") { CallBase = true };
+            var mockProvider = new Mock<PluginCredentialProvider>(mockLogger.Object, @"c:\path\plugin.exe", 10, "Detailed") { CallBase = true };
             var stdout1 = @"{""Message"":""Unexpected Parameter""}";
             var stdout2 = @"{""username"":""u1"", ""password"":""p1"", ""Message"":""""}";
             mockProvider.Setup(x => x.Execute(It.Is<ProcessStartInfo>(p=>p.Arguments.Contains("-verbosity")), It.IsAny<CancellationToken>(), out stdout1))
-                .Returns((int)PluginCredentialResponseExitCode.Failure)
+                .Returns((int)-1)
                 .Verifiable();
             mockProvider.Setup(x => x.Execute(It.Is<ProcessStartInfo>(p => !p.Arguments.Contains("-verbosity")), It.IsAny<CancellationToken>(), out stdout2))
                 .Returns((int)PluginCredentialResponseExitCode.Success)

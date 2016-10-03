@@ -20,6 +20,7 @@ namespace NuGet.Credentials
     {
         private readonly Common.ILogger _logger;
         private readonly string _verbosity;
+        private const string NormalVerbosity = "normal";
 
         /// <summary>
         /// Constructor
@@ -113,9 +114,10 @@ namespace NuGet.Credentials
                 {
                     response = GetPluginResponse(request, cancellationToken);
                 }
-                catch (PluginException)
+                catch (PluginUnexpectedStatusException)
                 {
-                    // older providers may return errors if the verbosity flag is sent, so retry without it
+                    // older providers may throw if the verbosity flag is sent,
+                    // so retry without it
                     request.Verbosity = null;
                     response = GetPluginResponse(request, cancellationToken);
                 }
@@ -167,10 +169,15 @@ namespace NuGet.Credentials
             var argumentString =
                 $"-uri {request.Uri}"
                 + (request.IsRetry ? " -isRetry" : string.Empty)
-                + (request.NonInteractive ? " -nonInteractive" : string.Empty)
-                + (!string.IsNullOrWhiteSpace(request.Verbosity) 
-                    ? $" -verbosity {request.Verbosity.ToLower()}" 
-                    : string.Empty);
+                + (request.NonInteractive ? " -nonInteractive" : string.Empty);
+
+            // only apply -verbosity flag if set and != Normal
+            // since normal is default
+            if (request.Verbosity != null
+                && !string.Equals(request.Verbosity, NormalVerbosity, StringComparison.OrdinalIgnoreCase))
+            {
+                argumentString += $" -verbosity {request.Verbosity.ToLower()}";
+            }
 
             var startInfo = new ProcessStartInfo
             {
@@ -226,7 +233,7 @@ namespace NuGet.Credentials
                     throw PluginException.CreateAbortMessage(Path, credentialResponse.Message);
 
                 default:
-                    throw PluginException.CreateUnexpectedStatusMessage(Path, status);
+                    throw PluginUnexpectedStatusException.CreateUnexpectedStatusMessage(Path, status);
             }
         }
 

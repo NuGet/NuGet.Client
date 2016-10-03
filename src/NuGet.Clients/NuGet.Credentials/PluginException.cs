@@ -76,11 +76,5 @@ namespace NuGet.Credentials
                 response.AuthTypes == null ? string.Empty : string.Join(", ", response.AuthTypes),
                 response.Message));
         }
-
-        public static PluginException CreateUnexpectedStatusMessage(
-            string path, PluginCredentialResponseExitCode status)
-        {
-            return new PluginException(string.Format(Resources.PluginException_UnexpectedStatus_Format, path, status));
-        }
     }
 }
