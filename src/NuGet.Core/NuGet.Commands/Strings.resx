@@ -456,6 +456,10 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>Invalid restore input. {0}</value>
     <comment>0 is an error message specific to the validation failure.</comment>
   </data>
+  <data name="Error_UnableToLocateBuildOutput" xml:space="preserve">
+    <value>No build found in {0}. Use the -Build option or build the project.</value>
+    <comment>{0} is the project output directory</comment>
+  </data>
   <data name="InvalidRestoreInputWithFiles" xml:space="preserve">
     <value>Invalid restore input. {0} Input files: {1}.</value>
     <comment>0 is an error message specific to the validation failure. 1 is a list of file paths.</comment>
