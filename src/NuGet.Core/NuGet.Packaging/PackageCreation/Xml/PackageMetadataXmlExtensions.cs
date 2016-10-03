@@ -61,6 +61,15 @@ namespace NuGet.Packaging.Xml
                 elem.Add(GetXElementFromManifestPackageTypes(ns, metadata.PackageTypes));
             }
 
+            if (metadata.Repository != null)
+            {
+                XElement repoElement = GetXElementFromManifestRepository(ns, metadata.Repository);
+                if (repoElement != null)
+                {
+                    elem.Add(repoElement);
+                }
+            }
+
             elem.Add(GetXElementFromGroupableItemSets(
                 ns,
                 metadata.DependencyGroups,
@@ -219,6 +228,25 @@ namespace NuGet.Packaging.Xml
             attributes = attributes.Where(xAtt => xAtt != null).ToList();
 
             return new XElement(ns + Files, attributes);
+        }
+
+        private static XElement GetXElementFromManifestRepository(XNamespace ns, RepositoryMetadata repository)
+        {
+            var attributeList = new List<XAttribute>();
+            if (repository != null && !string.IsNullOrEmpty(repository.Type))
+            {
+                attributeList.Add(new XAttribute(NuspecUtility.RepositoryType, repository.Type));
+            }
+
+            if (repository != null && !string.IsNullOrEmpty(repository.Url))
+            {
+                attributeList.Add(new XAttribute(NuspecUtility.RepositoryUrl, repository.Url));
+            }
+            if (attributeList.Any())
+            {
+                return new XElement(ns + NuspecUtility.Repository, attributeList);
+            }
+            return null;
         }
 
         private static XElement GetXElementFromManifestPackageTypes(XNamespace ns, IEnumerable<PackageType> packageTypes)

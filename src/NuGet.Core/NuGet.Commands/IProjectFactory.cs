@@ -9,6 +9,6 @@ namespace NuGet.Commands
     {
         Dictionary<string, string> GetProjectProperties();
         void SetIncludeSymbols(bool includeSymbols);
-        PackageBuilder CreateBuilder(string basePath, NuGetVersion version, string suffix, bool buildIfNeeded);
+        PackageBuilder CreateBuilder(string basePath, NuGetVersion version, string suffix, bool buildIfNeeded, PackageBuilder builder = null);
     }
 }

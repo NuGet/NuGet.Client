@@ -52,5 +52,7 @@ namespace NuGet.Packaging
         IEnumerable<ManifestContentFiles> ContentFiles { get; }
 
         IEnumerable<PackageType> PackageTypes { get; }
+
+        RepositoryMetadata Repository { get; }
     }
 }

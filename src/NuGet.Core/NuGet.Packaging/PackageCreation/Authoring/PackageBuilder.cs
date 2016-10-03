@@ -85,6 +85,8 @@ namespace NuGet.Packaging
             set;
         }
 
+        public RepositoryMetadata Repository { get; set; }
+
         public bool HasSnapshotVersion
         {
             get;
@@ -522,6 +524,7 @@ namespace NuGet.Packaging
             Language = metadata.Language;
             Copyright = metadata.Copyright;
             MinClientVersion = metadata.MinClientVersion;
+            Repository = metadata.Repository;
             ContentFiles = new Collection<ManifestContentFiles>(manifestMetadata.ContentFiles.ToList());
 
             if (metadata.Tags != null)

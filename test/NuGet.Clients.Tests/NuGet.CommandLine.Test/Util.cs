@@ -31,10 +31,10 @@ namespace NuGet.CommandLine.Test
             string dependencyPackageVersion)
         {
             var group = new PackageDependencyGroup(NuGetFramework.AnyFramework,
-                new List<Packaging.Core.PackageDependency>()
+                new HashSet<Packaging.Core.PackageDependency>(new List<Packaging.Core.PackageDependency>()
             {
                 new Packaging.Core.PackageDependency(dependencyPackageId, VersionRange.Parse(dependencyPackageVersion))
-            });
+            }));
 
             return CreateTestPackage(packageId, version, path,
                 new List<NuGetFramework>() { NuGetFramework.Parse(framework) },

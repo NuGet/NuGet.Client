@@ -227,11 +227,11 @@ namespace NuGet.Packaging.Test
                                     {
                                         new PackageDependencyGroup(
                                             NuGetFramework.AnyFramework,
-                                            new []
+                                            new HashSet<PackageDependency>(new []
                                             {
                                                 new PackageDependency("Test", VersionRange.Parse("1.2.0"))
                                             }
-                                        )
+                                        ))
                                     },
                 FrameworkReferences = new[]
                                         {
@@ -599,49 +599,49 @@ namespace NuGet.Packaging.Test
                     DependencyGroups = new[] {
                                     new PackageDependencyGroup(
                                         NuGetFramework.Parse(".NETFramework40"),
-                                        new [] {
+                                        new HashSet<PackageDependency>(new [] {
                                             new PackageDependency("B")
-                                        }
+                                        })
                                     ),
 
                                     new PackageDependencyGroup(
                                         NuGetFramework.AnyFramework,
-                                        new [] {
+                                        new HashSet<PackageDependency>(new [] {
                                             new PackageDependency("A")
-                                        }
+                                        })
                                     ),
 
                                     new PackageDependencyGroup(
                                         NuGetFramework.AnyFramework,
-                                        new [] {
+                                        new HashSet<PackageDependency>(new [] {
                                             new PackageDependency("C")
-                                        }
+                                        })
                                     ),
 
                                     new PackageDependencyGroup(
                                         NuGetFramework.Parse("Silverlight35"),
-                                        new [] {
+                                        new HashSet<PackageDependency>(new [] {
                                             new PackageDependency("D")
-                                        }
+                                        })
                                     ),
 
                                     new PackageDependencyGroup(
                                         NuGetFramework.Parse("net40"),
-                                        new [] {
+                                        new HashSet<PackageDependency>(new [] {
                                             new PackageDependency("E")
-                                        }
+                                        })
                                     ),
 
                                     new PackageDependencyGroup(
                                         NuGetFramework.Parse("sl35"),
-                                        new [] {
+                                        new HashSet<PackageDependency>(new [] {
                                             new PackageDependency("F")
-                                        }
+                                        })
                                     ),
 
                                     new PackageDependencyGroup(
                                         NuGetFramework.Parse("winrt45"),
-                                        new List<PackageDependency>()
+                                        new HashSet<PackageDependency>()
                                     ),
                             }
                 }
@@ -655,18 +655,18 @@ namespace NuGet.Packaging.Test
 
             Assert.Equal(NuGetFramework.AnyFramework, dependencyGroups[0].TargetFramework);
             Assert.Equal(2, dependencyGroups[0].Packages.Count());
-            Assert.Equal("A", dependencyGroups[0].Packages.First().Id);
-            Assert.Equal("C", dependencyGroups[0].Packages.Last().Id);
+            Assert.Equal("A", dependencyGroups[0].Packages.First(t=> t.Id == "A").Id);
+            Assert.Equal("C", dependencyGroups[0].Packages.First(t => t.Id == "C").Id);
 
             Assert.Equal(NuGetFramework.Parse(".NETFramework, Version=4.0"), dependencyGroups[1].TargetFramework);
             Assert.Equal(2, dependencyGroups[1].Packages.Count());
-            Assert.Equal("B", dependencyGroups[1].Packages.First().Id);
-            Assert.Equal("E", dependencyGroups[1].Packages.Last().Id);
+            Assert.Equal("B", dependencyGroups[1].Packages.First(t => t.Id == "B").Id);
+            Assert.Equal("E", dependencyGroups[1].Packages.First(t => t.Id == "E").Id);
 
             Assert.Equal(NuGetFramework.Parse("Silverlight, Version=3.5"), dependencyGroups[2].TargetFramework);
             Assert.Equal(2, dependencyGroups[2].Packages.Count());
-            Assert.Equal("D", dependencyGroups[2].Packages.First().Id);
-            Assert.Equal("F", dependencyGroups[2].Packages.Last().Id);
+            Assert.Equal("D", dependencyGroups[2].Packages.First(t => t.Id == "D").Id);
+            Assert.Equal("F", dependencyGroups[2].Packages.First(t => t.Id == "F").Id);
 
             Assert.Equal(NuGetFramework.Parse("WinRT, Version=4.5"), dependencyGroups[3].TargetFramework);
             Assert.Equal(0, dependencyGroups[3].Packages.Count());

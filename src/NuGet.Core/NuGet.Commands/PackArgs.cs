@@ -31,6 +31,7 @@ namespace NuGet.Commands
         public bool Symbols { get; set; }
         public bool Tool { get; set; }
         public string Version { get; set; }
+        public MSBuildPackTargetArgs PackTargetArgs { get; set; }
         public Dictionary<string, string> Properties
         {
             get

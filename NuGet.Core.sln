@@ -136,6 +136,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Commands.Test.Utility
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.DependencyResolver.Core.Tests.Utility", "test\NuGet.Core.Tests\NuGet.DependencyResolver.Core.Tests.Utility\NuGet.DependencyResolver.Core.Tests.Utility.xproj", "{23C35C81-55E5-4E21-9E67-CCDEE901072B}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Build.Tasks.Pack", "src\NuGet.Core\NuGet.Build.Tasks.Pack\NuGet.Build.Tasks.Pack.xproj", "{E1E473C5-2954-45E4-AF95-287B506B696D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -366,6 +368,10 @@ Global
 		{23C35C81-55E5-4E21-9E67-CCDEE901072B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{23C35C81-55E5-4E21-9E67-CCDEE901072B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{23C35C81-55E5-4E21-9E67-CCDEE901072B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1E473C5-2954-45E4-AF95-287B506B696D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1E473C5-2954-45E4-AF95-287B506B696D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1E473C5-2954-45E4-AF95-287B506B696D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1E473C5-2954-45E4-AF95-287B506B696D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -427,5 +433,6 @@ Global
 		{93D1D30C-45F8-4DCE-8EAD-7C7C504713B6} = {7323F93B-D141-4001-BB9E-7AF14031143E}
 		{975924FA-3B4F-46AD-AA3B-F7C066D3955C} = {7323F93B-D141-4001-BB9E-7AF14031143E}
 		{23C35C81-55E5-4E21-9E67-CCDEE901072B} = {7323F93B-D141-4001-BB9E-7AF14031143E}
+		{E1E473C5-2954-45E4-AF95-287B506B696D} = {BD1946CE-5544-4F28-A04A-9C3D51113E1A}
 	EndGlobalSection
 EndGlobal
