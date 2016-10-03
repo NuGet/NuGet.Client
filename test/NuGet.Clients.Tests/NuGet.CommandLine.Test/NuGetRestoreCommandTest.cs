@@ -13,6 +13,7 @@ using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using Xunit;
 using System.Text.RegularExpressions;
+using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol;
 
