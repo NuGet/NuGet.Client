@@ -20,8 +20,6 @@ namespace NuGet.Repositories
         private readonly ConcurrentDictionary<string, IEnumerable<LocalPackageInfo>> _cache
             = new ConcurrentDictionary<string, IEnumerable<LocalPackageInfo>>(StringComparer.OrdinalIgnoreCase);
 
-        private readonly List<LocalPackageInfo> _updateMeList = new List<LocalPackageInfo>();
-
         private readonly ConcurrentDictionary<string, object> _idLocks
             = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 

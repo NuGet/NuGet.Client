@@ -80,9 +80,6 @@ namespace NuGet.Build.Tasks
             // Convert to the internal wrapper
             var wrappedItems = RestoreGraphItems.Select(GetMSBuildItem);
 
-            // Log the graph input
-            // MSBuildRestoreUtility.Dump(wrappedItems, log);
-
             //var graphLines = RestoreGraphItems;
             var providerCache = new RestoreCommandProvidersCache();
 
