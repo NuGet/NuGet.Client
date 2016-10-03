@@ -177,15 +177,6 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to No build found in {0}. Use the -Build option or build the project..
-        /// </summary>
-        public static string Error_UnableToLocateBuildOutput {
-            get {
-                return ResourceManager.GetString("Error_UnableToLocateBuildOutput", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///    Looks up a localized string similar to The folder &apos;{0}&apos; does not contain a project to restore..
         /// </summary>
         public static string Error_UnableToLocateRestoreTarget {

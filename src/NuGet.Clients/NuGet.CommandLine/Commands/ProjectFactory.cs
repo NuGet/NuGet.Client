@@ -77,7 +77,7 @@ namespace NuGet.CommandLine
         {
             LoadAssemblies(msbuildDirectory);
 
-            // create project
+            // create project            
             var project = Activator.CreateInstance(
                 _projectType,
                 path,
@@ -136,7 +136,7 @@ namespace NuGet.CommandLine
                     console.Verbosity = Verbosity.Quiet;
                     break;
                 }
-            }
+            }                
         }
 
         private string TargetPath
@@ -486,10 +486,9 @@ namespace NuGet.CommandLine
             }
         }
 
-        private static IEnumerable<string> GetFiles(string path, ISet<string> fileNames, SearchOption searchOption)
+        private static IEnumerable<string> GetFiles(string path, string fileNameWithoutExtension, HashSet<string> allowedExtensions, SearchOption searchOption)
         {
-            return Directory.EnumerateFiles(path, "*", searchOption)
-                .Where(filePath => fileNames.Contains(Path.GetFileName(filePath)));
+            return allowedExtensions.Select(extension => Directory.GetFiles(path, fileNameWithoutExtension + extension, searchOption)).SelectMany(a => a);
         }
 
         private void ApplyAction(Action<ProjectFactory> action)
@@ -757,10 +756,27 @@ namespace NuGet.CommandLine
                 nugetFramework = TargetFramework != null ? NuGetFramework.Parse(TargetFramework.FullName) : null;
             }
 
-            var projectOutputDirectory = Path.GetDirectoryName(TargetPath);
-            string targetFileName;
+            // Get the target file path
+            string targetPath = TargetPath;
 
-            if (Directory.Exists(TargetPath))
+            // List of extensions to allow in the output path
+            var allowedOutputExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
+                ".dll",
+                ".exe",
+                ".xml",
+                ".winmd"
+            };
+
+            if (IncludeSymbols)
+            {
+                // Include pdbs for symbol packages
+                allowedOutputExtensions.Add(".pdb");
+            }
+
+            string projectOutputDirectory = Path.GetDirectoryName(targetPath);
+
+            string targetFileName;
+            if (Directory.Exists(targetPath))
             {
                 targetFileName = builder.Id;
             }
@@ -769,23 +785,17 @@ namespace NuGet.CommandLine
                 targetFileName = Path.GetFileNameWithoutExtension(TargetPath);
             }
 
-            var outputFileNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            // By default we add all files in the project's output directory
+            foreach (var file in GetFiles(projectOutputDirectory, targetFileName, allowedOutputExtensions, SearchOption.AllDirectories))
             {
-                $"{targetFileName}.dll",
-                $"{targetFileName}.exe",
-                $"{targetFileName}.xml",
-                $"{targetFileName}.winmd"
-            };
+                string extension = Path.GetExtension(file);
 
-            if (IncludeSymbols)
-            {
-                outputFileNames.Add($"{targetFileName}.pdb");
-                outputFileNames.Add($"{targetFileName}.dll.mdb");
-                outputFileNames.Add($"{targetFileName}.exe.mdb");
-            }
+                // Only look at files we care about
+                if (!allowedOutputExtensions.Contains(extension))
+                {
+                    continue;
+                }
 
-            foreach (var file in GetFiles(projectOutputDirectory, outputFileNames, SearchOption.AllDirectories))
-            {
                 string targetFolder;
 
                 if (IsTool)
