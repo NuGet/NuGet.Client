@@ -6055,13 +6055,20 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        public static string MsbuildLoadToolSetError
-        {
         ///   Looks up a localized string similar to Using Msbuild from &apos;{0}&apos;..
         /// </summary>
         public static string MSbuildFromPath {
             get {
                 return ResourceManager.GetString("MSbuildFromPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to load msbuild Toolset.
+        /// </summary>
+        public static string MsbuildLoadToolSetError {
+            get {
+                return ResourceManager.GetString("MsbuildLoadToolSetError", resourceCulture);
             }
         }
         
@@ -6074,6 +6081,7 @@ namespace NuGet.CommandLine {
             }
         }
         
+        /// <summary>
         ///   Looks up a localized string similar to Found multiple project files for &apos;{0}&apos;..
         /// </summary>
         public static string MultipleProjectFilesFound {

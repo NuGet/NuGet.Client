@@ -6111,7 +6111,6 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="MsbuildLoadToolSetError" xml:space="preserve">
     <value>Failed to load msbuild Toolset</value>
   </data>
-  </data>
   <data name="Warning_MsbuildPath" xml:space="preserve">
     <value>MsbuildPath : {0} is using, ignore MsBuildVersion: {1}. </value>
   </data>
@@ -6120,4 +6119,5 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   </data>
   <data name="MsbuildPathNotExist" xml:space="preserve">
     <value>MSBuildPath : {0}  doesn't not exist.</value>
+  </data>
 </root>
