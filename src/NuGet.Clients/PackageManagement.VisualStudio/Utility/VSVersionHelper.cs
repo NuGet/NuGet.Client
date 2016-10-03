@@ -9,11 +9,8 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     internal static class VSVersionHelper
     {
-        public static string GetSKU()
+        public static string GetSKU(DTE dte)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            DTE dte = ServiceLocator.GetInstance<DTE>();
             string sku = dte.Edition;
             if (sku.Equals("Ultimate", StringComparison.OrdinalIgnoreCase)
                 ||
@@ -27,12 +24,8 @@ namespace NuGet.PackageManagement.VisualStudio
             return sku;
         }
 
-        public static string GetFullVsVersionString()
+        public static string GetFullVsVersionString(DTE dte)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            DTE dte = ServiceLocator.GetInstance<DTE>();
-
             // On Dev14, dte.Edition just returns SKU, such as "Enterprise"
             // Add "VS" to the string so that in user agent header, it will be "VS Enterprise/14.0".
             string edition = dte.Edition;
