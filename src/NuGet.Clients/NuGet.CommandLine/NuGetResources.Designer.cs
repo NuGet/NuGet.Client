@@ -6046,15 +6046,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to load msbuild Toolset.
-        /// </summary>
-        public static string MsbuildLoadToolSetError {
-            get {
-                return ResourceManager.GetString("MsbuildLoadToolSetError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Found multiple project files for &apos;{0}&apos;..
         /// </summary>
         public static string MultipleProjectFilesFound {
