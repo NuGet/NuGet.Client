@@ -163,11 +163,11 @@ Invoke-BuildStep 'Building NuGet.Clients projects - VS14 Toolset' {
     -ev +BuildErrors
 
 Invoke-BuildStep 'Creating NuGet.Clients packages - VS14 Toolset' {
-        param($Configuration, $MSPFXPath)
-        Build-ClientsPackages $Configuration $ReleaseLabel $BuildNumber -ToolsetVersion 14 -KeyFile $MSPFXPath
+        param($Configuration, $MSPFXPath, $SkipILMerge)
+        Build-ClientsPackages $Configuration $ReleaseLabel $BuildNumber -ToolsetVersion 14 -KeyFile $MSPFXPath -SkipILMerge:$SkipILMerge
     } `
-    -args $Configuration, $MSPFXPath `
-    -skip:($Fast -or $SkipILMerge -or $SkipVS14) `
+    -args $Configuration, $MSPFXPath, $SkipILMerge `
+    -skip:($Fast -or $SkipVS14) `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Creating the VS14 EndToEnd test package' {
