@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -228,10 +229,36 @@ namespace NuGet.Commands
                 {
                     // Add RIDs and Supports
                     result.RuntimeGraph = GetRuntimeGraph(specItem);
+
+                    // Add PackageTargetFallback
+                    AddPackageTargetFallbacks(result, items);
                 }
             }
 
             return result;
+        }
+
+        private static void AddPackageTargetFallbacks(PackageSpec spec, IEnumerable<IMSBuildItem> items)
+        {
+            foreach (var item in GetItemByType(items, "TargetFrameworkInformation"))
+            {
+                var frameworkString = item.GetProperty("TargetFramework");
+                TargetFrameworkInformation targetFrameworkInfo = null;
+
+                if (!string.IsNullOrEmpty(frameworkString))
+                {
+                    targetFrameworkInfo = spec.GetTargetFramework(NuGetFramework.Parse(frameworkString));
+                }
+
+                Debug.Assert(targetFrameworkInfo != null, $"PackageSpec does not contain the target framework: {frameworkString}");
+
+                if (targetFrameworkInfo != null)
+                {
+                    targetFrameworkInfo.Imports = Split(item.GetProperty("PackageTargetFallback"))
+                        .Select(NuGetFramework.Parse)
+                        .ToList();
+                }
+            }
         }
 
         private static RuntimeGraph GetRuntimeGraph(IMSBuildItem specItem)

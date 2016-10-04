@@ -1341,6 +1341,50 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public async Task RestoreNetCore_SingleProjectWithPackageTargetFallback()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                packageX.AddFile("lib/dnxcore50/a.dll");
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                // Add imports property
+                projectA.Properties.Add("PackageTargetFallback", "portable-net45+win8;dnxcore50");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var r = RestoreSolution(pathContext);
+                var xTarget = projectA.AssetsFile.Targets.Single().Libraries.Single();
+
+                // Assert
+                Assert.Equal("lib/dnxcore50/a.dll", xTarget.CompileTimeAssemblies.Single());
+            }
+        }
+
+        [Fact]
         public async Task RestoreNetCore_SingleProject_SingleTFM()
         {
             // Arrange

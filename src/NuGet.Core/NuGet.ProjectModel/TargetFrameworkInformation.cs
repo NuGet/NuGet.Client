@@ -11,23 +11,18 @@ namespace NuGet.ProjectModel
     {
         public NuGetFramework FrameworkName { get; set; }
 
-        public IList<LibraryDependency> Dependencies { get; set; }
+        public IList<LibraryDependency> Dependencies { get; set; } = new List<LibraryDependency>();
 
         /// <summary>
         /// A fallback PCL framework to use when no compatible items
         /// were found for <see cref="FrameworkName"/>.
         /// </summary>
-        public IReadOnlyList<NuGetFramework> Imports { get; set; }
+        public IList<NuGetFramework> Imports { get; set; } = new List<NuGetFramework>();
 
         /// <summary>
         /// Display warnings when the Imports framework is used.
         /// </summary>
         public bool Warn { get; set; }
-
-        public TargetFrameworkInformation()
-        {
-            Dependencies = new List<LibraryDependency>();
-        }
 
         public override string ToString()
         {
