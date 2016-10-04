@@ -10,7 +10,7 @@ namespace NuGet.Credentials
     [Serializable]
     public class PluginException : Exception
     {
-        private const string redactedPassword = "********";
+        private const string RedactedPassword = "********";
 
         public PluginException() { }
 
@@ -72,7 +72,7 @@ namespace NuGet.Credentials
                 path,
                 status,
                 response.Username,
-                response.Password == null ? string.Empty : redactedPassword,
+                response.Password == null ? string.Empty : RedactedPassword,
                 response.AuthTypes == null ? string.Empty : string.Join(", ", response.AuthTypes),
                 response.Message));
         }

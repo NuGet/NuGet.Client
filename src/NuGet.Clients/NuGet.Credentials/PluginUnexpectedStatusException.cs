@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.Serialization;
 
 namespace NuGet.Credentials
 {
@@ -20,8 +21,8 @@ namespace NuGet.Credentials
         public PluginUnexpectedStatusException(string message, Exception inner) : base(message, inner) { }
 
         protected PluginUnexpectedStatusException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context) : base(info, context)
+          SerializationInfo info,
+          StreamingContext context) : base(info, context)
         { }
 
         public static PluginException CreateUnexpectedStatusMessage(

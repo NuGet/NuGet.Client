@@ -447,7 +447,6 @@ namespace NuGet.Credentials.Test
         }
 
         [Fact]
-
         public async Task WhenUnexpectedStatus_Throws()
         {
             // Arrange
@@ -475,7 +474,6 @@ namespace NuGet.Credentials.Test
         }
 
         [Fact]
-
         public async Task OnPluginUnexpectedStatusException_RetryWithoutVerbosityFlag()
         {
             // Arrange
@@ -523,6 +521,47 @@ namespace NuGet.Credentials.Test
             Assert.Equal("u1", result.Credentials.GetCredential(uri, "basic")?.UserName);
             Assert.Equal("p1", result.Credentials.GetCredential(uri, "basic")?.Password);
             mockProvider.VerifyAll(); // ensure both calls to Execute occurred
+        }
+
+        [Fact]
+        public async Task OnPluginUnexpectedStatusException_NoRetryIfVerbosityFlagWasNotSent()
+        {
+            // Arrange
+            var mockLogger = new Mock<Common.ILogger>();
+            // note that we do not pass the verbosity flag to the plugin for "Normal" verbosity.
+            var mockProvider = new Mock<PluginCredentialProvider>(
+                mockLogger.Object,
+                @"c:\path\plugin.exe",
+                10,
+                "Normal")
+            { CallBase = true };
+            var stdout1 = @"{""Message"":""Unexpected Parameter""}";
+            mockProvider.Setup(x => x.Execute(
+                    It.Is<ProcessStartInfo>(p => !p.Arguments.Contains("-verbosity")),
+                    It.IsAny<CancellationToken>(),
+                    out stdout1))
+                .Returns((int)-1)
+                .Verifiable();
+
+            var uri = new Uri("http://host/");
+            var proxy = null as IWebProxy;
+            var type = CredentialRequestType.Unauthorized;
+            var message = null as string;
+            var isRetry = true;
+            var nonInteractive = true;
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<PluginUnexpectedStatusException>(() => mockProvider.Object.GetAsync(
+                uri,
+                proxy,
+                type,
+                message,
+                isRetry,
+                nonInteractive,
+                CancellationToken.None));
+            mockProvider.Verify(
+                x => x.Execute(It.IsAny<ProcessStartInfo>(), It.IsAny<CancellationToken>(), out _testStdOut),
+                Times.Once());
         }
 
         [Fact]

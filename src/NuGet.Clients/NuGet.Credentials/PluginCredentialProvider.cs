@@ -114,7 +114,7 @@ namespace NuGet.Credentials
                 {
                     response = GetPluginResponse(request, cancellationToken);
                 }
-                catch (PluginUnexpectedStatusException)
+                catch (PluginUnexpectedStatusException) when (PassVerbosityFlag(request))
                 {
                     // older providers may throw if the verbosity flag is sent,
                     // so retry without it
@@ -173,8 +173,7 @@ namespace NuGet.Credentials
 
             // only apply -verbosity flag if set and != Normal
             // since normal is default
-            if (request.Verbosity != null
-                && !string.Equals(request.Verbosity, NormalVerbosity, StringComparison.OrdinalIgnoreCase))
+            if (PassVerbosityFlag(request))
             {
                 argumentString += $" -verbosity {request.Verbosity.ToLower()}";
             }
@@ -284,6 +283,12 @@ namespace NuGet.Credentials
 
             stdOut = outBuffer.ToString();
             return process.ExitCode;
+        }
+
+        private bool PassVerbosityFlag(PluginCredentialRequest request)
+        {
+            return request.Verbosity != null
+                && !string.Equals(request.Verbosity, NormalVerbosity, StringComparison.OrdinalIgnoreCase);
         }
 
         private static void Kill(Process p)
