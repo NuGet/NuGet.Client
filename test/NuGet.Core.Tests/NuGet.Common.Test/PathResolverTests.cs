@@ -619,8 +619,10 @@ namespace NuGet.Common.Test
         private void Verify(IEnumerable<string> expectedRelativePaths, IEnumerable<string> actualFullPaths)
         {
             var actualRelativePaths = actualFullPaths.Select(fullPath => fullPath.Substring(_fixture.TestDirectoryPath.Length));
+            var expectedResults = expectedRelativePaths.OrderBy(path => path);
+            var actualResults = actualRelativePaths.OrderBy(path => path);
 
-            Assert.Equal(expectedRelativePaths, actualRelativePaths);
+            Assert.Equal(expectedResults, actualResults);
         }
 
         private static IEnumerable<string> GetPlatformSpecificPaths(IEnumerable<string> platformUnspecificPaths)
