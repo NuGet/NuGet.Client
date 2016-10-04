@@ -75,7 +75,6 @@ namespace NuGet.Test.Utility
 #else
                     var processExited = p.WaitForExit(timeOutInMilliseconds);
 #endif
-                    Task.WaitAll(outputTask, errorTask);
                     if (!processExited)
                     {
                         p.Kill();
@@ -87,6 +86,7 @@ namespace NuGet.Test.Utility
 
                     if (processExited)
                     {
+                        Task.WaitAll(outputTask, errorTask);
                         exitCode = p.ExitCode;
                     }
                 }
