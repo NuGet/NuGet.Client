@@ -90,31 +90,35 @@ namespace NuGet.PackageManagement
                 }
             }
 
-            using (var cacheContext = new SourceCacheContext())
+            // Check if there are actual projects to restore before running.
+            if (dgSpec.Restore.Count > 0)
             {
-                var providers = new List<IPreLoadedRestoreRequestProvider>();
-                var providerCache = new RestoreCommandProvidersCache();
-                providers.Add(new DependencyGraphSpecRequestProvider(providerCache, dgSpec));
-
-                var sourceProvider = new CachingSourceProvider(new PackageSourceProvider(settings));
-
-                var restoreContext = new RestoreArgs
+                using (var cacheContext = new SourceCacheContext())
                 {
-                    CacheContext = cacheContext,
-                    LockFileVersion = LockFileFormat.Version,
-                    ConfigFile = null,
-                    DisableParallel = false,
-                    GlobalPackagesFolder = pathContext.UserPackageFolder,
-                    Log = referenceContext.Logger,
-                    MachineWideSettings = new XPlatMachineWideSetting(),
-                    PreLoadedRequestProviders = providers,
-                    CachingSourceProvider = sourceProvider,
-                    Sources = sources.ToList()
-                };
+                    var providers = new List<IPreLoadedRestoreRequestProvider>();
+                    var providerCache = new RestoreCommandProvidersCache();
+                    providers.Add(new DependencyGraphSpecRequestProvider(providerCache, dgSpec));
 
-                var restoreSummaries = await RestoreRunner.Run(restoreContext);
-                
-                RestoreSummary.Log(referenceContext.Logger, restoreSummaries);
+                    var sourceProvider = new CachingSourceProvider(new PackageSourceProvider(settings));
+
+                    var restoreContext = new RestoreArgs
+                    {
+                        CacheContext = cacheContext,
+                        LockFileVersion = LockFileFormat.Version,
+                        ConfigFile = null,
+                        DisableParallel = false,
+                        GlobalPackagesFolder = pathContext.UserPackageFolder,
+                        Log = referenceContext.Logger,
+                        MachineWideSettings = new XPlatMachineWideSetting(),
+                        PreLoadedRequestProviders = providers,
+                        CachingSourceProvider = sourceProvider,
+                        Sources = sources.ToList()
+                    };
+
+                    var restoreSummaries = await RestoreRunner.Run(restoreContext);
+
+                    RestoreSummary.Log(referenceContext.Logger, restoreSummaries);
+                }
             }
         }
     }
