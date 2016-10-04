@@ -456,7 +456,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GenerateRestoreGraphWalk"
-      DependsOnTargets="_GetProjectRestoreType;_GetRestoreTargetFrameworksOutput;_GenerateRestoreProjectSpec;_GenerateRestoreDependencies;_GetChildRestoreProjects"
+      DependsOnTargets="
+      _GetProjectRestoreType;
+      _GetRestoreTargetFrameworksOutput;
+      _GenerateRestoreProjectSpec;
+      _GenerateRestoreDependencies;
+      _GetChildRestoreProjects"
       Returns="@(_RestoreGraphEntry)">
 
     <!-- Output from dependency targets -->
@@ -494,6 +499,16 @@ Copyright (c) .NET Foundation. All rights reserved.
         TaskParameter="RestoreGraphItems"
         ItemName="_RestoreGraphEntry" />
     </GetRestorePackageReferencesTask>
+    
+    <!-- Write out target framework information -->
+    <ItemGroup Condition="  '$(_ProjectRestoreType)' == 'NETCore' AND '$(PackageTargetFallback)' != '' ">
+      <_RestoreGraphEntry Include="$([System.Guid]::NewGuid())">
+        <Type>TargetFrameworkInformation</Type>
+        <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>
+        <PackageTargetFallback>$(PackageTargetFallback)</PackageTargetFallback>
+        <TargetFramework>$(TargetFramework)</TargetFramework>
+      </_RestoreGraphEntry>
+    </ItemGroup>
   </Target>
 
   <!--

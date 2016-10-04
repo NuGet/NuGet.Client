@@ -275,7 +275,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static void SetImports(JObject json, IReadOnlyList<NuGetFramework> frameworks)
+        private static void SetImports(JObject json, IList<NuGetFramework> frameworks)
         {
             if (frameworks?.Any() == true)
             {
