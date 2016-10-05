@@ -829,18 +829,18 @@ Function Build-ClientsPackages {
 
     Copy-Item -Path "${projectInstallPs1}" -Destination "${projectInputDir}"
 
-	Build-NuGetPackage `
-            -NuspecPath $projectNuspec `
-            -BasePath $projectInputDir `
-            -OutputDir $Nupkgs `
-            -Version $prereleaseNupkgVersion
+    Build-NuGetPackage `
+        -NuspecPath $projectNuspec `
+        -BasePath $projectInputDir `
+        -OutputDir $Nupkgs `
+        -Version $prereleaseNupkgVersion
 
     # Pack the NuGet.VisualStudio project with just the release label.
-	Build-NuGetPackage `
-            -NuspecPath $projectNuspec `
-            -BasePath $projectInputDir `
-            -OutputDir $ReleaseNupkgs `
-            -Version $releaseNupkgVersion
+    Build-NuGetPackage `
+        -NuspecPath $projectNuspec `
+        -BasePath $projectInputDir `
+        -OutputDir $ReleaseNupkgs `
+        -Version $releaseNupkgVersion
 }
 
 Function Build-NuGetPackage {
