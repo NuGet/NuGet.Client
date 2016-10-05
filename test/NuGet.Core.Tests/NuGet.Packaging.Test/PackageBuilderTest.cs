@@ -207,7 +207,7 @@ namespace NuGet.Packaging.Test
                 PackageBuilder builder = new PackageBuilder();
 
                 // Act
-                builder.AddFiles(directory.TestDirectoryPath, source, destination, exclude);
+                builder.AddFiles(directory.Path, source, destination, exclude);
 
                 // Assert
                 Assert.Collection(builder.Files,
@@ -2653,50 +2653,30 @@ Enabling license acceptance requires a license url.");
             file1.txt
             file2.txt
         */
-        public sealed class TestDirectory : IDisposable
+        public sealed class TestDirectory : NuGet.Test.Utility.TestDirectory
         {
-            private DirectoryInfo _directory;
-
-            public string TestDirectoryPath
-            {
-                get { return _directory.FullName; }
-            }
-
             public TestDirectory()
+                : base(System.IO.Path.Combine(System.IO.Path.GetTempPath(), System.IO.Path.GetRandomFileName()))
             {
-                _directory = CreateTestDirectory();
+                CreateTestDirectory();
             }
 
-            public void Dispose()
+            private void CreateTestDirectory()
             {
-                try
-                {
-                    _directory.Delete(recursive: true);
-                }
-                catch (DirectoryNotFoundException)
-                {
-                }
-            }
-
-            private static DirectoryInfo CreateTestDirectory()
-            {
-                var rootDirectoryPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-                var rootDirectory = Directory.CreateDirectory(rootDirectoryPath);
-                var directory1 = Directory.CreateDirectory(Path.Combine(rootDirectory.FullName, "dir1"));
-                var directory2 = Directory.CreateDirectory(Path.Combine(directory1.FullName, "dir2"));
-                var directory3 = Directory.CreateDirectory(Path.Combine(rootDirectory.FullName, "dir3"));
+                var rootDirectory = Directory.CreateDirectory(Path);
+                var directory1 = Directory.CreateDirectory(System.IO.Path.Combine(rootDirectory.FullName, "dir1"));
+                var directory2 = Directory.CreateDirectory(System.IO.Path.Combine(directory1.FullName, "dir2"));
+                var directory3 = Directory.CreateDirectory(System.IO.Path.Combine(rootDirectory.FullName, "dir3"));
 
                 CreateTestFiles(rootDirectory);
                 CreateTestFiles(directory1);
                 CreateTestFiles(directory2);
-
-                return rootDirectory;
             }
 
             private static void CreateTestFiles(DirectoryInfo directory)
             {
-                File.WriteAllText(Path.Combine(directory.FullName, "file1.txt"), string.Empty);
-                File.WriteAllText(Path.Combine(directory.FullName, "file2.txt"), string.Empty);
+                File.WriteAllText(System.IO.Path.Combine(directory.FullName, "file1.txt"), string.Empty);
+                File.WriteAllText(System.IO.Path.Combine(directory.FullName, "file2.txt"), string.Empty);
             }
         }
     }
