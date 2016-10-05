@@ -18,6 +18,12 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DocumentationFile>$(OutputPath)\NuGet.VisualStudio.XML</DocumentationFile>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DocumentationFile>$(OutputPath)\NuGet.VisualStudio.XML</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Mono Release'">
+    <DocumentationFile>$(OutputPath)\NuGet.VisualStudio.XML</DocumentationFile>
+  </PropertyGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '14.0'">
 	  <ItemGroup>
@@ -92,7 +98,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="install.ps1" />
+    <None Include="install.ps1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="NuGet.VisualStudio.nuspec" />
     <None Include="project.json" />
   </ItemGroup>

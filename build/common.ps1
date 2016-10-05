@@ -819,22 +819,19 @@ Function Build-ClientsPackages {
 		}
 		& $NuGetExe $opts
 	}
-	
+
 	# Pack the NuGet.VisualStudio project with the build number and release label.
 	$projectDir = [io.path]::combine($NuGetClientRoot, "src", "NuGet.Clients", "NuGet.VisualStudio")
 	$projectNuspec = Join-Path $projectDir "NuGet.VisualStudio.nuspec"
 	$projectInputDir = [io.path]::combine($Artifacts, "NuGet.VisualStudio", "${ToolsetVersion}.0", "${Configuration}")
-	$projectInstallPs1 = Join-Path $projectDir "install.ps1"
-	
-	Copy-Item -Path "${projectInstallPs1}" -Destination "${projectInputDir}"
-	
+
 	$opts = 'pack', $projectNuspec
     $opts += '-BasePath', $projectInputDir
     $opts += '-OutputDirectory', $Nupkgs
-    $opts += '-Symbols'	
+    $opts += '-Symbols'
     $opts += '-Version', "$PackageReleaseVersion-$ReleaseLabel-$BuildNumber"
-    & $NuGetExe $opts	
-	
+    & $NuGetExe $opts
+
 	# Pack the NuGet.VisualStudio project with just the release label.
 	$opts = 'pack', $projectNuspec
     $opts += '-BasePath', $projectInputDir
