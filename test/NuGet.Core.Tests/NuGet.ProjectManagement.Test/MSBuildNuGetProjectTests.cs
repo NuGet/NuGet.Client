@@ -60,7 +60,7 @@ namespace ProjectManagement.Test
                 Assert.Equal(msBuildNuGetProjectSystem.ProjectFileFullPath, actual.RestoreMetadata.ProjectUniqueName);
                 Assert.Equal(1, actual.TargetFrameworks.Count);
                 Assert.Equal(projectTargetFramework, actual.TargetFrameworks[0].FrameworkName);
-                Assert.Null(actual.TargetFrameworks[0].Imports);
+                Assert.Empty(actual.TargetFrameworks[0].Imports);
 
                 Assert.Empty(actual.Dependencies);
                 Assert.Empty(actual.TargetFrameworks[0].Dependencies);
@@ -112,7 +112,7 @@ namespace ProjectManagement.Test
                 Assert.Equal(msBuildNuGetProjectSystem.ProjectFileFullPath, actual.RestoreMetadata.ProjectUniqueName);
                 Assert.Equal(1, actual.TargetFrameworks.Count);
                 Assert.Equal(projectTargetFramework, actual.TargetFrameworks[0].FrameworkName);
-                Assert.Null(actual.TargetFrameworks[0].Imports);
+                Assert.Empty(actual.TargetFrameworks[0].Imports);
 
                 Assert.Equal(1, actual.Dependencies.Count);
                 Assert.Equal("uniqueName", actual.Dependencies[0].Name);
