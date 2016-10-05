@@ -14,8 +14,6 @@
     <CodeAnalysisRuleSet>..\..\..\NuGet.ruleset</CodeAnalysisRuleSet>
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
-  </PropertyGroup>
-  <PropertyGroup>
     <DocumentationFile>$(OutputPath)\NuGet.VisualStudio.xml</DocumentationFile>
   </PropertyGroup>
   <Choose>
