@@ -765,6 +765,13 @@ Function Build-ClientsPackages {
         [switch]$SkipILMerge
     )
 
+	$prereleaseNupkgVersion = "$PackageReleaseVersion-$ReleaseLabel-$BuildNumber"
+    if ($ReleaseLabel -Ne 'rtm') {
+        $releaseNupkgVersion = "$PackageReleaseVersion-$ReleaseLabel"
+    } else {
+        $releaseNupkgVersion = "$PackageReleaseVersion"
+    }
+
     if (-not $SkipILMerge){
         $exeProjectDir = [io.path]::combine($NuGetClientRoot, "src", "NuGet.Clients", "NuGet.CommandLine")
         $exeProject = Join-Path $exeProjectDir "NuGet.CommandLine.csproj"
@@ -786,12 +793,11 @@ Function Build-ClientsPackages {
             -OutputDir $exeOutputDir `
             -KeyFile $KeyFile
 
-        $opts = 'pack', $exeNuspec
-        $opts += '-BasePath', $exeOutputDir
-        $opts += '-OutputDirectory', $Nupkgs
-        $opts += '-Symbols'
-        $opts += '-Version', "$PackageReleaseVersion-$ReleaseLabel-$BuildNumber"
-        & $NuGetExe $opts
+        Build-NuGetPackage `
+            -NuspecPath $exeNuspec `
+            -BasePath $exeOutputDir `
+            -OutputDir $Nupkgs `
+            -Version $prereleaseNupkgVersion
 
         # Build and pack the NuGet.CommandLine project with just the release label.
         Build-ClientsProjectHelper `
@@ -808,16 +814,11 @@ Function Build-ClientsPackages {
             -OutputDir $exeOutputDir `
             -KeyFile $KeyFile
 
-        $opts = 'pack', $exeNuspec
-        $opts += '-BasePath', $exeOutputDir
-        $opts += '-OutputDirectory', $ReleaseNupkgs
-        $opts += '-Symbols'
-        if ($ReleaseLabel -Ne 'rtm') {
-            $opts += '-Version', "$PackageReleaseVersion-$ReleaseLabel"
-        } else {
-            $opts += '-Version', $PackageReleaseVersion
-        }
-        & $NuGetExe $opts
+        Build-NuGetPackage `
+            -NuspecPath $exeNuspec `
+            -BasePath $exeOutputDir `
+            -OutputDir $ReleaseNupkgs `
+            -Version $releaseNupkgVersion
     }
 
     # Pack the NuGet.VisualStudio project with the build number and release label.
@@ -828,23 +829,33 @@ Function Build-ClientsPackages {
 
     Copy-Item -Path "${projectInstallPs1}" -Destination "${projectInputDir}"
 
-    $opts = 'pack', $projectNuspec
-    $opts += '-BasePath', $projectInputDir
-    $opts += '-OutputDirectory', $Nupkgs
-    $opts += '-Symbols'
-    $opts += '-Version', "$PackageReleaseVersion-$ReleaseLabel-$BuildNumber"
-    & $NuGetExe $opts
+	Build-NuGetPackage `
+            -NuspecPath $projectNuspec `
+            -BasePath $projectInputDir `
+            -OutputDir $Nupkgs `
+            -Version $prereleaseNupkgVersion
 
     # Pack the NuGet.VisualStudio project with just the release label.
-    $opts = 'pack', $projectNuspec
-    $opts += '-BasePath', $projectInputDir
-    $opts += '-OutputDirectory', $ReleaseNupkgs
+	Build-NuGetPackage `
+            -NuspecPath $projectNuspec `
+            -BasePath $projectInputDir `
+            -OutputDir $ReleaseNupkgs `
+            -Version $releaseNupkgVersion
+}
+
+Function Build-NuGetPackage {
+    param(
+		[string]$NuspecPath,
+		[string]$BasePath,
+		[string]$OutputDir,
+		[string]$Version
+	)
+
+    $opts = 'pack', $NuspecPath
+    $opts += '-BasePath', $BasePath
+    $opts += '-OutputDirectory', $OutputDir
     $opts += '-Symbols'
-    if ($ReleaseLabel -Ne 'rtm') {
-        $opts += '-Version', "$PackageReleaseVersion-$ReleaseLabel"
-    } else {
-        $opts += '-Version', $PackageReleaseVersion
-    }
+    $opts += '-Version', $Version
     & $NuGetExe $opts
 }
 
