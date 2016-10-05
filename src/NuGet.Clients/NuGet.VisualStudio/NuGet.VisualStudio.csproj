@@ -98,9 +98,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="install.ps1">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <None Include="install.ps1" />
     <None Include="NuGet.VisualStudio.nuspec" />
     <None Include="project.json" />
   </ItemGroup>

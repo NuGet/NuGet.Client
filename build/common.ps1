@@ -824,6 +824,9 @@ Function Build-ClientsPackages {
     $projectDir = [io.path]::combine($NuGetClientRoot, "src", "NuGet.Clients", "NuGet.VisualStudio")
     $projectNuspec = Join-Path $projectDir "NuGet.VisualStudio.nuspec"
     $projectInputDir = [io.path]::combine($Artifacts, "NuGet.VisualStudio", "${ToolsetVersion}.0", "${Configuration}")
+    $projectInstallPs1 = Join-Path $projectDir "install.ps1"
+
+    Copy-Item -Path "${projectInstallPs1}" -Destination "${projectInputDir}"
 
     $opts = 'pack', $projectNuspec
     $opts += '-BasePath', $projectInputDir
