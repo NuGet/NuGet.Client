@@ -15,14 +15,8 @@
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DocumentationFile>$(OutputPath)\NuGet.VisualStudio.XML</DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <DocumentationFile>$(OutputPath)\NuGet.VisualStudio.XML</DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)' == 'Mono Release'">
-    <DocumentationFile>$(OutputPath)\NuGet.VisualStudio.XML</DocumentationFile>
+  <PropertyGroup>
+    <DocumentationFile>$(OutputPath)\NuGet.VisualStudio.xml</DocumentationFile>
   </PropertyGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '14.0'">
