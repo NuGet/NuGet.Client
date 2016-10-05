@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -190,6 +193,39 @@ namespace NuGet.Packaging.Test
     </dependencies>
   </metadata>
 </package>".Replace("\r\n", "\n"), result.Replace("\r\n", "\n"));
+            }
+        }
+
+        [Theory]
+        [InlineData("**", @"**\file2.txt", "Content")]
+        [InlineData("**", "**/file2.txt", "Content")]
+        public void CreatePackageWithNuspecIncludeExcludeWithWildcards(string source, string exclude, string destination)
+        {
+            using (var directory = new TestDirectory())
+            {
+                // Arrange
+                PackageBuilder builder = new PackageBuilder();
+
+                // Act
+                builder.AddFiles(directory.TestDirectoryPath, source, destination, exclude);
+
+                // Assert
+                Assert.Collection(builder.Files,
+                    file =>
+                    {
+                        Assert.Equal(string.Format("Content{0}file1.txt", Path.DirectorySeparatorChar), file.Path);
+                        Assert.Equal("file1.txt", file.EffectivePath);
+                    },
+                    file =>
+                    {
+                        Assert.Equal(string.Format("Content{0}dir1{0}file1.txt", Path.DirectorySeparatorChar), file.Path);
+                        Assert.Equal(string.Format("dir1{0}file1.txt", Path.DirectorySeparatorChar), file.EffectivePath);
+                    },
+                    file =>
+                    {
+                        Assert.Equal(string.Format("Content{0}dir1{0}dir2{0}file1.txt", Path.DirectorySeparatorChar), file.Path);
+                        Assert.Equal(string.Format("dir1{0}dir2{0}file1.txt", Path.DirectorySeparatorChar), file.EffectivePath);
+                    });
             }
         }
 
@@ -2602,6 +2638,66 @@ Enabling license acceptance requires a license url.");
             }
 
             return resultStream;
+        }
+
+        /*
+        Test directory contents:
+
+            dir1
+                dir2
+                    file1.txt
+                    file2.txt
+                file1.txt
+                file2.txt
+            dir3
+            file1.txt
+            file2.txt
+        */
+        public sealed class TestDirectory : IDisposable
+        {
+            private DirectoryInfo _directory;
+
+            public string TestDirectoryPath
+            {
+                get { return _directory.FullName; }
+            }
+
+            public TestDirectory()
+            {
+                _directory = CreateTestDirectory();
+            }
+
+            public void Dispose()
+            {
+                try
+                {
+                    _directory.Delete(recursive: true);
+                }
+                catch (DirectoryNotFoundException)
+                {
+                }
+            }
+
+            private static DirectoryInfo CreateTestDirectory()
+            {
+                var rootDirectoryPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+                var rootDirectory = Directory.CreateDirectory(rootDirectoryPath);
+                var directory1 = Directory.CreateDirectory(Path.Combine(rootDirectory.FullName, "dir1"));
+                var directory2 = Directory.CreateDirectory(Path.Combine(directory1.FullName, "dir2"));
+                var directory3 = Directory.CreateDirectory(Path.Combine(rootDirectory.FullName, "dir3"));
+
+                CreateTestFiles(rootDirectory);
+                CreateTestFiles(directory1);
+                CreateTestFiles(directory2);
+
+                return rootDirectory;
+            }
+
+            private static void CreateTestFiles(DirectoryInfo directory)
+            {
+                File.WriteAllText(Path.Combine(directory.FullName, "file1.txt"), string.Empty);
+                File.WriteAllText(Path.Combine(directory.FullName, "file2.txt"), string.Empty);
+            }
         }
     }
 }

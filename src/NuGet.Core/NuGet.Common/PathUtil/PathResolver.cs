@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -58,7 +61,7 @@ namespace NuGet.Common
                 // regex wildcard adjustments for *nix-style file systems
                 pattern = pattern
                     .Replace(@"\.\*\*", @"\.[^/.]*") // .** should not match on ../file or ./file but will match .file
-                    .Replace(@"\*\*/", ".*") //For recursive wildcards /**/, include the current directory.
+                    .Replace(@"\*\*/", "(.+/)*") //For recursive wildcards /**/, include the current directory.
                     .Replace(@"\*\*", ".*") // For recursive wildcards that don't end in a slash e.g. **.txt would be treated as a .txt file at any depth
                     .Replace(@"\*", @"[^/]*(/)?") // For non recursive searches, limit it any character that is not a directory separator
                     .Replace(@"\?", "."); // ? translates to a single any character
@@ -69,7 +72,7 @@ namespace NuGet.Common
                 pattern = pattern
                     .Replace("/", @"\\") // On Windows, / is treated the same as \.
                     .Replace(@"\.\*\*", @"\.[^\\.]*") // .** should not match on ../file or ./file but will match .file
-                    .Replace(@"\*\*\\", ".*") //For recursive wildcards \**\, include the current directory.
+                    .Replace(@"\*\*\\", @"(.+\\)*") //For recursive wildcards \**\, include the current directory.
                     .Replace(@"\*\*", ".*") // For recursive wildcards that don't end in a slash e.g. **.txt would be treated as a .txt file at any depth
                     .Replace(@"\*", @"[^\\]*(\\)?") // For non recursive searches, limit it any character that is not a directory separator
                     .Replace(@"\?", "."); // ? translates to a single any character
@@ -88,7 +91,7 @@ namespace NuGet.Common
         public static IEnumerable<SearchPathResult> PerformWildcardSearch(string basePath, string searchPath, bool includeEmptyDirectories, out string normalizedBasePath)
         {
             bool searchDirectory = false;
-            
+
             // If the searchPath ends with \ or /, we treat searchPath as a directory,
             // and will include everything under it, recursively
             if (IsDirectoryPath(searchPath))
@@ -173,17 +176,18 @@ namespace NuGet.Common
 
         internal static string NormalizeBasePath(string basePath, ref string searchPath)
         {
-            const string relativePath = @"..\";
+            string parentDirectoryPath = $"..{Path.DirectorySeparatorChar}";
+            string currentDirectoryPath = $".{Path.DirectorySeparatorChar}";
 
             // If no base path is provided, use the current directory.
-            basePath = String.IsNullOrEmpty(basePath) ? @".\" : basePath;
+            basePath = String.IsNullOrEmpty(basePath) ? currentDirectoryPath : basePath;
 
-            // If the search path is relative, transfer the ..\ portion to the base path. 
+            // If the search path is relative, transfer the parent directory portion to the base path.
             // This needs to be done because the base path determines the root for our enumeration.
-            while (searchPath.StartsWith(relativePath, StringComparison.OrdinalIgnoreCase))
+            while (searchPath.StartsWith(parentDirectoryPath, StringComparison.OrdinalIgnoreCase))
             {
-                basePath = Path.Combine(basePath, relativePath);
-                searchPath = searchPath.Substring(relativePath.Length);
+                basePath = Path.Combine(basePath, parentDirectoryPath);
+                searchPath = searchPath.Substring(parentDirectoryPath.Length);
             }
 
             return Path.GetFullPath(basePath);

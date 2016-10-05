@@ -605,7 +605,10 @@ namespace NuGet.Packaging
 
         public void AddFiles(string basePath, string source, string destination, string exclude = null)
         {
+            exclude = exclude?.Replace('\\', Path.DirectorySeparatorChar);
+
             List<PhysicalPackageFile> searchFiles = ResolveSearchPattern(basePath, source.Replace('\\', Path.DirectorySeparatorChar), destination, _includeEmptyDirectories).ToList();
+
             if (_includeEmptyDirectories)
             {
                 // we only allow empty directories which are under known root folders.
@@ -616,13 +619,12 @@ namespace NuGet.Packaging
             ExcludeFiles(searchFiles, basePath, exclude);
 
             // Don't throw if the exclude is what made this find no files. Adding files from
-            // project.json ends up calling this one file at a time where some may be filtered out.  
+            // project.json ends up calling this one file at a time where some may be filtered out.
             if (!PathResolver.IsWildcardSearch(source) && !PathResolver.IsDirectoryPath(source) && !searchFiles.Any() && string.IsNullOrEmpty(exclude))
             {
                 throw new FileNotFoundException(
                     String.Format(CultureInfo.CurrentCulture, NuGetResources.PackageAuthoring_FileNotFound, source));
             }
-
 
             Files.AddRange(searchFiles);
         }
