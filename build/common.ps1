@@ -765,7 +765,7 @@ Function Build-ClientsPackages {
         [switch]$SkipILMerge
     )
 
-	$prereleaseNupkgVersion = "$PackageReleaseVersion-$ReleaseLabel-$BuildNumber"
+    $prereleaseNupkgVersion = "$PackageReleaseVersion-$ReleaseLabel-$BuildNumber"
     if ($ReleaseLabel -Ne 'rtm') {
         $releaseNupkgVersion = "$PackageReleaseVersion-$ReleaseLabel"
     } else {
@@ -845,10 +845,10 @@ Function Build-ClientsPackages {
 
 Function Build-NuGetPackage {
     param(
-		[string]$NuspecPath,
-		[string]$BasePath,
-		[string]$OutputDir,
-		[string]$Version
+        [string]$NuspecPath,
+        [string]$BasePath,
+        [string]$OutputDir,
+        [string]$Version
 	)
 
     $opts = 'pack', $NuspecPath
