@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using NuGet.Credentials;
 using System;
 using System.Linq;
 
@@ -9,6 +10,8 @@ namespace NuGet.Credentials
     [Serializable]
     public class PluginException : Exception
     {
+        private const string RedactedPassword = "********";
+
         public PluginException() { }
 
         public PluginException(string message) : base(message) { }
@@ -33,19 +36,6 @@ namespace NuGet.Credentials
                 string.Format(Resources.PluginException_Timeout_Format, path, timeoutMillis));
         }
 
-        public static PluginException CreateWrappedExceptionMessage(
-            string path, int exitCode, string stdout, string stderr)
-        {
-            var strings = new string[]
-            {
-                 string.Format(Resources.PluginException_Error_Format, path, exitCode),
-                 stdout,
-                 stderr
-            }.Where(x => !string.IsNullOrWhiteSpace(x));
-
-            return new PluginException(string.Join(Environment.NewLine, strings));
-        }
-
         public static PluginException CreateNotStartedMessage(string path)
         {
             return new PluginException(string.Format(Resources.PluginException_NotStarted_Format, path));
@@ -62,16 +52,29 @@ namespace NuGet.Credentials
             return new PluginException(string.Format(Resources.PluginException_Abort_Format, path, message));
         }
 
-        public static PluginException CreatePayloadExceptionMessage(
+        public static PluginException CreateUnreadableResponseExceptionMessage(
             string path,
-            PluginCredentialResponseExitCode status,
-            string payload)
+            PluginCredentialResponseExitCode status)
         {
             return new PluginException(string.Format(
-                Resources.PluginException_IncorrectPayload_Format,
+                Resources.PluginException_UnreadableResponse_Format,
+                path,
+                status));
+        }
+
+        public static PluginException CreateInvalidResponseExceptionMessage(
+            string path,
+            PluginCredentialResponseExitCode status,
+            PluginCredentialResponse response)
+        {
+            return new PluginException(string.Format(
+                Resources.PluginException_InvalidResponse_Format,
                 path,
                 status,
-                payload));
+                response.Username,
+                response.Password == null ? string.Empty : RedactedPassword,
+                response.AuthTypes == null ? string.Empty : string.Join(", ", response.AuthTypes),
+                response.Message));
         }
     }
 }

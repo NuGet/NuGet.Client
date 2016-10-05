@@ -18,15 +18,20 @@ namespace NuGet.Credentials
         private readonly Configuration.ISettings _settings;
         private readonly Common.IEnvironmentVariableReader _envarReader;
         private readonly IExtensionLocator _extensionLocator;
+        private readonly Common.ILogger _logger;
 
-        public PluginCredentialProviderBuilder(IExtensionLocator extensionLocator, Configuration.ISettings settings) 
-            : this(extensionLocator, settings, new EnvironmentVariableWrapper())
+        public PluginCredentialProviderBuilder(
+            IExtensionLocator extensionLocator,
+            Configuration.ISettings settings,
+            Common.ILogger logger)
+            : this(extensionLocator, settings, logger, new EnvironmentVariableWrapper())
         {
         }
 
         public PluginCredentialProviderBuilder(
             IExtensionLocator extensionLocator,
             Configuration.ISettings settings,
+            Common.ILogger logger,
             Common.IEnvironmentVariableReader envarReader)
         {
             if (extensionLocator == null)
@@ -39,6 +44,11 @@ namespace NuGet.Credentials
                 throw new ArgumentNullException(nameof(settings));
             }
 
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
             if (envarReader == null)
             {
                 throw new ArgumentNullException(nameof(envarReader));
@@ -46,6 +56,7 @@ namespace NuGet.Credentials
 
             _extensionLocator = extensionLocator;
             _settings = settings;
+            _logger = logger;
             _envarReader = envarReader;
 
         }
@@ -55,8 +66,13 @@ namespace NuGet.Credentials
         /// matching any extension named CredentialProvider.*.exe.
         /// </summary>
         /// <returns>An enumeration of plugin providers</returns>
-        public IEnumerable<ICredentialProvider> BuildAll()
+        public IEnumerable<ICredentialProvider> BuildAll(string verbosity)
         {
+            if (verbosity == null)
+            {
+                throw new ArgumentNullException(nameof(verbosity));
+            }
+
             var timeout = TimeoutSeconds;
             var pluginPaths = _extensionLocator.FindCredentialProviders();
 
@@ -67,7 +83,7 @@ namespace NuGet.Credentials
             var plugins = pluginPaths
                 .GroupBy(Path.GetDirectoryName)
                 .SelectMany(g => g.OrderBy(Path.GetFileName, StringComparer.OrdinalIgnoreCase))
-                .Select(x => new PluginCredentialProvider(x, timeout));
+                .Select(x => new PluginCredentialProvider(_logger, x, timeout, verbosity));
 
             return plugins;
         }

@@ -13,5 +13,7 @@ namespace NuGet.Credentials
         public bool NonInteractive { get; set; }
 
         public bool IsRetry { get; set; }
+
+        public string Verbosity { get; set; }
     }
 }
