@@ -225,6 +225,15 @@ namespace NuGet.PackageManagement.UI
             await WaitForCompletionAsync(currentLoader, token);
 
             token.ThrowIfCancellationRequested();
+
+            if (currentLoader == _loader
+                && !loadedItems.Any()
+                && currentLoader.State.LoadingStatus == LoadingStatus.Ready)
+            {
+                UpdatePackageList(currentLoader.GetCurrent(), refresh: false);
+            }
+
+            token.ThrowIfCancellationRequested();
         }
 
         private async Task<IEnumerable<PackageItemListViewModel>> LoadNextPageAsync(IPackageItemLoader currentLoader, CancellationToken token)
