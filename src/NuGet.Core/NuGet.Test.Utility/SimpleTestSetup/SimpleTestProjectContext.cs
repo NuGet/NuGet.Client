@@ -266,7 +266,8 @@ namespace NuGet.Test.Utility
             AddProperties(xml, new Dictionary<string, string>()
             {
                 { "ProjectGuid", "{" + ProjectGuid.ToString() + "}" },
-                { "BaseIntermediateOutputPath", OutputPath }
+                { "BaseIntermediateOutputPath", OutputPath },
+                { "AssemblyName", ProjectName }
             });
 
             AddProperties(xml, Properties);
