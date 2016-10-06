@@ -318,6 +318,21 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ConvertToAbsolutePath Paths="$(RestoreOutputPath)" Condition=" '$(_ProjectRestoreType)' == 'NETCore' ">
       <Output TaskParameter="AbsolutePaths" PropertyName="RestoreOutputAbsolutePath" />
     </ConvertToAbsolutePath>
+    
+    <!-- 
+      Determine project name for the assets file.
+      Highest priority: PackageId
+      If PackageId does not exist use: AssemblyName
+      If AssemblyName does not exist fallback to the project file name without the extension: $(MSBuildProjectName)
+
+      For non-NETCore projects use only: $(MSBuildProjectName)
+    -->
+    <PropertyGroup>
+      <_RestoreProjectName>$(MSBuildProjectName)</_RestoreProjectName>
+      <_RestoreProjectName Condition=" '$(_ProjectRestoreType)' == 'NETCore' AND '$(AssemblyName)' != '' ">$(AssemblyName)</_RestoreProjectName>
+      <_RestoreProjectName Condition=" '$(_ProjectRestoreType)' == 'NETCore' AND '$(PackageId)' != '' ">$(PackageId)</_RestoreProjectName>
+    </PropertyGroup>
+
 
     <!-- Write properties for the top level entry point -->
     <ItemGroup Condition=" '$(_ProjectRestoreType)' == 'NETCore' ">
@@ -325,7 +340,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <Type>ProjectSpec</Type>
         <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>
         <ProjectPath>$(MSBuildProjectFullPath)</ProjectPath>
-        <ProjectName>$(MSBuildProjectName)</ProjectName>
+        <ProjectName>$(_RestoreProjectName)</ProjectName>
         <Sources>$(RestoreSources)</Sources>
         <FallbackFolders>$(RestoreFallbackFolders)</FallbackFolders>
         <PackagesPath>$(RestorePackagesPath)</PackagesPath>
@@ -344,7 +359,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <Type>ProjectSpec</Type>
         <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>
         <ProjectPath>$(MSBuildProjectFullPath)</ProjectPath>
-        <ProjectName>$(MSBuildProjectName)</ProjectName>
+        <ProjectName>$(_RestoreProjectName)</ProjectName>
         <Sources>$(RestoreSources)</Sources>
         <FallbackFolders>$(RestoreFallbackFolders)</FallbackFolders>
         <PackagesPath>$(RestorePackagesPath)</PackagesPath>
@@ -360,7 +375,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <Type>ProjectSpec</Type>
         <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>
         <ProjectPath>$(MSBuildProjectFullPath)</ProjectPath>
-        <ProjectName>$(MSBuildProjectName)</ProjectName>
+        <ProjectName>$(_RestoreProjectName)</ProjectName>
         <OutputType>$(_ProjectRestoreType)</OutputType>
         <TargetFrameworks>$(TargetFrameworkMoniker)</TargetFrameworks>
       </_RestoreGraphEntry>
