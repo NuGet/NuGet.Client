@@ -1,4 +1,5 @@
 ﻿using System;
+using NuGet.LibraryModel;
 
 namespace NuGet.ProjectModel
 {
@@ -13,6 +14,12 @@ namespace NuGet.ProjectModel
         /// Full path to the msbuild project file.
         /// </summary>
         public string ProjectPath { get; set; }
+
+        public LibraryIncludeFlags IncludeAssets { get; set; } = LibraryIncludeFlags.All;
+
+        public LibraryIncludeFlags ExcludeAssets { get; set; }
+
+        public LibraryIncludeFlags PrivateAssets { get; set; } = LibraryIncludeFlagUtils.DefaultSuppressParent;
 
         public override int GetHashCode()
         {

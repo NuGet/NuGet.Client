@@ -137,8 +137,25 @@ namespace NuGet.ProjectModel
 
                 foreach (var project in msbuildMetadata.ProjectReferences)
                 {
-                    projectReferencesObj[project.ProjectUniqueName] = new JObject();
-                    projectReferencesObj[project.ProjectUniqueName]["projectPath"] = project.ProjectPath;
+                    var projectObject = new JObject();
+                    projectReferencesObj[project.ProjectUniqueName] = projectObject;
+
+                    projectObject["projectPath"] = project.ProjectPath;
+
+                    if (project.IncludeAssets != LibraryIncludeFlags.All)
+                    {
+                        projectObject["includeAssets"] = LibraryIncludeFlagUtils.GetFlagString(project.IncludeAssets);
+                    }
+
+                    if (project.ExcludeAssets != LibraryIncludeFlags.None)
+                    {
+                        projectObject["excludeAssets"] = LibraryIncludeFlagUtils.GetFlagString(project.ExcludeAssets);
+                    }
+
+                    if (project.PrivateAssets != LibraryIncludeFlagUtils.DefaultSuppressParent)
+                    {
+                        projectObject["privateAssets"] = LibraryIncludeFlagUtils.GetFlagString(project.PrivateAssets);
+                    }
                 }
             }
 
@@ -164,7 +181,12 @@ namespace NuGet.ProjectModel
             SetValue(rawPackOptions, "summary", packageSpec.Summary);
             SetValue(rawPackOptions, "releaseNotes", packageSpec.ReleaseNotes);
             SetValue(rawPackOptions, "licenseUrl", packageSpec.LicenseUrl);
-            SetValue(rawPackOptions, "requireLicenseAcceptance", packageSpec.RequireLicenseAcceptance.ToString());
+
+            if (packageSpec.RequireLicenseAcceptance)
+            {
+                SetValue(rawPackOptions, "requireLicenseAcceptance", packageSpec.RequireLicenseAcceptance.ToString());
+            }
+
             if (packOptions.PackageType != null)
             {
                 if (packOptions.PackageType.Count == 1)

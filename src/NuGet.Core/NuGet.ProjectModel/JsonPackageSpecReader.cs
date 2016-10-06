@@ -255,7 +255,19 @@ namespace NuGet.ProjectModel
                     msbuildMetadata.ProjectReferences.Add(new ProjectRestoreReference()
                     {
                         ProjectUniqueName = prop.Name,
-                        ProjectPath = prop.Value.GetValue<string>("projectPath")
+                        ProjectPath = prop.Value.GetValue<string>("projectPath"),
+
+                        IncludeAssets = LibraryIncludeFlagUtils.GetFlags(
+                            flags: prop.Value.GetValue<string>("includeAssets"),
+                            defaultFlags: LibraryIncludeFlags.All),
+
+                        ExcludeAssets = LibraryIncludeFlagUtils.GetFlags(
+                            flags: prop.Value.GetValue<string>("excludeAssets"),
+                            defaultFlags: LibraryIncludeFlags.None),
+
+                        PrivateAssets = LibraryIncludeFlagUtils.GetFlags(
+                            flags: prop.Value.GetValue<string>("privateAssets"),
+                            defaultFlags: LibraryIncludeFlagUtils.DefaultSuppressParent),
                     });
                 }
             }
