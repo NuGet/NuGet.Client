@@ -824,55 +824,54 @@ Function Publish-ClientsPackages {
         $releaseNupkgVersion = "$PackageReleaseVersion"
     }
 
-        $exeProjectDir = [io.path]::combine($NuGetClientRoot, "src", "NuGet.Clients", "NuGet.CommandLine")
-        $exeProject = Join-Path $exeProjectDir "NuGet.CommandLine.csproj"
-        $exeNuspec = Join-Path $exeProjectDir "NuGet.CommandLine.nuspec"
-        $exeInputDir = [io.path]::combine($Artifacts, "NuGet.CommandLine", "${ToolsetVersion}.0", $Configuration)
-        $exeOutputDir = Join-Path $Artifacts "VS${ToolsetVersion}"
+    $exeProjectDir = [io.path]::combine($NuGetClientRoot, "src", "NuGet.Clients", "NuGet.CommandLine")
+    $exeProject = Join-Path $exeProjectDir "NuGet.CommandLine.csproj"
+    $exeNuspec = Join-Path $exeProjectDir "NuGet.CommandLine.nuspec"
+    $exeInputDir = [io.path]::combine($Artifacts, "NuGet.CommandLine", "${ToolsetVersion}.0", $Configuration)
+    $exeOutputDir = Join-Path $Artifacts "VS${ToolsetVersion}"
 
-        # Build and pack the NuGet.CommandLine project with the build number and release label.
-        Build-ClientsProjectHelper `
-            -SolutionOrProject $exeProject `
-            -Configuration $Configuration `
-            -ReleaseLabel $ReleaseLabel `
-            -BuildNumber $BuildNumber `
-            -ToolsetVersion $ToolsetVersion `
-            -Rebuild
+    # Build and pack the NuGet.CommandLine project with the build number and release label.
+    Build-ClientsProjectHelper `
+        -SolutionOrProject $exeProject `
+        -Configuration $Configuration `
+        -ReleaseLabel $ReleaseLabel `
+        -BuildNumber $BuildNumber `
+        -ToolsetVersion $ToolsetVersion `
+        -Rebuild
 
-        Invoke-ILMerge `
-            -InputDir $exeInputDir `
-            -OutputDir $exeOutputDir `
-            -KeyFile $KeyFile
+    Invoke-ILMerge `
+        -InputDir $exeInputDir `
+        -OutputDir $exeOutputDir `
+        -KeyFile $KeyFile
 
-        New-NuGetPackage `
-            -NuspecPath $exeNuspec `
-            -BasePath $exeOutputDir `
-            -OutputDir $Nupkgs `
-            -Version $prereleaseNupkgVersion `
-            -Configuration $Configuration
+    New-NuGetPackage `
+        -NuspecPath $exeNuspec `
+        -BasePath $exeOutputDir `
+        -OutputDir $Nupkgs `
+        -Version $prereleaseNupkgVersion `
+        -Configuration $Configuration
 
-        # Build and pack the NuGet.CommandLine project with just the release label.
-        Build-ClientsProjectHelper `
-            -SolutionOrProject $exeProject `
-            -Configuration $Configuration `
-            -ReleaseLabel $ReleaseLabel `
-            -BuildNumber $BuildNumber `
-            -ToolsetVersion $ToolsetVersion `
-            -ExcludeBuildNumber `
-            -Rebuild
+    # Build and pack the NuGet.CommandLine project with just the release label.
+    Build-ClientsProjectHelper `
+        -SolutionOrProject $exeProject `
+        -Configuration $Configuration `
+        -ReleaseLabel $ReleaseLabel `
+        -BuildNumber $BuildNumber `
+        -ToolsetVersion $ToolsetVersion `
+        -ExcludeBuildNumber `
+        -Rebuild
 
-        Invoke-ILMerge `
-            -InputDir $exeInputDir `
-            -OutputDir $exeOutputDir `
-            -KeyFile $KeyFile
+    Invoke-ILMerge `
+        -InputDir $exeInputDir `
+        -OutputDir $exeOutputDir `
+        -KeyFile $KeyFile
 
-        New-NuGetPackage `
-            -NuspecPath $exeNuspec `
-            -BasePath $exeOutputDir `
-            -OutputDir $ReleaseNupkgs `
-            -Version $releaseNupkgVersion `
-            -Configuration $Configuration
-    }
+    New-NuGetPackage `
+        -NuspecPath $exeNuspec `
+        -BasePath $exeOutputDir `
+        -OutputDir $ReleaseNupkgs `
+        -Version $releaseNupkgVersion `
+        -Configuration $Configuration
 
     # Pack the NuGet.VisualStudio project with the build number and release label.
     $projectDir = [io.path]::combine($NuGetClientRoot, "src", "NuGet.Clients", "NuGet.VisualStudio")
