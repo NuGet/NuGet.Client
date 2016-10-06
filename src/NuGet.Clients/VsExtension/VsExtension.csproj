@@ -32,7 +32,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug'">
     <StartAction>Program</StartAction>
-    <StartProgram>$(VisualStudioInstallDir)\Common7\IDE\devenv.exe</StartProgram>
+    <StartProgram>$(DevEnvDir)devenv.exe</StartProgram>
     <StartArguments>/rootsuffix Exp /log</StartArguments>
     <CreateVsixContainer>True</CreateVsixContainer>
     <DeployExtension>True</DeployExtension>
@@ -230,13 +230,13 @@
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '14.0'">
-	  <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL"/>
-	  </ItemGroup>
-	</When>
-	<When Condition="'$(VisualStudioVersion)' == '15.0'">
-	  <ItemGroup>
-		<Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL"/>
+      <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+      </ItemGroup>
+    </When>
+    <When Condition="'$(VisualStudioVersion)' == '15.0'">
+      <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
       </ItemGroup>
     </When>
   </Choose>

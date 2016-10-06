@@ -85,74 +85,53 @@ if (-not $SkipVS15 -and -not $VS15Installed) {
 
 $BuildErrors = @()
 
-# Restoring tools required for build
-Invoke-BuildStep 'Restoring solution packages' { Restore-SolutionPackages } `
-    -skip:$SkipRestore `
-    -ev +BuildErrors
-
 Invoke-BuildStep 'Running NuGet.Core unit-tests' {
-        param($Configuration)
         Test-CoreProjects $Configuration
     } `
-    -args $Configuration `
     -skip:($SkipXProj -or $SkipUnitTests) `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Running NuGet.Core functional tests' {
-        param($Configuration)
         Test-FuncCoreProjects $Configuration
     } `
-    -args $Configuration `
     -skip:($SkipXProj -or $SkipFuncTests) `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Building NuGet.Clients projects - VS14 Toolset' {
-        param($Configuration, $ReleaseLabel, $BuildNumber)
-        Build-ClientsProjects $Configuration $ReleaseLabel $BuildNumber -ToolsetVersion 14
+        Build-ClientsProjects $Configuration $DefaultReleaseLabel $BuildNumber -ToolsetVersion 14
     } `
-    -args $Configuration, $DefaultReleaseLabel, $BuildNumber `
     -skip:$SkipVS14 `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Running NuGet.Clients unit-tests - VS14 Toolset' {
-        param($Configuration)
         Test-ClientsProjects $Configuration -ToolsetVersion 14
     } `
-    -args $Configuration `
     -skip:($SkipVS14 -or $SkipUnitTests) `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Running NuGet.Clients functional tests - VS14 Toolset' {
-        param($Configuration)
         Test-FuncClientsProjects $Configuration -ToolsetVersion 14
     } `
-    -args $Configuration `
     -skip:($SkipVS14 -or $SkipFuncTests) `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Building NuGet.Clients projects - VS15 Toolset' {
-        param($Configuration, $ReleaseLabel, $BuildNumber)
-        Build-ClientsProjects $Configuration $ReleaseLabel $BuildNumber -ToolsetVersion 15
+        Build-ClientsProjects $Configuration $DefaultReleaseLabel $BuildNumber -ToolsetVersion 15
     } `
-    -args $Configuration, $DefaultReleaseLabel, $BuildNumber `
     -skip:$SkipVS15 `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Running NuGet.Clients tests - VS15 Toolset' {
-        param($Configuration)
         # We don't run command line tests on VS15 as we don't build a nuget.exe for this version
         Test-ClientsProjects $Configuration -ToolsetVersion 15 -SkipProjects 'NuGet.CommandLine.Test'
     } `
-    -args $Configuration `
     -skip:($SkipVS15 -or $SkipUnitTests) `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Running NuGet.Clients functional tests - VS15 Toolset' {
-        param($Configuration)
         # We don't run command line tests on VS15 as we don't build a nuget.exe for this version
         Test-FuncClientsProjects $Configuration -ToolsetVersion 15 -SkipProjects 'NuGet.CommandLine.FuncTest'
     } `
-    -args $Configuration `
     -skip:($SkipVS15 -or $SkipFuncTests) `
     -ev +BuildErrors
 

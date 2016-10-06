@@ -11,9 +11,6 @@ Release label to use for package and assemblies versioning (zlocal by default)
 .PARAMETER BuildNumber
 Build number to use for package and assemblies versioning (auto-generated if not provided)
 
-.PARAMETER SkipRestore
-Builds without restoring first
-
 .PARAMETER MSPFXPath
 Path to a code signing certificate for delay-sigining (optional)
 
@@ -29,11 +26,8 @@ Skips building binaries targeting Visual Studio "14" (released as Visual Studio 
 .PARAMETER SkipVS15
 Skips building binaries targeting Visual Studio "15"
 
-.PARAMETER SkipILMerge
-Skips creating an ILMerged nuget.exe
-
 .PARAMETER Fast
-Runs minimal incremental build. ILMerge and end-to-end packaging steps skipped.
+Runs minimal incremental build. Skips end-to-end packaging step.
 
 .PARAMETER CI
 Indicates the build script is invoked from CI
@@ -64,8 +58,6 @@ param (
     [string]$ReleaseLabel = 'zlocal',
     [Alias('n')]
     [int]$BuildNumber,
-    [Alias('sr')]
-    [switch]$SkipRestore,
     [Alias('mspfx')]
     [string]$MSPFXPath,
     [Alias('nugetpfx')]
@@ -76,8 +68,6 @@ param (
     [switch]$SkipVS14,
     [Alias('s15')]
     [switch]$SkipVS15,
-    [Alias('si')]
-    [switch]$SkipILMerge,
     [Alias('f')]
     [switch]$Fast,
     [switch]$CI
@@ -123,54 +113,39 @@ Invoke-BuildStep 'Cleaning artifacts' {
     -skip:($Fast -or $SkipXProj) `
     -ev +BuildErrors
 
-# Restoring tools required for build
-Invoke-BuildStep 'Restoring solution packages' { Restore-SolutionPackages } `
-    -skip:$SkipRestore `
-    -ev +BuildErrors
-
 Invoke-BuildStep 'Enabling delay-signing' {
-        param($MSPFXPath, $NuGetPFXPath)
         Enable-DelaySigning $MSPFXPath $NuGetPFXPath
     } `
-    -args $MSPFXPath, $NuGetPFXPath `
     -skip:((-not $MSPFXPath) -and (-not $NuGetPFXPath)) `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Building NuGet.Core projects' {
-        param($Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore)
-        Build-CoreProjects $Configuration $ReleaseLabel $BuildNumber -SkipRestore:$SkipRestore
+        Build-CoreProjects $Configuration $ReleaseLabel $BuildNumber -CI:$CI
     } `
-    -args $Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore `
     -skip:$SkipXProj `
     -ev +BuildErrors
 
 ## Building the VS15 Tooling solution
 Invoke-BuildStep 'Building NuGet.Clients projects - VS15 Toolset' {
-        param($Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore)
-        Build-ClientsProjects $Configuration $ReleaseLabel $BuildNumber -ToolsetVersion 15 -SkipRestore:$SkipRestore
+        Build-ClientsProjects $Configuration $ReleaseLabel $BuildNumber -ToolsetVersion 15
     } `
-    -args $Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore `
     -skip:$SkipVS15 `
     -ev +BuildErrors
 
 ## Building the VS14 Tooling solution
 Invoke-BuildStep 'Building NuGet.Clients projects - VS14 Toolset' {
-        param($Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore)
-        Build-ClientsProjects $Configuration $ReleaseLabel $BuildNumber -ToolsetVersion 14 -SkipRestore:$SkipRestore
+        Build-ClientsProjects $Configuration $ReleaseLabel $BuildNumber -ToolsetVersion 14
     } `
-    -args $Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore `
     -skip:$SkipVS14 `
     -ev +BuildErrors
 
-Invoke-BuildStep 'Creating NuGet.Clients packages - VS14 Toolset' {
-        param($Configuration, $MSPFXPath, $SkipILMerge)
-        Build-ClientsPackages $Configuration $ReleaseLabel $BuildNumber -ToolsetVersion 14 -KeyFile $MSPFXPath -SkipILMerge:$SkipILMerge
+Invoke-BuildStep 'Publishing NuGet.Clients packages - VS14 Toolset' {
+        Publish-ClientsPackages $Configuration $ReleaseLabel $BuildNumber -ToolsetVersion 14 -KeyFile $MSPFXPath
     } `
-    -args $Configuration, $MSPFXPath, $SkipILMerge `
     -skip:($Fast -or $SkipVS14) `
     -ev +BuildErrors
 
-Invoke-BuildStep 'Creating the VS14 EndToEnd test package' {
+Invoke-BuildStep 'Publishing the VS14 EndToEnd test package' {
         param($Configuration)
         $EndToEndScript = Join-Path $PSScriptRoot scripts\cibuild\CreateEndToEndTestPackage.ps1 -Resolve
         $OutDir = Join-Path $Artifacts VS14
@@ -180,7 +155,7 @@ Invoke-BuildStep 'Creating the VS14 EndToEnd test package' {
     -skip:($Fast -or $SkipVS14) `
     -ev +BuildErrors
 
-Invoke-BuildStep 'Creating the VS15 EndToEnd test package' {
+Invoke-BuildStep 'Publishing the VS15 EndToEnd test package' {
         param($Configuration)
         $EndToEndScript = Join-Path $PSScriptRoot scripts\cibuild\CreateEndToEndTestPackage.ps1 -Resolve
         $OutDir = Join-Path $Artifacts VS15

@@ -8,16 +8,11 @@ $DefaultMSBuildVersion = 15
 $PackageReleaseVersion = "3.6.0"
 
 $NuGetClientRoot = Split-Path -Path $PSScriptRoot -Parent
-
-# allow this to work for scripts/funcTests
-if ((Split-Path -Path $PSScriptRoot -Leaf) -eq "scripts") {
-    $NuGetClientRoot = Split-Path -Path $NuGetClientRoot -Parent
-}
-
-$CLIRoot = Join-Path $NuGetClientRoot 'cli'
+$CLIRoot = Join-Path $NuGetClientRoot cli
 $Nupkgs = Join-Path $NuGetClientRoot nupkgs
 $Artifacts = Join-Path $NuGetClientRoot artifacts
 $ReleaseNupkgs = Join-Path $Artifacts ReleaseNupkgs
+$ConfigureJson = Join-Path $Artifacts configure.json
 
 $DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
 $NuGetExe = Join-Path $NuGetClientRoot '.nuget\nuget.exe'
@@ -68,7 +63,7 @@ Function Error-Log {
         Write-Error "[$(Trace-Time)]`t$ErrorMessage"
     }
     else {
-        Write-Error "[$(Trace-Time)]`t$ErrorMessage" -ErrorAction Stop
+        Write-Error "[$(Trace-Time)]`t[FATAL] $ErrorMessage" -ErrorAction Stop
     }
 }
 
@@ -101,7 +96,8 @@ Function Invoke-BuildStep {
         [Alias('args')]
         [Object[]]$Arguments,
         [Alias('skip')]
-        [switch]$SkipExecution
+        [switch]$SkipExecution,
+        [switch]$Critical
     )
     if (-not $SkipExecution) {
         if ($env:TEAMCITY_VERSION) {
@@ -148,10 +144,9 @@ Function Update-Submodules {
     param(
         [switch]$Force
     )
-
-    $SubmodulesDir = Join-Path $NuGetClientRoot submodules -Resolve
-    $Submodules = gci $SubmodulesDir -ea Ignore
-    if ($Force -or -not $Submodules) {
+    $Submodules = Join-Path $NuGetClientRoot submodules -Resolve
+    $GitAttributes = gci $Submodules\* -Filter '.gitattributes' -r -ea Ignore
+    if ($Force -or -not $GitAttributes) {
         $opts = 'submodule', 'update'
         $opts += '--init'
         if (-not $VerbosePreference) {
@@ -170,11 +165,13 @@ Function Install-NuGet {
     param(
         [switch]$Force
     )
-
     if ($Force -or -not (Test-Path $NuGetExe)) {
         Trace-Log 'Downloading nuget.exe'
         wget https://dist.nuget.org/win-x86-commandline/latest-prerelease/nuget.exe -OutFile $NuGetExe
     }
+
+    # Display nuget info
+    & $NuGetExe locals all -list -verbosity detailed
 }
 
 Function Install-DotnetCLI {
@@ -182,12 +179,11 @@ Function Install-DotnetCLI {
     param(
         [switch]$Force
     )
-
     $env:DOTNET_HOME=$CLIRoot
     $env:DOTNET_INSTALL_DIR=$NuGetClientRoot
 
     if ($Force -or -not (Test-Path $DotNetExe)) {
-        Trace-Log 'Downloading Dotnet CLI'
+        Trace-Log 'Downloading .NET CLI'
 
         New-Item -ItemType Directory -Force -Path $CLIRoot | Out-Null
 
@@ -257,20 +253,32 @@ Function Test-MSBuildVersionPresent {
     Test-Path $MSBuildExe
 }
 
-$MSBuildExe = Get-MSBuildExe
-Set-Alias msbuild $MSBuildExe
-
-$VS14Installed = Test-MSBuildVersionPresent -MSBuildVersion 14
-$VS15Installed = Test-MSBuildVersionPresent -MSBuildVersion 15
-
-function Test-BuildEnvironment {
+Function Test-BuildEnvironment {
+    [CmdletBinding()]
     param(
         [switch]$CI
     )
+    if (-not (Test-Path $ConfigureJson)) {
+        Error-Log 'Build environment is not configured. Please run configure.ps1 first.' -Fatal
+    }
+
     $Installed = (Test-Path $DotNetExe) -and (Test-Path $NuGetExe)
     if (-not $Installed) {
         Error-Log 'Build environment is not configured. Please run configure.ps1 first.' -Fatal
     }
+
+    $script:ConfigureObject = Get-Content $ConfigureJson -Raw | ConvertFrom-Json
+    Set-Variable MSBuildExe -Value $ConfigureObject.BuildTools.MSBuildExe -Scope Script -Force
+    Set-Alias msbuild $script:MSBuildExe -Scope Script -Force
+    Set-Variable BuildToolsets -Value $ConfigureObject.Toolsets -Scope Script -Force
+
+    $script:VS14Installed = ($BuildToolsets | where vs14 -ne $null)
+    $script:VS15Installed = ($BuildToolsets | where vs15 -ne $null)
+
+    $ConfigureObject |
+         select -expand envvars -ea Ignore |
+         %{ $_.psobject.properties } |
+         %{ Set-Item -Path "env:$($_.Name)" -Value $_.Value }
 
     if ($CI) {
         # Explicitly add cli to environment PATH
@@ -376,7 +384,7 @@ Function Clear-Artifacts {
     param()
     if( Test-Path $Artifacts) {
         Trace-Log 'Cleaning the Artifacts folder'
-        Remove-Item $Artifacts\* -Recurse -Force
+        Remove-Item $Artifacts\* -Recurse -Force -Exclude 'configure.json'
     }
 }
 
@@ -549,7 +557,8 @@ Function Build-CoreProjects {
         [string]$Configuration = $DefaultConfiguration,
         [string]$ReleaseLabel = $DefaultReleaseLabel,
         [int]$BuildNumber = (Get-BuildNumber),
-        [switch]$SkipRestore
+        [switch]$SkipRestore,
+        [switch]$CI
     )
     $XProjectsLocation = Join-Path $NuGetClientRoot src\NuGet.Core -Resolve
     $xprojects = Find-XProjects $XProjectsLocation
@@ -561,9 +570,11 @@ Function Build-CoreProjects {
     # Build .nupkgs for MyGet (which have release label and build number)
     $xprojects | Invoke-DotnetPack -config $Configuration -label $ReleaseLabel -build $BuildNumber -out $Nupkgs
 
-    # Build .nupkgs for release (which have no build number). This will re-use the build from the last
-    # step because the --build-base-path is the same.
-    $xprojects | Invoke-DotnetPack -config $Configuration -label $ReleaseLabel -out $ReleaseNupkgs
+    if ($CI) {
+        # Build .nupkgs for release (which have no build number). This will re-use the build from the last
+        # step because the --build-base-path is the same.
+        $xprojects | Invoke-DotnetPack -config $Configuration -label $ReleaseLabel -out $ReleaseNupkgs
+    }
 
     # Publish NuGet.CommandLine.XPlat
     $PublishLocation = Join-Path $Artifacts "NuGet.CommandLine.XPlat\publish"
@@ -588,7 +599,7 @@ Function Pack-NuGetBuildTasksPack {
 
     Remove-Item $Nupkgs\NuGet.Build.Tasks.Pack*
     Remove-Item $ReleaseNupkgs\NuGet.Build.Tasks.Pack*
-    
+
     $prereleaseNupkgVersion = "$PackageReleaseVersion-$ReleaseLabel-$BuildNumber"
     if ($ReleaseLabel -Ne 'rtm') {
         $releaseNupkgVersion = "$PackageReleaseVersion-$ReleaseLabel"
@@ -598,7 +609,7 @@ Function Pack-NuGetBuildTasksPack {
 
     $PackProjectLocation = Join-Path $NuGetClientRoot src\NuGet.Core\NuGet.Build.Tasks.Pack
     $PackBuildTaskNuspecLocation = Join-Path $PackProjectLocation NuGet.Build.Tasks.Pack.nuspec
-    
+
     Build-NuGetPackage `
             -NuspecPath $PackBuildTaskNuspecLocation `
             -BasePath $PackProjectLocation `
@@ -795,7 +806,7 @@ Function Build-ClientsProjects {
         -IsSolution
 }
 
-Function Build-ClientsPackages {
+Function Publish-ClientsPackages {
     [CmdletBinding()]
     param(
         [string]$Configuration = $DefaultConfiguration,
@@ -803,8 +814,7 @@ Function Build-ClientsPackages {
         [int]$BuildNumber = (Get-BuildNumber),
         [ValidateSet(14,15)]
         [int]$ToolsetVersion = $DefaultMSBuildVersion,
-        [string]$KeyFile,
-        [switch]$SkipILMerge
+        [string]$KeyFile
     )
 
     $prereleaseNupkgVersion = "$PackageReleaseVersion-$ReleaseLabel-$BuildNumber"
@@ -814,7 +824,6 @@ Function Build-ClientsPackages {
         $releaseNupkgVersion = "$PackageReleaseVersion"
     }
 
-    if (-not $SkipILMerge){
         $exeProjectDir = [io.path]::combine($NuGetClientRoot, "src", "NuGet.Clients", "NuGet.CommandLine")
         $exeProject = Join-Path $exeProjectDir "NuGet.CommandLine.csproj"
         $exeNuspec = Join-Path $exeProjectDir "NuGet.CommandLine.nuspec"
@@ -835,7 +844,7 @@ Function Build-ClientsPackages {
             -OutputDir $exeOutputDir `
             -KeyFile $KeyFile
 
-        Build-NuGetPackage `
+        New-NuGetPackage `
             -NuspecPath $exeNuspec `
             -BasePath $exeOutputDir `
             -OutputDir $Nupkgs `
@@ -857,7 +866,7 @@ Function Build-ClientsPackages {
             -OutputDir $exeOutputDir `
             -KeyFile $KeyFile
 
-        Build-NuGetPackage `
+        New-NuGetPackage `
             -NuspecPath $exeNuspec `
             -BasePath $exeOutputDir `
             -OutputDir $ReleaseNupkgs `
@@ -873,7 +882,7 @@ Function Build-ClientsPackages {
 
     Copy-Item -Path "${projectInstallPs1}" -Destination "${projectInputDir}"
 
-    Build-NuGetPackage `
+    New-NuGetPackage `
         -NuspecPath $projectNuspec `
         -BasePath $projectInputDir `
         -OutputDir $Nupkgs `
@@ -881,7 +890,7 @@ Function Build-ClientsPackages {
         -Configuration $Configuration
 
     # Pack the NuGet.VisualStudio project with just the release label.
-    Build-NuGetPackage `
+    New-NuGetPackage `
         -NuspecPath $projectNuspec `
         -BasePath $projectInputDir `
         -OutputDir $ReleaseNupkgs `
@@ -889,14 +898,15 @@ Function Build-ClientsPackages {
         -Configuration $Configuration
 }
 
-Function Build-NuGetPackage {
+Function New-NuGetPackage {
+    [CmdletBinding()]
     param(
         [string]$NuspecPath,
         [string]$BasePath,
         [string]$OutputDir,
         [string]$Version,
         [string]$Configuration=$DefaultConfiguration
-	)
+    )
 
     $opts = 'pack', $NuspecPath
     $opts += '-BasePath', $BasePath
@@ -904,6 +914,15 @@ Function Build-NuGetPackage {
     $opts += '-Symbols'
     $opts += '-Version', $Version
     $opts += '-Properties', "Configuration=$Configuration"
+
+    if ($VerbosePreference) {
+        $opts += '-verbosity', 'detailed'
+    }
+    else {
+        $opts += '-verbosity', 'quiet'
+    }
+
+    Trace-Log "$NuGetExe $opts"
     & $NuGetExe $opts
 }
 

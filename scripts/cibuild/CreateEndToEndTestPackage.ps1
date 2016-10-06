@@ -48,6 +48,9 @@ $opts = '/s', '/z', '/r:3', '/w:30', '/np', '/nfl'
 if ($VerbosePreference) {
     $opts += '/v'
 }
+else {
+    $opts += '/ndl', '/njs'
+}
 
 try {
     $TestSource = Join-Path $NuGetRoot test\EndToEnd -Resolve
@@ -71,10 +74,11 @@ try {
 
     $TestPackage = Join-Path $OutputDirectory EndToEnd.zip
     Write-Verbose "Creating test package '$TestPackage'"
+    Remove-Item $TestPackage -Force -ea Ignore | Out-Null
     New-ZipArchive $WorkingDirectory $TestPackage
 
     Write-Output "Created end-to-end test package for toolset '${ToolsetVersion}.0' at '$TestPackage'"
 }
 finally {
-    rm $workingDirectory -r -force -WhatIf:$false
+    rm $workingDirectory -r -Force -WhatIf:$false
 }

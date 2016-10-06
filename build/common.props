@@ -18,10 +18,6 @@
     <ArtifactRoot>$(EnlistmentRoot)\artifacts</ArtifactRoot>
     <ArtifactRoot>$([System.IO.Path]::GetFullPath( $(ArtifactRoot) ))</ArtifactRoot>
 
-    <VisualStudioRegistryKey>HKEY_CURRENT_USER\Software\Microsoft\VisualStudio\$(VisualStudioVersion)_Config\InstallDir</VisualStudioRegistryKey>
-    <VisualStudioDefaultInstallDir>$(ProgramFiles)\Microsoft Visual Studio $(VisualStudioVersion)\Common7\IDE\</VisualStudioDefaultInstallDir>
-    <VisualStudioInstallDir>$([MSBuild]::GetRegistryValue($(VisualStudioRegistryKey), $(VisualStudioDefaultInstallDir))</VisualStudioInstallDir>
-
     <OutDirFx>$(VisualStudioVersion)\$(Configuration)\</OutDirFx>
     <OutputPath>$(ArtifactRoot)\$(MSBuildProjectName)\$(OutDirFx)</OutputPath>
     <OutputPath>$([System.IO.Path]::GetFullPath( $(OutputPath) ))\</OutputPath>

@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <Import Project="..\..\..\Build\Common.props" Condition="Exists('..\..\..\Build\Common.props')" />
+  <Import Project="..\..\..\Build\Common.props" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <ProjectGuid>{306CDDFA-FF0B-4299-930C-9EC6C9308160}</ProjectGuid>
@@ -18,13 +18,27 @@
   </PropertyGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '14.0'">
-	  <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL"/>
-	  </ItemGroup>
-	</When>
-	<When Condition="'$(VisualStudioVersion)' == '15.0'">
-	  <ItemGroup>
-		<Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL"/>
+      <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+        <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+          <EmbedInteropTypes>True</EmbedInteropTypes>
+        </Reference>
+        <Reference Include="Microsoft.VisualStudio.ProjectSystem.Interop">
+          <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.14.1.127-pre\lib\net451\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
+          <EmbedInteropTypes>True</EmbedInteropTypes>
+        </Reference>
+      </ItemGroup>
+    </When>
+    <When Condition="'$(VisualStudioVersion)' == '15.0'">
+      <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.ComponentModelHost, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+        <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+          <EmbedInteropTypes>True</EmbedInteropTypes>
+        </Reference>
+        <Reference Include="Microsoft.VisualStudio.ProjectSystem.Interop">
+          <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.15.0.183-pre\lib\net451\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
+          <EmbedInteropTypes>True</EmbedInteropTypes>
+        </Reference>
       </ItemGroup>
     </When>
   </Choose>
@@ -36,34 +50,12 @@
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
   </ItemGroup>
-  <Choose>
-    <When Condition="$(VisualStudioVersion)=='14.0'">
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.ProjectSystem.Interop">
-          <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.14.1.127-pre\lib\net451\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
-          <EmbedInteropTypes>True</EmbedInteropTypes>
-        </Reference>
-      </ItemGroup>
-    </When>
-    <When Condition="$(VisualStudioVersion)=='15.0'">
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.ProjectSystem.Interop">
-          <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.15.0.183-pre\lib\net451\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
-          <EmbedInteropTypes>True</EmbedInteropTypes>
-        </Reference>
-      </ItemGroup>
-    </When>
-  </Choose>
   <ItemGroup>
     <Reference Include="Microsoft.Build">
       <HintPath>$(MSBuildToolsPath)\Microsoft.Build.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
-    <Reference Include="Microsoft.VisualStudio.VCProjectEngine">
-      <HintPath>$(VisualStudioInstallDir)PublicAssemblies\Microsoft.VisualStudio.VCProjectEngine.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
