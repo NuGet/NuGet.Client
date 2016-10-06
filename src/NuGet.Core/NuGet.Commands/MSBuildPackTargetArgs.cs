@@ -8,7 +8,8 @@ namespace NuGet.Commands
 {
     public class MSBuildPackTargetArgs
     {
-        public string[] TargetPaths { get; set; }
+        public string[] TargetPathsToSymbols { get; set; }
+        public string[] TargetPathsToAssemblies { get; set; }
         public string AssemblyName { get; set; }
         public string Configuration { get; set; }
         public string NuspecOutputPath { get; set; }
@@ -16,6 +17,8 @@ namespace NuGet.Commands
         public Dictionary<string, HashSet<string>> ContentFiles { get; set; }
         public ISet<NuGetFramework> TargetFrameworks { get; set; }
         public IDictionary<string, string> SourceFiles { get; set; }
+        public bool IncludeBuildOutput { get; set; }
+        public string BuildOutputFolder { get; set; }
 
 
         public MSBuildPackTargetArgs()

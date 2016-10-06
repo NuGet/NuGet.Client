@@ -12,8 +12,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- Load NuGet.Build.Tasks.Pack.dll, this can be overridden to use a different version with $(NugetTaskAssemblyFile) -->
   <PropertyGroup Condition="$(NugetTaskAssemblyFile) == ''">
-    <NugetTaskAssemblyFile Condition="'$(MSBuildRuntimeType)' == 'Core'">CoreCLR\NuGet.Build.Tasks.Pack.dll</NugetTaskAssemblyFile>
-    <NugetTaskAssemblyFile Condition="'$(MSBuildRuntimeType)' != 'Core'">Desktop\NuGet.Build.Tasks.Pack.dll</NugetTaskAssemblyFile>
+    <NugetTaskAssemblyFile Condition="'$(MSBuildRuntimeType)' == 'Core'">..\CoreCLR\NuGet.Build.Tasks.Pack.dll</NugetTaskAssemblyFile>
+    <NugetTaskAssemblyFile Condition="'$(MSBuildRuntimeType)' != 'Core'">..\Desktop\NuGet.Build.Tasks.Pack.dll</NugetTaskAssemblyFile>
   </PropertyGroup>
   <UsingTask TaskName="NuGet.Build.Tasks.Pack.PackTask" AssemblyFile="$(NugetTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.Pack.PackNuspecTask" AssemblyFile="$(NugetTaskAssemblyFile)" />
@@ -23,9 +23,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PackageVersion Condition=" '$(PackageVersion)' == '' ">$(Version)</PackageVersion>
     <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$(TargetDir)</PackageOutputPath>
     <IncludeContentInPack Condition="'$(IncludeContentInPack)'==''">true</IncludeContentInPack>
-    <GenerateNuspecDependsOn>_LoadPackInputItems; _WalkEachTargetPerFramework; _GetPackageFilesFromReferencedProjects; _GetSourceFilesForSymbols; _GetTargetPaths</GenerateNuspecDependsOn>
+    <GenerateNuspecDependsOn>_LoadPackInputItems; _WalkEachTargetPerFramework; _GetPackageFiles</GenerateNuspecDependsOn>
     <Description Condition="'$(Description)'==''">Package Description</Description>
     <IsPackable Condition="'$(IsPackable)'==''">true</IsPackable>
+    <IncludeBuildOutput Condition="'$(IncludeBuildOutput)'==''">true</IncludeBuildOutput>
+    <BuildOutputTargetFolder Condition="'$(BuildOutputTargetFolder)' == '' AND '$(IsTool)' == 'true'">tools</BuildOutputTargetFolder>
+    <BuildOutputTargetFolder Condition="'$(BuildOutputTargetFolder)' == ''">lib</BuildOutputTargetFolder>
   </PropertyGroup>
   <PropertyGroup Condition="'$(NoBuild)' == 'true' ">
     <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
@@ -40,7 +43,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PackDependsOn>PackUsingNuspec</PackDependsOn>
   </PropertyGroup>
   <ItemGroup>
-    <_TargetFrameworks Include="$(TargetFrameworks.Split(';'))"></_TargetFrameworks>
+    <_TargetFrameworks Condition="'$(TargetFramework)' == ''" Include="$(TargetFrameworks.Split(';'))"/>
+    <_TargetFrameworks Condition="'$(TargetFramework)' != ''" Include="$(TargetFramework)"/>
   </ItemGroup>
   
   <!--
@@ -63,7 +67,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup Condition="$(ContinuePackingAfterGeneratingNuspec) == '' ">
       <ContinuePackingAfterGeneratingNuspec>false</ContinuePackingAfterGeneratingNuspec>
     </PropertyGroup>
-    <Message Text="In target GenerateNuspec with value of the boolean ContinuePackingAfterGeneratingNuspec: $(ContinuePackingAfterGeneratingNuspec)" Importance="High" />
     <!-- Call Pack -->
     <PackTask PackItem="$(PackProjectInputFile)"
               PackageFiles="@(_PackageFiles)"
@@ -80,7 +83,8 @@ Copyright (c) .NET Foundation. All rights reserved.
               ReleaseNotes="$(PackageReleaseNotes)"
               Tags="$(PackageTags)"
               Configuration="$(Configuration)"
-              TargetPaths="@(_TargetPaths)"
+              TargetPathsToAssemblies="@(_TargetPathsToAssemblies)"
+              TargetPathsToSymbols="@(_TargetPathsToSymbols)"
               TargetFrameworks="@(_TargetFrameworks)"
               AssemblyName="$(AssemblyName)"
               ProjectReferences="@(_ProjectReferences)"
@@ -99,13 +103,9 @@ Copyright (c) .NET Foundation. All rights reserved.
               AssemblyReferences="@(_References)"
               PackageReferences="@(_PackageReferences)"
               ContinuePackingAfterGeneratingNuspec="$(ContinuePackingAfterGeneratingNuspec)"
-              NuspecOutputPath="$(IntermediateOutputPath)"/>
-  </Target>
-
-  <Target Name="_GetTargetPaths">
-    <ItemGroup>
-      <_TargetPaths Include="$(TargetDir)%(_TargetFrameworks.Identity)\$(TargetFileName)"/>
-    </ItemGroup>
+              NuspecOutputPath="$(BaseIntermediateOutputPath)"
+              IncludeBuildOutput="$(IncludeBuildOutput)"
+              BuildOutputFolder="$(BuildOutputTargetFolder)"/>
   </Target>
   <!--
     ============================================================
@@ -129,7 +129,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GetProjectToProjectReferences"
-      Properties="TargetFramework=%(_TargetFrameworks.Identity)
+      Properties="TargetFramework=%(_TargetFrameworks.Identity);
               %(_MSBuildProjectReferenceExistent.SetConfiguration);
               %(_MSBuildProjectReferenceExistent.SetPlatform);
               BuildProjectReferences=false;"
@@ -139,11 +139,56 @@ Copyright (c) .NET Foundation. All rights reserved.
           TaskParameter="TargetOutputs"
           ItemName="_ProjectReferences" />
     </MSBuild>
+
+    <MSBuild
+      Condition="'$(IncludeBuildOutput)' == 'true'"
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="BuiltProjectOutputGroup"
+      Properties="TargetFramework=%(_TargetFrameworks.Identity);
+              %(_MSBuildProjectReferenceExistent.SetConfiguration);
+              %(_MSBuildProjectReferenceExistent.SetPlatform);
+              BuildProjectReferences=false;"
+      RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="_TargetPathsToAssemblies" />
+    </MSBuild>
+
+    <MSBuild
+      Condition="'$(IncludeSymbols)' == 'true' OR '$(IncludeSource)' == 'true'"
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="DebugSymbolsProjectOutputGroup"
+      Properties="TargetFramework=%(_TargetFrameworks.Identity);
+              %(_MSBuildProjectReferenceExistent.SetConfiguration);
+              %(_MSBuildProjectReferenceExistent.SetPlatform);
+              BuildProjectReferences=false;"
+      RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="_TargetPathsToSymbols" />
+    </MSBuild>
+    
+    <MSBuild
+      Condition="'$(IncludeSource)' == 'true'"
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="SourceFilesProjectOutputGroup"
+      Properties="TargetFramework=%(_TargetFrameworks.Identity);
+              %(_MSBuildProjectReferenceExistent.SetConfiguration);
+              %(_MSBuildProjectReferenceExistent.SetPlatform);
+              BuildProjectReferences=false;"
+      RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
+
+      <Output
+          TaskParameter="TargetOutputs"
+          ItemName="_SourceFiles" />
+    </MSBuild>
     
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GetPackageReferences"
-      Properties="TargetFramework=%(_TargetFrameworks.Identity)
+      Properties="TargetFramework=%(_TargetFrameworks.Identity);
               %(_MSBuildProjectReferenceExistent.SetConfiguration);
               %(_MSBuildProjectReferenceExistent.SetPlatform);
               BuildProjectReferences=false;"
@@ -206,15 +251,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     </MSBuild>
   </Target>
 
-  
-
   <!--
     ============================================================
-    _GetPackageFilesFromReferencedProjects
+    _GetPackageFiles
     Entry point for generating the project to project references.
     ============================================================
   -->
-  <Target Name="_GetPackageFilesFromReferencedProjects" Condition="$(IncludeContentInPack) == 'true'">
+  <Target Name="_GetPackageFiles" Condition="$(IncludeContentInPack) == 'true'">
     <ItemGroup>
       <_PackageFilesToExclude Include="@(Content)" Condition="'%(Content.Pack)' == 'false'"/>
     </ItemGroup>
@@ -223,19 +266,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_PackageFiles Include="@(Content)" Condition=" %(Content.Pack) != 'false' " />
       <_PackageFiles Include="@(Compile)" Condition=" %(Compile.Pack) == 'true' " />
       <_PackageFiles Include="@(None)" Condition=" %(None.Pack) == 'true' " />
-    </ItemGroup>
-  </Target>
-
-  
-  <!--
-    ============================================================
-    _GetSourceFilesForSymbols
-    Entry point for getting the source files for the project & it's references.
-    ============================================================
-  -->
-  <Target Name="_GetSourceFilesForSymbols" Condition="$(IncludeSource) == 'true'">
-    <ItemGroup>
-      <_SourceFiles Include="@(Compile)" />
     </ItemGroup>
   </Target>
 
