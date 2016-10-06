@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -649,17 +650,30 @@ namespace NuGet.Common.Test
         file1.txt
         file2.txt
     */
-    public sealed class TestDirectoryFixture : TestDirectory
+    public sealed class TestDirectoryFixture : IDisposable
     {
-        public TestDirectoryFixture()
-            : base(System.IO.Path.Combine(System.IO.Path.GetTempPath(), System.IO.Path.GetRandomFileName()))
+        private TestDirectory _rootDirectory;
+
+        public string Path
         {
-            CreateTestDirectory();
+            get { return _rootDirectory.Path; }
         }
 
-        private void CreateTestDirectory()
+        public TestDirectoryFixture()
         {
-            var rootDirectory = Directory.CreateDirectory(Path);
+            _rootDirectory = TestDirectory.Create();
+
+            PopulateTestDirectory();
+        }
+
+        public void Dispose()
+        {
+            _rootDirectory.Dispose();
+        }
+
+        private void PopulateTestDirectory()
+        {
+            var rootDirectory = new DirectoryInfo(_rootDirectory.Path);
             var directory1 = Directory.CreateDirectory(System.IO.Path.Combine(rootDirectory.FullName, "dir1"));
             var directory2 = Directory.CreateDirectory(System.IO.Path.Combine(directory1.FullName, "dir2"));
             var directory3 = Directory.CreateDirectory(System.IO.Path.Combine(directory2.FullName, "dir3"));

@@ -253,8 +253,8 @@ namespace NuGet.Test
         public async Task DependencyGraphProjectCacheUtility_CacheDiffersOnClosure_WithJustBuildIntegrated()
         {
             // Arrange
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPath2 = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectFolderPath = TestDirectory.Create())
+            using (var randomProjectFolderPath2 = TestDirectory.Create())
             {
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var randomConfig2 = Path.Combine(randomProjectFolderPath2, "project.json");
@@ -319,8 +319,8 @@ namespace NuGet.Test
         public async Task DependencyGraphProjectCacheUtility_CacheDiffersProjectReferences_WithBuildIntegratedAndPackagesConfig()
         {
             // Arrange
-            using (var randomProjectFolderPath1 = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPath2 = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectFolderPath1 = TestDirectory.Create())
+            using (var randomProjectFolderPath2 = TestDirectory.Create())
             {
                 var projectTargetFramework = NuGetFramework.Parse("netcore50");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -389,8 +389,8 @@ namespace NuGet.Test
         public async Task DependencyGraphProjectCacheUtility_CacheHasChanges_ReturnsTrue_IfSupportProfilesDiffer()
         {
             // Arrange
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPath2 = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectFolderPath = TestDirectory.Create())
+            using (var randomProjectFolderPath2 = TestDirectory.Create())
             {
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var randomConfig2 = Path.Combine(randomProjectFolderPath2, "project.json");
@@ -471,8 +471,8 @@ namespace NuGet.Test
         public async Task DependencyGraphProjectCacheUtility_CacheDiffersOnProjects()
         {
             // Arrange
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPath2 = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectFolderPath = TestDirectory.Create())
+            using (var randomProjectFolderPath2 = TestDirectory.Create())
             {
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var randomConfig2 = Path.Combine(randomProjectFolderPath2, "project.json");
@@ -529,8 +529,8 @@ namespace NuGet.Test
         public async Task DependencyGraphProjectCacheUtility_SameCache()
         {
             // Arrange
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPath2 = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectFolderPath = TestDirectory.Create())
+            using (var randomProjectFolderPath2 = TestDirectory.Create())
             {
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var randomConfig2 = Path.Combine(randomProjectFolderPath2, "project.json");
@@ -585,8 +585,8 @@ namespace NuGet.Test
         public async Task DependencyGraphProjectCacheUtility_CreateCache_JustBuildIntegrated()
         {
             // Arrange
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPath2 = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectFolderPath = TestDirectory.Create())
+            using (var randomProjectFolderPath2 = TestDirectory.Create())
             {
                 var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
                 var randomConfig2 = Path.Combine(randomProjectFolderPath2, "project.json");
@@ -639,9 +639,9 @@ namespace NuGet.Test
         public async Task DependencyGraphProjectCacheUtility_CreateCache_BuildIntegratedAndPackagesConfig()
         {
             // Arrange
-            using (var randomProjectFolderPath1 = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPath2 = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPath3 = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectFolderPath1 = TestDirectory.Create())
+            using (var randomProjectFolderPath2 = TestDirectory.Create())
+            using (var randomProjectFolderPath3 = TestDirectory.Create())
             {
                 var projectTargetFramework = NuGetFramework.Parse("netcore50");
                 var testNuGetProjectContext = new TestNuGetProjectContext();

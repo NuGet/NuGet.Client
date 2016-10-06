@@ -25,7 +25,7 @@ namespace NuGet.CommandLine.Test
         public void SelfUpdater_WithArbitraryVersions_UpdateSelf(string version, bool prerelease, bool replaced)
         {
             // Arrange
-            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testDirectory = TestDirectory.Create())
             {
                 var tc = new TestContext(testDirectory);
                 tc
@@ -47,7 +47,7 @@ namespace NuGet.CommandLine.Test
         public void SelfUpdater_WithCurrentVersion(bool prerelease)
         {
             // Arrange
-            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testDirectory = TestDirectory.Create())
             {
                 var tc = new TestContext(testDirectory);
                 tc.Package.Setup(x => x.Version).Returns(tc.ClientVersion);

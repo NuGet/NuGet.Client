@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -18,7 +21,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         public void LocalFolderUtility_GetAndVerifyRootDirectory_WithAbsoluteFileUri()
         {
             // Arrange
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Act
                 var uri = UriUtility.CreateSourceUri(root, UriKind.Absolute);
@@ -34,7 +37,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         public void LocalFolderUtility_GetAndVerifyRootDirectory_WithAbsolute()
         {
             // Arrange
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Act
                 var actual = LocalFolderUtility.GetAndVerifyRootDirectory(root);
@@ -49,7 +52,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         public void LocalFolderUtility_GetAndVerifyRootDirectory_WithNonexistentAbsolute()
         {
             // Arrange
-            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testFolder = TestDirectory.Create())
             {
                 var root = Path.Combine(testFolder, "not-real");
 
@@ -97,7 +100,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackagesConfigFolderPackages_All()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -130,7 +133,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackagesConfigFolderPackages_ById()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -161,7 +164,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackagesConfigFolderPackages_ById_NotFound()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -190,7 +193,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackagesConfigFolderPackage()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -218,7 +221,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackagesConfigFolderPackage_Missing()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -240,7 +243,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackagesConfigFolderPackage_NonNormalizedInFolder()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -268,7 +271,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackagesConfigFolderPackage_NonNormalizedInRequest()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -296,7 +299,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackagesConfigFolderPackage_ConflictAndMissing()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -321,7 +324,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackagesConfigFolderPackage_MissingNupkgs()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -349,7 +352,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackagesConfigFolderPackage_IgnoreNupkgInWrongFolder()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -380,7 +383,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackagesConfigFolderPackage_EmptyDir()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -399,7 +402,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackagesConfigFolderPackages_EmptyDir()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -417,7 +420,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackagesConfigFolderPackagesWithId_EmptyDir()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -435,7 +438,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackagesV3MaxPathTest()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -467,7 +470,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackagesV2MaxPathTest()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -500,7 +503,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackageV3MaxPathTest()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -532,7 +535,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackageV2MaxPathTest()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -564,7 +567,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackagesV2ValidPackage()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -589,7 +592,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackagesV2ReadWithV3()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -609,7 +612,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalFolderUtility_GetPackagesV3ValidPackage()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -634,7 +637,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalFolderUtility_GetPackagesV3ReadWithV2()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -654,7 +657,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackageV2()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -681,7 +684,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackageV2NotFound()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -703,7 +706,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackageV2NotFoundEmptyDir()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -720,7 +723,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackageV2NotFoundMissingDir()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -737,7 +740,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackageV2NonNormalizedVersions()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -768,7 +771,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackagesV2NotFoundEmptyDir()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -785,7 +788,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackagesV2NotFoundMissingDir()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -802,7 +805,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackagesByIdV2NotFoundEmptyDir()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -819,7 +822,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackagesByIdV2NotFoundMissingDir()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -836,7 +839,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalFolderUtility_GetPackageV3()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -863,7 +866,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalFolderUtility_GetPackageV3NotFound()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -885,7 +888,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackageV3NotFoundEmptyDir()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -902,7 +905,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackageV3NotFoundMissingDir()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -919,7 +922,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackagesV3NotFoundEmptyDir()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -936,7 +939,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackagesV3NotFoundMissingDir()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -953,7 +956,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackagesByIdV3NotFoundEmptyDir()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -970,7 +973,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void LocalFolderUtility_GetPackagesByIdV3NotFoundMissingDir()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -1025,7 +1028,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [MemberData("GetValidVersions")]
         public void LocalFolderUtility_VerifyPackageCanBeFoundV2_NonNormalizedOnDisk(string versionString)
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -1053,7 +1056,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [MemberData("GetValidVersions")]
         public void LocalFolderUtility_VerifyPackageCanBeFoundV2_NormalizedOnDisk(string versionString)
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -1082,7 +1085,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [MemberData("GetValidVersions")]
         public async Task LocalFolderUtility_VerifyPackageCanBeFoundV3_NonNormalizedOnDisk(string versionString)
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -1110,7 +1113,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [MemberData("GetValidVersions")]
         public async Task LocalFolderUtility_VerifyPackageCanBeFoundV3_NormalizedOnDisk(string versionString)
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();

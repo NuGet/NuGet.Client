@@ -240,7 +240,7 @@ namespace NuGet.Test.Utility
 
                 Directory.CreateDirectory(folder);
 
-                using (var tempRoot = TestFileSystemUtility.CreateRandomTestFolder())
+                using (var tempRoot = TestDirectory.Create())
                 {
                     CreatePackages(tempRoot, context);
 
@@ -301,7 +301,7 @@ namespace NuGet.Test.Utility
         /// </summary>
         public static async Task CreateFolderFeedV3(string root, PackageSaveMode saveMode, params SimpleTestPackageContext[] contexts)
         {
-            using (var tempRoot = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var tempRoot = TestDirectory.Create())
             {
                 CreatePackages(tempRoot, contexts);
 
@@ -358,7 +358,7 @@ namespace NuGet.Test.Utility
         /// </summary>
         public static void CreateFolderFeedPackagesConfig(string root, params SimpleTestPackageContext[] contexts)
         {
-            using (var tempRoot = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var tempRoot = TestDirectory.Create())
             {
                 CreatePackages(tempRoot, contexts);
 

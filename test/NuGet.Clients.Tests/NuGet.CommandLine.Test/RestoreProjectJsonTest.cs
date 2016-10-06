@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,7 +23,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_MinClientVersionFail()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
@@ -75,7 +78,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_RestoreFolder_VerifyFailure()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var projectDir1 = Path.Combine(workingPath, "test1");
@@ -137,7 +140,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_RestoreForSingleProject()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var projectDir1 = Path.Combine(workingPath, "test1");
@@ -233,7 +236,7 @@ namespace NuGet.CommandLine.Test
         public async Task RestoreProjectJson_RestoreWithFallbackFolder()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var globalPath = Path.Combine(workingPath, "global");
                 var repositoryPath = Path.Combine(workingPath, "Repository");
@@ -322,7 +325,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_RestoreFromSlnWithCsproj()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var projectDir1 = Path.Combine(workingPath, "test1");
@@ -405,7 +408,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_P2PTimeouts(string timeout, int projectCount, int expectedTimeOut)
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 Func<int, string> getProjectDir = (int i) => Path.Combine(workingPath, "test" + i);
 
@@ -526,7 +529,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_RestoreFromSlnWithReferenceOutputAssemblyFalse()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var projectDir1 = Path.Combine(workingPath, "test1");
@@ -661,7 +664,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_RestoreProjectFileNotFound()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
@@ -701,7 +704,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_RestoreProjectJsonFileNotFound()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
@@ -741,7 +744,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_RestoreCSProj()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var projectDir1 = Path.Combine(workingPath, "test1");
@@ -792,7 +795,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_RestoreUnknownProj()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var projectDir1 = Path.Combine(workingPath, "test1");
@@ -843,7 +846,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_RestoreFromSlnWithUnknownProjAndCsproj()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var projectDir1 = Path.Combine(workingPath, "test1");
@@ -949,7 +952,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_RestoreFromSlnUsesNuGetFolderSettings()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
 
@@ -1068,7 +1071,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_FloatReleaseLabelHighestPrelease()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
@@ -1124,7 +1127,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_FloatReleaseLabelTakesStable()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
@@ -1181,7 +1184,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_FloatIncludesStableOnly()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
@@ -1240,7 +1243,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_RestoreFiltersToStablePackages()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
@@ -1297,7 +1300,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_RestoreBumpsFromStableToPrereleaseWhenNeeded()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
@@ -1354,7 +1357,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_RestoreDowngradesStableDependency()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
@@ -1411,7 +1414,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_RestoreDowngradesFromStableToPrereleaseWhenNeeded()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
@@ -1468,7 +1471,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_SolutionFileWithAllProjectsInOneFolder()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var projectDir = Path.Combine(workingPath, "abc");
@@ -1587,7 +1590,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_GenerateFilesWithProjectNameFromCSProj()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
@@ -1648,7 +1651,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_GenerateTargetsFileFromSln()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var nugetexe = Util.GetNuGetExePath();
 
@@ -1743,7 +1746,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_GenerateTargetsFileFromCSProj()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
@@ -1818,7 +1821,7 @@ namespace NuGet.CommandLine.Test
         public async Task RestoreProjectJson_GenerateTargetsForFallbackFolder()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var globalPath = Path.Combine(workingPath, "global");
@@ -1926,7 +1929,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_GenerateTargetsFileFromNuProj()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
@@ -2001,7 +2004,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_GenerateTargetsFileWithFolder()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 string folderName = Path.GetFileName(workingPath);
 
@@ -2076,7 +2079,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_GenerateTargetsForRootBuildFolderIgnoreSubFolders()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 string folderName = Path.GetFileName(workingPath);
 
@@ -2146,7 +2149,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_GenerateTargetsPersistsWithMultipleRestores()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 string folderName = Path.GetFileName(workingPath);
 
@@ -2260,7 +2263,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_CorruptedLockFile()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();

@@ -15,6 +15,7 @@ using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Xunit;
+using NuGet.Test.Utility;
 
 namespace NuGet.Packaging.Test
 {
@@ -201,7 +202,7 @@ namespace NuGet.Packaging.Test
         [InlineData("**", "**/file2.txt", "Content")]
         public void CreatePackageWithNuspecIncludeExcludeWithWildcards(string source, string exclude, string destination)
         {
-            using (var directory = new TestDirectory())
+            using (var directory = new TestSourcesDirectory())
             {
                 // Arrange
                 PackageBuilder builder = new PackageBuilder();
@@ -2653,17 +2654,30 @@ Enabling license acceptance requires a license url.");
             file1.txt
             file2.txt
         */
-        public sealed class TestDirectory : NuGet.Test.Utility.TestDirectory
+        public sealed class TestSourcesDirectory : IDisposable
         {
-            public TestDirectory()
-                : base(System.IO.Path.Combine(System.IO.Path.GetTempPath(), System.IO.Path.GetRandomFileName()))
+            private TestDirectory _testDirectory;
+
+            public string Path
             {
-                CreateTestDirectory();
+                get { return _testDirectory.Path; }
             }
 
-            private void CreateTestDirectory()
+            public TestSourcesDirectory()
             {
-                var rootDirectory = Directory.CreateDirectory(Path);
+                _testDirectory = TestDirectory.Create();
+
+                PopulateTestDirectory();
+            }
+
+            public void Dispose()
+            {
+                _testDirectory.Dispose();
+            }
+
+            private void PopulateTestDirectory()
+            {
+                var rootDirectory = new DirectoryInfo(_testDirectory.Path);
                 var directory1 = Directory.CreateDirectory(System.IO.Path.Combine(rootDirectory.FullName, "dir1"));
                 var directory2 = Directory.CreateDirectory(System.IO.Path.Combine(directory1.FullName, "dir2"));
                 var directory3 = Directory.CreateDirectory(System.IO.Path.Combine(rootDirectory.FullName, "dir3"));

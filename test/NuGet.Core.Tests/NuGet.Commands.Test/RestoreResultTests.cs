@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.IO;
 using System.Threading;
@@ -16,7 +19,7 @@ namespace NuGet.Commands.Test
         public async Task RestoreResult_WritesCommitToMinimal()
         {
             // Arrange
-            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var td = TestDirectory.Create())
             {
                 var path = Path.Combine(td, "project.lock.json");
                 var logger = new TestLogger();
@@ -47,7 +50,7 @@ namespace NuGet.Commands.Test
         public async Task RestoreResult_WritesSkipCommitToMinimal()
         {
             // Arrange
-            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var td = TestDirectory.Create())
             {
                 var path = Path.Combine(td, "project.lock.json");
                 var logger = new TestLogger();
@@ -78,7 +81,7 @@ namespace NuGet.Commands.Test
         public async Task RestoreResult_WritesToolCommitToDebug()
         {
             // Arrange
-            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var td = TestDirectory.Create())
             {
                 var path = Path.Combine(td, ".tools", "project.lock.json");
                 var logger = new TestLogger();
@@ -118,7 +121,7 @@ namespace NuGet.Commands.Test
         public async Task RestoreResult_WritesToolSkipCommitToDebug()
         {
             // Arrange
-            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var td = TestDirectory.Create())
             {
                 var path = Path.Combine(td, "tools", "project.lock.json");
                 var logger = new TestLogger();

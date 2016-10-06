@@ -11,21 +11,6 @@ namespace NuGet.Test.Utility
         public static readonly string NuGetTestFolder =
             Path.Combine(Path.GetTempPath(), "NuGetTestFolder");
 
-        public static TestDirectory CreateRandomTestFolder()
-        {
-            var randomFolderName = Guid.NewGuid().ToString();
-            var path = Path.Combine(NuGetTestFolder, randomFolderName);
-
-            if (Directory.Exists(path))
-            {
-                throw new InvalidOperationException("Guid colission");
-            }
-
-            Directory.CreateDirectory(path);
-
-            return new TestDirectory(path);
-        }
-
         public static void DeleteRandomTestFolder(string randomTestPath)
         {
             if (Directory.Exists(randomTestPath))
@@ -39,7 +24,6 @@ namespace NuGet.Test.Utility
                 catch
                 {
                 }
-
             }
         }
 

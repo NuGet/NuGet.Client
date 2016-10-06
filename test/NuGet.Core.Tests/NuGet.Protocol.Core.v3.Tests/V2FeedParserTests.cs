@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -121,7 +124,7 @@ namespace NuGet.Protocol.Tests
             V2FeedParser parser = new V2FeedParser(httpSource, "https://www.nuget.org/api/v2/");
 
             // Act & Assert
-            using (var packagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesFolder = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             using (var downloadResult = await parser.DownloadFromUrl(
                 new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("6.2.0")),
@@ -157,7 +160,7 @@ namespace NuGet.Protocol.Tests
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
 
             // Act
-            using (var packagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesFolder = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             {
                 var actual = await parser.DownloadFromIdentity(

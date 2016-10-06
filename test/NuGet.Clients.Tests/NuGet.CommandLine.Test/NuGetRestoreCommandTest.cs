@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -24,7 +27,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void RestoreCommand_BadInputPath()
         {
-            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestDirectory.Create())
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
@@ -55,7 +58,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void RestoreCommand_MissingSolutionFile()
         {
-            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestDirectory.Create())
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
@@ -86,7 +89,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void TestVerbosityQuiet_ShowsErrorMessages()
         {
-            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestDirectory.Create())
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
@@ -119,7 +122,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void RestoreCommand_MissingPackagesConfigFile()
         {
-            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestDirectory.Create())
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
@@ -153,7 +156,7 @@ namespace NuGet.CommandLine.Test
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 Directory.CreateDirectory(repositoryPath);
@@ -187,7 +190,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreCommand_NoCancelledOrNotFoundMessages()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var nugetexe = Util.GetNuGetExePath();
 
@@ -259,7 +262,7 @@ namespace NuGet.CommandLine.Test
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, "packages.config", configFileName);
 
@@ -283,8 +286,8 @@ namespace NuGet.CommandLine.Test
         public void RestoreCommand_FromProjectFile()
         {
             // Arrange
-            using (var repositoryPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var repositoryPath = TestDirectory.Create())
+            using (var workingPath = TestDirectory.Create())
             {
                 var proj1Directory = Path.Combine(workingPath, "proj1");
                 Directory.CreateDirectory(proj1Directory);
@@ -353,7 +356,7 @@ namespace NuGet.CommandLine.Test
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 Directory.CreateDirectory(workingPath);
 
@@ -388,7 +391,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, proj1ConfigFileName, proj2ConfigFileName);
 
@@ -423,7 +426,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, "packages.config", configFileName);
 
@@ -451,7 +454,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, "packages.config", configFileName);
 
@@ -485,7 +488,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
                 msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/14.1/bin/";
             }
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, "packages.config", "packages.config");
 
@@ -513,7 +516,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
             var nugetexe = Util.GetNuGetExePath();
             var msbuildPath = @"\\not exist path";
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, "packages.config", "packages.config");
 
@@ -544,7 +547,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
                 msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/14.1/bin/";
             }
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, "packages.config", "packages.config");
 
@@ -575,7 +578,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var proj1Directory = Path.Combine(workingPath, "proj1");
@@ -632,7 +635,7 @@ EndProject");
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
 
@@ -684,7 +687,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 Util.CreateFile(workingPath, "my.config",
                     @"
@@ -726,7 +729,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, "packages.config", "packages.config");
                 Util.CreateFile(workingPath, "my.config",
@@ -768,8 +771,8 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             // Arrang
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
+            using (var randomTestFolder = TestDirectory.Create())
             {
                 var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, "packages.config", configFileName);
 
@@ -797,8 +800,8 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
+            using (var randomTestFolder = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var proj1Directory = Path.Combine(workingPath, "proj1");
@@ -887,8 +890,8 @@ EndProject");
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
+            using (var randomTestFolder = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var proj1Directory = Path.Combine(workingPath, "proj1");
@@ -960,7 +963,7 @@ EndProject");
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var proj1Directory = Path.Combine(workingPath, "proj1");
@@ -1046,7 +1049,7 @@ EndProject");
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Util.CreateBasicTwoProjectSolution(workingPath, "packages.config", "packages.config");
 
@@ -1148,8 +1151,8 @@ EndProject");
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -1220,7 +1223,7 @@ EndProject");
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var basePath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var basePath = TestDirectory.Create())
             {
                 var workingPath = Path.Combine(basePath, "sub1", "sub2");
 
@@ -1294,7 +1297,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         [Fact]
         public void RestoreCommand_InvalidPackagesConfigFile()
         {
-            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestDirectory.Create())
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
@@ -1330,7 +1333,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         [Fact]
         public void RestoreCommand_InvalidSolutionFile()
         {
-            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestDirectory.Create())
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
@@ -1374,7 +1377,7 @@ EndProject";
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 Directory.CreateDirectory(repositoryPath);
@@ -1417,7 +1420,7 @@ EndProject";
         public void RestoreCommand_NoFeedAvailable()
         {
             var nugetexe = Util.GetNuGetExePath();
-            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestDirectory.Create())
             {
                 // Create an empty config file and pass it as -ConfigFile switch.
                 // This imitates the scenario where there is a machine without a default nuget.config under %APPDATA%
@@ -1469,8 +1472,8 @@ EndProject";
         [Fact]
         public void RestoreCommand_LegacySolutionLevelPackages_SolutionDirectory()
         {
-            using (var randomRepositoryPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomSolutionFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomRepositoryPath = TestDirectory.Create())
+            using (var randomSolutionFolder = TestDirectory.Create())
 
             {
                 // Arrange
@@ -1542,8 +1545,8 @@ EndProject";
         [Fact]
         public void RestoreCommand_LegacySolutionLevelPackages_SolutionFile()
         {
-            using (var randomRepositoryPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomSolutionFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomRepositoryPath = TestDirectory.Create())
+            using (var randomSolutionFolder = TestDirectory.Create())
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
@@ -1614,8 +1617,8 @@ EndProject";
         [Fact]
         public void RestoreCommand_LegacySolutionLevelPackages_NoArgument()
         {
-            using (var randomRepositoryPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomSolutionFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomRepositoryPath = TestDirectory.Create())
+            using (var randomSolutionFolder = TestDirectory.Create())
 
             {
                 // Arrange
@@ -1687,8 +1690,8 @@ EndProject";
         [Fact]
         public void RestoreCommand_LegacySolutionLevelPackages_DuplicatePackageIds()
         {
-            using (var randomRepositoryPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomSolutionFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomRepositoryPath = TestDirectory.Create())
+            using (var randomSolutionFolder = TestDirectory.Create())
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
@@ -1786,8 +1789,8 @@ EndProject";
         [Fact]
         public void RestoreCommand_LegacySolutionLevelPackages_DuplicatePackageIdentities()
         {
-            using (var randomRepositoryPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomSolutionFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomRepositoryPath = TestDirectory.Create())
+            using (var randomSolutionFolder = TestDirectory.Create())
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
@@ -1863,8 +1866,8 @@ EndProject";
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var repositoryPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
+            using (var repositoryPath = TestDirectory.Create())
             {
                 var entryModifiedTime = new DateTimeOffset(1985, 11, 20, 12, 0, 0, TimeSpan.FromHours(-7.0)).DateTime;
 
@@ -1908,7 +1911,7 @@ EndProject";
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var basePath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var basePath = TestDirectory.Create())
             {
                 Directory.CreateDirectory(Path.Combine(basePath, "A"));
                 Directory.CreateDirectory(Path.Combine(basePath, "A", "A.Util"));
@@ -2024,7 +2027,7 @@ EndProject");
             var nugetexe = Util.GetNuGetExePath();
             var identity = new Packaging.Core.PackageIdentity("packageA", new Versioning.NuGetVersion("1.1.0"));
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 Directory.CreateDirectory(repositoryPath);
@@ -2060,7 +2063,7 @@ EndProject");
             var nugetexe = Util.GetNuGetExePath();
             var identity = new Packaging.Core.PackageIdentity("Newtonsoft.Json", new Versioning.NuGetVersion("7.0.1"));
             var source = @"https://api.nuget.org/v3/index.json";
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 // Overriding globalPackages folder
                 Util.CreateFile(workingPath, "nuget.config",
@@ -2105,7 +2108,7 @@ EndProject");
             var nugetexe = Util.GetNuGetExePath();
             var identity = new Packaging.Core.PackageIdentity("Newtonsoft.Json", new Versioning.NuGetVersion("7.0.1"));
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 // Overriding globalPackages folder
                 Util.CreateFile(workingPath, "nuget.config",

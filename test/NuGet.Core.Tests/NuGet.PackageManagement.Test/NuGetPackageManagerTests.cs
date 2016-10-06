@@ -80,7 +80,7 @@ namespace NuGet.Test
         [Fact]
         public async Task TestPacManInstallAndRequestInstalledPackages()
         {
-            using (var packageSource = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageSource = TestDirectory.Create())
             {
                 // Arrange
                 var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
@@ -4786,8 +4786,8 @@ namespace NuGet.Test
         public async Task TestDirectDownloadByPackagesConfig()
         {
             // Arrange
-            using (var testFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var directDownloadDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testFolderPath = TestDirectory.Create())
+            using (var directDownloadDirectory = TestDirectory.Create())
             {
                 // Create a nuget.config file with a test global packages folder
                 var globalPackageFolderPath = Path.Combine(testFolderPath, "GlobalPackagesFolder");
@@ -4843,7 +4843,7 @@ namespace NuGet.Test
         [Fact]
         public async Task TestPacMan_InstallPackage_BatchEvent_Raised()
         {
-            using (var packageSource = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageSource = TestDirectory.Create())
             {
                 // Arrange
                 var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
@@ -4912,7 +4912,7 @@ namespace NuGet.Test
         public async Task TestPacMan_UpdatePackage_BatchEvent_Raised()
         {
             // Arrange
-            using (var packageSource = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageSource = TestDirectory.Create())
             {
                 // Arrange
                 var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
@@ -4998,7 +4998,7 @@ namespace NuGet.Test
         public async Task TestPacMan_UninstallPackage_BatchEvent_Raised()
         {
             // Arrange
-            using (var packageSource = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageSource = TestDirectory.Create())
             {
                 // Arrange
                 var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
@@ -5064,7 +5064,7 @@ namespace NuGet.Test
         public async Task TestPacMan_ExecuteMultipleNugetActions_BatchEvent_Raised()
         {
             // Arrange
-            using (var packageSource = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageSource = TestDirectory.Create())
             {
                 // Arrange
                 var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
@@ -5139,7 +5139,7 @@ namespace NuGet.Test
         public async Task TestPacMan_InstallPackagesInMultipleProjects_BatchEvent_Raised()
         {
             // Arrange
-            using (var packageSource = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageSource = TestDirectory.Create())
             {
                 // Arrange
                 var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
@@ -5220,7 +5220,7 @@ namespace NuGet.Test
         public async Task TestPacMan_ExecuteNugetActions_NoOP_BatchEvent()
         {
             // Arrange
-            using (var packageSource = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageSource = TestDirectory.Create())
             {
                 // Arrange
                 var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
@@ -5280,7 +5280,7 @@ namespace NuGet.Test
         public async Task TestPacMan_InstallPackage_Fail_BatchEvent_Raised()
         {
             // Arrange
-            using (var packageSource = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageSource = TestDirectory.Create())
             {
                 // Arrange
                 var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
@@ -5349,7 +5349,7 @@ namespace NuGet.Test
         public async Task TestPacMan_DownloadPackageTask_Fail_BatchEvent_NotRaised()
         {
             // Arrange
-            using (var packageSource = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageSource = TestDirectory.Create())
             {
                 // Arrange
                 var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
@@ -5420,7 +5420,7 @@ namespace NuGet.Test
         public async Task TestPacMan_DownloadPackageResult_Fail_BatchEvent_Raised()
         {
             // Arrange
-            using (var packageSource = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageSource = TestDirectory.Create())
             {
                 // Arrange
                 var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(

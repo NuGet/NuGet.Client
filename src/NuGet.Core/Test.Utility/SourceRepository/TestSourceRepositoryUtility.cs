@@ -128,7 +128,7 @@ namespace Test.Utility
 
         public static TestDirectory CreateAndGetSettingFilePath()
         {
-            var tempFolder = TestFileSystemUtility.CreateRandomTestFolder();
+            var tempFolder = TestDirectory.Create();
             var fileName = "nuget.config";
 
             File.WriteAllText(Path.Combine(tempFolder, fileName), TempPackageSourceContents);

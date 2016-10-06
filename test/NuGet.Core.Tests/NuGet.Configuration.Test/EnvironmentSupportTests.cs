@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.IO;
 using System.Linq;
 using NuGet.Common;
@@ -22,7 +25,7 @@ namespace NuGet.Configuration.Test
             //Arrange
             var expectedRepositoryPath = @"ONE";
 
-            using (var nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var nugetConfigFileFolder = TestDirectory.Create())
             {
                 var nugetConfigFile = "NuGet.config";
                 var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, nugetConfigFile);
@@ -45,7 +48,7 @@ namespace NuGet.Configuration.Test
             //Arrange
             var expectedRepositoryPath = @"ONE";
 
-            using (var nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var nugetConfigFileFolder = TestDirectory.Create())
             {
                 var nugetConfigFile = "NuGet.config";
                 var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, nugetConfigFile);
@@ -74,7 +77,7 @@ namespace NuGet.Configuration.Test
                 expectedRepositoryPath = @"C:\log";
             }
 
-            using (var nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var nugetConfigFileFolder = TestDirectory.Create())
             {
                 var nugetConfigFile = "NuGet.config";
                 var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, nugetConfigFile);
@@ -101,7 +104,7 @@ namespace NuGet.Configuration.Test
                 expectedRepositoryPath = @"C:\log";
             }
 
-            using (var nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var nugetConfigFileFolder = TestDirectory.Create())
             {
                 var nugetConfigFile = "NuGet.config";
                 var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, nugetConfigFile);

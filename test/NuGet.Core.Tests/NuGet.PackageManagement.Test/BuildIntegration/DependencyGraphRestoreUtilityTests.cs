@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement.Test
             var projectName = "testproj";
             var logger = new TestLogger();
 
-            using (var rootFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var rootFolder = TestDirectory.Create())
             {
                 var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
                 projectFolder.Create();
@@ -75,7 +75,7 @@ namespace NuGet.PackageManagement.Test
             var projectName = "testproj";
             var logger = new TestLogger();
 
-            using (var rootFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var rootFolder = TestDirectory.Create())
             {
                 var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
                 projectFolder.Create();

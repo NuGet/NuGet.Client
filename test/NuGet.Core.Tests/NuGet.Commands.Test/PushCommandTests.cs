@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -18,7 +21,7 @@ namespace NuGet.Commands.Test
         [Fact]
         public async Task PushCommand_AbsolutePathSource()
         {
-            using (TestDirectory workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (TestDirectory workingDir = TestDirectory.Create())
             {
                 // Arrange (create a test package)
                 DirectoryInfo packagePushDest = new DirectoryInfo(Path.Combine(workingDir, "packagePushDest"));

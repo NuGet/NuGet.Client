@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -17,7 +20,7 @@ namespace NuGet.Commands.Test
         [Fact]
         public void MSBuildRestoreUtility_GetPackageSpec_Tool()
         {
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 // Arrange
                 var project1Root = Path.Combine(workingDir, "a");
@@ -60,7 +63,7 @@ namespace NuGet.Commands.Test
         [Fact]
         public void MSBuildRestoreUtility_GetPackageSpec_NetCoreVerifyIncludeFlags()
         {
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 // Arrange
                 var project1Root = Path.Combine(workingDir, "a");
@@ -141,7 +144,7 @@ namespace NuGet.Commands.Test
         [Fact]
         public void MSBuildRestoreUtility_GetPackageSpec_NetCoreVerifyBasicMetadata()
         {
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 // Arrange
                 var project1Root = Path.Combine(workingDir, "a");
@@ -299,7 +302,7 @@ namespace NuGet.Commands.Test
         [Fact]
         public void MSBuildRestoreUtility_GetPackageSpec_NetCoreVerifyRuntimes()
         {
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 // Arrange
                 var project1Root = Path.Combine(workingDir, "a");
@@ -342,7 +345,7 @@ namespace NuGet.Commands.Test
         [Fact]
         public void MSBuildRestoreUtility_GetPackageSpec_NetCoreVerifyRuntimes_Duplicates()
         {
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 // Arrange
                 var project1Root = Path.Combine(workingDir, "a");
@@ -385,7 +388,7 @@ namespace NuGet.Commands.Test
         [Fact]
         public void MSBuildRestoreUtility_GetPackageSpec_NetCore_Conditionals()
         {
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 // Arrange
                 var project1Root = Path.Combine(workingDir, "a");
@@ -545,7 +548,7 @@ namespace NuGet.Commands.Test
         [Fact]
         public void MSBuildRestoreUtility_GetPackageSpec_UAP_P2P()
         {
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 // Arrange
                 var project1Root = Path.Combine(workingDir, "a");
@@ -650,7 +653,7 @@ namespace NuGet.Commands.Test
         [Fact]
         public void MSBuildRestoreUtility_GetPackageSpec_UAP_VerifyMetadata()
         {
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 // Arrange
                 var projectJsonPath = Path.Combine(workingDir, "project.json");
@@ -701,7 +704,7 @@ namespace NuGet.Commands.Test
         [Fact]
         public void MSBuildRestoreUtility_GetPackageSpec_NonNuGetProject()
         {
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 // Arrange
                 var projectPath = Path.Combine(workingDir, "a.csproj");

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -18,7 +21,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalAutoCompleteResource_IdStartsWithEmptyString()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -46,7 +49,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalAutoCompleteResource_IdStartsWithEmptyStringAndStable()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -73,7 +76,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalAutoCompleteResource_IdStartsWithFilter()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -101,7 +104,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalAutoCompleteResource_IdStartsWithFilter_NotFound()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -127,7 +130,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalAutoCompleteResource_IdStartsWithFilter_StableNotFound()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -153,7 +156,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalAutoCompleteResource_VersionStartsWithEmptyString()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -181,7 +184,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalAutoCompleteResource_VersionStartsWithFilter()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -208,7 +211,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalAutoCompleteResource_VersionStartsWithFilterExactMatch()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -235,7 +238,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalAutoCompleteResource_VersionStartsWithFilterExactMatch_Stable()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -261,7 +264,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalAutoCompleteResource_EmptyRepo()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();

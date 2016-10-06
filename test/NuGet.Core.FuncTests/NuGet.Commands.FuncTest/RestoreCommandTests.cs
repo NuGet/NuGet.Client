@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -35,8 +38,8 @@ namespace NuGet.Commands.FuncTest
                 .GetCoreV3()
                 .Where(x => !excludedProviders.Contains(x.Value.GetType()));
             var sourceRepository = Repository.CreateSource(providers, source);
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfigWithNet46.ToString(), "TestProject", specPath);
@@ -70,8 +73,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 Directory.CreateDirectory(Path.Combine(projectDir, "TestProject"));
                 var projectSpecPath = Path.Combine(projectDir, "TestProject", "project.json");
@@ -120,8 +123,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 Directory.CreateDirectory(Path.Combine(projectDir, "TestProject"));
                 var projectSpecPath = Path.Combine(projectDir, "TestProject", "project.json");
@@ -169,8 +172,8 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource> { new PackageSource("https://www.nuget.org/api/v2/") };
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 // This test is verifying the following dependency graph:
                 //
@@ -243,8 +246,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
@@ -285,8 +288,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://api.nuget.org/v3/index.json"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
@@ -327,9 +330,9 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>();
 
-            using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var sourceDir = TestDirectory.Create())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 sources.Add(new PackageSource(sourceDir));
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
@@ -380,10 +383,10 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>();
 
-            using (var emptyDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var emptyDir = TestDirectory.Create())
+            using (var workingDir = TestDirectory.Create())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 sources.Add(new PackageSource(emptyDir));
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
@@ -451,8 +454,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var configJson = JObject.Parse(@"
                 {
@@ -505,8 +508,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var configJson = JObject.Parse(@"
                 {
@@ -561,8 +564,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var configJson = JObject.Parse(@"
                 {
@@ -616,8 +619,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var configJson = JObject.Parse(@"
                 {
@@ -675,8 +678,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var configJson = JObject.Parse(@"
                 {
@@ -725,8 +728,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var configJson = JObject.Parse(@"
                 {
@@ -777,8 +780,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var configJson = JObject.Parse(@"
                 {
@@ -822,8 +825,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var json = new JObject();
 
@@ -873,8 +876,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var json = new JObject();
 
@@ -917,8 +920,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
@@ -969,8 +972,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
@@ -1019,8 +1022,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
@@ -1082,8 +1085,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
@@ -1125,8 +1128,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
@@ -1183,7 +1186,7 @@ namespace NuGet.Commands.FuncTest
               }
             }";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
@@ -1245,8 +1248,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfigWithNet46.ToString(), "TestProject", specPath);
@@ -1287,8 +1290,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
@@ -1326,8 +1329,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource(source));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
@@ -1359,8 +1362,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource(source));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
@@ -1390,8 +1393,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
@@ -1425,8 +1428,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
@@ -1461,8 +1464,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
@@ -1504,8 +1507,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
@@ -1552,8 +1555,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
@@ -1602,8 +1605,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(project, "TestProject", specPath);
@@ -1649,8 +1652,8 @@ namespace NuGet.Commands.FuncTest
 
             sources.Add(new PackageSource("https://www.nuget.org/api/v2"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(project, "TestProject", specPath);
@@ -1694,8 +1697,8 @@ namespace NuGet.Commands.FuncTest
 
             sources.Add(new PackageSource("https://nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(project, "TestProject", specPath);
@@ -1779,8 +1782,8 @@ namespace NuGet.Commands.FuncTest
 
             sources.Add(new PackageSource("https://nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(project, "TestProject", specPath);
@@ -1816,8 +1819,8 @@ namespace NuGet.Commands.FuncTest
             sources.Add(new PackageSource("https://failingSource"));
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var configJson = JObject.Parse(@"
                 {
@@ -1856,8 +1859,8 @@ namespace NuGet.Commands.FuncTest
             sources.Add(new PackageSource("https://failingSource"));
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             {
                 var configJson = JObject.Parse(@"
@@ -1895,8 +1898,8 @@ namespace NuGet.Commands.FuncTest
             sources.Add(new PackageSource("\\failingSource"));
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var configJson = JObject.Parse(@"
                 {
@@ -1933,8 +1936,8 @@ namespace NuGet.Commands.FuncTest
             sources.Add(new PackageSource("\\failingSource"));
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var configJson = JObject.Parse(@"
                 {
@@ -1980,8 +1983,8 @@ namespace NuGet.Commands.FuncTest
             sources.Add(new PackageSource("https://failingSource"));
             sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var configJson = JObject.Parse(@"
                 {

@@ -12,7 +12,7 @@ namespace NuGet.Common.Test
         [Fact]
         public void FileUtility_MoveBasicSuccess()
         {
-            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var orig = Path.Combine(testDirectory, "a");
@@ -32,7 +32,7 @@ namespace NuGet.Common.Test
         [Fact]
         public void FileUtility_MoveBasicFail()
         {
-            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var orig = Path.Combine(testDirectory, "a");
@@ -53,7 +53,7 @@ namespace NuGet.Common.Test
         [Fact]
         public void FileUtility_DeleteBasicSuccess()
         {
-            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var path = Path.Combine(testDirectory, "a");
@@ -71,7 +71,7 @@ namespace NuGet.Common.Test
         [Fact]
         public void FileUtility_DeleteBasicFail()
         {
-            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var path = Path.Combine(testDirectory, "a");

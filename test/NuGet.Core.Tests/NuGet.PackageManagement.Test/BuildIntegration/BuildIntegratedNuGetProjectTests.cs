@@ -30,8 +30,8 @@ namespace NuGet.PackageManagement.Test
             // Arrange
             var projectName = "testproj";
 
-            using (var packagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var rootFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesFolder = TestDirectory.Create())
+            using (var rootFolder = TestDirectory.Create())
             {
                 var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
                 projectFolder.Create();
@@ -92,8 +92,8 @@ namespace NuGet.PackageManagement.Test
             // Arrange
             var projectName = "testproj";
 
-            using (var packagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var rootFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesFolder = TestDirectory.Create())
+            using (var rootFolder = TestDirectory.Create())
             {
                 var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
                 projectFolder.Create();
@@ -155,8 +155,8 @@ namespace NuGet.PackageManagement.Test
             // Arrange
             var projectName = "testproj";
 
-            using (var packagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var rootFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesFolder = TestDirectory.Create())
+            using (var rootFolder = TestDirectory.Create())
             {
                 var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
                 projectFolder.Create();
@@ -215,7 +215,7 @@ namespace NuGet.PackageManagement.Test
             // Arrange
             var projectName = "testproj";
 
-            using (var rootFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var rootFolder = TestDirectory.Create())
             {
                 var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
                 projectFolder.Create();
@@ -270,7 +270,7 @@ namespace NuGet.PackageManagement.Test
             // Arrange
             var projectName = "testproj";
 
-            using (var rootFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var rootFolder = TestDirectory.Create())
             {
                 var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
                 projectFolder.Create();
@@ -325,9 +325,9 @@ namespace NuGet.PackageManagement.Test
             // Arrange
             var projectName = "testproj";
 
-            using (var globalFolder = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var fallbackFolder = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var rootFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var globalFolder = TestDirectory.Create())
+            using (var fallbackFolder = TestDirectory.Create())
+            using (var rootFolder = TestDirectory.Create())
             {
                 var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
                 projectFolder.Create();
@@ -383,9 +383,9 @@ namespace NuGet.PackageManagement.Test
             // Arrange
             var projectName = "testproj";
 
-            using (var globalFolder = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var fallbackFolder = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var rootFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var globalFolder = TestDirectory.Create())
+            using (var fallbackFolder = TestDirectory.Create())
+            using (var rootFolder = TestDirectory.Create())
             {
                 var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
                 projectFolder.Create();

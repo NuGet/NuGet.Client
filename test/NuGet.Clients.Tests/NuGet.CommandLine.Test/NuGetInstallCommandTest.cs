@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -16,7 +19,7 @@ namespace NuGet.CommandLine.Test
         public void InstallCommand_FromPackagesConfigFileWithExcludeVersion()
         {
             // Arrange
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
@@ -53,8 +56,8 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public async Task InstallCommand_WithExcludeVersion()
         {
-            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var outputDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var source = TestDirectory.Create())
+            using (var outputDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = PackageCreater.CreatePackage(
@@ -86,7 +89,7 @@ namespace NuGet.CommandLine.Test
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
 
@@ -133,7 +136,7 @@ namespace NuGet.CommandLine.Test
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var packagesConfig = Path.Combine(workingPath, "packages.config");
@@ -202,7 +205,7 @@ namespace NuGet.CommandLine.Test
             var currentDirectory = Directory.GetCurrentDirectory();
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 // Add a nuget.config to clear out sources and set the global packages folder
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
@@ -253,7 +256,7 @@ namespace NuGet.CommandLine.Test
             var currentDirectory = Directory.GetCurrentDirectory();
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 // Add a nuget.config to clear out sources and set the global packages folder
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
@@ -303,8 +306,8 @@ namespace NuGet.CommandLine.Test
 
         public void InstallCommand_PackageSaveModeNuspec()
         {
-            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var outputDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var source = TestDirectory.Create())
+            using (var outputDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = PackageCreater.CreatePackage(
@@ -333,8 +336,8 @@ namespace NuGet.CommandLine.Test
 
         public void InstallCommand_PackageSaveModeNupkg()
         {
-            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var outputDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var source = TestDirectory.Create())
+            using (var outputDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = PackageCreater.CreatePackage(
@@ -363,8 +366,8 @@ namespace NuGet.CommandLine.Test
 
         public void InstallCommand_PackageSaveModeNuspecNupkg()
         {
-            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var outputDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var source = TestDirectory.Create())
+            using (var outputDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = PackageCreater.CreatePackage(
@@ -398,8 +401,8 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var outputDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var source = TestDirectory.Create())
+            using (var outputDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = PackageCreater.CreatePackage(
@@ -432,8 +435,8 @@ namespace NuGet.CommandLine.Test
         // Test that PackageSaveMode specified in nuget.config file is used.
         public void InstallCommand_PackageSaveModeInConfigFile()
         {
-            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var outputDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var source = TestDirectory.Create())
+            using (var outputDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage(
@@ -478,7 +481,7 @@ namespace NuGet.CommandLine.Test
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 // Add a nuget.config to clear out sources and set the global packages folder
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
@@ -543,7 +546,7 @@ namespace NuGet.CommandLine.Test
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 // Add a nuget.config to clear out sources and set the global packages folder
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
@@ -605,8 +608,8 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Add a nuget.config to clear out sources and set the global packages folder
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
@@ -651,8 +654,8 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Add a nuget.config to clear out sources and set the global packages folder
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
@@ -690,8 +693,8 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Add a nuget.config to clear out sources and set the global packages folder
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
@@ -730,8 +733,8 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Add a nuget.config to clear out sources and set the global packages folder
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
@@ -798,7 +801,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 // Arrange
                 using (var server = new MockServer())
@@ -841,8 +844,8 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var proj1Directory = Path.Combine(workingPath, "proj1");
@@ -920,8 +923,8 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var repositoryPath = Path.Combine(workingPath, "Repository");
@@ -1004,8 +1007,8 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var outputDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var source = TestDirectory.Create())
+            using (var outputDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = PackageCreater.CreatePackage(
@@ -1044,8 +1047,8 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var outputDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var source = TestDirectory.Create())
+            using (var outputDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = PackageCreater.CreatePackage(
@@ -1085,7 +1088,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestDirectory.Create())
             {
                 bool credentialsPassedToRegistrationEndPoint = false;
 
@@ -1196,7 +1199,7 @@ namespace NuGet.CommandLine.Test
         public void TestInstallWhenNoFeedAvailable()
         {
             var nugetexe = Util.GetNuGetExePath();
-            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestDirectory.Create())
             {
                 // Create an empty config file and pass it as -ConfigFile switch.
                 // This imitates the scenario where there is a machine without a default nuget.config under %APPDATA%

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -37,10 +40,10 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task FindLocalPackagesResource_GetPackagesBasic()
         {
-            using (var rootPackagesConfig = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var rootUnzip = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var rootV3 = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var rootV2 = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var rootPackagesConfig = TestDirectory.Create())
+            using (var rootUnzip = TestDirectory.Create())
+            using (var rootV3 = TestDirectory.Create())
+            using (var rootV2 = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -76,7 +79,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void FindLocalPackagesResource_EmptyFolders()
         {
-            using (var emptyDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var emptyDir = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -116,10 +119,10 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task FindLocalPackagesResource_FindPackagesByIdBasic()
         {
-            using (var rootPackagesConfig = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var rootUnzip = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var rootV3 = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var rootV2 = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var rootPackagesConfig = TestDirectory.Create())
+            using (var rootUnzip = TestDirectory.Create())
+            using (var rootV3 = TestDirectory.Create())
+            using (var rootV2 = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -162,10 +165,10 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task FindLocalPackagesResource_GetPackageBasic()
         {
-            using (var rootPackagesConfig = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var rootUnzip = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var rootV3 = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var rootV2 = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var rootPackagesConfig = TestDirectory.Create())
+            using (var rootUnzip = TestDirectory.Create())
+            using (var rootV3 = TestDirectory.Create())
+            using (var rootV2 = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -26,7 +29,7 @@ namespace NuGet.CommandLine.Test
 
             using (var server2 = new MockServer())
             using (var server1 = new MockServer())
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath1 = Path.Combine(workingPath, "repo");
                 var repositoryPath2 = Path.Combine(workingPath, "repo2");
@@ -133,7 +136,7 @@ namespace NuGet.CommandLine.Test
 
             using (var server2 = new MockServer())
             using (var server = new MockServer())
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "repo");
                 var repositoryPath2 = Path.Combine(workingPath, "repo2");
@@ -268,7 +271,7 @@ namespace NuGet.CommandLine.Test
 
             using (var server2 = new MockServer())
             using (var server = new MockServer())
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "repo");
                 var repositoryPath2 = Path.Combine(workingPath, "repo2");
@@ -394,7 +397,7 @@ namespace NuGet.CommandLine.Test
 
             using (var server2 = new MockServer())
             using (var server = new MockServer())
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "repo");
                 var repositoryPath2 = Path.Combine(workingPath, "repo2");
@@ -1390,7 +1393,7 @@ namespace NuGet.CommandLine.Test
 
         private TestDirectory CreateMixedConfigAndJson()
         {
-            var workingPath = TestFileSystemUtility.CreateRandomTestFolder();
+            var workingPath = TestDirectory.Create();
 
             try
             {

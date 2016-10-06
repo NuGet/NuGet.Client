@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.IO;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -22,7 +25,7 @@ namespace NuGet.Configuration.Test
 </configuration>";
 
             var nugetConfigPath = "NuGet.Config";
-            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestDirectory.Create())
             {
                 var testFolder = Path.Combine(mockBaseDirectory, "test");
                 var srcFolder = Path.Combine(mockBaseDirectory, "src");
@@ -49,7 +52,7 @@ namespace NuGet.Configuration.Test
         public void NuGetPathContext_LoadDefaultSettings()
         {
             // Arrange
-            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestDirectory.Create())
             {
                 var globalFolder = SettingsUtility.GetGlobalPackagesFolder(NullSettings.Instance);
                 var http = SettingsUtility.GetHttpCacheFolder();

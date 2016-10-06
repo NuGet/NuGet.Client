@@ -13,7 +13,7 @@ namespace NuGet.Common.Test
         public void ProjectJsonPathUtilities_GetLockFilePathWithProjectNameOnly()
         {
             // Arrange
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var projNameFile = Path.Combine(randomProjectFolderPath, "abc.project.json");
                 CreateFile(projNameFile);
@@ -31,7 +31,7 @@ namespace NuGet.Common.Test
         public void ProjectJsonPathUtilities_GetLockFilePathWithBothProjectJsonFiles()
         {
             // Arrange
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var projNameFile = Path.Combine(randomProjectFolderPath, "abc.project.json");
                 var projJsonFile = Path.Combine(randomProjectFolderPath, "project.json");
@@ -51,7 +51,7 @@ namespace NuGet.Common.Test
         public void ProjectJsonPathUtilities_GetLockFilePathWithProjectJsonFromAnotherProject()
         {
             // Arrange
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var projNameFile = Path.Combine(randomProjectFolderPath, "xyz.project.json");
                 var projJsonFile = Path.Combine(randomProjectFolderPath, "project.json");
@@ -73,7 +73,7 @@ namespace NuGet.Common.Test
         public void ProjectJsonPathUtilities_GetLockFilePathWithProjectNameJsonAndAnotherProject()
         {
             // Arrange
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var otherFile = Path.Combine(randomProjectFolderPath, "xyz.project.json");
                 var projJsonFile = Path.Combine(randomProjectFolderPath, "abc.project.json");
@@ -95,7 +95,7 @@ namespace NuGet.Common.Test
         public void ProjectJsonPathUtilities_GetLockFilePathWithNoFiles()
         {
             // Arrange
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var expected = Path.Combine(randomProjectFolderPath, "project.json");
 
@@ -113,7 +113,7 @@ namespace NuGet.Common.Test
         public void ProjectJsonPathUtilities_GetLockFilePathWithProjectJsonOnly()
         {
             // Arrange
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var projJsonFile = Path.Combine(randomProjectFolderPath, "project.json");
                 CreateFile(projJsonFile);

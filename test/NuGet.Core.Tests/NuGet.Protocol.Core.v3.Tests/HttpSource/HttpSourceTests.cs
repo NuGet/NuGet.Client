@@ -33,7 +33,7 @@ namespace NuGet.Protocol.Tests
         public async Task HttpSource_GetAsync_ThrottlesRequests()
         {
             // Arrange
-            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var td = TestDirectory.Create())
             {
                 var tc = new TestContext(td);
 
@@ -54,7 +54,7 @@ namespace NuGet.Protocol.Tests
         public async Task HttpSource_GetJObjectAsync_ThrottlesRequests()
         {
             // Arrange
-            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var td = TestDirectory.Create())
             {
                 var tc = new TestContext(td);
 
@@ -79,7 +79,7 @@ namespace NuGet.Protocol.Tests
         public async Task HttpSource_ProcessStreamAsync_ThrottlesRequests()
         {
             // Arrange
-            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var td = TestDirectory.Create())
             {
                 var tc = new TestContext(td);
 
@@ -100,7 +100,7 @@ namespace NuGet.Protocol.Tests
         public async Task HttpSource_ProcessResponseAsync_ThrottlesRequests()
         {
             // Arrange
-            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var td = TestDirectory.Create())
             {
                 var tc = new TestContext(td);
 
@@ -121,7 +121,7 @@ namespace NuGet.Protocol.Tests
         public async Task HttpSource_GetNoContent()
         {
             // Arrange
-            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var td = TestDirectory.Create())
             {
                 var tc = new TestContext(td);
 
@@ -152,7 +152,7 @@ namespace NuGet.Protocol.Tests
         public async Task HttpSource_HasDefaultResponseTimeout()
         {
             // Arrange
-            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var td = TestDirectory.Create())
             {
                 var tc = new TestContext(td);
                 HttpRetryHandlerRequest actualRequest = null;
@@ -183,7 +183,7 @@ namespace NuGet.Protocol.Tests
         public async Task HttpSource_AllowsCustomResponseTimeout()
         {
             // Arrange
-            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var td = TestDirectory.Create())
             {
                 var tc = new TestContext(td);
                 HttpRetryHandlerRequest actualRequest = null;
@@ -218,7 +218,7 @@ namespace NuGet.Protocol.Tests
         public async Task HttpSource_TimesOutDownload()
         {
             // Arrange
-            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var td = TestDirectory.Create())
             {
                 var expectedMilliseconds = 250;
                 var server = new TcpListenerServer
@@ -258,7 +258,7 @@ namespace NuGet.Protocol.Tests
         public async Task HttpSource_DoesNotPopulateCacheWithDirectDownload()
         {
             // Arrange
-            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var td = TestDirectory.Create())
             {
                 var tc = new TestContext(td)
                 {
@@ -292,7 +292,7 @@ namespace NuGet.Protocol.Tests
         public async Task HttpSource_ReadsFromTheCacheWithDirectDownload()
         {
             // Arrange
-            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var td = TestDirectory.Create())
             {
                 var tc = new TestContext(td)
                 {
@@ -327,7 +327,7 @@ namespace NuGet.Protocol.Tests
         public async Task HttpSource_ValidatesValidNetworkContent()
         {
             // Arrange
-            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var td = TestDirectory.Create())
             {
                 var tc = new TestContext(td);
 
@@ -358,7 +358,7 @@ namespace NuGet.Protocol.Tests
         public async Task HttpSource_ValidatesInvalidNetworkContent()
         {
             // Arrange
-            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var td = TestDirectory.Create())
             {
                 var tc = new TestContext(td);
 
@@ -389,7 +389,7 @@ namespace NuGet.Protocol.Tests
         public async Task HttpSource_ValidatesValidCachedContent()
         {
             // Arrange
-            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var td = TestDirectory.Create())
             {
                 var tc = new TestContext(td);
                 await tc.WriteToCacheAsync(tc.CacheKey, tc.CacheContent);
@@ -421,7 +421,7 @@ namespace NuGet.Protocol.Tests
         public async Task HttpSource_ValidatesInvalidCachedContent()
         {
             // Arrange
-            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var td = TestDirectory.Create())
             {
                 var tc = new TestContext(td);
                 await tc.WriteToCacheAsync(tc.CacheKey, tc.CacheContent);

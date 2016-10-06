@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.IO;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
@@ -13,7 +16,7 @@ namespace NuGet.Commands.Test
         public void RequestFactory_FindConfigInProjectFolder()
         {
             // Verifies that we include any config file found in the project folder
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 // Arrange
                 var innerConfigFile = Path.Combine(workingDir, "sub", Settings.DefaultSettingsFileName);
@@ -67,7 +70,7 @@ namespace NuGet.Commands.Test
             var cache = new RestoreCommandProvidersCache();
             var provider = new ProjectJsonRestoreRequestProvider(cache);
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var p1 = Path.Combine(workingDir, "project.json");
                 var p2 = Path.Combine(workingDir, "sub", "project.json");

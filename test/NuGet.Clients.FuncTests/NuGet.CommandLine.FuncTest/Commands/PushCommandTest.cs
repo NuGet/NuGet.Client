@@ -21,7 +21,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void PushCommand_AllowsTimeoutToBeSpecifiedHigherThan100Seconds()
         {
             // Arrange
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 var nuget = Util.GetNuGetExePath();
                 var sourcePath = Util.CreateTestPackage("PackageA", "1.1.0", packageDirectory);
@@ -66,7 +66,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void PushCommand_AllowsTimeoutToBeSpecifiedLowerThan100Seconds()
         {
             // Arrange
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 var nuget = Util.GetNuGetExePath();
                 var sourcePath = Util.CreateTestPackage("PackageA", "1.1.0", packageDirectory);

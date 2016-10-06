@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -355,7 +358,7 @@ namespace NuGet.CommandLine
         {
             // Setup
             var nugetexe = Util.GetNuGetExePath();
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
 
@@ -390,7 +393,7 @@ namespace NuGet.CommandLine
             // Setup
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Setup the projects
                 DummyProject link = new DummyProject("Link", Path.Combine(workingDirectory, "Link\\Link.csproj"));
@@ -430,7 +433,7 @@ namespace NuGet.CommandLine
             // Setup
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Setup the projects
                 DummyProject link = new DummyProject("Link", Path.Combine(workingDirectory, "Link\\Link.csproj"));

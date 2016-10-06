@@ -37,7 +37,7 @@ namespace NuGet.PackageManagement
             try
             {
                 using (var cacheContext = new SourceCacheContext())
-                using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+                using (var packagesDirectory = TestDirectory.Create())
                 {
                     await PackageDownloader.GetDownloadResourceResultAsync(v2sourceRepository,
                         packageIdentity,
@@ -73,7 +73,7 @@ namespace NuGet.PackageManagement
             try
             {
                 using (var cacheContext = new SourceCacheContext())
-                using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+                using (var packagesDirectory = TestDirectory.Create())
                 {
                     await PackageDownloader.GetDownloadResourceResultAsync(v3sourceRepository,
                         packageIdentity,
@@ -102,7 +102,7 @@ namespace NuGet.PackageManagement
 
             // Act
             using (var cacheContext = new SourceCacheContext())
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
             using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(v2sourceRepository,
                 packageIdentity,
                 new PackageDownloadContext(cacheContext),
@@ -129,7 +129,7 @@ namespace NuGet.PackageManagement
 
             // Act
             using (var cacheContext = new SourceCacheContext())
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
             using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(v3sourceRepository,
                 packageIdentity,
                 new PackageDownloadContext(cacheContext),
@@ -181,7 +181,7 @@ namespace NuGet.PackageManagement
 
             // Act
             using (var cacheContext = new SourceCacheContext())
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
             using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(),
                 packageIdentity,
                 new PackageDownloadContext(cacheContext),
@@ -208,7 +208,7 @@ namespace NuGet.PackageManagement
 
             var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
 
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             {
                 await Assert.ThrowsAsync<FatalProtocolException>(async () => await PackageDownloader.GetDownloadResourceResultAsync(sourceRepositoryProvider.GetRepositories(),
@@ -237,7 +237,7 @@ namespace NuGet.PackageManagement
 
             // Act
             using (var cacheContext = new SourceCacheContext())
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
             using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(
                 sourceRepositoryProvider.GetRepositories(),
                 packageIdentity,
@@ -259,8 +259,8 @@ namespace NuGet.PackageManagement
             var sourceRepository = sourceRepositoryProvider.GetRepositories().First();
             var packageIdentity = new PackageIdentity("jQuery", new NuGetVersion("1.8.2"));
 
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var directDownloadDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
+            using (var directDownloadDirectory = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             {
                 var downloadContext = new PackageDownloadContext(

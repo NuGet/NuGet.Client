@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -16,7 +19,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalPackageMetadataResourceTests_GetMetadataStable()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -73,7 +76,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalPackageMetadataResourceTests_GetMetadataPrerelease()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -130,7 +133,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalPackageMetadataResourceTests_GetMetadataStableNoVersions()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -184,7 +187,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalPackageMetadataResourceTests_GetMetadataNoMatch()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -215,7 +218,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalPackageMetadataResourceTests_VerifyAllFields()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -308,7 +311,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalPackageMetadataResourceTests_GetMetadataAsync_PackageIdentity()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -352,7 +355,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalPackageMetadataResourceTests_GetMetadataAsync_PackageIdentity_NotFound()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.IO;
 using System.Linq;
 using NuGet.Test.Utility;
@@ -30,7 +33,7 @@ namespace NuGet.Configuration.Test
 </configuration>";
 
             var nugetConfigPath = "NuGet.Config";
-            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestDirectory.Create())
             {
                 ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 Settings settings = new Settings(mockBaseDirectory);
@@ -55,7 +58,7 @@ namespace NuGet.Configuration.Test
 </configuration>";
 
             var nugetConfigPath = "NuGet.Config";
-            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestDirectory.Create())
             {
                 var subFolder = Path.Combine(mockBaseDirectory, "sub");
                 var testFolder = Path.Combine(mockBaseDirectory, "test");
@@ -84,7 +87,7 @@ namespace NuGet.Configuration.Test
 </configuration>";
 
             var nugetConfigPath = "NuGet.Config";
-            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestDirectory.Create())
             {
                 var testFolder = Path.Combine(mockBaseDirectory, "test");
 
@@ -114,7 +117,7 @@ namespace NuGet.Configuration.Test
 </configuration>";
 
             var nugetConfigPath = "NuGet.Config";
-            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestDirectory.Create())
             {
                 ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 Settings settings = new Settings(mockBaseDirectory);
@@ -159,8 +162,8 @@ namespace NuGet.Configuration.Test
 </configuration>";
 
             var nugetConfigPath = "NuGet.Config";
-            using (var machineWide = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var machineWide = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.Create())
             {
                 var subFolder = Path.Combine(mockBaseDirectory, "sub");
 
@@ -220,8 +223,8 @@ namespace NuGet.Configuration.Test
 </configuration>";
 
             var nugetConfigPath = "NuGet.Config";
-            using (var machineWide = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var machineWide = TestDirectory.Create())
+            using (var mockBaseDirectory = TestDirectory.Create())
             {
                 var subFolder = Path.Combine(mockBaseDirectory, "sub");
 

@@ -28,7 +28,7 @@ namespace Commands.Test
                 var version = new NuGetVersion(package.Version);
                 var identity = new PackageIdentity(package.Id, version);
 
-                var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
+                var packagesDir = TestDirectory.Create();
                 var pathResolver = new VersionFolderPathResolver(packagesDir);
 
                 var token = CancellationToken.None;
@@ -70,7 +70,7 @@ namespace Commands.Test
                 var version = new NuGetVersion(package.Version);
                 var identity = new PackageIdentity(package.Id, version);
 
-                var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
+                var packagesDir = TestDirectory.Create();
                 var pathResolver = new VersionFolderPathResolver(packagesDir);
 
                 var token = CancellationToken.None;
@@ -111,7 +111,7 @@ namespace Commands.Test
                 var version = new NuGetVersion(package.Version);
                 var identity = new PackageIdentity(package.Id, version);
 
-                var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
+                var packagesDir = TestDirectory.Create();
                 var pathResolver = new VersionFolderPathResolver(packagesDir);
 
                 var token = CancellationToken.None;
@@ -163,7 +163,7 @@ namespace Commands.Test
                 var version = new NuGetVersion(package.Version);
                 var identity = new PackageIdentity(package.Id, version);
 
-                var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
+                var packagesDir = TestDirectory.Create();
                 var pathResolver = new VersionFolderPathResolver(packagesDir);
 
                 var token = CancellationToken.None;
@@ -220,7 +220,7 @@ namespace Commands.Test
                 var version = new NuGetVersion(package.Version);
                 var identity = new PackageIdentity(package.Id, version);
 
-                var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
+                var packagesDir = TestDirectory.Create();
                 var pathResolver = new VersionFolderPathResolver(packagesDir);
 
                 var token = CancellationToken.None;
@@ -275,7 +275,7 @@ namespace Commands.Test
                 var version = new NuGetVersion(package.Version);
                 var identity = new PackageIdentity(package.Id, version);
 
-                var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
+                var packagesDir = TestDirectory.Create();
                 var pathResolver = new VersionFolderPathResolver(packagesDir);
 
                 var token = CancellationToken.None;
@@ -342,7 +342,7 @@ namespace Commands.Test
             var package = new PackageIdentity("packageA", new NuGetVersion("2.0.3"));
 
             using (var packageFileInfo = TestPackages.GetLegacyTestPackage())
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
             {
                 var pathResolver = new VersionFolderPathResolver(packagesDirectory);
                 var versionFolderPathContext = new VersionFolderPathContext(
@@ -380,7 +380,7 @@ namespace Commands.Test
             var package = new PackageIdentity("packageA", new NuGetVersion("2.0.3"));
 
             using (var packageFileInfo = TestPackages.GetLegacyTestPackage())
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
             {
                 var pathResolver = new VersionFolderPathResolver(packagesDirectory);
                 var versionFolderPathContext = new VersionFolderPathContext(
@@ -417,7 +417,7 @@ namespace Commands.Test
             // Arrange
             var package = new PackageIdentity("packageA", new NuGetVersion("2.0.3"));
 
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
             {
                 var pathResolver = new VersionFolderPathResolver(packagesDirectory);
                 var packageFileInfo = await TestPackages.GetPackageWithSHA512AtRoot(
@@ -471,7 +471,7 @@ namespace Commands.Test
         {
             // Arrange
             var package = new PackageIdentity("packageA", new NuGetVersion("2.0.3"));
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
             {
                 var pathResolver = new VersionFolderPathResolver(packagesDirectory);
                 var packageFileInfo = await TestPackages.GetPackageWithNupkgAtRoot(
@@ -521,7 +521,7 @@ namespace Commands.Test
             // Arrange
             var package = new PackageIdentity("packageA", new NuGetVersion("2.0.3"));
             var entryModifiedTime = new DateTimeOffset(1985, 11, 20, 12, 0, 0, TimeSpan.FromHours(-7.0)).DateTime;
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
             {
                 var pathResolver = new VersionFolderPathResolver(packagesDirectory);
                 var packageFileInfo = await TestPackages.GeneratePackageAsync(
@@ -565,7 +565,7 @@ namespace Commands.Test
             var package = new PackageIdentity("packageA", new NuGetVersion("2.0.3"));
 
             using (var packageFileInfo = TestPackages.GetLegacyTestPackage())
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
             {
                 var pathResolver = new VersionFolderPathResolver(packagesDirectory);
                 var versionFolderPathContext = new VersionFolderPathContext(

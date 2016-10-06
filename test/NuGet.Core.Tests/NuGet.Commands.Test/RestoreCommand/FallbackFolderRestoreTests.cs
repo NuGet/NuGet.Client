@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -37,7 +40,7 @@ namespace NuGet.Commands.Test
               }
             }";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var fallbackFolder = new DirectoryInfo(Path.Combine(workingDir, "fallbackFolder"));
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
@@ -133,7 +136,7 @@ namespace NuGet.Commands.Test
               }
             }";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var fallbackFolder = new DirectoryInfo(Path.Combine(workingDir, "fallbackFolder"));
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
@@ -221,7 +224,7 @@ namespace NuGet.Commands.Test
               }
             }";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var fallbackFolder = new DirectoryInfo(Path.Combine(workingDir, "fallbackFolder"));
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
@@ -311,7 +314,7 @@ namespace NuGet.Commands.Test
               }
             }";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var fallbackFolder = new DirectoryInfo(Path.Combine(workingDir, "fallbackFolder"));
                 var fallbackFolder2 = new DirectoryInfo(Path.Combine(workingDir, "fallbackFolder2"));
@@ -398,7 +401,7 @@ namespace NuGet.Commands.Test
               }
             }";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var fallbackFolder = new DirectoryInfo(Path.Combine(workingDir, "fallbackFolder"));
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
@@ -472,7 +475,7 @@ namespace NuGet.Commands.Test
               }
             }";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var fallbackFolder = new DirectoryInfo(Path.Combine(workingDir, "fallbackFolder"));
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));

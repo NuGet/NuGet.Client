@@ -28,8 +28,8 @@ namespace NuGet.XPlat.FuncTest
         [InlineData(TestServers.ProGet)]
         public void Restore_WithConfigFileInProjectDirectory_Succeeds(string sourceUri)
         {
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var configFile = XPlatTestUtils.CopyFuncTestConfig(projectDir);
 
@@ -75,9 +75,9 @@ namespace NuGet.XPlat.FuncTest
         [InlineData(TestServers.ProGet)]
         public void Restore_WithConfigFileInDifferentDirectory_Succeeds(string sourceUri)
         {
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var configDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
+            using (var configDir = TestDirectory.Create())
             {
                 var configFile = XPlatTestUtils.CopyFuncTestConfig(configDir);
 
@@ -118,8 +118,8 @@ namespace NuGet.XPlat.FuncTest
         [Fact]
         public void Restore_WithMissingConfigFile_Fails()
         {
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var configDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var projectDir = TestDirectory.Create())
+            using (var configDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "XPlatRestoreTests", "project.json");
                 var spec = XPlatTestUtils.BasicConfigNetCoreApp;
@@ -151,11 +151,11 @@ namespace NuGet.XPlat.FuncTest
         [Fact]
         public async Task Restore_FallbackFolderContainsAllPackages()
         {
-            using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var fallbackDir1 = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var fallbackDir2 = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var sourceDir = TestDirectory.Create())
+            using (var fallbackDir1 = TestDirectory.Create())
+            using (var fallbackDir2 = TestDirectory.Create())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "XPlatRestoreTests", "project.json");
                 var spec = XPlatTestUtils.BasicConfigNetCoreApp;
@@ -213,11 +213,11 @@ namespace NuGet.XPlat.FuncTest
         [Fact]
         public async Task Restore_FallbackFolderContainsUnrelatedPackages()
         {
-            using (var fallbackDir1 = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var fallbackDir2 = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var fallbackDir1 = TestDirectory.Create())
+            using (var fallbackDir2 = TestDirectory.Create())
+            using (var packagesDir = TestDirectory.Create())
+            using (var sourceDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "XPlatRestoreTests", "project.json");
                 var spec = XPlatTestUtils.BasicConfigNetCoreApp;
@@ -283,11 +283,11 @@ namespace NuGet.XPlat.FuncTest
         [Fact]
         public async Task Restore_FallbackFolderDoesNotExist()
         {
-            using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var fallbackDir1 = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var fallbackDir2 = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var sourceDir = TestDirectory.Create())
+            using (var fallbackDir1 = TestDirectory.Create())
+            using (var fallbackDir2 = TestDirectory.Create())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "XPlatRestoreTests", "project.json");
                 var spec = XPlatTestUtils.BasicConfigNetCoreApp;
@@ -348,9 +348,9 @@ namespace NuGet.XPlat.FuncTest
         [InlineData(false)]
         public async Task Restore_RespectsLegacyPackagesDirectorySwitch(bool useSwitch)
         {
-            using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var sourceDir = TestDirectory.Create())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "XPlatRestoreTests", "project.json");
                 var spec = XPlatTestUtils.BasicConfigNetCoreApp;

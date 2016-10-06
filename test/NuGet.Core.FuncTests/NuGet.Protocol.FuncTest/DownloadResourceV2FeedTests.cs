@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,7 +29,7 @@ namespace NuGet.Protocol.FuncTest
             var package = new SourcePackageDependencyInfo("WindowsAzure.Storage", new NuGetVersion("6.2.0"), null, true, repo, new Uri($@"{TestServers.NuGetV2}/package/WindowsAzure.Storage/6.2.0"), "");
 
             // Act & Assert
-            using (var packagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesFolder = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             using (var downloadResult = await downloadResource.GetDownloadResourceResultAsync(
                 package,
@@ -53,7 +56,7 @@ namespace NuGet.Protocol.FuncTest
             var package = new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("6.2.0"));
 
             // Act & Assert
-            using (var packagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesFolder = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             using (var downloadResult = await downloadResource.GetDownloadResourceResultAsync(
                 package,
@@ -80,7 +83,7 @@ namespace NuGet.Protocol.FuncTest
             var package = new SourcePackageDependencyInfo("not-found", new NuGetVersion("6.2.0"), null, true, repo, new Uri($@"{TestServers.NuGetV2}/package/not-found/6.2.0"), "");
 
             // Act
-            using (var packagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesFolder = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             {
                 var actual = await downloadResource.GetDownloadResourceResultAsync(

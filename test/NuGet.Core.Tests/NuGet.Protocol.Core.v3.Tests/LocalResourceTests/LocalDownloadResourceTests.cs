@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +19,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalDownloadResource_PackageIsReturned()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -72,7 +75,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalDownloadResource_PackageIsReturnedNonNormalized()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -150,7 +153,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalDownloadResource_PackageIsReturnedSemVer2()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -206,7 +209,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalDownloadResource_PackageNotFound()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -255,7 +258,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalDownloadResource_PackageNotFoundEmptyFolder()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -283,7 +286,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalDownloadResource_PackageNotFoundNoFolder()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -313,7 +316,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalDownloadResource_PackageIsReturnedUnzippedFolder()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();

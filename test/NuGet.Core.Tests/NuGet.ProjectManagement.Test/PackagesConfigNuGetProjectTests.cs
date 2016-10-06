@@ -23,7 +23,7 @@ namespace ProjectManagement.Test
         public async Task TestInstallPackage()
         {
             // Arrange
-            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestDirectory.Create())
             {
                 var targetFramework = NuGetFramework.Parse("net45");
                 var metadata = GetTestMetadata(targetFramework);
@@ -48,7 +48,7 @@ namespace ProjectManagement.Test
         public async Task TestInstallPackageUnsupportedFx()
         {
             // Arrange
-            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestDirectory.Create())
             {
                 var targetFramework = NuGetFramework.UnsupportedFramework;
                 var metadata = GetTestMetadata(targetFramework);
@@ -73,7 +73,7 @@ namespace ProjectManagement.Test
         public async Task TestUninstallLastPackage()
         {
             // Arrange
-            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestDirectory.Create())
             {
                 var targetFramework = NuGetFramework.Parse("net45");
                 var metadata = GetTestMetadata(targetFramework);
@@ -106,7 +106,7 @@ namespace ProjectManagement.Test
         public async Task TestInstallSecondPackage()
         {
             // Arrange
-            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestDirectory.Create())
             {
                 var targetFramework = NuGetFramework.Parse("net45");
                 var metadata = GetTestMetadata(targetFramework);
@@ -144,7 +144,7 @@ namespace ProjectManagement.Test
         public async Task TestUninstallPenultimatePackage()
         {
             // Arrange
-            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestDirectory.Create())
             {
                 var targetFramework = NuGetFramework.Parse("net45");
                 var metadata = GetTestMetadata(targetFramework);
@@ -190,7 +190,7 @@ namespace ProjectManagement.Test
         public async Task TestInstallHigherVersionPackage()
         {
             // Arrange
-            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestDirectory.Create())
             {
                 var targetFramework = NuGetFramework.Parse("net45");
                 var metadata = GetTestMetadata(targetFramework);
@@ -225,7 +225,7 @@ namespace ProjectManagement.Test
         public async Task TestRenameOfPackagesConfigToIncludeProjectName()
         {
             // Arrange
-            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestDirectory.Create())
             {
                 var targetFramework = NuGetFramework.Parse("net45");
                 var projectName = "TestProject";
@@ -262,7 +262,7 @@ namespace ProjectManagement.Test
         public async Task TestRenameOfPackagesProjectConfigToExcludeProjectName()
         {
             // Arrange
-            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestDirectory.Create())
             {
                 var targetFramework = NuGetFramework.Parse("net45");
                 var projectName = "TestProject";

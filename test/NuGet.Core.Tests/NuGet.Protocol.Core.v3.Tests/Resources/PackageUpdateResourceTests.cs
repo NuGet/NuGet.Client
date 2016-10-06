@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -20,7 +23,7 @@ namespace NuGet.Protocol.Tests
         public async Task PackageUpdateResource_IncludesApiKeyWhenDeleting()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var source = "https://www.nuget.org/api/v2";
                 HttpRequestMessage actualRequest = null;
@@ -67,7 +70,7 @@ namespace NuGet.Protocol.Tests
         public async Task PackageUpdateResource_AllowsNoApiKeyWhenDeleting()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var source = "https://www.nuget.org/api/v2";
                 HttpRequestMessage actualRequest = null;
@@ -113,7 +116,7 @@ namespace NuGet.Protocol.Tests
         public async Task PackageUpdateResource_AllowsApiKeyWhenPushing()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var source = "https://www.nuget.org/api/v2";
                 HttpRequestMessage actualRequest = null;
@@ -164,7 +167,7 @@ namespace NuGet.Protocol.Tests
         public async Task PackageUpdateResource_AllowsNoApiKeyWhenPushing()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var source = "https://www.nuget.org/api/v2";
                 HttpRequestMessage actualRequest = null;

@@ -27,7 +27,7 @@ namespace Test.Utility
 
         public TestSolutionManager(bool foo)
         {
-            _testDirectory = TestFileSystemUtility.CreateRandomTestFolder();
+            _testDirectory = TestDirectory.Create();
             SolutionDirectory = _testDirectory;
         }
 

@@ -27,8 +27,8 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
+            using (var source = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -54,8 +54,8 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
+            using (var source = TestDirectory.Create())
             {
                 //drop dummy artifacts to make it a V3
                 var dummyPackageName = "foo";
@@ -91,8 +91,8 @@ namespace NuGet.CommandLine.Test
         {
             string nugetexe = Util.GetNuGetExePath();
 
-            using (TestDirectory packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (TestDirectory source = TestFileSystemUtility.CreateRandomTestFolder())
+            using (TestDirectory packageDirectory = TestDirectory.Create())
+            using (TestDirectory source = TestDirectory.Create())
             {
                 // Arrange
                 string packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -127,8 +127,8 @@ namespace NuGet.CommandLine.Test
         {
             string nugetexe = Util.GetNuGetExePath();
 
-            using (TestDirectory packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (TestDirectory source = TestFileSystemUtility.CreateRandomTestFolder())
+            using (TestDirectory packageDirectory = TestDirectory.Create())
+            using (TestDirectory source = TestDirectory.Create())
             {
                 // Arrange
                 string packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -161,8 +161,8 @@ namespace NuGet.CommandLine.Test
         {
             string nugetexe = Util.GetNuGetExePath();
 
-            using (TestDirectory packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (TestDirectory source = TestFileSystemUtility.CreateRandomTestFolder())
+            using (TestDirectory packageDirectory = TestDirectory.Create())
+            using (TestDirectory source = TestDirectory.Create())
             {
                 // Arrange
                 string packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -200,8 +200,8 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var windowsSource = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
+            using (var windowsSource = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -229,8 +229,8 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
+            using (var source = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -256,7 +256,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -301,7 +301,7 @@ namespace NuGet.CommandLine.Test
             // The symbols package would try to get pushed to a public symbols server if
             // the -NoSymbols switch wasn't set.
 
-            using (TestDirectory packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (TestDirectory packageDirectory = TestDirectory.Create())
             using (MockServer server = new MockServer())
             {
                 // Arrange
@@ -331,7 +331,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void PushCommand_PushToServerWithSymbols()
         {
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             using (var server = new MockServer())
             {
                 // Arrange
@@ -380,7 +380,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void PushCommand_PushToDirectoryWithSymbols()
         {
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -410,7 +410,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void PushCommand_PushToDirectoryInConfigWithSymbols()
         {
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -451,7 +451,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void PushCommand_PushTimeoutErrorMessage()
         {
-            using (TestDirectory packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (TestDirectory packageDirectory = TestDirectory.Create())
             using (MockServer server = new MockServer())
             {
                 // Arrange
@@ -483,7 +483,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -535,7 +535,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -573,7 +573,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -608,7 +608,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -653,7 +653,7 @@ namespace NuGet.CommandLine.Test
             List<string> credentialForGetRequest = new List<string>();
             List<string> credentialForPutRequest = new List<string>();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -733,7 +733,7 @@ namespace NuGet.CommandLine.Test
             List<string> credentialForGetRequest = new List<string>();
             List<string> credentialForPutRequest = new List<string>();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -812,7 +812,7 @@ namespace NuGet.CommandLine.Test
 
             IPrincipal putUser = null;
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -857,7 +857,7 @@ namespace NuGet.CommandLine.Test
 
             IPrincipal putUser = null;
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
@@ -915,7 +915,7 @@ namespace NuGet.CommandLine.Test
             List<string> credentialForGetRequest = new List<string>();
             List<string> credentialForPutRequest = new List<string>();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -983,7 +983,7 @@ namespace NuGet.CommandLine.Test
             List<string> credentialForGetRequest = new List<string>();
             List<string> credentialForPutRequest = new List<string>();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -1051,7 +1051,7 @@ namespace NuGet.CommandLine.Test
             List<string> credentialForGetRequest = new List<string>();
             List<string> credentialForPutRequest = new List<string>();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -1118,7 +1118,7 @@ namespace NuGet.CommandLine.Test
             List<string> credentialForGetRequest = new List<string>();
             List<string> credentialForPutRequest = new List<string>();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -1190,7 +1190,7 @@ namespace NuGet.CommandLine.Test
             List<string> credentialForGetRequest = new List<string>();
             List<string> credentialForPutRequest = new List<string>();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -1257,7 +1257,7 @@ namespace NuGet.CommandLine.Test
             Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
@@ -1337,7 +1337,7 @@ namespace NuGet.CommandLine.Test
         {
             Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
 
             {
                 // Arrange
@@ -1397,7 +1397,7 @@ namespace NuGet.CommandLine.Test
             Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
@@ -1462,7 +1462,7 @@ namespace NuGet.CommandLine.Test
             var testApiKey = Guid.NewGuid().ToString();
             Util.ClearWebCache();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
@@ -1508,7 +1508,7 @@ namespace NuGet.CommandLine.Test
             var testApiKey = Guid.NewGuid().ToString();
             Util.ClearWebCache();
 
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
             {
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
                 var outputFileName = Path.Combine(packagesDirectory, "t1.nupkg");
@@ -1584,7 +1584,7 @@ namespace NuGet.CommandLine.Test
             var testApiKey = Guid.NewGuid().ToString();
             Util.ClearWebCache();
 
-            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", randomTestFolder);
@@ -1672,7 +1672,7 @@ namespace NuGet.CommandLine.Test
         {
             Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
-            using (var randomDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomDirectory = TestDirectory.Create())
 
             {
                 // Arrange
@@ -1705,7 +1705,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -1788,7 +1788,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
@@ -1831,7 +1831,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
 
             {
                 // Arrange
@@ -1870,7 +1870,7 @@ namespace NuGet.CommandLine.Test
         public void PushCommand_InvalidInput_V2_NonExistent(string invalidInput)
         {
             var nugetexe = Util.GetNuGetExePath();
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
@@ -1910,7 +1910,7 @@ namespace NuGet.CommandLine.Test
         {
             Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
 
             {
                 // Arrange
@@ -1949,7 +1949,7 @@ namespace NuGet.CommandLine.Test
         {
             Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestDirectory.Create())
 
             {
                 // Arrange

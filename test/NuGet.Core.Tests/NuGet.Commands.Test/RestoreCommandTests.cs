@@ -29,7 +29,7 @@ namespace NuGet.Commands.Test
         public async Task RestoreCommand_ObservesLowercaseFlag(bool isLowercase)
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
                 var sourceDir = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
@@ -104,7 +104,7 @@ namespace NuGet.Commands.Test
         public async Task RestoreCommand_WhenSwitchingBetweenLowercaseSettings_LockFileAlwaysRespectsLatestSetting(bool isLowercase)
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
                 var sourceDir = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
@@ -242,7 +242,7 @@ namespace NuGet.Commands.Test
               }
             }";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
@@ -303,7 +303,7 @@ namespace NuGet.Commands.Test
               }
             }";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
@@ -362,7 +362,7 @@ namespace NuGet.Commands.Test
               }
             }";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
@@ -421,7 +421,7 @@ namespace NuGet.Commands.Test
               }
             }";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
@@ -487,7 +487,7 @@ namespace NuGet.Commands.Test
               }
             }";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
@@ -556,7 +556,7 @@ namespace NuGet.Commands.Test
               }
             }";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
@@ -625,7 +625,7 @@ namespace NuGet.Commands.Test
               }
             }";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
@@ -694,7 +694,7 @@ namespace NuGet.Commands.Test
               }
             }";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
@@ -743,7 +743,7 @@ namespace NuGet.Commands.Test
         public async Task RestoreCommand_PathInPackageLibrary()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
@@ -816,7 +816,7 @@ namespace NuGet.Commands.Test
               }
             }";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
@@ -880,7 +880,7 @@ namespace NuGet.Commands.Test
               }
             }";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
@@ -934,7 +934,7 @@ namespace NuGet.Commands.Test
               }
             }";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
@@ -970,7 +970,7 @@ namespace NuGet.Commands.Test
         public async Task RestoreCommand_RestoresTools()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var tc = new ToolTestContext(workingDir)
                 {
@@ -1030,7 +1030,7 @@ namespace NuGet.Commands.Test
         public async Task RestoreCommand_DoesNotRedoRestoreToolsWithValidLockFile()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var tc = new ToolTestContext(workingDir)
                 {
@@ -1087,7 +1087,7 @@ namespace NuGet.Commands.Test
         public async Task RestoreCommand_FailsCommandWhenToolRestoreFails()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var tc = new ToolTestContext(workingDir)
                 {
@@ -1132,7 +1132,7 @@ namespace NuGet.Commands.Test
         public async Task RestoreCommand_HandlesMultipleToolRestores()
         {
             // Arrange
-            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testDirectory = TestDirectory.Create())
             {
                 var tc = new ToolTestContext(testDirectory)
                 {
@@ -1191,7 +1191,7 @@ namespace NuGet.Commands.Test
         public async Task RestoreCommand_MatchingToolImports()
         {
             // Arrange
-            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testDirectory = TestDirectory.Create())
             {
                 var tc = new ToolTestContext(testDirectory)
                 {
@@ -1254,7 +1254,7 @@ namespace NuGet.Commands.Test
         public async Task RestoreCommand_NoMatchingToolImportsForTool()
         {
             // Arrange
-            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testDirectory = TestDirectory.Create())
             {
                 var tc = new ToolTestContext(testDirectory)
                 {
@@ -1324,7 +1324,7 @@ namespace NuGet.Commands.Test
         public async Task RestoreCommand_NoMatchingToolImportsForToolDependency()
         {
             // Arrange
-            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testDirectory = TestDirectory.Create())
             {
                 var tc = new ToolTestContext(testDirectory)
                 {

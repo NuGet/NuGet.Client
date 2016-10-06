@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.IO;
 using System.Net;
 using NuGet.Test.Utility;
@@ -17,7 +20,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var source = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", source);
@@ -44,7 +47,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var source = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", source);
@@ -72,7 +75,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var source = TestDirectory.Create())
             {
                 //drop dummy artifacts to make it a V3
                 var dummyPackageName = "foo";
@@ -103,7 +106,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var source = TestDirectory.Create())
             {
                 //drop dummy artifacts to make it a V3
                 var dummyPackageName = "foo";
@@ -136,7 +139,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var windowsSource = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var windowsSource = TestDirectory.Create())
             {
                 string source = ((string)windowsSource).Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
@@ -303,7 +306,7 @@ namespace NuGet.CommandLine.Test
             Util.ClearWebCache();
             var testApiKey = Guid.NewGuid().ToString();
 
-            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testFolder = TestDirectory.Create())
             {
                 using (var server = new MockServer())
                 {
