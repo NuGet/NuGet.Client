@@ -610,14 +610,14 @@ Function Pack-NuGetBuildTasksPack {
     $PackProjectLocation = Join-Path $NuGetClientRoot src\NuGet.Core\NuGet.Build.Tasks.Pack
     $PackBuildTaskNuspecLocation = Join-Path $PackProjectLocation NuGet.Build.Tasks.Pack.nuspec
 
-    Build-NuGetPackage `
+    New-NuGetPackage `
             -NuspecPath $PackBuildTaskNuspecLocation `
             -BasePath $PackProjectLocation `
             -OutputDir $Nupkgs `
             -Version $prereleaseNupkgVersion `
             -Configuration $Configuration
 
-    Build-NuGetPackage `
+    New-NuGetPackage `
             -NuspecPath $PackBuildTaskNuspecLocation `
             -BasePath $PackProjectLocation `
             -OutputDir $ReleaseNupkgs `
