@@ -156,6 +156,11 @@ namespace NuGet.ProjectModel
                     {
                         projectObject["privateAssets"] = LibraryIncludeFlagUtils.GetFlagString(project.PrivateAssets);
                     }
+
+                    if (project.Frameworks.Count > 0)
+                    {
+                        projectObject["frameworks"] = new JArray(project.Frameworks.Select(f => f.GetShortFolderName()));
+                    }
                 }
             }
 

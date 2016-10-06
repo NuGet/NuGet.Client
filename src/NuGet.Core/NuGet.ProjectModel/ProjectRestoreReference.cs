@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using NuGet.Frameworks;
 using NuGet.LibraryModel;
 
 namespace NuGet.ProjectModel
@@ -20,6 +22,8 @@ namespace NuGet.ProjectModel
         public LibraryIncludeFlags ExcludeAssets { get; set; }
 
         public LibraryIncludeFlags PrivateAssets { get; set; } = LibraryIncludeFlagUtils.DefaultSuppressParent;
+
+        public IList<NuGetFramework> Frameworks { get; set; } = new List<NuGetFramework>();
 
         public override int GetHashCode()
         {

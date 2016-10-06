@@ -210,6 +210,11 @@ namespace NuGet.ProjectModel.Test
                 IncludeAssets = LibraryIncludeFlags.Build,
                 ExcludeAssets = LibraryIncludeFlags.Compile,
                 PrivateAssets = LibraryIncludeFlags.Runtime,
+                Frameworks = new List<NuGetFramework>()
+                {
+                    NuGetFramework.Parse("net45"),
+                    NuGetFramework.Parse("netstandard1.3"),
+                }
             });
 
             msbuildMetadata.ProjectReferences.Add(new ProjectRestoreReference()
@@ -230,11 +235,14 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(LibraryIncludeFlags.Build, references[0].IncludeAssets);
             Assert.Equal(LibraryIncludeFlags.Compile, references[0].ExcludeAssets);
             Assert.Equal(LibraryIncludeFlags.Runtime, references[0].PrivateAssets);
+            Assert.Equal(NuGetFramework.Parse("net45"), references[0].Frameworks[0]);
+            Assert.Equal(NuGetFramework.Parse("netstandard1.3"), references[0].Frameworks[1]);
 
             Assert.Equal("78A6AD3F-9FA5-47F6-A54E-84B46A48CB2F", references[1].ProjectUniqueName);
             Assert.Equal(LibraryIncludeFlags.All, references[1].IncludeAssets);
             Assert.Equal(LibraryIncludeFlags.None, references[1].ExcludeAssets);
             Assert.Equal(LibraryIncludeFlagUtils.DefaultSuppressParent, references[1].PrivateAssets);
+            Assert.Equal(0, references[1].Frameworks.Count);
         }
     }
 }

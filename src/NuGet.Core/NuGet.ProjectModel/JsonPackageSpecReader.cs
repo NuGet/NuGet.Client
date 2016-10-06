@@ -252,6 +252,17 @@ namespace NuGet.ProjectModel
             {
                 foreach (var prop in projectsObj.Properties())
                 {
+                    var referenceFrameworks = new List<NuGetFramework>();
+
+                    var frameworksArray = prop.Value.GetValue<JArray>("frameworks");
+                    if (frameworksArray != null)
+                    {
+                        referenceFrameworks.AddRange(frameworksArray
+                            .Where(e => e.Type == JTokenType.String)
+                            .Select(e => NuGetFramework.Parse(e.ToString()))
+                            .Distinct());
+                    }
+
                     msbuildMetadata.ProjectReferences.Add(new ProjectRestoreReference()
                     {
                         ProjectUniqueName = prop.Name,
@@ -268,6 +279,8 @@ namespace NuGet.ProjectModel
                         PrivateAssets = LibraryIncludeFlagUtils.GetFlags(
                             flags: prop.Value.GetValue<string>("privateAssets"),
                             defaultFlags: LibraryIncludeFlagUtils.DefaultSuppressParent),
+
+                        Frameworks = referenceFrameworks
                     });
                 }
             }
