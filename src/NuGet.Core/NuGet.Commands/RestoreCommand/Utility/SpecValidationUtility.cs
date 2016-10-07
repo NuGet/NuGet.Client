@@ -103,9 +103,6 @@ namespace NuGet.Commands
                 // Verify project metadata
                 ValidateProjectMSBuildMetadata(spec, files);
 
-                // Verify project references
-                ValidateProjectReferences(spec, files);
-
                 // Verify based on the type.
                 switch (outputType)
                 {
@@ -291,47 +288,6 @@ namespace NuGet.Commands
                     CultureInfo.CurrentCulture,
                     Strings.PropertyNotAllowed,
                     nameof(spec.Dependencies));
-
-                throw RestoreSpecException.Create(message, files);
-            }
-        }
-
-        private static void ValidateProjectReferences(PackageSpec spec, IEnumerable<string> files)
-        {
-            var dependencies = new HashSet<string>(GetAllDependencies(spec)
-                .Where(d => d.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.ExternalProject))
-                .Select(d => d.Name),
-                StringComparer.OrdinalIgnoreCase);
-
-            var projectOnly = new HashSet<string>(GetAllDependencies(spec)
-                .Where(d => d.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.ExternalProject)
-                        && !d.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package)
-                        && !d.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Reference))
-                .Select(d => d.Name),
-                StringComparer.OrdinalIgnoreCase);
-
-            var externalReferences = new HashSet<string>(
-                spec.RestoreMetadata.ProjectReferences.Select(p => p.ProjectUniqueName),
-                StringComparer.OrdinalIgnoreCase);
-
-            foreach (var missing in externalReferences.Except(dependencies))
-            {
-                // Missing dependency in dependencies section
-                var message = string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.SpecValidationMissingDependency,
-                    missing);
-
-                throw RestoreSpecException.Create(message, files);
-            }
-
-            foreach (var missing in projectOnly.Except(dependencies))
-            {
-                // missing restore section reference containing project path
-                var message = string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.SpecValidationMissingDependency,
-                    missing);
 
                 throw RestoreSpecException.Create(message, files);
             }
