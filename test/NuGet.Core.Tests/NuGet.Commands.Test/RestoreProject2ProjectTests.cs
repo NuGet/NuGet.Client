@@ -29,7 +29,7 @@ namespace NuGet.Commands.Test
                 sources.Add(new PackageSource(pathContext.PackageSource));
 
                 var spec1 = GetProject(projectName: "projectA", framework: "netstandard1.6");
-                var spec2 = GetProject(projectName: "projectB", framework: "netstandard1.6");
+                var spec2 = GetProject(projectName: "projectB", framework: "netstandard1.3");
 
                 var specs = new[] { spec1, spec2 };
 
@@ -40,16 +40,20 @@ namespace NuGet.Commands.Test
                 spec1.RestoreMetadata.ProjectReferences.Add(new ProjectRestoreReference()
                 {
                     ProjectPath = projects[1].ProjectPath,
-                    ProjectUniqueName = projects[1].ProjectPath,
+                    ProjectUniqueName = spec2.RestoreMetadata.ProjectUniqueName,
                 });
 
                 // Create dg file
                 var dgFile = new DependencyGraphSpec();
                 foreach (var spec in specs)
                 {
-                    dgFile.AddRestore(spec.RestoreMetadata.ProjectUniqueName);
                     dgFile.AddProject(spec);
                 }
+
+                // Restore only the first one
+                dgFile.AddRestore(spec1.RestoreMetadata.ProjectUniqueName);
+
+                dgFile.Save(Path.Combine(pathContext.WorkingDirectory, "out.dg"));
 
                 // Act
                 var summaries = await RunRestore(pathContext, logger, sources, dgFile, cacheContext);
@@ -60,7 +64,7 @@ namespace NuGet.Commands.Test
 
                 var targetLib = projects[0].AssetsFile
                     .Targets
-                    .Single(e => e.TargetFramework == NuGetFramework.Parse("netstandard1.6"))
+                    .Single(e => e.TargetFramework.Equals(NuGetFramework.Parse("netstandard1.6")))
                     .Libraries
                     .Single(e => e.Name == "projectB");
 
@@ -69,15 +73,110 @@ namespace NuGet.Commands.Test
                     .Single(e => e.Name == "projectB");
 
                 Assert.Equal("projectB", targetLib.Name);
-                Assert.Equal(NuGetFramework.Parse("netstandard1.6"), NuGetFramework.Parse(targetLib.Framework));
+                Assert.Equal(NuGetFramework.Parse("netstandard1.3"), NuGetFramework.Parse(targetLib.Framework));
                 Assert.Equal("1.0.0", targetLib.Version.ToNormalizedString());
                 Assert.Equal("project", targetLib.Type);
 
                 Assert.Equal("projectB", libraryLib.Name);
                 Assert.Equal("project", libraryLib.Type);
-                Assert.Equal("project", libraryLib.MSBuildProject);
-                Assert.Equal("project", libraryLib.Path);
+                Assert.Equal("../projectB/projectB.csproj", libraryLib.MSBuildProject);
+                Assert.Equal("../projectB/projectB.csproj", libraryLib.Path);
                 Assert.Equal("1.0.0", libraryLib.Version.ToNormalizedString());
+            }
+        }
+
+        [Fact]
+        public async Task RestoreProject2Project_ProjectReference_IgnoredForTFM()
+        {
+            // Arrange
+            using (var cacheContext = new SourceCacheContext())
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var logger = new TestLogger();
+                var sources = new List<PackageSource>();
+                sources.Add(new PackageSource(pathContext.PackageSource));
+
+                var spec1 = GetProject(projectName: "projectA", framework: "netstandard1.6");
+                var spec2 = GetProject(projectName: "projectB", framework: "netstandard1.3");
+
+                var specs = new[] { spec1, spec2 };
+
+                // Create fake projects, the real data is in the specs
+                var projects = CreateProjectsFromSpecs(pathContext, specs);
+
+                // Link projects
+                spec1.RestoreMetadata.ProjectReferences.Add(new ProjectRestoreReference()
+                {
+                    ProjectPath = projects[1].ProjectPath,
+                    ProjectUniqueName = spec2.RestoreMetadata.ProjectUniqueName,
+                    Frameworks = new List<NuGetFramework>() { NuGetFramework.Parse("net45") }
+                });
+
+                // Create dg file
+                var dgFile = new DependencyGraphSpec();
+                foreach (var spec in specs)
+                {
+                    dgFile.AddProject(spec);
+                }
+
+                // Restore only the first one
+                dgFile.AddRestore(spec1.RestoreMetadata.ProjectUniqueName);
+
+                dgFile.Save(Path.Combine(pathContext.WorkingDirectory, "out.dg"));
+
+                // Act
+                var summaries = await RunRestore(pathContext, logger, sources, dgFile, cacheContext);
+                var success = summaries.All(s => s.Success);
+
+                // Assert
+                Assert.True(success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
+                Assert.Equal(0, projects[0].AssetsFile.Libraries.Count);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreProject2Project_ProjectMissing()
+        {
+            // Arrange
+            using (var cacheContext = new SourceCacheContext())
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var logger = new TestLogger();
+                var sources = new List<PackageSource>();
+                sources.Add(new PackageSource(pathContext.PackageSource));
+
+                var spec1 = GetProject(projectName: "projectA", framework: "netstandard1.6");
+                var spec2 = GetProject(projectName: "projectB", framework: "netstandard1.3");
+
+                var specs = new[] { spec1, spec2 };
+
+                // Create fake projects, the real data is in the specs
+                var projects = CreateProjectsFromSpecs(pathContext, specs);
+
+                // Link projects
+                spec1.RestoreMetadata.ProjectReferences.Add(new ProjectRestoreReference()
+                {
+                    ProjectPath = projects[1].ProjectPath,
+                    ProjectUniqueName = spec2.RestoreMetadata.ProjectUniqueName,
+                });
+
+                // Create dg file
+                var dgFile = new DependencyGraphSpec();
+
+                // Only add projectA
+                dgFile.AddProject(spec1);
+                dgFile.AddRestore(spec1.RestoreMetadata.ProjectUniqueName);
+
+                dgFile.Save(Path.Combine(pathContext.WorkingDirectory, "out.dg"));
+
+                // Act
+                var summaries = await RunRestore(pathContext, logger, sources, dgFile, cacheContext);
+                var success = summaries.All(s => s.Success);
+
+                // Assert
+                Assert.False(success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
+                Assert.Contains("Unable to resolve", string.Join(Environment.NewLine, logger.Messages));
+                Assert.Contains(projects[1].ProjectPath, string.Join(Environment.NewLine, logger.Messages));
             }
         }
 
@@ -87,9 +186,12 @@ namespace NuGet.Commands.Test
 
             foreach (var spec in specs)
             {
-                var project = new SimpleTestProjectContext(spec.Name, RestoreOutputType.NETCore, pathContext.SolutionRoot);
+                var project = new SimpleTestProjectContext(spec.Name, RestoreOutputType.NETCore, pathContext.SolutionRoot); 
+
+                // Set proj properties
                 spec.FilePath = project.ProjectPath;
                 spec.RestoreMetadata.OutputPath = project.OutputPath;
+                spec.RestoreMetadata.ProjectPath = project.ProjectPath;
 
                 projects.Add(project);
             }
@@ -135,7 +237,6 @@ namespace NuGet.Commands.Test
             spec.RestoreMetadata = new ProjectRestoreMetadata();
             spec.RestoreMetadata.ProjectUniqueName = $"{projectName}-UNIQUENAME";
             spec.RestoreMetadata.ProjectName = projectName;
-            spec.RestoreMetadata.ProjectPath = $"{projectName}.csproj";
             spec.RestoreMetadata.OutputType = RestoreOutputType.NETCore;
             spec.RestoreMetadata.OriginalTargetFrameworks.Add(framework);
             spec.Name = projectName;
