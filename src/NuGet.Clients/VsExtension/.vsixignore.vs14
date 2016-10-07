@@ -4,7 +4,6 @@ Microsoft.ApplicationInsights.dll
 Microsoft.ApplicationInsights.PersistenceChannel.dll
 Microsoft.ApplicationInsights.UniversalTelemetryChannel.dll
 Microsoft.CSharp.dll
-Microsoft.Diagnostics.Tracing.EventSource.dll
 Microsoft.IdentityModel.Clients.ActiveDirectory.dll
 Microsoft.IdentityModel.Clients.ActiveDirectory.WindowsForms.dll
 Microsoft.ServiceBus.dll
@@ -50,11 +49,9 @@ Microsoft.VisualStudio.RemoteControl.dll
 Microsoft.VisualStudio.Services.Client.dll
 Microsoft.VisualStudio.Services.Common.dll
 Microsoft.VisualStudio.Services.WebApi.dll
-Microsoft.VisualStudio.Telemetry.dll
 Microsoft.VisualStudio.Utilities.Internal.dll
 Microsoft.WindowsAzure.Configuration.dll
 Newtonsoft.Json.dll
-System.ComponentModel.Composition.dll
 System.dll
 System.IdentityModel.dll
 System.IdentityModel.Tokens.Jwt.dll
@@ -63,9 +60,7 @@ System.Net.dll
 System.Net.Http.dll
 System.Net.Http.Formatting.dll
 System.Net.Http.WebRequest.dll
-System.Runtime.Serialization.dll
 System.Security.dll
-System.ServiceModel.dll
 System.Web.Http.dll
 System.Xml.dll
 System.Xml.Linq.dll
