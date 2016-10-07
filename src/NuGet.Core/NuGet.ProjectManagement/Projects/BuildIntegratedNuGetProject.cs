@@ -307,19 +307,15 @@ namespace NuGet.ProjectManagement.Projects
             {
                 foreach (var reference in references)
                 {
-                    MSBuildRestoreUtility.AddMSBuildProjectReference(
-                        packageSpec,
-                        new ProjectRestoreReference
-                        {
-                            ProjectUniqueName = reference.UniqueName,
-                            ProjectPath = reference.MSBuildProjectPath
-                        },
-                        new LibraryDependency
-                        {
-                            LibraryRange = new LibraryRange(
-                                reference.UniqueName,
-                                LibraryDependencyTarget.ExternalProject)
-                        });
+                    // This reference applies to all frameworks
+                    // Include/exclude flags may be applied later when merged with project.json
+                    var projectReference = new ProjectRestoreReference
+                    {
+                        ProjectUniqueName = reference.UniqueName,
+                        ProjectPath = reference.MSBuildProjectPath
+                    };
+
+                    metadata.ProjectReferences.Add(projectReference);
                 }
             }
 
