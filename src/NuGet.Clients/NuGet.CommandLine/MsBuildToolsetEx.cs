@@ -53,6 +53,14 @@ namespace NuGet.CommandLine
             _installDateTime = ConvertFILETIMEToDateTime(sxsToolset.GetInstallDate());
         }
 
+        internal MsBuildToolsetEx(string toolsVersion, string toolsPath): this(
+            new Toolset(toolsVersion: toolsVersion,
+                        toolsPath: toolsPath,
+                        projectCollection: new ProjectCollection(),
+                        msbuildOverrideTasksPath: string.Empty))
+        {
+        }
+
         public string ToolsVersion
         {
             get

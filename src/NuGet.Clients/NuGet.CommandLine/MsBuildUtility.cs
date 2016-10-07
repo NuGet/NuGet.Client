@@ -137,7 +137,6 @@ namespace NuGet.CommandLine
 
                 // Projects to restore
                 argumentBuilder.Append(" /p:RestoreGraphProjectInput=\"");
-
                 for (var i = 0; i < projectPaths.Length; i++)
                 {
                     argumentBuilder.Append(projectPaths[i])
@@ -288,6 +287,56 @@ namespace NuGet.CommandLine
         }
 
         /// <summary>
+        /// Gets the version of MSBuild in PATH.
+        /// </summary>
+        /// <returns>The version of MSBuild in PATH. Returns null if MSBuild does not exist in PATH.</returns>
+        private static Version GetMsBuildVersionInPath()
+        {
+            // run msbuild to get the version
+            var processStartInfo = new ProcessStartInfo
+            {
+                UseShellExecute = false,
+                FileName = "msbuild.exe",
+                Arguments = "/version /nologo",
+                RedirectStandardOutput = true
+            };
+
+            try
+            {
+                using (var process = Process.Start(processStartInfo))
+                {
+                    process.WaitForExit(MsBuildWaitTime);
+
+                    if (process.ExitCode == 0)
+                    {
+                        var output = process.StandardOutput.ReadToEnd();
+
+                        // The output of msbuid /version /nologo with MSBuild 12 & 14 is something like:
+                        // 14.0.23107.0
+                        var lines = output.Split(
+                            new[] { Environment.NewLine },
+                            StringSplitOptions.RemoveEmptyEntries);
+
+                        var versionString = lines.LastOrDefault(
+                            line => !string.IsNullOrWhiteSpace(line));
+
+                        Version version;
+                        if (Version.TryParse(versionString, out version))
+                        {
+                            return version;
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // ignore errors
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Gets the path of MSBuild in PATH.
         /// </summary>
         /// <returns>The path of MSBuild in PATH. Returns null if MSBuild does not exist in PATH.</returns>
@@ -332,27 +381,84 @@ namespace NuGet.CommandLine
         /// <returns>The msbuild directory.</returns>
         public static string GetMsbuildDirectory(string userVersion, IConsole console)
         {
-            var currentDirectoryCache = Directory.GetCurrentDirectory();
-
-            List<MsBuildToolsetEx> installedToolsets;
-            using (var projectCollection = new ProjectCollection())
+            // Try to find msbuild for mono from hard code path.
+            // Mono always tell user we are on unix even when user is on Mac.
+            if (RuntimeEnvironmentHelper.IsMono)
             {
-                installedToolsets = MsBuildToolsetEx.AsMsToolsetExCollection(projectCollection.Toolsets).ToList();
-            }
+                if (!string.IsNullOrEmpty(userVersion))
+                {
+                    switch (userVersion)
+                    {
+                        case "14.1": return CommandLineConstants.MsbuildPathOnMac14;
+                        case "15":
+                        case "15.0": return CommandLineConstants.MsbuildPathOnMac15;
+                    }
+                }
+                else
+                {
+                    var toolset = new[] {
+                        new MsBuildToolsetEx("15.0", CommandLineConstants.MsbuildPathOnMac15),
+                        new MsBuildToolsetEx("14.1", CommandLineConstants.MsbuildPathOnMac14)}
+                    .FirstOrDefault(t => Directory.Exists(t.ToolsPath));
 
-            var installedSxsToolsets = GetInstalledSxsToolsets();
-            if (installedToolsets == null)
-            {
-                installedToolsets = installedSxsToolsets;
-            }
-            else if (installedSxsToolsets != null)
-            {
-                installedToolsets.AddRange(installedSxsToolsets);
-            }
+                    if (toolset != null)
+                    {
+                        LogToolsetToConsole(console, toolset);
+                        return toolset.ToolsPath;
+                    }
+                }
 
-            var msBuildDirectory = GetMsBuildDirectoryInternal(userVersion, console, installedToolsets, () => GetMsBuildPathInPath());
-            Directory.SetCurrentDirectory(currentDirectoryCache);
-            return msBuildDirectory;
+                try
+                {
+                    List<MsBuildToolsetEx> installedToolsets = new List<MsBuildToolsetEx>();
+                    var assembly = Assembly.Load("Microsoft.Build, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
+                    Type projectCollectionType = assembly.GetType("Microsoft.Build.Evaluation.ProjectCollection", throwOnError: true);
+                    var projectCollection = Activator.CreateInstance(projectCollectionType) as IDisposable;
+
+                    using (projectCollection)
+                    {
+                        var installed = ((dynamic)projectCollection).Toolsets;
+
+                        foreach (dynamic item in installed)
+                        {
+                            installedToolsets.Add(new MsBuildToolsetEx(item.ToolsVersion, item.ToolsPath));
+                        }
+
+                        installedToolsets = installedToolsets.OrderByDescending(toolset => toolset.ParsedToolsVersion).ToList();
+                    }
+
+                    return GetMsBuildDirectoryInternal(userVersion, console, installedToolsets, () => GetMsBuildPathInPath());
+                }
+                catch (Exception e)
+                {
+                    throw new CommandLineException(LocalizedResourceManager.GetString(
+                                nameof(NuGetResources.MsbuildLoadToolSetError)), e);
+                }
+            }
+            else
+            {
+                var currentDirectoryCache = Directory.GetCurrentDirectory();
+
+                List<MsBuildToolsetEx> installedToolsets;
+                using (var projectCollection = new ProjectCollection())
+                {
+                    installedToolsets = MsBuildToolsetEx.AsMsToolsetExCollection(projectCollection.Toolsets).ToList();
+                }
+
+                var installedSxsToolsets = GetInstalledSxsToolsets();
+                if (installedToolsets == null)
+                {
+                    installedToolsets = installedSxsToolsets;
+                }
+                else if (installedSxsToolsets != null)
+                {
+                    installedToolsets.AddRange(installedSxsToolsets);
+                }
+
+                var msBuildDirectory = GetMsBuildDirectoryInternal(userVersion, console, installedToolsets, () => GetMsBuildPathInPath());
+                Directory.SetCurrentDirectory(currentDirectoryCache);
+                return msBuildDirectory;
+            }
         }
 
         // This method is called by GetMsbuildDirectory(). This method is not intended to be called directly.
@@ -363,20 +469,89 @@ namespace NuGet.CommandLine
             IEnumerable<MsBuildToolsetEx> installedToolsets,
             Func<string> getMSBuildPathInPath)
         {
-            MsBuildToolsetEx toolset;
-            if (string.IsNullOrEmpty(userVersion))
+            if (RuntimeEnvironmentHelper.IsMono)
             {
-                var msbuildPathInPath = getMSBuildPathInPath();
-                toolset = SelectMsBuildToolsetForVersionFoundInPath(msbuildPathInPath, installedToolsets);
+                if (string.IsNullOrEmpty(userVersion))
+                {
+                    var msbuildVersion = GetMsBuildVersionInPath();
+                    var toolset = SelectMsBuildToolset(msbuildVersion, installedToolsets);
+                    LogToolsetToConsole(console, toolset);
+                    return toolset.ToolsPath;
+                }
+                else
+                {
+                    // append ".0" if the userVersion is a number
+                    string userVersionString = userVersion;
+                    int unused;
+
+                    if (int.TryParse(userVersion, out unused))
+                    {
+                        userVersionString = userVersion + ".0";
+                    }
+
+                    Version ver;
+                    bool hasNumericVersion = Version.TryParse(userVersionString, out ver);
+
+                    var selectedToolset = installedToolsets.FirstOrDefault(
+                    toolset =>
+                    {
+                            // first match by string comparison
+                            if (string.Equals(userVersionString, toolset.ToolsVersion, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return true;
+                        }
+
+                            // then match by Major & Minor version numbers.
+                            Version toolsVersion;
+                        if (hasNumericVersion && Version.TryParse(toolset.ToolsVersion, out toolsVersion))
+                        {
+                            return (toolsVersion.Major == ver.Major &&
+                                toolsVersion.Minor == ver.Minor);
+                        }
+
+                        return false;
+                    });
+
+                    if (selectedToolset == null)
+                    {
+                        var message = string.Format(
+                            CultureInfo.CurrentCulture,
+                            LocalizedResourceManager.GetString(
+                                nameof(NuGetResources.Error_CannotFindMsbuild)),
+                            userVersion);
+
+                        throw new CommandLineException(message);
+                    }
+
+                    return selectedToolset.ToolsPath;
+                }
             }
             else
             {
-                toolset = SelectMsBuildToolsetForUserVersion(userVersion, installedToolsets);
-            }
+                MsBuildToolsetEx toolset;
+                if (string.IsNullOrEmpty(userVersion))
+                {
+                    var msbuildPathInPath = getMSBuildPathInPath();
+                    toolset = SelectMsBuildToolsetStartingWithPath(msbuildPathInPath, installedToolsets);
+                }
+                else
+                {
+                    toolset = SelectMsBuildToolsetForUserVersion(userVersion, installedToolsets);
+                }
 
-            LogToolsetToConsole(console, toolset);
-            return toolset?.ToolsPath;
+                if (toolset == null)
+                {
+                    return null;
+                }
+
+                LogToolsetToConsole(console, toolset);
+                return toolset.ToolsPath;
+            }
         }
+
+
+//TODO: what is the story with msbuild 15.1 and Mono? Are version searches no longer feasible here too?
+
 
         /// <summary>
         /// Gets the msbuild toolset that matches the given <paramref name="msbuildVersion"/>.
@@ -387,12 +562,59 @@ namespace NuGet.CommandLine
         /// <returns>The matching toolset.</returns>
         /// <remarks>This method is not intended to be called directly. It's marked public so that it
         /// can be called by unit tests.</remarks>
-        public static MsbuildToolSet SelectMsbuildToolset(
+        public static MsBuildToolsetEx SelectMsBuildToolset(
             Version msbuildVersion,
-            IEnumerable<MsbuildToolSet> installedToolsets)
+            IEnumerable<MsBuildToolsetEx> installedToolsets)
         {
-            MsbuildToolSet selectedToolset;
+            MsBuildToolsetEx selectedToolset;
             if (msbuildVersion == null)
+            {
+                // MSBuild does not exist in PATH. In this case, the highest installed version is used
+                selectedToolset = installedToolsets.FirstOrDefault();
+            }
+            else
+            {
+                // Search by major & minor version
+                selectedToolset = installedToolsets.FirstOrDefault(t =>
+                    t.ParsedToolsVersion.Major == msbuildVersion.Major && 
+                    t.ParsedToolsVersion.Minor == msbuildVersion.Minor);
+
+                if (selectedToolset == null)
+                {
+                    // no match found. Now search by major only
+                    selectedToolset = installedToolsets.FirstOrDefault(t => t.ParsedToolsVersion.Major == msbuildVersion.Major);
+                }
+
+                if (selectedToolset == null)
+                {
+                    // still no match. Use the highest installed version in this case
+                    selectedToolset = installedToolsets.FirstOrDefault();
+                }
+            }
+
+            if (selectedToolset == null)
+            {
+                throw new CommandLineException(
+                    LocalizedResourceManager.GetString(
+                            nameof(NuGetResources.Error_MSBuildNotInstalled)));
+            }
+
+            return selectedToolset;
+        }
+
+        /// <summary>
+        /// Gets the msbuild toolset that matches the given <paramref name="msbuildVersion"/>.
+        /// </summary>
+        /// <param name="msbuildVersion">The msbuild version. Can be null.</param>
+        /// <param name="installedToolsets">List of installed toolsets,
+        /// ordered by ToolsVersion, from highest to lowest.</param>
+        /// <returns>The matching toolset.</returns>
+        private static MsBuildToolsetEx SelectMsBuildToolsetStartingWithPath(
+            string msbuildPathInPath,
+            IEnumerable<MsBuildToolsetEx> installedToolsets)
+        {
+            MsBuildToolsetEx selectedToolset;
+            if (string.IsNullOrEmpty(msbuildPathInPath))
             {
                 // MSBuild does not exist in PATH. In this case, the highest installed version is used
                 selectedToolset = installedToolsets.OrderByDescending(t => t).FirstOrDefault();
@@ -422,128 +644,6 @@ namespace NuGet.CommandLine
             }
 
             return selectedToolset;
-        }
-
-        public static Lazy<string> GetMsbuildDirectoryFromMsbuildPath(string msbuildPath, string msbuildVersion, IConsole console)
-        {
-            if (msbuildPath != null)
-            {
-                if (msbuildVersion != null)
-                {
-                    console?.WriteWarning(LocalizedResourceManager.GetString(
-                        nameof(NuGetResources.Warning_MsbuildPath)),
-                        msbuildPath, msbuildVersion);
-                }
-
-                console?.WriteLine(LocalizedResourceManager.GetString(
-                               nameof(NuGetResources.MSbuildFromPath)),
-                           msbuildPath);
-
-                if (!Directory.Exists(msbuildPath))
-                {
-                    var message = string.Format(
-                        CultureInfo.CurrentCulture,
-                        LocalizedResourceManager.GetString(
-                            nameof(NuGetResources.MsbuildPathNotExist)),
-                        msbuildPath);
-
-                    throw new CommandLineException(message);
-                }
-                return new Lazy<string>(() => msbuildPath);
-            }
-            else
-            {
-                return new Lazy<string>(() => GetMsbuildDirectory(msbuildVersion, console));
-            }
-        }
-
-        /// <summary>
-        /// Returns the msbuild directory. If <paramref name="userVersion"/> is null, then the directory containing
-        /// the highest installed msbuild version is returned. Otherwise, the directory containing msbuild
-        /// whose version matches <paramref name="userVersion"/> is returned. If no match is found,
-        /// an exception will be thrown.
-        /// </summary>
-        /// <param name="userVersion">The user specified version. Can be null</param>
-        /// <param name="console">The console used to output messages.</param>
-        /// <returns>The msbuild directory.</returns>
-        public static string GetMsbuildDirectory(string userVersion, IConsole console)
-        {
-            // Try to find msbuild for mono from hard code path.
-            // Mono always tell user we are on unix even user is on Mac.
-            if (RuntimeEnvironmentHelper.IsMono)
-            {
-                if (userVersion != null)
-                {
-                    switch (userVersion)
-                    {
-                        case "14.1": return CommandLineConstants.MsbuildPathOnMac14;
-                        case "15":
-                        case "15.0": return CommandLineConstants.MsbuildPathOnMac15;
-                    }
-                }
-                else
-                {
-                    var path = new[] { new MsbuildToolSet("15.0", CommandLineConstants.MsbuildPathOnMac15),
-                       new MsbuildToolSet("14.1", CommandLineConstants.MsbuildPathOnMac14) }
-                    .FirstOrDefault(p => Directory.Exists(p.ToolsPath));
-
-                    if (path != null)
-                    {
-                        if (console != null)
-                        {
-                            if (console.Verbosity == Verbosity.Detailed)
-                            {
-                                console.WriteLine(
-                                    LocalizedResourceManager.GetString(
-                                        nameof(NuGetResources.MSBuildAutoDetection_Verbose)),
-                                    path.ToolsVersion,
-                                    path.ToolsPath);
-                            }
-                            else
-                            {
-                                console.WriteLine(
-                                    LocalizedResourceManager.GetString(
-                                        nameof(NuGetResources.MSBuildAutoDetection)),
-                                    path.ToolsVersion,
-                                    path.ToolsPath);
-                            }
-                        }
-
-                        return path.ToolsPath;
-                    }
-                }
-            }
-
-            try
-            {
-                List<MsbuildToolSet> installedToolsets = new List<MsbuildToolSet>();
-                var assembly = Assembly.Load(
-                        "Microsoft.Build, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
-                Type projectCollectionType = assembly.GetType(
-                   "Microsoft.Build.Evaluation.ProjectCollection",
-                   throwOnError: true);
-                var projectCollection = Activator.CreateInstance(projectCollectionType) as IDisposable;
-
-
-                using (projectCollection)
-                {
-                    var installed = ((dynamic)projectCollection).Toolsets;
-
-                    foreach (dynamic item in installed)
-                    {
-                        installedToolsets.Add(new MsbuildToolSet(item.ToolsVersion, item.ToolsPath));
-                    }
-
-                    installedToolsets = installedToolsets.OrderByDescending(toolset => SafeParseVersion(toolset.ToolsVersion)).ToList();
-                }
-
-                return GetMsbuildDirectoryInternal(userVersion, console, installedToolsets);
-            }
-            catch (Exception e)
-            {
-                throw new CommandLineException(LocalizedResourceManager.GetString(
-                            nameof(NuGetResources.MsbuildLoadToolSetError)), e);
-            }
         }
 
         private static MsBuildToolsetEx SelectMsBuildToolsetForUserVersion(
@@ -618,6 +718,39 @@ namespace NuGet.CommandLine
                         nameof(NuGetResources.MSBuildAutoDetection)),
                     toolset.ToolsVersion,
                     toolset.ToolsPath);
+            }
+        }
+
+        public static Lazy<string> GetMsbuildDirectoryFromMsbuildPath(string msbuildPath, string msbuildVersion, IConsole console)
+        {
+            if (msbuildPath != null)
+            {
+                if (msbuildVersion != null)
+                {
+                    console?.WriteWarning(LocalizedResourceManager.GetString(
+                        nameof(NuGetResources.Warning_MsbuildPath)),
+                        msbuildPath, msbuildVersion);
+                }
+
+                console?.WriteLine(LocalizedResourceManager.GetString(
+                               nameof(NuGetResources.MSbuildFromPath)),
+                           msbuildPath);
+
+                if (!Directory.Exists(msbuildPath))
+                {
+                    var message = string.Format(
+                        CultureInfo.CurrentCulture,
+                        LocalizedResourceManager.GetString(
+                            nameof(NuGetResources.MsbuildPathNotExist)),
+                        msbuildPath);
+
+                    throw new CommandLineException(message);
+                }
+                return new Lazy<string>(() => msbuildPath);
+            }
+            else
+            {
+                return new Lazy<string>(() => GetMsbuildDirectory(msbuildVersion, console));
             }
         }
 
@@ -766,6 +899,66 @@ namespace NuGet.CommandLine
             }
 
             return setupInstances;
+        }
+
+        private static string GetMsbuild(string msbuildDirectory)
+        {
+            if (RuntimeEnvironmentHelper.IsMono)
+            {
+                // Try to find msbuild or xbuild in $Path.
+                string[] pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(new[] { Path.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
+
+                if (pathDirs?.Length > 0)
+                {
+                    foreach (var exeName in new[] { "msbuild", "xbuild" })
+                    {
+                        var exePath = pathDirs.Select(dir => Path.Combine(dir, exeName)).FirstOrDefault(File.Exists);
+                        if (exePath != null)
+                        {
+                            return exePath;
+                        }
+                    }
+                }
+
+                // Try to find msbuild.exe from hard code path.
+                var path = new[] { CommandLineConstants.MsbuildPathOnMac15, CommandLineConstants.MsbuildPathOnMac14 }.
+                    Select(p => Path.Combine(p, "msbuild.exe")).FirstOrDefault(File.Exists);
+
+                if (path != null)
+                {
+                    return path;
+                }
+                else
+                {
+                    return Path.Combine(msbuildDirectory, "xbuild.exe");
+                }
+            }
+            else
+            {
+                return Path.Combine(msbuildDirectory, "msbuild.exe");
+            }
+
+        }
+
+        /// <summary>
+        /// Escapes a string so that it can be safely passed as a command line argument when starting a msbuild process.
+        /// Source: http://stackoverflow.com/a/12364234
+        /// </summary>
+        public static string Escape(string argument)
+        {
+            if (argument == string.Empty)
+            {
+                return "\"\"";
+            }
+
+            var escaped = Regex.Replace(argument, @"(\\*)""", @"$1\$0");
+
+            escaped = Regex.Replace(
+                escaped,
+                @"^(.*\s.*?)(\\*)$", @"""$1$2$2""",
+                RegexOptions.Singleline);
+
+            return escaped;
         }
     }
 }

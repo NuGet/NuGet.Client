@@ -25,7 +25,8 @@
       <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.Setup.Configuration.Interop.1.1.142-preview4-29265\lib\net35\Microsoft.VisualStudio.Setup.Configuration.Interop.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
-  </ItemGroup>  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="CommandLineMachineWideSettings.cs" />
     <Compile Include="CommandLineParser.cs" />
     <Compile Include="CommandLineSourceRepositoryProvider.cs" />
@@ -83,7 +84,6 @@
     <Compile Include="FileConflictAction.cs" />
     <Compile Include="ICommandManager.cs" />
     <Compile Include="MSBuildTasks\ProjectReferencesTask.cs" />
-    <Compile Include="MsbuildToolSet.cs" />
     <Compile Include="MsBuildToolsetEx.cs" />
     <Compile Include="MsBuildUtility.cs" />
     <Compile Include="NuGetCommand.Designer.cs">

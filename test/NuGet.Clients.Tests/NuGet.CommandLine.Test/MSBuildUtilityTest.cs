@@ -1,13 +1,9 @@
 ﻿using System;
-<<<<<<< HEAD
-using System.Collections.Generic;
-using NuGet.Common;
-=======
 using System.IO;
 using System.Collections.Generic;
 using Microsoft.Build.Evaluation;
+using NuGet.Common;
 using NuGet.Test.Utility;
->>>>>>> Add MSBuild 15.1 discovery capabilities to NuGet.exe
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -331,8 +327,9 @@ namespace NuGet.CommandLine.Test
                     installedToolsets: installedToolsets,
                     getMSBuildPathInPath: () => null);
 
-            // Assert
-            Assert.Equal(directory, toolsetV12.ToolsPath);
+                // Assert
+                Assert.Equal(directory, toolsetV12.ToolsPath);
+            }
         }
 
         // Tests that GetMsbuildDirectoryInternal() returns path of the latest toolset whose toolset version matches
@@ -424,10 +421,10 @@ namespace NuGet.CommandLine.Test
                     installedToolsets: installedToolsets,
                     getMSBuildPathInPath: () => null);
 
-            // Assert
-            Assert.Equal(directory, toolsetV12.ToolsPath);
+                // Assert
+                Assert.Equal(directory, toolsetV12.ToolsPath);
+            }
         }
-
 
         [Theory]
 
@@ -466,8 +463,9 @@ namespace NuGet.CommandLine.Test
                     installedToolsets: installedToolsets,
                     getMSBuildPathInPath: () => null);
 
-            // Assert
-            Assert.Equal(directory, expectedDirectory);
+                // Assert
+                Assert.Equal(directory, expectedDirectory);
+            }
         }
 
         [Theory]
@@ -505,20 +503,21 @@ namespace NuGet.CommandLine.Test
                     toolsetV14, toolsetV12, toolsetFoo4
                 };
 
-            // Act
-            var ex = Assert.Throws<CommandLineException>(() =>
-                {
-                    var directory = MsBuildUtility.GetMsBuildDirectoryInternal(
-                        userVersion: userVersion,
-                        console: null,
-                        installedToolsets: installedToolsets,
-                        getMSBuildPathInPath: () => null);
-                });
+                // Act
+                var ex = Assert.Throws<CommandLineException>(() =>
+                    {
+                        var directory = MsBuildUtility.GetMsBuildDirectoryInternal(
+                            userVersion: userVersion,
+                            console: null,
+                            installedToolsets: installedToolsets,
+                            getMSBuildPathInPath: () => null);
+                    });
 
-            // Assert
-            Assert.Equal(
-                $"Cannot find the specified version of msbuild: '{userVersion}'",
-                ex.Message);
+                // Assert
+                Assert.Equal(
+                    $"Cannot find the specified version of msbuild: '{userVersion}'",
+                    ex.Message);
+            }
         }
 
         [Theory]
