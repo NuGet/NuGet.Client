@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -51,7 +54,7 @@ namespace NuGet.Protocol.Tests
         public async Task RemoteV2FindPackageById_GetOriginalIdentity_IdInResponse()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var serviceAddress = TestUtility.CreateServiceAddress();
                 var package = SimpleTestPackageUtility.CreateFullPackage(workingDir, "xunit", "2.2.0-beta1-build3239");
@@ -109,7 +112,7 @@ namespace NuGet.Protocol.Tests
         public async Task RemoteV2FindPackageById_GetOriginalIdentity_IdNotInResponse()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var serviceAddress = TestUtility.CreateServiceAddress();
                 var package = SimpleTestPackageUtility.CreateFullPackage(workingDir, "WindowsAzure.Storage", "6.2.2-preview");

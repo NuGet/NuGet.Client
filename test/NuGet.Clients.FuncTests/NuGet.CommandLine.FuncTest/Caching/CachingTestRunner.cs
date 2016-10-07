@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using NuGet.Test.Utility;
 
@@ -8,7 +12,7 @@ namespace NuGet.CommandLine.Test.Caching
     {
         public static async Task<CachingValidations> ExecuteAsync(ICachingTest test, ICachingCommand command, INuGetExe nuGetExe, CachingType caching, ServerType server)
         {
-            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testFolder = TestDirectory.Create())
             using (var mockServer = new MockServer())
             {
                 var tc = new CachingTestContext(testFolder, mockServer, nuGetExe);

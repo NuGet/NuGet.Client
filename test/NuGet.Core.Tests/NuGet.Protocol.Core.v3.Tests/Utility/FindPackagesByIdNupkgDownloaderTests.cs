@@ -29,7 +29,7 @@ namespace NuGet.Protocol.Tests
             int expectedRequests)
         {
             // Arrange
-            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testDirectory = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             {
                 var tc = new TestContext(testDirectory);
@@ -61,7 +61,7 @@ namespace NuGet.Protocol.Tests
             int expectedRequests)
         {
             // Arrange
-            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testDirectory = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             {
                 var tc = new TestContext(testDirectory);
@@ -84,7 +84,7 @@ namespace NuGet.Protocol.Tests
         public async Task GetNuspecReaderFromNupkgAsync_GetsNuspecReader()
         {
             // Arrange
-            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testDirectory = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             {
                 var tc = new TestContext(testDirectory);
@@ -109,7 +109,7 @@ namespace NuGet.Protocol.Tests
         public async Task GetNuspecReaderFromNupkgAsync_DoesNotWriteCacheFileWithDirectDownload()
         {
             // Arrange
-            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testDirectory = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             {
                 var tc = new TestContext(testDirectory);
@@ -144,7 +144,7 @@ namespace NuGet.Protocol.Tests
         public async Task CopyNupkgToStreamAsync_CopiesNupkgToDestinationStream()
         {
             // Arrange
-            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testDirectory = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             {
                 var tc = new TestContext(testDirectory);
@@ -170,7 +170,7 @@ namespace NuGet.Protocol.Tests
         public async Task CopyNupkgToStreamAsync_RemembersCacheFileLocationWithoutDirectDownload()
         {
             // Arrange
-            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testDirectory = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             {
                 var tc = new TestContext(testDirectory);
@@ -210,7 +210,7 @@ namespace NuGet.Protocol.Tests
         public async Task CopyNupkgToStreamAsync_DoesNotWriteCacheFileWithDirectDownload()
         {
             // Arrange
-            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testDirectory = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             {
                 var tc = new TestContext(testDirectory);
@@ -252,7 +252,7 @@ namespace NuGet.Protocol.Tests
         public async Task CopyNupkgToStreamAsync_DirectDownloadPopulatesInMemoryCache()
         {
             // Arrange
-            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testDirectory = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
             {
                 var tc = new TestContext(testDirectory);

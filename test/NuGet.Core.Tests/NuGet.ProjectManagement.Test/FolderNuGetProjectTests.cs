@@ -28,8 +28,8 @@ namespace ProjectManagement.Test
 
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomTestDestinationPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestSourcePath = TestDirectory.Create())
+            using (var randomTestDestinationPath = TestDirectory.Create())
             {
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyTestPackage(randomTestSourcePath, packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
                 var folderNuGetProject = new FolderNuGetProject(randomTestDestinationPath);
@@ -59,7 +59,7 @@ namespace ProjectManagement.Test
         public void TestFolderNuGetProjectMetadata()
         {
             // Arrange
-            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestDirectory.Create())
             {
                 var folderNuGetProject = new FolderNuGetProject(randomTestFolder);
 
@@ -78,8 +78,8 @@ namespace ProjectManagement.Test
         public async Task TestFolderNuGetProjectGetInstalledPackageFilePath()
         {
             // Arrange
-            using (var randomTestSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomTestDestinationPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestSourcePath = TestDirectory.Create())
+            using (var randomTestDestinationPath = TestDirectory.Create())
             {
                 var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyTestPackage(randomTestSourcePath, packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
@@ -119,8 +119,8 @@ namespace ProjectManagement.Test
         public async Task TestFolderNuGetProjectGetInstalledPackageDirectoryPath()
         {
             // Arrange
-            using (var randomTestSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomTestDestinationPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestSourcePath = TestDirectory.Create())
+            using (var randomTestDestinationPath = TestDirectory.Create())
             {
                 var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyTestPackage(randomTestSourcePath, packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
@@ -160,8 +160,8 @@ namespace ProjectManagement.Test
         public async Task TestFolderNuGetProjectPackageExists()
         {
             // Arrange
-            using (var randomTestSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomTestDestinationPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestSourcePath = TestDirectory.Create())
+            using (var randomTestDestinationPath = TestDirectory.Create())
             {
                 var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyTestPackage(randomTestSourcePath, packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
@@ -199,8 +199,8 @@ namespace ProjectManagement.Test
         public async Task TestFolderNuGetProjectDeletePackage()
         {
             // Arrange
-            using (var randomTestSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomTestDestinationPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestSourcePath = TestDirectory.Create())
+            using (var randomTestDestinationPath = TestDirectory.Create())
             {
                 var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyContentPackage(randomTestSourcePath, packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
@@ -248,8 +248,8 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomTestDestinationPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestSourcePath = TestDirectory.Create())
+            using (var randomTestDestinationPath = TestDirectory.Create())
             {
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyTestPackage(
                     randomTestSourcePath,
@@ -303,8 +303,8 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomTestDestinationPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestSourcePath = TestDirectory.Create())
+            using (var randomTestDestinationPath = TestDirectory.Create())
             {
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyTestPackage(
                 randomTestSourcePath,

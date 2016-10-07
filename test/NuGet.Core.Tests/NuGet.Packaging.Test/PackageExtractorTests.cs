@@ -23,7 +23,7 @@ namespace NuGet.Packaging.Test
         public async Task PackageExtractor_InstallFromSourceAsync_StressTest()
         {
             // Arrange
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 var identity = new PackageIdentity("PackageA", new NuGetVersion("2.0.0"));
 
@@ -88,7 +88,7 @@ namespace NuGet.Packaging.Test
         public async Task PackageExtractor_InstallFromSourceAsync_ReturnsFalseWhenAlreadyInstalled()
         {
             // Arrange
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 var identity = new PackageIdentity("PackageA", new NuGetVersion("2.0.3-Beta"));
 
@@ -127,7 +127,7 @@ namespace NuGet.Packaging.Test
         public async Task PackageExtractor_InstallFromSourceAsync_ReturnsTrueAfterNewInstall()
         {
             // Arrange
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 var identity = new PackageIdentity("PackageA", new NuGetVersion("2.0.3-Beta"));
 
@@ -167,7 +167,7 @@ namespace NuGet.Packaging.Test
         public async Task PackageExtractor_WithLowercaseSpecified_ExtractsToSpecifiedCase(bool isLowercase)
         {
             // Arrange
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 var identity = new PackageIdentity("PackageA", new NuGetVersion("2.0.3-Beta"));
 
@@ -207,7 +207,7 @@ namespace NuGet.Packaging.Test
         public async Task PackageExtractor_NuspecWithDifferentName_InstallForV3()
         {
             // Arrange
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 var packageA = new SimpleTestPackageContext()
                 {
@@ -260,7 +260,7 @@ namespace NuGet.Packaging.Test
         public async Task PackageExtractor_NupkgWithDifferentName_InstallForV3()
         {
             // Arrange
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 var packageA = new SimpleTestPackageContext()
                 {
@@ -300,7 +300,7 @@ namespace NuGet.Packaging.Test
         {
             // Arrange
             using (var packageStream = TestPackages.GetTestPackageWithContentXmlFile())
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             using (var packageReader = new PackageArchiveReader(packageStream))
             {
                 var resolver = new PackagePathResolver(root);
@@ -326,8 +326,8 @@ namespace NuGet.Packaging.Test
         {
             using (var packageFile = TestPackages.GetLegacyTestPackage())
             {
-                using (var root = TestFileSystemUtility.CreateRandomTestFolder())
-                using (var packageFolder = TestFileSystemUtility.CreateRandomTestFolder())
+                using (var root = TestDirectory.Create())
+                using (var packageFolder = TestDirectory.Create())
                 {
                     using (var stream = File.OpenRead(packageFile))
                     using (var zipFile = new ZipArchive(stream))
@@ -356,7 +356,7 @@ namespace NuGet.Packaging.Test
         public async Task PackageExtractor_NupkgContent()
         {
             // Arrange
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
@@ -393,8 +393,8 @@ namespace NuGet.Packaging.Test
         {
             // Arrange
             using (var packageFile = TestPackages.GetLegacyTestPackage())
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packageFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
+            using (var packageFolder = TestDirectory.Create())
             {
                 using (var packageStream = File.OpenRead(packageFile))
                 using (var zipFile = new ZipArchive(packageStream))
@@ -424,8 +424,8 @@ namespace NuGet.Packaging.Test
         {
             // Arrange
             using (var packageFile = TestPackages.GetLegacyTestPackage())
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packageFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
+            using (var packageFolder = TestDirectory.Create())
             {
                 using (var packageStream = File.OpenRead(packageFile))
                 using (var zipFile = new ZipArchive(packageStream))
@@ -455,8 +455,8 @@ namespace NuGet.Packaging.Test
         {
             // Arrange
             using (var packageFile = TestPackages.GetLegacyTestPackage())
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packageFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
+            using (var packageFolder = TestDirectory.Create())
             {
                 using (var packageStream = File.OpenRead(packageFile))
                 using (var zipFile = new ZipArchive(packageStream))
@@ -485,7 +485,7 @@ namespace NuGet.Packaging.Test
         public async Task PackageExtractor_DefaultPackageExtractionContext()
         {
             // Arrange
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
@@ -526,7 +526,7 @@ namespace NuGet.Packaging.Test
         public async Task PackageExtractor_ExtractsXmlFiles_IfXmlSaveModeIsSetToNone()
         {
             // Arrange
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
@@ -566,7 +566,7 @@ namespace NuGet.Packaging.Test
         public async Task PackageExtractor_CompressesXmlFiles_IfXmlSaveModeIsSetToCompress()
         {
             // Arrange
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
@@ -616,7 +616,7 @@ namespace NuGet.Packaging.Test
         public async Task PackageExtractor_CompressesXmlFilesForLanguageSpecificDirectories()
         {
             // Arrange
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
@@ -660,7 +660,7 @@ namespace NuGet.Packaging.Test
         public async Task PackageExtractor_SkipsXmlFiles_IfXmlSaveModeIsSetToSkip()
         {
             // Arrange
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
@@ -701,7 +701,7 @@ namespace NuGet.Packaging.Test
         public async Task PackageExtractor_SkipsXmlFiles_ForLanguageSpecificDirectories()
         {
             // Arrange
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
@@ -749,7 +749,7 @@ namespace NuGet.Packaging.Test
         public async Task PackageExtractor_SkipsSatelliteXmlFiles()
         {
             // Arrange
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
@@ -807,7 +807,7 @@ namespace NuGet.Packaging.Test
         public async Task PackageExtractor_WithXmlModeCompress_DoesNotThrowIfPackageAlreadyContainsAXmlZipFile()
         {
             // Arrange
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
@@ -848,7 +848,7 @@ namespace NuGet.Packaging.Test
         public async Task PackageExtractor_WithXmlModeSkip_DoesNotSkipXmlZipFile()
         {
             // Arrange
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
@@ -887,7 +887,7 @@ namespace NuGet.Packaging.Test
         public async Task PackageExtractor_WithoutPackageSaveModeFile_DoesNotExtractFiles()
         {
             // Arrange
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
@@ -927,7 +927,7 @@ namespace NuGet.Packaging.Test
         public async Task PackageExtractor_WithoutPackageSaveModeNuspec_DoesNotExtractNuspec()
         {
             // Arrange
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
@@ -967,7 +967,7 @@ namespace NuGet.Packaging.Test
         public async Task PackageExtractor_WithPackageSaveModeNuspec_ExtractsInnerNuspec()
         {
             // Arrange
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
@@ -1007,7 +1007,7 @@ namespace NuGet.Packaging.Test
         public async Task PackageExtractor_WithoutPackageSaveModeNuspec_ExtractsInnerNuspec()
         {
             // Arrange
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
@@ -1047,7 +1047,7 @@ namespace NuGet.Packaging.Test
         public async Task PackageExtractor_WithoutPackageSaveModeNupkg_DoesNotExtractNupkg()
         {
             // Arrange
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 var resolver = new PackagePathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
@@ -1087,7 +1087,7 @@ namespace NuGet.Packaging.Test
         public async Task InstallFromSourceAsync_WithoutPackageSaveModeNuspec_DoesNotExtractNuspec()
         {
             // Arrange
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 var resolver = new VersionFolderPathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
@@ -1123,7 +1123,7 @@ namespace NuGet.Packaging.Test
         public async Task InstallFromSourceAsync_WithoutPackageSaveModeNupkg_DoesNotExtractNupkg()
         {
             // Arrange
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 var resolver = new VersionFolderPathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
@@ -1160,7 +1160,7 @@ namespace NuGet.Packaging.Test
         public async Task InstallFromSourceAsync_WithoutPackageSaveModeFiles_DoesNotExtractFiles()
         {
             // Arrange
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 var resolver = new VersionFolderPathResolver(root);
                 var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
@@ -1196,7 +1196,7 @@ namespace NuGet.Packaging.Test
         public async Task PackageExtractor_PreservesZipEntryTime()
         {
             // Arrange
-            using (TestDirectory root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (TestDirectory root = TestDirectory.Create())
             {
                 DateTime time = DateTime.Parse("2014-09-26T01:23:00Z",
                     System.Globalization.CultureInfo.InvariantCulture,
@@ -1239,7 +1239,7 @@ namespace NuGet.Packaging.Test
         public async Task PackageExtractor_IgnoresFutureZipEntryTime()
         {
             // Arrange
-            using (TestDirectory root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (TestDirectory root = TestDirectory.Create())
             {
                 DateTime testStartTime = DateTime.UtcNow;
                 DateTime time = DateTime.Parse("2084-09-26T01:23:00Z",

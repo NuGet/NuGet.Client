@@ -36,8 +36,8 @@ namespace NuGet.Protocol.Tests
             var token = CancellationToken.None;
 
             using (var cacheContext = new SourceCacheContext())
-            using (var downloadDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var downloadDirectory = TestDirectory.Create())
+            using (var globalPackagesFolder = TestDirectory.Create())
             {
                 var downloadContext = new PackageDownloadContext(
                     cacheContext,
@@ -94,8 +94,8 @@ namespace NuGet.Protocol.Tests
             var token = CancellationToken.None;
 
             using (var cacheContext = new SourceCacheContext())
-            using (var downloadDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var downloadDirectory = TestDirectory.Create())
+            using (var globalPackagesFolder = TestDirectory.Create())
             {
                 var downloadContext = new PackageDownloadContext(
                     cacheContext,
@@ -143,7 +143,7 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             using (var cacheContext = new SourceCacheContext())
-            using (var downloadDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var downloadDirectory = TestDirectory.Create())
             {
                 var downloadContext = new PackageDownloadContext(
                     cacheContext,

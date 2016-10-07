@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using NuGet.Common;
@@ -27,11 +30,11 @@ namespace NuGet.CommandLine.Test
 
             string targetDirectoryPath;
             string fileInTargetDirectory;
-            using (var targetDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var targetDirectory = TestDirectory.Create())
             {
                 // Arrange
                 targetDirectoryPath = targetDirectory.Path;
-                var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder();
+                var workingDirectory = TestDirectory.Create();
                 var subDirectoryPath = Path.Combine(workingDirectory.Path, "SubDirectory");
                 var subDirectory = Directory.CreateDirectory(subDirectoryPath);
 

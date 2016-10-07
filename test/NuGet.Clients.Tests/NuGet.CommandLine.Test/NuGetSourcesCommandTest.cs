@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -139,7 +142,7 @@ namespace NuGet.CommandLine.Test
         public void SourcesCommandTest_AddWithUserNamePassword_UserDefinedConfigFile()
         {
             // Arrange
-            using (var configFileDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var configFileDirectory = TestDirectory.Create())
             {
                 var nugetexe = Util.GetNuGetExePath();
                 var configFileName = "nuget.config";
@@ -202,7 +205,7 @@ namespace NuGet.CommandLine.Test
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var configFileDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var configFileDirectory = TestDirectory.Create())
             {
                 var configFileName = "nuget.config";
                 var configFilePath = Path.Combine(configFileDirectory, configFileName);
@@ -281,7 +284,7 @@ namespace NuGet.CommandLine.Test
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var configFileDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var configFileDirectory = TestDirectory.Create())
             {
                 var configFileName = "nuget.config";
                 var configFilePath = Path.Combine(configFileDirectory, configFileName);

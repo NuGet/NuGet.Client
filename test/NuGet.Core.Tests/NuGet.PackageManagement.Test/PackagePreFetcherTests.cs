@@ -22,8 +22,8 @@ namespace NuGet.PackageManagement.Test
         [Fact]
         public async Task PackagePreFetcher_NoActionsInput()
         {
-            using (var packagesFolderDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesFolderDir = TestDirectory.Create())
+            using (var globalPackagesFolder = TestDirectory.Create())
             {
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
@@ -50,8 +50,8 @@ namespace NuGet.PackageManagement.Test
         [Fact]
         public async Task PackagePreFetcher_NoInstallActionsInput()
         {
-            using (var packagesFolderDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesFolderDir = TestDirectory.Create())
+            using (var globalPackagesFolder = TestDirectory.Create())
             {
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
@@ -85,9 +85,9 @@ namespace NuGet.PackageManagement.Test
         [Fact]
         public async Task PackagePreFetcher_PackageAlreadyExists()
         {
-            using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packagesFolderDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var sourceDir = TestDirectory.Create())
+            using (var packagesFolderDir = TestDirectory.Create())
+            using (var globalPackagesFolder = TestDirectory.Create())
             {
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
@@ -132,9 +132,9 @@ namespace NuGet.PackageManagement.Test
         [Fact]
         public async Task PackagePreFetcher_PackageAlreadyExistsReinstall()
         {
-            using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packagesFolderDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var sourceDir = TestDirectory.Create())
+            using (var packagesFolderDir = TestDirectory.Create())
+            using (var globalPackagesFolder = TestDirectory.Create())
             {
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
@@ -180,9 +180,9 @@ namespace NuGet.PackageManagement.Test
         [Fact]
         public async Task PackagePreFetcher_UpdateMultiplePackages()
         {
-            using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packagesFolderDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var sourceDir = TestDirectory.Create())
+            using (var packagesFolderDir = TestDirectory.Create())
+            using (var globalPackagesFolder = TestDirectory.Create())
             {
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
@@ -264,9 +264,9 @@ namespace NuGet.PackageManagement.Test
         [Fact]
         public async Task PackagePreFetcher_PackageAlreadyExists_NonNormalizedVersionInPackages()
         {
-            using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packagesFolderDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var sourceDir = TestDirectory.Create())
+            using (var packagesFolderDir = TestDirectory.Create())
+            using (var globalPackagesFolder = TestDirectory.Create())
             {
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
@@ -311,9 +311,9 @@ namespace NuGet.PackageManagement.Test
         [Fact]
         public async Task PackagePreFetcher_PackageAlreadyExists_NonNormalizedVersionInput()
         {
-            using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packagesFolderDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var sourceDir = TestDirectory.Create())
+            using (var packagesFolderDir = TestDirectory.Create())
+            using (var globalPackagesFolder = TestDirectory.Create())
             {
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
@@ -358,9 +358,9 @@ namespace NuGet.PackageManagement.Test
         [Fact]
         public async Task PackagePreFetcher_PackageDoesNotExistsInPackagesFolder()
         {
-            using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packagesFolderDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var sourceDir = TestDirectory.Create())
+            using (var packagesFolderDir = TestDirectory.Create())
+            using (var globalPackagesFolder = TestDirectory.Create())
             {
                 // Arrange
                 var actions = new List<NuGetProjectAction>();
@@ -402,9 +402,9 @@ namespace NuGet.PackageManagement.Test
         [Fact]
         public async Task PackagePreFetcher_PackageDoesNotExistAnywhere()
         {
-            using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packagesFolderDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var sourceDir = TestDirectory.Create())
+            using (var packagesFolderDir = TestDirectory.Create())
+            using (var globalPackagesFolder = TestDirectory.Create())
             {
                 // Arrange
                 var actions = new List<NuGetProjectAction>();

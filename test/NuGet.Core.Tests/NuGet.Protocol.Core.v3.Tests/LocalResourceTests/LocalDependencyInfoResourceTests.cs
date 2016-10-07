@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -19,7 +22,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalDependencyInfoResource_Basic()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -117,7 +120,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalDependencyInfoResource_NoDependencies()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -163,7 +166,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalDependencyInfoResource_IdNotFound()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -196,7 +199,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalDependencyInfoResource_EmptyFolder()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -216,7 +219,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalDependencyInfoResource_FolderDoesNotExist()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -238,7 +241,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalDependencyInfoResource_MissingDependency()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -294,7 +297,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalDependencyInfoResource_SinglePackage()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -343,7 +346,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalDependencyInfoResource_SinglePackageNotFound()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -388,7 +391,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalDependencyInfoResource_SinglePackageNotFoundEmptyFolder()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -412,7 +415,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalDependencyInfoResource_SinglePackageNearestDependencyGroup()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -486,7 +489,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalDependencyInfoResource_ResolvePackagesNearestDependencyGroup()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();

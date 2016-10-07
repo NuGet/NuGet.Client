@@ -17,7 +17,7 @@ namespace NuGet.Packaging.Test
         public void PackageFolderReader_NuspecCountOne()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             using (var stream = new MemoryStream())
             {
                 using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
@@ -48,7 +48,7 @@ namespace NuGet.Packaging.Test
         public void PackageFolderReader_NuspecCountNested()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             using (var stream = new MemoryStream())
             {
                 using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
@@ -80,7 +80,7 @@ namespace NuGet.Packaging.Test
         public void PackageFolderReader_NuspecCountNestedOnly()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             using (var stream = new MemoryStream())
             {
                 using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
@@ -118,7 +118,7 @@ namespace NuGet.Packaging.Test
         public void PackageFolderReader_NuspecCountMultiple()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             using (var stream = new MemoryStream())
             {
                 using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
@@ -157,7 +157,7 @@ namespace NuGet.Packaging.Test
         public void PackageFolderReader_NuspecCountNone()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             using (var stream = new MemoryStream())
             {
                 using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
@@ -194,7 +194,7 @@ namespace NuGet.Packaging.Test
         public void PackageFolderReader_NuspecCountNoneInvalidEnding()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             using (var stream = new MemoryStream())
             {
                 using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
@@ -236,7 +236,7 @@ namespace NuGet.Packaging.Test
         public void PackageFolderReader_NuspecCountEscapingInName()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             using (var stream = new MemoryStream())
             {
                 using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))

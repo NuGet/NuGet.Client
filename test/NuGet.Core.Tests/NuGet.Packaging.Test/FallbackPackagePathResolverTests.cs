@@ -17,7 +17,7 @@ namespace NuGet.Packaging.Test
         public void FallbackPackagePathResolver_MissingPackageNoFallbacks()
         {
             // Arrange
-            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestDirectory.Create())
             {
                 var userFolder = Path.Combine(mockBaseDirectory, "global");
                 var fallbackFolders = new List<string>()
@@ -38,7 +38,7 @@ namespace NuGet.Packaging.Test
         public void FallbackPackagePathResolver_MissingPackageWithFallbacks()
         {
             // Arrange
-            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestDirectory.Create())
             {
                 var userFolder = Path.Combine(mockBaseDirectory, "global");
                 var fallbackFolders = new List<string>()
@@ -68,7 +68,7 @@ namespace NuGet.Packaging.Test
         public void FallbackPackagePathResolver_MissingFallbackFolder()
         {
             // Arrange
-            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestDirectory.Create())
             {
                 var userFolder = Path.Combine(mockBaseDirectory, "global");
                 var fallbackFolders = new List<string>()
@@ -89,7 +89,7 @@ namespace NuGet.Packaging.Test
         public async Task FallbackPackagePathResolver_FindPackageInUserFolder()
         {
             // Arrange
-            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestDirectory.Create())
             {
                 var userFolder = Path.Combine(mockBaseDirectory, "global");
                 var fallbackFolders = new List<string>()
@@ -128,7 +128,7 @@ namespace NuGet.Packaging.Test
         public async Task FallbackPackagePathResolver_FindPackageInFallbackFolder()
         {
             // Arrange
-            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestDirectory.Create())
             {
                 var userFolder = Path.Combine(mockBaseDirectory, "global");
                 var fallbackFolders = new List<string>()
@@ -169,7 +169,7 @@ namespace NuGet.Packaging.Test
         public async Task FallbackPackagePathResolver_FindPackageInFallbackFolder2()
         {
             // Arrange
-            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestDirectory.Create())
             {
                 var userFolder = Path.Combine(mockBaseDirectory, "global");
                 var fallbackFolders = new List<string>()
@@ -210,7 +210,7 @@ namespace NuGet.Packaging.Test
         public async Task FallbackPackagePathResolver_FindPackageInFallbackFolder2SkipMissingHashes()
         {
             // Arrange
-            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestDirectory.Create())
             {
                 var userFolder = Path.Combine(mockBaseDirectory, "global");
                 var fallbackFolders = new List<string>()

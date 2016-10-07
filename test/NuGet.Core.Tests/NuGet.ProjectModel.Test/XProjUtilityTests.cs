@@ -1,4 +1,7 @@
-﻿using System.Linq;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Linq;
 using System.IO;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
@@ -13,7 +16,7 @@ namespace NuGet.ProjectModel.Test
         public void XProjUtility_DependencyTargetProject()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var json1 = @"{
                           ""dependencies"": { },
@@ -59,7 +62,7 @@ namespace NuGet.ProjectModel.Test
         public void XProjUtility_DependencyTargetPackage()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var json1 = @"{
                           ""dependencies"": { }
@@ -106,7 +109,7 @@ namespace NuGet.ProjectModel.Test
         public void XProjUtility_TFMDependency()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var json1 = @"{
                           ""dependencies"": { },
@@ -152,7 +155,7 @@ namespace NuGet.ProjectModel.Test
         public void XProjUtility_RootDependency()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var json1 = @"{
                           ""dependencies"": {
@@ -197,7 +200,7 @@ namespace NuGet.ProjectModel.Test
         public void XProjUtility_DependencyNotFound()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var json1 = @"{
                           ""dependencies"": {

@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -39,7 +42,7 @@ namespace NuGet.Commands.FuncTest
         [Fact]
         public void UWPRestore_ReadLockFileRoundTrip()
         {
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 // Arrange
                 var expectedStream = GetResource("NuGet.Commands.FuncTest.compiler.resources.uwpBlankAppV2.json");
@@ -72,8 +75,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://api.nuget.org/v3/index.json"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var configJson = JObject.Parse(@"{
                   ""dependencies"": {
@@ -115,8 +118,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://api.nuget.org/v3/index.json"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var configJson = JObject.Parse(@"{
                   ""dependencies"": {
@@ -172,8 +175,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://api.nuget.org/v3/index.json"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var configJson = JObject.Parse(@"{
                 ""runtimes"": {
@@ -217,8 +220,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://api.nuget.org/v3/index.json"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var configJson = JObject.Parse(@"{
                   ""dependencies"": {
@@ -261,8 +264,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://api.nuget.org/v3/index.json"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var configJson = JObject.Parse(@"{
                   ""dependencies"": {
@@ -326,8 +329,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://api.nuget.org/v3/index.json"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var configJson = JObject.Parse(@"{
                   ""dependencies"": {
@@ -394,8 +397,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://api.nuget.org/v3/index.json"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var configJson = JObject.Parse(@"{
                   ""supports"": {
@@ -444,8 +447,8 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource("https://api.nuget.org/v3/index.json"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var configJson = JObject.Parse(@"{
                   ""dependencies"": {

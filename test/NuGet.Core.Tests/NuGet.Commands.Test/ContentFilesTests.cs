@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -24,7 +27,7 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "netstandard1.0";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var repository = Path.Combine(workingDir, "repository");
                 Directory.CreateDirectory(repository);
@@ -94,7 +97,7 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var repository = Path.Combine(workingDir, "repository");
                 Directory.CreateDirectory(repository);
@@ -163,7 +166,7 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var repository = Path.Combine(workingDir, "repository");
                 Directory.CreateDirectory(repository);
@@ -233,7 +236,7 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "uap10.0";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
 
                 var repository = Path.Combine(workingDir, "repository");
@@ -324,7 +327,7 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "uap10.0";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var repository = Path.Combine(workingDir, "repository");
                 Directory.CreateDirectory(repository);
@@ -423,7 +426,7 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net45";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var repository = Path.Combine(workingDir, "repository");
                 Directory.CreateDirectory(repository);
@@ -519,7 +522,7 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var repository = Path.Combine(workingDir, "repository");
                 Directory.CreateDirectory(repository);
@@ -617,7 +620,7 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var repository = Path.Combine(workingDir, "repository");
                 Directory.CreateDirectory(repository);
@@ -693,7 +696,7 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var repository = Path.Combine(workingDir, "repository");
                 Directory.CreateDirectory(repository);
@@ -761,7 +764,7 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var repository = Path.Combine(workingDir, "repository");
                 Directory.CreateDirectory(repository);
@@ -834,7 +837,7 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var repository = Path.Combine(workingDir, "repository");
                 Directory.CreateDirectory(repository);
@@ -904,7 +907,7 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var repository = Path.Combine(workingDir, "repository");
                 Directory.CreateDirectory(repository);
@@ -977,7 +980,7 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var repository = Path.Combine(workingDir, "repository");
                 Directory.CreateDirectory(repository);
@@ -1053,7 +1056,7 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var repository = Path.Combine(workingDir, "repository");
                 Directory.CreateDirectory(repository);
@@ -1131,7 +1134,7 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var repository = Path.Combine(workingDir, "repository");
                 Directory.CreateDirectory(repository);
@@ -1209,7 +1212,7 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var repository = Path.Combine(workingDir, "repository");
                 Directory.CreateDirectory(repository);
@@ -1290,7 +1293,7 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var repository = Path.Combine(workingDir, "repository");
                 Directory.CreateDirectory(repository);
@@ -1368,7 +1371,7 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var repository = Path.Combine(workingDir, "repository");
                 Directory.CreateDirectory(repository);
@@ -1451,7 +1454,7 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var repository = Path.Combine(workingDir, "repository");
                 Directory.CreateDirectory(repository);
@@ -1534,7 +1537,7 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var repository = Path.Combine(workingDir, "repository");
                 Directory.CreateDirectory(repository);
@@ -1617,7 +1620,7 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var repository = Path.Combine(workingDir, "repository");
                 Directory.CreateDirectory(repository);
@@ -1689,7 +1692,7 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var repository = Path.Combine(workingDir, "repository");
                 Directory.CreateDirectory(repository);
@@ -1760,7 +1763,7 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var repository = Path.Combine(workingDir, "repository");
                 Directory.CreateDirectory(repository);
@@ -1910,7 +1913,7 @@ namespace NuGet.Commands.Test
         private async Task<RestoreResult> SetupWithRuntimes(string framework, NuGet.Common.ILogger logger)
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var repository = Path.Combine(workingDir, "repository");
                 Directory.CreateDirectory(repository);
@@ -1971,7 +1974,7 @@ namespace NuGet.Commands.Test
             JObject configJson)
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var repository = Path.Combine(workingDir, "repository");
                 Directory.CreateDirectory(repository);

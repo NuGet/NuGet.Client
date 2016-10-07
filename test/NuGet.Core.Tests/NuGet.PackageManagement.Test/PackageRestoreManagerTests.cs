@@ -35,7 +35,7 @@ namespace NuGet.Test
         {
             // Arrange
             using (var testSolutionManager = new TestSolutionManager(true))
-            using (var randomPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomPackageSourcePath = TestDirectory.Create())
             {
                 var projectA = testSolutionManager.AddNewMSBuildProject();
                 var projectB = testSolutionManager.AddNewMSBuildProject();
@@ -172,7 +172,7 @@ namespace NuGet.Test
         {
             // Arrange
             using (var testSolutionManager = new TestSolutionManager(true))
-            using (var randomPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomPackageSourcePath = TestDirectory.Create())
             {
                 var projectA = testSolutionManager.AddNewMSBuildProject();
                 var projectB = testSolutionManager.AddNewMSBuildProject();
@@ -283,7 +283,7 @@ namespace NuGet.Test
         {
             // Arrange
             using (var testSolutionManager = new TestSolutionManager(true))
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
             {
                 var projectA = testSolutionManager.AddNewMSBuildProject("projectA");
                 var projectB = testSolutionManager.AddNewMSBuildProject("projectB");

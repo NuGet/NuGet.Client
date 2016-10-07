@@ -18,7 +18,7 @@ namespace NuGet.Common.Test
         public async Task ConcurrencyUtilities_LockStressSynchronous()
         {
             // Arrange
-            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testDirectory = TestDirectory.Create())
             {
                 // This is the path that uniquely identifies the system-wide mutex.
                 var path = Path.Combine(testDirectory, "ConcurrencyUtilities_LockStress_Verification_Synchronous");
@@ -74,7 +74,7 @@ namespace NuGet.Common.Test
         public async Task ConcurrencyUtilities_LockStress()
         {
             // Arrange
-            using(var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using(var testDirectory = TestDirectory.Create())
             {
                 // This is the path that uniquely identifies the system-wide mutex.
                 var path = Path.Combine(testDirectory, "ConcurrencyUtilities_LockStress_Verification");

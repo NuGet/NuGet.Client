@@ -35,7 +35,7 @@ namespace NuGet.Test
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
 
             using (var testSolutionManager = new TestSolutionManager(true))
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var testSettings = new Configuration.NullSettings();
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();

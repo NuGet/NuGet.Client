@@ -52,7 +52,7 @@ namespace NuGet.CommandLine.FuncTest
         public void Run_DoesNotHangWhenReadingLargeStdout(int outputSizeInKilobytes)
         {
             // Arrange
-            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testDirectory = TestDirectory.Create())
             {
                 // Write the line of the desired size.
                 var filePath = Path.Combine(testDirectory, "file.txt");

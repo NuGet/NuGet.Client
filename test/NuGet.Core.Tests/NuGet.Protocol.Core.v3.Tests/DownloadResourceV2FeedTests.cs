@@ -34,7 +34,7 @@ namespace NuGet.Protocol.Tests
             var downloadResource = await repo.GetResourceAsync<DownloadResource>();
 
             // Act
-            using (var packagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesFolder = TestDirectory.Create())
             using (var sourceCacheContext = new SourceCacheContext())
             {
                 var actual = await downloadResource.GetDownloadResourceResultAsync(

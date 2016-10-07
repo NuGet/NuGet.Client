@@ -37,7 +37,7 @@ namespace NuGet.XPlat.FuncTest
             Assert.NotNull(DotnetCli);
             Assert.NotNull(XplatDll);
 
-            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var mockGlobalPackagesDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"global-packages"));
@@ -87,7 +87,7 @@ namespace NuGet.XPlat.FuncTest
             Assert.NotNull(DotnetCli);
             Assert.NotNull(XplatDll);
 
-            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var mockGlobalPackagesDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"global-packages"));

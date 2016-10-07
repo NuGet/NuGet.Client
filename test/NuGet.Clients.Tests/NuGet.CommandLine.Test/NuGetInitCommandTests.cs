@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -50,11 +53,11 @@ namespace NuGet.CommandLine.Test
             public TestInfo(string sourceFeed = null, string destinationFeed = null)
             {
                 NuGetExePath = Util.GetNuGetExePath();
-                WorkingPath = TestFileSystemUtility.CreateRandomTestFolder();
+                WorkingPath = TestDirectory.Create();
 
                 if (sourceFeed == null)
                 {
-                    SourceFeed = TestFileSystemUtility.CreateRandomTestFolder();
+                    SourceFeed = TestDirectory.Create();
                 }
                 else
                 {
@@ -63,7 +66,7 @@ namespace NuGet.CommandLine.Test
 
                 if (destinationFeed == null)
                 {
-                    DestinationFeed = TestFileSystemUtility.CreateRandomTestFolder();
+                    DestinationFeed = TestDirectory.Create();
                 }
                 else
                 {
@@ -217,8 +220,8 @@ namespace NuGet.CommandLine.Test
         public void InitCommand_Success_DestinationDoesNotExist()
         {
             // Arrange
-            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var destinationFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testFolder = TestDirectory.Create())
+            using (var destinationFolder = TestDirectory.Create())
             using (var testInfo = new TestInfo(testFolder,
                                                Path.Combine(destinationFolder, "DoesNotExistSubFolder")))
             {
@@ -460,7 +463,7 @@ namespace NuGet.CommandLine.Test
         public void InitCommand_Fail_SourceDoesNotExist()
         {
             // Arrange
-            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testFolder = TestDirectory.Create())
             using (var testInfo = new TestInfo(Path.Combine(testFolder, "DoesNotExist")))
             {
                 var args = new string[]
@@ -489,7 +492,7 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var httpUrl = "https://api.nuget.org/v3/index.json";
-            using (var testInfo = new TestInfo(httpUrl, TestFileSystemUtility.CreateRandomTestFolder()))
+            using (var testInfo = new TestInfo(httpUrl, TestDirectory.Create()))
             {
                 var args = new string[]
                 {
@@ -517,7 +520,7 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var httpUrl = "https://api.nuget.org/v3/index.json";
-            using (var testInfo = new TestInfo(TestFileSystemUtility.CreateRandomTestFolder(), httpUrl))
+            using (var testInfo = new TestInfo(TestDirectory.Create(), httpUrl))
             {
                 var args = new string[]
                 {
@@ -545,7 +548,7 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var invalidPath = "foo|<>|bar";
-            using (var testInfo = new TestInfo(invalidPath, TestFileSystemUtility.CreateRandomTestFolder()))
+            using (var testInfo = new TestInfo(invalidPath, TestDirectory.Create()))
             {
                 // Act
                 var result = CommandRunner.Run(
@@ -565,7 +568,7 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var invalidPath = "foo|<>|bar";
-            using (var testInfo = new TestInfo(TestFileSystemUtility.CreateRandomTestFolder(), invalidPath))
+            using (var testInfo = new TestInfo(TestDirectory.Create(), invalidPath))
             {
                 // Act
                 var result = CommandRunner.Run(

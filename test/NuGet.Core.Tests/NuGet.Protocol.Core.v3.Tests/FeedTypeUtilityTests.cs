@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -73,7 +76,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void FeedTypeUtility_EmptyDirectoryIsUnknownType()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange & Act
                 var type = FeedTypeUtility.GetFeedType(new PackageSource(root));
@@ -86,7 +89,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void FeedTypeUtility_RandomFilesInRootIsUnknownType()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 CreateFile(Path.Combine(root, "a.txt"));
@@ -104,7 +107,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void FeedTypeUtility_NupkgAtInvalidLocationIsUnknown()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 CreateFile(Path.Combine(root, "a", "b", "a.1.0.0.nupkg"));
@@ -120,7 +123,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void FeedTypeUtility_NupkgAtRootIsV2()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 CreateFile(Path.Combine(root, "a.1.0.0.nupkg"));
@@ -136,7 +139,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void FeedTypeUtility_NupkgAtRootIsV2_FileUri()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 CreateFile(Path.Combine(root, "a.1.0.0.nupkg"));
@@ -152,7 +155,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void FeedTypeUtility_NupkgInVersionFolderIsV3()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 CreateFile(Path.Combine(root, "a", "1.0.0", "a.1.0.0.nupkg.sha512"));
@@ -170,7 +173,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void FeedTypeUtility_NupkgInVersionFolderIsV3_FileUri()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 CreateFile(Path.Combine(root, "a", "1.0.0", "a.1.0.0.nupkg.sha512"));
@@ -188,7 +191,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void FeedTypeUtility_NupkgOnlyInVersionFolderIsUnknown()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 CreateFile(Path.Combine(root, "a", "1.0.0", "a.1.0.0.nupkg"));
@@ -204,7 +207,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public void FeedTypeUtility_V2V3CombinedReturnsV2()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 CreateFile(Path.Combine(root, "a.1.0.0.nupkg"));

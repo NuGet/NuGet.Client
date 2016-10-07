@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -24,7 +27,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public async Task ProjectKNuGetProject_WithVersionRange_GetInstalledPackagesAsync()
         {
             // Arrange
-            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testDirectory = TestDirectory.Create())
             {
                 var tc = new TestContext(testDirectory);
 
@@ -47,7 +50,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public async Task ProjectKNuGetProject_WithPackageTypes_InstallPackageAsync()
         {
             // Arrange
-            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testDirectory = TestDirectory.Create())
             {
                 var tc = new TestContext(testDirectory);
                 using (var download = tc.InitializePackage())
@@ -81,7 +84,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public async Task ProjectKNuGetProject_WithFrameworks_InstallPackageAsync()
         {
             // Arrange
-            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testDirectory = TestDirectory.Create())
             {
                 var tc = new TestContext(testDirectory);
                 using (var download = tc.InitializePackage())

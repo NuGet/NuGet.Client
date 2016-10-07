@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,7 +19,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalPackageSearchResource_MatchOnId()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -94,7 +97,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalPackageSearchResource_RelativePathIsRejected()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -125,7 +128,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalPackageSearchResource_MatchOnTag()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -203,7 +206,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalPackageSearchResource_MatchOnDescription()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -281,7 +284,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalPackageSearchResource_MatchOnPartialId()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -341,7 +344,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalPackageSearchResource_MatchNone()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -397,7 +400,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalPackageSearchResource_SearchStableNoMatch()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -453,7 +456,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalPackageSearchResource_SearchStableMatch()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();
@@ -531,7 +534,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task LocalPackageSearchResource_FileSource()
         {
-            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var root = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();

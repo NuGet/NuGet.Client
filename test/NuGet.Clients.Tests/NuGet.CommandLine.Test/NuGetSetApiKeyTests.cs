@@ -16,7 +16,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void SetApiKey_DefaultSource()
         {
-            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testFolder = TestDirectory.Create())
             {
                 var configFile = Path.Combine(testFolder, "nuget.config");
                 Util.CreateFile(configFile, "<configuration/>");

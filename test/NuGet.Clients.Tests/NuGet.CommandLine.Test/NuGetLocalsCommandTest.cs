@@ -106,7 +106,7 @@ namespace NuGet.CommandLine.Test
         public async void LocalsCommand_ParsingValidation_WithNoConfigParam(string arg)
         {
             // Use a test directory to validate test key-value pairs within ISettings object passed to Runner
-            using (var mockCurrentDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var mockCurrentDirectory = TestDirectory.Create())
             {
                 // Arrange
                 LocalsUtil.CreateDummyConfigFile(mockCurrentDirectory.Path);
@@ -149,7 +149,7 @@ namespace NuGet.CommandLine.Test
         public async void LocalsCommand_ParsingValidation_WithConfigParam(string arg)
         {
             // Use a test directory to validate test key-value pairs within ISettings object passed to Runner
-            using (var mockCurrentDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var mockCurrentDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var dummyConfigPath = LocalsUtil.CreateDummyConfigFile(mockCurrentDirectory.Path);

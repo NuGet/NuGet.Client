@@ -29,7 +29,7 @@ namespace NuGet.Commands.Test
         public async Task OriginalCaseGlobalPackagesFolder_WhenPackageMustComeFromProvider_ConvertsPackages()
         {
             // Arrange
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 var packagesDirectory = Path.Combine(workingDirectory, "packages");
                 var sourceDirectory = Path.Combine(workingDirectory, "source");
@@ -64,7 +64,7 @@ namespace NuGet.Commands.Test
         public async Task OriginalCaseGlobalPackagesFolder_WhenPackageComesFromLocalFolder_ConvertsPackages()
         {
             // Arrange
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 var packagesDirectory = Path.Combine(workingDirectory, "packages");
                 var sourceDirectory = Path.Combine(workingDirectory, "source");
@@ -105,7 +105,7 @@ namespace NuGet.Commands.Test
         public async Task OriginalCaseGlobalPackagesFolder_DoesNothingIfPackageIsAlreadyInstalled()
         {
             // Arrange
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 var packagesDirectory = Path.Combine(workingDirectory, "packages");
                 var sourceDirectory = Path.Combine(workingDirectory, "source");
@@ -145,7 +145,7 @@ namespace NuGet.Commands.Test
         public async Task OriginalCaseGlobalPackagesFolder_OnlyInstallsPackagesOnce()
         {
             // Arrange
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 var packagesDirectory = Path.Combine(workingDirectory, "packages");
                 var sourceDirectory = Path.Combine(workingDirectory, "source");

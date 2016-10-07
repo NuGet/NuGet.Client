@@ -30,8 +30,8 @@ namespace ProjectManagement.Test
         public void MSBuildNuGetProject_GetPackageSpecForRestore_NoReferences()
         {
             // Arrange
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var projectTargetFramework = NuGetFramework.Parse("net45");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -72,8 +72,8 @@ namespace ProjectManagement.Test
         public void MSBuildNuGetProject_GetPackageSpecForRestore_WithReferences()
         {
             // Arrange
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var projectTargetFramework = NuGetFramework.Parse("net45");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -130,8 +130,8 @@ namespace ProjectManagement.Test
         public void MSBuildNuGetProject_IsRestoreRequired_AlwaysReturnsFalse()
         {
             // Arrange
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var projectTargetFramework = NuGetFramework.Parse("net45");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -164,8 +164,8 @@ namespace ProjectManagement.Test
         public void MSBuildNuGetProject_LastModified_IsAlwaysMinDateTimeOffset()
         {
             // Arrange
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var projectTargetFramework = NuGetFramework.Parse("net45");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -192,9 +192,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -249,9 +249,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -299,9 +299,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -357,9 +357,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -398,9 +398,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -438,9 +438,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -475,9 +475,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -517,9 +517,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
 
                 var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
@@ -565,9 +565,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -620,9 +620,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -672,9 +672,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomProjectFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -729,9 +729,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomProjectFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -786,9 +786,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomProjectFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -849,9 +849,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomProjectFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -905,9 +905,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomProjectFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -975,9 +975,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomProjectFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -1058,9 +1058,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomProjectFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -1160,9 +1160,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -1209,9 +1209,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -1275,9 +1275,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -1327,9 +1327,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -1403,9 +1403,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -1450,9 +1450,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -1514,9 +1514,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -1567,9 +1567,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -1618,9 +1618,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -1659,9 +1659,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -1709,9 +1709,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -1767,9 +1767,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomProjectFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -1859,9 +1859,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -1924,9 +1924,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -2007,9 +2007,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
                 var token = CancellationToken.None;
@@ -2052,9 +2052,9 @@ namespace ProjectManagement.Test
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
 
-            using (var randomTestPackageSourcePath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestPackageSourcePath = TestDirectory.Create())
+            using (var randomPackagesFolderPath = TestDirectory.Create())
+            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
             {
                 var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
                 var token = CancellationToken.None;

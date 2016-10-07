@@ -8,7 +8,7 @@ namespace NuGet.Test.Utility
 {
     public class TestDirectory : IDisposable
     {
-        public TestDirectory(string path)
+        private TestDirectory(string path)
         {
             Path = path;
         }
@@ -17,15 +17,23 @@ namespace NuGet.Test.Utility
 
         public void Dispose()
         {
-            TestFileSystemUtility.AssertNotTempPath(Path);
+            TestFileSystemUtility.DeleteRandomTestFolder(Path);
+        }
 
-            try
+        public static TestDirectory Create(string path = null)
+        {
+            var randomFolderName = Guid.NewGuid().ToString();
+
+            path = string.IsNullOrWhiteSpace(path) ? System.IO.Path.Combine(TestFileSystemUtility.NuGetTestFolder, randomFolderName) : path;
+
+            if (Directory.Exists(path))
             {
-                Directory.Delete(Path, recursive: true);
+                throw new InvalidOperationException("Guid collision");
             }
-            catch
-            {
-            }
+
+            Directory.CreateDirectory(path);
+
+            return new TestDirectory(path);
         }
 
         public static implicit operator string (TestDirectory directory)

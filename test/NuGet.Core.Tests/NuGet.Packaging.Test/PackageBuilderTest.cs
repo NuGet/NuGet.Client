@@ -15,6 +15,7 @@ using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Xunit;
+using NuGet.Test.Utility;
 
 namespace NuGet.Packaging.Test
 {
@@ -201,13 +202,13 @@ namespace NuGet.Packaging.Test
         [InlineData("**", "**/file2.txt", "Content")]
         public void CreatePackageWithNuspecIncludeExcludeWithWildcards(string source, string exclude, string destination)
         {
-            using (var directory = new TestDirectory())
+            using (var directory = new TestSourcesDirectory())
             {
                 // Arrange
                 PackageBuilder builder = new PackageBuilder();
 
                 // Act
-                builder.AddFiles(directory.TestDirectoryPath, source, destination, exclude);
+                builder.AddFiles(directory.Path, source, destination, exclude);
 
                 // Assert
                 Assert.Collection(builder.Files,
@@ -2653,50 +2654,43 @@ Enabling license acceptance requires a license url.");
             file1.txt
             file2.txt
         */
-        public sealed class TestDirectory : IDisposable
+        public sealed class TestSourcesDirectory : IDisposable
         {
-            private DirectoryInfo _directory;
+            private TestDirectory _testDirectory;
 
-            public string TestDirectoryPath
+            public string Path
             {
-                get { return _directory.FullName; }
+                get { return _testDirectory.Path; }
             }
 
-            public TestDirectory()
+            public TestSourcesDirectory()
             {
-                _directory = CreateTestDirectory();
+                _testDirectory = TestDirectory.Create();
+
+                PopulateTestDirectory();
             }
 
             public void Dispose()
             {
-                try
-                {
-                    _directory.Delete(recursive: true);
-                }
-                catch (DirectoryNotFoundException)
-                {
-                }
+                _testDirectory.Dispose();
             }
 
-            private static DirectoryInfo CreateTestDirectory()
+            private void PopulateTestDirectory()
             {
-                var rootDirectoryPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-                var rootDirectory = Directory.CreateDirectory(rootDirectoryPath);
-                var directory1 = Directory.CreateDirectory(Path.Combine(rootDirectory.FullName, "dir1"));
-                var directory2 = Directory.CreateDirectory(Path.Combine(directory1.FullName, "dir2"));
-                var directory3 = Directory.CreateDirectory(Path.Combine(rootDirectory.FullName, "dir3"));
+                var rootDirectory = new DirectoryInfo(_testDirectory.Path);
+                var directory1 = Directory.CreateDirectory(System.IO.Path.Combine(rootDirectory.FullName, "dir1"));
+                var directory2 = Directory.CreateDirectory(System.IO.Path.Combine(directory1.FullName, "dir2"));
+                var directory3 = Directory.CreateDirectory(System.IO.Path.Combine(rootDirectory.FullName, "dir3"));
 
                 CreateTestFiles(rootDirectory);
                 CreateTestFiles(directory1);
                 CreateTestFiles(directory2);
-
-                return rootDirectory;
             }
 
             private static void CreateTestFiles(DirectoryInfo directory)
             {
-                File.WriteAllText(Path.Combine(directory.FullName, "file1.txt"), string.Empty);
-                File.WriteAllText(Path.Combine(directory.FullName, "file2.txt"), string.Empty);
+                File.WriteAllText(System.IO.Path.Combine(directory.FullName, "file1.txt"), string.Empty);
+                File.WriteAllText(System.IO.Path.Combine(directory.FullName, "file2.txt"), string.Empty);
             }
         }
     }

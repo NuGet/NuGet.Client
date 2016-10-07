@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -57,7 +60,7 @@ namespace NuGet.PackageManagement.Test
         public async Task InstallationCompatibility_WithValidProjectActions_Succeeds()
         {
             // Arrange
-            using (var userPackageFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var userPackageFolder = TestDirectory.Create())
             {
                 var tc = new TestContext(userPackageFolder);
 
@@ -104,7 +107,7 @@ namespace NuGet.PackageManagement.Test
         public async Task InstallationCompatibility_WithInvalidProjectActions_Fails()
         {
             // Arrange
-            using (var userPackageFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var userPackageFolder = TestDirectory.Create())
             {
                 var tc = new TestContext(userPackageFolder);
 

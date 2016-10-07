@@ -20,7 +20,7 @@ namespace NuGet.XPlat.FuncTest
         public async Task PushToServerSucceeds(string sourceUri, string feedName, bool mustDeleteFirst)
         {
             // Arrange
-            using (var packageDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDir = TestDirectory.Create())
             using (TestFileSystemUtility.SetCurrentDirectory(packageDir))
             {
                 var packageId = "XPlatPushTests.PushToServerSucceeds";

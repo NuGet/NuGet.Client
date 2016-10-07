@@ -20,7 +20,7 @@ namespace NuGet.Repositories.Test
         public async Task NuGetv3LocalRepository_FindPackagesById_InstallStress()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var id = "a";
                 var target = new NuGetv3LocalRepository(workingDir);
@@ -81,7 +81,7 @@ namespace NuGet.Repositories.Test
         public async Task NuGetv3LocalRepository_FindPackagesById_Stress()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var id = "a";
                 var target = new NuGetv3LocalRepository(workingDir);
@@ -134,7 +134,7 @@ namespace NuGet.Repositories.Test
         public void NuGetv3LocalRepository_FindPackagesById_ReturnsEmptySequenceWithIdNotFound()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var target = new NuGetv3LocalRepository(workingDir);
 
@@ -150,7 +150,7 @@ namespace NuGet.Repositories.Test
         public async Task NuGetv3LocalRepository_FindPackagesById_UsesProvidedIdCase()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var id = "Foo";
                 var target = new NuGetv3LocalRepository(workingDir);
@@ -173,7 +173,7 @@ namespace NuGet.Repositories.Test
         public async Task NuGetv3LocalRepository_FindPackagesById_LeavesVersionCaseFoundOnFileSystem()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var id = "Foo";
                 var target = new NuGetv3LocalRepository(workingDir);
@@ -200,7 +200,7 @@ namespace NuGet.Repositories.Test
         public void NuGetv3LocalRepository_FindPackage_ReturnsNullWithIdNotFound()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var target = new NuGetv3LocalRepository(workingDir);
 
@@ -216,7 +216,7 @@ namespace NuGet.Repositories.Test
         public async Task NuGetv3LocalRepository_FindPackage_ReturnsNullWithVersionNotFound()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var id = "Foo";
                 var target = new NuGetv3LocalRepository(workingDir);
@@ -238,7 +238,7 @@ namespace NuGet.Repositories.Test
         public async Task NuGetv3LocalRepository_FindPackage_UsesProvidedVersionCase()
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 var id = "Foo";
                 var target = new NuGetv3LocalRepository(workingDir);

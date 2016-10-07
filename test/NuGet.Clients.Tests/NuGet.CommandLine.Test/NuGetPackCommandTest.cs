@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -22,7 +25,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
                 Util.CreateFile(
@@ -105,7 +108,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
                 Util.CreateFile(
@@ -193,7 +196,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
                 Util.CreateFile(
@@ -261,7 +264,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
                 Util.CreateFile(
@@ -311,7 +314,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
                 Util.CreateFile(
@@ -360,7 +363,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
                 string id = Path.GetFileName(workingDirectory);
@@ -433,7 +436,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
 
@@ -500,7 +503,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
                 Util.CreateFile(
@@ -554,7 +557,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
                 string id = Path.GetFileName(workingDirectory);
@@ -609,7 +612,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
                 Util.CreateFile(
@@ -689,7 +692,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
                 var proj2Directory = Path.Combine(workingDirectory, "proj2");
@@ -794,7 +797,7 @@ namespace Proj2
             // This bug tests issue: https://github.com/NuGet/Home/issues/3108
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
                 var project1Path = Path.Combine(proj1Directory, "proj1.csproj");
@@ -883,7 +886,7 @@ namespace Proj1
             // Fixed by PR : https://github.com/NuGet/NuGet.Client/pull/768
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
                 var packagesDirectory = Path.Combine(proj1Directory, "packages");
@@ -965,7 +968,7 @@ namespace Proj1
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
                 var proj2Directory = Path.Combine(workingDirectory, "proj2");
@@ -1085,7 +1088,7 @@ namespace Proj2
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 var projDirectory = Path.Combine(workingDirectory, "A");
 
@@ -1143,7 +1146,7 @@ namespace Proj2
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 var projDirectory = Path.Combine(workingDirectory, "A");
 
@@ -1203,7 +1206,7 @@ public class B
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 var projDirectory = Path.Combine(workingDirectory, "A");
 
@@ -1267,7 +1270,7 @@ public class B
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
 
@@ -1379,7 +1382,7 @@ public class B
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
 
@@ -1492,7 +1495,7 @@ public class B
         public void PackCommand_ReferencedProjectWithNuspecFileWithMsbuild14()
         {
             var nugetexe = Util.GetNuGetExePath();
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
 
@@ -1602,7 +1605,7 @@ public class B
         public void PackCommand_ReferencedProjectWithJsonFileWithMsbuild14()
         {
             var nugetexe = Util.GetNuGetExePath();
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
 
@@ -1717,7 +1720,7 @@ public class B
             const string prefixTokenValue = "fooBar";
 
             var nugetexe = Util.GetNuGetExePath();
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
 
@@ -1817,7 +1820,7 @@ public class B
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
 
@@ -1888,7 +1891,7 @@ public class B
             var nugetexe = Util.GetNuGetExePath();
 
             suffix = suffix.Replace('\\', Path.DirectorySeparatorChar);
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
                 CreateTestProject(workingDirectory, "proj1", new string[] { });
@@ -1930,7 +1933,7 @@ public class B
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
 
@@ -1981,7 +1984,7 @@ public class B
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
 
@@ -2030,7 +2033,7 @@ public class B
 
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
                 var proj2Directory = Path.Combine(workingDirectory, "proj2");
@@ -2151,7 +2154,7 @@ namespace Proj2
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
                 var proj2Directory = Path.Combine(workingDirectory, "proj2");
@@ -2270,7 +2273,7 @@ namespace Proj2
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var projDirectory = Path.Combine(workingDirectory, "package");
@@ -2327,7 +2330,7 @@ namespace Proj2
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
                 var packagesFolder = Path.Combine(proj1Directory, "packages");
@@ -2416,7 +2419,7 @@ namespace Proj1
             // This tests building without a solution file because that had caused a null ref exception
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
                 var packagesFolder = Path.Combine(proj1Directory, "packages");
@@ -2749,7 +2752,7 @@ namespace Proj1
 
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
 
@@ -2853,7 +2856,7 @@ namespace Proj1
 
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
 
@@ -2939,7 +2942,7 @@ namespace Proj1
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
 
             {
 
@@ -3066,7 +3069,7 @@ namespace Proj2
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
                 var proj2Directory = Path.Combine(workingDirectory, "proj2");
@@ -3189,7 +3192,7 @@ namespace Proj2
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
                 var proj2Directory = Path.Combine(workingDirectory, "proj2");
@@ -3319,7 +3322,7 @@ namespace Proj2
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
                 var proj2Directory = Path.Combine(workingDirectory, "proj2");
@@ -3450,7 +3453,7 @@ namespace Proj2
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
                 var proj2Directory = Path.Combine(workingDirectory, "proj2");
@@ -3560,7 +3563,7 @@ namespace Proj2
         public void PackCommand_VersionSuffixIsAssigned()
         {
             var nugetexe = Util.GetNuGetExePath();
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
                 CreateTestProject(workingDirectory, "proj1", null);
@@ -3654,7 +3657,7 @@ namespace " + projectName + @"
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
                 Util.CreateFile(
@@ -3736,7 +3739,7 @@ namespace " + projectName + @"
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
                 Util.CreateFile(
@@ -3813,7 +3816,7 @@ stuff \n <<".Replace("\r\n", "\n");
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
                 Util.CreateFile(
@@ -3875,7 +3878,7 @@ stuff \n <<".Replace("\r\n", "\n");
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
                 Util.CreateFile(
@@ -3965,7 +3968,7 @@ stuff \n <<".Replace("\r\n", "\n");
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
                 Util.CreateFile(
@@ -4063,7 +4066,7 @@ stuff \n <<".Replace("\r\n", "\n");
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
                 Util.CreateFile(
@@ -4128,7 +4131,7 @@ stuff \n <<".Replace("\r\n", "\n");
 
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
 
@@ -4196,7 +4199,7 @@ stuff \n <<".Replace("\r\n", "\n");
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
                 var packagesFolder = Path.Combine(proj1Directory, "packages");
@@ -4255,7 +4258,7 @@ stuff \n <<".Replace("\r\n", "\n");
 
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testFolder = TestDirectory.Create())
             {
                 // Arrange
                 var id = "packageId";
@@ -4327,7 +4330,7 @@ stuff \n <<".Replace("\r\n", "\n");
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
@@ -4375,7 +4378,7 @@ stuff \n <<".Replace("\r\n", "\n");
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
@@ -4441,7 +4444,7 @@ stuff \n <<".Replace("\r\n", "\n");
 
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
@@ -4508,7 +4511,7 @@ stuff \n <<".Replace("\r\n", "\n");
 
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
@@ -4571,7 +4574,7 @@ stuff \n <<".Replace("\r\n", "\n");
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
                 Util.CreateFile(
@@ -4629,7 +4632,7 @@ stuff \n <<".Replace("\r\n", "\n");
             // This test was added as a result of issue : https://github.com/NuGet/Home/issues/3432
             var nugetexe = Util.GetNuGetExePath();
 
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestDirectory.Create())
             {
                 var proj1SolutionDirectory = Path.Combine(workingDirectory, "Project One With Space");
                 var proj1ProjectDirectory = Path.Combine(proj1SolutionDirectory, "Project One With Space");

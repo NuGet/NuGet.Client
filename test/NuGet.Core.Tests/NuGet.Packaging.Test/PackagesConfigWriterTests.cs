@@ -276,7 +276,7 @@ namespace NuGet.Packaging.Test
         public void PackagesConfigWriter_CreateEmptyFile()
         {
             // Arrange
-            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testFolder = TestDirectory.Create())
             {
                 var path = Path.Combine(testFolder + "packages.config");
 
@@ -297,7 +297,7 @@ namespace NuGet.Packaging.Test
         public void PackagesConfigWriter_OpenExistingFile()
         {
             // Arrange
-            using (var folderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var folderPath = TestDirectory.Create())
             {
                 var filePath = Path.Combine(folderPath, "packages.config");
 
@@ -350,7 +350,7 @@ namespace NuGet.Packaging.Test
         public void PackagesConfigWriter_ThrowOnMalformedPackagesConfigXml()
         {
             // Arrange
-            using (var folderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var folderPath = TestDirectory.Create())
             {
                 var filePath = Path.Combine(folderPath, "packages.config");
 
@@ -372,7 +372,7 @@ namespace NuGet.Packaging.Test
         public void PackagesConfigWriter_ThrowOnMissingPackagesNode()
         {
             // Arrange
-            using (var folderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var folderPath = TestDirectory.Create())
             {
                 var filePath = Path.Combine(folderPath, "packages.config");
 
@@ -400,7 +400,7 @@ namespace NuGet.Packaging.Test
         public void PackagesConfigWriter_NoOldPackagesConfigFileLeftOnDisk()
         {
             // Arrange
-            using (var folderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var folderPath = TestDirectory.Create())
             {
                 var directoryInfo = new DirectoryInfo(folderPath);
                 var filePath = Path.Combine(folderPath, "packages.config");

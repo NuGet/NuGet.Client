@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,7 +19,7 @@ namespace NuGet.Commands.Test
         public void MSBuildRestoreResult_ReplaceWithUserProfileMacro()
         {
             // Arrange
-            using (var randomProjectDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectDirectory = TestDirectory.Create())
             {
                 var projectName = "testproject";
                 var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(NullSettings.Instance);
@@ -74,8 +77,8 @@ namespace NuGet.Commands.Test
         public void MSBuildRestoreResult_MultipleTFMs_CrossTargeting()
         {
             // Arrange
-            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var globalPackagesFolder = TestDirectory.Create())
+            using (var randomProjectDirectory = TestDirectory.Create())
             {
                 var projectName = "testproject";
 
@@ -146,8 +149,8 @@ namespace NuGet.Commands.Test
         public void MSBuildRestoreResult_MultipleTFMs_CrossTargeting_EmptyGroups()
         {
             // Arrange
-            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var globalPackagesFolder = TestDirectory.Create())
+            using (var randomProjectDirectory = TestDirectory.Create())
             {
                 var projectName = "testproject";
 
@@ -187,8 +190,8 @@ namespace NuGet.Commands.Test
         public void MSBuildRestoreResult_MultipleTFMs()
         {
             // Arrange
-            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var globalPackagesFolder = TestDirectory.Create())
+            using (var randomProjectDirectory = TestDirectory.Create())
             {
                 var projectName = "testproject";
 
@@ -248,8 +251,8 @@ namespace NuGet.Commands.Test
         public void MSBuildRestoreResult_EmptyResult()
         {
             // Arrange
-            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var globalPackagesFolder = TestDirectory.Create())
+            using (var randomProjectDirectory = TestDirectory.Create())
             {
                 var projectName = "testproject";
 
@@ -282,8 +285,8 @@ namespace NuGet.Commands.Test
         public void MSBuildRestoreResult_SingleTFM()
         {
             // Arrange
-            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var globalPackagesFolder = TestDirectory.Create())
+            using (var randomProjectDirectory = TestDirectory.Create())
             {
                 var projectName = "testproject";
 
@@ -333,8 +336,8 @@ namespace NuGet.Commands.Test
         public void MSBuildRestoreResult_SingleTFM_NoConditionals()
         {
             // Arrange
-            using (var globalPackagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var globalPackagesFolder = TestDirectory.Create())
+            using (var randomProjectDirectory = TestDirectory.Create())
             {
                 var projectName = "testproject";
 

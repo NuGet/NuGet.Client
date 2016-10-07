@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -21,9 +24,9 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public async Task UpdateCommand_Success_Update_DeletedFile()
         {
-            using (var packagesSourceDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var solutionDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesSourceDirectory = TestDirectory.Create())
+            using (var solutionDirectory = TestDirectory.Create())
+            using (var workingPath = TestDirectory.Create())
             {
                 var projectDirectory = Path.Combine(solutionDirectory, "proj1");
                 var packagesDirectory = Path.Combine(solutionDirectory, "packages");
@@ -129,9 +132,9 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public async Task UpdateCommand_Success_References()
         {
-            using (var packagesSourceDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var solutionDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesSourceDirectory = TestDirectory.Create())
+            using (var solutionDirectory = TestDirectory.Create())
+            using (var workingPath = TestDirectory.Create())
             {
                 var projectDirectory = Path.Combine(solutionDirectory, "proj1");
                 var packagesDirectory = Path.Combine(solutionDirectory, "packages");
@@ -209,9 +212,9 @@ namespace NuGet.CommandLine.Test
         public async Task UpdateCommand_Success_References_MultipleProjects()
         {
 
-            using (var packagesSourceDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var solutionDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesSourceDirectory = TestDirectory.Create())
+            using (var solutionDirectory = TestDirectory.Create())
+            using (var workingPath = TestDirectory.Create())
             {
                 var projectDirectory1 = Path.Combine(solutionDirectory, "proj1");
                 var projectDirectory2 = Path.Combine(solutionDirectory, "proj2");
@@ -338,9 +341,9 @@ namespace NuGet.CommandLine.Test
         public async Task UpdateCommand_Fails_References_MultipleProjectsInSameDirectory()
         {
             // Arrange
-            using (var packagesSourceDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var solutionDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesSourceDirectory = TestDirectory.Create())
+            using (var solutionDirectory = TestDirectory.Create())
+            using (var workingPath = TestDirectory.Create())
             {
                 var projectDirectory = Path.Combine(solutionDirectory, "proj");
                 var packagesDirectory = Path.Combine(solutionDirectory, "packages");
@@ -433,9 +436,9 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public async Task UpdateCommand_Success_NOPrerelease()
         {
-            using (var packagesSourceDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var solutionDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesSourceDirectory = TestDirectory.Create())
+            using (var solutionDirectory = TestDirectory.Create())
+            using (var workingPath = TestDirectory.Create())
             {
                 var projectDirectory = Path.Combine(solutionDirectory, "proj1");
                 var packagesDirectory = Path.Combine(solutionDirectory, "packages");
@@ -511,9 +514,9 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public async Task UpdateCommand_Success_Prerelease()
         {
-            using (var packagesSourceDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var solutionDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesSourceDirectory = TestDirectory.Create())
+            using (var solutionDirectory = TestDirectory.Create())
+            using (var workingPath = TestDirectory.Create())
             {
                 var projectDirectory = Path.Combine(solutionDirectory, "proj1");
                 var packagesDirectory = Path.Combine(solutionDirectory, "packages");
@@ -591,9 +594,9 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public async Task UpdateCommand_Success_Version_Upgrade()
         {
-            using (var packagesSourceDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var solutionDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesSourceDirectory = TestDirectory.Create())
+            using (var solutionDirectory = TestDirectory.Create())
+            using (var workingPath = TestDirectory.Create())
             {
                 var projectDirectory = Path.Combine(solutionDirectory, "proj1");
                 var packagesDirectory = Path.Combine(solutionDirectory, "packages");
@@ -682,9 +685,9 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public async Task UpdateCommand_Success_Version_Downgrade()
         {
-            using (var packagesSourceDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var solutionDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesSourceDirectory = TestDirectory.Create())
+            using (var solutionDirectory = TestDirectory.Create())
+            using (var workingPath = TestDirectory.Create())
             {
                 var projectDirectory = Path.Combine(solutionDirectory, "proj1");
                 var packagesDirectory = Path.Combine(solutionDirectory, "packages");
@@ -773,9 +776,9 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public async Task UpdateCommand_Success_ProjectFile_References()
         {
-            using (var packagesSourceDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var solutionDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesSourceDirectory = TestDirectory.Create())
+            using (var solutionDirectory = TestDirectory.Create())
+            using (var workingPath = TestDirectory.Create())
             {
                 var projectDirectory = Path.Combine(solutionDirectory, "proj1");
                 var packagesDirectory = Path.Combine(solutionDirectory, "packages");
@@ -852,9 +855,9 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public async Task UpdateCommand_Success_PackagesConfig_References()
         {
-            using (var packagesSourceDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var solutionDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesSourceDirectory = TestDirectory.Create())
+            using (var solutionDirectory = TestDirectory.Create())
+            using (var workingPath = TestDirectory.Create())
             {
                 var projectDirectory = Path.Combine(solutionDirectory, "proj1");
                 var packagesDirectory = Path.Combine(solutionDirectory, "packages");
@@ -933,9 +936,9 @@ namespace NuGet.CommandLine.Test
         public async Task UpdateCommand_Success_ContentFiles()
         {
             // Arrange
-            using (var packagesSourceDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var solutionDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesSourceDirectory = TestDirectory.Create())
+            using (var solutionDirectory = TestDirectory.Create())
+            using (var workingPath = TestDirectory.Create())
             {
                 var projectDirectory = Path.Combine(solutionDirectory, "proj1");
                 var packagesDirectory = Path.Combine(solutionDirectory, "packages");
@@ -1046,8 +1049,8 @@ namespace NuGet.CommandLine.Test
         public async Task UpdateCommand_Success_CustomPackagesFolder_RelativePath()
         {
             // Arrange
-            using (var packagesSourceDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var solutionDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesSourceDirectory = TestDirectory.Create())
+            using (var solutionDirectory = TestDirectory.Create())
             {
                 // Use a different folder name instead of 'packages'
                 var packagesDirectory = Path.Combine(solutionDirectory, "custom-pcks");
@@ -1137,9 +1140,9 @@ namespace NuGet.CommandLine.Test
         public async Task UpdateCommand_Success_CustomPackagesFolder_AbsolutePath()
         {
             // Arrange
-            using (var packagesSourceDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var solutionDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesSourceDirectory = TestDirectory.Create())
+            using (var solutionDirectory = TestDirectory.Create())
+            using (var packagesDirectory = TestDirectory.Create())
             {
                 // Create some packages
                 var a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
@@ -1225,9 +1228,9 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public async Task UpdateCommand_Native_JS_Projects_Success()
         {
-            using (var packagesSourceDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var solutionDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesSourceDirectory = TestDirectory.Create())
+            using (var solutionDirectory = TestDirectory.Create())
+            using (var workingPath = TestDirectory.Create())
             {
                 var projectDirectory1 = Path.Combine(solutionDirectory, "proj1");
                 var projectDirectory2 = Path.Combine(solutionDirectory, "proj2");

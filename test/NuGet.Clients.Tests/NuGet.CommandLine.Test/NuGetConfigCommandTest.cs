@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using NuGet.Test.Utility;
@@ -50,7 +53,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void ConfigCommand_ChangeUserDefinedConfigFile()
         {
-            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testFolder = TestDirectory.Create())
             {
                 // Arrange
                 var configFile = Path.Combine(testFolder, "file.tmp");
@@ -97,7 +100,7 @@ namespace NuGet.CommandLine.Test
         [Fact(Skip="Expected to fail until plugins loaded as extensions fix is in")]
         public void ConfigCommand_MisconfiguredPluginCredentialProviderDoesNotBlockConfigCommand()
         {
-            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testFolder = TestDirectory.Create())
             {
                 var configFile = Path.Combine(testFolder, "file.tmp");
                 var missingPluginProvider = Path.Combine(Path.GetTempPath(), "PluginDoesNotExist.exe");
@@ -127,7 +130,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void ConfigCommand_GetValueWithAsPathOption()
         {
-            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testFolder = TestDirectory.Create())
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
@@ -204,7 +207,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void ConfigCommand_EvaluatesEnvironmentalVariables()
         {
-            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var testFolder = TestDirectory.Create())
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();

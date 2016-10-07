@@ -29,7 +29,7 @@ namespace NuGet.Test
             // Arrange
             var projectName = "testproj";
 
-            using (var rootFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var rootFolder = TestDirectory.Create())
             {
                 var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
                 projectFolder.Create();
@@ -71,7 +71,7 @@ namespace NuGet.Test
             // Arrange
             var projectName = "testproj";
 
-            using (var rootFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var rootFolder = TestDirectory.Create())
             {
                 var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
                 projectFolder.Create();
@@ -112,9 +112,9 @@ namespace NuGet.Test
             // Arrange
             var projectName = "testproj";
 
-            using (var rootFolder = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var configFolder = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var solutionFolderParent = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var rootFolder = TestDirectory.Create())
+            using (var configFolder = TestDirectory.Create())
+            using (var solutionFolderParent = TestDirectory.Create())
             {
                 var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
                 projectFolder.Create();
@@ -183,10 +183,10 @@ namespace NuGet.Test
         public async Task BuildIntegratedRestoreUtility_GetChildProjectsInClosure_MultipleChildHierarchy()
         {           
             // Arrange
-            using (var randomProjectFolderPathProject1 = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPathA = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPathB = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPathC = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectFolderPathProject1 = TestDirectory.Create())
+            using (var randomProjectFolderPathA = TestDirectory.Create())
+            using (var randomProjectFolderPathB = TestDirectory.Create())
+            using (var randomProjectFolderPathC = TestDirectory.Create())
             {
                 var projectConfig = new FileInfo(Path.Combine(randomProjectFolderPathProject1, "project.json"));
                 var projectConfigA = new FileInfo(Path.Combine(randomProjectFolderPathA, "project.json"));
@@ -276,10 +276,10 @@ namespace NuGet.Test
         public async Task BuildIntegratedRestoreUtility_GetChildProjectsInClosure_SingleChild()
         {
             // Arrange
-            using (var randomProjectFolderPathProject1 = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPathA = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPathB = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPathC = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectFolderPathProject1 = TestDirectory.Create())
+            using (var randomProjectFolderPathA = TestDirectory.Create())
+            using (var randomProjectFolderPathB = TestDirectory.Create())
+            using (var randomProjectFolderPathC = TestDirectory.Create())
             {
                 var projectConfig = new FileInfo(Path.Combine(randomProjectFolderPathProject1, "project.json"));
                 var projectConfigA = new FileInfo(Path.Combine(randomProjectFolderPathA, "project.json"));
@@ -361,9 +361,9 @@ namespace NuGet.Test
         public async Task BuildIntegratedRestoreUtility_GetChildProjectsInClosure_NoChild()
         {
             // Arrange
-            using (var randomProjectFolderPathProject1 = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPathA = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPathB = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomProjectFolderPathProject1 = TestDirectory.Create())
+            using (var randomProjectFolderPathA = TestDirectory.Create())
+            using (var randomProjectFolderPathB = TestDirectory.Create())
             {
                 var projectConfig = new FileInfo(Path.Combine(randomProjectFolderPathProject1, "project.json"));
                 var projectConfigA = new FileInfo(Path.Combine(randomProjectFolderPathA, "project.json"));

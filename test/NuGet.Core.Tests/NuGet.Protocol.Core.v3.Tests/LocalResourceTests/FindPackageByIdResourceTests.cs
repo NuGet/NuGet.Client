@@ -20,8 +20,8 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task FindPackageByIdResource_V2V3Compare()
         {
-            using (var rootV3 = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var rootV2 = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var rootV3 = TestDirectory.Create())
+            using (var rootV2 = TestDirectory.Create())
             {
                 // Arrange
                 var testLogger = new TestLogger();

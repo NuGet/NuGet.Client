@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.CommandLine.XPlat;
@@ -16,8 +19,8 @@ namespace NuGet.XPlat.FuncTest
         public void RestoreCommand_VerifyMinClientVersionV2Source()
         {
             // Arrange
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = XPlatTestUtils.BasicConfigNetCoreApp;
@@ -53,8 +56,8 @@ namespace NuGet.XPlat.FuncTest
         public void RestoreCommand_VerifyMinClientVersionV3Source()
         {
             // Arrange
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = XPlatTestUtils.BasicConfigNetCoreApp;
@@ -90,9 +93,9 @@ namespace NuGet.XPlat.FuncTest
         public void RestoreCommand_VerifyMinClientVersionLocalFolder()
         {
             // Arrange
-            using (var sourceDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var sourceDir = TestDirectory.Create())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var packageContext = new SimpleTestPackageContext()
                 {
@@ -136,10 +139,10 @@ namespace NuGet.XPlat.FuncTest
         public async Task RestoreCommand_VerifyMinClientVersionAlreadyInstalled()
         {
             // Arrange
-            using (var emptyDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var emptyDir = TestDirectory.Create())
+            using (var workingDir = TestDirectory.Create())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
             {
                 var logger = new TestLogger();
 
