@@ -15,10 +15,10 @@ using Xunit;
 
 namespace NuGet.Commands.Test
 {
-    public class RestoreProject2ProjectTests
+    public class NETCoreProject2ProjectTests
     {
         [Fact]
-        public async Task RestoreProject2Project_ProjectReferenceOnlyUnderRestoreMetadata()
+        public async Task NETCoreProject2Project_ProjectReferenceOnlyUnderRestoreMetadata()
         {
             // Arrange
             using (var cacheContext = new SourceCacheContext())
@@ -86,7 +86,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreProject2Project_ProjectReference_IgnoredForTFM()
+        public async Task NETCoreProject2Project_ProjectReference_IgnoredForTFM()
         {
             // Arrange
             using (var cacheContext = new SourceCacheContext())
@@ -135,7 +135,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreProject2Project_ProjectMissing()
+        public async Task NETCoreProject2Project_ProjectMissing()
         {
             // Arrange
             using (var cacheContext = new SourceCacheContext())
@@ -177,6 +177,72 @@ namespace NuGet.Commands.Test
                 Assert.False(success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
                 Assert.Contains("Unable to resolve", string.Join(Environment.NewLine, logger.Messages));
                 Assert.Contains(projects[1].ProjectPath, string.Join(Environment.NewLine, logger.Messages));
+            }
+        }
+
+        [Fact]
+        public async Task NETCoreProject2Project_ProjectFileDependencyGroupsForNETCore()
+        {
+            // Arrange
+            using (var cacheContext = new SourceCacheContext())
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                pathContext.CleanUp = false;
+
+                var logger = new TestLogger();
+                var sources = new List<PackageSource>();
+                sources.Add(new PackageSource(pathContext.PackageSource));
+
+                var spec1 = GetProject(projectName: "projectA", framework: "netstandard1.6");
+                var spec2 = GetProject(projectName: "projectB", framework: "netstandard1.3");
+                var spec3 = GetProject(projectName: "projectC", framework: "netstandard1.0");
+
+                var specs = new[] { spec1, spec2, spec3 };
+
+                // Create fake projects, the real data is in the specs
+                var projects = CreateProjectsFromSpecs(pathContext, specs);
+
+                // Link projects
+                spec1.RestoreMetadata.ProjectReferences.Add(new ProjectRestoreReference()
+                {
+                    ProjectPath = projects[1].ProjectPath,
+                    ProjectUniqueName = spec2.RestoreMetadata.ProjectUniqueName,
+                });
+
+                spec2.RestoreMetadata.ProjectReferences.Add(new ProjectRestoreReference()
+                {
+                    ProjectPath = projects[2].ProjectPath,
+                    ProjectUniqueName = spec3.RestoreMetadata.ProjectUniqueName,
+                });
+
+                // Create dg file
+                var dgFile = new DependencyGraphSpec();
+                foreach (var spec in specs)
+                {
+                    dgFile.AddProject(spec);
+                }
+
+                // Restore only the first one
+                dgFile.AddRestore(spec1.RestoreMetadata.ProjectUniqueName);
+
+                dgFile.Save(Path.Combine(pathContext.WorkingDirectory, "out.dg"));
+
+                // Act
+                var summaries = await RunRestore(pathContext, logger, sources, dgFile, cacheContext);
+                var success = summaries.All(s => s.Success);
+
+                // Assert
+                Assert.True(success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
+                var dependencies = projects[0].AssetsFile.ProjectFileDependencyGroups.SelectMany(e => e.Dependencies).ToArray();
+
+                // Ensure ProjectC does not show up
+                Assert.Equal(1, dependencies.Length);
+
+                // Ensure ProjectC is in the libraries
+                Assert.Equal(2, projects[0].AssetsFile.Libraries.Count);
+
+                // Verify the project name is used not the path or unique name
+                Assert.Equal("projectB", dependencies[0]);
             }
         }
 
