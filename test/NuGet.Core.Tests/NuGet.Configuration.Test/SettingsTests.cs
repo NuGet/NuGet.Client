@@ -50,7 +50,7 @@ namespace NuGet.Configuration.Test
                     Environment.GetEnvironmentVariable("ALLUSERSPROFILE") ?? null;
                 var userSetting = Environment.GetEnvironmentVariable("APPDATA");
 #else
-                var commonApplicationData = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+                var commonApplicationData = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
                 var userSetting = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 #endif
                 // Assert 
