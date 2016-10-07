@@ -26,6 +26,7 @@ namespace NuGet.Commands
                 ".dll",
                 ".exe",
                 ".xml",
+                ".json",
                 ".winmd"
             };
 
@@ -35,7 +36,9 @@ namespace NuGet.Commands
                 ".exe",
                 ".xml",
                 ".winmd",
-                ".pdb"
+                ".json",
+                ".pdb",
+                ".mdb"
             };
 
         private MSBuildPackTargetArgs PackTargetArgs { get; set; }
@@ -90,7 +93,10 @@ namespace NuGet.Commands
         {
             // Add output files
             Files.Clear();
-            AddOutputFiles(builder);
+            if (PackTargetArgs.IncludeBuildOutput)
+            {
+                AddOutputFiles(builder);
+            }
 
             // Add content files if there are any. They could come from a project or nuspec file
             AddContentFiles();
@@ -116,70 +122,53 @@ namespace NuGet.Commands
 
         private void AddOutputFiles(PackageBuilder builder)
         {
-            // Get the target file path
-            foreach (string targetPath in PackTargetArgs.TargetPaths)
+            var allowedOutputExtensions = _allowedOutputExtensions;
+            var listOfFiles = PackTargetArgs.TargetPathsToAssemblies.ToList();
+            if (IncludeSymbols)
             {
-                var allowedOutputExtensions = _allowedOutputExtensions;
-
-                if (IncludeSymbols)
-                {
-                    // Include pdbs for symbol packages
-                    allowedOutputExtensions = _allowedOutputExtensionsForSymbols;
-                }
-
-                string projectOutputDirectory = Path.GetDirectoryName(targetPath);
-
-                string targetFileName = PackTargetArgs.AssemblyName;
-                IList<string> filesToCopy = GetFiles(projectOutputDirectory, targetFileName, allowedOutputExtensions, SearchOption.AllDirectories);
-
-                //AddReferencedProjectsToOutputFiles(projectOutputDirectory, allowedOutputExtensions, filesToCopy);
-
-                // By default we add all files in the project's output directory
-                foreach (var file in filesToCopy)
-                {
-                    string extension = Path.GetExtension(file);
-
-                    // Only look at files we care about
-                    if (!allowedOutputExtensions.Contains(extension))
-                    {
-                        continue;
-                    }
-
-                    string targetFolder = ReferenceFolder;
-
-                    if (IsTool)
-                    {
-                        targetFolder = ToolsFolder;
-                    }
-                    else
-                    {
-                        if (Directory.Exists(targetPath))
-                        {
-                            // In the new MSBuild world, this should never happen, as TargetPath will always be a list of output DLLs.
-                            targetFolder = Path.Combine(ReferenceFolder, Path.GetDirectoryName(file.Replace(targetPath, string.Empty)));
-                        }
-                        else if (PackTargetArgs.TargetFrameworks.Count > 0)
-                        {
-                            //This should always execute in the new MSBuild world. This is the case where project.json is not being read,
-                            // therefore packagebuilder has no targetframeworks
-                            string frameworkName = Path.GetFileName(projectOutputDirectory);
-                            NuGetFramework folderNameAsNuGetFramework = NuGetFramework.Parse(frameworkName);
-                            string shortFolderName = string.Empty;
-                            if (PackTargetArgs.TargetFrameworks.Contains(folderNameAsNuGetFramework))
-                            {
-                                shortFolderName = folderNameAsNuGetFramework.GetShortFolderName();
-                            }
-                            targetFolder = Path.Combine(ReferenceFolder, shortFolderName);
-                        }
-                    }
-                    var packageFile = new ManifestFile()
-                    {
-                        Source = file,
-                        Target = Path.Combine(targetFolder, Path.GetFileName(file))
-                    };
-                    AddFileToBuilder(packageFile);
-                }
+                // Include pdbs for symbol packages
+                allowedOutputExtensions = _allowedOutputExtensionsForSymbols;
+                listOfFiles.AddRange(PackTargetArgs.TargetPathsToSymbols);
             }
+            
+            // By default we add all files in the project's output directory
+            foreach (var file in listOfFiles)
+            {
+                var projectOutputDirectory = Path.GetDirectoryName(file);
+                var extension = Path.GetExtension(file);
+
+                // Only look at files we care about
+                if (!allowedOutputExtensions.Contains(extension))
+                {
+                    continue;
+                }
+
+                var targetFolder = PackTargetArgs.BuildOutputFolder;
+                
+                if(!IsTool)
+                {
+                    if (PackTargetArgs.TargetFrameworks.Count > 0)
+                    {
+                        //This should always execute in the new MSBuild world. This is the case where project.json is not being read,
+                        // therefore packagebuilder has no targetframeworks
+                        var frameworkName = Path.GetFileName(projectOutputDirectory);
+                        var folderNameAsNuGetFramework = NuGetFramework.Parse(frameworkName);
+                        var shortFolderName = string.Empty;
+                        if (PackTargetArgs.TargetFrameworks.Contains(folderNameAsNuGetFramework))
+                        {
+                            shortFolderName = folderNameAsNuGetFramework.GetShortFolderName();
+                        }
+                        targetFolder = Path.Combine(targetFolder, shortFolderName);
+                    }
+                }
+                var packageFile = new ManifestFile()
+                {
+                    Source = file,
+                    Target = Path.Combine(targetFolder, Path.GetFileName(file))
+                };
+                AddFileToBuilder(packageFile);
+            }
+            
         }
 
         private static IList<string> GetFiles(string path, string fileNameWithoutExtension, HashSet<string> allowedExtensions, SearchOption searchOption)
@@ -195,7 +184,12 @@ namespace NuGet.Commands
             }
             else
             {
-                //TODO:  log warning : File '{0}' is not added because the package already contains file '{1}'
+                _logger.LogWarning(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.FileNotAddedToPackage,
+                        packageFile.Source,
+                        packageFile.Target));
             }
         }
 

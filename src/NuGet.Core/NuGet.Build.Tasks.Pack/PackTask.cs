@@ -1,15 +1,15 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
-using NuGet.Build.Tasks;
 using NuGet.Commands;
-using NuGet.Common;
 using NuGet.Packaging;
-using NuGet.ProjectModel;
 using NuGet.Versioning;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -37,7 +37,8 @@ namespace NuGet.Build.Tasks.Pack
         public string[] Tags { get; set; }
         public string ReleaseNotes { get; set; }
         public string Configuration { get; set; }
-        public string[] TargetPaths { get; set; }
+        public string[] TargetPathsToAssemblies { get; set; }
+        public string[] TargetPathsToSymbols { get; set; }
         public string AssemblyName { get; set; }
         public string PackageOutputPath { get; set; }
         public bool IsTool { get; set; }
@@ -55,6 +56,8 @@ namespace NuGet.Build.Tasks.Pack
         public ITaskItem[] ProjectReferences { get; set; }
         public bool ContinuePackingAfterGeneratingNuspec { get; set; }
         public string NuspecOutputPath { get; set; }
+        public bool IncludeBuildOutput { get; set; }
+        public string BuildOutputFolder { get; set; }
 
         public override bool Execute()
         {
@@ -80,9 +83,12 @@ namespace NuGet.Build.Tasks.Pack
             packArgs.NoPackageAnalysis = NoPackageAnalysis;
             packArgs.PackTargetArgs = new MSBuildPackTargetArgs()
             {
-                TargetPaths = TargetPaths,
+                TargetPathsToAssemblies = TargetPathsToAssemblies,
+                TargetPathsToSymbols = TargetPathsToSymbols,
                 Configuration = Configuration,
-                AssemblyName = AssemblyName
+                AssemblyName = AssemblyName,
+                IncludeBuildOutput = IncludeBuildOutput,
+                BuildOutputFolder = BuildOutputFolder
             };
             packArgs.PackTargetArgs.TargetFrameworks = ParseFrameworks();
             if (MinClientVersion != null)
