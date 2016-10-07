@@ -583,7 +583,7 @@ Function Build-CoreProjects {
     Publish-CoreProject $XPlatProject $PublishLocation $Configuration
 
     #Pack NuGet.Build.Tasks.Pack using the nuspec file and copy to the artifacts and artifacts\ReleaseNupkgs folder
-    Pack-NuGetBuildTasksPack -config $Configuration -label $ReleaseLabel -buildNum $BuildNumber
+    Pack-NuGetBuildTasksPack -config $Configuration -label $ReleaseLabel -buildNum $BuildNumber -CI:$CI
 }
 
 Function Pack-NuGetBuildTasksPack {
@@ -594,11 +594,17 @@ Function Pack-NuGetBuildTasksPack {
         [Alias('label')]
         [string]$ReleaseLabel,
         [Alias('buildNum')]
-        [string]$BuildNumber
+        [string]$BuildNumber,
+        [switch]$CI
     )
 
-    Remove-Item $Nupkgs\NuGet.Build.Tasks.Pack*
-    Remove-Item $ReleaseNupkgs\NuGet.Build.Tasks.Pack*
+    if (Test-Path $Nupkgs) {
+        Remove-Item $Nupkgs\NuGet.Build.Tasks.Pack*
+    }
+
+    if (Test-Path $ReleaseNupkgs) {
+        Remove-Item $ReleaseNupkgs\NuGet.Build.Tasks.Pack*
+    }
 
     $prereleaseNupkgVersion = "$PackageReleaseVersion-$ReleaseLabel-$BuildNumber"
     if ($ReleaseLabel -Ne 'rtm') {
@@ -611,19 +617,21 @@ Function Pack-NuGetBuildTasksPack {
     $PackBuildTaskNuspecLocation = Join-Path $PackProjectLocation NuGet.Build.Tasks.Pack.nuspec
 
     New-NuGetPackage `
-            -NuspecPath $PackBuildTaskNuspecLocation `
-            -BasePath $PackProjectLocation `
-            -OutputDir $Nupkgs `
-            -Version $prereleaseNupkgVersion `
-            -Configuration $Configuration
+        -NuspecPath $PackBuildTaskNuspecLocation `
+        -BasePath $PackProjectLocation `
+        -OutputDir $Nupkgs `
+        -Version $prereleaseNupkgVersion `
+        -Configuration $Configuration
 
-    New-NuGetPackage `
+    if ($CI) {
+        New-NuGetPackage `
             -NuspecPath $PackBuildTaskNuspecLocation `
             -BasePath $PackProjectLocation `
             -OutputDir $ReleaseNupkgs `
             -Version $releaseNupkgVersion `
             -Configuration $Configuration
     }
+}
 
 Function Test-XProjectCoreClr {
     [CmdletBinding()]
@@ -814,7 +822,8 @@ Function Publish-ClientsPackages {
         [int]$BuildNumber = (Get-BuildNumber),
         [ValidateSet(14,15)]
         [int]$ToolsetVersion = $DefaultMSBuildVersion,
-        [string]$KeyFile
+        [string]$KeyFile,
+        [switch]$CI
     )
 
     $prereleaseNupkgVersion = "$PackageReleaseVersion-$ReleaseLabel-$BuildNumber"
@@ -866,12 +875,14 @@ Function Publish-ClientsPackages {
         -OutputDir $exeOutputDir `
         -KeyFile $KeyFile
 
-    New-NuGetPackage `
-        -NuspecPath $exeNuspec `
-        -BasePath $exeOutputDir `
-        -OutputDir $ReleaseNupkgs `
-        -Version $releaseNupkgVersion `
-        -Configuration $Configuration
+    if ($CI) {
+        New-NuGetPackage `
+            -NuspecPath $exeNuspec `
+            -BasePath $exeOutputDir `
+            -OutputDir $ReleaseNupkgs `
+            -Version $releaseNupkgVersion `
+            -Configuration $Configuration
+    }
 
     # Pack the NuGet.VisualStudio project with the build number and release label.
     $projectDir = [io.path]::combine($NuGetClientRoot, "src", "NuGet.Clients", "NuGet.VisualStudio")
@@ -888,13 +899,15 @@ Function Publish-ClientsPackages {
         -Version $prereleaseNupkgVersion `
         -Configuration $Configuration
 
-    # Pack the NuGet.VisualStudio project with just the release label.
-    New-NuGetPackage `
-        -NuspecPath $projectNuspec `
-        -BasePath $projectInputDir `
-        -OutputDir $ReleaseNupkgs `
-        -Version $releaseNupkgVersion `
-        -Configuration $Configuration
+    if ($CI) {
+        # Pack the NuGet.VisualStudio project with just the release label.
+        New-NuGetPackage `
+            -NuspecPath $projectNuspec `
+            -BasePath $projectInputDir `
+            -OutputDir $ReleaseNupkgs `
+            -Version $releaseNupkgVersion `
+            -Configuration $Configuration
+    }
 }
 
 Function New-NuGetPackage {

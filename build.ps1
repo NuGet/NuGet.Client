@@ -140,7 +140,7 @@ Invoke-BuildStep 'Building NuGet.Clients projects - VS14 Toolset' {
     -ev +BuildErrors
 
 Invoke-BuildStep 'Publishing NuGet.Clients packages - VS14 Toolset' {
-        Publish-ClientsPackages $Configuration $ReleaseLabel $BuildNumber -ToolsetVersion 14 -KeyFile $MSPFXPath
+        Publish-ClientsPackages $Configuration $ReleaseLabel $BuildNumber -ToolsetVersion 14 -KeyFile $MSPFXPath -CI:$CI
     } `
     -skip:($Fast -or $SkipVS14) `
     -ev +BuildErrors

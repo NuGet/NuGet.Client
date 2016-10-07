@@ -85,16 +85,20 @@ Function New-BuildToolset {
     }
 
     if (-not $ToolsetObject -and $ToolsetVersion -gt 14) {
-        $WillowInstance = Get-ChildItem $env:ProgramData\Microsoft\VisualStudio\Packages\_Instances -filter state.json -recurse |
-            sort LastWriteTime |
-            select -last 1 |
-            Get-Content -raw |
-            ConvertFrom-Json
+        $VisualStudioPackageInstancesPath = "$env:ProgramData\Microsoft\VisualStudio\Packages\_Instances"
 
-        if ($WillowInstance) {
-            Verbose-Log "Using willow instance '$($WillowInstance.installationName)' installation path"
-            $ToolsetObject = @{
-                VisualStudioInstallDir = [System.IO.Path]::GetFullPath((Join-Path $WillowInstance.installationPath Common7\IDE\))
+        if (Test-Path $VisualStudioPackageInstancesPath) {
+            $WillowInstance = Get-ChildItem $VisualStudioPackageInstancesPath -filter state.json -recurse |
+                sort LastWriteTime |
+                select -last 1 |
+                Get-Content -raw |
+                ConvertFrom-Json
+
+            if ($WillowInstance) {
+                Verbose-Log "Using willow instance '$($WillowInstance.installationName)' installation path"
+                $ToolsetObject = @{
+                    VisualStudioInstallDir = [System.IO.Path]::GetFullPath((Join-Path $WillowInstance.installationPath Common7\IDE\))
+                }
             }
         }
     }
