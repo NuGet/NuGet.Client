@@ -197,7 +197,7 @@ namespace NuGet.Commands.Test
         [Fact]
         public void MSBuildRestoreUtility_GetPackageSpec_NetCoreVerifyImports()
         {
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 // Arrange
                 var project1Root = Path.Combine(workingDir, "a");
@@ -251,7 +251,7 @@ namespace NuGet.Commands.Test
         [Fact]
         public void MSBuildRestoreUtility_GetPackageSpec_NetCoreVerifyImportsEmpty()
         {
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestDirectory.Create())
             {
                 // Arrange
                 var project1Root = Path.Combine(workingDir, "a");
