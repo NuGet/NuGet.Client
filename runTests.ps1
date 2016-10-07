@@ -85,6 +85,11 @@ if (-not $SkipVS15 -and -not $VS15Installed) {
 
 $BuildErrors = @()
 
+Invoke-BuildStep 'Clear local caches' {
+        & nuget locals all -clear -verbosity detailed
+    } `
+    -ev +BuildErrors
+
 Invoke-BuildStep 'Running NuGet.Core unit-tests' {
         Test-CoreProjects $Configuration
     } `
@@ -147,6 +152,10 @@ Trace-Log ('=' * 60)
 if ($BuildErrors) {
     $ErrorLines = $BuildErrors | %{ ">>> $($_.Exception.Message)" }
     Write-Error "Build's completed with $($BuildErrors.Count) error(s):`r`n$($ErrorLines -join "`r`n")" -ErrorAction Stop
+} else {
+    Invoke-BuildStep 'Clear local caches' {
+            & nuget locals all -clear -verbosity detailed
+        } `
 }
 
 Write-Host ("`r`n" * 3)
