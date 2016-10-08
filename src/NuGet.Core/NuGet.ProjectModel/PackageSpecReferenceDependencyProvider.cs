@@ -275,7 +275,7 @@ namespace NuGet.ProjectModel
                     ExternalProjectReference externalProject;
                     if (_externalProjectsByUniqueName.TryGetValue(reference.ProjectUniqueName, out externalProject))
                     {
-                        dependencyName = externalProject.PackageSpecProjectName;
+                        dependencyName = externalProject.ProjectName;
 
                         // Create a version range based on the project if it has a range
                         var version = externalProject.PackageSpec?.Version;

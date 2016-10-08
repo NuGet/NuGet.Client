@@ -1546,8 +1546,8 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal("../b/b.csproj", libB.MSBuildProject);
 
                 // Verify project name is used
-                var group = projectA.AssetsFile.ProjectFileDependencyGroups.ToArray()[1];
-                Assert.Equal("y", group.Dependencies.Single());
+                var group = projectA.AssetsFile.ProjectFileDependencyGroups.ToArray()[0];
+                Assert.Equal("y >= 1.0.0", group.Dependencies.Single());
             }
         }
 

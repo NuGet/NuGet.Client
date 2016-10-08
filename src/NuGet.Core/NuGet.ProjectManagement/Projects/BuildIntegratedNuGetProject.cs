@@ -315,7 +315,12 @@ namespace NuGet.ProjectManagement.Projects
                         ProjectPath = reference.MSBuildProjectPath
                     };
 
-                    metadata.ProjectReferences.Add(projectReference);
+                    foreach (var framework in packageSpec.TargetFrameworks.Select(e => e.FrameworkName))
+                    {
+                        var group = new ProjectRestoreMetadataFrameworkInfo(framework);
+                        metadata.TargetFrameworks.Add(group);
+                        group.ProjectReferences.Add(projectReference);
+                    }
                 }
             }
 
