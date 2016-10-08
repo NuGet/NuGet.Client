@@ -147,6 +147,7 @@ namespace NuGet.Common
             Environment.SpecialFolder converted;
             switch (folder)
             {
+                case SpecialFolder.MachineWideSetting:
                 case SpecialFolder.ProgramFilesX86:
                     converted = Environment.SpecialFolder.ProgramFilesX86;
                     break;
