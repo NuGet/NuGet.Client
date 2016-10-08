@@ -96,7 +96,9 @@ namespace NuGet.Commands
 
         private static ExternalProjectReference GetExternalProject(PackageSpec rootProject)
         {
-            var projectReferences = rootProject.RestoreMetadata?.ProjectReferences ?? new List<ProjectRestoreReference>();
+            var projectReferences = rootProject.RestoreMetadata?.TargetFrameworks.SelectMany(e => e.ProjectReferences)
+                ?? new List<ProjectRestoreReference>();
+
             var type = rootProject.RestoreMetadata?.OutputType ?? RestoreOutputType.Unknown;
 
             // Leave the spec null for non-nuget projects.
@@ -112,11 +114,15 @@ namespace NuGet.Commands
                 projectSpec = rootProject;
             }
 
+            var uniqueReferences = projectReferences
+                .Select(p => p.ProjectUniqueName)
+                .Distinct(StringComparer.OrdinalIgnoreCase);
+
             return new ExternalProjectReference(
                 rootProject.RestoreMetadata.ProjectUniqueName,
                 projectSpec,
                 rootProject.RestoreMetadata?.ProjectPath,
-                projectReferences.Select(p => p.ProjectUniqueName));
+                uniqueReferences);
         }
 
         private RestoreSummaryRequest Create(

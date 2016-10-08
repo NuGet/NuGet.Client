@@ -215,28 +215,64 @@ namespace NuGet.Commands
 
         private static void AddProjectReferences(PackageSpec spec, IEnumerable<IMSBuildItem> items)
         {
+            // Add groups for each spec framework
+            var frameworkGroups = new Dictionary<NuGetFramework, List<ProjectRestoreReference>>();
+            foreach (var framework in spec.TargetFrameworks.Select(e => e.FrameworkName).Distinct())
+            {
+                frameworkGroups.Add(framework, new List<ProjectRestoreReference>());
+            }
+
             var flatReferences = GetItemByType(items, "ProjectReference")
-                .Select(GetProjectRestoreReference)
-                .Distinct();
+                .Select(GetProjectRestoreReference);
 
             // Add project paths
-            foreach (var msbuildDependency in flatReferences)
+            foreach (var frameworkPair in flatReferences)
             {
-                spec.RestoreMetadata.ProjectReferences.Add(msbuildDependency);
+                // If no frameworks were given, apply to all
+                var addToFrameworks = frameworkPair.Item1.Count == 0
+                    ? frameworkGroups.Keys.ToList()
+                    : frameworkPair.Item1;
+
+                foreach (var framework in addToFrameworks)
+                {
+                    List<ProjectRestoreReference> references;
+                    if (frameworkGroups.TryGetValue(framework, out references))
+                    {
+                        // Ensure unique
+                        if (!references
+                            .Any(e => e.ProjectUniqueName
+                            .Equals(frameworkPair.Item2.ProjectUniqueName, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            references.Add(frameworkPair.Item2);
+                        }
+                    }
+                }
+            }
+
+            // Add groups to spec
+            foreach (var frameworkPair in frameworkGroups)
+            {
+                spec.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(frameworkPair.Key)
+                {
+                    ProjectReferences = frameworkPair.Value
+                });
             }
         }
 
-        private static ProjectRestoreReference GetProjectRestoreReference(IMSBuildItem item)
+        private static Tuple<List<NuGetFramework>, ProjectRestoreReference> GetProjectRestoreReference(IMSBuildItem item)
         {
-            return new ProjectRestoreReference()
+            var frameworks = GetFrameworks(item).ToList();
+
+            var reference = new ProjectRestoreReference()
             {
                 ProjectPath = item.GetProperty("ProjectPath"),
                 ProjectUniqueName = item.GetProperty("ProjectReferenceUniqueName"),
                 IncludeAssets = GetIncludeFlags(item.GetProperty("IncludeAssets"), LibraryIncludeFlags.All),
                 ExcludeAssets = GetIncludeFlags(item.GetProperty("ExcludeAssets"), LibraryIncludeFlags.None),
-                PrivateAssets = GetIncludeFlags(item.GetProperty("PrivateAssets"), LibraryIncludeFlagUtils.DefaultSuppressParent),
-                Frameworks = GetFrameworks(item).ToList()
+                PrivateAssets = GetIncludeFlags(item.GetProperty("PrivateAssets"), LibraryIncludeFlagUtils.DefaultSuppressParent)
             };
+
+            return new Tuple<List<NuGetFramework>, ProjectRestoreReference>(frameworks, reference);
         }
 
         private static bool AddDependencyIfNotExist(PackageSpec spec, LibraryDependency dependency)

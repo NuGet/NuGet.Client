@@ -37,7 +37,7 @@ namespace NuGet.Commands.Test
                 var projects = CreateProjectsFromSpecs(pathContext, specs);
 
                 // Link projects
-                spec1.RestoreMetadata.ProjectReferences.Add(new ProjectRestoreReference()
+                spec1.RestoreMetadata.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
                 {
                     ProjectPath = projects[1].ProjectPath,
                     ProjectUniqueName = spec2.RestoreMetadata.ProjectUniqueName,
@@ -105,11 +105,11 @@ namespace NuGet.Commands.Test
                 var projects = CreateProjectsFromSpecs(pathContext, specs);
 
                 // Link projects
-                spec1.RestoreMetadata.ProjectReferences.Add(new ProjectRestoreReference()
+                spec1.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.Parse("net45")));
+                spec1.RestoreMetadata.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
                 {
                     ProjectPath = projects[1].ProjectPath,
-                    ProjectUniqueName = spec2.RestoreMetadata.ProjectUniqueName,
-                    Frameworks = new List<NuGetFramework>() { NuGetFramework.Parse("net45") }
+                    ProjectUniqueName = spec2.RestoreMetadata.ProjectUniqueName
                 });
 
                 // Create dg file
@@ -154,12 +154,12 @@ namespace NuGet.Commands.Test
                 var projects = CreateProjectsFromSpecs(pathContext, specs);
 
                 // Link projects
-                spec1.RestoreMetadata.ProjectReferences.Add(new ProjectRestoreReference()
+                spec1.RestoreMetadata.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
                 {
                     ProjectPath = projects[1].ProjectPath,
                     ProjectUniqueName = spec2.RestoreMetadata.ProjectUniqueName,
                 });
-
+                
                 // Create dg file
                 var dgFile = new DependencyGraphSpec();
 
@@ -201,13 +201,13 @@ namespace NuGet.Commands.Test
                 var projects = CreateProjectsFromSpecs(pathContext, specs);
 
                 // Link projects
-                spec1.RestoreMetadata.ProjectReferences.Add(new ProjectRestoreReference()
+                spec1.RestoreMetadata.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
                 {
                     ProjectPath = projects[1].ProjectPath,
                     ProjectUniqueName = spec2.RestoreMetadata.ProjectUniqueName,
                 });
 
-                spec2.RestoreMetadata.ProjectReferences.Add(new ProjectRestoreReference()
+                spec2.RestoreMetadata.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
                 {
                     ProjectPath = projects[2].ProjectPath,
                     ProjectUniqueName = spec3.RestoreMetadata.ProjectUniqueName,
@@ -304,6 +304,7 @@ namespace NuGet.Commands.Test
             spec.RestoreMetadata.OutputType = RestoreOutputType.NETCore;
             spec.RestoreMetadata.OriginalTargetFrameworks.Add(framework);
             spec.Name = projectName;
+            spec.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(targetFrameworkInfo.FrameworkName));
 
             return spec;
         }
