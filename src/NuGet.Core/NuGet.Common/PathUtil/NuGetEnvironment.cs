@@ -16,7 +16,7 @@ namespace NuGet.Common
             switch (folder)
             {
                 case NuGetFolderPath.MachineWideSettingsBaseDirectory:
-                    return Path.Combine(GetFolderPath(SpecialFolder.ProgramFilesX86),
+                    return Path.Combine(GetFolderPath(SpecialFolder.MachineWideSetting),
                         "NuGet");
 
                 case NuGetFolderPath.MachineWideConfigDirectory:
@@ -63,6 +63,16 @@ namespace NuGet.Common
         {
             switch (folder)
             {
+                case SpecialFolder.MachineWideSetting:
+                    if (RuntimeEnvironmentHelper.IsWindows)
+                    {
+                        return GetFolderPath(SpecialFolder.ProgramFilesX86);
+                    }
+                    else
+                    {
+                        return GetFolderPath(SpecialFolder.CommonApplicationData);
+                    }
+
                 case SpecialFolder.ProgramFilesX86:
                     return Environment.GetEnvironmentVariable("PROGRAMFILES(X86)");
 
@@ -75,7 +85,7 @@ namespace NuGet.Common
                 case SpecialFolder.CommonApplicationData:
                     if (RuntimeEnvironmentHelper.IsWindows)
                     {
-                        string programData = Environment.GetEnvironmentVariable("PROGRAMDATA");
+                        var programData = Environment.GetEnvironmentVariable("PROGRAMDATA");
 
                         if (!string.IsNullOrEmpty(programData))
                         {
@@ -90,7 +100,7 @@ namespace NuGet.Common
                     }
                     else
                     {
-                        string commonApplicationDataOverride = Environment.GetEnvironmentVariable("NUGET_COMMON_APPLICATION_DATA");
+                        var commonApplicationDataOverride = Environment.GetEnvironmentVariable("NUGET_COMMON_APPLICATION_DATA");
 
                         if (!string.IsNullOrEmpty(commonApplicationDataOverride))
                         {
@@ -117,7 +127,7 @@ namespace NuGet.Common
                     }
                     else
                     {
-                        string xdgDataHome = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
+                        var xdgDataHome = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
                         if (!string.IsNullOrEmpty(xdgDataHome))
                         {
                             return xdgDataHome;
@@ -180,7 +190,7 @@ namespace NuGet.Common
         {
             if (RuntimeEnvironmentHelper.IsWindows)
             {
-                string userProfile = Environment.GetEnvironmentVariable("USERPROFILE");
+                var userProfile = Environment.GetEnvironmentVariable("USERPROFILE");
                 if (!string.IsNullOrEmpty(userProfile))
                 {
                     return userProfile;
@@ -198,10 +208,10 @@ namespace NuGet.Common
 
         public static string GetDotNetLocation()
         {
-            string path = Environment.GetEnvironmentVariable("PATH");
+            var path = Environment.GetEnvironmentVariable("PATH");
             bool isWindows = RuntimeEnvironmentHelper.IsWindows;
             char splitChar = isWindows ? ';' : ':';
-            string executable = isWindows ? DotNetExe : DotNet;
+            var executable = isWindows ? DotNetExe : DotNet;
 
             foreach (var dir in path.Split(splitChar))
             {
@@ -214,7 +224,7 @@ namespace NuGet.Common
 
             if (isWindows)
             {
-                string programFiles = GetFolderPath(SpecialFolder.ProgramFiles);
+                var programFiles = GetFolderPath(SpecialFolder.ProgramFiles);
                 if (!string.IsNullOrEmpty(programFiles))
                 {
                     string fullPath = Path.Combine(programFiles, DotNet, DotNetExe);
@@ -227,7 +237,7 @@ namespace NuGet.Common
                 programFiles = GetFolderPath(SpecialFolder.ProgramFilesX86);
                 if (!string.IsNullOrEmpty(programFiles))
                 {
-                    string fullPath = Path.Combine(programFiles, DotNet, DotNetExe);
+                    var fullPath = Path.Combine(programFiles, DotNet, DotNetExe);
                     if (File.Exists(fullPath))
                     {
                         return fullPath;
@@ -236,10 +246,10 @@ namespace NuGet.Common
             }
             else
             {
-                string localBin = "/usr/local/bin";
+                var localBin = "/usr/local/bin";
                 if (!string.IsNullOrEmpty(localBin))
                 {
-                    string fullPath = Path.Combine(localBin, DotNet);
+                    var fullPath = Path.Combine(localBin, DotNet);
                     if (File.Exists(fullPath))
                     {
                         return fullPath;
@@ -263,7 +273,8 @@ namespace NuGet.Common
             UserProfile,
             CommonApplicationData,
             ApplicationData,
-            LocalApplicationData
+            LocalApplicationData,
+            MachineWideSetting
         }
     }
 }
