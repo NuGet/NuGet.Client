@@ -130,36 +130,45 @@ namespace NuGet.ProjectModel
                 }
             }
 
-            if (msbuildMetadata.ProjectReferences?.Count > 0)
+            if (msbuildMetadata.TargetFrameworks?.Count > 0)
             {
-                var projectReferencesObj = new JObject();
-                rawMSBuildMetadata["projectReferences"] = projectReferencesObj;
+                var frameworksObj = new JObject();
+                rawMSBuildMetadata["frameworks"] = frameworksObj;
 
-                foreach (var project in msbuildMetadata.ProjectReferences)
+                foreach (var msbuildFramework in msbuildMetadata.TargetFrameworks)
                 {
-                    var projectObject = new JObject();
-                    projectReferencesObj[project.ProjectUniqueName] = projectObject;
+                    var frameworkName = msbuildFramework.FrameworkName.GetShortFolderName();
 
-                    projectObject["projectPath"] = project.ProjectPath;
-
-                    if (project.IncludeAssets != LibraryIncludeFlags.All)
+                    if (frameworksObj[frameworkName] == null)
                     {
-                        projectObject["includeAssets"] = LibraryIncludeFlagUtils.GetFlagString(project.IncludeAssets);
-                    }
+                        var frameworkObj = new JObject();
+                        frameworksObj.Add(frameworkName, frameworkObj);
 
-                    if (project.ExcludeAssets != LibraryIncludeFlags.None)
-                    {
-                        projectObject["excludeAssets"] = LibraryIncludeFlagUtils.GetFlagString(project.ExcludeAssets);
-                    }
+                        var projectReferencesObj = new JObject();
+                        frameworkObj["projectReferences"] = projectReferencesObj;
 
-                    if (project.PrivateAssets != LibraryIncludeFlagUtils.DefaultSuppressParent)
-                    {
-                        projectObject["privateAssets"] = LibraryIncludeFlagUtils.GetFlagString(project.PrivateAssets);
-                    }
+                        foreach (var project in msbuildFramework.ProjectReferences)
+                        {
+                            var projectObject = new JObject();
+                            projectReferencesObj[project.ProjectUniqueName] = projectObject;
 
-                    if (project.Frameworks.Count > 0)
-                    {
-                        projectObject["frameworks"] = new JArray(project.Frameworks.Select(f => f.GetShortFolderName()));
+                            projectObject["projectPath"] = project.ProjectPath;
+
+                            if (project.IncludeAssets != LibraryIncludeFlags.All)
+                            {
+                                projectObject["includeAssets"] = LibraryIncludeFlagUtils.GetFlagString(project.IncludeAssets);
+                            }
+
+                            if (project.ExcludeAssets != LibraryIncludeFlags.None)
+                            {
+                                projectObject["excludeAssets"] = LibraryIncludeFlagUtils.GetFlagString(project.ExcludeAssets);
+                            }
+
+                            if (project.PrivateAssets != LibraryIncludeFlagUtils.DefaultSuppressParent)
+                            {
+                                projectObject["privateAssets"] = LibraryIncludeFlagUtils.GetFlagString(project.PrivateAssets);
+                            }
+                        }
                     }
                 }
             }

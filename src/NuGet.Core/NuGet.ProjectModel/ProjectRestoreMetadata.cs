@@ -51,10 +51,11 @@ namespace NuGet.ProjectModel
         public IList<string> FallbackFolders { get; set; } = new List<string>();
 
         /// <summary>
-        /// Project reference metadata. This will be added to the non-msbuild dependency reference in the package spec.
+        /// Framework specific metadata, this may be a subset of the project's frameworks.
+        /// Operations to determine the nearest framework should be done against the project's frameworks, 
+        /// and then matched directly to this section.
         /// </summary>
-        public IList<ProjectRestoreReference> ProjectReferences { get; set; } = new List<ProjectRestoreReference>();
-
+        public IList<ProjectRestoreMetadataFrameworkInfo> TargetFrameworks { get; set; } = new List<ProjectRestoreMetadataFrameworkInfo>();
 
         /// <summary>
         /// Original target frameworks strings. These are used to match msbuild conditionals to $(TargetFramework)

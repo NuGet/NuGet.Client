@@ -261,51 +261,45 @@ namespace NuGet.ProjectModel
             var dependencies = GetSpecDependencies(packageSpec, targetFramework, requireExternalProjects: true);
 
             // Get the nearest framework
-            var targetFrameworkInfo = packageSpec.GetTargetFramework(targetFramework);
-            var referenceFramework = targetFrameworkInfo.FrameworkName;
+            var referencesForFramework = packageSpec.GetRestoreMetadataFramework(targetFramework);
 
             // Ensure that this project is compatible
-            if (referenceFramework?.IsSpecificFramework == true)
+            if (referencesForFramework.FrameworkName?.IsSpecificFramework == true)
             {
-                foreach (var reference in packageSpec.RestoreMetadata.ProjectReferences)
+                foreach (var reference in referencesForFramework.ProjectReferences)
                 {
-                    // Filter down to references for the resolved framework
-                    // If there are no frameworks specified then it applies to all
-                    if (reference.Frameworks.Count < 1 || reference.Frameworks.Contains(referenceFramework))
+                    // Defaults, these will be used for missing projects
+                    var dependencyName = reference.ProjectPath;
+                    var range = VersionRange.All;
+
+                    ExternalProjectReference externalProject;
+                    if (_externalProjectsByUniqueName.TryGetValue(reference.ProjectUniqueName, out externalProject))
                     {
-                        // Defaults, these will be used for missing projects
-                        var dependencyName = reference.ProjectPath;
-                        var range = VersionRange.All;
+                        dependencyName = externalProject.PackageSpecProjectName;
 
-                        ExternalProjectReference externalProject;
-                        if (_externalProjectsByUniqueName.TryGetValue(reference.ProjectUniqueName, out externalProject))
+                        // Create a version range based on the project if it has a range
+                        var version = externalProject.PackageSpec?.Version;
+                        if (version != null)
                         {
-                            dependencyName = externalProject.PackageSpecProjectName;
-
-                            // Create a version range based on the project if it has a range
-                            var version = externalProject.PackageSpec?.Version;
-                            if (version != null)
-                            {
-                                range = new VersionRange(version);
-                            }
+                            range = new VersionRange(version);
                         }
-
-                        var dependency = new LibraryDependency()
-                        {
-                            LibraryRange = new LibraryRange(
-                            dependencyName,
-                            range,
-                            LibraryDependencyTarget.ExternalProject),
-                            IncludeType = (reference.IncludeAssets & ~reference.ExcludeAssets),
-                            SuppressParent = reference.PrivateAssets
-                        };
-
-                        // Remove existing reference if one exists, projects override
-                        dependencies.RemoveAll(e => StringComparer.OrdinalIgnoreCase.Equals(dependency.Name, e.Name));
-
-                        // Add reference
-                        dependencies.Add(dependency);
                     }
+
+                    var dependency = new LibraryDependency()
+                    {
+                        LibraryRange = new LibraryRange(
+                        dependencyName,
+                        range,
+                        LibraryDependencyTarget.ExternalProject),
+                        IncludeType = (reference.IncludeAssets & ~reference.ExcludeAssets),
+                        SuppressParent = reference.PrivateAssets
+                    };
+
+                    // Remove existing reference if one exists, projects override
+                    dependencies.RemoveAll(e => StringComparer.OrdinalIgnoreCase.Equals(dependency.Name, e.Name));
+
+                    // Add reference
+                    dependencies.Add(dependency);
                 }
             }
 

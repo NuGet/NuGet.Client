@@ -281,6 +281,8 @@ namespace NuGet.Test.Utility
                     { "TargetFrameworks", string.Join(";", Frameworks.Select(f => f.Framework.GetShortFolderName())) },
                 });
 
+                var addedToAll = new HashSet<SimpleTestProjectContext>();
+
                 foreach (var frameworkInfo in Frameworks)
                 {
                     foreach (var package in frameworkInfo.PackageReferences)
@@ -328,6 +330,12 @@ namespace NuGet.Test.Utility
                         if (Frameworks.All(f => f.ProjectReferences.Contains(project)))
                         {
                             referenceFramework = NuGetFramework.AnyFramework;
+
+                            if (!addedToAll.Add(project))
+                            {
+                                // Skip since this was already added
+                                continue;
+                            }
                         }
 
                         var props = new Dictionary<string, string>();
@@ -419,7 +427,8 @@ namespace NuGet.Test.Utility
                 propertyGroup.Add(subItem);
             }
 
-            doc.Root.AddFirst(propertyGroup);
+            var lastPropGroup = doc.Root.Elements().Where(e => e.Name.LocalName == "PropertyGroup").Last();
+            lastPropGroup.AddAfterSelf(propertyGroup);
         }
 
         private static void AddItem(XDocument doc,
@@ -430,9 +439,10 @@ namespace NuGet.Test.Utility
         {
             var ns = doc.Root.GetDefaultNamespace();
 
-            var propertyGroup = new XElement(XName.Get("ItemGroup", ns.NamespaceName));
+            var itemGroup = new XElement(XName.Get("ItemGroup", ns.NamespaceName));
             var entry = new XElement(XName.Get(name, ns.NamespaceName));
             entry.Add(new XAttribute(XName.Get("Include"), identity));
+            itemGroup.Add(entry);
 
             if (framework?.IsSpecificFramework == true)
             {
@@ -445,8 +455,23 @@ namespace NuGet.Test.Utility
                 entry.Add(subItem);
             }
 
-            propertyGroup.Add(entry);
-            doc.Root.Add(propertyGroup);
+            var lastItemGroup = doc.Root.Elements().Where(e => e.Name.LocalName == "ItemGroup").Last();
+            lastItemGroup.AddAfterSelf(itemGroup);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return StringComparer.Ordinal.Equals(ProjectPath, (obj as SimpleTestProjectContext)?.ProjectPath);
+        }
+
+        public override int GetHashCode()
+        {
+            return StringComparer.Ordinal.GetHashCode(ProjectPath);
+        }
+
+        public override string ToString()
+        {
+            return ProjectName;
         }
     }
 }
