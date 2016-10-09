@@ -532,8 +532,8 @@ namespace NuGet.CommandLine.Test
                 packageS.AddFile("build/s.props");
 
                 packageX.AddFile("lib/net45/test.dll");
-                packageX.AddFile("lib/net45/test.dll");
-                packageX.AddFile("lib/net45/test.dll");
+                packageZ.AddFile("lib/net45/test.dll");
+                packageS.AddFile("lib/net45/test.dll");
 
                 // To avoid sorting on case accidently
                 // A -> X -> Z -> S
