@@ -26,7 +26,9 @@ Param (
     [switch]$CleanCache,
     [Alias('f')]
     [switch]$Force,
-    [switch]$CI
+    [switch]$CI,
+    [Alias('s15')]
+    [switch]$SkipVS15
 )
 
 . "$PSScriptRoot\build\common.ps1"
@@ -153,7 +155,7 @@ Invoke-BuildStep 'Validating VS15 toolset installation' {
             $ConfigureObject.Add('EnvVars', @{ VSToolsPath = $VSToolsPath })
         }
     }
-} -ev +BuildErrors
+} -skip:($SkipVS15) -ev +BuildErrors
 
 if ($MSBuildExe) {
     $MSBuildExe = [System.IO.Path]::GetFullPath($MSBuildExe)
