@@ -46,7 +46,7 @@ namespace NuGet.Configuration.Test
                 var globalConfigTuple = Settings.GetFileNameAndItsRoot("test root", globalConfigPath);
 
 #if IS_CORECLR
-                var programFilesX86Data = Environment.GetEnvironmentVariable("PROGRAMFILESX86");
+                var programFilesX86Data = Environment.GetEnvironmentVariable("PROGRAMFILES(X86)");
                 var userSetting = Environment.GetEnvironmentVariable("APPDATA");
 #else
                 var programFilesX86Data = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
