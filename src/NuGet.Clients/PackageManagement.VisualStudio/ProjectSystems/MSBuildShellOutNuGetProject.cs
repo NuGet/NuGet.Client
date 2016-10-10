@@ -393,8 +393,10 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 var projectReferences = packageSpec
                     .RestoreMetadata
-                    .ProjectReferences
+                    .TargetFrameworks
+                    .SelectMany(e => e.ProjectReferences)
                     .Select(r => r.ProjectUniqueName)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToList();
 
                 var reference = new ExternalProjectReference(

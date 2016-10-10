@@ -303,23 +303,31 @@ namespace NuGet.ProjectManagement.Projects
             metadata.ProjectUniqueName = MSBuildProjectPath;
 
             IReadOnlyList<ExternalProjectReference> references = null;
-            if (referenceContext.DirectReferenceCache.TryGetValue(metadata.ProjectPath, out references))
+            if (referenceContext.DirectReferenceCache.TryGetValue(metadata.ProjectPath, out references)
+                && references.Count > 0)
             {
+                // Add msbuild reference groups for each TFM in the project
+                foreach (var framework in packageSpec.TargetFrameworks.Select(e => e.FrameworkName))
+                {
+                    metadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(framework));
+                }
+
                 foreach (var reference in references)
                 {
-                    MSBuildRestoreUtility.AddMSBuildProjectReference(
-                        packageSpec,
-                        new ProjectRestoreReference
-                        {
-                            ProjectUniqueName = reference.UniqueName,
-                            ProjectPath = reference.MSBuildProjectPath
-                        },
-                        new LibraryDependency
-                        {
-                            LibraryRange = new LibraryRange(
-                                reference.UniqueName,
-                                LibraryDependencyTarget.ExternalProject)
-                        });
+                    // This reference applies to all frameworks
+                    // Include/exclude flags may be applied later when merged with project.json
+                    var projectReference = new ProjectRestoreReference
+                    {
+                        ProjectUniqueName = reference.UniqueName,
+                        ProjectPath = reference.MSBuildProjectPath
+                    };
+
+                    // Add the reference for all TFM groups, there are no conditional project
+                    // references in UWP. There should also be just one TFM.
+                    foreach (var frameworkInfo in metadata.TargetFrameworks)
+                    {
+                        frameworkInfo.ProjectReferences.Add(projectReference);
+                    }
                 }
             }
 

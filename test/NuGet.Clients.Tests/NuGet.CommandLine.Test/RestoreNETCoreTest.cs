@@ -1499,6 +1499,59 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public void RestoreNetCore_NETCore_ProjectToProject_VerifyPackageIdUsed()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                // A -> B
+                projectA.AddProjectToAllFrameworks(projectB);
+
+                // Add package ids
+                projectA.Properties.Add("PackageId", "x");
+                projectB.Properties.Add("PackageId", "y");
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = RestoreSolution(pathContext);
+
+                // Assert
+                var targetB = projectA.AssetsFile.Targets.Single().Libraries.SingleOrDefault(e => e.Name == "y");
+                var libB = projectA.AssetsFile.Libraries.SingleOrDefault(e => e.Name == "y");
+
+                Assert.Equal("1.0.0", targetB.Version.ToNormalizedString());
+                Assert.Equal("project", targetB.Type);
+                Assert.Equal(".NETFramework,Version=v4.5", targetB.Framework);
+
+                Assert.Equal("1.0.0", libB.Version.ToNormalizedString());
+                Assert.Equal("project", libB.Type);
+                Assert.Equal("y", libB.Name);
+                Assert.Equal("../b/b.csproj", libB.Path);
+                Assert.Equal("../b/b.csproj", libB.MSBuildProject);
+
+                // Verify project name is used
+                var group = projectA.AssetsFile.ProjectFileDependencyGroups.ToArray()[0];
+                Assert.Equal("y >= 1.0.0", group.Dependencies.Single());
+            }
+        }
+
+        [Fact]
         public void RestoreNetCore_NETCore_ProjectToProject_MissingProjectReference()
         {
             // Arrange

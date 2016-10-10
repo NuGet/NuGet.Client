@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -41,22 +42,13 @@ namespace NuGet.Commands
 
             var previousLibraries = previousLockFile?.Libraries.ToDictionary(l => Tuple.Create(l.Name, l.Version));
 
-            // Use empty string as the key of dependencies shared by all frameworks
-            lockFile.ProjectFileDependencyGroups.Add(new ProjectFileDependencyGroup(
-                string.Empty,
-                project.Dependencies
-                    .Select(group => group.LibraryRange.ToLockFileDependencyGroupString())
-                    .OrderBy(group => group, StringComparer.Ordinal)));
-
-            foreach (var frameworkInfo in project.TargetFrameworks
-                .OrderBy(framework => framework.FrameworkName.ToString(),
-                    StringComparer.Ordinal))
+            if (project.RestoreMetadata?.OutputType == RestoreOutputType.NETCore)
             {
-                lockFile.ProjectFileDependencyGroups.Add(new ProjectFileDependencyGroup(
-                    frameworkInfo.FrameworkName.ToString(),
-                    frameworkInfo.Dependencies
-                        .Select(x => x.LibraryRange.ToLockFileDependencyGroupString())
-                        .OrderBy(dependency => dependency, StringComparer.Ordinal)));
+                AddProjectFileDependenciesForNETCore(project, lockFile, targetGraphs);
+            }
+            else
+            {
+                AddProjectFileDependenciesForSpec(project, lockFile);
             }
 
             // Record all libraries used
@@ -119,7 +111,7 @@ namespace NuGet.Commands
 
                     var package = packageInfo.Package;
                     var resolver = packageInfo.Repository.PathResolver;
-                    
+
                     LockFileLibrary previousLibrary = null;
                     if (previousLibraries?.TryGetValue(Tuple.Create(package.Id, package.Version), out previousLibrary) == true)
                     {
@@ -128,7 +120,7 @@ namespace NuGet.Commands
                         // we compare the new lock file to the previous (in-memory) lock file.
                         previousLibrary = previousLibrary.Clone();
                     }
-                    
+
                     var sha512 = File.ReadAllText(resolver.GetHashPath(package.Id, package.Version));
                     var path = PathUtility.GetPathWithForwardSlashes(
                         resolver.GetPackageDirectory(package.Id, package.Version));
@@ -314,6 +306,78 @@ namespace NuGet.Commands
             PopulatePackageFolders(localRepositories.Select(repo => repo.RepositoryRoot).Distinct(), lockFile);
 
             return lockFile;
+        }
+
+        private static void AddProjectFileDependenciesForSpec(PackageSpec project, LockFile lockFile)
+        {
+            // Use empty string as the key of dependencies shared by all frameworks
+            lockFile.ProjectFileDependencyGroups.Add(new ProjectFileDependencyGroup(
+                string.Empty,
+                project.Dependencies
+                    .Select(group => group.LibraryRange.ToLockFileDependencyGroupString())
+                    .OrderBy(group => group, StringComparer.Ordinal)));
+
+            foreach (var frameworkInfo in project.TargetFrameworks
+                .OrderBy(framework => framework.FrameworkName.ToString(),
+                    StringComparer.Ordinal))
+            {
+                lockFile.ProjectFileDependencyGroups.Add(new ProjectFileDependencyGroup(
+                    frameworkInfo.FrameworkName.ToString(),
+                    frameworkInfo.Dependencies
+                        .Select(x => x.LibraryRange.ToLockFileDependencyGroupString())
+                        .OrderBy(dependency => dependency, StringComparer.Ordinal)));
+            }
+        }
+
+        private static void AddProjectFileDependenciesForNETCore(PackageSpec project, LockFile lockFile, IEnumerable<RestoreTargetGraph> targetGraphs)
+        {
+            // For NETCore put everything under a TFM section
+            // Projects are included for NETCore
+            foreach (var frameworkInfo in project.TargetFrameworks
+                .OrderBy(framework => framework.FrameworkName.ToString(),
+                    StringComparer.Ordinal))
+            {
+                var dependencies = new List<LibraryRange>();
+                dependencies.AddRange(project.Dependencies.Select(e => e.LibraryRange));
+                dependencies.AddRange(frameworkInfo.Dependencies.Select(e => e.LibraryRange));
+
+                var targetGraph = targetGraphs.SingleOrDefault(graph => 
+                    graph.Framework.Equals(frameworkInfo.FrameworkName)
+                    && string.IsNullOrEmpty(graph.RuntimeIdentifier));
+
+                var resolvedEntry = targetGraph?
+                    .Flattened
+                    .SingleOrDefault(library => library.Key.Name.Equals(project.Name, StringComparison.OrdinalIgnoreCase));
+
+                Debug.Assert(resolvedEntry != null, "Unable to find project entry in target graph, project references will not be added");
+
+                // In some failure cases where there is a conflict the root level project cannot be resolved, this should be handled gracefully
+                if (resolvedEntry != null)
+                {
+                    dependencies.AddRange(resolvedEntry.Data.Dependencies.Where(lib =>
+                        lib.LibraryRange.TypeConstraint == LibraryDependencyTarget.ExternalProject)
+                        .Select(lib => lib.LibraryRange));
+                }
+
+                var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var uniqueDependencies = new List<LibraryRange>();
+
+                foreach (var dependency in dependencies)
+                {
+                    if (seen.Add(dependency.Name))
+                    {
+                        uniqueDependencies.Add(dependency);
+                    }
+                }
+
+                // Add entry
+                var dependencyGroup = new ProjectFileDependencyGroup(
+                    frameworkInfo.FrameworkName.ToString(),
+                    uniqueDependencies.Select(x => x.ToLockFileDependencyGroupString())
+                        .OrderBy(dependency => dependency, StringComparer.Ordinal));
+
+                lockFile.ProjectFileDependencyGroups.Add(dependencyGroup);
+            }
         }
 
         private static void PopulateTools(IEnumerable<ToolRestoreResult> toolRestoreResults, LockFile lockFile)

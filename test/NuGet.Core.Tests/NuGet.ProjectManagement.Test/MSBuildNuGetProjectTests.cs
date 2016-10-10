@@ -64,7 +64,7 @@ namespace ProjectManagement.Test
 
                 Assert.Empty(actual.Dependencies);
                 Assert.Empty(actual.TargetFrameworks[0].Dependencies);
-                Assert.Empty(actual.RestoreMetadata.ProjectReferences);
+                Assert.Empty(actual.RestoreMetadata.TargetFrameworks.SelectMany(e => e.ProjectReferences));
             }
         }
 
@@ -114,15 +114,13 @@ namespace ProjectManagement.Test
                 Assert.Equal(projectTargetFramework, actual.TargetFrameworks[0].FrameworkName);
                 Assert.Empty(actual.TargetFrameworks[0].Imports);
 
-                Assert.Equal(1, actual.Dependencies.Count);
-                Assert.Equal("uniqueName", actual.Dependencies[0].Name);
-                Assert.Equal(LibraryDependencyTarget.ExternalProject, actual.Dependencies[0].LibraryRange.TypeConstraint);
-
+                Assert.Equal(0, actual.Dependencies.Count);
                 Assert.Empty(actual.TargetFrameworks[0].Dependencies);
 
-                Assert.Equal(1, actual.RestoreMetadata.ProjectReferences.Count);
-                Assert.Equal("uniqueName", actual.RestoreMetadata.ProjectReferences[0].ProjectUniqueName);
-                Assert.Equal("msbuildProjectPath", actual.RestoreMetadata.ProjectReferences[0].ProjectPath);
+                var projectReferences = actual.RestoreMetadata.TargetFrameworks.SelectMany(e => e.ProjectReferences).ToList();
+                Assert.Equal(1, projectReferences.Count);
+                Assert.Equal("uniqueName", projectReferences[0].ProjectUniqueName);
+                Assert.Equal("msbuildProjectPath", projectReferences[0].ProjectPath);
             }
         }
 
