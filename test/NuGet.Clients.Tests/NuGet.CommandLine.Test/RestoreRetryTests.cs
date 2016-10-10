@@ -41,7 +41,7 @@ namespace NuGet.CommandLine.Test
 
                     server.Get.Add("/", r =>
                     {
-                        var path = r.Url.PathAndQuery.Substring(server.BasePath.Length);
+                        var path = server.GetRequestUrlPathAndQuery(r);
 
                         // track hits on the url
                         var urlHits = hitsByUrl.AddOrUpdate(path, 1, (s, i) => i + 1);
@@ -162,7 +162,7 @@ namespace NuGet.CommandLine.Test
 
                     server.Get.Add("/", r =>
                     {
-                        var path = r.Url.PathAndQuery.Substring(server.BasePath.Length);
+                        var path = server.GetRequestUrlPathAndQuery(r);
 
                         // track hits on the url
                         var urlHits = hitsByUrl.AddOrUpdate(path, 1, (s, i) => i + 1);
@@ -302,7 +302,7 @@ namespace NuGet.CommandLine.Test
 
                     server.Get.Add("/", r =>
                     {
-                        var path = r.Url.AbsolutePath.Substring(server.BasePath.Length);
+                        var path = server.GetRequestUrlAbsolutePath(r);
 
                         // track hits on the url
                         var urlHits = hitsByUrl.AddOrUpdate(path, 1, (s, i) => i + 1);
@@ -451,7 +451,7 @@ namespace NuGet.CommandLine.Test
 
                     server.Get.Add("/", r =>
                     {
-                        var path = r.Url.AbsolutePath.Substring(server.BasePath.Length);
+                        var path = server.GetRequestUrlAbsolutePath(r);
 
                         // track hits on the url
                         var urlHits = hitsByUrl.AddOrUpdate(path, 1, (s, i) => i + 1);

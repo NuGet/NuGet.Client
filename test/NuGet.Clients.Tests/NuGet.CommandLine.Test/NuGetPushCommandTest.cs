@@ -1270,7 +1270,7 @@ namespace NuGet.CommandLine.Test
                 {
                     serverV3.Get.Add("/", r =>
                     {
-                        var path = r.Url.AbsolutePath.Substring(serverV3.BasePath.Length);
+                        var path = serverV3.GetRequestUrlAbsolutePath(r);
 
                         if (path == "/index.json")
                         {
@@ -1351,7 +1351,7 @@ namespace NuGet.CommandLine.Test
                 {
                     serverV3.Get.Add("/", r =>
                     {
-                        var path = r.Url.AbsolutePath.Substring(serverV3.BasePath.Length);
+                        var path = serverV3.GetRequestUrlAbsolutePath(r);
 
                         if (path == "/index.json")
                         {
@@ -1410,7 +1410,7 @@ namespace NuGet.CommandLine.Test
                 {
                     serverV3.Get.Add("/", r =>
                     {
-                        var path = r.Url.AbsolutePath.Substring(serverV3.BasePath.Length);
+                        var path = serverV3.GetRequestUrlAbsolutePath(r);
 
                         if (path == "/index.json")
                         {
@@ -1715,7 +1715,7 @@ namespace NuGet.CommandLine.Test
                 {
                     server.Get.Add("/", r =>
                     {
-                        var path = r.Url.AbsolutePath.Substring(server.BasePath.Length);
+                        var path = server.GetRequestUrlAbsolutePath(r);
 
                         if (path.Equals("/", StringComparison.OrdinalIgnoreCase))
                         {
@@ -1739,7 +1739,7 @@ namespace NuGet.CommandLine.Test
 
                     server.Put.Add("/", r =>
                     {
-                        var path = r.Url.AbsolutePath.Substring(server.BasePath.Length);
+                        var path = server.GetRequestUrlAbsolutePath(r);
 
                         if (path.Equals("/api/v2/Package", StringComparison.OrdinalIgnoreCase)
                         || path.Equals("/api/v2/Package/", StringComparison.OrdinalIgnoreCase))
