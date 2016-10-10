@@ -85,8 +85,8 @@ if (-not $SkipVS15 -and -not $VS15Installed) {
 
 $BuildErrors = @()
 
-Invoke-BuildStep 'Clear local caches' {
-        & nuget locals all -clear -verbosity detailed
+Invoke-BuildStep 'Cleaning package cache' {
+        Clear-PackageCache
     } `
     -ev +BuildErrors
 
@@ -154,8 +154,8 @@ if ($BuildErrors) {
     Write-Error "Build's completed with $($BuildErrors.Count) error(s):`r`n$($ErrorLines -join "`r`n")" -ErrorAction Stop
 }
 
-Invoke-BuildStep 'Clear local caches' {
-        & nuget locals all -clear -verbosity detailed
-    } `
+Invoke-BuildStep 'Cleaning package cache' {
+        Clear-PackageCache
+    }
 
 Write-Host ("`r`n" * 3)

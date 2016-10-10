@@ -31,6 +31,12 @@ namespace NuGet.CommandLine.Test
         public int PortNumber { get; private set; }
         public string BaseUri { get; }
 
+        /// <summary>
+        /// Initializes an instance of PortReserver.
+        /// </summary>
+        /// <param name="basePath">The base path for all request URL's.
+        /// Can be either null (default) for "/" or any "/"-prefixed string (e.g.:  /{GUID}).</param>
+        /// <param name="basePort">The base port for all request URL's.</param>
         public PortReserver(string basePath = null, int basePort = 50231)
         {
             if (!string.IsNullOrEmpty(basePath) && (!basePath.StartsWith("/") || basePath.EndsWith("/")))
