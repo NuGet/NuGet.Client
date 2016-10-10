@@ -381,6 +381,32 @@ namespace NuGet.CommandLine
         /// <returns>The msbuild directory.</returns>
         public static string GetMsbuildDirectory(string userVersion, IConsole console)
         {
+            var currentDirectoryCache = Directory.GetCurrentDirectory();
+            var msBuildDirectory = string.Empty;
+            List<MsBuildToolsetEx> installedToolsets = new List<MsBuildToolsetEx>();
+
+
+
+
+/*
+            if mono, try hardcoded paths
+            if that fails, fall back to 14 in GAC, to get toolsets
+
+            if not mono, use nupkg microsoft.build to get toolsets and integrate
+*/
+            
+
+
+
+
+
+
+
+
+
+
+
+
             // Try to find msbuild for mono from hard code path.
             // Mono always tell user we are on unix even when user is on Mac.
             if (RuntimeEnvironmentHelper.IsMono)
@@ -410,7 +436,6 @@ namespace NuGet.CommandLine
 
                 try
                 {
-                    List<MsBuildToolsetEx> installedToolsets = new List<MsBuildToolsetEx>();
                     var assembly = Assembly.Load("Microsoft.Build, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
                     Type projectCollectionType = assembly.GetType("Microsoft.Build.Evaluation.ProjectCollection", throwOnError: true);
                     var projectCollection = Activator.CreateInstance(projectCollectionType) as IDisposable;
@@ -426,8 +451,6 @@ namespace NuGet.CommandLine
 
                         installedToolsets = installedToolsets.OrderByDescending(toolset => toolset.ParsedToolsVersion).ToList();
                     }
-
-                    return GetMsBuildDirectoryInternal(userVersion, console, installedToolsets, () => GetMsBuildPathInPath());
                 }
                 catch (Exception e)
                 {
@@ -437,9 +460,6 @@ namespace NuGet.CommandLine
             }
             else
             {
-                var currentDirectoryCache = Directory.GetCurrentDirectory();
-
-                List<MsBuildToolsetEx> installedToolsets;
                 using (var projectCollection = new ProjectCollection())
                 {
                     installedToolsets = MsBuildToolsetEx.AsMsToolsetExCollection(projectCollection.Toolsets).ToList();
@@ -454,11 +474,11 @@ namespace NuGet.CommandLine
                 {
                     installedToolsets.AddRange(installedSxsToolsets);
                 }
-
-                var msBuildDirectory = GetMsBuildDirectoryInternal(userVersion, console, installedToolsets, () => GetMsBuildPathInPath());
-                Directory.SetCurrentDirectory(currentDirectoryCache);
-                return msBuildDirectory;
             }
+
+            msBuildDirectory = GetMsBuildDirectoryInternal(userVersion, console, installedToolsets, () => GetMsBuildPathInPath());
+            Directory.SetCurrentDirectory(currentDirectoryCache);
+            return msBuildDirectory;
         }
 
         // This method is called by GetMsbuildDirectory(). This method is not intended to be called directly.
@@ -548,9 +568,6 @@ namespace NuGet.CommandLine
                 return toolset.ToolsPath;
             }
         }
-
-
-//TODO: what is the story with msbuild 15.1 and Mono? Are version searches no longer feasible here too?
 
 
         /// <summary>
