@@ -254,9 +254,18 @@ namespace NuGet.Commands
 
                 if (targetFrameworkInfo != null)
                 {
-                    targetFrameworkInfo.Imports = Split(item.GetProperty("PackageTargetFallback"))
+                    var fallbackList = Split(item.GetProperty("PackageTargetFallback"))
                         .Select(NuGetFramework.Parse)
                         .ToList();
+
+                    targetFrameworkInfo.Imports = fallbackList;
+
+                    // Update the PackageSpec framework to include fallback frameworks
+                    if (targetFrameworkInfo.Imports.Count > 0)
+                    {
+                        targetFrameworkInfo.FrameworkName = 
+                            new FallbackFramework(targetFrameworkInfo.FrameworkName, fallbackList);
+                    }
                 }
             }
         }
