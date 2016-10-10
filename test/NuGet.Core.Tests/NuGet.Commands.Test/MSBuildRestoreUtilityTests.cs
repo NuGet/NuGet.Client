@@ -245,6 +245,22 @@ namespace NuGet.Commands.Test
 
                 Assert.Equal(NuGetFramework.Parse("portable-net45+win8"), nsTFM.Imports[0]);
                 Assert.Equal(NuGetFramework.Parse("dnxcore50"), nsTFM.Imports[1]);
+
+                // Verify fallback framework
+                var fallbackFramework = (FallbackFramework)project1Spec.TargetFrameworks
+                    .Single(e => e.FrameworkName.GetShortFolderName() == "netstandard1.6")
+                    .FrameworkName;
+
+                // net46 does not have imports
+                var fallbackFrameworkNet45 = project1Spec.TargetFrameworks
+                    .Single(e => e.FrameworkName.GetShortFolderName() == "net46")
+                    .FrameworkName 
+                    as FallbackFramework;
+
+                Assert.Null(fallbackFrameworkNet45);
+                Assert.Equal(2, fallbackFramework.Fallback.Count);
+                Assert.Equal(NuGetFramework.Parse("portable-net45+win8"), fallbackFramework.Fallback[0]);
+                Assert.Equal(NuGetFramework.Parse("dnxcore50"), fallbackFramework.Fallback[1]);
             }
         }
 
@@ -296,6 +312,10 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.Equal(0, nsTFM.Imports.Count);
                 Assert.Equal(0, netTFM.Imports.Count);
+
+                // Verify no fallback frameworks
+                var fallbackFrameworks = project1Spec.TargetFrameworks.Select(e => e.FrameworkName as FallbackFramework);
+                Assert.True(fallbackFrameworks.All(e => e == null));
             }
         }
 
