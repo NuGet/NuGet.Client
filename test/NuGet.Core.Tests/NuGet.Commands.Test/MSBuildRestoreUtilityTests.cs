@@ -478,7 +478,10 @@ namespace NuGet.Commands.Test
                 var project1Spec = dgSpec.Projects.Single(e => e.Name == "a");
                 var project2Spec = dgSpec.Projects.Single(e => e.Name == "b");
 
-                var msbuildDependency = project1Spec.RestoreMetadata.TargetFrameworks.Single().ProjectReferences.Single();
+                var msbuildDependency = project1Spec.RestoreMetadata.TargetFrameworks
+                    .Single(e => e.FrameworkName.Equals(NuGetFramework.Parse("netstandard1.6")))
+                    .ProjectReferences
+                    .Single();
 
                 // Assert
                 // Verify p2p reference
@@ -487,7 +490,10 @@ namespace NuGet.Commands.Test
                 Assert.Equal(LibraryIncludeFlags.All, msbuildDependency.IncludeAssets);
                 Assert.Equal(LibraryIncludeFlags.None, msbuildDependency.ExcludeAssets);
                 Assert.Equal(LibraryIncludeFlagUtils.DefaultSuppressParent, msbuildDependency.PrivateAssets);
-                Assert.Equal("netstandard1.6", string.Join("|", project1Spec.RestoreMetadata.TargetFrameworks.Select(e => e.FrameworkName.GetShortFolderName()).OrderBy(s => s, StringComparer.Ordinal)));
+                Assert.Equal("netstandard1.6", string.Join("|", project1Spec.RestoreMetadata.TargetFrameworks
+                    .Where(e => e.ProjectReferences.Count > 0)
+                    .Select(e => e.FrameworkName.GetShortFolderName())
+                    .OrderBy(s => s, StringComparer.Ordinal)));
 
                 // Dependency counts
                 Assert.Equal(0, project1Spec.Dependencies.Count);
@@ -632,7 +638,9 @@ namespace NuGet.Commands.Test
                 Assert.Equal(LibraryIncludeFlags.All, msbuildDependency.IncludeAssets);
                 Assert.Equal(LibraryIncludeFlags.None, msbuildDependency.ExcludeAssets);
                 Assert.Equal(LibraryIncludeFlagUtils.DefaultSuppressParent, msbuildDependency.PrivateAssets);
-                Assert.Equal("netstandard1.6", string.Join("|", project1Spec.RestoreMetadata.TargetFrameworks.Select(e => e.FrameworkName.GetShortFolderName()).OrderBy(s => s, StringComparer.Ordinal)));
+                Assert.Equal("net45", string.Join("|", project1Spec.RestoreMetadata.TargetFrameworks
+                    .Select(e => e.FrameworkName.GetShortFolderName())
+                    .OrderBy(s => s, StringComparer.Ordinal)));
 
                 Assert.Equal(0, allDependencies2.Count);
             }

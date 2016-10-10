@@ -104,7 +104,10 @@ namespace NuGet.Commands.Test
                 // Create fake projects, the real data is in the specs
                 var projects = CreateProjectsFromSpecs(pathContext, specs);
 
-                // Link projects
+                // Remove valid link
+                spec1.RestoreMetadata.TargetFrameworks.Clear();
+
+                // Add invalid link, net45 is not a project tfm
                 spec1.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.Parse("net45")));
                 spec1.RestoreMetadata.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
                 {

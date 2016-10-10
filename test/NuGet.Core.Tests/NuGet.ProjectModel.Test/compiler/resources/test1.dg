@@ -41,8 +41,10 @@
             }
           },
           "net45": {
-            "78A6AD3F-9FA5-47F6-A54E-84B46A48CB2F": {
-              "projectPath": "c:\\b\\b.csproj"
+            "projectReferences": {
+              "78A6AD3F-9FA5-47F6-A54E-84B46A48CB2F": {
+                "projectPath": "c:\\b\\b.csproj"
+              }
             }
           }
         }
