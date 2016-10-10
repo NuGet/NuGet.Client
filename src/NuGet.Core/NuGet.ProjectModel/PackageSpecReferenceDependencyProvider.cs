@@ -287,12 +287,12 @@ namespace NuGet.ProjectModel
 
                     var dependency = new LibraryDependency()
                     {
-                        LibraryRange = new LibraryRange(
-                        dependencyName,
-                        range,
-                        LibraryDependencyTarget.ExternalProject),
                         IncludeType = (reference.IncludeAssets & ~reference.ExcludeAssets),
-                        SuppressParent = reference.PrivateAssets
+                        SuppressParent = reference.PrivateAssets,
+                        LibraryRange = new LibraryRange(
+                            dependencyName,
+                            range,
+                            LibraryDependencyTarget.ExternalProject),
                     };
 
                     // Remove existing reference if one exists, projects override

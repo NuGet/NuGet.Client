@@ -9,7 +9,7 @@ namespace NuGet.ProjectModel
     public class ProjectRestoreMetadataFrameworkInfo
     {
         /// <summary>
-        /// Framework references apply to
+        /// Target framework
         /// </summary>
         public NuGetFramework FrameworkName { get; set; }
 

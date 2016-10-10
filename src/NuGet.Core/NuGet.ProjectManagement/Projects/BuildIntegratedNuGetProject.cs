@@ -303,8 +303,15 @@ namespace NuGet.ProjectManagement.Projects
             metadata.ProjectUniqueName = MSBuildProjectPath;
 
             IReadOnlyList<ExternalProjectReference> references = null;
-            if (referenceContext.DirectReferenceCache.TryGetValue(metadata.ProjectPath, out references))
+            if (referenceContext.DirectReferenceCache.TryGetValue(metadata.ProjectPath, out references)
+                && references.Count > 0)
             {
+                // Add msbuild reference groups for each TFM in the project
+                foreach (var framework in packageSpec.TargetFrameworks.Select(e => e.FrameworkName))
+                {
+                    metadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(framework));
+                }
+
                 foreach (var reference in references)
                 {
                     // This reference applies to all frameworks
@@ -315,11 +322,11 @@ namespace NuGet.ProjectManagement.Projects
                         ProjectPath = reference.MSBuildProjectPath
                     };
 
-                    foreach (var framework in packageSpec.TargetFrameworks.Select(e => e.FrameworkName))
+                    // Add the reference for all TFM groups, there are no conditional project
+                    // references in UWP. There should also be just one TFM.
+                    foreach (var frameworkInfo in metadata.TargetFrameworks)
                     {
-                        var group = new ProjectRestoreMetadataFrameworkInfo(framework);
-                        metadata.TargetFrameworks.Add(group);
-                        group.ProjectReferences.Add(projectReference);
+                        frameworkInfo.ProjectReferences.Add(projectReference);
                     }
                 }
             }

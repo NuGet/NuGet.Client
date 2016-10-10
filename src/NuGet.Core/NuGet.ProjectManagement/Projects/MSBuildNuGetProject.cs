@@ -573,8 +573,13 @@ namespace NuGet.ProjectManagement
             metadata.ProjectUniqueName = MSBuildNuGetProjectSystem.ProjectFileFullPath;
 
             IReadOnlyList<ExternalProjectReference> references = null;
-            if (referenceContext.DirectReferenceCache.TryGetValue(metadata.ProjectPath, out references))
+            if (referenceContext.DirectReferenceCache.TryGetValue(metadata.ProjectPath, out references)
+                && references.Count > 0)
             {
+                // Add framework group
+                var frameworkGroup = new ProjectRestoreMetadataFrameworkInfo(MSBuildNuGetProjectSystem.TargetFramework);
+                metadata.TargetFrameworks.Add(frameworkGroup);
+
                 foreach (var reference in references)
                 {
                     // This reference applies to all frameworks
@@ -585,9 +590,7 @@ namespace NuGet.ProjectManagement
                         ProjectPath = reference.MSBuildProjectPath
                     };
 
-                    var group = new ProjectRestoreMetadataFrameworkInfo(MSBuildNuGetProjectSystem.TargetFramework);
-                    metadata.TargetFrameworks.Add(group);
-                    group.ProjectReferences.Add(projectReference);
+                    frameworkGroup.ProjectReferences.Add(projectReference);
                 }
             }
 
