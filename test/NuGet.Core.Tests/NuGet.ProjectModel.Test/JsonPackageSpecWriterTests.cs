@@ -39,8 +39,7 @@ namespace NuGet.ProjectModel.Test
     ""iconUrl"": ""http://my.url.com"",
     ""summary"": ""Sum"",
     ""releaseNotes"": ""release noted"",
-    ""licenseUrl"": ""http://my.url.com"",
-    ""requireLicenseAcceptance"": ""False""
+    ""licenseUrl"": ""http://my.url.com""
   },
   ""scripts"": {
     ""script1"": [
@@ -67,7 +66,6 @@ namespace NuGet.ProjectModel.Test
             // Arrange
             var json = @"{
   ""packOptions"": {
-    ""requireLicenseAcceptance"": ""False"",
     ""packageType"": ""DotNetTool""
   }
 }";
@@ -82,7 +80,6 @@ namespace NuGet.ProjectModel.Test
             // Arrange
             var json = @"{
   ""packOptions"": {
-    ""requireLicenseAcceptance"": ""False"",
     ""packageType"": [
       ""DotNetTool"",
       ""Dependency""

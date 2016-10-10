@@ -248,7 +248,11 @@ namespace NuGet.Commands.Test
                     }
                 });
 
-                spec1.RestoreMetadata.ProjectReferences.Add(new ProjectRestoreReference()
+                spec1.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.Parse("net45")));
+                spec1.RestoreMetadata.TargetFrameworks
+                    .Single()
+                    .ProjectReferences
+                    .Add(new ProjectRestoreReference()
                 {
                     ProjectPath = projPath2,
                     ProjectUniqueName = "project2"
@@ -381,11 +385,15 @@ namespace NuGet.Commands.Test
                     }
                 });
 
-                spec1.RestoreMetadata.ProjectReferences.Add(new ProjectRestoreReference()
-                {
-                    ProjectPath = projPath2,
-                    ProjectUniqueName = "project2"
-                });
+                spec1.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.Parse("net45")));
+                spec1.RestoreMetadata.TargetFrameworks
+                    .Single()
+                    .ProjectReferences
+                    .Add(new ProjectRestoreReference()
+                    {
+                        ProjectPath = projPath2,
+                        ProjectUniqueName = "project2"
+                    });
 
                 // Create dg file
                 var dgFile = new DependencyGraphSpec();

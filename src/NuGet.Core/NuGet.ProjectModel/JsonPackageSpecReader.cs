@@ -121,7 +121,7 @@ namespace NuGet.ProjectModel
             packageSpec.Dependencies = new List<LibraryDependency>();
             packageSpec.Copyright = rawPackageSpec.GetValue<string>("copyright");
             packageSpec.Language = rawPackageSpec.GetValue<string>("language");
-            
+
 
             var buildOptions = rawPackageSpec["buildOptions"] as JObject;
             if (buildOptions != null)
@@ -225,7 +225,7 @@ namespace NuGet.ProjectModel
             var outputTypeString = rawMSBuildMetadata.GetValue<string>("outputType");
 
             RestoreOutputType outputType;
-            if (!string.IsNullOrEmpty(outputTypeString) 
+            if (!string.IsNullOrEmpty(outputTypeString)
                 && Enum.TryParse<RestoreOutputType>(outputTypeString, ignoreCase: true, result: out outputType))
             {
                 msbuildMetadata.OutputType = outputType;
@@ -247,16 +247,40 @@ namespace NuGet.ProjectModel
                 }
             }
 
-            var projectsObj = rawMSBuildMetadata.GetValue<JObject>("projectReferences");
-            if (projectsObj != null)
+            var frameworksObj = rawMSBuildMetadata.GetValue<JObject>("frameworks");
+            if (frameworksObj != null)
             {
-                foreach (var prop in projectsObj.Properties())
+                foreach (var frameworkProperty in frameworksObj.Properties())
                 {
-                    msbuildMetadata.ProjectReferences.Add(new ProjectRestoreReference()
+                    var framework = NuGetFramework.Parse(frameworkProperty.Name);
+                    var frameworkGroup = new ProjectRestoreMetadataFrameworkInfo(framework);
+
+                    var projectsObj = frameworkProperty.Value.GetValue<JObject>("projectReferences");
+                    if (projectsObj != null)
                     {
-                        ProjectUniqueName = prop.Name,
-                        ProjectPath = prop.Value.GetValue<string>("projectPath")
-                    });
+                        foreach (var prop in projectsObj.Properties())
+                        {
+                            frameworkGroup.ProjectReferences.Add(new ProjectRestoreReference()
+                            {
+                                ProjectUniqueName = prop.Name,
+                                ProjectPath = prop.Value.GetValue<string>("projectPath"),
+
+                                IncludeAssets = LibraryIncludeFlagUtils.GetFlags(
+                                    flags: prop.Value.GetValue<string>("includeAssets"),
+                                    defaultFlags: LibraryIncludeFlags.All),
+
+                                ExcludeAssets = LibraryIncludeFlagUtils.GetFlags(
+                                    flags: prop.Value.GetValue<string>("excludeAssets"),
+                                    defaultFlags: LibraryIncludeFlags.None),
+
+                                PrivateAssets = LibraryIncludeFlagUtils.GetFlags(
+                                    flags: prop.Value.GetValue<string>("privateAssets"),
+                                    defaultFlags: LibraryIncludeFlagUtils.DefaultSuppressParent),
+                            });
+                        }
+                    }
+
+                    msbuildMetadata.TargetFrameworks.Add(frameworkGroup);
                 }
             }
 
@@ -290,8 +314,8 @@ namespace NuGet.ProjectModel
             var rawPackOptions = rawPackageSpec.Value<JToken>(PackOptions) as JObject;
             if (rawPackOptions == null)
             {
-                packageSpec.Owners = new string[] {};
-                packageSpec.Tags = new string[] {};
+                packageSpec.Owners = new string[] { };
+                packageSpec.Tags = new string[] { };
                 return new PackOptions
                 {
                     PackageType = new PackageType[0]
@@ -306,7 +330,7 @@ namespace NuGet.ProjectModel
             packageSpec.Summary = rawPackOptions.GetValue<string>("summary");
             packageSpec.ReleaseNotes = rawPackOptions.GetValue<string>("releaseNotes");
             packageSpec.LicenseUrl = rawPackOptions.GetValue<string>("licenseUrl");
-            
+
 
             var requireLicenseAcceptance = rawPackOptions["requireLicenseAcceptance"];
 
@@ -467,7 +491,7 @@ namespace NuGet.ProjectModel
                             {
                                 suppressParentFlagsValue = LibraryIncludeFlags.All;
                             }
-                            else if(dependencyTypeValue.Contains(LibraryDependencyTypeFlag.SharedFramework))
+                            else if (dependencyTypeValue.Contains(LibraryDependencyTypeFlag.SharedFramework))
                             {
                                 dependencyIncludeFlagsValue =
                                     LibraryIncludeFlags.Build |
@@ -599,8 +623,8 @@ namespace NuGet.ProjectModel
                             {
                                 versionValue = versionToken.Value<string>();
                             }
-                            
-                            imports.AddRange(GetImports((JObject) value, packageSpec));
+
+                            imports.AddRange(GetImports((JObject)value, packageSpec));
                         }
                     }
 
@@ -694,7 +718,7 @@ namespace NuGet.ProjectModel
                         token.Value<string>()
                     };
             }
-            else if(token.Type == JTokenType.Array)
+            else if (token.Type == JTokenType.Array)
             {
                 values = token.ValueAsArray<string>();
             }

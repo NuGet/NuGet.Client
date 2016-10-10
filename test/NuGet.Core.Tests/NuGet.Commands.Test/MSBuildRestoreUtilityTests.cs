@@ -181,7 +181,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal(RestoreOutputType.NETCore, project1Spec.RestoreMetadata.OutputType);
                 Assert.Equal("482C20DE-DFF9-4BD0-B90A-BD3201AA351A", project1Spec.RestoreMetadata.ProjectUniqueName);
                 Assert.Equal(project1Path, project1Spec.RestoreMetadata.ProjectPath);
-                Assert.Equal(0, project1Spec.RestoreMetadata.ProjectReferences.Count);
+                Assert.Equal(0, project1Spec.RestoreMetadata.TargetFrameworks.SelectMany(e => e.ProjectReferences).Count());
                 Assert.Null(project1Spec.RestoreMetadata.ProjectJsonPath);
                 Assert.Equal("net46|netstandard1.6", string.Join("|", project1Spec.TargetFrameworks.Select(e => e.FrameworkName.GetShortFolderName())));
                 Assert.Equal("net46|netstandard16", string.Join("|", project1Spec.RestoreMetadata.OriginalTargetFrameworks));
@@ -501,29 +501,29 @@ namespace NuGet.Commands.Test
                 var project1Spec = dgSpec.Projects.Single(e => e.Name == "a");
                 var project2Spec = dgSpec.Projects.Single(e => e.Name == "b");
 
-                var dependencyLink = project1Spec.GetTargetFramework(NuGetFramework.Parse("netstandard1.6"))
-                    .Dependencies
-                    .Single(e => e.Name == "AA2C20DE-DFF9-4BD0-B90A-BD3201AA351A");
-
-                var msbuildDependency = project1Spec.RestoreMetadata.ProjectReferences.Single();
+                var msbuildDependency = project1Spec.RestoreMetadata.TargetFrameworks
+                    .Single(e => e.FrameworkName.Equals(NuGetFramework.Parse("netstandard1.6")))
+                    .ProjectReferences
+                    .Single();
 
                 // Assert
                 // Verify p2p reference
-                Assert.Equal("AA2C20DE-DFF9-4BD0-B90A-BD3201AA351A", dependencyLink.Name);
-                Assert.Equal(LibraryDependencyTarget.ExternalProject, dependencyLink.LibraryRange.TypeConstraint);
-                Assert.Equal(VersionRange.All, dependencyLink.LibraryRange.VersionRange);
-                Assert.Equal(LibraryIncludeFlags.All, dependencyLink.IncludeType);
-                Assert.Equal(LibraryIncludeFlagUtils.DefaultSuppressParent, dependencyLink.SuppressParent);
-
                 Assert.Equal("AA2C20DE-DFF9-4BD0-B90A-BD3201AA351A", msbuildDependency.ProjectUniqueName);
                 Assert.Equal(project2Path, msbuildDependency.ProjectPath);
+                Assert.Equal(LibraryIncludeFlags.All, msbuildDependency.IncludeAssets);
+                Assert.Equal(LibraryIncludeFlags.None, msbuildDependency.ExcludeAssets);
+                Assert.Equal(LibraryIncludeFlagUtils.DefaultSuppressParent, msbuildDependency.PrivateAssets);
+                Assert.Equal("netstandard1.6", string.Join("|", project1Spec.RestoreMetadata.TargetFrameworks
+                    .Where(e => e.ProjectReferences.Count > 0)
+                    .Select(e => e.FrameworkName.GetShortFolderName())
+                    .OrderBy(s => s, StringComparer.Ordinal)));
 
                 // Dependency counts
                 Assert.Equal(0, project1Spec.Dependencies.Count);
                 Assert.Equal(0, project2Spec.Dependencies.Count);
 
                 Assert.Equal(2, project1Spec.GetTargetFramework(NuGetFramework.Parse("net46")).Dependencies.Count);
-                Assert.Equal(2, project1Spec.GetTargetFramework(NuGetFramework.Parse("netstandard1.6")).Dependencies.Count);
+                Assert.Equal(1, project1Spec.GetTargetFramework(NuGetFramework.Parse("netstandard1.6")).Dependencies.Count);
 
                 Assert.Equal(1, project2Spec.GetTargetFramework(NuGetFramework.Parse("net45")).Dependencies.Count);
                 Assert.Equal(1, project2Spec.GetTargetFramework(NuGetFramework.Parse("netstandard1.0")).Dependencies.Count);
@@ -653,18 +653,17 @@ namespace NuGet.Commands.Test
 
                 var allDependencies1 = project1Spec.Dependencies.Concat(project1Spec.TargetFrameworks.Single().Dependencies).ToList();
                 var allDependencies2 = project2Spec.Dependencies.Concat(project2Spec.TargetFrameworks.Single().Dependencies).ToList();
-                var dependencyLink = allDependencies1.Single();
-                var msbuildDependency = project1Spec.RestoreMetadata.ProjectReferences.Single();
+                var msbuildDependency = project1Spec.RestoreMetadata.TargetFrameworks.Single().ProjectReferences.Single();
 
                 // Assert
-                Assert.Equal("AA2C20DE-DFF9-4BD0-B90A-BD3201AA351A", dependencyLink.Name);
-                Assert.Equal(LibraryDependencyTarget.ExternalProject, dependencyLink.LibraryRange.TypeConstraint);
-                Assert.Equal(VersionRange.All, dependencyLink.LibraryRange.VersionRange);
-                Assert.Equal(LibraryIncludeFlags.All, dependencyLink.IncludeType);
-                Assert.Equal(LibraryIncludeFlagUtils.DefaultSuppressParent, dependencyLink.SuppressParent);
-
                 Assert.Equal("AA2C20DE-DFF9-4BD0-B90A-BD3201AA351A", msbuildDependency.ProjectUniqueName);
                 Assert.Equal(project2Path, msbuildDependency.ProjectPath);
+                Assert.Equal(LibraryIncludeFlags.All, msbuildDependency.IncludeAssets);
+                Assert.Equal(LibraryIncludeFlags.None, msbuildDependency.ExcludeAssets);
+                Assert.Equal(LibraryIncludeFlagUtils.DefaultSuppressParent, msbuildDependency.PrivateAssets);
+                Assert.Equal("net45", string.Join("|", project1Spec.RestoreMetadata.TargetFrameworks
+                    .Select(e => e.FrameworkName.GetShortFolderName())
+                    .OrderBy(s => s, StringComparer.Ordinal)));
 
                 Assert.Equal(0, allDependencies2.Count);
             }
@@ -715,7 +714,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal(RestoreOutputType.UAP, spec.RestoreMetadata.OutputType);
                 Assert.Equal("482C20DE-DFF9-4BD0-B90A-BD3201AA351A", spec.RestoreMetadata.ProjectUniqueName);
                 Assert.Equal(projectPath, spec.RestoreMetadata.ProjectPath);
-                Assert.Equal(0, spec.RestoreMetadata.ProjectReferences.Count);
+                Assert.Equal(0, spec.RestoreMetadata.TargetFrameworks.SelectMany(e => e.ProjectReferences).Count());
                 Assert.Equal(projectJsonPath, spec.RestoreMetadata.ProjectJsonPath);
                 Assert.Equal(NuGetFramework.Parse("net45"), spec.TargetFrameworks.Single().FrameworkName);
             }
@@ -749,7 +748,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal("482C20DE-DFF9-4BD0-B90A-BD3201AA351A", spec.RestoreMetadata.ProjectUniqueName);
                 Assert.Equal(projectPath, spec.RestoreMetadata.ProjectPath);
                 Assert.Equal(NuGetFramework.Parse("net462"), spec.TargetFrameworks.Single().FrameworkName);
-                Assert.Equal(0, spec.RestoreMetadata.ProjectReferences.Count);
+                Assert.Equal(0, spec.RestoreMetadata.TargetFrameworks.SelectMany(e => e.ProjectReferences).Count());
                 Assert.Null(spec.RestoreMetadata.ProjectJsonPath);
             }
         }

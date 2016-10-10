@@ -19,8 +19,13 @@ namespace NuGet.LibraryModel
 
         public LibraryRange(string name, VersionRange versionRange, LibraryDependencyTarget typeConstraint)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             Name = name;
-            VersionRange = versionRange;
+            VersionRange = versionRange ?? VersionRange.All;
             TypeConstraint = typeConstraint;
         }
 

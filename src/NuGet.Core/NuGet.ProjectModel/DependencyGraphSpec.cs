@@ -108,7 +108,11 @@ namespace NuGet.ProjectModel
         private static IEnumerable<string> GetProjectReferenceNames(PackageSpec spec)
         {
             // Handle projects which may not have specs, and which may not have references
-            return spec?.RestoreMetadata?.ProjectReferences?.Select(project => project.ProjectUniqueName)
+            return spec?.RestoreMetadata?
+                .TargetFrameworks
+                .SelectMany(e => e.ProjectReferences)
+                .Select(project => project.ProjectUniqueName)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
                 ?? Enumerable.Empty<string>();
         }
 

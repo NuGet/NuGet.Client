@@ -131,46 +131,14 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public void SpecValidationUtility_VerifyProjectReferences_MissingFromDependencies()
-        {
-            // Arrange
-            var spec = GetBasicDG();
-            spec.Projects.First().RestoreMetadata.ProjectReferences.Add(new ProjectRestoreReference()
-            {
-                ProjectPath = "b.csproj",
-                ProjectUniqueName = "b"
-            });
-
-            // Act && Assert
-            AssertError(spec, "Missing dependency on 'b'");
-        }
-
-        [Fact]
-        public void SpecValidationUtility_VerifyProjectReferences_MissingFromDependencies_PackageOnly()
-        {
-            // Arrange
-            var spec = GetBasicDG();
-            spec.Projects.First().RestoreMetadata.ProjectReferences.Add(new ProjectRestoreReference()
-            {
-                ProjectPath = "b.csproj",
-                ProjectUniqueName = "b"
-            });
-
-            spec.Projects.First().Dependencies.Add(new LibraryDependency()
-            {
-                LibraryRange = new LibraryRange("b", LibraryDependencyTarget.Package)
-            });
-
-            // Act && Assert
-            AssertError(spec, "Missing dependency on 'b'");
-        }
-
-        [Fact]
         public void SpecValidationUtility_VerifyProjectReferences_TopLevel_Pass()
         {
             // Arrange
             var spec = GetBasicDG();
-            spec.Projects.First().RestoreMetadata.ProjectReferences.Add(new ProjectRestoreReference()
+            spec.Projects.First().RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.Parse("net45")));
+
+            spec.Projects.First().RestoreMetadata.TargetFrameworks.Single()
+                .ProjectReferences.Add(new ProjectRestoreReference()
             {
                 ProjectPath = "b.csproj",
                 ProjectUniqueName = "b"
@@ -190,11 +158,14 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var spec = GetBasicDG();
-            spec.Projects.First().RestoreMetadata.ProjectReferences.Add(new ProjectRestoreReference()
-            {
-                ProjectPath = "b.csproj",
-                ProjectUniqueName = "b"
-            });
+            spec.Projects.First().RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.Parse("net45")));
+
+            spec.Projects.First().RestoreMetadata.TargetFrameworks.Single()
+                .ProjectReferences.Add(new ProjectRestoreReference()
+                {
+                    ProjectPath = "b.csproj",
+                    ProjectUniqueName = "b"
+                });
 
             spec.Projects.First().TargetFrameworks.First().Dependencies.Add(new LibraryDependency()
             {
@@ -258,17 +229,6 @@ namespace NuGet.Commands.Test
 
             // Act && Assert
             AssertError(spec, "Missing required property 'FilePath'");
-        }
-
-        [Fact]
-        public void SpecValidationUtility_UnexpectedError()
-        {
-            // Arrange
-            var spec = GetBasicDG();
-            spec.Projects.First().RestoreMetadata.ProjectReferences = null;
-
-            // Act && Assert
-            AssertError(spec, "Value cannot be null");
         }
 
         [Fact]

@@ -130,15 +130,46 @@ namespace NuGet.ProjectModel
                 }
             }
 
-            if (msbuildMetadata.ProjectReferences?.Count > 0)
+            if (msbuildMetadata.TargetFrameworks?.Count > 0)
             {
-                var projectReferencesObj = new JObject();
-                rawMSBuildMetadata["projectReferences"] = projectReferencesObj;
+                var frameworksObj = new JObject();
+                rawMSBuildMetadata["frameworks"] = frameworksObj;
 
-                foreach (var project in msbuildMetadata.ProjectReferences)
+                foreach (var msbuildFramework in msbuildMetadata.TargetFrameworks)
                 {
-                    projectReferencesObj[project.ProjectUniqueName] = new JObject();
-                    projectReferencesObj[project.ProjectUniqueName]["projectPath"] = project.ProjectPath;
+                    var frameworkName = msbuildFramework.FrameworkName.GetShortFolderName();
+
+                    if (frameworksObj[frameworkName] == null)
+                    {
+                        var frameworkObj = new JObject();
+                        frameworksObj.Add(frameworkName, frameworkObj);
+
+                        var projectReferencesObj = new JObject();
+                        frameworkObj["projectReferences"] = projectReferencesObj;
+
+                        foreach (var project in msbuildFramework.ProjectReferences)
+                        {
+                            var projectObject = new JObject();
+                            projectReferencesObj[project.ProjectUniqueName] = projectObject;
+
+                            projectObject["projectPath"] = project.ProjectPath;
+
+                            if (project.IncludeAssets != LibraryIncludeFlags.All)
+                            {
+                                projectObject["includeAssets"] = LibraryIncludeFlagUtils.GetFlagString(project.IncludeAssets);
+                            }
+
+                            if (project.ExcludeAssets != LibraryIncludeFlags.None)
+                            {
+                                projectObject["excludeAssets"] = LibraryIncludeFlagUtils.GetFlagString(project.ExcludeAssets);
+                            }
+
+                            if (project.PrivateAssets != LibraryIncludeFlagUtils.DefaultSuppressParent)
+                            {
+                                projectObject["privateAssets"] = LibraryIncludeFlagUtils.GetFlagString(project.PrivateAssets);
+                            }
+                        }
+                    }
                 }
             }
 
@@ -164,7 +195,12 @@ namespace NuGet.ProjectModel
             SetValue(rawPackOptions, "summary", packageSpec.Summary);
             SetValue(rawPackOptions, "releaseNotes", packageSpec.ReleaseNotes);
             SetValue(rawPackOptions, "licenseUrl", packageSpec.LicenseUrl);
-            SetValue(rawPackOptions, "requireLicenseAcceptance", packageSpec.RequireLicenseAcceptance.ToString());
+
+            if (packageSpec.RequireLicenseAcceptance)
+            {
+                SetValue(rawPackOptions, "requireLicenseAcceptance", packageSpec.RequireLicenseAcceptance.ToString());
+            }
+
             if (packOptions.PackageType != null)
             {
                 if (packOptions.PackageType.Count == 1)
