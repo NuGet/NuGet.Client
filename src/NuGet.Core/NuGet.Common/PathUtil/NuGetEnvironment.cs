@@ -16,7 +16,8 @@ namespace NuGet.Common
             switch (folder)
             {
                 case NuGetFolderPath.MachineWideSettingsBaseDirectory:
-                    return Path.Combine(GetFolderPath(SpecialFolder.MachineWideSetting),
+                    var machineWideBaseDir = RuntimeEnvironmentHelper.IsWindows ? GetFolderPath(SpecialFolder.ProgramFilesX86) : GetFolderPath(SpecialFolder.CommonApplicationData);
+                    return Path.Combine(machineWideBaseDir,
                         "nuget");
 
                 case NuGetFolderPath.MachineWideConfigDirectory:
@@ -59,20 +60,11 @@ namespace NuGet.Common
         }
 
 #if IS_CORECLR
+
         private static string GetFolderPath(SpecialFolder folder)
         {
             switch (folder)
             {
-                case SpecialFolder.MachineWideSetting:
-                    if (RuntimeEnvironmentHelper.IsWindows)
-                    {
-                        return GetFolderPath(SpecialFolder.ProgramFilesX86);
-                    }
-                    else
-                    {
-                        return GetFolderPath(SpecialFolder.CommonApplicationData);
-                    }
-
                 case SpecialFolder.ProgramFilesX86:
                     return Environment.GetEnvironmentVariable("PROGRAMFILES(X86)");
 
@@ -140,6 +132,7 @@ namespace NuGet.Common
                     return null;
             }
         }
+
 #else
         private static string GetFolderPath(SpecialFolder folder)
         {
@@ -147,7 +140,6 @@ namespace NuGet.Common
             Environment.SpecialFolder converted;
             switch (folder)
             {
-                case SpecialFolder.MachineWideSetting:
                 case SpecialFolder.ProgramFilesX86:
                     converted = Environment.SpecialFolder.ProgramFilesX86;
                     break;
@@ -261,7 +253,6 @@ namespace NuGet.Common
             return DotNet;
         }
 
-
         /// <summary>
         /// Since <see cref="Environment.SpecialFolder"/> is not available on .NET Core, we have to
         /// make our own and re-implement the functionality. On .NET Framework, we can use the
@@ -274,8 +265,7 @@ namespace NuGet.Common
             UserProfile,
             CommonApplicationData,
             ApplicationData,
-            LocalApplicationData,
-            MachineWideSetting
+            LocalApplicationData
         }
     }
 }

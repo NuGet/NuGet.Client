@@ -102,7 +102,6 @@ namespace NuGet.Configuration.Test
             var machineWidePathTuple = Settings.GetFileNameAndItsRoot("test root", machineWidePath);
             var globalConfigTuple = Settings.GetFileNameAndItsRoot("test root", globalConfigPath);
 
-
             // Assert
             Assert.Equal(Path.Combine(commonApplicationData, "nuget"), machineWidePathTuple.Item2);
             Assert.Equal("NuGet.Config", machineWidePathTuple.Item1);
