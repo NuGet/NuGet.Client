@@ -89,6 +89,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 return null;
             }
 
+            // The project must have the CPS capability.
+            if (!hierarchy.IsCapabilityMatch("CPS"))
+            {
+                return null;
+            }
+
             // The project must be an IVsBuildPropertyStorage.
             var buildPropertyStorage = hierarchy as IVsBuildPropertyStorage;
             if (buildPropertyStorage == null)
@@ -96,15 +102,15 @@ namespace NuGet.PackageManagement.VisualStudio
                 return null;
             }
 
-            // MSBuild must be found.
-            var msbuildPath = GetMSBuildPath(buildPropertyStorage, project.DTE);
-            if (msbuildPath == null)
+            // The project must have the "TargetFrameworks" property.
+            if (GetMSBuildProperty(buildPropertyStorage, TargetFrameworksName) == null)
             {
                 return null;
             }
 
-            // The project must have the "TargetFrameworks" property.
-            if (GetMSBuildProperty(buildPropertyStorage, TargetFrameworksName) == null)
+            // MSBuild must be found.
+            var msbuildPath = GetMSBuildPath(buildPropertyStorage, project.DTE);
+            if (msbuildPath == null)
             {
                 return null;
             }
@@ -351,19 +357,6 @@ namespace NuGet.PackageManagement.VisualStudio
             if (File.Exists(msbuildPath))
             {
                 return msbuildPath;
-            }
-
-            // Try to get MSBuild from the PATH.
-            var pathVariable = Environment.GetEnvironmentVariable("PATH");
-            var pathDirectories = pathVariable.Split(Path.PathSeparator);
-            foreach (var pathDirectory in pathDirectories)
-            {
-                msbuildPath = Path.Combine(pathDirectory, MSBuildExe);
-
-                if (File.Exists(msbuildPath))
-                {
-                    return msbuildPath;
-                }
             }
 
             return null;
