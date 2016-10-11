@@ -105,11 +105,17 @@ namespace NuGet.ProjectModel
             SetValue(rawMSBuildMetadata, "projectName", msbuildMetadata.ProjectName);
             SetValue(rawMSBuildMetadata, "projectPath", msbuildMetadata.ProjectPath);
             SetValue(rawMSBuildMetadata, "projectJsonPath", msbuildMetadata.ProjectJsonPath);
+            SetValue(rawMSBuildMetadata, "packagesPath", msbuildMetadata.PackagesPath);
             SetValue(rawMSBuildMetadata, "outputPath", msbuildMetadata.OutputPath);
 
             if (msbuildMetadata.OutputType != RestoreOutputType.Unknown)
             {
                 SetValue(rawMSBuildMetadata, "outputType", msbuildMetadata.OutputType.ToString());
+            }
+
+            if (msbuildMetadata.CrossTargeting)
+            {
+                SetValue(rawMSBuildMetadata, "crossTargeting", msbuildMetadata.CrossTargeting.ToString());
             }
 
             SetValue(rawMSBuildMetadata, "packagesPath", msbuildMetadata.PackagesPath);

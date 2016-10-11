@@ -61,5 +61,10 @@ namespace NuGet.ProjectModel
         /// Original target frameworks strings. These are used to match msbuild conditionals to $(TargetFramework)
         /// </summary>
         public IList<string> OriginalTargetFrameworks { get; set; } = new List<string>();
+
+        /// <summary>
+        /// True if $(TargetFrameworks) is used and the build is using Cross Targeting.
+        /// </summary>
+        public bool CrossTargeting { get; set; }
     }
 }
