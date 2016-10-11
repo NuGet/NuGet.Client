@@ -133,6 +133,9 @@ namespace NuGet.CommandLine
                 argumentBuilder.Append(" /p:RestoreGraphOutputPath=");
                 AppendQuoted(argumentBuilder, resultsPath);
 
+                // Disallow the import of targets/props from packages
+                argumentBuilder.Append(" /p:ExcludeRestorePackageImports=true ");
+
                 // Projects to restore
                 argumentBuilder.Append(" /p:RestoreGraphProjectInput=\"");
                 for (var i = 0; i < projectPaths.Length; i++)

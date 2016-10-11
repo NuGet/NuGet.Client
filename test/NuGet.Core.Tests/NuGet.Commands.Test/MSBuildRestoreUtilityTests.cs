@@ -36,6 +36,7 @@ namespace NuGet.Commands.Test
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
                     { "TargetFrameworks", "netcoreapp1.0" },
+                    { "CrossTargeting", "true" },
                 });
 
                 // Package reference
@@ -46,6 +47,7 @@ namespace NuGet.Commands.Test
                     { "Id", "x" },
                     { "VersionRange", "1.0.0-beta.*" },
                     { "TargetFrameworks", "netcoreapp1.0" },
+                    { "CrossTargeting", "true" },
                 });
 
                 var wrappedItems = items.Select(CreateItems).ToList();
@@ -81,6 +83,7 @@ namespace NuGet.Commands.Test
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
                     { "TargetFrameworks", "net46" },
+                    { "CrossTargeting", "true" },
                 });
 
                 // Package references
@@ -93,6 +96,7 @@ namespace NuGet.Commands.Test
                     { "VersionRange", "1.0.0" },
                     { "TargetFrameworks", "net46" },
                     { "IncludeAssets", "build;compile" },
+                    { "CrossTargeting", "true" },
                 });
 
                 // A net46 -> Y
@@ -167,6 +171,7 @@ namespace NuGet.Commands.Test
                     { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
                     { "FallbackFolders", fallbackFolder },
                     { "PackagesPath", packagesFolder },
+                    { "CrossTargeting", "true" }
                 });
 
                 var wrappedItems = items.Select(CreateItems).ToList();
@@ -191,6 +196,51 @@ namespace NuGet.Commands.Test
                 Assert.Equal(packagesFolder, string.Join("|", project1Spec.RestoreMetadata.PackagesPath));
                 Assert.Equal(0, project1Spec.RuntimeGraph.Runtimes.Count);
                 Assert.Equal(0, project1Spec.RuntimeGraph.Supports.Count);
+                Assert.True(project1Spec.RestoreMetadata.CrossTargeting);
+            }
+        }
+
+        [Fact]
+        public void MSBuildRestoreUtility_GetPackageSpec_NetCoreNonCrossTargeting()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var project1Root = Path.Combine(workingDir, "a");
+                var project1Path = Path.Combine(project1Root, "a.csproj");
+                var outputPath1 = Path.Combine(project1Root, "obj");
+                var fallbackFolder = Path.Combine(project1Root, "fallback");
+                var packagesFolder = Path.Combine(project1Root, "packages");
+
+                var items = new List<IDictionary<string, string>>();
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "a" },
+                    { "OutputType", "netcore" },
+                    { "OutputPath", outputPath1 },
+                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectPath", project1Path },
+                    { "TargetFrameworks", "netstandard16" },
+                    { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
+                    { "FallbackFolders", fallbackFolder },
+                    { "PackagesPath", packagesFolder },
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var project1Spec = dgSpec.Projects.Single();
+
+                // Assert
+                Assert.Equal(project1Path, project1Spec.FilePath);
+                Assert.Equal("a", project1Spec.Name);
+                Assert.Equal(RestoreOutputType.NETCore, project1Spec.RestoreMetadata.OutputType);
+                Assert.Equal("netstandard1.6", string.Join("|", project1Spec.TargetFrameworks.Select(e => e.FrameworkName.GetShortFolderName())));
+                Assert.Equal("netstandard16", string.Join("|", project1Spec.RestoreMetadata.OriginalTargetFrameworks));
+                Assert.False(project1Spec.RestoreMetadata.CrossTargeting);
             }
         }
 
@@ -220,6 +270,7 @@ namespace NuGet.Commands.Test
                     { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
                     { "FallbackFolders", fallbackFolder },
                     { "PackagesPath", packagesFolder },
+                    { "CrossTargeting", "true" },
                 });
 
                 items.Add(new Dictionary<string, string>()
@@ -290,6 +341,7 @@ namespace NuGet.Commands.Test
                     { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
                     { "FallbackFolders", fallbackFolder },
                     { "PackagesPath", packagesFolder },
+                    { "CrossTargeting", "true" },
                 });
 
                 items.Add(new Dictionary<string, string>()
@@ -344,6 +396,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworks", "net46;netstandard16" },
                     { "RuntimeIdentifiers", "win7-x86;linux-x64" },
                     { "RuntimeSupports", "net46.app;win8.app" },
+                    { "CrossTargeting", "true" },
                 });
 
                 var wrappedItems = items.Select(CreateItems).ToList();
@@ -387,6 +440,7 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworks", "net46;netstandard16" },
                     { "RuntimeIdentifiers", "win7-x86;linux-x64;win7-x86;linux-x64" },
                     { "RuntimeSupports", "net46.app;win8.app;net46.app;win8.app" },
+                    { "CrossTargeting", "true" },
                 });
 
                 var wrappedItems = items.Select(CreateItems).ToList();
@@ -431,6 +485,7 @@ namespace NuGet.Commands.Test
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
                     { "TargetFrameworks", "net46;netstandard1.6" },
+                    { "CrossTargeting", "true" },
                 });
 
                 items.Add(new Dictionary<string, string>()
@@ -442,6 +497,7 @@ namespace NuGet.Commands.Test
                     { "ProjectUniqueName", "AA2C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project2Path },
                     { "TargetFrameworks", "net45;netstandard1.0" },
+                    { "CrossTargeting", "true" },
                 });
 
                 // A -> B
@@ -452,6 +508,7 @@ namespace NuGet.Commands.Test
                     { "ProjectReferenceUniqueName", "AA2C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project2Path },
                     { "TargetFrameworks", "netstandard1.6" },
+                    { "CrossTargeting", "true" },
                 });
 
                 // Package references
@@ -463,6 +520,7 @@ namespace NuGet.Commands.Test
                     { "Id", "x" },
                     { "VersionRange", "1.0.0-beta.*" },
                     { "TargetFrameworks", "net46" },
+                    { "CrossTargeting", "true" },
                 });
 
                 // A netstandard1.6 -> Z
@@ -473,6 +531,7 @@ namespace NuGet.Commands.Test
                     { "Id", "z" },
                     { "VersionRange", "2.0.0" },
                     { "TargetFrameworks", "netstandard1.6" },
+                    { "CrossTargeting", "true" },
                 });
 
                 // B ALL -> Y
@@ -483,6 +542,7 @@ namespace NuGet.Commands.Test
                     { "Id", "y" },
                     { "VersionRange", "[1.0.0]" },
                     { "TargetFrameworks", "netstandard1.0;net45" },
+                    { "CrossTargeting", "true" },
                 });
 
                 // Framework assembly
@@ -492,6 +552,7 @@ namespace NuGet.Commands.Test
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "Id", "System.IO" },
                     { "TargetFrameworks", "net46" },
+                    { "CrossTargeting", "true" },
                 });
 
                 var wrappedItems = items.Select(CreateItems).ToList();
@@ -736,6 +797,7 @@ namespace NuGet.Commands.Test
                     { "ProjectPath", projectPath },
                     { "TargetFrameworks", "net462" },
                     { "ProjectName", "a" },
+                    { "CrossTargeting", "true" },
                 });
 
                 // Act

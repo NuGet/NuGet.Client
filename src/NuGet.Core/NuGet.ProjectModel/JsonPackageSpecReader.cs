@@ -235,6 +235,7 @@ namespace NuGet.ProjectModel
             msbuildMetadata.ProjectJsonPath = rawMSBuildMetadata.GetValue<string>("projectJsonPath");
             msbuildMetadata.ProjectName = rawMSBuildMetadata.GetValue<string>("projectName");
             msbuildMetadata.ProjectPath = rawMSBuildMetadata.GetValue<string>("projectPath");
+            msbuildMetadata.CrossTargeting = rawMSBuildMetadata.GetValue<bool>("crossTargeting");
 
             msbuildMetadata.Sources = new List<PackageSource>();
 

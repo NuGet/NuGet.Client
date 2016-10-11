@@ -169,6 +169,9 @@ namespace NuGet.Commands
 
                     // Add PackageTargetFallback
                     AddPackageTargetFallbacks(result, items);
+
+                    // Add CrossTargeting flag
+                    result.RestoreMetadata.CrossTargeting = IsPropertyTrue(specItem, "CrossTargeting");
                 }
             }
 
@@ -535,6 +538,11 @@ namespace NuGet.Commands
 
                 spec.Save(path);
             }
+        }
+
+        private static bool IsPropertyTrue(IMSBuildItem item, string propertyName)
+        {
+            return StringComparer.OrdinalIgnoreCase.Equals(item.GetProperty(propertyName), Boolean.TrueString);
         }
 
         private static readonly Lazy<bool> _isPersistDGSet = new Lazy<bool>(() => IsPersistDGSet());

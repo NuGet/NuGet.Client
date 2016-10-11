@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Xml.Linq;
 using NuGet.Common;
 
@@ -39,19 +39,19 @@ namespace NuGet.Commands
         /// <summary>
         /// Gets a list of MSBuild props files provided by packages during this restore
         /// </summary>
-        public IDictionary<string, IList<string>> Props { get; }
+        public IList<MSBuildRestoreImportGroup> Props { get; }
 
         /// <summary>
         /// Gets a list of MSBuild targets files provided by packages during this restore
         /// </summary>
-        public IDictionary<string, IList<string>> Targets { get; }
+        public IList<MSBuildRestoreImportGroup> Targets { get; }
 
         public MSBuildRestoreResult(string targetsPath, string propsPath, bool success)
             : this(targetsPath,
-                  propsPath, 
-                  repositoryRoot: string.Empty, 
-                  targets: new Dictionary<string, IList<string>>(),
-                  props: new Dictionary<string, IList<string>>(),
+                  propsPath,
+                  repositoryRoot: string.Empty,
+                  targets: new List<MSBuildRestoreImportGroup>(),
+                  props: new List<MSBuildRestoreImportGroup>(),
                   success: success)
         {
         }
@@ -60,8 +60,8 @@ namespace NuGet.Commands
             string targetsPath,
             string propsPath,
             string repositoryRoot,
-            IDictionary<string, IList<string>> props,
-            IDictionary<string, IList<string>> targets)
+            IList<MSBuildRestoreImportGroup> props,
+            IList<MSBuildRestoreImportGroup> targets)
             : this(targetsPath, propsPath, repositoryRoot, props, targets, success: true)
         {
         }
@@ -70,8 +70,8 @@ namespace NuGet.Commands
             string targetsPath,
             string propsPath,
             string repositoryRoot,
-            IDictionary<string, IList<string>> props,
-            IDictionary<string, IList<string>> targets,
+            IList<MSBuildRestoreImportGroup> props,
+            IList<MSBuildRestoreImportGroup> targets,
             bool success)
         {
             Success = success;
@@ -83,6 +83,11 @@ namespace NuGet.Commands
         }
 
         public void Commit(ILogger log)
+        {
+            Commit(log, forceWrite: false, token: CancellationToken.None);
+        }
+
+        public void Commit(ILogger log, bool forceWrite, CancellationToken token)
         {
             // Ensure the directories exists
             if (!Success || Targets.Count > 0 || Props.Count > 0)
@@ -97,7 +102,7 @@ namespace NuGet.Commands
 
             if (!Success)
             {
-                // Write a target containing an error 
+                // Write a target containing an error
                 log.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_GeneratingMsBuildFile, TargetsPath));
                 GenerateMSBuildErrorFile(TargetsPath);
 
@@ -110,22 +115,22 @@ namespace NuGet.Commands
             else
             {
                 // Generate the files as needed
-                if (Targets.Any(pair => pair.Value.Count > 0))
+                if (Targets.Any(group => group.Imports.Count > 0))
                 {
                     log.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_GeneratingMsBuildFile, TargetsPath));
 
-                    GenerateImportsFile(TargetsPath, Targets);
+                    GenerateImportsFile(TargetsPath, Targets, forceWrite, log);
                 }
                 else if (File.Exists(TargetsPath))
                 {
                     File.Delete(TargetsPath);
                 }
 
-                if (Props.Any(pair => pair.Value.Count > 0))
+                if (Props.Any(group => group.Imports.Count > 0))
                 {
                     log.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_GeneratingMsBuildFile, PropsPath));
 
-                    GenerateImportsFile(PropsPath, Props);
+                    GenerateImportsFile(PropsPath, Props, forceWrite, log);
                 }
                 else if (File.Exists(PropsPath))
                 {
@@ -139,7 +144,7 @@ namespace NuGet.Commands
             foreach (var macroName in MacroCandidates)
             {
                 string macroValue = Environment.GetEnvironmentVariable(macroName);
-                if (!string.IsNullOrEmpty(macroValue) 
+                if (!string.IsNullOrEmpty(macroValue)
                     && path.StartsWith(macroValue, StringComparison.OrdinalIgnoreCase))
                 {
                     path = $"$({macroName})" + $"{path.Substring(macroValue.Length)}";
@@ -173,7 +178,7 @@ namespace NuGet.Commands
             }
         }
 
-        private void GenerateImportsFile(string path, IDictionary<string, IList<string>> imports)
+        private void GenerateImportsFile(string path, IList<MSBuildRestoreImportGroup> groups, bool forceWrite, ILogger log)
         {
             var ns = XNamespace.Get("http://schemas.microsoft.com/developer/msbuild/2003");
             var doc = new XDocument(
@@ -186,44 +191,42 @@ namespace NuGet.Commands
                         new XAttribute("Condition", "'$(NuGetPackageRoot)' == ''"),
                         new XElement(ns + "NuGetPackageRoot", ReplacePathsWithMacros(RepositoryRoot)))));
 
-            // Add import groups
-            foreach (var pair in imports.OrderBy(e => e.Key, StringComparer.OrdinalIgnoreCase))
+            // Add import groups, order by position, then by the conditions to keep the results deterministic
+            // Skip empty groups
+            foreach (var group in groups
+                .Where(e => e.Imports.Count > 0)
+                .OrderBy(e => e.Position)
+                .ThenBy(e => e.Condition, StringComparer.OrdinalIgnoreCase))
             {
-                var framework = pair.Key;
-                var importsForGroup = pair.Value;
+                var itemGroup = new XElement(ns + "ImportGroup", group.Imports.Select(i =>
+                            new XElement(ns + "Import",
+                                new XAttribute("Project", GetImportPath(i)),
+                                new XAttribute("Condition", $"Exists('{GetImportPath(i)}')"))));
 
-                if (importsForGroup.Count > 0)
+                // Add a conditional statement if multiple TFMs exist or cross targeting is present
+                var conditionValue = group.Condition;
+                if (!string.IsNullOrEmpty(conditionValue))
                 {
-                    var itemGroup = new XElement(ns + "ImportGroup", importsForGroup.Select(i =>
-                                new XElement(ns + "Import",
-                                    new XAttribute("Project", GetImportPath(i)),
-                                    new XAttribute("Condition", $"Exists('{GetImportPath(i)}')"))));
-
-                    // Add a conditional statement if multiple TFMs exist or cross targeting is present
-                    if (!string.IsNullOrEmpty(pair.Key))
-                    {
-                        var conditionValue = string.Empty;
-
-                        // Check for the cross targeting condition
-                        if (BuildAssetsUtils.CrossTargetingCondition.Equals(pair.Key, StringComparison.Ordinal))
-                        {
-                            conditionValue = pair.Key;
-                        }
-                        else
-                        {
-                            conditionValue = $" '$(TargetFramework)' == '{framework}' ";
-                        }
-
-                        itemGroup.Add(new XAttribute("Condition", conditionValue));
-                    }
-
-                    doc.Root.Add(itemGroup);
+                    itemGroup.Add(new XAttribute("Condition", conditionValue));
                 }
+
+                // Add itemgroup to file
+                doc.Root.Add(itemGroup);
             }
 
-            using (var output = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
+            // Check if the file has changes
+            if (forceWrite || HasChanges(doc, path, log))
             {
-                doc.Save(output);
+                log.LogDebug($"Writing imports file to disk: {path}");
+
+                using (var output = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
+                {
+                    doc.Save(output);
+                }
+            }
+            else
+            {
+                log.LogDebug($"No changes found. Skipping write of imports file to disk: {path}");
             }
         }
 
@@ -241,6 +244,46 @@ namespace NuGet.Commands
             }
 
             return path;
+        }
+
+        /// <summary>
+        /// Check if the file has changes compared to the original on disk.
+        /// </summary>
+        private bool HasChanges(XDocument newFile, string path, ILogger log)
+        {
+            XDocument existing = ReadExisting(path, log);
+
+            if (existing != null)
+            {
+                // Use a simple string compare to check if the files match
+                // This can be optimized in the future, but generally these are very small files.
+                return !newFile.ToString().Equals(existing.ToString(), StringComparison.Ordinal);
+            }
+
+            return true;
+        }
+
+        private XDocument ReadExisting(string path, ILogger log)
+        {
+            XDocument result = null;
+
+            if (File.Exists(path))
+            {
+                try
+                {
+                    using (var output = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None))
+                    {
+                        result = XDocument.Load(output);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log a debug message and ignore, this will force an overwrite
+                    log.LogDebug($"Failed to open imports file: {path} Error: {ex.Message}");
+                }
+            }
+
+            return result;
         }
     }
 }

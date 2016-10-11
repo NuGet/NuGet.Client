@@ -67,6 +67,103 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public async Task RestoreNetCore_RestoreWithRIDSingle()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                projectA.Properties.Add("RuntimeIdentifier", "win7-x86");
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var r = RestoreSolution(pathContext);
+
+                // Assert
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.Item2);
+                Assert.True(File.Exists(projectA.TargetsOutput), r.Item2);
+                Assert.False(File.Exists(projectA.PropsOutput), r.Item2);
+
+                var assetsFile = projectA.AssetsFile;
+                Assert.Equal(2, assetsFile.Targets.Count);
+                Assert.Equal(NuGetFramework.Parse("net45"), assetsFile.Targets.Single(t => string.IsNullOrEmpty(t.RuntimeIdentifier)).TargetFramework);
+                Assert.Equal(NuGetFramework.Parse("net45"), assetsFile.Targets.Single(t => !string.IsNullOrEmpty(t.RuntimeIdentifier)).TargetFramework);
+                Assert.Equal("win7-x86", assetsFile.Targets.Single(t => !string.IsNullOrEmpty(t.RuntimeIdentifier)).RuntimeIdentifier);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_RestoreWithRIDDuplicates()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                projectA.Properties.Add("RuntimeIdentifier", "win7-x86");
+                projectA.Properties.Add("RuntimeIdentifiers", "win7-x86;win7-x86;;");
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var r = RestoreSolution(pathContext);
+
+                // Assert
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.Item2);
+                Assert.True(File.Exists(projectA.TargetsOutput), r.Item2);
+                Assert.False(File.Exists(projectA.PropsOutput), r.Item2);
+
+                var assetsFile = projectA.AssetsFile;
+                Assert.Equal(2, assetsFile.Targets.Count);
+                Assert.Equal(NuGetFramework.Parse("net45"), assetsFile.Targets.Single(t => string.IsNullOrEmpty(t.RuntimeIdentifier)).TargetFramework);
+                Assert.Equal(NuGetFramework.Parse("net45"), assetsFile.Targets.Single(t => !string.IsNullOrEmpty(t.RuntimeIdentifier)).TargetFramework);
+                Assert.Equal("win7-x86", assetsFile.Targets.Single(t => !string.IsNullOrEmpty(t.RuntimeIdentifier)).RuntimeIdentifier);
+            }
+        }
+
+        [Fact]
         public async Task RestoreNetCore_RestoreWithSupports()
         {
             // Arrange
@@ -566,8 +663,8 @@ namespace NuGet.CommandLine.Test
 
                 // CrossTargeting should be first
                 Assert.Equal(2, targetItemGroups.Count);
-                Assert.Equal("'$(IsCrossTargetingBuild)' == 'true'", targetItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
-                Assert.Equal("'$(TargetFramework)' == 'net45'", targetItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal("'$(IsCrossTargetingBuild)' == 'true' AND '$(ExcludeRestorePackageImports)' != 'true'", targetItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal("'$(TargetFramework)' == 'net45' AND '$(ExcludeRestorePackageImports)' != 'true'", targetItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
 
                 Assert.Equal(3, targetItemGroups[0].Elements().Count());
                 Assert.EndsWith("s.targets", targetItemGroups[0].Elements().ToList()[0].Attribute(XName.Get("Project")).Value);
@@ -580,8 +677,8 @@ namespace NuGet.CommandLine.Test
                 Assert.EndsWith("x.targets", targetItemGroups[1].Elements().ToList()[2].Attribute(XName.Get("Project")).Value);
 
                 Assert.Equal(2, propsItemGroups.Count);
-                Assert.Equal("'$(IsCrossTargetingBuild)' == 'true'", propsItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
-                Assert.Equal("'$(TargetFramework)' == 'net45'", propsItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal("'$(IsCrossTargetingBuild)' == 'true' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal("'$(TargetFramework)' == 'net45' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
 
                 Assert.Equal(3, propsItemGroups[0].Elements().Count());
                 Assert.EndsWith("s.props", propsItemGroups[0].Elements().ToList()[0].Attribute(XName.Get("Project")).Value);
@@ -638,7 +735,7 @@ namespace NuGet.CommandLine.Test
                 var targetItemGroups = targetsXML.Root.Elements().Where(e => e.Name.LocalName == "ImportGroup").ToList();
 
                 Assert.Equal(1, targetItemGroups.Count);
-                Assert.Equal("'$(IsCrossTargetingBuild)' == 'true'", targetItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal("'$(IsCrossTargetingBuild)' == 'true' AND '$(ExcludeRestorePackageImports)' != 'true'", targetItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
                 Assert.Equal(1, targetItemGroups[0].Elements().Count());
                 Assert.EndsWith("x.targets", targetItemGroups[0].Elements().ToList()[0].Attribute(XName.Get("Project")).Value);
             }
@@ -794,6 +891,106 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.False(File.Exists(projectA.TargetsOutput), r.Item2);
                 Assert.False(File.Exists(projectA.PropsOutput), r.Item2);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_NETCoreImports_VerifyImportFromPackageIsIgnored()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                packageX.AddFile("build/x.props", "<Project>This is a bad props file!!!!<");
+                packageX.AddFile("build/x.targets", "<Project>This is a bad target file!!!!<");
+                packageX.AddFile("lib/net45/test.dll");
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Restore one
+                var r = RestoreSolution(pathContext);
+                Assert.True(File.Exists(projectA.TargetsOutput), r.Item2);
+
+                // Act
+                r = RestoreSolution(pathContext);
+                Assert.True(File.Exists(projectA.TargetsOutput), r.Item2);
+                Assert.True(r.Item1 == 0);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_UAPImports_VerifyImportFromPackageIsIgnored()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectJson = JObject.Parse(@"{
+                                                    'dependencies': {
+                                                        'x': '1.0.0'
+                                                    },
+                                                    'frameworks': {
+                                                        'net45': {
+                                                            
+                                                    }
+                                                  }
+                                               }");
+
+                var projectA = SimpleTestProjectContext.CreateUAP(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"),
+                    projectJson);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                packageX.AddFile("build/x.props", "<Project>This is a bad props file!!!!<");
+                packageX.AddFile("build/x.targets", "<Project>This is a bad target file!!!!<");
+                packageX.AddFile("lib/net45/test.dll");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Restore one
+                var r = RestoreSolution(pathContext);
+                Assert.True(File.Exists(projectA.TargetsOutput), r.Item2);
+
+                // Act
+                r = RestoreSolution(pathContext);
+                Assert.True(r.Item1 == 0);
+                Assert.True(File.Exists(projectA.TargetsOutput), r.Item2);
             }
         }
 

@@ -35,14 +35,17 @@ namespace NuGet.Commands.Test
                     var propsName = $"{projectName}.nuget.props";
                     var propsPath = Path.Combine(randomProjectDirectory, propsName);
 
-                    var targets = new Dictionary<string, IList<string>>();
-                    targets.Add(string.Empty, new List<string>() { "blah" });
+                    var targets = new List<MSBuildRestoreImportGroup>();
+                    targets.Add(new MSBuildRestoreImportGroup()
+                    {
+                        Imports = new List<string>() { "blah" }
+                    });
 
-                      var msBuildRestoreResult = new MSBuildRestoreResult(
+                    var msBuildRestoreResult = new MSBuildRestoreResult(
                         targetsPath,
                         propsPath,
                         globalPackagesFolder,
-                        new Dictionary<string, IList<string>>(),
+                        new List<MSBuildRestoreImportGroup>(),
                         targets);
 
                     // Assert
@@ -88,25 +91,113 @@ namespace NuGet.Commands.Test
                 var propsName = $"{projectName}.nuget.g.props";
                 var propsPath = Path.Combine(randomProjectDirectory, propsName);
 
-                var targets = new Dictionary<string, IList<string>>();
-                targets.Add("net45", new List<string>() { "a.targets", "b.targets" });
-                targets.Add("netstandard16", new List<string>() { "c.targets" });
-                targets.Add("netStandard1.7", new List<string>() { });
-                targets.Add(" '$(IsCrossTargetingBuild)' == 'true' ", new List<string>() { "x.targets", "y.targets" });
+                var propGroups = new List<MSBuildRestoreImportGroup>();
+                var targetGroups = new List<MSBuildRestoreImportGroup>();
 
-                var props = new Dictionary<string, IList<string>>();
-                props.Add("net45", new List<string>() { "a.props", "b.props" });
-                props.Add("netstandard16", new List<string>() { "c.props" });
-                props.Add("netStandard1.7", new List<string>() { });
-                props.Add("netStandard1.8", new List<string>() { });
-                props.Add(" '$(IsCrossTargetingBuild)' == 'true' ", new List<string>() { "z.props" });
+                targetGroups.Add(new MSBuildRestoreImportGroup()
+                {
+                    Imports = new List<string>()
+                    {
+                        "a.targets", "b.targets"
+                    },
+                    Conditions = new List<string>()
+                    {
+                        "'$(TargetFramework)' == 'net45'"
+                    }
+                });
+
+                targetGroups.Add(new MSBuildRestoreImportGroup()
+                {
+                    Imports = new List<string>()
+                    {
+                        "c.targets"
+                    },
+                    Conditions = new List<string>()
+                    {
+                        "'$(TargetFramework)' == 'netstandard16'"
+                    }
+                });
+
+                targetGroups.Add(new MSBuildRestoreImportGroup()
+                {
+                    Conditions = new List<string>()
+                    {
+                        "'$(TargetFramework)' == 'netStandard1.7'"
+                    }
+                });
+
+                targetGroups.Add(new MSBuildRestoreImportGroup()
+                {
+                    Imports = new List<string>()
+                    {
+                         "x.targets", "y.targets"
+                    },
+                    Conditions = new List<string>()
+                    {
+                        "'$(IsCrossTargetingBuild)' == 'true'"
+                    },
+                    Position = 0,
+                });
+
+                propGroups.Add(new MSBuildRestoreImportGroup()
+                {
+                    Imports = new List<string>()
+                    {
+                        "a.props", "b.props"
+                    },
+                    Conditions = new List<string>()
+                    {
+                        "'$(TargetFramework)' == 'net45'"
+                    }
+                });
+
+                propGroups.Add(new MSBuildRestoreImportGroup()
+                {
+                    Imports = new List<string>()
+                    {
+                        "c.props"
+                    },
+                    Conditions = new List<string>()
+                    {
+                        "'$(TargetFramework)' == 'netstandard16'"
+                    }
+                });
+
+                propGroups.Add(new MSBuildRestoreImportGroup()
+                {
+                    Conditions = new List<string>()
+                    {
+                        "'$(TargetFramework)' == 'netStandard1.7'"
+                    }
+                });
+
+                propGroups.Add(new MSBuildRestoreImportGroup()
+                {
+                    Conditions = new List<string>()
+                    {
+                        "'$(TargetFramework)' == 'netStandard1.8'"
+                    }
+                });
+
+                propGroups.Add(new MSBuildRestoreImportGroup()
+                {
+                    Imports = new List<string>()
+                    {
+                         "z.props"
+                    },
+                    Conditions = new List<string>()
+                    {
+                        "'$(IsCrossTargetingBuild)' == 'true'"
+                    },
+                    Position = 0,
+                });
 
                 var msBuildRestoreResult = new MSBuildRestoreResult(
                   targetsPath,
                   propsPath,
                   globalPackagesFolder,
-                  props,
-                  targets);
+                  propGroups,
+                  targetGroups);
 
                 // Act
                 msBuildRestoreResult.Commit(Common.NullLogger.Instance);
@@ -160,15 +251,56 @@ namespace NuGet.Commands.Test
                 var propsName = $"{projectName}.nuget.g.props";
                 var propsPath = Path.Combine(randomProjectDirectory, propsName);
 
-                var targets = new Dictionary<string, IList<string>>();
-                targets.Add("net45", new List<string>() { });
-                targets.Add("netStandard1.7", new List<string>() { });
-                targets.Add(" '$(IsCrossTargetingBuild)' == 'true' ", new List<string>() { });
+                var props = new List<MSBuildRestoreImportGroup>();
+                var targets = new List<MSBuildRestoreImportGroup>();
 
-                var props = new Dictionary<string, IList<string>>();
-                props.Add("net45", new List<string>() { });
-                props.Add("netStandard1.7", new List<string>() { });
-                props.Add(" '$(IsCrossTargetingBuild)' == 'true' ", new List<string>() { });
+                props.Add(new MSBuildRestoreImportGroup()
+                {
+                    Conditions = new List<string>()
+                    {
+                        "'$(TargetFramework)' == 'net45'"
+                    }
+                });
+
+                props.Add(new MSBuildRestoreImportGroup()
+                {
+                    Conditions = new List<string>()
+                    {
+                        "'$(TargetFramework)' == 'netStandard1.7'"
+                    }
+                });
+
+                props.Add(new MSBuildRestoreImportGroup()
+                {
+                    Conditions = new List<string>()
+                    {
+                        "'$(IsCrossTargetingBuild)' == 'true'"
+                    }
+                });
+
+                targets.Add(new MSBuildRestoreImportGroup()
+                {
+                    Conditions = new List<string>()
+                    {
+                        "'$(TargetFramework)' == 'net45'"
+                    }
+                });
+
+                targets.Add(new MSBuildRestoreImportGroup()
+                {
+                    Conditions = new List<string>()
+                    {
+                        "'$(TargetFramework)' == 'netStandard1.7'"
+                    }
+                });
+
+                targets.Add(new MSBuildRestoreImportGroup()
+                {
+                    Conditions = new List<string>()
+                    {
+                        "'$(IsCrossTargetingBuild)' == 'true'"
+                    }
+                });
 
                 var msBuildRestoreResult = new MSBuildRestoreResult(
                   targetsPath,
@@ -204,16 +336,80 @@ namespace NuGet.Commands.Test
                 var propsName = $"{projectName}.nuget.g.props";
                 var propsPath = Path.Combine(randomProjectDirectory, propsName);
 
-                var targets = new Dictionary<string, IList<string>>();
-                targets.Add("net45", new List<string>() { "a.targets", "b.targets" });
-                targets.Add("netstandard16", new List<string>() { "c.targets" });
-                targets.Add("netStandard1.7", new List<string>() { });
+                var props = new List<MSBuildRestoreImportGroup>();
+                var targets = new List<MSBuildRestoreImportGroup>();
 
-                var props = new Dictionary<string, IList<string>>();
-                props.Add("net45", new List<string>() { "a.props", "b.props" });
-                props.Add("netstandard16", new List<string>() { "c.props" });
-                props.Add("netStandard1.7", new List<string>() { });
-                props.Add("netStandard1.8", new List<string>() { });
+                targets.Add(new MSBuildRestoreImportGroup()
+                {
+                    Conditions = new List<string>()
+                    {
+                        "'$(TargetFramework)' == 'net45'"
+                    },
+                    Imports = new List<string>()
+                    {
+                        "a.targets", "b.targets"
+                    }
+                });
+
+                targets.Add(new MSBuildRestoreImportGroup()
+                {
+                    Conditions = new List<string>()
+                    {
+                        "'$(TargetFramework)' == 'netstandard16'"
+                    },
+                    Imports = new List<string>()
+                    {
+                        "c.targets"
+                    }
+                });
+
+                targets.Add(new MSBuildRestoreImportGroup()
+                {
+                    Conditions = new List<string>()
+                    {
+                        "'$(TargetFramework)' == 'netStandard1.7'"
+                    }
+                });
+
+                props.Add(new MSBuildRestoreImportGroup()
+                {
+                    Conditions = new List<string>()
+                    {
+                        "'$(TargetFramework)' == 'net45'"
+                    },
+                    Imports = new List<string>()
+                    {
+                        "a.props", "b.props"
+                    }
+                });
+
+                props.Add(new MSBuildRestoreImportGroup()
+                {
+                    Conditions = new List<string>()
+                    {
+                        "'$(TargetFramework)' == 'netstandard16'"
+                    },
+                    Imports = new List<string>()
+                    {
+                        "c.props"
+                    }
+                });
+
+                props.Add(new MSBuildRestoreImportGroup()
+                {
+                    Conditions = new List<string>()
+                    {
+                        "'$(TargetFramework)' == 'netStandard1.7'"
+                    }
+                });
+
+                props.Add(new MSBuildRestoreImportGroup()
+                {
+                    Conditions = new List<string>()
+                    {
+                        "'$(TargetFramework)' == 'netStandard1.8'"
+                    }
+                });
 
                 var msBuildRestoreResult = new MSBuildRestoreResult(
                   targetsPath,
@@ -262,8 +458,8 @@ namespace NuGet.Commands.Test
                 var propsName = $"{projectName}.nuget.g.props";
                 var propsPath = Path.Combine(randomProjectDirectory, propsName);
 
-                var targets = new Dictionary<string, IList<string>>();
-                var props = new Dictionary<string, IList<string>>();
+                var props = new List<MSBuildRestoreImportGroup>();
+                var targets = new List<MSBuildRestoreImportGroup>();
 
                 var msBuildRestoreResult = new MSBuildRestoreResult(
                   targetsPath,
@@ -299,11 +495,32 @@ namespace NuGet.Commands.Test
                 var propsName = $"{projectName}.nuget.g.props";
                 var propsPath = Path.Combine(randomProjectDirectory, propsName);
 
-                var targets = new Dictionary<string, IList<string>>();
-                targets.Add("net45", new List<string>() { "a.targets", "b.targets" });
+                var props = new List<MSBuildRestoreImportGroup>();
+                var targets = new List<MSBuildRestoreImportGroup>();
 
-                var props = new Dictionary<string, IList<string>>();
-                props.Add("net45", new List<string>() { "a.props", "b.props" });
+                targets.Add(new MSBuildRestoreImportGroup()
+                {
+                    Conditions = new List<string>()
+                    {
+                        "'$(TargetFramework)' == 'net45'"
+                    },
+                    Imports = new List<string>()
+                    {
+                        "a.targets", "b.targets"
+                    }
+                });
+
+                props.Add(new MSBuildRestoreImportGroup()
+                {
+                    Conditions = new List<string>()
+                    {
+                        "'$(TargetFramework)' == 'net45'"
+                    },
+                    Imports = new List<string>()
+                    {
+                        "a.props", "b.props"
+                    }
+                });
 
                 var msBuildRestoreResult = new MSBuildRestoreResult(
                   targetsPath,
@@ -350,11 +567,24 @@ namespace NuGet.Commands.Test
                 var propsName = $"{projectName}.nuget.g.props";
                 var propsPath = Path.Combine(randomProjectDirectory, propsName);
 
-                var targets = new Dictionary<string, IList<string>>();
-                targets.Add("", new List<string>() { "a.targets", "b.targets" });
+                var props = new List<MSBuildRestoreImportGroup>();
+                var targets = new List<MSBuildRestoreImportGroup>();
 
-                var props = new Dictionary<string, IList<string>>();
-                props.Add("", new List<string>() { "a.props", "b.props" });
+                targets.Add(new MSBuildRestoreImportGroup()
+                {
+                    Imports = new List<string>()
+                    {
+                        "a.targets", "b.targets"
+                    }
+                });
+
+                props.Add(new MSBuildRestoreImportGroup()
+                {
+                    Imports = new List<string>()
+                    {
+                        "a.props", "b.props"
+                    }
+                });
 
                 var msBuildRestoreResult = new MSBuildRestoreResult(
                   targetsPath,
@@ -380,6 +610,98 @@ namespace NuGet.Commands.Test
                 Assert.Equal(2, targetItemGroups[0].Elements().Count());
                 Assert.Equal("a.targets", targetItemGroups[0].Elements().ToList()[0].Attribute(XName.Get("Project")).Value);
                 Assert.Equal("b.targets", targetItemGroups[0].Elements().ToList()[1].Attribute(XName.Get("Project")).Value);
+            }
+        }
+
+        [Fact]
+        public void MSBuildRestoreResult_VerifyPositionAndSortOrder()
+        {
+            // Arrange
+            using (var globalPackagesFolder = TestDirectory.Create())
+            using (var randomProjectDirectory = TestDirectory.Create())
+            {
+                var projectName = "testproject";
+                var targetsName = $"{projectName}.nuget.g.targets";
+                var targetsPath = Path.Combine(randomProjectDirectory, targetsName);
+
+                var propsName = $"{projectName}.nuget.g.props";
+                var propsPath = Path.Combine(randomProjectDirectory, propsName);
+
+                var props = new List<MSBuildRestoreImportGroup>();
+                var targets = new List<MSBuildRestoreImportGroup>();
+
+                targets.Add(new MSBuildRestoreImportGroup()
+                {
+                    Conditions = new List<string>()
+                    {
+                        "b"
+                    },
+                    Imports = new List<string>()
+                    {
+                        "a.targets"
+                    },
+                    Position = 0
+                });
+
+                targets.Add(new MSBuildRestoreImportGroup()
+                {
+                    Conditions = new List<string>()
+                    {
+                        "a"
+                    },
+                    Imports = new List<string>()
+                    {
+                        "a.targets"
+                    },
+                    Position = 0
+                });
+
+                targets.Add(new MSBuildRestoreImportGroup()
+                {
+                    Conditions = new List<string>()
+                    {
+                        "z"
+                    },
+                    Imports = new List<string>()
+                    {
+                        "a.targets"
+                    },
+                    Position = -1
+                });
+
+                targets.Add(new MSBuildRestoreImportGroup()
+                {
+                    Conditions = new List<string>()
+                    {
+                        "x"
+                    },
+                    Imports = new List<string>()
+                    {
+                        "a.targets"
+                    },
+                    Position = 100
+                });
+
+                var msBuildRestoreResult = new MSBuildRestoreResult(
+                  targetsPath,
+                  propsPath,
+                  globalPackagesFolder,
+                  props,
+                  targets);
+
+                // Act
+                msBuildRestoreResult.Commit(Common.NullLogger.Instance);
+
+                // Assert
+                Assert.True(File.Exists(targetsPath));
+                var targetsXML = XDocument.Load(targetsPath);
+                var targetItemGroups = targetsXML.Root.Elements().Where(e => e.Name.LocalName == "ImportGroup").ToList();
+
+                Assert.Equal(4, targetItemGroups.Count);
+                Assert.Equal("z", targetItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal("a", targetItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal("b", targetItemGroups[2].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal("x", targetItemGroups[3].Attribute(XName.Get("Condition")).Value.Trim());
             }
         }
     }
