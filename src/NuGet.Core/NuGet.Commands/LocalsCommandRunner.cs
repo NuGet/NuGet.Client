@@ -195,9 +195,16 @@ namespace NuGet.Commands
         /// <returns><code>True</code> if the operation was successful; otherwise <code>false</code>.</returns>
         private bool ClearNuGetTempFolder(LocalsArgs localsArgs)
         {
+            var success = true;
             var tempFolderPath = NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp);
+            if (!string.IsNullOrEmpty(tempFolderPath))
+            {
+                localsArgs.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.LocalsCommand_ClearingNuGetTempCache,
+                    tempFolderPath));
 
-            return ClearCacheDirectory(tempFolderPath, localsArgs);
+                success &= ClearCacheDirectory(tempFolderPath, localsArgs);
+            }
+            return success;
         }
 
         /// <summary>

@@ -426,15 +426,19 @@
   </data>
   <data name="LocalsCommand_ClearingNuGetCache" xml:space="preserve">
     <value>Clearing NuGet cache: {0}</value>
+    <comment>{0} : Cache path</comment>
   </data>
   <data name="LocalsCommand_ClearingNuGetGlobalPackagesCache" xml:space="preserve">
     <value>Clearing NuGet global packages cache: {0}</value>
+    <comment>{0} : Global packages cache path</comment>
   </data>
   <data name="LocalsCommand_ClearingNuGetHttpCache" xml:space="preserve">
     <value>Clearing NuGet HTTP cache: {0}</value>
+    <comment>{0} : Http cache path</comment>
   </data>
   <data name="LocalsCommand_FailedToDeletePath" xml:space="preserve">
     <value>Failed to delete '{0}'.</value>
+    <comment>{0} : Path to be deleted</comment>
   </data>
   <data name="LocalsCommand_InvalidLocalResourceName" xml:space="preserve">
     <value>An invalid local resource name was provided. Please provide one of the following values: http-cache, temp, global-packages, all.</value>
@@ -502,5 +506,9 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   </data>
   <data name="Error_XPROJNotAllowed" xml:space="preserve">
     <value>Invalid input '{0}'. XProj support has been removed. Support for XProj and standalone project.json files has been removed, to continue working with legacy projects use NuGet 3.5.x from https://nuget.org/downloads</value>
+  </data>
+  <data name="LocalsCommand_ClearingNuGetTempCache" xml:space="preserve">
+    <value>Clearing NuGet Temp cache: {0}</value>
+    <comment>{0} : Temp cache path</comment>
   </data>
 </root>
