@@ -57,6 +57,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private const string MSBuildExe = "msbuild.exe";
 
+        private const string NuGetSubKey = @"Software\NuGet";
         private const string EnableRegistryKey = "EnableMSBuildShellOutNuGetProject";
 
         private static readonly string MSBuild14Path = Path.Combine(
@@ -143,7 +144,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             try
             {
-                using (var subKey = Registry.CurrentUser.OpenSubKey(@"Software\NuGet"))
+                using (var subKey = Registry.CurrentUser.OpenSubKey(NuGetSubKey))
                 {
                     var keyValue = subKey == null ? null : subKey.GetValue(key) as string;
                     return keyValue != null && keyValue != "0";
