@@ -1531,12 +1531,12 @@ namespace NuGet.CommandLine.Test
         {
             try
             {
-                var path = request.Url.AbsolutePath;
+                var path = server.GetRequestUrlAbsolutePath(request);
                 var parts = request.Url.AbsolutePath.Split('/');
                 var repositoryPath = localRepo.Source;
 
                 // track hits on the url
-                var urlHits = hitsByUrl.AddOrUpdate(request.RawUrl, 1, (s, i) => i + 1);
+                var urlHits = hitsByUrl.AddOrUpdate(server.GetRequestRawUrl(request), 1, (s, i) => i + 1);
 
                 if (path == "/index.json")
                 {

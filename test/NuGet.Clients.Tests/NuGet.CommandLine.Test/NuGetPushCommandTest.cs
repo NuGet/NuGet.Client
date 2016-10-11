@@ -530,7 +530,7 @@ namespace NuGet.CommandLine.Test
 
         // Tests that push command will terminate even when there is an infinite
         // redirection loop.
-        [Fact(Skip="On-hold, nuget.org has removed the redirect long ago")]
+        [Fact(Skip = "On-hold, nuget.org has removed the redirect long ago")]
         public void PushCommand_PushToServerWithInfiniteRedirectionLoop()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -568,7 +568,7 @@ namespace NuGet.CommandLine.Test
         }
 
         // Tests that push command generates error when it detects invalid redirection location.
-        [Fact(Skip="On-hold, nuget.org has removed the redirect long ago")]
+        [Fact(Skip = "On-hold, nuget.org has removed the redirect long ago")]
         public void PushCommand_PushToServerWithInvalidRedirectionLocation()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -603,7 +603,7 @@ namespace NuGet.CommandLine.Test
         // Regression test for the bug that "nuget.exe push" will retry forever instead of asking for
         // user's password when NuGet.Server uses Windows Authentication.
         [Fact(Skip = "TODO: reconstruct faked response headers which won't crash HttpClient. " +
-            "Using real serevr, same sceanrio works fine")]
+            "Using real server, same scenario works fine")]
         public void PushCommand_PushToServerWontRetryForever()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -1270,7 +1270,7 @@ namespace NuGet.CommandLine.Test
                 {
                     serverV3.Get.Add("/", r =>
                     {
-                        var path = r.Url.AbsolutePath;
+                        var path = serverV3.GetRequestUrlAbsolutePath(r);
 
                         if (path == "/index.json")
                         {
@@ -1351,7 +1351,7 @@ namespace NuGet.CommandLine.Test
                 {
                     serverV3.Get.Add("/", r =>
                     {
-                        var path = r.Url.AbsolutePath;
+                        var path = serverV3.GetRequestUrlAbsolutePath(r);
 
                         if (path == "/index.json")
                         {
@@ -1410,7 +1410,7 @@ namespace NuGet.CommandLine.Test
                 {
                     serverV3.Get.Add("/", r =>
                     {
-                        var path = r.Url.AbsolutePath;
+                        var path = serverV3.GetRequestUrlAbsolutePath(r);
 
                         if (path == "/index.json")
                         {
@@ -1548,7 +1548,7 @@ namespace NuGet.CommandLine.Test
                     serverV3.Start();
 
                     // Act
-                    var args = new []
+                    var args = new[]
                     {
                         "push",
                         packageFileName,
@@ -1715,7 +1715,7 @@ namespace NuGet.CommandLine.Test
                 {
                     server.Get.Add("/", r =>
                     {
-                        var path = r.Url.AbsolutePath;
+                        var path = server.GetRequestUrlAbsolutePath(r);
 
                         if (path.Equals("/", StringComparison.OrdinalIgnoreCase))
                         {
@@ -1739,7 +1739,7 @@ namespace NuGet.CommandLine.Test
 
                     server.Put.Add("/", r =>
                     {
-                        var path = r.Url.AbsolutePath;
+                        var path = server.GetRequestUrlAbsolutePath(r);
 
                         if (path.Equals("/api/v2/Package", StringComparison.OrdinalIgnoreCase)
                         || path.Equals("/api/v2/Package/", StringComparison.OrdinalIgnoreCase))

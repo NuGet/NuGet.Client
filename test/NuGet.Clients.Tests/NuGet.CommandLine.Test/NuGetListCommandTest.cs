@@ -639,7 +639,7 @@ namespace NuGet.CommandLine.Test
                 {
                     serverV3.Get.Add("/", r =>
                     {
-                        var path = r.Url.AbsolutePath;
+                        var path = serverV3.GetRequestUrlAbsolutePath(r);
 
                         if (path == "/index.json")
                         {
@@ -662,7 +662,7 @@ namespace NuGet.CommandLine.Test
 
                         serverV2.Get.Add("/", r =>
                         {
-                            var path = r.Url.AbsolutePath;
+                            var path = serverV2.GetRequestUrlAbsolutePath(r);
 
                             if (path == "/")
                             {
@@ -732,7 +732,7 @@ namespace NuGet.CommandLine.Test
                 {
                     serverV3.Get.Add("/", r =>
                     {
-                        var path = r.Url.AbsolutePath;
+                        var path = serverV3.GetRequestUrlAbsolutePath(r);
 
                         if (path == "/index.json")
                         {
@@ -790,7 +790,7 @@ namespace NuGet.CommandLine.Test
                 {
                     serverV3.Get.Add("/", r =>
                     {
-                        var path = r.Url.AbsolutePath;
+                        var path = serverV3.GetRequestUrlAbsolutePath(r);
 
                         if (path == "/index.json")
                         {
@@ -1007,7 +1007,7 @@ namespace NuGet.CommandLine.Test
                             return HttpStatusCode.Forbidden;
                         }
 
-                        var path = r.Url.AbsolutePath;
+                        var path = serverV3.GetRequestUrlAbsolutePath(r);
 
                         if (path == "/index.json")
                         {

@@ -15,7 +15,7 @@ namespace NuGet.CommandLine.Test
     public class RestoreRetryTests
     {
         // Restore a packages.config file from a failing v2 http source.
-        [Fact(Skip = "https://github.com/NuGet/Home/issues/1217")]
+        [Fact]
         public void RestoreRetry_PackagesConfigRetryOnFailingV2Source()
         {
             // Arrange
@@ -41,10 +41,10 @@ namespace NuGet.CommandLine.Test
 
                     server.Get.Add("/", r =>
                     {
-                        var path = r.Url.PathAndQuery;
+                        var path = server.GetRequestUrlPathAndQuery(r);
 
-                    // track hits on the url
-                    var urlHits = hitsByUrl.AddOrUpdate(path, 1, (s, i) => i + 1);
+                        // track hits on the url
+                        var urlHits = hitsByUrl.AddOrUpdate(path, 1, (s, i) => i + 1);
 
                         if (path == "/nuget/$metadata")
                         {
@@ -55,8 +55,8 @@ namespace NuGet.CommandLine.Test
                         }
                         else if (path == "/package/testPackage1/1.1.0")
                         {
-                        // Fail on the first two requests for this download
-                        if (urlHits < 3)
+                            // Fail on the first two requests for this download
+                            if (urlHits < 3)
                             {
                                 return new Action<HttpListenerResponse>(response =>
                                 {
@@ -162,13 +162,13 @@ namespace NuGet.CommandLine.Test
 
                     server.Get.Add("/", r =>
                     {
-                        var path = r.Url.PathAndQuery;
+                        var path = server.GetRequestUrlPathAndQuery(r);
 
-                    // track hits on the url
-                    var urlHits = hitsByUrl.AddOrUpdate(path, 1, (s, i) => i + 1);
+                        // track hits on the url
+                        var urlHits = hitsByUrl.AddOrUpdate(path, 1, (s, i) => i + 1);
 
-                    // Fail on the first 3 requests for every url
-                    if (urlHits < 4)
+                        // Fail on the first 3 requests for every url
+                        if (urlHits < 4)
                         {
                             return new Action<HttpListenerResponse>(response =>
                             {
@@ -302,13 +302,13 @@ namespace NuGet.CommandLine.Test
 
                     server.Get.Add("/", r =>
                     {
-                        var path = r.Url.AbsolutePath;
+                        var path = server.GetRequestUrlAbsolutePath(r);
 
-                    // track hits on the url
-                    var urlHits = hitsByUrl.AddOrUpdate(path, 1, (s, i) => i + 1);
+                        // track hits on the url
+                        var urlHits = hitsByUrl.AddOrUpdate(path, 1, (s, i) => i + 1);
 
-                    // Fail on the first 2 requests for every url
-                    if (urlHits < 3)
+                        // Fail on the first 2 requests for every url
+                        if (urlHits < 3)
                         {
                             return new Action<HttpListenerResponse>(response =>
                             {
@@ -451,13 +451,13 @@ namespace NuGet.CommandLine.Test
 
                     server.Get.Add("/", r =>
                     {
-                        var path = r.Url.AbsolutePath;
+                        var path = server.GetRequestUrlAbsolutePath(r);
 
-                    // track hits on the url
-                    var urlHits = hitsByUrl.AddOrUpdate(path, 1, (s, i) => i + 1);
+                        // track hits on the url
+                        var urlHits = hitsByUrl.AddOrUpdate(path, 1, (s, i) => i + 1);
 
-                    // Fail on the first 2 requests for every url
-                    if (urlHits < 3)
+                        // Fail on the first 2 requests for every url
+                        if (urlHits < 3)
                         {
                             return new Action<HttpListenerResponse>(response =>
                             {

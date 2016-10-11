@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -18,18 +21,25 @@ namespace NuGet.CommandLine.Test
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable")]
     public class MockServer : IDisposable
     {
-        public HttpListener Listener { get; }
-        private PortReserver PortReserver { get; }
-
         private Task _listenerTask;
         private bool _disposed = false;
+
+        public string BasePath { get; }
+        public HttpListener Listener { get; }
+        private PortReserver PortReserver { get; }
+        public RouteTable Get { get; }
+        public RouteTable Put { get; }
+        public RouteTable Delete { get; }
+        public string Uri { get { return PortReserver.BaseUri; } }
 
         /// <summary>
         /// Initializes an instance of MockServer.
         /// </summary>
         public MockServer()
         {
-            PortReserver = new PortReserver();
+            BasePath = $"/{Guid.NewGuid().ToString("D")}";
+
+            PortReserver = new PortReserver(BasePath);
 
             // tests that cancel downloads and exit will cause the mock server to throw, this should be ignored.
             Listener = new HttpListener()
@@ -38,15 +48,11 @@ namespace NuGet.CommandLine.Test
             };
 
             Listener.Prefixes.Add(PortReserver.BaseUri);
+
+            Get = new RouteTable(BasePath);
+            Put = new RouteTable(BasePath);
+            Delete = new RouteTable(BasePath);
         }
-
-        public RouteTable Get { get; } = new RouteTable();
-
-        public RouteTable Put { get; } = new RouteTable();
-
-        public RouteTable Delete { get; } = new RouteTable();
-
-        public string Uri { get { return PortReserver.BaseUri; } }
 
         /// <summary>
         /// Starts the mock server.
@@ -78,6 +84,39 @@ namespace NuGet.CommandLine.Test
             {
                 Debug.Fail(ex.ToString());
             }
+        }
+
+        /// <summary>
+        /// Gets the absolute path of a URL minus the random base path.
+        /// This enables tests to get the stable part of a request URL.
+        /// </summary>
+        /// <param name="request">An <see cref="HttpListenerRequest"/> instance.</param>
+        /// <returns>The stable part of a request URL's absolute path.</returns>
+        public string GetRequestUrlAbsolutePath(HttpListenerRequest request)
+        {
+            return request.Url.AbsolutePath.Substring(BasePath.Length);
+        }
+
+        /// <summary>
+        /// Gets the path and query parts of a URL minus the random base path.
+        /// This enables tests to get the stable part of a request URL.
+        /// </summary>
+        /// <param name="request">An <see cref="HttpListenerRequest"/> instance.</param>
+        /// <returns>The stable part of a request URL's path and query.</returns>
+        public string GetRequestUrlPathAndQuery(HttpListenerRequest request)
+        {
+            return request.Url.PathAndQuery.Substring(BasePath.Length);
+        }
+
+        /// <summary>
+        /// Gets the raw URL minus the random base path.
+        /// This enables tests to get the stable part of a request URL.
+        /// </summary>
+        /// <param name="request">An <see cref="HttpListenerRequest"/> instance.</param>
+        /// <returns>The stable part of a request URL's raw URL.</returns>
+        public string GetRequestRawUrl(HttpListenerRequest request)
+        {
+            return request.RawUrl.Substring(BasePath.Length);
         }
 
         /// <summary>
@@ -209,13 +248,13 @@ namespace NuGet.CommandLine.Test
             SetResponseContent(response, System.Text.Encoding.UTF8.GetBytes(text));
         }
 
-        void SetResponseNotFound(HttpListenerResponse response)
+        private void SetResponseNotFound(HttpListenerResponse response)
         {
             response.StatusCode = (int)HttpStatusCode.NotFound;
             SetResponseContent(response, "404 not found");
         }
 
-        void GenerateResponse(HttpListenerContext context)
+        private void GenerateResponse(HttpListenerContext context)
         {
             var request = context.Request;
             HttpListenerResponse response = context.Response;
@@ -276,7 +315,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        void HandleRequest()
+        private void HandleRequest()
         {
             const int ERROR_OPERATION_ABORTED = 995;
             const int ERROR_INVALID_HANDLE = 6;
@@ -401,16 +440,18 @@ namespace NuGet.CommandLine.Test
     /// </remarks>
     public class RouteTable
     {
-        List<Tuple<string, Func<HttpListenerRequest, object>>> _mappings;
+        private readonly string _basePath;
+        private readonly List<Tuple<string, Func<HttpListenerRequest, object>>> _mappings;
 
-        public RouteTable()
+        public RouteTable(string basePath)
         {
+            _basePath = basePath ?? string.Empty;
             _mappings = new List<Tuple<string, Func<HttpListenerRequest, object>>>();
         }
 
         public void Add(string pattern, Func<HttpListenerRequest, object> f)
         {
-            _mappings.Add(new Tuple<string, Func<HttpListenerRequest, object>>(pattern, f));
+            _mappings.Add(new Tuple<string, Func<HttpListenerRequest, object>>($"{_basePath}{pattern}", f));
         }
 
         public Func<HttpListenerRequest, object> Match(HttpListenerRequest r)
