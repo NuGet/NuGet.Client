@@ -18,7 +18,7 @@ namespace NuGet.Common
                 case NuGetFolderPath.MachineWideSettingsBaseDirectory:
                     var machineWideBaseDir = RuntimeEnvironmentHelper.IsWindows ? GetFolderPath(SpecialFolder.ProgramFilesX86) : GetFolderPath(SpecialFolder.CommonApplicationData);
                     return Path.Combine(machineWideBaseDir,
-                        "nuget");
+                        "NuGet");
 
                 case NuGetFolderPath.MachineWideConfigDirectory:
                     return Path.Combine(
@@ -134,6 +134,7 @@ namespace NuGet.Common
         }
 
 #else
+
         private static string GetFolderPath(SpecialFolder folder)
         {
             // Convert the private enum to the .NET Framework enum
@@ -177,6 +178,7 @@ namespace NuGet.Common
 
             return Environment.GetFolderPath(converted);
         }
+
 #endif
 
         private static string GetHome()

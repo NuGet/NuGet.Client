@@ -53,7 +53,7 @@ namespace NuGet.Configuration.Test
             var globalConfigTuple = Settings.GetFileNameAndItsRoot("test root", globalConfigPath);
 
             // Assert
-            Assert.Equal(Path.Combine(programFilesX86Data, "nuget"), machineWidePathTuple.Item2);
+            Assert.Equal(Path.Combine(programFilesX86Data, "NuGet"), machineWidePathTuple.Item2);
             Assert.Equal("NuGet.Config", machineWidePathTuple.Item1);
             Assert.Equal(Path.Combine(userSetting, "NuGet"), globalConfigTuple.Item2);
             Assert.Equal("NuGet.Config", globalConfigTuple.Item1);
@@ -78,7 +78,7 @@ namespace NuGet.Configuration.Test
             var globalConfigTuple = Settings.GetFileNameAndItsRoot("test root", globalConfigPath);
 
             // Assert
-            Assert.Equal(Path.Combine(commonApplicationData, "nuget"), machineWidePathTuple.Item2);
+            Assert.Equal(Path.Combine(commonApplicationData, "NuGet"), machineWidePathTuple.Item2);
             Assert.Equal("NuGet.Config", machineWidePathTuple.Item1);
             Assert.Equal(Path.Combine(userSetting, "NuGet"), globalConfigTuple.Item2);
             Assert.Equal("NuGet.Config", globalConfigTuple.Item1);
@@ -103,7 +103,7 @@ namespace NuGet.Configuration.Test
             var globalConfigTuple = Settings.GetFileNameAndItsRoot("test root", globalConfigPath);
 
             // Assert
-            Assert.Equal(Path.Combine(commonApplicationData, "nuget"), machineWidePathTuple.Item2);
+            Assert.Equal(Path.Combine(commonApplicationData, "NuGet"), machineWidePathTuple.Item2);
             Assert.Equal("NuGet.Config", machineWidePathTuple.Item1);
             Assert.Equal(Path.Combine(userSetting, "NuGet"), globalConfigTuple.Item2);
             Assert.Equal("NuGet.Config", globalConfigTuple.Item1);
