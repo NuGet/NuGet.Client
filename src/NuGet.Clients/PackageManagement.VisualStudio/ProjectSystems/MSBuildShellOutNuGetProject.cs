@@ -21,6 +21,7 @@ using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using EnvDTEProject = EnvDTE.Project;
+using Microsoft.Win32;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -56,6 +57,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private const string MSBuildExe = "msbuild.exe";
 
+        private const string EnableRegistryKey = "EnableMSBuildShellOutNuGetProject";
+
         private static readonly string MSBuild14Path = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
                 @"MSBuild\14.0\Bin",
@@ -81,6 +84,12 @@ namespace NuGet.PackageManagement.VisualStudio
         public static MSBuildShellOutNuGetProject Create(EnvDTEProject project)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
+
+            // Only enable this code path if the registry key exists.
+            if (!GetBooleanSetting(EnableRegistryKey))
+            {
+                return null;
+            }
 
             // The project must be an IVSHierarchy.
             var hierarchy = VsHierarchyUtility.ToVsHierarchy(project);
@@ -128,6 +137,22 @@ namespace NuGet.PackageManagement.VisualStudio
                 projectFullPath,
                 projectUniqueName,
                 msbuildPath);
+        }
+        
+        private static bool GetBooleanSetting(string key)
+        {
+            try
+            {
+                using (var subKey = Registry.CurrentUser.OpenSubKey(@"Software\NuGet"))
+                {
+                    var keyValue = subKey == null ? null : subKey.GetValue(key) as string;
+                    return keyValue != null && keyValue != "0";
+                }
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private MSBuildShellOutNuGetProject(
