@@ -231,4 +231,7 @@ To prevent NuGet from restoring packages during build, open the Visual Studio Op
   <data name="CredentialProviderFailed_DefaultCredentialsCredentialProvider" xml:space="preserve">
     <value>The default credentials credential provider failed to load.</value>
   </data>
+  <data name="CredentialProviderFailed_ImportedProvider" xml:space="preserve">
+    <value>Failed to load credential provider from assembly {0}.</value>
+  </data>
 </root>
