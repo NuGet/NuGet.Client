@@ -19,19 +19,15 @@ namespace NuGet.LibraryModel
 
         public LibraryRange(string name, VersionRange versionRange, LibraryDependencyTarget typeConstraint)
         {
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
             Name = name;
-            VersionRange = versionRange ?? VersionRange.All;
+            VersionRange = versionRange;
             TypeConstraint = typeConstraint;
         }
 
         public string Name { get; set; }
 
-        public VersionRange VersionRange { get; set; } = VersionRange.All;
+        // Null is used for all, CLI still has code expecting this
+        public VersionRange VersionRange { get; set; }
 
         public LibraryDependencyTarget TypeConstraint { get; set; } = LibraryDependencyTarget.All;
 

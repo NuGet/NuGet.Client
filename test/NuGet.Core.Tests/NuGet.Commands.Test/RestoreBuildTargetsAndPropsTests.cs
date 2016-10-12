@@ -11,6 +11,7 @@ using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.Commands.Test
@@ -33,7 +34,7 @@ namespace NuGet.Commands.Test
                 spec.RestoreMetadata.CrossTargeting = true;
                 spec.Dependencies.Add(new LibraryDependency()
                 {
-                    LibraryRange = new LibraryRange("x", LibraryDependencyTarget.Package)
+                    LibraryRange = new LibraryRange("x", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package)
                 });
 
                 // Create fake projects, the real data is in the specs
@@ -96,7 +97,7 @@ namespace NuGet.Commands.Test
                 spec.RestoreMetadata.CrossTargeting = false;
                 spec.Dependencies.Add(new LibraryDependency()
                 {
-                    LibraryRange = new LibraryRange("x", LibraryDependencyTarget.Package)
+                    LibraryRange = new LibraryRange("x", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package)
                 });
 
                 // Create fake projects, the real data is in the specs
@@ -156,7 +157,7 @@ namespace NuGet.Commands.Test
                 spec.RestoreMetadata.CrossTargeting = true;
                 spec.Dependencies.Add(new LibraryDependency()
                 {
-                    LibraryRange = new LibraryRange("x", LibraryDependencyTarget.Package)
+                    LibraryRange = new LibraryRange("x", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package)
                 });
 
                 // Create fake projects, the real data is in the specs
@@ -216,7 +217,7 @@ namespace NuGet.Commands.Test
                 spec.RestoreMetadata.CrossTargeting = true;
                 spec.Dependencies.Add(new LibraryDependency()
                 {
-                    LibraryRange = new LibraryRange("x", LibraryDependencyTarget.Package)
+                    LibraryRange = new LibraryRange("x", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package)
                 });
 
                 // Create fake projects, the real data is in the specs
@@ -276,7 +277,7 @@ namespace NuGet.Commands.Test
                 spec.RestoreMetadata.CrossTargeting = true;
                 spec.Dependencies.Add(new LibraryDependency()
                 {
-                    LibraryRange = new LibraryRange("x", LibraryDependencyTarget.Package)
+                    LibraryRange = new LibraryRange("x", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package)
                 });
 
                 // Create fake projects, the real data is in the specs
@@ -336,7 +337,7 @@ namespace NuGet.Commands.Test
                 spec.RestoreMetadata.CrossTargeting = true;
                 spec.Dependencies.Add(new LibraryDependency()
                 {
-                    LibraryRange = new LibraryRange("x", LibraryDependencyTarget.Package)
+                    LibraryRange = new LibraryRange("x", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package)
                 });
 
                 // Create fake projects, the real data is in the specs
@@ -380,7 +381,7 @@ namespace NuGet.Commands.Test
                 // Modify spec
                 spec.Dependencies.Add(new LibraryDependency()
                 {
-                    LibraryRange = new LibraryRange("y", LibraryDependencyTarget.Package)
+                    LibraryRange = new LibraryRange("y", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package)
                 });
 
                 // Act
