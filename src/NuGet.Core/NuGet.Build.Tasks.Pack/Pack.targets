@@ -20,8 +20,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
-    <PackageVersion Condition=" '$(PackageVersion)' == '' ">$(Version)</PackageVersion>
-    <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$(TargetDir)</PackageOutputPath>
     <IncludeContentInPack Condition="'$(IncludeContentInPack)'==''">true</IncludeContentInPack>
     <GenerateNuspecDependsOn>_LoadPackInputItems; _WalkEachTargetPerFramework; _GetPackageFiles</GenerateNuspecDependsOn>
     <Description Condition="'$(Description)'==''">Package Description</Description>
@@ -66,6 +64,10 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="GenerateNuspec" DependsOnTargets="$(GenerateNuspecDependsOn)" Condition="$(IsPackable) == 'true'">
     <PropertyGroup Condition="$(ContinuePackingAfterGeneratingNuspec) == '' ">
       <ContinuePackingAfterGeneratingNuspec>false</ContinuePackingAfterGeneratingNuspec>
+    </PropertyGroup>
+    <PropertyGroup>      
+      <PackageVersion Condition=" '$(PackageVersion)' == '' ">$(Version)</PackageVersion>
+      <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$(OutputPath)</PackageOutputPath>
     </PropertyGroup>
     <!-- Call Pack -->
     <PackTask PackItem="$(PackProjectInputFile)"
