@@ -663,7 +663,7 @@ namespace NuGet.CommandLine.Test
 
                 // CrossTargeting should be first
                 Assert.Equal(2, targetItemGroups.Count);
-                Assert.Equal("'$(IsCrossTargetingBuild)' == 'true' AND '$(ExcludeRestorePackageImports)' != 'true'", targetItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal("'$(TargetFramework)' == '' AND '$(ExcludeRestorePackageImports)' != 'true'", targetItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
                 Assert.Equal("'$(TargetFramework)' == 'net45' AND '$(ExcludeRestorePackageImports)' != 'true'", targetItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
 
                 Assert.Equal(3, targetItemGroups[0].Elements().Count());
@@ -677,7 +677,7 @@ namespace NuGet.CommandLine.Test
                 Assert.EndsWith("x.targets", targetItemGroups[1].Elements().ToList()[2].Attribute(XName.Get("Project")).Value);
 
                 Assert.Equal(2, propsItemGroups.Count);
-                Assert.Equal("'$(IsCrossTargetingBuild)' == 'true' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal("'$(TargetFramework)' == '' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
                 Assert.Equal("'$(TargetFramework)' == 'net45' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
 
                 Assert.Equal(3, propsItemGroups[0].Elements().Count());
@@ -735,7 +735,7 @@ namespace NuGet.CommandLine.Test
                 var targetItemGroups = targetsXML.Root.Elements().Where(e => e.Name.LocalName == "ImportGroup").ToList();
 
                 Assert.Equal(1, targetItemGroups.Count);
-                Assert.Equal("'$(IsCrossTargetingBuild)' == 'true' AND '$(ExcludeRestorePackageImports)' != 'true'", targetItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal("'$(TargetFramework)' == '' AND '$(ExcludeRestorePackageImports)' != 'true'", targetItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
                 Assert.Equal(1, targetItemGroups[0].Elements().Count());
                 Assert.EndsWith("x.targets", targetItemGroups[0].Elements().ToList()[0].Attribute(XName.Get("Project")).Value);
             }

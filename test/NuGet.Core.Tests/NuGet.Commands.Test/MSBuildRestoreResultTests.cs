@@ -134,7 +134,7 @@ namespace NuGet.Commands.Test
                     },
                     Conditions = new List<string>()
                     {
-                        "'$(IsCrossTargetingBuild)' == 'true'"
+                        "'$(TargetFramework)' == ''"
                     },
                     Position = 0,
                 });
@@ -187,7 +187,7 @@ namespace NuGet.Commands.Test
                     },
                     Conditions = new List<string>()
                     {
-                        "'$(IsCrossTargetingBuild)' == 'true'"
+                        "'$(TargetFramework)' == ''"
                     },
                     Position = 0,
                 });
@@ -213,7 +213,7 @@ namespace NuGet.Commands.Test
                 var propsItemGroups = propsXML.Root.Elements().Where(e => e.Name.LocalName == "ImportGroup").ToList();
 
                 Assert.Equal(3, targetItemGroups.Count);
-                Assert.Equal("'$(IsCrossTargetingBuild)' == 'true'", targetItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal("'$(TargetFramework)' == ''", targetItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
                 Assert.Equal("'$(TargetFramework)' == 'net45'", targetItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
                 Assert.Equal("'$(TargetFramework)' == 'netstandard16'", targetItemGroups[2].Attribute(XName.Get("Condition")).Value.Trim());
 
@@ -229,7 +229,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal("c.targets", targetItemGroups[2].Elements().ToList()[0].Attribute(XName.Get("Project")).Value);
 
                 Assert.Equal(3, propsItemGroups.Count);
-                Assert.Equal("'$(IsCrossTargetingBuild)' == 'true'", propsItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal("'$(TargetFramework)' == ''", propsItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
 
                 Assert.Equal(1, propsItemGroups[0].Elements().Count());
                 Assert.Equal("z.props", propsItemGroups[0].Elements().ToList()[0].Attribute(XName.Get("Project")).Value);
@@ -274,7 +274,7 @@ namespace NuGet.Commands.Test
                 {
                     Conditions = new List<string>()
                     {
-                        "'$(IsCrossTargetingBuild)' == 'true'"
+                        "'$(TargetFramework)' == ''"
                     }
                 });
 
@@ -298,7 +298,7 @@ namespace NuGet.Commands.Test
                 {
                     Conditions = new List<string>()
                     {
-                        "'$(IsCrossTargetingBuild)' == 'true'"
+                        "'$(TargetFramework)' == ''"
                     }
                 });
 

@@ -22,7 +22,7 @@ namespace NuGet.Commands
 {
     public static class BuildAssetsUtils
     {
-        internal static readonly string CrossTargetingCondition = "'$(IsCrossTargetingBuild)' == 'true'";
+        internal static readonly string CrossTargetingCondition = "'$(TargetFramework)' == ''";
         internal static readonly string TargetFrameworkCondition = "'$(TargetFramework)' == '{0}'";
         internal static readonly string ExcludeAllCondition = "'$(ExcludeRestorePackageImports)' != 'true'";
 
