@@ -256,8 +256,8 @@ namespace NuGet.Commands.Test
                 var propsXML = XDocument.Parse(File.ReadAllText(project.PropsOutput));
                 var propsItemGroups = propsXML.Root.Elements().Where(e => e.Name.LocalName == "ImportGroup").ToList();
 
-                Assert.Equal("'$(IsCrossTargetingBuild)' == 'true' AND '$(ExcludeRestorePackageImports)' != 'true'", targetItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
-                Assert.Equal("'$(IsCrossTargetingBuild)' == 'true' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal("'$(TargetFramework)' == '' AND '$(ExcludeRestorePackageImports)' != 'true'", targetItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal("'$(TargetFramework)' == '' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
             }
         }
 
