@@ -38,6 +38,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <IsRestoreTargetsFileLoaded>true</IsRestoreTargetsFileLoaded>
     <!-- Load NuGet.Build.Tasks.dll, this can be overridden to use a different version with $(RestoreTaskAssemblyFile) -->
     <RestoreTaskAssemblyFile Condition=" '$(RestoreTaskAssemblyFile)' == '' ">NuGet.Build.Tasks.dll</RestoreTaskAssemblyFile>
+    <!-- Recurse by default -->
+    <RestoreRecursive Condition=" '$(RestoreRecursive)' == '' ">true</RestoreRecursive>
   </PropertyGroup>
 
   <!-- Tasks -->
@@ -72,7 +74,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       RestoreDisableParallel="$(RestoreDisableParallel)"
       RestoreConfigFile="$(RestoreConfigFile)"
       RestoreNoCache="$(RestoreNoCache)"
-      RestoreIgnoreFailedSources="$(RestoreIgnoreFailedSources)" />
+      RestoreIgnoreFailedSources="$(RestoreIgnoreFailedSources)"
+      RestoreRecursive="$(RestoreRecursive)" />
   </Target>
 
   <!--
@@ -96,7 +99,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Write file -->
     <WriteRestoreGraphTask
       RestoreGraphItems="@(_RestoreGraphEntryFiltered)"
-      RestoreGraphOutputPath="$(RestoreGraphOutputPath)" />
+      RestoreGraphOutputPath="$(RestoreGraphOutputPath)"
+      RestoreRecursive="$(RestoreRecursive)" />
   </Target>
 
   <!--
@@ -122,7 +126,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-    <!--
+  <!--
     ============================================================
     _GenerateRestoreGraph
     Entry point for creating the project to project restore graph.
@@ -307,7 +311,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ConvertToAbsolutePath Paths="$(RestoreOutputPath)" Condition=" '$(_ProjectRestoreType)' == 'NETCore' ">
       <Output TaskParameter="AbsolutePaths" PropertyName="RestoreOutputAbsolutePath" />
     </ConvertToAbsolutePath>
-    
+
     <!-- 
       Determine project name for the assets file.
       Highest priority: PackageId
@@ -321,7 +325,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_RestoreProjectName Condition=" '$(_ProjectRestoreType)' == 'NETCore' AND '$(AssemblyName)' != '' ">$(AssemblyName)</_RestoreProjectName>
       <_RestoreProjectName Condition=" '$(_ProjectRestoreType)' == 'NETCore' AND '$(PackageId)' != '' ">$(PackageId)</_RestoreProjectName>
     </PropertyGroup>
-    
+
     <!-- Determine if this will use cross targeting -->
     <PropertyGroup Condition=" '$(_ProjectRestoreType)' == 'NETCore' AND '$(TargetFrameworks)' != '' ">
       <_RestoreCrossTargeting>true</_RestoreCrossTargeting>
@@ -511,7 +515,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         TaskParameter="RestoreGraphItems"
         ItemName="_RestoreGraphEntry" />
     </GetRestorePackageReferencesTask>
-    
+
     <!-- Write out target framework information -->
     <ItemGroup Condition="  '$(_ProjectRestoreType)' == 'NETCore' AND '$(PackageTargetFallback)' != '' ">
       <_RestoreGraphEntry Include="$([System.Guid]::NewGuid())">

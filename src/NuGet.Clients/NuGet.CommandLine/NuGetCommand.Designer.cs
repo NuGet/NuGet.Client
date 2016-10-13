@@ -10144,6 +10144,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Restore all referenced projects for UWP and NETCore projects. This does not include packages.config projects..
+        /// </summary>
+        internal static string RestoreCommandRecursive {
+            get {
+                return ResourceManager.GetString("RestoreCommandRecursive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Checks if package restore consent is granted before installing a package..
         /// </summary>
         internal static string RestoreCommandRequireConsent {

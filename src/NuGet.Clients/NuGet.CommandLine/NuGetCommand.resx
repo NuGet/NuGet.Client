@@ -5333,4 +5333,7 @@ nuget locals global-packages -list</value>
   <data name="CommandMSBuildPath" xml:space="preserve">
     <value>Specifies the path of MSBuild to be used with this command. This command will takes precedence over MSbuildVersion, nuget will always pick MSbuild from this specified path.</value>
   </data>
+  <data name="RestoreCommandRecursive" xml:space="preserve">
+    <value>Restore all referenced projects for UWP and NETCore projects. This does not include packages.config projects.</value>
+  </data>
 </root>

@@ -43,6 +43,9 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "CommandMSBuildPath")]
         public string MSBuildPath { get; set; }
 
+        [Option(typeof(NuGetCommand), "Recursive")]
+        public bool Recursive { get; set; }
+
         [ImportingConstructor]
         public RestoreCommand()
             : base(MachineCache.Default)
@@ -594,7 +597,8 @@ namespace NuGet.CommandLine
                 _msbuildDirectory.Value,
                 projectsWithPotentialP2PReferences,
                 scaleTimeout,
-                Console);
+                Console,
+                Recursive);
         }
 
         /// <summary>
