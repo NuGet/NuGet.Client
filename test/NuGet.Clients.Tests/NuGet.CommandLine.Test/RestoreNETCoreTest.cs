@@ -2,22 +2,162 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using NuGet.ProjectModel;
 using NuGet.Test.Utility;
-using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
 {
     public class RestoreNetCoreTest
     {
+        [Fact]
+        public void RestoreNetCore_ProjectToProject_Recursive()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETCoreApp1.0"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETStandard1.5"));
+
+                var projectC = SimpleTestProjectContext.CreateNETCore(
+                    "c",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETStandard1.5"));
+
+                // A -> B
+                projectA.AddProjectToAllFrameworks(projectB);
+
+                // B -> C
+                projectB.AddProjectToAllFrameworks(projectC);
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Projects.Add(projectC);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var nugetexe = Util.GetNuGetExePath();
+
+                // Store the dg file for debugging
+                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
+                var envVars = new Dictionary<string, string>()
+                {
+                    { "NUGET_PERSIST_DG", "true" },
+                    { "NUGET_PERSIST_DG_PATH", dgPath }
+                };
+
+                string[] args = new string[] {
+                    "restore",
+                    projectA.ProjectPath,
+                    "-Verbosity",
+                    "detailed",
+                    "-Recursive"
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    pathContext.WorkingDirectory.Path,
+                    string.Join(" ", args),
+                    waitForExit: true,
+                    environmentVariables: envVars);
+
+                // Assert
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+                Assert.True(File.Exists(projectB.AssetsFileOutputPath));
+                Assert.True(File.Exists(projectC.AssetsFileOutputPath));
+            }
+        }
+
+        [Fact]
+        public void RestoreNetCore_ProjectToProject_RecursiveIgnoresNonRestorable()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETCoreApp1.0"));
+
+                var projectB = SimpleTestProjectContext.CreateNonNuGet(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETStandard1.5"));
+
+                var projectC = SimpleTestProjectContext.CreateNETCore(
+                    "c",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETStandard1.5"));
+
+                // A -> B
+                projectA.AddProjectToAllFrameworks(projectB);
+
+                // B -> C
+                projectB.AddProjectToAllFrameworks(projectC);
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Projects.Add(projectC);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var nugetexe = Util.GetNuGetExePath();
+
+                // Store the dg file for debugging
+                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
+                var envVars = new Dictionary<string, string>()
+                {
+                    { "NUGET_PERSIST_DG", "true" },
+                    { "NUGET_PERSIST_DG_PATH", dgPath }
+                };
+
+                string[] args = new string[] {
+                    "restore",
+                    projectA.ProjectPath,
+                    "-Verbosity",
+                    "detailed",
+                    "-Recursive"
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    pathContext.WorkingDirectory.Path,
+                    string.Join(" ", args),
+                    waitForExit: true,
+                    environmentVariables: envVars);
+
+                // Assert
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+                Assert.False(File.Exists(projectB.AssetsFileOutputPath));
+                Assert.True(File.Exists(projectC.AssetsFileOutputPath));
+            }
+        }
+
         [Fact]
         public async Task RestoreNetCore_RestoreWithRID()
         {
@@ -292,7 +432,7 @@ namespace NuGet.CommandLine.Test
                     var packageZSub = new SimpleTestPackageContext()
                     {
                         Id = "z",
-                        Version = $"{i+1}.0.0"
+                        Version = $"{i + 1}.0.0"
                     };
 
                     project.DotnetCLIToolReferences.Add(packageZSub);
@@ -413,7 +553,7 @@ namespace NuGet.CommandLine.Test
 
                 var projects = new List<SimpleTestProjectContext>();
 
-                for (int i=0; i < 10; i++)
+                for (int i = 0; i < 10; i++)
                 {
                     var project = SimpleTestProjectContext.CreateNETCore(
                         $"proj{i}",
@@ -511,7 +651,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact(Skip="Not supported")]
+        [Fact(Skip = "Not supported")]
         public async Task RestoreNetCore_SingleToolRestore_Noop()
         {
             // Arrange
@@ -954,7 +1094,6 @@ namespace NuGet.CommandLine.Test
                                                     },
                                                     'frameworks': {
                                                         'net45': {
-                                                            
                                                     }
                                                   }
                                                }");
@@ -1064,7 +1203,7 @@ namespace NuGet.CommandLine.Test
                     Id = "x",
                     Version = "1.0.0-beta"
                 };
-               
+
                 // G -> X
                 projectG.AddPackageToAllFrameworks(packageX);
 
@@ -1287,7 +1426,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void  RestoreNetCore_ProjectToProject_UAPToUnknown()
+        public void RestoreNetCore_ProjectToProject_UAPToUnknown()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1959,7 +2098,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        private static CommandRunnerResult RestoreSolution(SimpleTestPathContext pathContext, int exitCode=0)
+        private static CommandRunnerResult RestoreSolution(SimpleTestPathContext pathContext, int exitCode = 0)
         {
             var nugetexe = Util.GetNuGetExePath();
 

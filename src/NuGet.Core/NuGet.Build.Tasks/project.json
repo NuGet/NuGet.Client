@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "3.6.0-*",
   "description": "NuGet 3 restore for dotnet CLI",
   "packOptions": {

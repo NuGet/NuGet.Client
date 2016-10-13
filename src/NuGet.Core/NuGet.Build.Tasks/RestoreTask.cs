@@ -58,6 +58,11 @@ namespace NuGet.Build.Tasks
         /// </summary>
         public bool RestoreIgnoreFailedSources { get; set; }
 
+        /// <summary>
+        /// Restore all projects.
+        /// </summary>
+        public bool RestoreRecursive { get; set; }
+
         public override bool Execute()
         {
             if (RestoreGraphItems.Length < 1)
@@ -69,6 +74,7 @@ namespace NuGet.Build.Tasks
             var log = new MSBuildLogger(Log);
 
             // Log inputs
+            log.LogDebug($"(in) RestoreGraphItems Count '{RestoreGraphItems?.Count() ?? 0}'");
             log.LogDebug($"(in) RestoreSources '{RestoreSources}'");
             log.LogDebug($"(in) RestorePackagesPath '{RestorePackagesPath}'");
             log.LogDebug($"(in) RestoreFallbackFolders '{RestoreFallbackFolders}'");
@@ -76,6 +82,7 @@ namespace NuGet.Build.Tasks
             log.LogDebug($"(in) RestoreConfigFile '{RestoreConfigFile}'");
             log.LogDebug($"(in) RestoreNoCache '{RestoreNoCache}'");
             log.LogDebug($"(in) RestoreIgnoreFailedSources '{RestoreIgnoreFailedSources}'");
+            log.LogDebug($"(in) RestoreRecursive '{RestoreRecursive}'");
 
             // Convert to the internal wrapper
             var wrappedItems = RestoreGraphItems.Select(GetMSBuildItem);
@@ -98,6 +105,12 @@ namespace NuGet.Build.Tasks
                     // Restore will fail if given no inputs, but here we should skip it and provide a friendly message.
                     log.LogMinimal("Nothing to do. None of the projects specified contain packages to restore.");
                     return true;
+                }
+
+                // Add all child projects
+                if (RestoreRecursive)
+                {
+                    BuildTasksUtility.AddAllProjectsForRestore(dgFile);
                 }
 
                 providers.Add(new DependencyGraphSpecRequestProvider(providerCache, dgFile));

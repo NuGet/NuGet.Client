@@ -66,7 +66,8 @@ namespace NuGet.CommandLine
             string msbuildDirectory,
             string[] projectPaths,
             int timeOut,
-            IConsole console)
+            IConsole console,
+            bool recursive)
         {
             string msbuildPath = Path.Combine(msbuildDirectory, "msbuild.exe");
 
@@ -135,6 +136,12 @@ namespace NuGet.CommandLine
 
                 // Disallow the import of targets/props from packages
                 argumentBuilder.Append(" /p:ExcludeRestorePackageImports=true ");
+
+                // Add all depenencies as top level restore projects if recursive is set
+                if (recursive)
+                {
+                    argumentBuilder.Append($" /p:RestoreRecursive=true ");
+                }
 
                 // Projects to restore
                 argumentBuilder.Append(" /p:RestoreGraphProjectInput=\"");
