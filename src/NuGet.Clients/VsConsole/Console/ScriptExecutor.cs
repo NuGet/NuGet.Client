@@ -65,7 +65,7 @@ namespace NuGetConsole
                     return true;
                 }
 
-                var request = new ScriptExecutionRequest(scriptPath, identity, project);
+                var request = new ScriptExecutionRequest(scriptPath, installPath, identity, project);
 
                 var psNuGetProjectContext = nuGetProjectContext as IPSNuGetProjectContext;
                 if (psNuGetProjectContext != null
@@ -141,7 +141,7 @@ namespace NuGetConsole
                             PackageInitPS1State.FoundAndExecuted,
                             PackageInitPS1State.NotFound);
 
-                        var request = new ScriptExecutionRequest(scriptPath, identity, project: null);
+                        var request = new ScriptExecutionRequest(scriptPath, installPath, identity, project: null);
 
                         await ExecuteScriptCoreAsync(request);
 
