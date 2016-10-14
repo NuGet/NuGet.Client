@@ -43,7 +43,7 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "CommandMSBuildPath")]
         public string MSBuildPath { get; set; }
 
-        [Option(typeof(NuGetCommand), "Recursive")]
+        [Option(typeof(NuGetCommand), "RestoreCommandRecursive")]
         public bool Recursive { get; set; }
 
         [ImportingConstructor]
