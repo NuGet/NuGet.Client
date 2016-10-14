@@ -502,13 +502,34 @@ namespace NuGet.DependencyResolver
             {
                 // Find the root directory of the parent project if one exists.
                 // This is used for resolving global json.
-                var parentProjectRoot = GetRootPathForParentProject(outerEdge);
+                string parentProjectRoot = null;
+                var parentEdge = GetNearestParentProject(outerEdge);
+
+                if (AllowXProjResolution(parentEdge))
+                {
+                    parentProjectRoot = GetRootPathForEdge(parentEdge);
+                }
 
                 foreach (var provider in _context.ProjectLibraryProviders)
                 {
                     if (provider.SupportsType(libraryRange.TypeConstraint))
                     {
-                        var match = provider.GetLibrary(libraryRange, framework, parentProjectRoot);
+                        Library match = null;
+
+                        // Until xproj is removed allow the outer edge to come from anywhere
+                        // this is safe since it has to be the project.
+                        if (outerEdge == null)
+                        {
+                            // Not passing the path uses the default resolver
+                            match = provider.GetLibrary(libraryRange, framework);
+                        }
+                        else
+                        {
+                            // If parentProjectRoot is null xproj resolution will not be used, this parameter
+                            // will be removed soon!
+                            match = provider.GetLibrary(libraryRange, framework, parentProjectRoot);
+                        }
+
                         if (match != null)
                         {
                             result = new LocalMatch
@@ -531,13 +552,12 @@ namespace NuGet.DependencyResolver
         /// Returns root directory of the parent project.
         /// This will be null if the reference is from a non-project type.
         /// </summary>
-        private static string GetRootPathForParentProject(GraphEdge<RemoteResolveResult> outerEdge)
+        private static string GetRootPathForEdge(GraphEdge<RemoteResolveResult> parentProjectEdge)
         {
-            if (outerEdge != null
-                && outerEdge.Item.Key.Type == LibraryType.Project
-                && outerEdge.Item.Data.Match.Path != null)
+            if (parentProjectEdge != null
+                && parentProjectEdge.Item.Data.Match.Path != null)
             {
-                var projectJsonPath = new FileInfo(outerEdge.Item.Data.Match.Path);
+                var projectJsonPath = new FileInfo(parentProjectEdge.Item.Data.Match.Path);
 
                 // For files in the root of the drive this will be null
                 if (projectJsonPath.Directory.Parent == null)
@@ -551,6 +571,43 @@ namespace NuGet.DependencyResolver
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// True if legacy Xproj resolution is allowed. This will be removed soon!
+        /// </summary>
+        private static bool AllowXProjResolution(GraphEdge<RemoteResolveResult> parentProjectEdge)
+        {
+            var localMatch = parentProjectEdge?.Item.Data.Match as LocalMatch;
+
+            if (localMatch != null)
+            {
+                object outputTypeObj;
+                if (localMatch.LocalLibrary.Items.TryGetValue(KnownLibraryProperties.ProjectOutputType, out outputTypeObj))
+                {
+                    var outputType = (string)outputTypeObj;
+
+                    // XProj is listed as Unknown
+                    return StringComparer.OrdinalIgnoreCase.Equals("unknown", outputType);
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Walk the graph up to the nearest parent project or null if this is the root.
+        /// </summary>
+        private static GraphEdge<RemoteResolveResult> GetNearestParentProject(GraphEdge<RemoteResolveResult> outerEdge)
+        {
+            while (outerEdge != null
+                && outerEdge.Item.Key.Type != LibraryType.Project)
+            {
+                // Move up one level
+                outerEdge = outerEdge.OuterEdge;
+            }
+
+            return outerEdge;
         }
 
         private async Task<RemoteMatch> FindLibraryByVersion(LibraryRange libraryRange, NuGetFramework framework, IEnumerable<IRemoteDependencyProvider> providers, CancellationToken token)
