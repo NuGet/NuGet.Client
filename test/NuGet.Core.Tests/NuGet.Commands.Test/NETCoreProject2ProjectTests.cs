@@ -4,19 +4,100 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.Commands.Test
 {
     public class NETCoreProject2ProjectTests
     {
+        [Fact]
+        public async Task NETCoreProject2Project_IgnoreXproj()
+        {
+            // Arrange
+            using (var cacheContext = new SourceCacheContext())
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var logger = new TestLogger();
+                var sources = new List<PackageSource>();
+                sources.Add(new PackageSource(pathContext.PackageSource));
+
+                var spec = GetProject(projectName: "projectA", framework: "netstandard1.6");
+                var specs = new[] { spec };
+
+                spec.TargetFrameworks.Single().Dependencies.Add(new LibraryDependency()
+                {
+                    LibraryRange = new LibraryRange("x", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package)
+                });
+
+                // Create fake projects, the real data is in the specs
+                var projects = CreateProjectsFromSpecs(pathContext, spec);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+
+                packageX.Dependencies.Add(packageY);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageY);
+
+                // Create dg file
+                var dgFile = new DependencyGraphSpec();
+
+                // Only add projectA
+                dgFile.AddProject(spec);
+                dgFile.AddRestore(spec.RestoreMetadata.ProjectUniqueName);
+
+                dgFile.Save(Path.Combine(pathContext.WorkingDirectory, "out.dg"));
+
+                var projectYRoot = Path.Combine(pathContext.SolutionRoot, "y");
+                Directory.CreateDirectory(projectYRoot);
+                var projectYJson = Path.Combine(projectYRoot, "project.json");
+
+                var projectJsonContent = JObject.Parse(@"{
+                                                    'dependencies': {
+                                                    },
+                                                    'frameworks': {
+                                                        'netstandard1.0': {
+                                                    }
+                                                  }
+                                               }");
+
+                File.WriteAllText(projectYJson, projectJsonContent.ToString());
+
+                // Act
+                var summaries = await RunRestore(pathContext, logger, sources, dgFile, cacheContext);
+                var success = summaries.All(s => s.Success);
+
+                // Assert
+                Assert.True(success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
+
+                // Verify only packages
+                Assert.Empty(projects[0].AssetsFile.Libraries.Where(e => e.Type != "package"));
+            }
+        }
+
         [Fact]
         public async Task NETCoreProject2Project_ProjectReferenceOnlyUnderRestoreMetadata()
         {

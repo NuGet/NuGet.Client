@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -20,6 +21,80 @@ namespace NuGet.Commands.Test
 {
     public class DotnetCliToolTests
     {
+        [Fact]
+        public async Task DotnetCliTool_VerifyProjectsAreNotAllowed()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var logger = new TestLogger();
+                var dgFile = new DependencyGraphSpec();
+
+                var spec = ToolRestoreUtility.GetSpec(
+                    Path.Combine(pathContext.SolutionRoot, "tool", "fake.csproj"),
+                    "a",
+                    VersionRange.Parse("1.0.0"),
+                    NuGetFramework.Parse("netcoreapp1.0"));
+
+                dgFile.AddProject(spec);
+                dgFile.AddRestore(spec.Name);
+
+                var pathResolver = new ToolPathResolver(pathContext.UserPackagesFolder);
+                var path = pathResolver.GetLockFilePath(
+                    "a",
+                    NuGetVersion.Parse("1.0.0"),
+                    NuGetFramework.Parse("netcoreapp1.0"));
+
+                var packageA = new SimpleTestPackageContext()
+                {
+                    Id = "a",
+                    Version = "1.0.0"
+                };
+
+                var packageB = new SimpleTestPackageContext()
+                {
+                    Id = "b",
+                    Version = "1.0.0"
+                };
+
+                packageA.Dependencies.Add(packageB);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageA,
+                    packageB);
+
+                var projectYRoot = Path.Combine(pathContext.SolutionRoot, "b");
+                Directory.CreateDirectory(projectYRoot);
+                var projectYJson = Path.Combine(projectYRoot, "project.json");
+
+                var projectJsonContent = JObject.Parse(@"{
+                                                    'dependencies': {
+                                                    },
+                                                    'frameworks': {
+                                                        'netstandard1.0': {
+                                                    }
+                                                  }
+                                               }");
+
+                File.WriteAllText(projectYJson, projectJsonContent.ToString());
+
+                // Act
+                var result = await CommandsTestUtility.RunSingleRestore(dgFile, pathContext, logger);
+
+                // Assert
+                Assert.True(result.Success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
+                Assert.True(File.Exists(path));
+
+                var lockFormat = new LockFileFormat();
+                var lockFile = lockFormat.Read(path);
+
+                // Verify only packages
+                Assert.Empty(lockFile.Libraries.Where(e => e.Type != "package"));
+            }
+        }
+
         [Fact]
         public async Task DotnetCliTool_BasicToolRestore()
         {

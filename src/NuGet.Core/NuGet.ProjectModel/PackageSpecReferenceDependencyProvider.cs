@@ -111,7 +111,8 @@ namespace NuGet.ProjectModel
             {
                 packageSpec = externalReference.PackageSpec;
             }
-            else if (libraryRange.TypeConstraintAllows(LibraryDependencyTarget.Project))
+            else if (libraryRange.TypeConstraintAllows(LibraryDependencyTarget.Project)
+                && !string.IsNullOrEmpty(rootPath))
             {
                 // Find the package spec resolver for this root path.
                 var specResolver = GetPackageSpecResolver(rootPath);
@@ -171,6 +172,17 @@ namespace NuGet.ProjectModel
             if (packageSpec != null)
             {
                 library[KnownLibraryProperties.PackageSpec] = packageSpec;
+
+                var outputType = packageSpec.RestoreMetadata?.OutputType;
+
+                if (outputType.HasValue)
+                {
+                    library[KnownLibraryProperties.ProjectOutputType] = outputType.Value.ToString();
+                }
+                else
+                {
+                    library[KnownLibraryProperties.ProjectOutputType] = "unknown";
+                }
             }
 
             // Add msbuild path
