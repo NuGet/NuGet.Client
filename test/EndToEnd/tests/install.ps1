@@ -2258,6 +2258,22 @@ function Test-ToolsPathForInitAndInstallScriptPointToToolsFolder
     Assert-Package $p 'packageA'
 }
 
+function Test-InstallPackageWithNestedToolsDirectory
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+	$solutionDir = Get-SolutionDir
+
+    # Act 
+    $p | Install-Package TestPackage.SupportingMultipleFrameworks -Version 1.2.0 -Source $context.RepositoryPath
+
+    # Assert
+    Assert-Package $p 'TestPackage.SupportingMultipleFrameworks'
+	Assert-PathExists (Join-Path $solutionDir packages\TestPackage.SupportingMultipleFrameworks.1.2.0\version.txt)
+}
+
 function Test-InstallFailCleansUpSatellitePackageFiles 
 {
     # Verification for work item 2311
