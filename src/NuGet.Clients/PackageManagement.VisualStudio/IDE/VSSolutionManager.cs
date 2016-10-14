@@ -102,8 +102,22 @@ namespace NuGet.PackageManagement.VisualStudio
                 ErrorHandler.ThrowOnFailure(hr);
             }
 
-            UserAgent.SetUserAgentString(
-                new UserAgentStringBuilder().WithVisualStudioSKU(VSVersionHelper.GetFullVsVersionString()));
+            // Allow this constructor to be invoked from either the UI or a worker thread
+            if (ThreadHelper.CheckAccess())
+            {
+                UserAgent.SetUserAgentString(
+                    new UserAgentStringBuilder().WithVisualStudioSKU(VSVersionHelper.GetFullVsVersionString()));
+            }
+            else
+            {
+                ThreadHelper.JoinableTaskFactory.Run(async delegate
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    UserAgent.SetUserAgentString(
+                        new UserAgentStringBuilder().WithVisualStudioSKU(VSVersionHelper.GetFullVsVersionString()));
+                });
+            }
 
             _solutionEvents.BeforeClosing += OnBeforeClosing;
             _solutionEvents.AfterClosing += OnAfterClosing;
