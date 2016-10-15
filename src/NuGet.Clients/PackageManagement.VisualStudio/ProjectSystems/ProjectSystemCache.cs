@@ -27,9 +27,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public bool TryGetNuGetProject(string name, out NuGetProject project)
         {
-            if (name == null)
+            if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(name));
             }
 
             project = null;
@@ -45,9 +45,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public bool TryGetDTEProject(string name, out EnvDTE.Project project)
         {
-            if (name == null)
+            if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(name));
             }
 
             project = null;
@@ -63,9 +63,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public bool TryGetProjectRestoreInfo(String name, out PackageSpec packageSpec)
         {
-            if (name == null)
+            if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(name));
             }
 
             packageSpec = null;
@@ -81,9 +81,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public bool TryGetProjectNames(string name, out ProjectNames projectNames)
         {
-            if (name == null)
+            if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(name));
             }
 
             _readerWriterLock.EnterReadLock();
@@ -101,9 +101,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public void RemoveProject(string name)
         {
-            if (name == null)
+            if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(name));
             }
 
             _readerWriterLock.EnterUpgradeableReadLock();
@@ -134,9 +134,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public bool ContainsKey(string name)
         {
-            if (name == null)
+            if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(name));
             }
 
             _readerWriterLock.EnterReadLock();
@@ -186,9 +186,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public bool IsAmbiguous(string shortName)
         {
-            if (shortName == null)
+            if (string.IsNullOrEmpty(shortName))
             {
-                throw new ArgumentNullException(nameof(shortName));
+                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(shortName));
             }
 
             _readerWriterLock.EnterReadLock();
@@ -313,9 +313,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public bool TryGetProjectNameByShortName(string name, out ProjectNames projectNames)
         {
-            if (name == null)
+            if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(name));
             }
 
             projectNames = null;

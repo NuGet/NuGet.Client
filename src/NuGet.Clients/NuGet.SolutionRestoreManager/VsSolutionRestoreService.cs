@@ -84,13 +84,20 @@ namespace NuGet.SolutionRestoreManager
                 if (dteProject != null)
                 {
                     // Get information about the project from DTE.
-                    var projectNames = ProjectNames.FromDTEProject(dteProject);
+                    // TODO: Get rid off all DTE calls in this method
+                    // cache should be indexed by full project path only.
+                    var projectNames = new ProjectNames(
+                        fullName: projectUniqueName, // dteProject.FullName throws here
+                        uniqueName: EnvDTEProjectUtility.GetUniqueName(dteProject),
+                        shortName: EnvDTEProjectUtility.GetName(dteProject),
+                        customUniqueName: EnvDTEProjectUtility.GetCustomUniqueName(dteProject));
+
                     packageSpec.Name = packageSpec.RestoreMetadata.ProjectName = projectNames.ShortName;
 
                     var restoreMetadata = packageSpec.RestoreMetadata;
                     restoreMetadata.ProjectUniqueName = projectNames.UniqueName;
 
-                    var projectDirectory = EnvDTEProjectUtility.GetProjectDirectory(dteProject);
+                    var projectDirectory = Path.GetDirectoryName(projectUniqueName);
                     restoreMetadata.OutputPath = Path.GetFullPath(
                         Path.Combine(
                             projectDirectory,

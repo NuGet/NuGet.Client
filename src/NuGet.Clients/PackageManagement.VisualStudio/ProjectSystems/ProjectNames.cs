@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.Shell;
 namespace NuGet.PackageManagement.VisualStudio
 {
     /// <summary>
-    /// Represents a project name in the solution manager.
+    /// Represents project names in the solution manager.
     /// </summary>
     public class ProjectNames : IEquatable<ProjectNames>
     {
@@ -17,6 +17,43 @@ namespace NuGet.PackageManagement.VisualStudio
         public string ShortName { get; private set; }
         public string CustomUniqueName { get; private set; }
 
+        public ProjectNames(
+            string fullName,
+            string uniqueName,
+            string shortName,
+            string customUniqueName)
+        {
+            if (string.IsNullOrEmpty(fullName))
+            {
+                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(fullName));
+            }
+
+            if (string.IsNullOrEmpty(uniqueName))
+            {
+                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(uniqueName));
+            }
+
+            if (string.IsNullOrEmpty(shortName))
+            {
+                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(shortName));
+            }
+
+            if (string.IsNullOrEmpty(customUniqueName))
+            {
+                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(customUniqueName));
+            }
+
+            FullName = fullName;
+            UniqueName = uniqueName;
+            ShortName = shortName;
+            CustomUniqueName = customUniqueName;
+        }
+
+        /// <summary>
+        /// Factory method initializing instance of <see cref="ProjectNames"/> with values retrieved from a DTE project.
+        /// </summary>
+        /// <param name="dteProject">DTE project to get project names for.</param>
+        /// <returns>New instance of <see cref="ProjectNames"/>.</returns>
         public static ProjectNames FromDTEProject(EnvDTE.Project dteProject)
         {
             if (dteProject == null)
@@ -26,13 +63,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
             Debug.Assert(ThreadHelper.CheckAccess());
 
-            return new ProjectNames
-            {
-                FullName = dteProject.FullName,
-                UniqueName = EnvDTEProjectUtility.GetUniqueName(dteProject),
-                ShortName = EnvDTEProjectUtility.GetName(dteProject),
-                CustomUniqueName = EnvDTEProjectUtility.GetCustomUniqueName(dteProject)
-            };
+            return new ProjectNames(
+                fullName: dteProject.FullName,
+                uniqueName: EnvDTEProjectUtility.GetUniqueName(dteProject),
+                shortName: EnvDTEProjectUtility.GetName(dteProject),
+                customUniqueName: EnvDTEProjectUtility.GetCustomUniqueName(dteProject));
         }
 
         /// <summary>
