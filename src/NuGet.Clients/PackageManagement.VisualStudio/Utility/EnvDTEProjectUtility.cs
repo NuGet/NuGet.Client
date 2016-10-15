@@ -402,7 +402,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return packagesConfigWithProjectNameFullPath;
         }
 
-        internal static string GetName(EnvDTEProject envDTEProject)
+        public static string GetName(EnvDTEProject envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -474,7 +474,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return GetName(envDTEProject);
         }
 
-        internal static string GetUniqueName(EnvDTEProject envDTEProject)
+        public static string GetUniqueName(EnvDTEProject envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
