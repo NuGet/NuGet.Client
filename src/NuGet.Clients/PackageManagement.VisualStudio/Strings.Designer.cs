@@ -133,6 +133,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to NuGet Package Manager.
+        /// </summary>
+        public static string DialogTitle {
+            get {
+                return ResourceManager.GetString("DialogTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The project &apos;{0}&apos; is unsupported.
         /// </summary>
         public static string DTE_ProjectUnsupported {
@@ -156,6 +165,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         public static string Error_WhileLoadingConfigForBindingRedirects {
             get {
                 return ResourceManager.GetString("Error_WhileLoadingConfigForBindingRedirects", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error occurred while restoring NuGet packages: {0}.
+        /// </summary>
+        public static string ErrorOccurredRestoringPackages {
+            get {
+                return ResourceManager.GetString("ErrorOccurredRestoringPackages", resourceCulture);
             }
         }
         
@@ -205,6 +223,81 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to All packages are already installed and there is nothing to restore..
+        /// </summary>
+        public static string NothingToRestore {
+            get {
+                return ResourceManager.GetString("NothingToRestore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to One or more NuGet packages need to be restored but couldn&apos;t be because consent has not been granted. To give consent, open the Visual Studio Options dialog, click on the Package Manager node and check &apos;Allow NuGet to download missing packages during build.&apos; You can also give consent by setting the environment variable &apos;EnableNuGetPackageRestore&apos; to &apos;true&apos;. 
+        ///
+        ///Missing packages: {0}.
+        /// </summary>
+        public static string PackageNotRestoredBecauseOfNoConsent {
+            get {
+                return ResourceManager.GetString("PackageNotRestoredBecauseOfNoConsent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NuGet package restore canceled..
+        /// </summary>
+        public static string PackageRestoreCanceled {
+            get {
+                return ResourceManager.GetString("PackageRestoreCanceled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NuGet Package restore failed for project {0}: {1}..
+        /// </summary>
+        public static string PackageRestoreFailedForProject {
+            get {
+                return ResourceManager.GetString("PackageRestoreFailedForProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NuGet package restore finished..
+        /// </summary>
+        public static string PackageRestoreFinished {
+            get {
+                return ResourceManager.GetString("PackageRestoreFinished", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NuGet Package restore finished for project &apos;{0}&apos;..
+        /// </summary>
+        public static string PackageRestoreFinishedForProject {
+            get {
+                return ResourceManager.GetString("PackageRestoreFinishedForProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NuGet package restore failed..
+        /// </summary>
+        public static string PackageRestoreFinishedWithError {
+            get {
+                return ResourceManager.GetString("PackageRestoreFinishedWithError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restoring NuGet packages...
+        ///To prevent NuGet from restoring packages during build, open the Visual Studio Options dialog, click on the Package Manager node and uncheck &apos;Allow NuGet to download missing packages during build.&apos;.
+        /// </summary>
+        public static string PackageRestoreOptOutMessage {
+            get {
+                return ResourceManager.GetString("PackageRestoreOptOutMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Path &apos;{0}&apos; to existing file is not found on disk. Cannot add to project &apos;{1}&apos;.
         /// </summary>
         public static string PathToExistingFileNotPresent {
@@ -219,6 +312,24 @@ namespace NuGet.PackageManagement.VisualStudio {
         public static string RelativeGlobalPackagesFolder {
             get {
                 return ResourceManager.GetString("RelativeGlobalPackagesFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restored NuGet package {0}..
+        /// </summary>
+        public static string RestoredPackage {
+            get {
+                return ResourceManager.GetString("RestoredPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restoring NuGet packages....
+        /// </summary>
+        public static string RestoringPackages {
+            get {
+                return ResourceManager.GetString("RestoringPackages", resourceCulture);
             }
         }
         

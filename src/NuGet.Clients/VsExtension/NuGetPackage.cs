@@ -32,8 +32,8 @@ using IMachineWideSettings = NuGet.Configuration.IMachineWideSettings;
 using ISettings = NuGet.Configuration.ISettings;
 using Resx = NuGet.PackageManagement.UI.Resources;
 using Strings = NuGet.PackageManagement.VisualStudio.Strings;
-using UI = NuGet.PackageManagement.UI;
 using Tasks = System.Threading.Tasks;
+using UI = NuGet.PackageManagement.UI;
 
 namespace NuGetVSExtension
 {
@@ -67,7 +67,7 @@ namespace NuGetVSExtension
     public sealed class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
         // It is displayed in the Help - About box of Visual Studio
-        public const string ProductVersion = "3.6.1";
+        public const string ProductVersion = "3.6.0";
         private static readonly object _credentialsPromptLock = new object();
 
         private static readonly string[] _visualizerSupportedSKUs = { "Premium", "Ultimate" };
@@ -78,7 +78,6 @@ namespace NuGetVSExtension
         private IConsoleStatus _consoleStatus;
         private IVsMonitorSelection _vsMonitorSelection;
         private bool? _isVisualizerSupported;
-        private IPackageRestoreManager _packageRestoreManager;
 
         private ISettings _settings;
         private ISourceControlManagerProvider _sourceControlManagerProvider;
@@ -138,19 +137,6 @@ namespace NuGetVSExtension
                 }
 
                 return _consoleStatus;
-            }
-        }
-
-        private IPackageRestoreManager PackageRestoreManager
-        {
-            get
-            {
-                if (_packageRestoreManager == null)
-                {
-                    _packageRestoreManager = ServiceLocator.GetInstance<IPackageRestoreManager>();
-                    Debug.Assert(_packageRestoreManager != null);
-                }
-                return _packageRestoreManager;
             }
         }
 
@@ -263,8 +249,6 @@ namespace NuGetVSExtension
             }
         }
 
-        private OnBuildPackageRestorer OnBuildPackageRestorer { get; set; }
-
         private ProjectRetargetingHandler ProjectRetargetingHandler { get; set; }
 
         private ProjectUpgradeHandler ProjectUpgradeHandler { get; set; }
@@ -285,6 +269,7 @@ namespace NuGetVSExtension
 
             // Add our command handlers for menu (commands must exist in the .vsct file)
             AddMenuCommandHandlers();
+            RestorePackagesCommand.Initialize(this);
 
             // IMPORTANT: Do NOT do anything that can lead to a call to ServiceLocator.GetGlobalService().
             // Doing so is illegal and may cause VS to hang.
@@ -325,16 +310,6 @@ namespace NuGetVSExtension
             {
                 DeleteOnRestart.DeleteMarkedPackageDirectories(_uiProjectContext);
             }
-
-            // NOTE: Don't use the exported IPackageRestoreManager for OnBuildPackageRestorer. Exported IPackageRestoreManager also uses 'PackageRestoreManager'
-            //       but, overrides RestoreMissingPackages to catch the exceptions. OnBuildPackageRestorer needs to catch the exception by itself to populate error list window
-            //       Exported IPackageRestoreManager is used by UI manual restore, Powershell manual restore and by VS extensibility package restore
-            OnBuildPackageRestorer = new OnBuildPackageRestorer(SolutionManager,
-                PackageRestoreManager,
-                this,
-                SourceRepositoryProvider,
-                Settings,
-                new EmptyNuGetProjectContext());
 
             ProjectRetargetingHandler = new ProjectRetargetingHandler(_dte, SolutionManager, this);
             ProjectUpgradeHandler = new ProjectUpgradeHandler(this, SolutionManager);
@@ -518,11 +493,6 @@ namespace NuGetVSExtension
                 CommandID generalSettingsCommandID = new CommandID(GuidList.guidNuGetToolsGroupCmdSet, PkgCmdIDList.cmdIdGeneralSettings);
                 OleMenuCommand generalSettingsCommand = new OleMenuCommand(ShowGeneralSettingsOptionPage, generalSettingsCommandID);
                 _mcs.AddCommand(generalSettingsCommand);
-
-                // menu command for Package Restore command
-                CommandID restorePackagesCommandID = new CommandID(GuidList.guidNuGetDialogCmdSet, PkgCmdIDList.cmdidRestorePackages);
-                var restorePackagesCommand = new OleMenuCommand(RestorePackages, null, BeforeQueryStatusForPackageRestore, restorePackagesCommandID);
-                _mcs.AddCommand(restorePackagesCommand);
             }
         }
 
@@ -1047,11 +1017,6 @@ namespace NuGetVSExtension
             }
         }
 
-        private void RestorePackages(object sender, EventArgs args)
-        {
-            OnBuildPackageRestorer.RestorePackages();
-        }
-
         // For PowerShell, it's okay to query from the worker thread.
         private void BeforeQueryStatusForPowerConsole(object sender, EventArgs args)
         {
@@ -1098,23 +1063,7 @@ namespace NuGetVSExtension
             });
         }
 
-        private void BeforeQueryStatusForPackageRestore(object sender, EventArgs args)
-        {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                OleMenuCommand command = (OleMenuCommand)sender;
-
-                // Enable the 'Restore NuGet Packages' dialog menu
-                // a) if the console is NOT busy executing a command, AND
-                // b) if the solution exists and not debugging and not building AND
-                // c) if there are no NuGetProjects. This means that there no loaded, supported projects
-                command.Enabled = !ConsoleStatus.IsBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() && SolutionManager.GetNuGetProjects().Any();
-            });
-        }
-
-        private bool IsSolutionExistsAndNotDebuggingAndNotBuilding()
+        public bool IsSolutionExistsAndNotDebuggingAndNotBuilding()
         {
             int pfActive;
             int result = VsMonitorSelection.IsCmdUIContextActive(_solutionNotBuildingAndNotDebuggingContextCookie, out pfActive);

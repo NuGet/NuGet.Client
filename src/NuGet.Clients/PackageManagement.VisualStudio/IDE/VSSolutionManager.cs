@@ -397,6 +397,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             DefaultNuGetProjectName = null;
             _projectSystemCache.Clear();
+            _cacheInitialized = false;
 
             SolutionClosing?.Invoke(this, EventArgs.Empty);
 
@@ -571,6 +572,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 catch
                 {
                     _projectSystemCache.Clear();
+                    _cacheInitialized = false;
                     DefaultNuGetProjectName = null;
 
                     throw;

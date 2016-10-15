@@ -99,9 +99,17 @@
     <Compile Include="ProjectSystems\IProjectSystemCache.cs" />
     <Compile Include="ProjectSystems\CpsPackageReferenceProjectProvider.cs" />
     <Compile Include="ProjectSystems\ProjectSystemProviderContext.cs" />
+    <Compile Include="SolutionRestore\ISolutionRestoreJob.cs" />
+    <Compile Include="SolutionRestore\SolutionRestoreRequest.cs" />
+    <Compile Include="SolutionRestore\SolutionRestoreJobContext.cs" />
     <Compile Include="ScriptExecutionRequest.cs" />
     <Compile Include="IDE\VSProjectReferenceUtility.cs" />
     <Compile Include="ProjectSystems\VSMSBuildNuGetProject.cs" />
+    <Compile Include="SolutionRestore\ISolutionRestoreWorker.cs" />
+    <Compile Include="SolutionRestore\SolutionRestoreJob.cs" />
+    <Compile Include="SolutionRestore\SolutionRestoreWorker.cs" />
+    <Compile Include="SolutionRestore\VerbosityLevel.cs" />
+    <Compile Include="SolutionRestore\WaitDialogLogger.cs" />
     <Compile Include="Telemetry\ProjectTelemetryEvent.cs" />
     <Compile Include="IDE\PackageInitPS1State.cs" />
     <Compile Include="IDE\VsCommonOperations.cs" />
@@ -162,6 +170,7 @@
     <Compile Include="Utility\ProjectRetargetingUtility.cs" />
     <Compile Include="Utility\RefreshFileUtility.cs" />
     <Compile Include="Utility\RuntimeHelpers.cs" />
+    <Compile Include="Utility\ServiceProviderExtensions.cs" />
     <Compile Include="Utility\SettingsHelper.cs" />
     <Compile Include="Utility\VCProjectHelper.cs" />
     <Compile Include="Utility\VSVersionHelper.cs" />

@@ -198,4 +198,43 @@
   <data name="ConfigErrorDialogBoxTitle" xml:space="preserve">
     <value>NuGet operation failed</value>
   </data>
+  <data name="ErrorOccurredRestoringPackages" xml:space="preserve">
+    <value>Error occurred while restoring NuGet packages: {0}</value>
+  </data>
+  <data name="NothingToRestore" xml:space="preserve">
+    <value>All packages are already installed and there is nothing to restore.</value>
+  </data>
+  <data name="PackageRestoreCanceled" xml:space="preserve">
+    <value>NuGet package restore canceled.</value>
+  </data>
+  <data name="PackageRestoreFailedForProject" xml:space="preserve">
+    <value>NuGet Package restore failed for project {0}: {1}.</value>
+  </data>
+  <data name="PackageRestoreFinished" xml:space="preserve">
+    <value>NuGet package restore finished.</value>
+  </data>
+  <data name="PackageRestoreFinishedForProject" xml:space="preserve">
+    <value>NuGet Package restore finished for project '{0}'.</value>
+  </data>
+  <data name="PackageRestoreFinishedWithError" xml:space="preserve">
+    <value>NuGet package restore failed.</value>
+  </data>
+  <data name="PackageRestoreOptOutMessage" xml:space="preserve">
+    <value>Restoring NuGet packages...
+To prevent NuGet from restoring packages during build, open the Visual Studio Options dialog, click on the Package Manager node and uncheck 'Allow NuGet to download missing packages during build.'</value>
+  </data>
+  <data name="DialogTitle" xml:space="preserve">
+    <value>NuGet Package Manager</value>
+  </data>
+  <data name="PackageNotRestoredBecauseOfNoConsent" xml:space="preserve">
+    <value>One or more NuGet packages need to be restored but couldn't be because consent has not been granted. To give consent, open the Visual Studio Options dialog, click on the Package Manager node and check 'Allow NuGet to download missing packages during build.' You can also give consent by setting the environment variable 'EnableNuGetPackageRestore' to 'true'. 
+
+Missing packages: {0}</value>
+  </data>
+  <data name="RestoredPackage" xml:space="preserve">
+    <value>Restored NuGet package {0}.</value>
+  </data>
+  <data name="RestoringPackages" xml:space="preserve">
+    <value>Restoring NuGet packages...</value>
+  </data>
 </root>
