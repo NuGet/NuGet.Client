@@ -529,7 +529,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     if (File.Exists(scriptPath) &&
                         _scriptExecutor.TryMarkVisited(identity, PackageInitPS1State.FoundAndExecuted))
                     {
-                        var request = new ScriptExecutionRequest(scriptPath, identity, project: null);
+                        var request = new ScriptExecutionRequest(scriptPath, installPath, identity, project: null);
 
                         Runspace.Invoke(
                             request.BuildCommand(),

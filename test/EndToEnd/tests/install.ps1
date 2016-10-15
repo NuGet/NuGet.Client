@@ -2258,6 +2258,38 @@ function Test-ToolsPathForInitAndInstallScriptPointToToolsFolder
     Assert-Package $p 'packageA'
 }
 
+function Test-InstallPackageWithNestedPS1InsideTools
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+	$solutionDir = Get-SolutionDir
+
+    # Act
+	$p | Install-Package TestPackage.SupportingMultipleFrameworksNestedPS1 -Version 1.2.0 -Source $context.RepositoryRoot
+
+    # Assert
+    Assert-Package $p 'TestPackage.SupportingMultipleFrameworksNestedPS1'
+	Assert-PathExists (Join-Path $solutionDir packages\TestPackage.SupportingMultipleFrameworksNestedPS1.1.2.0\version.txt)
+}
+
+function Test-InstallPackageWithNonNestedPS1InsideTools
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+	$solutionDir = Get-SolutionDir
+
+    # Act
+	$p | Install-Package TestPackage.SupportingMultipleFrameworksNonNestedPS1 -Version 1.2.0 -Source $context.RepositoryRoot
+
+    # Assert
+    Assert-Package $p 'TestPackage.SupportingMultipleFrameworksNonNestedPS1'
+	Assert-PathExists (Join-Path $solutionDir packages\TestPackage.SupportingMultipleFrameworksNonNestedPS1.1.2.0\version.txt)
+}
+
 function Test-InstallFailCleansUpSatellitePackageFiles 
 {
     # Verification for work item 2311

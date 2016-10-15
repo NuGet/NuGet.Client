@@ -13,7 +13,7 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public class ScriptExecutionRequest
     {
-        public ScriptExecutionRequest(string scriptPath, PackageIdentity identity, EnvDTEProject project)
+        public ScriptExecutionRequest(string scriptPath, string installPath, PackageIdentity identity, EnvDTEProject project)
         {
             if (scriptPath == null)
             {
@@ -27,9 +27,9 @@ namespace NuGet.PackageManagement.VisualStudio
             
             Identity = identity;
             ScriptPath = scriptPath;
+            InstallPath = installPath;
 
             ToolsPath = Path.GetDirectoryName(ScriptPath);
-            InstallPath = Path.GetDirectoryName(ToolsPath);
             ScriptPackage = new ScriptPackage(Identity.Id, Identity.Version.ToString(), InstallPath);
             Project = project;
         }
