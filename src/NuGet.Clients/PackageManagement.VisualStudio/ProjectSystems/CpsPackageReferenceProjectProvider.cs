@@ -56,7 +56,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 return false;
             }
 
-            if (!hierarchy.IsCapabilityMatch("CPS") || !hierarchy.IsCapabilityMatch("PackageReference"))
+            if (!hierarchy.IsCapabilityMatch("CPS") ||
+                !hierarchy.IsCapabilityMatch("PackageReference"))
             {
                 return false;
             }

@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.PackageManagement.VisualStudio;
@@ -14,8 +15,6 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
-using ActivityLog = Microsoft.VisualStudio.Shell.ActivityLog;
-using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 
 namespace NuGet.SolutionRestoreManager
 {
@@ -26,31 +25,40 @@ namespace NuGet.SolutionRestoreManager
     /// </summary>
     [PartCreationPolicy(CreationPolicy.Shared)]
     [Export(typeof(IVsSolutionRestoreService))]
-    public class VsSolutionRestoreService : IVsSolutionRestoreService
+    internal sealed class VsSolutionRestoreService : IVsSolutionRestoreService
     {
         private readonly EnvDTE.DTE _dte;
         private readonly IProjectSystemCache _projectSystemCache;
+        private readonly ISolutionRestoreWorker _restoreWorker;
 
         [ImportingConstructor]
-        public VsSolutionRestoreService(IProjectSystemCache projectSystemCache)
+        public VsSolutionRestoreService(
+            [Import(typeof(SVsServiceProvider))]
+            IServiceProvider serviceProvider,
+            IProjectSystemCache projectSystemCache,
+            ISolutionRestoreWorker restoreWorker)
         {
+            if (serviceProvider == null)
+            {
+                throw new ArgumentNullException(nameof(serviceProvider));
+            }
+
             if (projectSystemCache == null)
             {
                 throw new ArgumentNullException(nameof(projectSystemCache));
             }
 
-            _projectSystemCache = projectSystemCache;
-
-            _dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
-        }
-
-        public Task<bool> CurrentRestoreOperation
-        {
-            get
+            if (restoreWorker == null)
             {
-                return Task.FromResult(true);
+                throw new ArgumentNullException(nameof(restoreWorker));
             }
+
+            _dte = serviceProvider.GetDTE();
+            _projectSystemCache = projectSystemCache;
+            _restoreWorker = restoreWorker;
         }
+
+        public Task<bool> CurrentRestoreOperation => _restoreWorker.CurrentRestoreOperation;
 
         public async Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo projectRestoreInfo, CancellationToken token)
         {
@@ -73,43 +81,58 @@ namespace NuGet.SolutionRestoreManager
                 ExceptionHelper.LogEntrySource,
                 $"The nominate API is called for '{projectUniqueName}'.");
 
-            var packageSpec = ToPackageSpec(projectRestoreInfo);
-            packageSpec.FilePath = packageSpec.RestoreMetadata.ProjectPath = projectUniqueName;
+            var projectNames = await FindMatchingDteProjectAsync(projectUniqueName);
+            if (projectNames != null)
+            {
+                var packageSpec = ToPackageSpec(projectNames, projectRestoreInfo);
 
-            return await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                DumpProjectRestoreInfo(packageSpec);
+
+                _projectSystemCache.AddProjectRestoreInfo(projectNames, packageSpec);
+
+                // returned task completes when scheduled restore operation completes.
+                // it should be discarded as we don't want to block CPS on that.
+                var ignored = _restoreWorker.ScheduleRestoreAsync(
+                    SolutionRestoreRequest.OnUpdate(), 
+                    token);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        // Try matching the nominated project to a DTE counterpart
+        private async Task<ProjectNames> FindMatchingDteProjectAsync(string projectUniqueName)
+        {
+            var projectNames = await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                var dteProject = TryGetDteProject(projectUniqueName);
-                if (dteProject != null)
+                try
                 {
-                    // Get information about the project from DTE.
-                    // TODO: Get rid off all DTE calls in this method
-                    // cache should be indexed by full project path only.
-                    var projectNames = new ProjectNames(
-                        fullName: projectUniqueName, // dteProject.FullName throws here
-                        uniqueName: EnvDTEProjectUtility.GetUniqueName(dteProject),
-                        shortName: EnvDTEProjectUtility.GetName(dteProject),
-                        customUniqueName: EnvDTEProjectUtility.GetCustomUniqueName(dteProject));
-
-                    packageSpec.Name = packageSpec.RestoreMetadata.ProjectName = projectNames.ShortName;
-
-                    var restoreMetadata = packageSpec.RestoreMetadata;
-                    restoreMetadata.ProjectUniqueName = projectNames.UniqueName;
-
-                    var projectDirectory = Path.GetDirectoryName(projectUniqueName);
-                    restoreMetadata.OutputPath = Path.GetFullPath(
-                        Path.Combine(
-                            projectDirectory,
-                            projectRestoreInfo.BaseIntermediatePath));
-
-                    DumpProjectRestoreInfo(packageSpec);
-
-                    return _projectSystemCache.AddProjectRestoreInfo(projectNames, packageSpec);
+                    var dteProject = TryGetDteProject(projectUniqueName);
+                    if (dteProject != null)
+                    {
+                        // Get information about the project from DTE.
+                        // TODO: Get rid off all DTE calls in this method
+                        // TODO: cache should be indexed by full project path only.
+                        return new ProjectNames(
+                            fullName: projectUniqueName, // dteProject.FullName throws here
+                            uniqueName: EnvDTEProjectUtility.GetUniqueName(dteProject),
+                            shortName: EnvDTEProjectUtility.GetName(dteProject),
+                            customUniqueName: EnvDTEProjectUtility.GetCustomUniqueName(dteProject));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ExceptionHelper.WriteToActivityLog(ex);
                 }
 
-                return true;
+                return null;
             });
+
+            return projectNames;
         }
 
         private EnvDTE.Project TryGetDteProject(String projectUniqueName)
@@ -153,21 +176,29 @@ namespace NuGet.SolutionRestoreManager
             }
         }
 
-        private static PackageSpec ToPackageSpec(IVsProjectRestoreInfo projectRestoreInfo)
+        private static PackageSpec ToPackageSpec(ProjectNames projectNames, IVsProjectRestoreInfo projectRestoreInfo)
         {
             var tfis = projectRestoreInfo.TargetFrameworks
                 .Cast<IVsTargetFrameworkInfo>()
                 .Select(ToTargetFrameworkInformation)
                 .ToArray();
 
-            var projectReferences = GetProjectReferences(projectRestoreInfo);
-
-            var packageReferences = GetPackageReferences(projectRestoreInfo);
+            var projectFullPath = projectNames.FullName;
+            var projectDirectory = Path.GetDirectoryName(projectFullPath);
 
             var packageSpec = new PackageSpec(tfis)
             {
+                Name = projectNames.ShortName,
+                FilePath = projectFullPath,
                 RestoreMetadata = new ProjectRestoreMetadata
                 {
+                    ProjectName = projectNames.ShortName,
+                    ProjectUniqueName = projectNames.UniqueName,
+                    ProjectPath = projectFullPath,
+                    OutputPath = Path.GetFullPath(
+                        Path.Combine(
+                            projectDirectory,
+                            projectRestoreInfo.BaseIntermediatePath)),
                     OutputType = RestoreOutputType.NETCore,
                     OriginalTargetFrameworks = tfis
                         .Select(tfi => tfi.FrameworkName.GetShortFolderName())

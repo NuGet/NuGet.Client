@@ -31,6 +31,7 @@
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="NuGet.VisualStudio.Implementation" Path="|NuGet.VisualStudio.Implementation|" />
     <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="NuGet.VisualStudio" Path="|NuGet.VisualStudio|" AssemblyName="|NuGet.VisualStudio;AssemblyName|" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="NuGet.SolutionRestoreManager" Path="|NuGet.SolutionRestoreManager|" />
+    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="NuGet.SolutionRestoreManager" Path="|NuGet.SolutionRestoreManager;PkgdefProjectOutputGroup|" />
   </Assets>
   <Prerequisites>
     <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,16.0)" DisplayName="Visual Studio core editor" />
