@@ -36,6 +36,9 @@
         <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
           <EmbedInteropTypes>True</EmbedInteropTypes>
         </Reference>
+        <Reference Include="Microsoft.VisualStudio.ProjectSystem">
+          <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.15.0.530-pre-g355f3866ef\lib\net46\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
+        </Reference>
         <Reference Include="Microsoft.VisualStudio.ProjectSystem.Interop">
           <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.15.0.530-pre-g355f3866ef\lib\net46\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
           <EmbedInteropTypes>True</EmbedInteropTypes>
@@ -48,9 +51,6 @@
         <Reference Include="VSLangProj150">
           <HintPath>$(EnlistmentRoot)\lib\VSLangProj150.dll</HintPath>
           <EmbedInteropTypes>True</EmbedInteropTypes>
-        </Reference>
-        <Reference Include="Microsoft.VisualStudio.ProjectSystem">
-          <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.15.0.530-pre-g355f3866ef\lib\net46\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
         </Reference>
       </ItemGroup>
     </When>
@@ -99,6 +99,8 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
+    <Compile Include="ProjectSystems\LegacyCSProjPackageReferenceProject.cs" />
+    <Compile Include="ProjectSystems\LegacyCSProjPackageReferenceProjectProvider.cs" />
     <Compile Include="Utility\EnvDTEProjectAdapter.cs" />
     <Compile Include="Utility\LegacyCSProjProjectReference.cs" />
     <Compile Include="Utility\LegacyCSProjPackageReference.cs" />

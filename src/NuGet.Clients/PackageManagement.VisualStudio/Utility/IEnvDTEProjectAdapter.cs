@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using EnvDTE;
 using NuGet.Frameworks;
-using NuGet.ProjectModel;
-using VSLangProj;
+using NuGet.ProjectManagement;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -16,6 +16,11 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public interface IEnvDTEProjectAdapter
     {
+        /// <summary>
+        /// In unavoidable circumstances where we need to DTE object, it's exposed here
+        /// </summary>
+        Project DTEProject { get; }
+
         /// <summary>
         /// Project Name
         /// </summary>
@@ -32,9 +37,19 @@ namespace NuGet.PackageManagement.VisualStudio
         string ProjectFullPath { get; }
 
         /// <summary>
+        /// Project supports extracting reference collections
+        /// </summary>
+        bool SupportsReferences { get; }
+
+        /// <summary>
         /// Is this project a non-CPS package reference based csproj?
         /// </summary>
         bool IsLegacyCSProjPackageReferenceProject { get; }
+
+        /// <summary>
+        /// All dependency graph projects referenced by project
+        /// </summary>
+        IEnumerable<IDependencyGraphProject> ReferencedDependencyGraphProjects { get; }
 
         /// <summary>
         /// Base intermediate path (e.g. c:\projFoo\obj)

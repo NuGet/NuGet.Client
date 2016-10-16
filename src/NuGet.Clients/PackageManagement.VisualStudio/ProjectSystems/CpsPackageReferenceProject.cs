@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.ProjectSystem;
 using NuGet.Frameworks;
@@ -16,7 +17,7 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
-using Tasks = System.Threading.Tasks;
+using Task = System.Threading.Tasks.Task;
 using EnvDTEProject = EnvDTE.Project;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -82,7 +83,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public override async Tasks.Task<bool> ExecuteInitScriptAsync(
+        public override async Task<bool> ExecuteInitScriptAsync(
             PackageIdentity identity,
             string packageInstallPath,
             INuGetProjectContext projectContext,
@@ -107,8 +108,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public override string MSBuildProjectPath => _projectFullPath;
 
 
-
-        public override Tasks.Task<PackageSpec> GetPackageSpecAsync(DependencyGraphCacheContext context)
+        public override Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
         {
             PackageSpec packageSpec = null;
             if (context == null || !context.PackageSpecCache.TryGetValue(MSBuildProjectPath, out packageSpec))
@@ -117,35 +117,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 context?.PackageSpecCache.Add(MSBuildProjectPath, packageSpec);
             }
 
-            return Tasks.Task.FromResult<PackageSpec>(packageSpec);
-        }
-
-        public override Tasks.Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(DependencyGraphCacheContext context)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Tasks.Task<IReadOnlyList<IDependencyGraphProject>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)
-        {
-            IReadOnlyList<IDependencyGraphProject> references = null;
-            if(context == null || !context.DirectReferenceCache.TryGetValue(MSBuildProjectPath, out references))
-            {
-                var solutionManager = (VSSolutionManager)ServiceLocator.GetInstance<ISolutionManager>();
-                var list = new List<IDependencyGraphProject>();
-                if (solutionManager != null)
-                {
-                    var projReferences = GetProjectReferences(_packageSpecFactory());
-                    if (projReferences != null && projReferences.Any())
-                    {
-                        IList<NuGetProject>  nugetProjReferences = projReferences.Select(r => solutionManager.GetNuGetProject(r)).ToList();
-                        references = nugetProjReferences.OfType<IDependencyGraphProject>().ToList().AsReadOnly();
-                    }
-                }
-
-                context?.DirectReferenceCache.Add(MSBuildProjectPath, references);
-            }
-
-            return Tasks.Task.FromResult<IReadOnlyList<IDependencyGraphProject>>(references);
+            return Task.FromResult<IReadOnlyList<PackageSpec>>(new[] { packageSpec });
         }
 
         private static string[] GetProjectReferences(PackageSpec packageSpec)
@@ -164,14 +136,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Select(l => l.Name);
         }
 
-        public override Tasks.Task<bool> IsRestoreRequired(IEnumerable<VersionFolderPathResolver> pathResolvers, ISet<PackageIdentity> packagesChecked, DependencyGraphCacheContext context)
+        public override Task<bool> IsRestoreRequired(IEnumerable<VersionFolderPathResolver> pathResolvers, ISet<PackageIdentity> packagesChecked, DependencyGraphCacheContext context)
         {
             // TODO: when the real implementation of NuGetProject for CPS PackageReference is completed, more
             // sophisticated restore no-op detection logic is required. Always returning true means that every build
             // will result in a restore.
 
             var packageSpec = _packageSpecFactory();
-            return Tasks.Task.FromResult<bool>(packageSpec != null);
+            return Task.FromResult<bool>(packageSpec != null);
         }
 
         public override string ProjectName { get; }
@@ -180,7 +152,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #region NuGetProject
 
-        public override Tasks.Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
+        public override Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
             PackageReference[] installedPackages;
 
@@ -194,7 +166,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 installedPackages = new PackageReference[0];
             }
 
-            return Tasks.Task.FromResult<IEnumerable<PackageReference>>(installedPackages);
+            return Task.FromResult<IEnumerable<PackageReference>>(installedPackages);
         }
 
         private static PackageReference[] GetPackageReferences(PackageSpec packageSpec)
@@ -225,7 +197,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return new PackageReference(identity, targetFramework);
         }
 
-        public override async Tasks.Task<Boolean> InstallPackageAsync(PackageIdentity packageIdentity, DownloadResourceResult downloadResourceResult, INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        public override async Task<Boolean> InstallPackageAsync(PackageIdentity packageIdentity, DownloadResourceResult downloadResourceResult, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.InstallingPackage, packageIdentity);
@@ -243,7 +215,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return true;
         }
 
-        public override async Tasks.Task<Boolean> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        public override async Task<Boolean> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             var configuredProject = await _unconfiguredProject.GetSuggestedConfiguredProjectAsync();
             await configuredProject.Services.PackageReferences.RemoveAsync(packageIdentity.Id);

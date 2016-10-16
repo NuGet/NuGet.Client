@@ -82,6 +82,28 @@ namespace NuGet.Commands
         }
 
         /// <summary>
+        /// Insert asset flags into dependency, based on ;-delimited string args
+        /// </summary>
+        public static void ApplyIncludeFlags(LibraryDependency dependency, string includeAssets, string excludeAssets, string privateAssets)
+        {
+            var includeFlags = GetIncludeFlags(includeAssets, LibraryIncludeFlags.All);
+            var excludeFlags = GetIncludeFlags(excludeAssets, LibraryIncludeFlags.None);
+
+            dependency.IncludeType = includeFlags & ~excludeFlags;
+            dependency.SuppressParent = GetIncludeFlags(privateAssets, LibraryIncludeFlagUtils.DefaultSuppressParent);
+        }
+
+        /// <summary>
+        /// Insert asset flags into project dependency, based on ;-delimited string args
+        /// </summary>
+        public static void ApplyIncludeFlags(ProjectRestoreReference dependency, string includeAssets, string excludeAssets, string privateAssets)
+        {
+            dependency.IncludeAssets = GetIncludeFlags(includeAssets, LibraryIncludeFlags.All);
+            dependency.ExcludeAssets = GetIncludeFlags(excludeAssets, LibraryIncludeFlags.None);
+            dependency.PrivateAssets = GetIncludeFlags(privateAssets, LibraryIncludeFlagUtils.DefaultSuppressParent);
+        }
+
+        /// <summary>
         /// Convert MSBuild items to a PackageSpec.
         /// </summary>
         public static PackageSpec GetPackageSpec(IEnumerable<IMSBuildItem> items)
@@ -279,10 +301,9 @@ namespace NuGet.Commands
             {
                 ProjectPath = item.GetProperty("ProjectPath"),
                 ProjectUniqueName = item.GetProperty("ProjectReferenceUniqueName"),
-                IncludeAssets = GetIncludeFlags(item.GetProperty("IncludeAssets"), LibraryIncludeFlags.All),
-                ExcludeAssets = GetIncludeFlags(item.GetProperty("ExcludeAssets"), LibraryIncludeFlags.None),
-                PrivateAssets = GetIncludeFlags(item.GetProperty("PrivateAssets"), LibraryIncludeFlagUtils.DefaultSuppressParent)
             };
+
+            ApplyIncludeFlags(reference, item.GetProperty("IncludeAssets"), item.GetProperty("ExcludeAssets"), item.GetProperty("PrivateAssets"));
 
             return new Tuple<List<NuGetFramework>, ProjectRestoreReference>(frameworks, reference);
         }
@@ -349,11 +370,7 @@ namespace NuGet.Commands
 
         private static void ApplyIncludeFlags(LibraryDependency dependency, IMSBuildItem item)
         {
-            var includeFlags = GetIncludeFlags(item.GetProperty("IncludeAssets"), LibraryIncludeFlags.All);
-            var excludeFlags = GetIncludeFlags(item.GetProperty("ExcludeAssets"), LibraryIncludeFlags.None);
-
-            dependency.IncludeType = includeFlags & ~excludeFlags;
-            dependency.SuppressParent = GetIncludeFlags(item.GetProperty("PrivateAssets"), LibraryIncludeFlagUtils.DefaultSuppressParent);
+            ApplyIncludeFlags(dependency, item.GetProperty("IncludeAssets"), item.GetProperty("ExcludeAssets"), item.GetProperty("PrivateAssets"));
         }
 
         private static LibraryIncludeFlags GetIncludeFlags(string value, LibraryIncludeFlags defaultValue)

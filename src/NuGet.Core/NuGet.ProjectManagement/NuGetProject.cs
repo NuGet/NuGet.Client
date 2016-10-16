@@ -35,7 +35,6 @@ namespace NuGet.ProjectManagement
             get { return InternalMetadata; }
         }
 
-        // TODO: Consider adding CancellationToken here
         /// <summary>
         /// This installs a package into the NuGetProject using the <see cref="Stream"/> passed in
         /// <param name="downloadResourceResult"></param>

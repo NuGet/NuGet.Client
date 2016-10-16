@@ -14,7 +14,7 @@ namespace NuGet.PackageManagement.VisualStudio
     [Export(typeof(IProjectSystemProvider))]
     [Name(nameof(MSBuildNuGetProjectProvider))]
 #if VS15
-    [Order(After = nameof(CpsPackageReferenceProjectProvider))]
+    [Order(After = nameof(LegacyCSProjPackageReferenceProjectProvider))]
 #else
     [Order(After = nameof(ProjectKNuGetProjectProvider))]
 #endif

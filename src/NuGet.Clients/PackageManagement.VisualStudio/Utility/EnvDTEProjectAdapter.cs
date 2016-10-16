@@ -9,10 +9,7 @@ using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Frameworks;
-using NuGet.ProjectModel;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using VSLangProj;
+using NuGet.ProjectManagement;
 using VSLangProj150;
 using Task = System.Threading.Tasks.Task;
 
@@ -48,30 +45,6 @@ namespace NuGet.PackageManagement.VisualStudio
             _project = project;
         }
 
-        private IVsHierarchy AsIVsHierarchy
-        {
-            get
-            {
-                return _asIVsHierarchy ?? (_asIVsHierarchy = VsHierarchyUtility.ToVsHierarchy(_project));
-            }
-        }
-
-        private IVsBuildPropertyStorage AsIVsBuildPropertyStorage
-        {
-            get
-            {
-                return _asIVsBuildPropertyStorage ?? (_asIVsBuildPropertyStorage = AsIVsHierarchy as IVsBuildPropertyStorage);
-            }
-        }
-
-        private VSProject4 AsVSProject4
-        {
-            get
-            {
-                return _asVSProject4 ?? (_asVSProject4 = _project.Object as VSProject4);
-            }
-        }
-
         public bool IsLegacyCSProjPackageReferenceProject
         {
             get
@@ -83,6 +56,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
 
                 return _isLegacyCSProjPackageReferenceProject.Value;
+            }
+        }
+
+        public Project DTEProject
+        {
+            get
+            {
+                return _project;
             }
         }
 
@@ -114,6 +95,31 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        public bool SupportsReferences
+        {
+            get
+            {
+                return EnvDTEProjectUtility.SupportsReferences(_project);
+            }
+        }
+
+        public IEnumerable<IDependencyGraphProject> ReferencedDependencyGraphProjects
+        {
+            get
+            {
+                var references = EnvDTEProjectUtility.GetReferencedProjects(_project);
+
+                foreach(var reference in references)
+                {
+                    var dependencyGraphProject = reference as IDependencyGraphProject;
+                    if (dependencyGraphProject != null)
+                    {
+                        yield return dependencyGraphProject;
+                    }
+                }
+            }
+        }
+
         public async Task<string> GetBaseIntermediatePath()
         {
             if (string.IsNullOrEmpty(_baseIntermediatePath))
@@ -130,6 +136,30 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return _baseIntermediatePath;
+        }
+
+        private IVsHierarchy AsIVsHierarchy
+        {
+            get
+            {
+                return _asIVsHierarchy ?? (_asIVsHierarchy = VsHierarchyUtility.ToVsHierarchy(_project));
+            }
+        }
+
+        private IVsBuildPropertyStorage AsIVsBuildPropertyStorage
+        {
+            get
+            {
+                return _asIVsBuildPropertyStorage ?? (_asIVsBuildPropertyStorage = AsIVsHierarchy as IVsBuildPropertyStorage);
+            }
+        }
+
+        private VSProject4 AsVSProject4
+        {
+            get
+            {
+                return _asVSProject4 ?? (_asVSProject4 = _project.Object as VSProject4);
+            }
         }
 
         public async Task<NuGetFramework> GetTargetNuGetFramework()
