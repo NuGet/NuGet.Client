@@ -2,23 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Runtime.Versioning;
 using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.ProjectSystem.Interop;
 using Moq;
 using NuGet.Frameworks;
-using NuGet.PackageManagement.VisualStudio;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using NuGet.ProjectManagement;
-using NuGet.ProjectModel;
-using NuGet.Protocol.Core.Types;
-using NuGet.Test.Utility;
-using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
@@ -76,7 +63,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Equal(1, installedPackages.Count());
             Assert.Equal("foo1", installedPackages.ElementAt(0).PackageIdentity.Id);
             Assert.Equal("1.0.0", installedPackages.ElementAt(0).PackageIdentity.Version.ToString());
-            //TODO more
+            //Add additional verification
         }
     }
 }
