@@ -16,7 +16,7 @@ namespace NuGet.Common
             switch (folder)
             {
                 case NuGetFolderPath.MachineWideSettingsBaseDirectory:
-                    var machineWideBaseDir = RuntimeEnvironmentHelper.IsWindows ? GetFolderPath(SpecialFolder.ProgramFilesX86) : GetFolderPath(SpecialFolder.CommonApplicationData);
+                    var machineWideBaseDir = (!RuntimeEnvironmentHelper.IsDev14 && RuntimeEnvironmentHelper.IsWindows) ? GetFolderPath(SpecialFolder.ProgramFilesX86) : GetFolderPath(SpecialFolder.CommonApplicationData);
                     return Path.Combine(machineWideBaseDir,
                         "NuGet");
 

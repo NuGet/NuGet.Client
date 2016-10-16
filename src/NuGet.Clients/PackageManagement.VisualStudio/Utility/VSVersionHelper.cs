@@ -7,8 +7,23 @@ using Microsoft.VisualStudio.Shell;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    internal static class VSVersionHelper
+    public static class VSVersionHelper
     {
+        private static Version _vsVersion;
+
+        public static Version VSVersion
+        {
+            get
+            {
+                if (_vsVersion == null)
+                {
+                    var dte = ServiceLocator.GetInstance<DTE>();
+                    _vsVersion = new Version(dte.Version);
+                }
+                return _vsVersion;
+            }
+        }
+
         public static string GetSKU()
         {
             ThreadHelper.ThrowIfNotOnUIThread();

@@ -32,6 +32,7 @@ using IMachineWideSettings = NuGet.Configuration.IMachineWideSettings;
 using ISettings = NuGet.Configuration.ISettings;
 using Resx = NuGet.PackageManagement.UI.Resources;
 using Strings = NuGet.PackageManagement.VisualStudio.Strings;
+
 using UI = NuGet.PackageManagement.UI;
 
 namespace NuGetVSExtension
@@ -67,6 +68,7 @@ namespace NuGetVSExtension
     {
         // It is displayed in the Help - About box of Visual Studio
         public const string ProductVersion = "3.6.0";
+
         private static readonly object _credentialsPromptLock = new object();
 
         private static readonly string[] _visualizerSupportedSKUs = { "Premium", "Ultimate" };
@@ -103,6 +105,12 @@ namespace NuGetVSExtension
 
         public NuGetPackage()
         {
+            // Set IsDev14 in NuGet.Common.RunTimeHelper to pick %PROGRAMDATA%/NuGet/Config as the MachineWideBaseDir
+            // This is only needed for Dev14 VSIX
+            if (VSVersionHelper.VSVersion.Major == 14)
+            {
+                RuntimeEnvironmentHelper.IsDev14 = true;
+            }
             ServiceLocator.InitializePackageServiceProvider(this);
             StandaloneSwitch.IsRunningStandalone = false;
             _nugetSettings = new NuGetSettings();
@@ -213,7 +221,7 @@ namespace NuGetVSExtension
                 var windowFrame = FindExistingWindowFrame(project);
                 if (windowFrame != null)
                 {
-                    windowFrame.SetProperty((int) __VSFPROPID.VSFPROPID_OwnerCaption, String.Format(
+                    windowFrame.SetProperty((int)__VSFPROPID.VSFPROPID_OwnerCaption, String.Format(
                         CultureInfo.CurrentCulture,
                         Resx.Label_NuGetWindowCaption,
                         project.Name));
@@ -288,7 +296,7 @@ namespace NuGetVSExtension
 
             // IMPORTANT: Do NOT do anything that can lead to a call to ServiceLocator.GetGlobalService().
             // Doing so is illegal and may cause VS to hang.
-
+            
             _dte = (DTE)GetService(typeof(SDTE));
             Debug.Assert(_dte != null);
 
@@ -372,7 +380,7 @@ namespace NuGetVSExtension
         {
             // Initialize the credential providers.
             var credentialProviders = new List<NuGet.Credentials.ICredentialProvider>();
-            
+
             TryAddCredentialProvider(
                 credentialProviders,
                 Resources.CredentialProviderFailed_LegacyCredentialProvider,
@@ -384,7 +392,7 @@ namespace NuGetVSExtension
                         NullCredentialProvider.Instance,
                         packageSourceProvider));
                 });
-            
+
             TryAddCredentialProvider(
                 credentialProviders,
                 Resources.CredentialProviderFailed_VisualStudioAccountProvider,
@@ -1163,6 +1171,7 @@ namespace NuGetVSExtension
         }
 
         #region IVsPackageExtensionProvider implementation
+
         public dynamic CreateExtensionInstance(ref Guid extensionPoint, ref Guid instance)
         {
             if (instance == typeof(NuGetSearchProvider).GUID)
@@ -1171,6 +1180,7 @@ namespace NuGetVSExtension
             }
             return null;
         }
+
         #endregion // IVsPackageExtensionProvider implementation
 
         private void OnBeginShutDown()
@@ -1196,6 +1206,7 @@ namespace NuGetVSExtension
         }
 
         #region IVsPersistSolutionOpts implementation
+
         public int LoadUserOptions(IVsSolutionPersistence pPersistence, uint grfLoadOpts)
         {
             return VSConstants.S_OK;
@@ -1244,6 +1255,7 @@ namespace NuGetVSExtension
 
             return VSConstants.S_OK;
         }
+
         #endregion // IVsPersistSolutionOpts implementation
     }
 }
