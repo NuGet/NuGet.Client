@@ -290,6 +290,21 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static string GetProjectMetadataValue(LegacyCSProjProjectReference item, string metadataElement)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            if (string.IsNullOrEmpty(metadataElement))
+            {
+                throw new ArgumentNullException(nameof(metadataElement));
+            }
+
+            if (item.MetadataElements == null || item.MetadataValues == null)
+            {
+                return String.Empty; // no metadata for project
+            }
+
             var index = Array.IndexOf(item.MetadataElements, metadataElement);
             if (index >= 0)
             {
@@ -301,6 +316,21 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static string GetPackageMetadataValue(LegacyCSProjPackageReference item, string metadataElement)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            if (string.IsNullOrEmpty(metadataElement))
+            {
+                throw new ArgumentNullException(nameof(metadataElement));
+            }
+
+            if (item.MetadataElements == null || item.MetadataValues == null)
+            {
+                return String.Empty; // no metadata for package
+            }
+
             var index = Array.IndexOf(item.MetadataElements, metadataElement);
             if (index >= 0)
             {
