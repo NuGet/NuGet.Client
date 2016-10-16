@@ -92,10 +92,16 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
         {
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            PackageSpec packageSpec;
+            if (context.PackageSpecCache.TryGetValue(_project.ProjectFullPath, out packageSpec))
+            {
+                return new[] { packageSpec };
+            }
 
-            //TODO: check context package spec cache as in GetDirectProjectReferencesAsync
-            return new[] { await GetPackageSpec() };
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            packageSpec = await GetPackageSpec();
+            context.PackageSpecCache.Add(_project.ProjectFullPath, packageSpec);
+            return new[] { packageSpec };
         }
 
         public override async Task<bool> ExecuteInitScriptAsync(
@@ -223,10 +229,13 @@ namespace NuGet.PackageManagement.VisualStudio
             var packageSpec = new PackageSpec(tfis)
             {
                 Name = _project.Name ?? _project.UniqueName,
+                FilePath = _project.ProjectFullPath,
                 RestoreMetadata = new ProjectRestoreMetadata
                 {
                     OutputType = RestoreOutputType.NETCore,
+                    OutputPath = await _project.GetBaseIntermediatePath(),
                     ProjectPath = _project.ProjectFullPath,
+                    ProjectName = _project.Name ?? _project.UniqueName,
                     ProjectUniqueName = _project.ProjectFullPath,
                     OriginalTargetFrameworks = tfis
                         .Select(tfi => tfi.FrameworkName.GetShortFolderName())
@@ -259,28 +268,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
             return reference;
         }
-
-        //TODO: remove if not needed
-        //private static LibraryDependency ToProjectLibraryDependency(ProjectRestoreReference item)
-        //{
-        //    return new LibraryDependency
-        //    {
-        //        LibraryRange = new LibraryRange(
-        //            name: item.ProjectUniqueName,
-        //            versionRange: VersionRange.All,
-        //            typeConstraint: LibraryDependencyTarget.ExternalProject)
-        //    };
-        //}
-
-        //private static PackageReference ToPackageReference(LegacyCSProjPackageReference item)
-        //{
-        //    return new PackageReference(
-        //        identity: new PackageIdentity(
-        //            item.Name,
-        //            new NuGetVersion(item.Version)),
-        //        targetFramework: item.TargetNuGetFramework
-        //    );
-        //}
 
         private static LibraryDependency ToPackageLibraryDependency(LegacyCSProjPackageReference item)
         {

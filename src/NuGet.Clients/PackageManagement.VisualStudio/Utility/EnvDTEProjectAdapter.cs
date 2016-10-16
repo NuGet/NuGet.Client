@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Frameworks;
 using NuGet.ProjectManagement;
+using VSLangProj;
 using VSLangProj150;
 using Task = System.Threading.Tasks.Task;
 
@@ -28,6 +29,7 @@ namespace NuGet.PackageManagement.VisualStudio
         // Interface casts
         private IVsBuildPropertyStorage _asIVsBuildPropertyStorage;
         private IVsHierarchy _asIVsHierarchy;
+        private VSProject _asVSProject;
         private VSProject4 _asVSProject4;
 
         // Property caches
@@ -128,9 +130,10 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     var relativeBaseIntermediatePath = GetMSBuildProperty(AsIVsBuildPropertyStorage, "BaseIntermediateOutputPath");
-                    if (!string.IsNullOrEmpty(relativeBaseIntermediatePath))
+                    if (!string.IsNullOrEmpty(relativeBaseIntermediatePath) && !string.IsNullOrEmpty(ProjectFullPath))
                     {
-                        _baseIntermediatePath = Path.Combine(ProjectFullPath, relativeBaseIntermediatePath);
+                        var projectDirectory = Path.GetDirectoryName(ProjectFullPath);
+                        _baseIntermediatePath = Path.Combine(projectDirectory, relativeBaseIntermediatePath);
                     }
                 }
             }
@@ -151,6 +154,14 @@ namespace NuGet.PackageManagement.VisualStudio
             get
             {
                 return _asIVsBuildPropertyStorage ?? (_asIVsBuildPropertyStorage = AsIVsHierarchy as IVsBuildPropertyStorage);
+            }
+        }
+
+        private VSProject AsVSProject
+        {
+            get
+            {
+                return _asVSProject ?? (_asVSProject = _project.Object as VSProject);
             }
         }
 
@@ -199,8 +210,6 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            //TODO: add metadata
             AsVSProject4.PackageReferences.AddOrUpdate(packageName, packageVersion, metadataElements, metadataValues);
         }
 
@@ -212,23 +221,22 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
             AsVSProject4.PackageReferences.Remove(packageName);
         }
 
         private IEnumerable<LegacyCSProjProjectReference> GetLegacyCSProjProjectReferences(Array desiredMetadata)
         {
-            //TODO: replace with metadata calls when available
-            var metadataElements = Array.CreateInstance(typeof(string), 1);
-            metadataElements.SetValue("metadataName0", 0);
-            var metadataValues = Array.CreateInstance(typeof(string), 1);
-            metadataValues.SetValue("metadataValue0", 0);
-            yield return new LegacyCSProjProjectReference()
+            foreach (Reference reference in AsVSProject.References)
             {
-                UniqueName = "projectFoo",
-                MetadataElements = metadataElements,
-                MetadataValues = metadataValues
-            };
+                if (reference.SourceProject != null)
+                {
+                    yield return new LegacyCSProjProjectReference()
+                    {
+                        UniqueName = reference.SourceProject.FullName
+                        // When metadata API is available, each project's metadata can be inserted into this instance
+                    };
+                }
+            }
         }
 
         private IEnumerable<LegacyCSProjPackageReference> GetLegacyCSProjPackageReferences(Array desiredMetadata)
