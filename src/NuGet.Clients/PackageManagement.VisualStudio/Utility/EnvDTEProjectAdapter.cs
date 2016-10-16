@@ -53,8 +53,25 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 if (!_isLegacyCSProjPackageReferenceProject.HasValue)
                 {
-                    // If it's a VSProject4 and not CPS, it's a legacy CSProj package reference project
-                    _isLegacyCSProjPackageReferenceProject = !(AsIVsHierarchy?.IsCapabilityMatch("CPS") ?? false) && AsVSProject4 != null;
+                    // A legacy CSProj can't be CPS, must cast to VSProject4 and *must* have at least one package
+                    // reference already in the CSProj. In the future this logic may change. For now a user must
+                    // hand code their first package reference. Laid out in longhand for readability.
+                    if (AsIVsHierarchy?.IsCapabilityMatch("CPS") ?? true)
+                    {
+                        _isLegacyCSProjPackageReferenceProject = false;
+                    }
+                    else if (AsVSProject4 == null)
+                    {
+                        _isLegacyCSProjPackageReferenceProject = false;
+                    }
+                    else if ((AsVSProject4.PackageReferences?.InstalledPackages?.Length ?? 0) == 0)
+                    {
+                        _isLegacyCSProjPackageReferenceProject = false;
+                    }
+                    else
+                    {
+                        _isLegacyCSProjPackageReferenceProject = true;
+                    }
                 }
 
                 return _isLegacyCSProjPackageReferenceProject.Value;
