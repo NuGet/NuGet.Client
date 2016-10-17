@@ -9,19 +9,15 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public static class VSVersionHelper
     {
-        private static Version _vsVersion;
-
-        public static Version VSVersion
+        /// <summary>
+        /// Used to check if the code is being executed in dev14/VS 2015
+        /// </summary>
+        /// <param name="dte">DTE object used to get version</param>
+        /// <returns><code>bool</code> indicating is the code is being executed from within dev14/VS 2015</returns>
+        public static bool IsDev14(DTE dte)
         {
-            get
-            {
-                if (_vsVersion == null)
-                {
-                    var dte = ServiceLocator.GetInstance<DTE>();
-                    _vsVersion = new Version(dte.Version);
-                }
-                return _vsVersion;
-            }
+            var vsVersion = new Version(dte.Version);
+            return (vsVersion.Major == 14) ? true : false;
         }
 
         public static string GetSKU()

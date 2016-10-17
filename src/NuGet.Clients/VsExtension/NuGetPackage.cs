@@ -107,7 +107,8 @@ namespace NuGetVSExtension
         {
             // Set IsDev14 in NuGet.Common.RunTimeHelper to pick %PROGRAMDATA%/NuGet/Config as the MachineWideBaseDir
             // This is only needed for Dev14 VSIX
-            if (VSVersionHelper.VSVersion.Major == 14)
+            var dte = ServiceLocator.GetInstance<DTE>();
+            if (VSVersionHelper.IsDev14(dte))
             {
                 RuntimeEnvironmentHelper.IsDev14 = true;
             }
@@ -296,7 +297,7 @@ namespace NuGetVSExtension
 
             // IMPORTANT: Do NOT do anything that can lead to a call to ServiceLocator.GetGlobalService().
             // Doing so is illegal and may cause VS to hang.
-            
+
             _dte = (DTE)GetService(typeof(SDTE));
             Debug.Assert(_dte != null);
 
@@ -1181,7 +1182,7 @@ namespace NuGetVSExtension
             return null;
         }
 
-        #endregion // IVsPackageExtensionProvider implementation
+        #endregion IVsPackageExtensionProvider implementation
 
         private void OnBeginShutDown()
         {
@@ -1256,6 +1257,6 @@ namespace NuGetVSExtension
             return VSConstants.S_OK;
         }
 
-        #endregion // IVsPersistSolutionOpts implementation
+        #endregion IVsPersistSolutionOpts implementation
     }
 }
