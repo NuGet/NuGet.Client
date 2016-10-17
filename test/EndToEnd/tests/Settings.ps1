@@ -45,3 +45,26 @@ function Test-GetRepositoryPathFromVsSettings {
 	Assert-True (Test-Path $repoPath)
 	Assert-True (Test-Path (Join-Path $repoPath "elmah.1.2.2"))
 }
+
+function Test-GetMachineWideSettingBaseDirectoryInVSIX {
+    param($context)
+
+	# Arrange
+	$dte = [System.Runtime.InteropServices.Marshal]::GetActiveObject("VisualStudio.DTE")
+	[string]$vsVersionString = $dte.version
+	[string]$machineWideSettingsBaseDirExpected
+	if (($vsVersionString -as [double]) -ne $null) {
+		[double]$vsVersion = $vsVersionString
+		if($vsVersion -le 14) {
+		$machineWideSettingsBaseDirExpected = Join-Path (Get-ChildItem Env:PROGRAMDATA).Value "\NuGet\Config"
+		}
+		else {
+		$machineWideSettingsBaseDirExpected = Join-Path (Get-ChildItem Env:PROGRAMFILES).Value "\NuGet\Config"
+		}
+	}
+	# Act
+	$machineWideSettingsBaseDirActual = [NuGet.Common.NuGetEnvironment]::GetFolderPath([NuGet.Common.NuGetFolderPath]::MachineWideSettingsBaseDirectory)
+
+	# Assert
+	Assert-True [string]::Compare($machineWideSettingsBaseDirExpected, $machineWideSettingsBaseDirActual, $True)
+}

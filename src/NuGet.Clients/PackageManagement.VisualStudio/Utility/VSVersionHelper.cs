@@ -17,7 +17,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public static bool IsDev14(DTE dte)
         {
             var vsVersion = new Version(dte.Version);
-            return (vsVersion.Major == 14) ? true : false;
+            return (vsVersion.Major == 14);
         }
 
         public static string GetSKU()
