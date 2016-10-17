@@ -1450,31 +1450,6 @@ Description is required.");
         }
 
         [Fact]
-        public void SpecialVersionExceedingMaxLengthThrows()
-        {
-            // Arrange
-            string spec = @"<?xml version=""1.0"" encoding=""utf-8""?>
-<package><metadata>
-    <id>aaa</id>
-    <version>2.5.0-vvvvvvvvvvvvvvvvvvvvv</version>
-    <authors>Velio Ivanov</authors>
-    <language>en-us</language>
-    <description>This is the Description (With, Comma-Separated, Words, in Parentheses).</description>
-    <dependencies>
-       <dependency id=""A"" />
-    </dependencies>
-  </metadata>
-</package>";
-
-            var builder = new PackageBuilder(spec.AsStream(), null);
-
-            // Act & Assert
-            ExceptionAssert.Throws<InvalidOperationException>(
-                () => builder.Save(new MemoryStream()),
-                "The special version part cannot exceed 20 characters.");
-        }
-
-        [Fact]
         public void MissingVersionThrows()
         {
             // Arrange
@@ -2219,27 +2194,6 @@ Enabling license acceptance requires a license url.");
 
             // Act & Assert            
             ExceptionAssert.ThrowsArgumentException(() => builder.Save(new MemoryStream()), "Id must not exceed 100 characters.");
-        }
-
-        [Fact]
-        public void PackageBuilderThrowsIfSpecialVersionExceedsMaxLengthLimit()
-        {
-            // Arrange
-            var builder = new PackageBuilder
-            {
-                Id = "cool",
-                Version = NuGetVersion.Parse("1.0-vvvvvvvvvvvvvvvvvvvvK"),
-                Description = "Description"
-            };
-            builder.Authors.Add("Me");
-
-            var dependencies = new PackageDependency[] {
-                        new PackageDependency("X")
-                    };
-            builder.DependencyGroups.Add(new PackageDependencyGroup(NuGetFramework.AnyFramework, dependencies));
-
-            // Act & Assert            
-            ExceptionAssert.Throws<InvalidOperationException>(() => builder.Save(new MemoryStream()), "The special version part cannot exceed 20 characters.");
         }
 
         [Fact]
