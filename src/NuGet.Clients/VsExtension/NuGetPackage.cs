@@ -357,34 +357,13 @@ namespace NuGetVSExtension
         {
             var credentialService = GetCredentialService();
 
-            HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(credentialService);
-
             HttpHandlerResourceV3.CredentialService = credentialService;
-
-            HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>
-            {
-                // v2 stack credentials update
-                CredentialStore.Instance.Add(uri, credentials);
-            };
         }
 
         private NuGet.Configuration.ICredentialService GetCredentialService()
         {
             // Initialize the credential providers.
-            var credentialProviders = new List<NuGet.Credentials.ICredentialProvider>();
-
-            TryAddCredentialProviders(
-                credentialProviders,
-                Resources.CredentialProviderFailed_LegacyCredentialProvider,
-                () =>
-                {
-                    var packageSourceProvider = new PackageSourceProvider(new SettingsToLegacySettings(Settings));
-
-                    return new NuGet.Credentials.ICredentialProvider[] {
-                        new CredentialProviderAdapter(new SettingsCredentialProvider(
-                        NullCredentialProvider.Instance,
-                        packageSourceProvider)) };
-                });
+            var credentialProviders = new List<ICredentialProvider>();
 
             TryAddCredentialProviders(
                 credentialProviders,
@@ -1185,9 +1164,6 @@ namespace NuGetVSExtension
         {
             _dteEvents.OnBeginShutdown -= OnBeginShutDown;
             _dteEvents = null;
-
-            // Clean up optimized zips used by NuGet.Core as part of the V2 Protocol
-            OptimizedZipPackage.PurgeCache();
         }
 
         private void LoadSettings()

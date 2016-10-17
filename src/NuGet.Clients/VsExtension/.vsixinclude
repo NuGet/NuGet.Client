@@ -41,9 +41,6 @@ NuGet.Resolver.dll
 NuGet.RuntimeModel.dll
 NuGet.Versioning.dll
 
-# NuGet dlls to keep
-NuGet.Core.dll
-
 # 3rd party dlls to keep
 Lucene.Net.dll
 Microsoft.Web.XmlTransform.dll
