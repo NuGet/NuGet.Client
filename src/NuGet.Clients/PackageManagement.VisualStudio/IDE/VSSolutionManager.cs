@@ -102,8 +102,15 @@ namespace NuGet.PackageManagement.VisualStudio
                 ErrorHandler.ThrowOnFailure(hr);
             }
 
-            UserAgent.SetUserAgentString(
-                new UserAgentStringBuilder().WithVisualStudioSKU(VSVersionHelper.GetFullVsVersionString()));
+            // Allow this constructor to be invoked from either the UI or a worker thread. This JTF call should be
+            // cheap (minimal context switch cost) when we are already on the UI thread.
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                UserAgent.SetUserAgentString(
+                    new UserAgentStringBuilder().WithVisualStudioSKU(VSVersionHelper.GetFullVsVersionString()));
+            });
 
             _solutionEvents.BeforeClosing += OnBeforeClosing;
             _solutionEvents.AfterClosing += OnAfterClosing;
