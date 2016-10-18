@@ -146,6 +146,11 @@ namespace NuGet.PackageManagement.VisualStudio
             return null;
         }
 
+        public static string GetProjectDirectory(EnvDTEProject envDTEProject)
+        {
+            return GetFullPath(envDTEProject);
+        }
+
         /// <summary>
         /// Returns the full path of the project directory.
         /// </summary>
@@ -397,7 +402,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return packagesConfigWithProjectNameFullPath;
         }
 
-        internal static string GetName(EnvDTEProject envDTEProject)
+        public static string GetName(EnvDTEProject envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -469,7 +474,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return GetName(envDTEProject);
         }
 
-        internal static string GetUniqueName(EnvDTEProject envDTEProject)
+        public static string GetUniqueName(EnvDTEProject envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -1329,7 +1334,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var projectKProject = VSNuGetProjectFactory.GetProjectKProject(envDTEProject);
+            var projectKProject = ProjectKNuGetProjectProvider.GetProjectKProject(envDTEProject);
             return projectKProject != null;
         }
 

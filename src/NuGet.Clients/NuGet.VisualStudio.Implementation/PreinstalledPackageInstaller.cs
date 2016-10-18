@@ -12,7 +12,6 @@ using System.Threading;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.Win32;
-using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
@@ -36,7 +35,7 @@ namespace NuGet.VisualStudio
         //private readonly IVsWebsiteHandler _websiteHandler;
         private readonly IVsPackageInstallerServices _packageServices;
         //private readonly IVsCommonOperations _vsCommonOperations;
-        private readonly ISolutionManager _solutionManager;
+        private readonly IVsSolutionManager _solutionManager;
         private readonly ISourceRepositoryProvider _sourceProvider;
         private readonly VsPackageInstaller _installer;
 
@@ -44,7 +43,7 @@ namespace NuGet.VisualStudio
 
         public PreinstalledPackageInstaller(
             IVsPackageInstallerServices packageServices,
-            ISolutionManager solutionManager,
+            IVsSolutionManager solutionManager,
             Configuration.ISettings settings,
             ISourceRepositoryProvider sourceProvider,
             VsPackageInstaller installer)
@@ -174,7 +173,7 @@ namespace NuGet.VisualStudio
 
             // find the project
             var defaultProjectContext = new VSAPIProjectContext();
-            var nuGetProject = await PackageManagementHelpers.GetProjectAsync(_solutionManager, project, defaultProjectContext);
+            var nuGetProject = await _solutionManager.GetOrCreateProjectAsync(project, defaultProjectContext);
 
             // For BuildIntegratedNuGetProject, nuget will ignore preunzipped configuration.
             var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;

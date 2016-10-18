@@ -248,7 +248,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (xprojFiles.Count > 0)
                 {
-                    var pathToProject = GetPathToDTEProjectLookup(project.DTE.Solution);
+                    var pathToProject = EnvDTESolutionUtility.GetPathToDTEProjectLookup(project.DTE.Solution);
 
                     foreach (var xProjPath in xprojFiles)
                     {
@@ -284,29 +284,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 childReferences));
 
             return result;
-        }
-
-        private static Dictionary<string, EnvDTEProject> GetPathToDTEProjectLookup(Solution solution)
-        {
-            var pathToProject = new Dictionary<string, EnvDTEProject>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var solutionProjectObj in solution.Projects)
-            {
-                var solutionProject = solutionProjectObj as EnvDTEProject;
-
-                if (solutionProject != null)
-                {
-                    var solutionProjectPath = EnvDTEProjectUtility.GetFullProjectPath(solutionProject);
-
-                    if (!string.IsNullOrEmpty(solutionProjectPath)
-                        && !pathToProject.ContainsKey(solutionProjectPath))
-                    {
-                        pathToProject.Add(solutionProjectPath, solutionProject);
-                    }
-                }
-            }
-
-            return pathToProject;
         }
 
         private static IEnumerable<Reference> GetProjectReferences(EnvDTEProject project)

@@ -33,13 +33,14 @@ using ISettings = NuGet.Configuration.ISettings;
 using Resx = NuGet.PackageManagement.UI.Resources;
 using Strings = NuGet.PackageManagement.VisualStudio.Strings;
 using UI = NuGet.PackageManagement.UI;
+using Tasks = System.Threading.Tasks;
 
 namespace NuGetVSExtension
 {
     /// <summary>
     /// This is the class that implements the package exposed by this assembly.
     /// </summary>
-    [PackageRegistration(UseManagedResourcesOnly = true)]
+    [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = false)]
     [InstalledProductRegistration("#110", "#112", ProductVersion, IconResourceID = 400)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideToolWindow(typeof(PowerConsoleToolWindow),
@@ -63,10 +64,10 @@ namespace NuGetVSExtension
         NuGetConsole.Implementation.GuidList.GuidPackageManagerConsoleFontAndColorCategoryString,
         "{" + GuidList.guidNuGetPkgString + "}")]
     [Guid(GuidList.guidNuGetPkgString)]
-    public sealed class NuGetPackage : Package, IVsPackageExtensionProvider, IVsPersistSolutionOpts
+    public sealed class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
         // It is displayed in the Help - About box of Visual Studio
-        public const string ProductVersion = "3.6.0";
+        public const string ProductVersion = "3.6.1";
         private static readonly object _credentialsPromptLock = new object();
 
         private static readonly string[] _visualizerSupportedSKUs = { "Premium", "Ultimate" };
@@ -272,10 +273,9 @@ namespace NuGetVSExtension
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
         /// where you can put all the initialization code that rely on services provided by VisualStudio.
         /// </summary>
-        protected override void Initialize()
+        protected override async Tasks.Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            base.Initialize();
-            LoadSettings();
+            await LoadSettingsAsync();
             Styles.LoadVsStyles();
             Brushes.LoadVsBrushes();
 
@@ -289,7 +289,7 @@ namespace NuGetVSExtension
             // IMPORTANT: Do NOT do anything that can lead to a call to ServiceLocator.GetGlobalService().
             // Doing so is illegal and may cause VS to hang.
 
-            _dte = (DTE)GetService(typeof(SDTE));
+            _dte = (DTE)await GetServiceAsync(typeof(SDTE));
             Debug.Assert(_dte != null);
 
             _dteEvents = _dte.Events.DTEEvents;
@@ -342,10 +342,10 @@ namespace NuGetVSExtension
             LoadNuGetSettings();
 
             // This initializes the IVSSourceControlTracker, even though _vsSourceControlTracker is unused.
-            _vsSourceControlTracker = ServiceLocator.GetInstanceSafe<IVsSourceControlTracker>();
+            _vsSourceControlTracker = await ServiceLocator.GetInstanceSafeAsync<IVsSourceControlTracker>();
 
             // This instantiates a decoupled ICommand instance responsible to locate and display output pane by a UI control
-            var serviceProvider = ServiceLocator.GetInstanceSafe<System.IServiceProvider>();
+            var serviceProvider = await ServiceLocator.GetInstanceSafeAsync<System.IServiceProvider>();
             UI.Commands.ShowErrorsCommand = new ShowErrorsCommand(serviceProvider);
         }
 
@@ -1190,11 +1190,11 @@ namespace NuGetVSExtension
             OptimizedZipPackage.PurgeCache();
         }
 
-        private void LoadSettings()
+        private async Tasks.Task LoadSettingsAsync()
         {
             try
             {
-                _settings = ServiceLocator.GetInstance<ISettings>();
+                _settings = await ServiceLocator.GetInstanceAsync<ISettings>();
                 Debug.Assert(_settings != null);
             }
             catch (Exception e)
