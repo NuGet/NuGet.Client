@@ -36,7 +36,7 @@ namespace NuGet.Protocol
 
         private static IEnumerable<VersionInfo> GetVersions(PackageSearchMetadata metadata, SearchFilter filter)
         {
-            var versions = metadata.OnDemandParsedVersions.Value;
+            var versions = metadata.ParsedVersions;
 
             // TODO: in v2, we only have download count for all versions, not per version.
             // To be consistent, in v3, we also use total download count for now.

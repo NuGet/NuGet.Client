@@ -28,6 +28,9 @@ namespace NuGet.PackageManagement.UI
     {
         private readonly bool _initialized;
 
+        private CancellationTokenSource _refreshCts;
+        private CancellationTokenSource _loadCts;
+
         // used to prevent starting new search when we update the package sources
         // list in response to PackageSourcesChanged event.
         private bool _dontStartNewSearch;
@@ -547,15 +550,22 @@ namespace NuGet.PackageManagement.UI
                     ? Resx.Resources.Text_Loading
                     : string.Format(CultureInfo.CurrentCulture, Resx.Resources.Text_Searching, searchText);
 
+                // Set a new cancellation token source which will be used to cancel this task in case
+                // new loading task starts or manager ui is closed while loading packages.
+                _loadCts = new CancellationTokenSource();
+
                 // start SearchAsync task for initial loading of packages
-                var searchResultTask = loader.SearchAsync(continuationToken:null, cancellationToken:CancellationToken.None);
+                var searchResultTask = loader.SearchAsync(continuationToken:null, cancellationToken: _loadCts.Token);
 
                 // this will wait for searchResultTask to complete instead of creating a new task
-                _packageList.LoadItems(loader, loadingMessage, _uiLogger, searchResultTask);
+                _packageList.LoadItems(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token);
 
                 // We only refresh update count, when we don't use cache so check it it's false
                 if (!useCache)
                 {
+                    // clear existing caches
+                    Model.CachedUpdates = null;
+
                     if (_topPanel.Filter.Equals(ItemFilter.UpdatesAvailable))
                     {
                         // it means selected tab is update itself, so just wait for searchAsyncTask to complete
@@ -591,9 +601,14 @@ namespace NuGet.PackageManagement.UI
                 var loader = new PackageItemLoader(
                     loadContext, packageFeed, includePrerelease: IncludePrerelease);
 
+                // cancel previous refresh update count task, if any
+                // and start a new one.
+                var refreshCts = new CancellationTokenSource();
+                Interlocked.Exchange(ref _refreshCts, refreshCts)?.Cancel();
+
                 Model.CachedUpdates = new PackageSearchMetadataCache
                 {
-                    Packages = await loader.GetAllPackagesAsync(CancellationToken.None),
+                    Packages = await loader.GetAllPackagesAsync(refreshCts.Token),
                     IncludePrerelease = IncludePrerelease
                 };
 
@@ -897,6 +912,14 @@ namespace NuGet.PackageManagement.UI
             solutionManager.ActionsExecuted -= SolutionManager_ActionsExecuted;
 
             Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged -= Sources_PackageSourcesChanged;
+
+            // make sure to cancel currently running load or refresh tasks
+            _loadCts?.Cancel();
+            _refreshCts?.Cancel();
+
+            // make sure to dispose cancellation token source
+            _loadCts?.Dispose();
+            _refreshCts?.Dispose();
 
             _detailModel.CleanUp();
             _packageList.SelectionChanged -= PackageList_SelectionChanged;

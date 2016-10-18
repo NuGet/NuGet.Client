@@ -29,7 +29,7 @@ namespace NuGet.Protocol
             }
 
             var packages = (set[JsonProperties.Dependencies] as JArray ?? Enumerable.Empty<JToken>())
-                .Select(LoadDependency);
+                .Select(LoadDependency).ToList();
             return new PackageDependencyGroup(framework, packages);
         }
 
