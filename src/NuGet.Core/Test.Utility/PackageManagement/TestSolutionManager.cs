@@ -154,6 +154,16 @@ namespace Test.Utility
             get { return IsSolutionOpen; }
         }
 
+        public bool IsSolutionDPLEnabled
+        {
+            get { return false; }
+        }
+
+        public void EnsureSolutionIsLoaded()
+        {
+            // do nothing
+        }
+
 #pragma warning disable 0067
         public event EventHandler<NuGetProjectEventArgs> NuGetProjectAdded;
 

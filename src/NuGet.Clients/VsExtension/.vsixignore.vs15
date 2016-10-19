@@ -49,6 +49,7 @@ Microsoft.VisualStudio.RemoteControl.dll
 Microsoft.VisualStudio.Services.Client.dll
 Microsoft.VisualStudio.Services.Common.dll
 Microsoft.VisualStudio.Services.WebApi.dll
+Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime.dll
 Microsoft.VisualStudio.Telemetry.dll
 Microsoft.VisualStudio.Utilities.Internal.dll
 Microsoft.WindowsAzure.Configuration.dll

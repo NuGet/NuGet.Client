@@ -166,6 +166,12 @@ namespace NuGetVSExtension
                     return;
                 }
 
+                // Check if solution is DPL enabled, then don't restore
+                if (SolutionManager.IsSolutionDPLEnabled)
+                {
+                    return;
+                }
+
                 if (!IsAutomatic(Settings))
                 {
                     return;
@@ -211,6 +217,10 @@ namespace NuGetVSExtension
                 {
                     // Get MSBuildOutputVerbosity from _dte
                     _msBuildOutputVerbosity = GetMSBuildOutputVerbositySetting(_dte);
+
+                    // make sure all projects are loaded before start to restore. Since
+                    // projects might not be loaded when DPL is enabled.
+                    SolutionManager.EnsureSolutionIsLoaded();
 
                     // Get the projects from the SolutionManager
                     // Note that projects that are not supported by NuGet, will not show up in this list
