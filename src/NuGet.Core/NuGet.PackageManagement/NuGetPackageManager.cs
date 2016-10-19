@@ -419,7 +419,7 @@ namespace NuGet.PackageManagement
             IEnumerable<SourceRepository> secondarySources,
             CancellationToken token)
         {
-            ActivityCorrelationContext.StartNew();
+            ActivityCorrelationId.StartNew();
 
             // Step-1 : Call PreviewInstallPackageAsync to get all the nuGetProjectActions
             var nuGetProjectActions = await PreviewInstallPackageAsync(nuGetProject, packageIdentity, resolutionContext,
@@ -441,7 +441,7 @@ namespace NuGet.PackageManagement
         public async Task UninstallPackageAsync(NuGetProject nuGetProject, string packageId, UninstallationContext uninstallationContext,
             INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
-            ActivityCorrelationContext.StartNew();
+            ActivityCorrelationId.StartNew();
 
             // Step-1 : Call PreviewUninstallPackagesAsync to get all the nuGetProjectActions
             var nuGetProjectActions = await PreviewUninstallPackageAsync(nuGetProject, packageId, uninstallationContext, nuGetProjectContext, token);

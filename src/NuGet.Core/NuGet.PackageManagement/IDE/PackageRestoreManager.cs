@@ -259,7 +259,7 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(nuGetProjectContext));
             }
 
-            ActivityCorrelationContext.StartNew();
+            ActivityCorrelationId.StartNew();
 
             var missingPackages = packageRestoreContext.Packages.Where(p => p.IsMissing).ToList();
             if (!missingPackages.Any())
