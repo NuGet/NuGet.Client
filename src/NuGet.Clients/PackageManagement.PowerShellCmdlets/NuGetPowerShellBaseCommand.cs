@@ -78,7 +78,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 ExecutionContext = new IDEExecutionContext(_commonOperations);
             }
 
-            ActivityCorrelationContext.StartNew();
+            ActivityCorrelationId.StartNew();
         }
 
         #region Properties

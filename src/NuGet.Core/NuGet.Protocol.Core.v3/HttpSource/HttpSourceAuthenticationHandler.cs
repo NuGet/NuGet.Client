@@ -196,7 +196,7 @@ namespace NuGet.Protocol
 
         private AmbientAuthenticationState GetAuthenticationState()
         {
-            var correlationId = ActivityCorrelationContext.Current.CorrelationId;
+            var correlationId = ActivityCorrelationId.Current;
 
             AmbientAuthenticationState authState;
             if (!_authStates.TryGetValue(correlationId, out authState))
