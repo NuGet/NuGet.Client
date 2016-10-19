@@ -12,23 +12,30 @@ using NuGet.ProjectModel;
 namespace NuGet.Commands
 {
     /// <summary>
-    /// Shared code to run the "restore" command from the command line projects
+    /// Shared code to run the "restore" command for dotnet restore, nuget.exe, and VS.
     /// </summary>
     public static class RestoreRunner
     {
+        /// <summary>
+        /// Create requests, execute requests, and commit restore results.
+        /// </summary>
         public static async Task<IReadOnlyList<RestoreSummary>> Run(RestoreArgs restoreContext)
         {
-            var maxTasks = 1;
+            // Create requests
+            var requests = await GetRequests(restoreContext);
 
-            if (!restoreContext.DisableParallel && !RuntimeEnvironmentHelper.IsMono)
-            {
-                maxTasks = Environment.ProcessorCount;
-            }
+            // Run requests
+            return await Run(requests, restoreContext);
+        }
 
-            if (maxTasks < 1)
-            {
-                maxTasks = 1;
-            }
+        /// <summary>
+        /// Execute and commit restore requests.
+        /// </summary>
+        public static async Task<IReadOnlyList<RestoreSummary>> Run(
+            IEnumerable<RestoreSummaryRequest> restoreRequests,
+            RestoreArgs restoreContext)
+        {
+            int maxTasks = GetMaxTaskCount(restoreContext);
 
             var log = restoreContext.Log;
 
@@ -45,59 +52,9 @@ namespace NuGet.Commands
             }
 
             // Get requests
-            var requests = new Queue<RestoreSummaryRequest>();
+            var requests = new Queue<RestoreSummaryRequest>(restoreRequests);
             var restoreTasks = new List<Task<RestoreSummary>>(maxTasks);
             var restoreSummaries = new List<RestoreSummary>(requests.Count);
-
-            var inputs = new List<string>(restoreContext.Inputs);
-
-            // If there are no inputs, use the current directory
-            if (restoreContext.PreLoadedRequestProviders.Count < 1 && !inputs.Any())
-            {
-                inputs.Add(Path.GetFullPath("."));
-            }
-
-            // Ignore casing on windows and mac
-            var comparer = (RuntimeEnvironmentHelper.IsWindows || RuntimeEnvironmentHelper.IsMacOSX) ?
-                StringComparer.OrdinalIgnoreCase
-                : StringComparer.Ordinal;
-
-            var uniqueRequest = new HashSet<string>(comparer);
-
-            // Create requests
-            // Pre-loaded requests
-            foreach (var request in await CreatePreLoadedRequests(restoreContext))
-            {
-                // De-dupe requests
-                if (request.Request.LockFilePath == null 
-                    || uniqueRequest.Add(request.Request.LockFilePath))
-                {
-                    requests.Enqueue(request);
-                }
-            }
-
-            // Input based requests
-            foreach (var input in inputs)
-            {
-                var inputRequests = await CreateRequests(input, restoreContext);
-                if (inputRequests.Count == 0)
-                {
-                    // No need to throw here - the situation is harmless, and we want to report all possible
-                    // inputs that don't resolve to a project.
-                    log.LogWarning(string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.Error_UnableToLocateRestoreTarget,
-                            Path.GetFullPath(input)));
-                }
-                foreach (var request in inputRequests)
-                {
-                    // De-dupe requests
-                    if (uniqueRequest.Add(request.Request.LockFilePath))
-                    {
-                        requests.Enqueue(request);
-                    }
-                }
-            }
 
             // Run requests
             while (requests.Count > 0)
@@ -124,6 +81,84 @@ namespace NuGet.Commands
 
             // Summary
             return restoreSummaries;
+        }
+
+        /// <summary>
+        /// Create restore requests but do not execute them.
+        /// </summary>
+        public static async Task<IReadOnlyList<RestoreSummaryRequest>> GetRequests(RestoreArgs restoreContext)
+        {
+            // Get requests
+            var requests = new List<RestoreSummaryRequest>();
+
+            var inputs = new List<string>(restoreContext.Inputs);
+
+            // If there are no inputs, use the current directory
+            if (restoreContext.PreLoadedRequestProviders.Count < 1 && !inputs.Any())
+            {
+                inputs.Add(Path.GetFullPath("."));
+            }
+
+            // Ignore casing on windows and mac
+            var comparer = (RuntimeEnvironmentHelper.IsWindows || RuntimeEnvironmentHelper.IsMacOSX) ?
+                StringComparer.OrdinalIgnoreCase
+                : StringComparer.Ordinal;
+
+            var uniqueRequest = new HashSet<string>(comparer);
+
+            // Create requests
+            // Pre-loaded requests
+            foreach (var request in await CreatePreLoadedRequests(restoreContext))
+            {
+                // De-dupe requests
+                if (request.Request.LockFilePath == null
+                    || uniqueRequest.Add(request.Request.LockFilePath))
+                {
+                    requests.Add(request);
+                }
+            }
+
+            // Input based requests
+            foreach (var input in inputs)
+            {
+                var inputRequests = await CreateRequests(input, restoreContext);
+                if (inputRequests.Count == 0)
+                {
+                    // No need to throw here - the situation is harmless, and we want to report all possible
+                    // inputs that don't resolve to a project.
+                    restoreContext.Log.LogWarning(string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Error_UnableToLocateRestoreTarget,
+                            Path.GetFullPath(input)));
+                }
+                foreach (var request in inputRequests)
+                {
+                    // De-dupe requests
+                    if (uniqueRequest.Add(request.Request.LockFilePath))
+                    {
+                        requests.Add(request);
+                    }
+                }
+            }
+
+            return requests;
+        }
+
+        private static int GetMaxTaskCount(RestoreArgs restoreContext)
+        {
+            var maxTasks = 1;
+
+            if (!restoreContext.DisableParallel && !RuntimeEnvironmentHelper.IsMono)
+            {
+                maxTasks = Environment.ProcessorCount;
+            }
+
+            if (maxTasks < 1)
+            {
+                maxTasks = 1;
+            }
+
+            return maxTasks;
         }
 
         private static async Task<RestoreSummary> Execute(RestoreSummaryRequest summaryRequest)
