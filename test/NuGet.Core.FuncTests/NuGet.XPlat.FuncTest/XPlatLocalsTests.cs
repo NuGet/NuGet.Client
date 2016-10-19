@@ -121,6 +121,12 @@ namespace NuGet.XPlat.FuncTest
                     DotnetCliUtil.VerifyClearSuccess(mockGlobalPackagesDirectory.FullName);
                     DotnetCliUtil.VerifyClearSuccess(mockHttpCacheDirectory.FullName);
                     DotnetCliUtil.VerifyClearSuccess(mockTmpCacheDirectory.FullName);
+
+                    // Assert clear message
+                    DotnetCliUtil.VerifyResultSuccess(result, "Clearing NuGet global packages cache:");
+                    DotnetCliUtil.VerifyResultSuccess(result, "Clearing NuGet HTTP cache:");
+                    DotnetCliUtil.VerifyResultSuccess(result, "Clearing NuGet Temp cache:");
+                    DotnetCliUtil.VerifyResultSuccess(result, "Local resources cleared.");
                 }
                 else if (cacheType == "global-packages")
                 {
@@ -130,6 +136,10 @@ namespace NuGet.XPlat.FuncTest
                     // Http cache and Temp cahce should be untouched
                     DotnetCliUtil.VerifyNoClear(mockHttpCacheDirectory.FullName);
                     DotnetCliUtil.VerifyNoClear(mockTmpCacheDirectory.FullName);
+
+                    // Assert clear message
+                    DotnetCliUtil.VerifyResultSuccess(result, "Clearing NuGet global packages cache:");
+                    DotnetCliUtil.VerifyResultSuccess(result, "Local resources cleared.");
                 }
                 else if (cacheType == "http-cache")
                 {
@@ -139,6 +149,10 @@ namespace NuGet.XPlat.FuncTest
                     // Global packages cache and temp cache should be untouched
                     DotnetCliUtil.VerifyNoClear(mockGlobalPackagesDirectory.FullName);
                     DotnetCliUtil.VerifyNoClear(mockTmpCacheDirectory.FullName);
+
+                    // Assert clear message
+                    DotnetCliUtil.VerifyResultSuccess(result, "Clearing NuGet HTTP cache:");
+                    DotnetCliUtil.VerifyResultSuccess(result, "Local resources cleared.");
                 }
                 else if (cacheType == "temp")
                 {
@@ -148,8 +162,11 @@ namespace NuGet.XPlat.FuncTest
                     // Global packages cache and Http cache should be un touched
                     DotnetCliUtil.VerifyNoClear(mockGlobalPackagesDirectory.FullName);
                     DotnetCliUtil.VerifyNoClear(mockHttpCacheDirectory.FullName);
+
+                    // Assert clear message
+                    DotnetCliUtil.VerifyResultSuccess(result, "Clearing NuGet Temp cache:");
+                    DotnetCliUtil.VerifyResultSuccess(result, "Local resources cleared.");
                 }
-                DotnetCliUtil.VerifyResultSuccess(result, string.Empty);
             }
         }
 

@@ -321,6 +321,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Clearing NuGet Temp cache: {0}.
+        /// </summary>
+        public static string LocalsCommand_ClearingNuGetTempCache {
+            get {
+                return ResourceManager.GetString("LocalsCommand_ClearingNuGetTempCache", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Failed to delete &apos;{0}&apos;..
         /// </summary>
         public static string LocalsCommand_FailedToDeletePath {
