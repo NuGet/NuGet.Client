@@ -98,8 +98,7 @@ namespace NuGet.PackageManagement
                 project.ProjectName));
 
             var dgFile = await project.GetDependencyGraphSpecAsync();
-
-            var requests = 
+            var args = GetRestoreArgs()
 
             var request = new RestoreRequest(packageSpec, providers, cacheContext, logger);
             request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
