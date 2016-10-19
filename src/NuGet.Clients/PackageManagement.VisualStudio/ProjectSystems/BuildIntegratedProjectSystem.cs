@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using EnvDTE;
+using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -97,10 +98,24 @@ namespace NuGet.PackageManagement.VisualStudio
             return false;
         }
 
-        public override async Task<IReadOnlyList<ExternalProjectReference>> GetProjectReferenceClosureAsync(
-            ExternalProjectReferenceContext context)
+        public override Task<IReadOnlyList<IDependencyGraphProject>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)
         {
-            return await VSProjectReferenceUtility.GetProjectReferenceClosureAsync(_envDTEProject, context);
+            var solutionManager = (VSSolutionManager)ServiceLocator.GetInstance<ISolutionManager>();
+            var list = new List<IDependencyGraphProject>();
+            if (solutionManager != null && EnvDTEProjectUtility.SupportsReferences(_envDTEProject))
+            {
+                foreach (var referencedProject in EnvDTEProjectUtility.GetReferencedProjects(_envDTEProject))
+                {
+                    var nugetProject = EnvDTEProjectUtility.GetNuGetProject(referencedProject, solutionManager);
+                    var dependencyGraphProject = nugetProject as IDependencyGraphProject;
+                    if (dependencyGraphProject != null)
+                    {
+                        list.Add(dependencyGraphProject);
+                    }
+                }
+            }
+
+            return Task.FromResult<IReadOnlyList<IDependencyGraphProject>>(list.AsReadOnly());
         }
     }
 }

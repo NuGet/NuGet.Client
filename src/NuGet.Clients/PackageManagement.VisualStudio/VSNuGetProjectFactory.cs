@@ -62,10 +62,6 @@ namespace NuGet.PackageManagement.VisualStudio
                     envDTEProject.Name,
                     EnvDTEProjectUtility.GetCustomUniqueName(envDTEProject));
             }
-            else if ((result = GetMSBuildShellOutNuGetProject(envDTEProject)) != null)
-            {
-                // Use the NuGetProject result initialized in the condition.
-            }
             else 
             {
                 var msBuildNuGetProjectSystem = MSBuildNuGetProjectSystemFactory.CreateMSBuildNuGetProjectSystem(
@@ -129,21 +125,6 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return result;
-        }
-
-        public static MSBuildShellOutNuGetProject GetMSBuildShellOutNuGetProject(EnvDTEProject project)
-        {
-            try
-            {
-                return MSBuildShellOutNuGetProject.Create(project);
-            }
-            catch
-            {
-                // Ignore failures. If this method returns null, the problem falls into one of the other NuGet project
-                // types.
-            }
-
-            return null;
         }
 
         public static INuGetPackageManager GetProjectKProject(EnvDTEProject project)

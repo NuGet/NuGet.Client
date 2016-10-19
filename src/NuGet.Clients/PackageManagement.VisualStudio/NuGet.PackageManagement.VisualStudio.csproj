@@ -94,7 +94,6 @@
     <Compile Include="ScriptExecutionRequest.cs" />
     <Compile Include="IDE\VSProjectReferenceUtility.cs" />
     <Compile Include="ProjectSystems\VSMSBuildNuGetProject.cs" />
-    <Compile Include="ProjectSystems\MSBuildShellOutNuGetProject.cs" />
     <Compile Include="Telemetry\ProjectTelemetryEvent.cs" />
     <Compile Include="IDE\PackageInitPS1State.cs" />
     <Compile Include="IDE\VsCommonOperations.cs" />

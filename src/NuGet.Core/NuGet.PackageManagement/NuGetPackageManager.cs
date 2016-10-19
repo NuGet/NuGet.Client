@@ -45,7 +45,7 @@ namespace NuGet.PackageManagement
 
         private IDictionary<string, bool> _buildIntegratedProjectsUpdateDict;
 
-        private IReadOnlyDictionary<string, DependencyGraphProjectCacheEntry> _buildIntegratedProjectsCache;
+        private DependencyGraphSpec _buildIntegratedProjectsCache;
 
         public IDeleteOnRestartManager DeleteOnRestartManager { get; }
 
@@ -1886,7 +1886,7 @@ namespace NuGet.PackageManagement
             if (buildIntegratedProjectsToUpdate.Count > 0)
             {
                 var logger = new ProjectContextLogger(nuGetProjectContext);
-                var referenceContext = new ExternalProjectReferenceContext(logger);
+                var referenceContext = new DependencyGraphCacheContext(logger);
                 _buildIntegratedProjectsUpdateDict = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
 
                 // get all build integrated projects of the solution which will be used to map project references
@@ -1895,23 +1895,19 @@ namespace NuGet.PackageManagement
                     SolutionManager.GetNuGetProjects().OfType<BuildIntegratedNuGetProject>().ToList();
 
                 _buildIntegratedProjectsCache =
-                    await DependencyGraphProjectCacheUtility.CreateDependencyGraphProjectCache(allBuildIntegratedProjects,
+                    await DependencyGraphProjectCacheUtility.GetSolutionRestoreSpec(allBuildIntegratedProjects,
                         referenceContext);
 
-                var orderedChildren = new List<BuildIntegratedNuGetProject>();
+                IEnumerable<BuildIntegratedNuGetProject> orderedChildren = null;
                 var msbuildProjectPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
                 foreach (var project in buildIntegratedProjectsToUpdate)
                 {
-                    if (msbuildProjectPaths.Add(project.MSBuildProjectPath))
-                    {
-                        BuildIntegratedRestoreUtility.GetChildProjectsInClosure(
-                            project,
-                            allBuildIntegratedProjects,
-                            orderedChildren,
-                            msbuildProjectPaths,
-                            _buildIntegratedProjectsCache);
-                    }
+                     orderedChildren = DependencyGraphRestoreUtility.GetChildProjectsInClosure(
+                         project,
+                         allBuildIntegratedProjects,
+                        _buildIntegratedProjectsCache);
+                 
                 }
                 sortedProjectsToUpdate.AddRange(orderedChildren);
 
@@ -2283,7 +2279,7 @@ namespace NuGet.PackageManagement
             {
                 cacheContext.MaxAge = DateTimeOffset.UtcNow;
 
-                var buildIntegratedContext = new ExternalProjectReferenceContext(logger);
+                var dependencyGraphContext = new DependencyGraphCacheContext(logger);
 
                 var providers = RestoreCommandProviders.Create(
                     pathContext.UserPackageFolder,
@@ -2300,10 +2296,10 @@ namespace NuGet.PackageManagement
                         buildIntegratedProject.ProjectName,
                         buildIntegratedProject.JsonConfigPath);
 
-                    var originalRestoreResult = await BuildIntegratedRestoreUtility.RestoreAsync(
+                    var originalRestoreResult = await DependencyGraphRestoreUtility.PreviewRestoreAsync(
                         buildIntegratedProject,
                         originalPackageSpec,
-                        buildIntegratedContext,
+                        dependencyGraphContext,
                         providers,
                         cacheContext,
                         token);
@@ -2330,10 +2326,10 @@ namespace NuGet.PackageManagement
                     buildIntegratedProject.JsonConfigPath);
 
                 // Restore based on the modified package spec. This operation does not write the lock file to disk.
-                var restoreResult = await BuildIntegratedRestoreUtility.RestoreAsync(
+                var restoreResult = await DependencyGraphRestoreUtility.PreviewRestoreAsync(
                     buildIntegratedProject,
                     packageSpec,
-                    buildIntegratedContext,
+                    dependencyGraphContext,
                     providers,
                     cacheContext,
                     token);
@@ -2416,7 +2412,7 @@ namespace NuGet.PackageManagement
                 }
 
                 var logger = new ProjectContextLogger(nuGetProjectContext);
-                var referenceContext = new ExternalProjectReferenceContext(logger);
+                var referenceContext = new DependencyGraphCacheContext(logger);
                 var pathContext = NuGetPathContext.Create(Settings);
                 var pathResolver = new FallbackPackagePathResolver(pathContext);
 
@@ -2431,7 +2427,7 @@ namespace NuGet.PackageManagement
                         out isProjectUpdated) &&
                     isProjectUpdated)
                 {
-                    await BuildIntegratedRestoreUtility.RestoreAsync(
+                    await DependencyGraphRestoreUtility.RestoreProjectAsync(
                             buildIntegratedProject,
                             referenceContext,
                             projectAction.Sources,
@@ -2490,7 +2486,7 @@ namespace NuGet.PackageManagement
                 if (_buildIntegratedProjectsCache == null)
                 {
                     _buildIntegratedProjectsCache = await
-                        DependencyGraphProjectCacheUtility.CreateDependencyGraphProjectCache(projects,
+                        DependencyGraphProjectCacheUtility.GetSolutionRestoreSpec(projects,
                             referenceContext);
                 }
 
@@ -2511,7 +2507,7 @@ namespace NuGet.PackageManagement
                     else
                     {
                         // Restore and commit the lock file to disk regardless of the result
-                        var parentResult = await BuildIntegratedRestoreUtility.RestoreAsync(
+                        var parentResult = await DependencyGraphRestoreUtility.RestoreProjectAsync(
                             parent,
                             referenceContext,
                             projectAction.Sources,

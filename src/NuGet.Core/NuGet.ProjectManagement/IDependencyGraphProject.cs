@@ -27,14 +27,34 @@ namespace NuGet.ProjectManagement
         /// </summary>
         DateTimeOffset LastModified { get; }
 
-        IReadOnlyList<PackageSpec> GetPackageSpecsForRestore(ExternalProjectReferenceContext context);
+        /// <summary>
+        /// Project spec
+        /// </summary>
+        Task<PackageSpec> GetPackageSpecAsync();
 
-        bool IsRestoreRequired(
+        /// <summary>
+        /// Project spec
+        /// </summary>
+        Task<PackageSpec> GetPackageSpecAsync(DependencyGraphCacheContext context);
+
+        /// <summary>
+        /// Full project closure and tools.
+        /// </summary>
+        Task<DependencyGraphSpec> GetDependencyGraphSpecAsync();
+
+        /// <summary>
+        /// Full project closure and tools.
+        /// </summary>
+        Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(DependencyGraphCacheContext context);
+
+        /// <summary>
+        /// Full project closure and tools.
+        /// </summary>
+        Task<IReadOnlyList<IDependencyGraphProject>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context);
+
+        Task<bool> IsRestoreRequired(
             IEnumerable<VersionFolderPathResolver> pathResolvers,
             ISet<PackageIdentity> packagesChecked,
-            ExternalProjectReferenceContext context);
-
-        Task<IReadOnlyList<ExternalProjectReference>> GetProjectReferenceClosureAsync(
-            ExternalProjectReferenceContext context);
+            DependencyGraphCacheContext context);
     }
 }

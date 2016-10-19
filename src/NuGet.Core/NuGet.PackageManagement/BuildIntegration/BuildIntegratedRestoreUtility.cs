@@ -29,23 +29,24 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Restore a build integrated project and update the lock file
         /// </summary>
-        public static async Task<RestoreResult> RestoreAsync(
-            BuildIntegratedNuGetProject project,
-            ExternalProjectReferenceContext context,
-            IEnumerable<SourceRepository> sources,
-            string effectiveGlobalPackagesFolder,
-            IEnumerable<string> fallbackPackageFolders,
-            CancellationToken token)
-        {
-            return await RestoreAsync(
-                project,
-                context,
-                sources,
-                effectiveGlobalPackagesFolder,
-                fallbackPackageFolders,
-                c => { },
-                token);
-        }
+
+        //public static async Task<RestoreResult> RestoreAsync(
+        //    BuildIntegratedNuGetProject project,
+        //    ExternalProjectReferenceContext context,
+        //    IEnumerable<SourceRepository> sources,
+        //    string effectiveGlobalPackagesFolder,
+        //    IEnumerable<string> fallbackPackageFolders,
+        //    CancellationToken token)
+        //{
+        //    return await RestoreAsync(
+        //        project,
+        //        context,
+        //        sources,
+        //        effectiveGlobalPackagesFolder,
+        //        fallbackPackageFolders,
+        //        c => { },
+        //        token);
+        //}
 
         public static async Task ExecuteInitPs1ScriptsAsync(
             BuildIntegratedNuGetProject project,
@@ -78,100 +79,6 @@ namespace NuGet.PackageManagement
                         throwOnFailure: false);
                 }
             }
-        }
-
-        /// <summary>
-        /// Restore a build integrated project and update the lock file
-        /// </summary>
-        public static async Task<RestoreResult> RestoreAsync(
-            BuildIntegratedNuGetProject project,
-            ExternalProjectReferenceContext context,
-            IEnumerable<SourceRepository> sources,
-            string effectiveGlobalPackagesFolder,
-            IEnumerable<string> fallbackPackageFolders,
-            Action<SourceCacheContext> cacheContextModifier,
-            CancellationToken token)
-        {
-            using (var cacheContext = new SourceCacheContext())
-            {
-                cacheContextModifier(cacheContext);
-
-                var providers = RestoreCommandProviders.Create(effectiveGlobalPackagesFolder,
-                    fallbackPackageFolders,
-                    sources,
-                    cacheContext,
-                    context.Logger);
-
-                // Restore
-                var result = await RestoreAsync(
-                    project,
-                    project.PackageSpec,
-                    context,
-                    providers,
-                    cacheContext,
-                    token);
-
-                // Throw before writing if this has been canceled
-                token.ThrowIfCancellationRequested();
-
-                // Write out the lock file and msbuild files
-                await result.CommitAsync(context.Logger, token);
-
-                return result;
-            }
-        }
-
-        /// <summary>
-        /// Restore without writing the lock file
-        /// </summary>
-        internal static async Task<RestoreResult> RestoreAsync(
-            BuildIntegratedNuGetProject project,
-            PackageSpec packageSpec,
-            ExternalProjectReferenceContext context,
-            RestoreCommandProviders providers,
-            SourceCacheContext cacheContext,
-            CancellationToken token)
-        {
-            // Restoring packages
-            var logger = context.Logger;
-            logger.LogMinimal(string.Format(CultureInfo.CurrentCulture,
-                Strings.BuildIntegratedPackageRestoreStarted,
-                project.ProjectName));
-
-            var request = new RestoreRequest(packageSpec, providers, cacheContext, logger);
-            request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
-
-            // Add the existing lock file if it exists
-            var lockFilePath = ProjectJsonPathUtilities.GetLockFilePath(project.JsonConfigPath);
-            request.LockFilePath = lockFilePath;
-            request.ExistingLockFile = LockFileUtilities.GetLockFile(lockFilePath, logger);
-
-            // Find the full closure of project.json files and referenced projects
-            var projectReferences = await project.GetProjectReferenceClosureAsync(context);
-            request.ExternalProjects = projectReferences.ToList();
-
-            token.ThrowIfCancellationRequested();
-
-            var command = new RestoreCommand(request);
-
-            // Execute the restore
-            var result = await command.ExecuteAsync(token);
-
-            // Report a final message with the Success result
-            if (result.Success)
-            {
-                logger.LogMinimal(string.Format(CultureInfo.CurrentCulture,
-                    Strings.BuildIntegratedPackageRestoreSucceeded,
-                    project.ProjectName));
-            }
-            else
-            {
-                logger.LogMinimal(string.Format(CultureInfo.CurrentCulture,
-                    Strings.BuildIntegratedPackageRestoreFailed,
-                    project.ProjectName));
-            }
-
-            return result;
         }
 
         /// <summary>
@@ -252,7 +159,7 @@ namespace NuGet.PackageManagement
         public static IReadOnlyList<BuildIntegratedNuGetProject> GetParentProjectsInClosure(
             IReadOnlyList<BuildIntegratedNuGetProject> projects,
             BuildIntegratedNuGetProject target,
-            IReadOnlyDictionary<string, DependencyGraphProjectCacheEntry> cache)
+            DependencyGraphSpec cache)
         {
             if (projects == null)
             {
@@ -269,89 +176,24 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(cache));
             }
 
-            var parents = new HashSet<BuildIntegratedNuGetProject>();
+            var listOfParents = cache.GetParents(target.MSBuildProjectPath);
 
-            var targetProjectJson = Path.GetFullPath(target.JsonConfigPath);
+            var parentNuGetprojects = new HashSet<BuildIntegratedNuGetProject>();
 
-            foreach (var project in projects)
+            foreach (var parent in listOfParents)
             {
                 // do not count the target as a parent
-                if (!target.Equals(project))
+                var nugetProject = projects.FirstOrDefault(r => r.MSBuildProjectPath == parent);
+                if (nugetProject != null && !nugetProject.Equals(target))
                 {
-                    DependencyGraphProjectCacheEntry cacheEntry;
-
-                    if (cache.TryGetValue(project.MSBuildProjectPath, out cacheEntry))
-                    {
-                        // find all projects which have a child reference matching the same project.json path as the target
-                        if (cacheEntry.ReferenceClosure.Any(reference =>
-                            string.Equals(targetProjectJson, Path.GetFullPath(reference), StringComparison.OrdinalIgnoreCase)))
-                        {
-                            parents.Add(project);
-                        }
-                    }
+                    parentNuGetprojects.Add(nugetProject);
                 }
             }
 
             // sort parents by path to make this more deterministic during restores
-            return parents
+            return parentNuGetprojects
                 .OrderBy(parent => parent.MSBuildProjectPath, StringComparer.Ordinal)
                 .ToList();
-        }
-
-        /// <summary>
-        /// Find the list of child projects direct or indirect references of target project in
-        /// reverse dependency order like the least dependent package first.
-        /// </summary>
-        public static void GetChildProjectsInClosure(
-            BuildIntegratedNuGetProject target,
-            IReadOnlyList<BuildIntegratedNuGetProject> projects,
-            IList<BuildIntegratedNuGetProject> orderedChildren,
-            HashSet<string> msbuildProjectPaths,
-            IReadOnlyDictionary<string, DependencyGraphProjectCacheEntry> cache)
-        {
-            if (projects == null)
-            {
-                throw new ArgumentNullException(nameof(projects));
-            }
-
-            if (target == null)
-            {
-                throw new ArgumentNullException(nameof(target));
-            }
-
-            if (orderedChildren == null)
-            {
-                orderedChildren = new List<BuildIntegratedNuGetProject>();
-            }
-
-            if (msbuildProjectPaths == null)
-            {
-                msbuildProjectPaths = new HashSet<string>();
-            }
-
-            msbuildProjectPaths.Add(target.MSBuildProjectPath);
-
-            if (!orderedChildren.Contains(target))
-            {
-                DependencyGraphProjectCacheEntry cacheEntry;
-                if (cache.TryGetValue(target.MSBuildProjectPath, out cacheEntry))
-                {
-                    foreach (var reference in cacheEntry.ReferenceClosure)
-                    {
-                        var packageSpecPath = Path.GetFullPath(reference);
-                        var depProject = projects.FirstOrDefault(
-                            proj =>
-                                StringComparer.OrdinalIgnoreCase.Equals(Path.GetFullPath(proj.JsonConfigPath),
-                                    packageSpecPath));
-
-                        if (depProject != null && !orderedChildren.Contains(depProject) && msbuildProjectPaths.Add(depProject.MSBuildProjectPath))
-                        {
-                            GetChildProjectsInClosure(depProject, projects, orderedChildren, msbuildProjectPaths, cache);
-                        }
-                    }
-                }
-                orderedChildren.Add(target);
-            }
         }
     }
 }

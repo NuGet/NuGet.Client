@@ -13,96 +13,28 @@ namespace NuGet.PackageManagement
 {
     public static class DependencyGraphProjectCacheUtility
     {
-        /// <summary>
-        /// Creates an index of the project unique name to the cache entry.
-        /// The cache entry contains the project and the closure of project.json files.
-        /// </summary>
-        public static async Task<Dictionary<string, DependencyGraphProjectCacheEntry>>
-            CreateDependencyGraphProjectCache(
-                IEnumerable<IDependencyGraphProject> projects,
-                ExternalProjectReferenceContext context)
+        public static async Task<DependencyGraphSpec> GetSolutionRestoreSpec(
+            IEnumerable<IDependencyGraphProject> projects,
+                DependencyGraphCacheContext context)
         {
-            var cache = new Dictionary<string, DependencyGraphProjectCacheEntry>();
-
-            // Find all project closures
+            var dgSpec = new DependencyGraphSpec();
             foreach (var project in projects)
             {
-                // Get all project.json file paths in the closure
-                var closure = await project.GetProjectReferenceClosureAsync(context);
+                var packageSpec = await project.GetPackageSpecAsync(context);
+                
+                dgSpec.AddProject(packageSpec);
 
-                var files = new HashSet<string>(StringComparer.Ordinal);
-
-                // Store the last modified date of the project.json file
-                // If there are any changes a restore is needed
-                var lastModified = project.LastModified;
-
-                foreach (var reference in closure)
+                if (packageSpec.RestoreMetadata.OutputType == RestoreOutputType.NETCore ||
+                    packageSpec.RestoreMetadata.OutputType == RestoreOutputType.UAP ||
+                    packageSpec.RestoreMetadata.OutputType == RestoreOutputType.DotnetCliTool ||
+                    packageSpec.RestoreMetadata.OutputType == RestoreOutputType.Standalone)
                 {
-                    if (!string.IsNullOrEmpty(reference.MSBuildProjectPath))
-                    {
-                        files.Add(reference.MSBuildProjectPath);
-                    }
-
-                    if (!string.IsNullOrEmpty(reference.ProjectJsonPath))
-                    {
-                        files.Add(reference.ProjectJsonPath);
-                    }
+                    dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
                 }
-
-                var projectInfo = new DependencyGraphProjectCacheEntry(files, lastModified);
-                var projectPath = project.MSBuildProjectPath;
-
-                if (!cache.ContainsKey(projectPath))
-                {
-                    cache.Add(projectPath, projectInfo);
-                }
-                else
-                {
-                    Debug.Fail("project list contains duplicate projects");
-                }
+                
             }
-
-            return cache;
-        }
-
-        /// <summary>
-        /// Verifies that the caches contain the same projects and that each project contains the same closure.
-        /// This is used to detect if any projects have changed before verifying the lock files.
-        /// </summary>
-        public static bool CacheHasChanges(
-            IReadOnlyDictionary<string, DependencyGraphProjectCacheEntry> previousCache,
-            IReadOnlyDictionary<string, DependencyGraphProjectCacheEntry> currentCache)
-        {
-            if (previousCache == null)
-            {
-                return true;
-            }
-
-            foreach (var item in currentCache)
-            {
-                var projectName = item.Key;
-                DependencyGraphProjectCacheEntry projectInfo;
-                if (!previousCache.TryGetValue(projectName, out projectInfo))
-                {
-                    // A new project was added, this needs a restore
-                    return true;
-                }
-
-                if (item.Value.ProjectConfigLastModified?.Equals(projectInfo.ProjectConfigLastModified) != true)
-                {
-                    // project.json has been modified
-                    return true;
-                }
-
-                if (!item.Value.ReferenceClosure.SetEquals(projectInfo.ReferenceClosure))
-                {
-                    // The project closure has changed
-                    return true;
-                }
-            }
-
-            // no project changes have occurred
-            return false;
+            // Return dg file
+            return dgSpec;
         }
 
         /// <summary>

@@ -32,8 +32,7 @@ namespace NuGetVSExtension
 
         private readonly DTE _dte;
 
-        private Dictionary<string, DependencyGraphProjectCacheEntry> _dependencyGraphProjectCache
-            = new Dictionary<string, DependencyGraphProjectCacheEntry>(StringComparer.Ordinal);
+        private int _dependencyGraphProjectCacheHash = Int32.MinValue;
 
         // The value of the "MSBuild project build output verbosity" setting 
         // of VS. From 0 (quiet) to 4 (Diagnostic).
@@ -158,9 +157,9 @@ namespace NuGetVSExtension
                 if (Action == vsBuildAction.vsBuildActionClean)
                 {
                     // Clear the project.json restore cache on clean to ensure that the next build restores again
-                    if (_dependencyGraphProjectCache != null)
+                    if (_dependencyGraphProjectCacheHash != Int32.MinValue)
                     {
-                        _dependencyGraphProjectCache.Clear();
+                        _dependencyGraphProjectCacheHash = Int32.MinValue;
                     }
 
                     return;
@@ -318,9 +317,7 @@ namespace NuGetVSExtension
                 }
 
                 // Cache p2ps discovered from DTE 
-                var referenceContext = new ExternalProjectReferenceContext(
-                    _dependencyGraphProjectCache,
-                    logger: this);
+                var cacheContext = new DependencyGraphCacheContext(this);
                 var pathContext = NuGetPathContext.Create(Settings);
 
                 // No-op all project closures are up to date and all packages exist on disk.
@@ -328,10 +325,11 @@ namespace NuGetVSExtension
                     projects,
                     forceRestore,
                     pathContext,
-                    referenceContext))
+                    cacheContext,
+                    _dependencyGraphProjectCacheHash))
                 {
                     // Save the project between operations.
-                    _dependencyGraphProjectCache = referenceContext.ProjectCache;
+                    _dependencyGraphProjectCacheHash = cacheContext.SolutionSpecHash;
 
                     var waitDialogFactory = ServiceLocator
                         .GetGlobalService<SVsThreadedWaitDialogFactory, IVsThreadedWaitDialogFactory>();
@@ -366,7 +364,7 @@ namespace NuGetVSExtension
                             projects,
                             sources,
                             Settings,
-                            referenceContext);
+                            cacheContext);
                     }
                 }
             }

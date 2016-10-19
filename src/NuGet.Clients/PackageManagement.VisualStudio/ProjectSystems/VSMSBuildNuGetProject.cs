@@ -30,10 +30,24 @@ namespace NuGet.PackageManagement.VisualStudio
             _project = project;
         }
 
-        public override async Task<IReadOnlyList<ExternalProjectReference>> GetProjectReferenceClosureAsync(
-            ExternalProjectReferenceContext context)
+        public override Task<IReadOnlyList<IDependencyGraphProject>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)
         {
-            return await VSProjectReferenceUtility.GetProjectReferenceClosureAsync(_project, context);
+            var solutionManager = (VSSolutionManager)ServiceLocator.GetInstance<ISolutionManager>();
+            var list = new List<IDependencyGraphProject>();
+            if (solutionManager != null && EnvDTEProjectUtility.SupportsReferences(_project))
+            {
+                foreach (var referencedProject in EnvDTEProjectUtility.GetReferencedProjects(_project))
+                {
+                    var nugetProject = EnvDTEProjectUtility.GetNuGetProject(referencedProject, solutionManager);
+                    var dependencyGraphProject = nugetProject as IDependencyGraphProject;
+                    if (dependencyGraphProject != null)
+                    {
+                        list.Add(dependencyGraphProject);
+                    }
+                }
+            }
+
+            return Task.FromResult<IReadOnlyList<IDependencyGraphProject>>(list.AsReadOnly());
         }
     }
 }

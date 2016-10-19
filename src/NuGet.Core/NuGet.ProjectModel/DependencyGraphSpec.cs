@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NuGet.Packaging;
 
 namespace NuGet.ProjectModel
 {
@@ -64,6 +65,13 @@ namespace NuGet.ProjectModel
             return project;
         }
 
+        public IReadOnlyList<string> GetParents(string rootUniqueName)
+        {
+            return Projects.Select(p => p.RestoreMetadata.ProjectUniqueName)
+                .Where(id => GetClosure(id).Any(p => p.RestoreMetadata.ProjectUniqueName == rootUniqueName))
+                .ToList();
+        }
+
         /// <summary>
         /// Retrieve the full project closure including the root project itself.
         /// </summary>
@@ -101,8 +109,7 @@ namespace NuGet.ProjectModel
                     }
                 }
             }
-
-            return closure;
+            return SortPackagesByDependencyOrder(closure);
         }
 
         private static IEnumerable<string> GetProjectReferenceNames(PackageSpec spec)
@@ -128,6 +135,22 @@ namespace NuGet.ProjectModel
                 ?? Guid.NewGuid().ToString();
 
             _projects.Add(projectUniqueName, projectSpec);
+        }
+
+        public static  DependencyGraphSpec Union(IEnumerable<DependencyGraphSpec> dgSpecs )
+        {
+            var projects =
+                dgSpecs.SelectMany(e => e.Projects)
+                    .GroupBy(e => e.RestoreMetadata.ProjectUniqueName, StringComparer.Ordinal)
+                    .Select(e => e.First())
+                    .ToList();
+
+            var newDgSpec = new DependencyGraphSpec();
+            foreach (var project in projects)
+            {
+                newDgSpec.AddProject(project);
+            }
+            return newDgSpec;
         }
 
         public static DependencyGraphSpec Load(string path)
@@ -221,6 +244,55 @@ namespace NuGet.ProjectModel
             }
 
             return json;
+        }
+
+        public override int GetHashCode()
+        {
+            //TODO : Write a better hash function
+            var jobject = GetJson(this);
+            return jobject.ToString().GetHashCode();
+        }
+
+        /// <summary>
+        /// Order dependencies by children first.
+        /// </summary>
+        internal static IReadOnlyList<PackageSpec> SortPackagesByDependencyOrder(
+            IEnumerable<PackageSpec> packages)
+        {
+            var sorted = new List<PackageSpec>();
+            var toSort = packages.Distinct().ToList();
+
+            while (toSort.Count > 0)
+            {
+                // Order packages by parent count, take the child with the lowest number of parents
+                // and remove it from the list
+                var nextPackage = toSort.OrderBy(package => GetParentCount(toSort, package.RestoreMetadata.ProjectUniqueName))
+                    .ThenBy(package => package.RestoreMetadata.ProjectUniqueName, StringComparer.Ordinal).First();
+
+                sorted.Add(nextPackage);
+                toSort.Remove(nextPackage);
+            }
+
+            // the list is ordered by parents first, reverse to run children first
+            sorted.Reverse();
+
+            return sorted;
+        }
+
+        private static int GetParentCount(List<PackageSpec> packages, string projectUniqueName)
+        {
+            int count = 0;
+
+            foreach (var package in packages)
+            {
+                if (package.RestoreMetadata.TargetFrameworks.SelectMany(r=> r.ProjectReferences).Any(dependency =>
+                        string.Equals(projectUniqueName, dependency.ProjectUniqueName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    count++;
+                }
+            }
+
+            return count;
         }
     }
 }

@@ -94,6 +94,15 @@ namespace NuGet.Commands
             return requests;
         }
 
+        public static IEnumerable<ExternalProjectReference> GetExternalClosure(DependencyGraphSpec dgFile, string projectNameToRestore)
+        {
+            var closure = dgFile.GetClosure(projectNameToRestore);
+
+            var externalClosure = closure.Select(GetExternalProject);
+            return externalClosure;
+
+        }
+
         private static ExternalProjectReference GetExternalProject(PackageSpec rootProject)
         {
             var projectReferences = rootProject.RestoreMetadata?.TargetFrameworks.SelectMany(e => e.ProjectReferences)

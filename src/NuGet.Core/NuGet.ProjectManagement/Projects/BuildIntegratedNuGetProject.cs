@@ -31,7 +31,7 @@ namespace NuGet.ProjectManagement.Projects
     {
         private readonly FileInfo _jsonConfig;
         private readonly string _projectName;
-        
+
         public string MSBuildProjectPath { get; }
 
         /// <summary>
@@ -103,90 +103,6 @@ namespace NuGet.ProjectManagement.Projects
             InternalMetadata.Add(NuGetProjectMetadataKeys.SupportedFrameworks, supported);
         }
 
-        public bool IsRestoreRequired(
-            IEnumerable<VersionFolderPathResolver> pathResolvers,
-            ISet<PackageIdentity> packagesChecked,
-            ExternalProjectReferenceContext context)
-        {
-            var lockFilePath = ProjectJsonPathUtilities.GetLockFilePath(JsonConfigPath);
-
-            if (!File.Exists(lockFilePath))
-            {
-                // If the lock file does not exist a restore is needed
-                return true;
-            }
-
-            var lockFileFormat = new LockFileFormat();
-            LockFile lockFile;
-            try
-            {
-                lockFile = lockFileFormat.Read(lockFilePath, context.Logger);
-            }
-            catch
-            {
-                // If the lock file is invalid, then restore.
-                return true;
-            }
-
-            // Ignore tools here
-            var packageSpecs = GetPackageSpecsForRestore(context)
-                .Where(p => p.RestoreMetadata.OutputType == RestoreOutputType.UAP
-                    || p.RestoreMetadata.OutputType == RestoreOutputType.NETCore);
-
-            foreach (var packageSpec in packageSpecs)
-            {
-                if (!lockFile.IsValidForPackageSpec(packageSpec, LockFileFormat.Version))
-                {
-                    // The project.json file has been changed and the lock file needs to be updated.
-                    return true;
-                }
-
-                // Verify all libraries are on disk
-                var packages = lockFile.Libraries.Where(library => library.Type == LibraryType.Package);
-
-                foreach (var library in packages)
-                {
-                    var identity = new PackageIdentity(library.Name, library.Version);
-
-                    // Each id/version only needs to be checked once
-                    if (packagesChecked.Add(identity))
-                    {
-                        var found = false;
-
-                        //  Check each package folder. These need to match the order used for restore.
-                        foreach (var resolver in pathResolvers)
-                        {
-                            // Verify the SHA for each package
-                            var hashPath = resolver.GetHashPath(library.Name, library.Version);
-
-                            if (File.Exists(hashPath))
-                            {
-                                found = true;
-                                var sha512 = File.ReadAllText(hashPath);
-
-                                if (library.Sha512 != sha512)
-                                {
-                                    // A package has changed
-                                    return true;
-                                }
-
-                                // Skip checking the rest of the package folders
-                                break;
-                            }
-                        }
-
-                        if (!found)
-                        {
-                            // A package is missing
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            return false;
-        }
-
         public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
             var packages = new List<PackageReference>();
@@ -218,18 +134,6 @@ namespace NuGet.ProjectManagement.Projects
             var dependency = new PackageDependency(packageIdentity.Id, new VersionRange(packageIdentity.Version));
 
             return await AddDependency(dependency, token);
-        }
-
-        /// <summary>
-        /// Retrieve the full closure of project to project references.
-        /// Warnings and errors encountered will be logged.
-        /// </summary>
-        public virtual Task<IReadOnlyList<ExternalProjectReference>> GetProjectReferenceClosureAsync(
-            ExternalProjectReferenceContext context)
-        {
-            // This cannot be resolved with DTE currently, it is overridden at a higher level
-            return Task.FromResult<IReadOnlyList<ExternalProjectReference>>(
-                Enumerable.Empty<ExternalProjectReference>().ToList());
         }
 
         /// <summary>
@@ -289,49 +193,132 @@ namespace NuGet.ProjectManagement.Projects
             }
         }
 
-        public IReadOnlyList<PackageSpec> GetPackageSpecsForRestore(ExternalProjectReferenceContext referenceContext)
+        public async Task<PackageSpec> GetPackageSpecAsync()
         {
-            var packageSpec = PackageSpec;
+            return await GetPackageSpecAsync(new DependencyGraphCacheContext());
+        }
 
-            var metadata = new ProjectRestoreMetadata();
-            packageSpec.RestoreMetadata = metadata;
-
-            metadata.OutputType = RestoreOutputType.UAP;
-            metadata.ProjectPath = MSBuildProjectPath;
-            metadata.ProjectJsonPath = packageSpec.FilePath;
-            metadata.ProjectName = packageSpec.Name;
-            metadata.ProjectUniqueName = MSBuildProjectPath;
-
-            IReadOnlyList<ExternalProjectReference> references = null;
-            if (referenceContext.DirectReferenceCache.TryGetValue(metadata.ProjectPath, out references)
-                && references.Count > 0)
+        public Task<PackageSpec> GetPackageSpecAsync(DependencyGraphCacheContext context)
+        {
+            DependencyGraphSpec dgSpec = null;
+            if (context != null && context.Cache.TryGetValue(MSBuildNuGetProjectSystem.ProjectFileFullPath, out dgSpec))
             {
-                // Add msbuild reference groups for each TFM in the project
-                foreach (var framework in packageSpec.TargetFrameworks.Select(e => e.FrameworkName))
-                {
-                    metadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(framework));
-                }
+                return Task.FromResult<PackageSpec>(dgSpec.GetProjectSpec(MSBuildNuGetProjectSystem.ProjectFileFullPath));
+            }
+            else
+            {
+                return Task.FromResult<PackageSpec>(PackageSpec);
+            }
+        }
 
-                foreach (var reference in references)
-                {
-                    // This reference applies to all frameworks
-                    // Include/exclude flags may be applied later when merged with project.json
-                    var projectReference = new ProjectRestoreReference
-                    {
-                        ProjectUniqueName = reference.UniqueName,
-                        ProjectPath = reference.MSBuildProjectPath
-                    };
+        public async Task<DependencyGraphSpec> GetDependencyGraphSpecAsync()
+        {
+            return await GetDependencyGraphSpecAsync(new DependencyGraphCacheContext());
+        }
 
-                    // Add the reference for all TFM groups, there are no conditional project
-                    // references in UWP. There should also be just one TFM.
-                    foreach (var frameworkInfo in metadata.TargetFrameworks)
+        public virtual async Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(DependencyGraphCacheContext context)
+        {
+            DependencyGraphSpec dgSpec = null;
+            if (context != null && context.Cache.TryGetValue(MSBuildNuGetProjectSystem.ProjectFileFullPath, out dgSpec))
+            {
+                return dgSpec;
+            }
+            else
+            {
+                dgSpec = new DependencyGraphSpec();
+                dgSpec.AddProject(await GetPackageSpecAsync(context));
+                var projectReferences = await GetDirectProjectReferencesAsync(context);
+                var listOfDgSpecs = projectReferences.Select(async r => await r.GetDependencyGraphSpecAsync(context)).Select(r => r.Result).ToList();
+                listOfDgSpecs.Add(dgSpec);
+                var newDgSpec = DependencyGraphSpec.Union(listOfDgSpecs);
+                newDgSpec.AddRestore(MSBuildProjectPath);
+                return newDgSpec;
+            }
+        }
+
+        public virtual Task<IReadOnlyList<IDependencyGraphProject>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)
+        {
+            return Task.FromResult<IReadOnlyList<IDependencyGraphProject>>(
+                Enumerable.Empty<IDependencyGraphProject>().ToList());
+        }
+
+        public async Task<bool> IsRestoreRequired(
+            IEnumerable<VersionFolderPathResolver> pathResolvers,
+            ISet<PackageIdentity> packagesChecked,
+            DependencyGraphCacheContext context)
+        {
+            var lockFilePath = ProjectJsonPathUtilities.GetLockFilePath(JsonConfigPath);
+
+            if (!File.Exists(lockFilePath))
+            {
+                // If the lock file does not exist a restore is needed
+                return true;
+            }
+
+            var lockFileFormat = new LockFileFormat();
+            LockFile lockFile;
+            try
+            {
+                lockFile = lockFileFormat.Read(lockFilePath, context.Logger);
+            }
+            catch
+            {
+                // If the lock file is invalid, then restore.
+                return true;
+            }
+
+            // Ignore tools here
+            var packageSpec = await GetPackageSpecAsync(context);
+
+            if (!lockFile.IsValidForPackageSpec(packageSpec, LockFileFormat.Version))
+            {
+                // The project.json file has been changed and the lock file needs to be updated.
+                return true;
+            }
+
+            // Verify all libraries are on disk
+            var packages = lockFile.Libraries.Where(library => library.Type == LibraryType.Package);
+
+            foreach (var library in packages)
+            {
+                var identity = new PackageIdentity(library.Name, library.Version);
+
+                // Each id/version only needs to be checked once
+                if (packagesChecked.Add(identity))
+                {
+                    var found = false;
+
+                    //  Check each package folder. These need to match the order used for restore.
+                    foreach (var resolver in pathResolvers)
                     {
-                        frameworkInfo.ProjectReferences.Add(projectReference);
+                        // Verify the SHA for each package
+                        var hashPath = resolver.GetHashPath(library.Name, library.Version);
+
+                        if (File.Exists(hashPath))
+                        {
+                            found = true;
+                            var sha512 = File.ReadAllText(hashPath);
+
+                            if (library.Sha512 != sha512)
+                            {
+                                // A package has changed
+                                return true;
+                            }
+
+                            // Skip checking the rest of the package folders
+                            break;
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        // A package is missing
+                        return true;
                     }
                 }
             }
 
-            return new List<PackageSpec>() { packageSpec };
+            return false;
         }
 
         /// <summary>
