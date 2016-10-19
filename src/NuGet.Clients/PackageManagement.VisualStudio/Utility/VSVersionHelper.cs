@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.Shell;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    public static class VSVersionHelper
+    internal static class VSVersionHelper
     {
         public static string GetSKU()
         {
