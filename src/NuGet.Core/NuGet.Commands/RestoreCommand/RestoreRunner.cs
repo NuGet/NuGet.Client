@@ -92,7 +92,8 @@ namespace NuGet.Commands
                 foreach (var request in inputRequests)
                 {
                     // De-dupe requests
-                    if (uniqueRequest.Add(request.Request.LockFilePath))
+                    if (request.Request.LockFilePath == null
+                        || uniqueRequest.Add(request.Request.LockFilePath))
                     {
                         requests.Enqueue(request);
                     }

@@ -53,7 +53,7 @@ namespace NuGet.Repositories
                     else
                     {
                         // Scan the folder for the nuspec
-                        var folderReader = new PackageFolderReader(ExpandedPath);
+                        var folderReader = GetPackage();
 
                         // This will throw if the nuspec is not found
                         _nuspec = new NuspecReader(folderReader.GetNuspec());
@@ -62,6 +62,14 @@ namespace NuGet.Repositories
 
                 return _nuspec;
             }
+        }
+
+        /// <summary>
+        /// Returns a package folder reader for the package.
+        /// </summary>
+        public PackageFolderReader GetPackage()
+        {
+            return new PackageFolderReader(ExpandedPath);
         }
 
         public override string ToString()

@@ -22,6 +22,7 @@ namespace NuGet.Commands
             Dictionary<NuGetFramework, RuntimeGraph> runtimeGraphCache,
             ConcurrentDictionary<PackageIdentity, RuntimeGraph> runtimeGraphCacheByPackage)
         {
+            RestoreRequest = request;
             CacheContext = request.CacheContext;
             Log = request.Log;
             PackagesDirectory = request.PackagesDirectory;
@@ -34,6 +35,7 @@ namespace NuGet.Commands
             XmlDocFileSaveMode = request.XmlDocFileSaveMode;
         }
 
+        public RestoreRequest RestoreRequest { get; }
         public SourceCacheContext CacheContext { get; }
         public ILogger Log { get; }
         public string PackagesDirectory { get; }

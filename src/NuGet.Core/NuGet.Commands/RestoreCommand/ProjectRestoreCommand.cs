@@ -237,48 +237,11 @@ namespace NuGet.Commands
             CancellationToken token)
         {
             var packagesToInstall = graphs.SelectMany(g => g.Install.Where(match => allInstalledPackages.Add(match.Library)));
-            if (_request.MaxDegreeOfConcurrency <= 1)
-            {
-                foreach (var match in packagesToInstall)
-                {
-                    await InstallPackageAsync(match, token);
-                }
-            }
-            else
-            {
-                var bag = new ConcurrentBag<RemoteMatch>(packagesToInstall);
-                var tasks = Enumerable.Range(0, _request.MaxDegreeOfConcurrency)
-                    .Select(async _ =>
-                    {
-                        RemoteMatch match;
-                        while (bag.TryTake(out match))
-                        {
-                            await InstallPackageAsync(match, token);
-                        }
-                    });
-                await Task.WhenAll(tasks);
-            }
-        }
 
-        private async Task InstallPackageAsync(RemoteMatch installItem, CancellationToken token)
-        {
-            var packageIdentity = new PackageIdentity(installItem.Library.Name, installItem.Library.Version);
-
-            var versionFolderPathContext = new VersionFolderPathContext(
-                packageIdentity,
-                _request.PackagesDirectory,
-                _logger,
-                _request.PackageSaveMode,
-                _request.XmlDocFileSaveMode);
-
-            await PackageExtractor.InstallFromSourceAsync(
-                stream => installItem.Provider.CopyToAsync(
-                    installItem.Library,
-                    stream,
-                    _request.CacheContext,
-                    _logger,
-                    token),
-                versionFolderPathContext,
+            await RestoreInstallUtility.InstallPackagesAsync(
+                _request.RestoreRequest,
+                packagesToInstall,
+                allInstalledPackages,
                 token);
         }
 

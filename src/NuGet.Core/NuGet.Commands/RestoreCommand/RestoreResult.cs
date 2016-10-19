@@ -45,6 +45,8 @@ namespace NuGet.Commands
         /// </summary>
         public LockFile PreviousLockFile { get; }
 
+        public DotnetCliToolRestoreResult DotnetCliToolRestoreResult { get; }
+
         public RestoreResult(
             bool success,
             IEnumerable<RestoreTargetGraph> restoreGraphs,
@@ -65,6 +67,18 @@ namespace NuGet.Commands
             PreviousLockFile = previousLockFile;
             ToolRestoreResults = toolRestoreResults;
             OutputType = outputType;
+        }
+
+        public RestoreResult(
+            IEnumerable<RestoreTargetGraph> restoreGraphs,
+            DotnetCliToolRestoreResult toolRestoreResult)
+        {
+            Success = toolRestoreResult.ToolFile.Success;
+            RestoreGraphs = restoreGraphs;
+            CompatibilityCheckResults = Enumerable.Empty<CompatibilityCheckResult>();
+            ToolRestoreResults = Enumerable.Empty<ToolRestoreResult>();
+            OutputType = RestoreOutputType.DotnetCliTool;
+            DotnetCliToolRestoreResult = toolRestoreResult;
         }
 
         /// <summary>
@@ -138,7 +152,20 @@ namespace NuGet.Commands
                 }
             }
 
-            MSBuild.Commit(log);
+            if (DotnetCliToolRestoreResult != null)
+            {
+                // Write tool file to path
+                var info = new FileInfo(DotnetCliToolRestoreResult.Path);
+                log.LogInformation($"Writing {info.FullName}");
+
+                info.Directory.Create();
+                DotnetCliToolRestoreResult.ToolFile.Save(info.FullName);
+            }
+
+            if (MSBuild != null)
+            {
+                MSBuild.Commit(log);
+            }
         }
 
         private static async Task CommitAsync(

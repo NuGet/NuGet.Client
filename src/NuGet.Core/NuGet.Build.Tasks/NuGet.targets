@@ -212,17 +212,18 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GenerateDotnetCliToolReferenceSpecs"
+      DependsOnTargets="_GetRestoreOutputPath"
       Returns="@(_RestoreGraphEntry)">
 
     <PropertyGroup>
-      <DotnetCliToolTargetFramework Condition=" '$(DotnetCliToolTargetFramework)' == '' ">netcoreapp1.0</DotnetCliToolTargetFramework>
+      <_RestoreDotnetCliTools Condition=" '$(RestoreDotnetCliToolReferences)' == '' OR '$(_RestoreDotnetCliTools)' == 'true' ">true</_RestoreDotnetCliTools>
     </PropertyGroup>
 
     <!-- Write out tool references -->
     <GetRestoreDotnetCliToolsTask
-      Condition=" '$(RestoreDotnetCliToolReferences)' == '' OR '$(RestoreDotnetCliToolReferences)' == 'true' "
+      Condition=" @(DotnetCliToolReference) != '' AND '$(_RestoreDotnetCliTools)' == 'true' "
       ProjectPath="$(MSBuildProjectFullPath)"
-      ToolFramework="$(DotnetCliToolTargetFramework)"
+      OutputPath="$(_RestoreOutputAbsolutePath)"
       DotnetCliToolReferences="@(DotnetCliToolReference)">
 
       <Output
@@ -295,23 +296,32 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
-    _GenerateRestoreProjectSpec
-    Generate a restore project spec for the current project.
+    _GetRestoreOutputPath
+    Get project output path.
     ============================================================
   -->
-  <Target Name="_GenerateRestoreProjectSpec"
-    DependsOnTargets="_GetProjectRestoreType;_GetRestoreTargetFrameworksOutput"
-    Returns="@(_RestoreGraphEntry)">
-
+  <Target Name="_GetRestoreOutputPath"
+    DependsOnTargets="_GetProjectRestoreType"
+    Returns="$(_RestoreOutputAbsolutePath)">
     <!-- Determine the restore output path -->
     <PropertyGroup Condition=" '$(_ProjectRestoreType)' == 'NETCore' ">
       <RestoreOutputPath Condition=" '$(RestoreOutputPath)' == '' " >$(BaseIntermediateOutputPath)</RestoreOutputPath>
     </PropertyGroup>
 
     <ConvertToAbsolutePath Paths="$(RestoreOutputPath)" Condition=" '$(_ProjectRestoreType)' == 'NETCore' ">
-      <Output TaskParameter="AbsolutePaths" PropertyName="RestoreOutputAbsolutePath" />
+      <Output TaskParameter="AbsolutePaths" PropertyName="_RestoreOutputAbsolutePath" />
     </ConvertToAbsolutePath>
+  </Target>
 
+  <!--
+    ============================================================
+    _GenerateRestoreProjectSpec
+    Generate a restore project spec for the current project.
+    ============================================================
+  -->
+  <Target Name="_GenerateRestoreProjectSpec"
+    DependsOnTargets="_GetProjectRestoreType;_GetRestoreTargetFrameworksOutput;_GetRestoreOutputPath"
+    Returns="@(_RestoreGraphEntry)">
     <!-- 
       Determine project name for the assets file.
       Highest priority: PackageId
@@ -343,7 +353,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <PackagesPath>$(RestorePackagesPath)</PackagesPath>
         <FallbackFolders>$(RestoreFallbackFolders)</FallbackFolders>
         <OutputType>$(_ProjectRestoreType)</OutputType>
-        <OutputPath>$(RestoreOutputAbsolutePath)</OutputPath>
+        <OutputPath>$(_RestoreOutputAbsolutePath)</OutputPath>
         <TargetFrameworks>@(_RestoreTargetFrameworksOutputFiltered)</TargetFrameworks>
         <RuntimeIdentifiers>$(RuntimeIdentifiers);$(RuntimeIdentifier)</RuntimeIdentifiers>
         <RuntimeSupports>$(RuntimeSupports)</RuntimeSupports>
@@ -495,6 +505,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Write out project references -->
     <GetRestoreProjectReferencesTask
+      Condition=" @(RestoreGraphProjectFullPathForOutput) != '' "
       ProjectUniqueName="$(MSBuildProjectFullPath)"
       ProjectReferences="@(RestoreGraphProjectFullPathForOutput)"
       TargetFrameworks="$(TargetFramework)">
@@ -506,7 +517,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Write out package references for NETCore -->
     <GetRestorePackageReferencesTask
-      Condition=" '$(_ProjectRestoreType)' == 'NETCore' "
+      Condition=" '$(_ProjectRestoreType)' == 'NETCore' AND @(PackageReference) != '' "
       ProjectUniqueName="$(MSBuildProjectFullPath)"
       PackageReferences="@(PackageReference)"
       TargetFrameworks="$(TargetFramework)">

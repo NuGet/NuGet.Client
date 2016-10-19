@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -18,16 +21,16 @@ namespace NuGet.Build.Tasks
         public string ProjectPath { get; set; }
 
         /// <summary>
+        /// Full path of the project output.
+        /// </summary>
+        [Required]
+        public string OutputPath { get; set; }
+
+        /// <summary>
         /// Output items
         /// </summary>
         [Output]
         public ITaskItem[] RestoreGraphItems { get; set; }
-
-        /// <summary>
-        /// Tool runtime framework where this will be executed.
-        /// </summary>
-        [Required]
-        public string ToolFramework { get; set; }
 
         /// <summary>
         /// NuGet sources, ; delimited
@@ -51,6 +54,10 @@ namespace NuGet.Build.Tasks
         {
             var log = new MSBuildLogger(Log);
             log.LogDebug($"(in) ProjectPath '{ProjectPath}'");
+            log.LogDebug($"(in) OutputPath '{OutputPath}'");
+            log.LogDebug($"(in) RestoreSources '{RestoreSources}'");
+            log.LogDebug($"(in) RestoreFallbackFolders '{RestoreFallbackFolders}'");
+            log.LogDebug($"(in) RestorePackagesPath '{RestorePackagesPath}'");
             log.LogDebug($"(in) DotnetCliToolReferences '{string.Join(";", DotnetCliToolReferences.Select(p => p.ItemSpec))}'");
 
             var entries = new List<ITaskItem>();
@@ -73,7 +80,7 @@ namespace NuGet.Build.Tasks
                 BuildTasksUtility.AddPropertyIfExists(properties, "Sources", RestoreSources);
                 BuildTasksUtility.AddPropertyIfExists(properties, "FallbackFolders", RestoreFallbackFolders);
                 BuildTasksUtility.AddPropertyIfExists(properties, "PackagesPath", RestorePackagesPath);
-                properties.Add("TargetFrameworks", ToolFramework);
+                properties.Add("OutputPath", OutputPath);
                 properties.Add("OutputType", RestoreOutputType.DotnetCliTool.ToString());
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "Version");
 
@@ -85,7 +92,6 @@ namespace NuGet.Build.Tasks
                 packageProperties.Add("Type", "Dependency");
                 packageProperties.Add("Id", msbuildItem.ItemSpec);
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, packageProperties, "Version", "VersionRange");
-                packageProperties.Add("TargetFrameworks", ToolFramework);
 
                 entries.Add(new TaskItem(Guid.NewGuid().ToString(), packageProperties));
 

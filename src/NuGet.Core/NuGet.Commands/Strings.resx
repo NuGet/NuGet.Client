@@ -503,4 +503,13 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="Error_XPROJNotAllowed" xml:space="preserve">
     <value>Invalid input '{0}'. XProj support has been removed. Support for XProj and standalone project.json files has been removed, to continue working with legacy projects use NuGet 3.5.x from https://nuget.org/downloads</value>
   </data>
+  <data name="MissingPackageDotnetCliToolPackageType" xml:space="preserve">
+    <value>Invalid tool package. '{0}' does not contain the package type 'DotnetCliTool'.</value>
+  </data>
+  <data name="UnableToFindPackageOnDisk" xml:space="preserve">
+    <value>Unable to find package on disk '{0}'.</value>
+  </data>
+  <data name="UnableToResolveToolDependency" xml:space="preserve">
+    <value>Unable to resolve DotnetCliTool dependency '{0}'.</value>
+  </data>
 </root>

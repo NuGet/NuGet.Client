@@ -862,6 +862,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Invalid tool package. &apos;{0}&apos; does not contain the package type &apos;DotnetCliTool&apos;..
+        /// </summary>
+        public static string MissingPackageDotnetCliToolPackageType {
+            get {
+                return ResourceManager.GetString("MissingPackageDotnetCliToolPackageType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Missing required property &apos;{0}&apos;..
         /// </summary>
         public static string MissingRequiredProperty {
@@ -1038,6 +1047,24 @@ namespace NuGet.Commands {
         public static string UnableToFindBuildOutput {
             get {
                 return ResourceManager.GetString("UnableToFindBuildOutput", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Unable to find package on disk &apos;{0}&apos;..
+        /// </summary>
+        public static string UnableToFindPackageOnDisk {
+            get {
+                return ResourceManager.GetString("UnableToFindPackageOnDisk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Unable to resolve DotnetCliTool dependency &apos;{0}&apos;..
+        /// </summary>
+        public static string UnableToResolveToolDependency {
+            get {
+                return ResourceManager.GetString("UnableToResolveToolDependency", resourceCulture);
             }
         }
         

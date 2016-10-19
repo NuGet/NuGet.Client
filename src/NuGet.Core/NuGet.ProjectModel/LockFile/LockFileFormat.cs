@@ -69,6 +69,15 @@ namespace NuGet.ProjectModel
             return Read(filePath, NullLogger.Instance);
         }
 
+        /// <summary>
+        /// Load a lock file from disk.
+        /// </summary>
+        public static LockFile Load(string filePath)
+        {
+            var format = new LockFileFormat();
+            return format.Read(filePath);
+        }
+
         public LockFile Read(string filePath, ILogger log)
         {
             using (var stream = File.OpenRead(filePath))

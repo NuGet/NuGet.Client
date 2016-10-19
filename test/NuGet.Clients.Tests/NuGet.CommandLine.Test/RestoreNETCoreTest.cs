@@ -7,6 +7,8 @@ using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -435,6 +437,10 @@ namespace NuGet.CommandLine.Test
                         Version = $"{i + 1}.0.0"
                     };
 
+                    packageZSub.PackageTypes.Add(PackageType.DotnetCliTool);
+                    packageZSub.AddFile("lib/netcoreapp1.0/dotnet-z.dll");
+                    packageZSub.AddFile("lib/netcoreapp1.0/dotnet-z.deps.json", GetDepsJson("dotnet-z", "x"));
+
                     project.DotnetCLIToolReferences.Add(packageZSub);
 
                     await SimpleTestPackageUtility.CreateFolderFeedV3(
@@ -444,6 +450,8 @@ namespace NuGet.CommandLine.Test
 
                     solution.Projects.Add(project);
                     solution.Create(pathContext.SolutionRoot);
+
+                    projects.Add(project);
                 }
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3(
@@ -452,18 +460,20 @@ namespace NuGet.CommandLine.Test
                     packageX,
                     packageZ);
 
-                var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", avoidVersion, "netcoreapp1.0", "project.assets.json");
-                var zPath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z");
-
                 // Act
                 var r = RestoreSolution(pathContext);
 
                 // Assert
-                // Version should not be used
-                Assert.False(File.Exists(path), r.Item2);
+                foreach (var project in projects)
+                {
+                    var path = DotnetCliToolPathResolver.GetFilePath(project.OutputPath, "z");
 
-                // Each project should have its own tool verion
-                Assert.Equal(testCount, Directory.GetDirectories(zPath).Length);
+                    var toolFile = DotnetCliToolFile.Load(path);
+                    Assert.True(toolFile.Success);
+
+                    // Verify version not used
+                    Assert.NotEqual(avoidVersion, toolFile.ToolVersion.ToString());
+                }
             }
         }
 
@@ -490,6 +500,10 @@ namespace NuGet.CommandLine.Test
                     Version = "20.0.0"
                 };
 
+                packageZ.PackageTypes.Add(PackageType.DotnetCliTool);
+                packageZ.AddFile("lib/netcoreapp1.0/dotnet-z.dll");
+                packageZ.AddFile("lib/netcoreapp1.0/dotnet-z.deps.json", GetDepsJson("dotnet-z", "x"));
+
                 var projects = new List<SimpleTestProjectContext>();
 
                 for (int i = 0; i < 10; i++)
@@ -508,6 +522,8 @@ namespace NuGet.CommandLine.Test
 
                     solution.Projects.Add(project);
                     solution.Create(pathContext.SolutionRoot);
+
+                    projects.Add(project);
                 }
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3(
@@ -516,15 +532,20 @@ namespace NuGet.CommandLine.Test
                     packageX,
                     packageZ);
 
-                var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "20.0.0", "netcoreapp1.0", "project.assets.json");
-                var zPath = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z");
-
                 // Act
                 var r = RestoreSolution(pathContext);
 
                 // Assert
-                Assert.True(File.Exists(path), r.Item2);
-                Assert.Equal(1, Directory.GetDirectories(zPath).Length);
+                for (int i = 0; i < 10; i++)
+                {
+                    var path = DotnetCliToolPathResolver.GetFilePath(projects[i].OutputPath, "z");
+
+                    Assert.True(File.Exists(path), r.Item2);
+
+                    var toolFile = DotnetCliToolFile.Load(path);
+                    Assert.True(toolFile.Success);
+                    Assert.Equal("20.0.0", toolFile.ToolVersion.ToString());
+                }
             }
         }
 
@@ -551,6 +572,10 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.0"
                 };
 
+                packageZ.PackageTypes.Add(PackageType.DotnetCliTool);
+                packageZ.AddFile("lib/netcoreapp1.0/dotnet-z.dll");
+                packageZ.AddFile("lib/netcoreapp1.0/dotnet-z.deps.json", GetDepsJson("dotnet-z", "x"));
+
                 var projects = new List<SimpleTestProjectContext>();
 
                 for (int i = 0; i < 10; i++)
@@ -561,14 +586,12 @@ namespace NuGet.CommandLine.Test
                         NuGetFramework.Parse("net45"));
 
                     project.AddPackageToAllFrameworks(packageX);
-                    project.DotnetCLIToolReferences.Add(new SimpleTestPackageContext()
-                    {
-                        Id = "z",
-                        Version = "1.0.0"
-                    });
+                    project.DotnetCLIToolReferences.Add(packageZ);
 
                     solution.Projects.Add(project);
                     solution.Create(pathContext.SolutionRoot);
+
+                    projects.Add(project);
                 }
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3(
@@ -577,13 +600,18 @@ namespace NuGet.CommandLine.Test
                     packageX,
                     packageZ);
 
-                var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "1.0.0", "netcoreapp1.0", "project.assets.json");
-
                 // Act
                 var r = RestoreSolution(pathContext);
 
                 // Assert
-                Assert.True(File.Exists(path), r.Item2);
+                for (int i = 0; i < 10; i++)
+                {
+                    var path = DotnetCliToolPathResolver.GetFilePath(projects[i].OutputPath, "z");
+
+                    Assert.True(File.Exists(path), r.Item2);
+                    var toolFile = DotnetCliToolFile.Load(path);
+                    Assert.True(toolFile.Success);
+                }
             }
         }
 
@@ -615,6 +643,10 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.0"
                 };
 
+                packageZ.PackageTypes.Add(PackageType.DotnetCliTool);
+                packageZ.AddFile("lib/netcoreapp1.0/dotnet-z.dll");
+                packageZ.AddFile("lib/netcoreapp1.0/dotnet-z.deps.json", GetDepsJson("dotnet-z", "x"));
+
                 var packageY = new SimpleTestPackageContext()
                 {
                     Id = "y",
@@ -625,11 +657,7 @@ namespace NuGet.CommandLine.Test
 
                 projectA.AddPackageToAllFrameworks(packageX);
 
-                projectA.DotnetCLIToolReferences.Add(new SimpleTestPackageContext()
-                {
-                    Id = "z",
-                    Version = "1.0.0"
-                });
+                projectA.DotnetCLIToolReferences.Add(packageZ);
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
@@ -641,13 +669,156 @@ namespace NuGet.CommandLine.Test
                     packageZ,
                     packageY);
 
-                var path = Path.Combine(pathContext.UserPackagesFolder, ".tools", "z", "1.0.0", "netcoreapp1.0", "project.assets.json");
+                var path = DotnetCliToolPathResolver.GetFilePath(projectA.OutputPath, "z");
 
                 // Act
                 var r = RestoreSolution(pathContext);
 
                 // Assert
                 Assert.True(File.Exists(path), r.Item2);
+
+                var toolFile = DotnetCliToolFile.Load(path);
+                Assert.True(toolFile.Success);
+                Assert.Equal("1.0.0", toolFile.ToolVersion.ToString());
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_ToolMissing_VerifyErrorInOutputAndToolFile()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                pathContext.CleanUp = false;
+
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageZ = new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "1.0.0"
+                };
+
+                packageZ.PackageTypes.Add(PackageType.DotnetCliTool);
+                packageZ.AddFile("lib/netcoreapp1.0/dotnet-z.dll");
+                packageZ.AddFile("lib/netcoreapp1.0/dotnet-z.deps.json", GetDepsJson("dotnet-z", "x"));
+
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+
+                packageZ.Dependencies.Add(packageY);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                projectA.DotnetCLIToolReferences.Add(packageZ);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageY);
+
+                var path = DotnetCliToolPathResolver.GetFilePath(projectA.OutputPath, "z");
+
+                // Act
+                var r = RestoreSolution(pathContext, exitCode: 1);
+
+                // Assert
+                Assert.True(File.Exists(path), r.Item2);
+
+                var toolFile = DotnetCliToolFile.Load(path);
+                Assert.False(toolFile.Success);
+                Assert.Contains("Unable to resolve", string.Join("|", toolFile.Log.Select(e => e.Message)));
+                Assert.Contains("z (>= 1.0.0)", string.Join("|", toolFile.Log.Select(e => e.Message)));
+                Assert.Contains("Unable to resolve", r.Item2);
+                Assert.Contains("z (>= 1.0.0)", r.Item2);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_ToolMissingDependency_VerifyErrorInOutputAndToolFile()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                pathContext.CleanUp = false;
+
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageZ = new SimpleTestPackageContext()
+                {
+                    Id = "z",
+                    Version = "1.0.0"
+                };
+
+                packageZ.PackageTypes.Add(PackageType.DotnetCliTool);
+                packageZ.AddFile("lib/netcoreapp1.0/dotnet-z.dll");
+                packageZ.AddFile("lib/netcoreapp1.0/dotnet-z.deps.json", GetDepsJson("dotnet-z", "toolDependencyA"));
+
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+
+                packageZ.Dependencies.Add(packageY);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                projectA.DotnetCLIToolReferences.Add(packageZ);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageY,
+                    packageZ);
+
+                var path = DotnetCliToolPathResolver.GetFilePath(projectA.OutputPath, "z");
+
+                // Act
+                var r = RestoreSolution(pathContext, exitCode: 1);
+
+                // Assert
+                Assert.True(File.Exists(path), r.Item2);
+
+                var toolFile = DotnetCliToolFile.Load(path);
+                Assert.False(toolFile.Success);
+                Assert.Contains("Unable to resolve DotnetCliTool dependency 'toolDependencyA (= 1.0.0)'", string.Join("|", toolFile.Log.Select(e => e.Message)));
+                Assert.Contains("Unable to resolve DotnetCliTool dependency 'toolDependencyA (= 1.0.0)'", r.Item2);
             }
         }
 
@@ -2130,5 +2301,56 @@ namespace NuGet.CommandLine.Test
 
             return r;
         }
+
+        private static string GetDepsJson(string name = "a", string dependencyName = "b")
+        {
+            return DepsJson.Replace("$TOOLNAME", name)
+                .Replace("$DEPENDENCYNAME$", dependencyName);
+        }
+
+        private static string DepsJson = @"{
+                      ""runtimeTarget"": {
+                        ""name"": "".NETCoreApp,Version=v1.0"",
+                        ""signature"": ""09db60146a5b8a0d40c5ea0fb7485ab3bbdd4a1a""
+                      },
+                      ""compilationOptions"": {},
+                      ""targets"": {
+                        "".NETCoreApp,Version=v1.0"": {
+                          ""$TOOLNAME$/1.0.0"": {
+                            ""dependencies"": {
+                              ""$DEPENDENCYNAME$"": ""1.0.0""
+                            },
+                            ""runtime"": {
+                              ""dotnetnew.dll"": {}
+                            }
+                          },
+                          ""$DEPENDENCYNAME$/1.0.0"": {
+                            ""dependencies"": {
+                              ""System.Runtime.Serialization.Primitives"": ""4.1.1""
+                            },
+                            ""runtime"": {
+                              ""lib/netstandard1.0/Newtonsoft.Json.dll"": {}
+                            }
+                          },
+                          ""System.Runtime.Serialization.Primitives/4.1.1"": {
+                            ""runtime"": {
+                              ""lib/netstandard1.3/System.Runtime.Serialization.Primitives.dll"": {}
+                            }
+                          }
+                        }
+                      },
+                      ""libraries"": {
+                        ""$TOOLNAME$/1.0.0"": {
+                          ""type"": ""project"",
+                          ""serviceable"": false,
+                          ""sha512"": """"
+                        },
+                        ""$DEPENDENCYNAME$/1.0.0"": {
+                          ""type"": ""package"",
+                          ""serviceable"": true,
+                          ""sha512"": ""sha512-U82mHQSKaIk+lpSVCbWYKNavmNH1i5xrExDEquU1i6I5pV6UMOqRnJRSlKO3cMPfcpp0RgDY+8jUXHdQ4IfXvw==""
+                        }
+                      }
+                    }";
     }
 }

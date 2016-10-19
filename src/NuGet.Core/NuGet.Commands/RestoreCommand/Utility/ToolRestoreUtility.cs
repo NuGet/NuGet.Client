@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
@@ -48,73 +51,6 @@ namespace NuGet.Commands
                     ProjectPath = projectFilePath
                 }
             };
-        }
-
-        /// <summary>
-        /// Only one output can win per packages folder/version range. Between colliding requests take
-        /// the intersection of the inputs used.
-        /// </summary>
-        /// <returns></returns>
-        public static IReadOnlyList<RestoreSummaryRequest> GetSubSetRequests(IEnumerable<RestoreSummaryRequest> requestSummaries)
-        {
-            var results = new List<RestoreSummaryRequest>();
-            var tools = new List<RestoreSummaryRequest>();
-
-            foreach (var requestSummary in requestSummaries)
-            {
-                if (requestSummary.Request.Project.RestoreMetadata?.OutputType == RestoreOutputType.DotnetCliTool)
-                {
-                    tools.Add(requestSummary);
-                }
-                else
-                {
-                    // Pass non-tools to the output
-                    results.Add(requestSummary);
-                }
-            }
-
-            foreach (var toolIdGroup in tools.GroupBy(e => GetToolIdOrNullFromSpec(e.Request.Project), StringComparer.OrdinalIgnoreCase))
-            {
-                if (string.IsNullOrEmpty(toolIdGroup.Key))
-                {
-                    // Pass problem requests on to fail with a better error message
-                    results.AddRange(toolIdGroup);
-                }
-                else
-                {
-                    // Actually narrow down the requests now
-                    results.AddRange(GetSubSetRequestsForSingleId(toolIdGroup));
-                }
-            }
-
-            return results;
-        }
-
-        public static IReadOnlyList<RestoreSummaryRequest> GetSubSetRequestsForSingleId(IEnumerable<RestoreSummaryRequest> requests)
-        {
-            var results = new List<RestoreSummaryRequest>();
-
-            // Unique by packages folder
-            foreach (var packagesFolderGroup in requests.GroupBy(e => e.Request.PackagesDirectory, StringComparer.Ordinal))
-            {
-                // Unique by version range
-                foreach (var versionRangeGroup in packagesFolderGroup.GroupBy(e =>
-                    GetToolDependencyOrNullFromSpec(e.Request.Project)?.LibraryRange?.VersionRange))
-                {
-                    // This could be improved in the future, for now take the request with the least sources
-                    // to ensure that if this is going to fail anywhere it will *probably* consistently fail.
-                    // Take requests with no imports over requests that do need imports to increase the chance
-                    // of failing.
-                    var bestRequest = versionRangeGroup
-                        .OrderBy(e => e.Request.Project.TargetFrameworks.Any(f => f.FrameworkName is FallbackFramework) ? 1 : 0)
-                        .ThenBy(e => e.Request.DependencyProviders.RemoteProviders.Count)
-                        .First();
-
-                    results.Add(bestRequest);
-                }
-            }
-
-            return results;
         }
 
         /// <summary>

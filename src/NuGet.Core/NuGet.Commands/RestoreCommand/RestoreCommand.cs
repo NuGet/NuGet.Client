@@ -71,6 +71,59 @@ namespace NuGet.Commands
 
             var contextForProject = CreateRemoteWalkContext(_request);
 
+            if (_request.RestoreOutputType == RestoreOutputType.DotnetCliTool)
+            {
+                // Read deps.json and download all dependencies.
+                return await ExecuteDotnetCliToolRestoreAsync(
+                    contextForProject,
+                    token);
+            }
+            else
+            {
+                // Walk dependencies and create an assets file.
+                return await ExecuteProjectRestoreAsync(
+                    contextForProject,
+                    localRepositories,
+                    token);
+            }
+        }
+
+        private async Task<RestoreResult> ExecuteDotnetCliToolRestoreAsync(
+            RemoteWalkContext context,
+            CancellationToken token)
+        {
+            var allDependencies = _request.Project.Dependencies.Concat(
+                _request.Project.TargetFrameworks
+                    .SelectMany(e => e.Dependencies));
+
+            var toolDependencyRange = allDependencies.Single().LibraryRange;
+            var toolWalker = new RemoteToolWalker(context);
+
+            var allInstalled = new HashSet<LibraryIdentity>();
+            var toolRestoreCommand = new DotnetCliToolRestoreCommand(_request);
+
+            var result = await toolRestoreCommand.TryRestore(
+                toolDependencyRange,
+                allInstalled,
+                _request.DependencyProviders.GlobalPackages,
+                _request.DependencyProviders.FallbackPackageFolders,
+                toolWalker,
+                context,
+                token);
+
+            var path = DotnetCliToolPathResolver.GetFilePath(_request.Project.RestoreMetadata.OutputPath, toolDependencyRange.Name);
+            var toolResult = new DotnetCliToolRestoreResult(path, result.Item1);
+
+            return new RestoreResult(
+                result.Item2,
+                toolResult);
+        }
+
+        private async Task<RestoreResult> ExecuteProjectRestoreAsync(
+            RemoteWalkContext contextForProject,
+            List<NuGetv3LocalRepository> localRepositories,
+            CancellationToken token)
+        {
             // Restore
             var graphs = await ExecuteRestoreAsync(
                 _request.DependencyProviders.GlobalPackages,
@@ -136,13 +189,6 @@ namespace NuGet.Commands
             // Determine the lock file output path
             var projectLockFilePath = GetLockFilePath(lockFile);
 
-            // Tool restores are unique since the output path is not known until after restore
-            if (_request.LockFilePath == null
-                && _request.RestoreOutputType == RestoreOutputType.DotnetCliTool)
-            {
-                _request.LockFilePath = projectLockFilePath;
-            }
-
             // Create result
             return new RestoreResult(
                 _success,
@@ -170,18 +216,9 @@ namespace NuGet.Commands
                 else if (_request.RestoreOutputType == RestoreOutputType.DotnetCliTool)
                 {
                     var toolName = ToolRestoreUtility.GetToolIdOrNullFromSpec(_request.Project);
-                    var lockFileLibrary = ToolRestoreUtility.GetToolTargetLibrary(lockFile, toolName);
+                    var outputPath = _request.Project.RestoreMetadata.OutputPath;
 
-                    if (lockFileLibrary != null)
-                    {
-                        var version = lockFileLibrary.Version;
-
-                        var toolPathResolver = new ToolPathResolver(_request.PackagesDirectory);
-                        projectLockFilePath = toolPathResolver.GetLockFilePath(
-                            toolName,
-                            version,
-                            lockFile.Targets.First().TargetFramework);
-                    }
+                    projectLockFilePath = DotnetCliToolPathResolver.GetFilePath(outputPath, toolName);
                 }
                 else
                 {
