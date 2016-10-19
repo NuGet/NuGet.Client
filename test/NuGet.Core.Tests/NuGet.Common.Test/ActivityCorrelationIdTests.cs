@@ -11,6 +11,20 @@ namespace NuGet.Common.Test
     public class ActivityCorrelationIdTests
     {
         [Fact]
+        public void ActivityCorrelationId_StartNewChangesCorrelationId()
+        {
+            // Arrange
+            ActivityCorrelationId.StartNew();
+            var original = ActivityCorrelationId.Current;
+
+            // Act
+            ActivityCorrelationId.StartNew();
+
+            // Assert
+            Assert.NotEqual(original, ActivityCorrelationId.Current);
+        }
+
+        [Fact]
         public async Task ActivityCorrelationId_FlowsDownAsyncCalls()
         {
             // Arrange
