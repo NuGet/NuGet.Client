@@ -50,21 +50,19 @@ function Test-GetMachineWideSettingBaseDirectoryInVSIX {
     param($context)
 
 	# Arrange
-	$dte = [System.Runtime.InteropServices.Marshal]::GetActiveObject("VisualStudio.DTE")
-	[string]$vsVersionString = $dte.version
+	[string]$vsVersionString = Get-VSVersion
 	[string]$machineWideSettingsBaseDirExpected
-	if (($vsVersionString -as [double]) -ne $null) {
-		[double]$vsVersion = $vsVersionString
-		if($vsVersion -le 14) {
-		$machineWideSettingsBaseDirExpected = Join-Path (Get-ChildItem Env:PROGRAMDATA).Value "\NuGet\Config"
-		}
-		else {
-		$machineWideSettingsBaseDirExpected = Join-Path (Get-ChildItem Env:PROGRAMFILES).Value "\NuGet\Config"
-		}
+
+	if($vsVersionString -ge "15.0") {
+		$machineWideSettingsBaseDirExpected = Join-Path (Get-ChildItem Env:PROGRAMFILES).Value "\NuGet"
 	}
+	else {
+		$machineWideSettingsBaseDirExpected = Join-Path (Get-ChildItem Env:PROGRAMDATA).Value "\NuGet"
+	}
+
 	# Act
 	$machineWideSettingsBaseDirActual = [NuGet.Common.NuGetEnvironment]::GetFolderPath([NuGet.Common.NuGetFolderPath]::MachineWideSettingsBaseDirectory)
 
 	# Assert
-	Assert-True [string]::Compare($machineWideSettingsBaseDirExpected, $machineWideSettingsBaseDirActual, $True)
+	Assert-StringEqual $machineWideSettingsBaseDirActual  $machineWideSettingsBaseDirExpected $True
 }

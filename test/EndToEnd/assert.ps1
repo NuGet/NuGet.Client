@@ -232,3 +232,18 @@ function Assert-NoBindingRedirect {
 
     Assert-True ($bindings.Count -eq 0) "Binding redirect matching $Name, $OldVersion, $NewVersion found in project $($Project.Name)"
 }
+
+function Assert-StringEqual {
+    param(
+        [parameter(Mandatory = $true)]
+        $StringA,
+        [parameter(Mandatory = $true)]
+        $StringB,
+        [parameter(Mandatory = $true)]
+        $CaseSensitive
+    )
+	
+	$result = [string]::Compare($StringA, $StringB, $CaseSensitive) 
+
+	Assert-True ($result -eq 0) "Strings $StringA and $StringB are unequal witn result $result"
+}

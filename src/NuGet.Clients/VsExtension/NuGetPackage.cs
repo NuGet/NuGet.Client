@@ -105,13 +105,9 @@ namespace NuGetVSExtension
 
         public NuGetPackage()
         {
-            // Set IsDev14 in NuGet.Common.RunTimeHelper to pick %PROGRAMDATA%/NuGet/Config as the MachineWideBaseDir
-            // This is only needed for Dev14 VSIX
-            var dte = ServiceLocator.GetInstance<DTE>();
-            if (VSVersionHelper.IsDev14(dte))
-            {
-                RuntimeEnvironmentHelper.IsDev14 = true;
-            }
+#if VS14
+            RuntimeEnvironmentHelper.IsDev14 = true;
+#endif
             ServiceLocator.InitializePackageServiceProvider(this);
             StandaloneSwitch.IsRunningStandalone = false;
             _nugetSettings = new NuGetSettings();

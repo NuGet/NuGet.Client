@@ -34,7 +34,6 @@
     <Compile Include="VisualStudioAccountProviderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VsCredentialProviderAdapterTests.cs" />
-    <Compile Include="VSVersionHelperTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="project.json" />

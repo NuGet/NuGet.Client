@@ -9,17 +9,6 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     public static class VSVersionHelper
     {
-        /// <summary>
-        /// Used to check if the code is being executed in dev14/VS 2015
-        /// </summary>
-        /// <param name="dte">DTE object used to get version</param>
-        /// <returns><code>bool</code> indicating is the code is being executed from within dev14/VS 2015</returns>
-        public static bool IsDev14(DTE dte)
-        {
-            var vsVersion = new Version(dte.Version);
-            return (vsVersion.Major == 14);
-        }
-
         public static string GetSKU()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
