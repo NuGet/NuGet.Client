@@ -22,8 +22,14 @@ namespace NuGet.ProjectManagement
         /// <summary>
         /// Unique name to dg
         /// </summary>
-        public Dictionary<string, DependencyGraphSpec> Cache { get; set; } =
+        public Dictionary<string, DependencyGraphSpec> DependencyGraphCache { get; set; } =
             new Dictionary<string, DependencyGraphSpec>(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Unique name to PackageSpec
+        /// </summary>
+        public Dictionary<string, PackageSpec> PackageSpecCache { get; set; } =
+            new Dictionary<string, PackageSpec>(StringComparer.Ordinal);
 
         /// <summary>
         /// Unique name to last modified

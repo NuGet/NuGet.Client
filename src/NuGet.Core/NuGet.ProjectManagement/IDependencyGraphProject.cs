@@ -38,7 +38,7 @@ namespace NuGet.ProjectManagement
         Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(DependencyGraphCacheContext context);
 
         /// <summary>
-        /// Full project closure and tools.
+        /// Direct project references of the project.
         /// </summary>
         Task<IReadOnlyList<IDependencyGraphProject>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context);
 

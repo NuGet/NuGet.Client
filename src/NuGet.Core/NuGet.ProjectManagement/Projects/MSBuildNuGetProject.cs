@@ -601,11 +601,10 @@ namespace NuGet.ProjectManagement
 
         public Task<PackageSpec> GetPackageSpecAsync(DependencyGraphCacheContext context)
         {
-            DependencyGraphSpec dgSpec = null;
             PackageSpec packageSpec = null;
-            if (context != null && context.Cache.TryGetValue(MSBuildNuGetProjectSystem.ProjectFileFullPath, out dgSpec))
+            if (context != null && context.PackageSpecCache.TryGetValue(MSBuildNuGetProjectSystem.ProjectFileFullPath, out packageSpec))
             {
-               packageSpec =  dgSpec.GetProjectSpec(MSBuildNuGetProjectSystem.ProjectFileFullPath);
+               
             }
             else
             {
@@ -629,16 +628,17 @@ namespace NuGet.ProjectManagement
                 metadata.ProjectPath = MSBuildNuGetProjectSystem.ProjectFileFullPath;
                 metadata.ProjectName = MSBuildNuGetProjectSystem.ProjectName;
                 metadata.ProjectUniqueName = MSBuildNuGetProjectSystem.ProjectFileFullPath;
-                
-                // Do we need to cache this package spec?
+
+                context?.PackageSpecCache.Add(MSBuildProjectPath, packageSpec);
             }
+            
             return Task.FromResult<PackageSpec>(packageSpec);
         }
 
         public async Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(DependencyGraphCacheContext context)
         {
             DependencyGraphSpec dgSpec = null;
-            if (context != null && context.Cache.TryGetValue(MSBuildNuGetProjectSystem.ProjectFileFullPath, out dgSpec))
+            if (context != null && context.DependencyGraphCache.TryGetValue(MSBuildNuGetProjectSystem.ProjectFileFullPath, out dgSpec))
             {
                 return dgSpec;
             }
