@@ -26,22 +26,12 @@ namespace NuGet.ProjectManagement
         /// Get the time when the project was last modified. This is used for cache invalidation.
         /// </summary>
         DateTimeOffset LastModified { get; }
-
-        /// <summary>
-        /// Project spec
-        /// </summary>
-        Task<PackageSpec> GetPackageSpecAsync();
-
+        
         /// <summary>
         /// Project spec
         /// </summary>
         Task<PackageSpec> GetPackageSpecAsync(DependencyGraphCacheContext context);
-
-        /// <summary>
-        /// Full project closure and tools.
-        /// </summary>
-        Task<DependencyGraphSpec> GetDependencyGraphSpecAsync();
-
+        
         /// <summary>
         /// Full project closure and tools.
         /// </summary>

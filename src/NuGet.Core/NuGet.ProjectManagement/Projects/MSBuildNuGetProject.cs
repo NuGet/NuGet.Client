@@ -599,11 +599,6 @@ namespace NuGet.ProjectManagement
             return Task.FromResult<bool>(false);
         }
 
-        public Task<PackageSpec> GetPackageSpecAsync()
-        {
-            return GetPackageSpecAsync(new DependencyGraphCacheContext());
-        }
-
         public Task<PackageSpec> GetPackageSpecAsync(DependencyGraphCacheContext context)
         {
             DependencyGraphSpec dgSpec = null;
@@ -638,11 +633,6 @@ namespace NuGet.ProjectManagement
                 // Do we need to cache this package spec?
             }
             return Task.FromResult<PackageSpec>(packageSpec);
-        }
-
-        public Task<DependencyGraphSpec> GetDependencyGraphSpecAsync()
-        {
-            return GetDependencyGraphSpecAsync(new DependencyGraphCacheContext());
         }
 
         public async Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(DependencyGraphCacheContext context)

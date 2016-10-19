@@ -193,11 +193,6 @@ namespace NuGet.ProjectManagement.Projects
             }
         }
 
-        public async Task<PackageSpec> GetPackageSpecAsync()
-        {
-            return await GetPackageSpecAsync(new DependencyGraphCacheContext());
-        }
-
         public Task<PackageSpec> GetPackageSpecAsync(DependencyGraphCacheContext context)
         {
             DependencyGraphSpec dgSpec = null;
@@ -209,11 +204,6 @@ namespace NuGet.ProjectManagement.Projects
             {
                 return Task.FromResult<PackageSpec>(PackageSpec);
             }
-        }
-
-        public async Task<DependencyGraphSpec> GetDependencyGraphSpecAsync()
-        {
-            return await GetDependencyGraphSpecAsync(new DependencyGraphCacheContext());
         }
 
         public virtual async Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(DependencyGraphCacheContext context)
