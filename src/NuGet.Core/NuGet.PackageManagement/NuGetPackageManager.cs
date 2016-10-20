@@ -8,11 +8,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -46,6 +43,8 @@ namespace NuGet.PackageManagement
         private IDictionary<string, bool> _buildIntegratedProjectsUpdateDict;
 
         private DependencyGraphSpec _buildIntegratedProjectsCache;
+
+        private RestoreCommandProvidersCache _restoreProviderCache;
 
         public IDeleteOnRestartManager DeleteOnRestartManager { get; }
 
@@ -647,7 +646,7 @@ namespace NuGet.PackageManagement
             var maxTasks = 4;
             var tasks = new List<Task<IEnumerable<NuGetProjectAction>>>(maxTasks);
             var nugetActions = new List<NuGetProjectAction>();
-            
+
             var buildIntegratedProjects = nuGetProjects.OfType<BuildIntegratedNuGetProject>().ToList();
             var nonBuildIntegratedProjects = nuGetProjects.Except(buildIntegratedProjects).ToList();
 
@@ -922,11 +921,11 @@ namespace NuGet.PackageManagement
                 {
                     if (PrunePackageTree.IsExactVersion(resolutionContext.VersionConstraints))
                     {
-                        primaryTargets = new List<PackageIdentity> {preferredVersions[packageId]};
+                        primaryTargets = new List<PackageIdentity> { preferredVersions[packageId] };
                     }
                     else
                     {
-                        primaryTargetIds = new List<string> { packageId};
+                        primaryTargetIds = new List<string> { packageId };
 
                         // If we have been given just a package Id we certainly don't want the one installed - pruning will be significant
                         preferredVersions.Remove(packageId);
@@ -1903,11 +1902,10 @@ namespace NuGet.PackageManagement
 
                 foreach (var project in buildIntegratedProjectsToUpdate)
                 {
-                     orderedChildren = DependencyGraphRestoreUtility.GetChildProjectsInClosure(
-                         project,
-                         allBuildIntegratedProjects,
-                        _buildIntegratedProjectsCache);
-                 
+                    orderedChildren = DependencyGraphRestoreUtility.GetChildProjectsInClosure(
+                        project,
+                        allBuildIntegratedProjects,
+                       _buildIntegratedProjectsCache);
                 }
                 sortedProjectsToUpdate.AddRange(orderedChildren);
 
@@ -1925,7 +1923,8 @@ namespace NuGet.PackageManagement
 
             // clear cache which could temper with other updates
             _buildIntegratedProjectsUpdateDict?.Clear();
-
+            _buildIntegratedProjectsCache = null;
+            _restoreProviderCache = null;
         }
 
         /// <summary>
@@ -2032,7 +2031,7 @@ namespace NuGet.PackageManagement
                     {
                         // Make this independently cancelable.
                         downloadTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
-                        
+
                         // Download all packages up front in parallel
                         downloadTasks = await PackagePreFetcher.GetPackagesAsync(
                             actionsList,
@@ -2148,7 +2147,6 @@ namespace NuGet.PackageManagement
                             PackageProjectEventsProvider.Instance.NotifyBatchEnd(packageProjectEventArgs);
                         }
                     }
-
                 }
 
                 if (exceptionInfo != null)
@@ -2262,10 +2260,11 @@ namespace NuGet.PackageManagement
             var dependencyGraphContext = new DependencyGraphCacheContext(logger);
 
             // Get Package Spec as json object
-            JObject rawPackageSpec = new JObject();
-            JsonPackageSpecWriter.WritePackageSpec(await buildIntegratedProject.GetPackageSpecAsync(dependencyGraphContext), rawPackageSpec);
+            var originalPackageSpec = await buildIntegratedProject.GetPackageSpecAsync(dependencyGraphContext);
+            var updatedPackageSpec = await buildIntegratedProject.GetPackageSpecAsync(dependencyGraphContext);
 
             var pathContext = NuGetPathContext.Create(Settings);
+            var providerCache = new RestoreCommandProvidersCache();
 
             // For installs only use cache entries newer than the current time.
             // This is needed for scenarios where a new package shows up in search
@@ -2276,30 +2275,19 @@ namespace NuGet.PackageManagement
             {
                 cacheContext.MaxAge = DateTimeOffset.UtcNow;
 
-                var providers = RestoreCommandProviders.Create(
-                    pathContext.UserPackageFolder,
-                    pathContext.FallbackPackageFolders,
-                    sources,
-                    cacheContext,
-                    logger);
-
                 // If the lock file does not exist, restore before starting the operations
                 if (originalLockFile == null)
                 {
-                    var originalPackageSpec = JsonPackageSpecReader.GetPackageSpec(
-                        rawPackageSpec.ToString(),
-                        buildIntegratedProject.ProjectName,
-                        buildIntegratedProject.AssetsFilePath);
-
                     var originalRestoreResult = await DependencyGraphRestoreUtility.PreviewRestoreAsync(
                         buildIntegratedProject,
                         originalPackageSpec,
                         dependencyGraphContext,
-                        providers,
+                        providerCache,
+                        Settings,
                         cacheContext,
                         token);
 
-                    originalLockFile = originalRestoreResult.LockFile;
+                    originalLockFile = originalRestoreResult.Result.LockFile;
                 }
 
                 // Modify the package spec
@@ -2307,25 +2295,21 @@ namespace NuGet.PackageManagement
                 {
                     if (action.NuGetProjectActionType == NuGetProjectActionType.Uninstall)
                     {
-                        JsonConfigUtility.RemoveDependency(rawPackageSpec, action.PackageIdentity.Id);
+                        PackageSpecOperations.RemoveDependency(updatedPackageSpec, action.PackageIdentity.Id);
                     }
                     else if (action.NuGetProjectActionType == NuGetProjectActionType.Install)
                     {
-                        JsonConfigUtility.AddDependency(rawPackageSpec, action.PackageIdentity);
+                        PackageSpecOperations.AddDependency(updatedPackageSpec, action.PackageIdentity);
                     }
                 }
-
-                // Create a package spec from the modified json
-                var packageSpec = JsonPackageSpecReader.GetPackageSpec(rawPackageSpec.ToString(),
-                    buildIntegratedProject.ProjectName,
-                    buildIntegratedProject.AssetsFilePath);
 
                 // Restore based on the modified package spec. This operation does not write the lock file to disk.
                 var restoreResult = await DependencyGraphRestoreUtility.PreviewRestoreAsync(
                     buildIntegratedProject,
-                    packageSpec,
+                    updatedPackageSpec,
                     dependencyGraphContext,
-                    providers,
+                    providerCache,
+                    Settings,
                     cacheContext,
                     token);
 
@@ -2333,7 +2317,7 @@ namespace NuGet.PackageManagement
                     buildIntegratedProject,
                     pathContext,
                     nuGetProjectActions,
-                    restoreResult);
+                    restoreResult.Result);
 
                 // If this build integrated project action represents only uninstalls, mark the entire operation
                 // as an uninstall. Otherwise, mark it as an install. This is important because install operations
@@ -2348,9 +2332,9 @@ namespace NuGet.PackageManagement
                     nuGetProjectActions.First().PackageIdentity,
                     actionType,
                     originalLockFile,
-                    rawPackageSpec,
                     restoreResult,
-                    sources.ToList());
+                    sources.ToList(),
+                    nuGetProjectActions.ToList());
             }
         }
 
@@ -2396,16 +2380,23 @@ namespace NuGet.PackageManagement
             // For uninstalls continue even if the restore failed to avoid blocking the user
             if (restoreResult.Success || uninstallOnly)
             {
-                // Write out project.json
-                // This can be replaced with the PackageSpec writer once it has been added to the library
-                if (buildIntegratedProject is ProjectJsonBuildIntegratedNuGetProject)
+                foreach (var originalAction in projectAction.OriginalActions)
                 {
-                    using (var writer = new StreamWriter(
-                    (buildIntegratedProject as ProjectJsonBuildIntegratedNuGetProject).JsonConfigPath,
-                    append: false,
-                    encoding: Encoding.UTF8))
+                    if (originalAction.NuGetProjectActionType == NuGetProjectActionType.Install)
                     {
-                        await writer.WriteAsync(projectAction.UpdatedProjectJson.ToString());
+                        // Install the package to the project
+                        await buildIntegratedProject.InstallPackageAsync(
+                            originalAction.PackageIdentity,
+                            downloadResourceResult: null,
+                            nuGetProjectContext: nuGetProjectContext,
+                            token: token);
+                    }
+                    else if (originalAction.NuGetProjectActionType == NuGetProjectActionType.Uninstall)
+                    {
+                        await buildIntegratedProject.UninstallPackageAsync(
+                            originalAction.PackageIdentity,
+                            nuGetProjectContext: nuGetProjectContext,
+                            token: token);
                     }
                 }
 
@@ -2428,16 +2419,16 @@ namespace NuGet.PackageManagement
                     await DependencyGraphRestoreUtility.RestoreProjectAsync(
                             buildIntegratedProject,
                             referenceContext,
-                            projectAction.Sources,
-                            pathContext.UserPackageFolder,
-                            pathContext.FallbackPackageFolders,
+                            GetRestoreProviderCache(),
                             cacheContextModifier,
+                            Settings,
+                            logger,
                             token);
                 }
                 else
                 {
                     // Write out the lock file
-                    await restoreResult.CommitAsync(logger, token);
+                    await RestoreRunner.Commit(projectAction.RestoreResultPair);
                 }
 
                 // Write out a message for each action
@@ -2465,7 +2456,6 @@ namespace NuGet.PackageManagement
                             buildIntegratedProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
                     }
                 }
-
 
                 // Run init.ps1 scripts
                 var addedPackages = BuildIntegratedRestoreUtility.GetAddedPackages(
@@ -2508,10 +2498,10 @@ namespace NuGet.PackageManagement
                         var parentResult = await DependencyGraphRestoreUtility.RestoreProjectAsync(
                             parent,
                             referenceContext,
-                            projectAction.Sources,
-                            pathContext.UserPackageFolder,
-                            pathContext.FallbackPackageFolders,
+                            GetRestoreProviderCache(),
                             cacheContextModifier,
+                            Settings,
+                            logger,
                             token);
                     }
                 }
@@ -2539,7 +2529,7 @@ namespace NuGet.PackageManagement
             if (executedNuGetProjectActions.Count > 0)
             {
                 // Only print the rollback warning if we have something to rollback
-                nuGetProjectContext.Log(ProjectManagement.MessageLevel.Warning, Strings.Warning_RollingBack);
+                nuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_RollingBack);
             }
 
             while (executedNuGetProjectActions.Count > 0)
@@ -2928,6 +2918,16 @@ namespace NuGet.PackageManagement
                     ideExecutionContext.IDEDirectInstall = null;
                 }
             }
+        }
+
+        private RestoreCommandProvidersCache GetRestoreProviderCache()
+        {
+            if (_restoreProviderCache == null)
+            {
+                _restoreProviderCache = new RestoreCommandProvidersCache();
+            }
+
+            return _restoreProviderCache;
         }
     }
 }

@@ -10,7 +10,7 @@ using NuGet.ProjectModel;
 
 namespace NuGet.PackageManagement.Test
 {
-    public class TestBuildIntegratedNuGetProject : BuildIntegratedNuGetProject
+    public class TestBuildIntegratedNuGetProject : ProjectJsonBuildIntegratedNuGetProject
     {
         public IReadOnlyList<ExternalProjectReference> ProjectClosure { get; set; }
 
@@ -25,12 +25,6 @@ namespace NuGet.PackageManagement.Test
         {
             InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, msbuildProjectSystem.ProjectName);
             ProjectClosure = new List<ExternalProjectReference>();
-        }
-
-        public override Task<IReadOnlyList<ExternalProjectReference>> GetProjectReferenceClosureAsync(
-            ExternalProjectReferenceContext context)
-        {
-            return Task.FromResult(ProjectClosure);
         }
     }
 }

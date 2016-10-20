@@ -27,59 +27,6 @@ namespace NuGet.PackageManagement
     /// </summary>
     public static class DependencyGraphRestoreUtility
     {
-        public static RestoreArgs GetRestoreArgs(
-            IEnumerable<SourceRepository> sources,
-            string effectiveGlobalPackagesFolder,
-            IEnumerable<string> fallbackPackageFolders,
-            RestoreCommandProvidersCache providerCache,
-            CancellationToken token)
-        {
-            var args = new RestoreArgs()
-            {
-            };
-
-            return args;
-        }
-
-        public static RestoreArgs GetRestoreArgs(
-            IEnumerable<IDependencyGraphProject> projects,
-            IEnumerable<string> sources,
-            ISettings settings,
-            DependencyGraphCacheContext cacheContext,
-            SourceCacheContext sourceCacheContext)
-        {
-            var pathContext = NuGetPathContext.Create(settings);
-            var dgSpec = cacheContext.SolutionSpec;
-
-            var providers = new List<IPreLoadedRestoreRequestProvider>();
-            var providerCache = new RestoreCommandProvidersCache();
-
-            if (dgSpec.Restore.Count > 0)
-            {
-                // Only read the dg spec if there is work to do.
-                providers.Add(new DependencyGraphSpecRequestProvider(providerCache, dgSpec));
-            }
-
-            var sourceProvider = new CachingSourceProvider(new PackageSourceProvider(settings));
-
-            var restoreContext = new RestoreArgs
-            {
-                CacheContext = sourceCacheContext,
-                LockFileVersion = LockFileFormat.Version,
-                ConfigFile = null,
-                DisableParallel = false,
-                GlobalPackagesFolder = pathContext.UserPackageFolder,
-                Log = cacheContext.Logger,
-                MachineWideSettings = new XPlatMachineWideSetting(),
-                PreLoadedRequestProviders = providers,
-                CachingSourceProvider = sourceProvider,
-                Sources = sources.ToList(),
-                FallbackSources = pathContext.FallbackPackageFolders.ToList(),
-            };
-
-            return restoreContext;
-        }
-
         public static async Task RestoreAsync(
            IEnumerable<IDependencyGraphProject> projects,
            IEnumerable<string> sources,
@@ -125,61 +72,36 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Restore without writing the lock file
         /// </summary>
-        internal static async Task<RestoreResult> PreviewRestoreAsync(
+        internal static async Task<RestoreResultPair> PreviewRestoreAsync(
             BuildIntegratedNuGetProject project,
             PackageSpec packageSpec,
             DependencyGraphCacheContext context,
-            RestoreCommandProviders providers,
-            SourceCacheContext cacheContext,
+            RestoreCommandProvidersCache providerCache,
+            ISettings settings,
+            SourceCacheContext sourceCacheContext,
             CancellationToken token)
         {
             // Restoring packages
             var logger = context.Logger;
-            logger.LogMinimal(string.Format(CultureInfo.CurrentCulture,
-                Strings.BuildIntegratedPackageRestoreStarted,
-                project.ProjectName));
 
-            //var dgFile = await project.GetDependencyGraphSpecAsync();
-            //var args = GetRestoreArgs();
+            // Add the new spec to the dg file and fill in the rest.
+            var dgFile = DependencyGraphSpec.WithReplacedSpec(await project.GetDependencyGraphSpecAsync(context), packageSpec);
+            dgFile.AddRestore(project.MSBuildProjectPath);
 
-            var request = new RestoreRequest(packageSpec, providers, cacheContext, logger);
-            request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
+            // Settings passed here will be used to populate the restore requests.
+            var dgProvider = new DependencyGraphSpecRequestProvider(providerCache, dgFile, settings);
 
-            // Add the existing lock file if it exists
-            var lockFilePath = project.AssetsFilePath;
-            request.LockFilePath = lockFilePath;
-            request.ExistingLockFile = LockFileUtilities.GetLockFile(lockFilePath, logger);
-
-            // Find the full closure of project.json files and referenced projects
-            //var projectReferences = await project.GetProjectReferenceClosureAsync(context);
-            var dgFile = await project.GetDependencyGraphSpecAsync(context);
-
-            var externalClosure = DependencyGraphSpecRequestProvider.GetExternalClosure(dgFile, project.MSBuildProjectPath).ToList();
-
-            request.ExternalProjects = externalClosure;
-
-            token.ThrowIfCancellationRequested();
-
-            var command = new RestoreCommand(request);
-
-            // Execute the restore
-            var result = await command.ExecuteAsync(token);
-
-            // Report a final message with the Success result
-            if (result.Success)
+            var restoreContext = new RestoreArgs()
             {
-                logger.LogMinimal(string.Format(CultureInfo.CurrentCulture,
-                    Strings.BuildIntegratedPackageRestoreSucceeded,
-                    project.ProjectName));
-            }
-            else
-            {
-                logger.LogMinimal(string.Format(CultureInfo.CurrentCulture,
-                    Strings.BuildIntegratedPackageRestoreFailed,
-                    project.ProjectName));
-            }
+                CacheContext = sourceCacheContext,
+                PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider>() { dgProvider },
+                Log = context.Logger
+            };
 
-            return result;
+            var requests = await RestoreRunner.GetRequests(restoreContext);
+            var results = await RestoreRunner.RunWithoutCommit(requests, restoreContext);
+
+            return results.Single();
         }
 
         public static async Task<bool> IsRestoreRequiredAsync(
@@ -262,28 +184,23 @@ namespace NuGet.PackageManagement
         public static async Task<RestoreResult> RestoreProjectAsync(
             BuildIntegratedNuGetProject project,
             DependencyGraphCacheContext context,
-            IEnumerable<SourceRepository> sources,
-            string effectiveGlobalPackagesFolder,
-            IEnumerable<string> fallbackPackageFolders,
+            RestoreCommandProvidersCache providerCache,
             Action<SourceCacheContext> cacheContextModifier,
+            ISettings settings,
+            ILogger log,
             CancellationToken token)
         {
             using (var cacheContext = new SourceCacheContext())
             {
                 cacheContextModifier(cacheContext);
 
-                var providers = RestoreCommandProviders.Create(effectiveGlobalPackagesFolder,
-                    fallbackPackageFolders,
-                    sources,
-                    cacheContext,
-                    context.Logger);
-
                 // Restore
                 var result = await PreviewRestoreAsync(
                     project,
                     await project.GetPackageSpecAsync(context),
                     context,
-                    providers,
+                    providerCache,
+                    settings,
                     cacheContext,
                     token);
 
@@ -291,9 +208,9 @@ namespace NuGet.PackageManagement
                 token.ThrowIfCancellationRequested();
 
                 // Write out the lock file and msbuild files
-                await result.CommitAsync(context.Logger, token);
+                var summary = await RestoreRunner.Commit(result);
 
-                return result;
+                return result.Result;
             }
         }
     }

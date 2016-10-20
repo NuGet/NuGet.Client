@@ -64,6 +64,8 @@ namespace NuGet.Commands
 
         public async Task<RestoreResult> ExecuteAsync(CancellationToken token)
         {
+            var restoreTime = Stopwatch.StartNew();
+
             // Local package folders (non-sources)
             var localRepositories = new List<NuGetv3LocalRepository>();
             localRepositories.Add(_request.DependencyProviders.GlobalPackages);
@@ -143,6 +145,8 @@ namespace NuGet.Commands
                 _request.LockFilePath = projectLockFilePath;
             }
 
+            restoreTime.Stop();
+
             // Create result
             return new RestoreResult(
                 _success,
@@ -153,7 +157,8 @@ namespace NuGet.Commands
                 projectLockFilePath,
                 msbuild,
                 toolRestoreResults,
-                _request.RestoreOutputType);
+                _request.RestoreOutputType,
+                restoreTime.Elapsed);
         }
 
         private string GetLockFilePath(LockFile lockFile)

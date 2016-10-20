@@ -23,10 +23,10 @@ namespace NuGet.PackageManagement.Test
             ProjectClosure = new List<ExternalProjectReference>();
         }
 
-        public override Task<IReadOnlyList<ExternalProjectReference>> GetProjectReferenceClosureAsync(
-            ExternalProjectReferenceContext context)
-        {
-            return Task.FromResult(ProjectClosure);
-        }
+        //public override Task<IReadOnlyList<ExternalProjectReference>> GetProjectReferenceClosureAsync(
+        //    ExternalProjectReferenceContext context)
+        //{
+        //    return Task.FromResult(ProjectClosure);
+        //}
     }
 }

@@ -33,6 +33,16 @@ namespace NuGet.ProjectManagement.Projects
 
         public override string MSBuildProjectPath { get; }
 
+        // TODO: can this be removed?
+        public ProjectJsonBuildIntegratedNuGetProject(
+            string jsonConfig,
+            string msBuildProjectPath,
+            IMSBuildNuGetProjectSystem projectSystem)
+            : this(jsonConfig, msBuildProjectPath)
+        {
+
+        }
+
         /// <summary>
         /// Project.json based project system.
         /// </summary>
@@ -192,11 +202,7 @@ namespace NuGet.ProjectManagement.Projects
         public override async Task<PackageSpec> GetPackageSpecAsync(DependencyGraphCacheContext context)
         {
             PackageSpec packageSpec = null;
-            if (context != null && context.PackageSpecCache.TryGetValue(MSBuildProjectPath, out packageSpec))
-            {
-
-            }
-            else
+            if (context == null || !context.PackageSpecCache.TryGetValue(MSBuildProjectPath, out packageSpec))
             {
                 packageSpec = JsonPackageSpec;
                 var metadata = new ProjectRestoreMetadata();
@@ -208,7 +214,7 @@ namespace NuGet.ProjectManagement.Projects
                 metadata.ProjectName = packageSpec.Name;
                 metadata.ProjectUniqueName = MSBuildProjectPath;
 
-                IReadOnlyList<IDependencyGraphProject> references = await GetDirectProjectReferencesAsync(context);
+                var references = await GetDirectProjectReferencesAsync(context);
                 if (references != null && references.Count > 0)
                 {
                     // Add msbuild reference groups for each TFM in the project
@@ -236,7 +242,7 @@ namespace NuGet.ProjectManagement.Projects
                     }
                 }
 
-                context?.PackageSpecCache.Add(MSBuildProjectPath, JsonPackageSpec);
+                context?.PackageSpecCache.Add(MSBuildProjectPath, packageSpec);
             }
             return packageSpec;
         }
@@ -244,27 +250,20 @@ namespace NuGet.ProjectManagement.Projects
         public override async Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(DependencyGraphCacheContext context)
         {
             DependencyGraphSpec dgSpec = null;
-            if (context != null && context.DependencyGraphCache.TryGetValue(MSBuildProjectPath, out dgSpec))
+            if (context == null || !context.DependencyGraphCache.TryGetValue(MSBuildProjectPath, out dgSpec))
             {
-                return dgSpec;
-            }
-            else
-            {
-                dgSpec = new DependencyGraphSpec();
-                var packageSpec = await GetPackageSpecAsync(context);
-                dgSpec.AddProject(packageSpec);
-
                 var projectReferences = await GetDirectProjectReferencesAsync(context);
                 var listOfDgSpecs = projectReferences.Select(async r => await r.GetDependencyGraphSpecAsync(context)).Select(r => r.Result).ToList();
-                listOfDgSpecs.Add(dgSpec);
 
-                var newDgSpec = DependencyGraphSpec.Union(listOfDgSpecs);
-                newDgSpec.AddRestore(MSBuildProjectPath);
+                dgSpec = DependencyGraphSpec.Union(listOfDgSpecs);
+                dgSpec.AddProject(await GetPackageSpecAsync(context));
+                dgSpec.AddRestore(MSBuildProjectPath);
 
                 //Cache this DG File
-                context?.DependencyGraphCache.Add(MSBuildProjectPath, newDgSpec);
-                return newDgSpec;
+                context?.DependencyGraphCache.Add(MSBuildProjectPath, dgSpec);
             }
+
+            return dgSpec;
         }
 
         public override Task<IReadOnlyList<IDependencyGraphProject>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)

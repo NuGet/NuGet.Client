@@ -134,7 +134,10 @@ namespace NuGet.ProjectModel
             var projectUniqueName = projectSpec.RestoreMetadata?.ProjectUniqueName
                 ?? Guid.NewGuid().ToString();
 
-            _projects.Add(projectUniqueName, projectSpec);
+            if (!_projects.ContainsKey(projectUniqueName))
+            {
+                _projects.Add(projectUniqueName, projectSpec);
+            }
         }
 
         public static  DependencyGraphSpec Union(IEnumerable<DependencyGraphSpec> dgSpecs )
@@ -293,6 +296,32 @@ namespace NuGet.ProjectModel
             }
 
             return count;
+        }
+
+        public static DependencyGraphSpec WithoutRestores(DependencyGraphSpec spec)
+        {
+            var newSpec = new DependencyGraphSpec();
+
+            foreach (var project in spec.Projects)
+            {
+                newSpec.AddProject(project);
+            }
+
+            return newSpec;
+        }
+
+        public static DependencyGraphSpec WithReplacedSpec(DependencyGraphSpec dgSpec, PackageSpec project)
+        {
+            var newSpec = new DependencyGraphSpec();
+            newSpec.AddProject(project);
+            newSpec.AddRestore(project.RestoreMetadata.ProjectUniqueName);
+
+            foreach (var child in dgSpec.Projects)
+            {
+                newSpec.AddProject(child);
+            }
+
+            return newSpec;
         }
     }
 }

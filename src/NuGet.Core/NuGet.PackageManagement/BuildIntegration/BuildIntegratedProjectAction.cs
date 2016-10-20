@@ -25,22 +25,27 @@ namespace NuGet.PackageManagement
         public RestoreResult RestoreResult { get; }
 
         /// <summary>
-        /// project.json after applying the changes
+        /// After applying the changes
         /// </summary>
-        public JObject UpdatedProjectJson { get; }
+        public RestoreResultPair RestoreResultPair { get; }
 
         /// <summary>
         /// Sources used for package restore.
         /// </summary>
         public IReadOnlyList<SourceRepository> Sources { get; }
 
+        /// <summary>
+        /// Original user actions.
+        /// </summary>
+        public IReadOnlyList<NuGetProjectAction> OriginalActions { get; }
+
         public BuildIntegratedProjectAction(NuGetProject project,
             PackageIdentity packageIdentity,
             NuGetProjectActionType nuGetProjectActionType,
             LockFile originalLockFile,
-            JObject updatedProjectJson,
-            RestoreResult restoreResult,
-            IReadOnlyList<SourceRepository> sources)
+            RestoreResultPair restoreResultPair,
+            IReadOnlyList<SourceRepository> sources,
+            IReadOnlyList<NuGetProjectAction> originalActions)
             : base(packageIdentity, nuGetProjectActionType, project)
         {
             if (packageIdentity == null)
@@ -53,14 +58,9 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(originalLockFile));
             }
 
-            if (updatedProjectJson == null)
+            if (restoreResultPair == null)
             {
-                throw new ArgumentNullException(nameof(updatedProjectJson));
-            }
-
-            if (restoreResult == null)
-            {
-                throw new ArgumentNullException(nameof(restoreResult));
+                throw new ArgumentNullException(nameof(restoreResultPair));
             }
 
             if (sources == null)
@@ -69,9 +69,10 @@ namespace NuGet.PackageManagement
             }
 
             OriginalLockFile = originalLockFile;
-            RestoreResult = restoreResult;
-            UpdatedProjectJson = updatedProjectJson;
+            RestoreResult = restoreResultPair.Result;
+            RestoreResultPair = restoreResultPair;
             Sources = sources;
+            OriginalActions = originalActions;
         }
 
         public IReadOnlyList<NuGetProjectAction> GetProjectActions()

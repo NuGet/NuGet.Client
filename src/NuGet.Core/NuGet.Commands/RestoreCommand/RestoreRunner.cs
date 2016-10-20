@@ -68,7 +68,7 @@ namespace NuGet.Commands
 
                 var request = requests.Dequeue();
 
-                var task = Task.Run(async () => await Execute(request));
+                var task = Task.Run(async () => await ExecuteAndCommit(request));
                 restoreTasks.Add(task);
             }
 
@@ -81,6 +81,61 @@ namespace NuGet.Commands
 
             // Summary
             return restoreSummaries;
+        }
+
+        /// <summary>
+        /// Execute and commit restore requests.
+        /// </summary>
+        public static async Task<IReadOnlyList<RestoreResultPair>> RunWithoutCommit(
+            IEnumerable<RestoreSummaryRequest> restoreRequests,
+            RestoreArgs restoreContext)
+        {
+            int maxTasks = GetMaxTaskCount(restoreContext);
+
+            var log = restoreContext.Log;
+
+            if (maxTasks > 1)
+            {
+                log.LogVerbose(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.Log_RunningParallelRestore,
+                    maxTasks));
+            }
+            else
+            {
+                log.LogVerbose(Strings.Log_RunningNonParallelRestore);
+            }
+
+            // Get requests
+            var requests = new Queue<RestoreSummaryRequest>(restoreRequests);
+            var restoreTasks = new List<Task<RestoreResultPair>>(maxTasks);
+            var restoreResults = new List<RestoreResultPair>(maxTasks);
+
+            // Run requests
+            while (requests.Count > 0)
+            {
+                // Throttle and wait for a task to finish if we have hit the limit
+                if (restoreTasks.Count == maxTasks)
+                {
+                    var restoreSummary = await CompleteTaskAsync(restoreTasks);
+                    restoreResults.Add(restoreSummary);
+                }
+
+                var request = requests.Dequeue();
+
+                var task = Task.Run(async () => await Execute(request));
+                restoreTasks.Add(task);
+            }
+
+            // Wait for all restores to finish
+            while (restoreTasks.Count > 0)
+            {
+                var restoreSummary = await CompleteTaskAsync(restoreTasks);
+                restoreResults.Add(restoreSummary);
+            }
+
+            // Summary
+            return restoreResults;
         }
 
         /// <summary>
@@ -161,7 +216,14 @@ namespace NuGet.Commands
             return maxTasks;
         }
 
-        private static async Task<RestoreSummary> Execute(RestoreSummaryRequest summaryRequest)
+        private static async Task<RestoreSummary> ExecuteAndCommit(RestoreSummaryRequest summaryRequest)
+        {
+            var result = await Execute(summaryRequest);
+
+            return await Commit(result);
+        }
+
+        private static async Task<RestoreResultPair> Execute(RestoreSummaryRequest summaryRequest)
         {
             var log = summaryRequest.Request.Log;
 
@@ -171,8 +233,6 @@ namespace NuGet.Commands
                     summaryRequest.InputPath));
 
             // Run the restore
-            var sw = Stopwatch.StartNew();
-
             var request = summaryRequest.Request;
 
             // Read the existing lock file, this is needed to support IsLocked=true
@@ -186,18 +246,26 @@ namespace NuGet.Commands
             var command = new RestoreCommand(request);
             var result = await command.ExecuteAsync();
 
+            return new RestoreResultPair(summaryRequest, result);
+        }
+
+        public static async Task<RestoreSummary> Commit(RestoreResultPair restoreResult)
+        {
+            var summaryRequest = restoreResult.SummaryRequest;
+            var result = restoreResult.Result;
+
+            var log = summaryRequest.Request.Log;
+
             // Commit the result
             log.LogInformation(Strings.Log_Committing);
-            await result.CommitAsync(request.Log, CancellationToken.None);
-
-            sw.Stop();
+            await result.CommitAsync(log, CancellationToken.None);
 
             if (result.Success)
             {
                 log.LogMinimal(string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.Log_RestoreComplete,
-                    sw.ElapsedMilliseconds,
+                    result.ElapsedTime.TotalMilliseconds,
                     summaryRequest.InputPath));
             }
             else
@@ -205,7 +273,7 @@ namespace NuGet.Commands
                 log.LogMinimal(string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.Log_RestoreFailed,
-                    sw.ElapsedMilliseconds,
+                    result.ElapsedTime.TotalMilliseconds,
                     summaryRequest.InputPath));
             }
 
@@ -219,6 +287,14 @@ namespace NuGet.Commands
         }
 
         private static async Task<RestoreSummary> CompleteTaskAsync(List<Task<RestoreSummary>> restoreTasks)
+        {
+            var doneTask = await Task.WhenAny(restoreTasks);
+            restoreTasks.Remove(doneTask);
+            return await doneTask;
+        }
+
+        private static async Task<RestoreResultPair>
+            CompleteTaskAsync(List<Task<RestoreResultPair>> restoreTasks)
         {
             var doneTask = await Task.WhenAny(restoreTasks);
             restoreTasks.Remove(doneTask);

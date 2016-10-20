@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -45,6 +46,11 @@ namespace NuGet.Commands
         /// </summary>
         public LockFile PreviousLockFile { get; }
 
+        /// <summary>
+        /// Restore time
+        /// </summary>
+        public TimeSpan ElapsedTime { get; }
+
         public RestoreResult(
             bool success,
             IEnumerable<RestoreTargetGraph> restoreGraphs,
@@ -54,7 +60,8 @@ namespace NuGet.Commands
             string lockFilePath,
             MSBuildRestoreResult msbuild,
             IEnumerable<ToolRestoreResult> toolRestoreResults,
-            RestoreOutputType outputType)
+            RestoreOutputType outputType,
+            TimeSpan elapsedTime)
         {
             Success = success;
             RestoreGraphs = restoreGraphs;
@@ -65,6 +72,7 @@ namespace NuGet.Commands
             PreviousLockFile = previousLockFile;
             ToolRestoreResults = toolRestoreResults;
             OutputType = outputType;
+            ElapsedTime = elapsedTime;
         }
 
         /// <summary>

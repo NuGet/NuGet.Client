@@ -79,12 +79,5 @@ namespace NuGet.PackageManagement.Test
                 msbuildProjectPath: null,
                 projectReferences: references);
         }
-
-        public static ExternalProjectReferenceContext GetExternalProjectReferenceContext()
-        {
-            var logger = new TestLogger();
-
-            return new ExternalProjectReferenceContext(logger);
-        }
     }
 }

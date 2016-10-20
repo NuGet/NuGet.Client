@@ -32,7 +32,8 @@ namespace NuGet.Commands.Test
                     lockFilePath: path,
                     msbuild: new MSBuildRestoreResult("project", td, true),
                     toolRestoreResults: Enumerable.Empty<ToolRestoreResult>(),
-                    outputType: RestoreOutputType.Unknown);
+                    outputType: RestoreOutputType.Unknown,
+                    elapsedTime: TimeSpan.MinValue);
                 
                 // Act
                 await result.CommitAsync(logger, CancellationToken.None);
@@ -63,7 +64,8 @@ namespace NuGet.Commands.Test
                     lockFilePath: path,
                     msbuild: new MSBuildRestoreResult("project", td, true),
                     toolRestoreResults: Enumerable.Empty<ToolRestoreResult>(),
-                    outputType: RestoreOutputType.Unknown);
+                    outputType: RestoreOutputType.Unknown,
+                    elapsedTime: TimeSpan.MinValue);
                 
                 // Act
                 await result.CommitAsync(logger, CancellationToken.None);
@@ -103,7 +105,8 @@ namespace NuGet.Commands.Test
                     lockFilePath: null,
                     msbuild: new MSBuildRestoreResult("project", td, true),
                     toolRestoreResults: new[] { toolResult },
-                    outputType: RestoreOutputType.Unknown);
+                    outputType: RestoreOutputType.Unknown,
+                    elapsedTime: TimeSpan.MinValue);
                 
                 // Act
                 await result.CommitAsync(logger, CancellationToken.None);
@@ -143,7 +146,8 @@ namespace NuGet.Commands.Test
                     lockFilePath: null,
                     msbuild: new MSBuildRestoreResult("project", td, true),
                     toolRestoreResults: new[] { toolResult },
-                    outputType: RestoreOutputType.Unknown);
+                    outputType: RestoreOutputType.Unknown,
+                    elapsedTime: TimeSpan.MinValue);
                 
                 // Act
                 await result.CommitAsync(logger, CancellationToken.None);
