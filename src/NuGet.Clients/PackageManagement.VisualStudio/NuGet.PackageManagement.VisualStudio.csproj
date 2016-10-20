@@ -85,6 +85,12 @@
     </Reference>
     <Reference Include="WindowsBase" />
   </ItemGroup>
+  <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
+    <Compile Include="Utility\EnvDTEProjectAdapter.cs" />
+    <Compile Include="Utility\LegacyCSProjProjectReference.cs" />
+    <Compile Include="Utility\LegacyCSProjPackageReference.cs" />
+    <Compile Include="Utility\IEnvDTEProjectAdapter.cs" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="BindingRedirectBehavior.cs" />
     <Compile Include="CommonResources.cs" />
