@@ -73,7 +73,8 @@ namespace NuGet.ProjectManagement
 
         public MSBuildNuGetProject(IMSBuildNuGetProjectSystem msbuildNuGetProjectSystem,
             string folderNuGetProjectPath,
-            string packagesConfigFolderPath)
+            string packagesConfigFolderPath,
+            string projectId = null)
         {
             if (msbuildNuGetProjectSystem == null)
             {
@@ -88,6 +89,11 @@ namespace NuGet.ProjectManagement
             if (packagesConfigFolderPath == null)
             {
                 throw new ArgumentNullException(nameof(packagesConfigFolderPath));
+            }
+
+            if (projectId != null)
+            {
+                InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
             }
 
             MSBuildNuGetProjectSystem = msbuildNuGetProjectSystem;

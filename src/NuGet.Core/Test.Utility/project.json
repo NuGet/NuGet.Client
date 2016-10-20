@@ -18,7 +18,7 @@
     }
   },
   "dependencies": {
-    "Microsoft.VisualStudio.ProjectSystem.Interop":{
+    "Microsoft.VisualStudio.ProjectSystem.Interop": {
       "type": "build",
       "version": "1.0.0-*"
     },

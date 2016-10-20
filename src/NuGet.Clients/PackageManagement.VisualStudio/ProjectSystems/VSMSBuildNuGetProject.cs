@@ -22,10 +22,12 @@ namespace NuGet.PackageManagement.VisualStudio
             EnvDTEProject project,
             IMSBuildNuGetProjectSystem msbuildNuGetProjectSystem,
             string folderNuGetProjectPath,
-            string packagesConfigFolderPath) : base(
+            string packagesConfigFolderPath,
+            string projectId) : base(
                 msbuildNuGetProjectSystem,
                 folderNuGetProjectPath,
-                packagesConfigFolderPath)
+                packagesConfigFolderPath,
+                projectId)
         {
             _project = project;
         }

@@ -130,6 +130,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 ProjectContext = new Mock<INuGetProjectContext>();
                 var projectName = "ProjectName";
                 var uniqueName = "UniqueName";
+                var projectId = string.Empty;
                 PackageIdentity = new PackageIdentity("PackageA", new NuGetVersion("1.0.0-beta"));
                 PackageTypes = new List<PackageType>
                 {
@@ -155,7 +156,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Target = new ProjectKNuGetProject(
                     PackageManager.Object,
                     projectName,
-                    uniqueName);
+                    uniqueName,
+                    projectId);
             }
 
             public TestDirectory TestDirectory { get; }

@@ -5802,6 +5802,265 @@ namespace NuGet.Test
             }
         }
 
+        [Fact]
+        public async Task TestPacMan_PreviewInstallPackage_PackagesConfig_RaiseTelemetryEvents()
+        {
+            // Arrange
+
+            // Set up Package Source
+            var packages = new List<SourcePackageDependencyInfo>
+            {
+                new SourcePackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new[] { new Packaging.Core.PackageDependency("b", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
+                new SourcePackageDependencyInfo("b", new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null)
+            };
+
+            var sourceRepositoryProvider = CreateSource(packages);
+
+            // set up telemetry service
+            TelemetryServiceHelper.Instance.EnableTelemetryEvents();
+
+            // Create Package Manager
+            using (var solutionManager = new TestSolutionManager(true))
+            {
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    new Configuration.NullSettings(),
+                    solutionManager,
+                    new TestDeleteOnRestartManager());
+
+                var nugetProject = solutionManager.AddNewMSBuildProject();
+
+                // Main Act
+                var target = new PackageIdentity("a", new NuGetVersion(1, 0, 0));
+
+                await nuGetPackageManager.PreviewInstallPackageAsync(
+                    nugetProject,
+                    target,
+                    new ResolutionContext(),
+                    new TestNuGetProjectContext(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None);
+
+                // Assert
+                var telemetryEvents = TelemetryServiceHelper.Instance.GetTelemetryEvents();
+                Assert.Equal(3, telemetryEvents.Count);
+                var projectId = nugetProject.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
+                VerifyPreviewActionsTelemetryEvents_PackagesConfig(projectId, telemetryEvents);
+            }
+        }
+
+        [Fact]
+        public async Task TestPacMan_PreviewInstallPackage_BuildIntegrated_RaiseTelemetryEvents()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+
+            // set up telemetry service
+            TelemetryServiceHelper.Instance.EnableTelemetryEvents();
+
+            // Create Package Manager
+            using (var solutionManager = new TestSolutionManager(true))
+            {
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    new Configuration.NullSettings(),
+                    solutionManager,
+                    new TestDeleteOnRestartManager());
+
+                var buildIntegratedProject = solutionManager.AddBuildIntegratedProject();
+
+                // Main Act
+                var target = PackageWithDependents[0];
+
+                await nuGetPackageManager.PreviewInstallPackageAsync(
+                    buildIntegratedProject,
+                    target,
+                    new ResolutionContext(),
+                    new TestNuGetProjectContext(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None);
+
+                // Assert
+                var telemetryEvents = TelemetryServiceHelper.Instance.GetTelemetryEvents();
+                Assert.Equal(1, telemetryEvents.Count);
+                var projectId = buildIntegratedProject.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
+                Assert.True(telemetryEvents.ContainsKey(
+                    string.Format(TelemetryConstants.PreviewBuildIntegratedStepName, projectId)));
+            }
+        }
+
+        [Fact]
+        public async Task TestPacMan_PreviewUpdatePackage_PackagesConfig_RaiseTelemetryEvents()
+        {
+            // Set up Package Source
+            var packages = new List<SourcePackageDependencyInfo>
+            {
+                new SourcePackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new[] { new Packaging.Core.PackageDependency("b", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
+                new SourcePackageDependencyInfo("a", new NuGetVersion(2, 0, 0), new[] { new Packaging.Core.PackageDependency("b", new VersionRange(new NuGetVersion(2, 0, 0))) }, true, null),
+                new SourcePackageDependencyInfo("b", new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("b", new NuGetVersion(2, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null)
+            };
+
+            var sourceRepositoryProvider = CreateSource(packages);
+
+            // Set up NuGetProject
+            var fwk45 = NuGetFramework.Parse("net45");
+
+            var installedPackage1 = new PackageIdentity("a", new NuGetVersion(1, 0, 0));
+            var installedPackage2 = new PackageIdentity("b", new NuGetVersion(1, 0, 0));
+
+            var installedPackages = new List<NuGet.Packaging.PackageReference>
+            {
+                new NuGet.Packaging.PackageReference(installedPackage1, fwk45, true),
+                new NuGet.Packaging.PackageReference(installedPackage2, fwk45, true)
+            };
+
+            var nuGetProject = new TestNuGetProject(installedPackages);
+
+            // set up telemetry service
+            TelemetryServiceHelper.Instance.EnableTelemetryEvents();
+
+            // Create Package Manager
+            using (var solutionManager = new TestSolutionManager(true))
+            {
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    new Configuration.NullSettings(),
+                    solutionManager,
+                    new TestDeleteOnRestartManager());
+
+                // Main Act
+                var target = new PackageIdentity("a", new NuGetVersion(2, 0, 0));
+
+                await nuGetPackageManager.PreviewUpdatePackagesAsync(
+                    new List<PackageIdentity> { target },
+                    new List<NuGetProject> { nuGetProject },
+                    new ResolutionContext(),
+                    new TestNuGetProjectContext(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None);
+
+                // Assert
+                var telemetryEvents = TelemetryServiceHelper.Instance.GetTelemetryEvents();
+                Assert.Equal(3, telemetryEvents.Count);
+                var projectId = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
+                VerifyPreviewActionsTelemetryEvents_PackagesConfig(projectId, telemetryEvents);
+            }
+        }        
+
+        [Fact]
+        public async Task TestPacMan_ExecuteNuGetProjectActions_PackagesConfig_RaiseTelemetryEvents()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+
+            // set up telemetry service
+            TelemetryServiceHelper.Instance.EnableTelemetryEvents();
+
+            // Create Package Manager
+            using (var solutionManager = new TestSolutionManager(true))
+            {
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    new Configuration.NullSettings(),
+                    solutionManager,
+                    new TestDeleteOnRestartManager());
+
+                var nugetProject = solutionManager.AddNewMSBuildProject();
+                var target = PackageWithDependents[0];
+
+                var projectActions = new List<NuGetProjectAction>();
+                projectActions.Add(
+                    NuGetProjectAction.CreateInstallProjectAction(
+                        target,
+                        sourceRepositoryProvider.GetRepositories().First(),
+                        nugetProject));
+
+                // Act
+                await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
+                    new List<NuGetProject>() { nugetProject },
+                    projectActions,
+                    new TestNuGetProjectContext(),
+                    CancellationToken.None);
+
+                // Assert
+                var telemetryEvents = TelemetryServiceHelper.Instance.GetTelemetryEvents();
+                var projectId = nugetProject.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
+
+                Assert.Equal(1, telemetryEvents.Count);
+                Assert.True(telemetryEvents.ContainsKey(
+                    string.Format(TelemetryConstants.ExecuteActionStepName, projectId)));
+            }
+        }
+
+        [Fact]
+        public async Task TestPacMan_ExecuteNuGetProjectActions_BuildIntegrated_RaiseTelemetryEvents()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+
+            // set up telemetry service
+            TelemetryServiceHelper.Instance.EnableTelemetryEvents();
+
+            using (var testSolutionManager = new TestSolutionManager(true))
+            {
+                var testSettings = new Configuration.NullSettings();
+                var token = CancellationToken.None;
+                var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    testSettings,
+                    testSolutionManager,
+                    deleteOnRestartManager);
+
+                var installationCompatibility = new Mock<IInstallationCompatibility>();
+                nuGetPackageManager.InstallationCompatibility = installationCompatibility.Object;
+
+                var buildIntegratedProject = testSolutionManager.AddBuildIntegratedProject();
+
+                var packageIdentity = PackageWithDependents[0];
+
+                var projectActions = new List<NuGetProjectAction>();
+                projectActions.Add(
+                    NuGetProjectAction.CreateInstallProjectAction(
+                        packageIdentity,
+                        sourceRepositoryProvider.GetRepositories().First(),
+                        buildIntegratedProject));
+
+                // Act
+                await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
+                    new List<NuGetProject>() { buildIntegratedProject },
+                    projectActions,
+                    new TestNuGetProjectContext(),
+                    token);
+
+                // Assert
+                var telemetryEvents = TelemetryServiceHelper.Instance.GetTelemetryEvents();
+                var projectId = buildIntegratedProject.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
+
+                Assert.True(telemetryEvents.ContainsKey(
+                    string.Format(TelemetryConstants.PreviewBuildIntegratedStepName, projectId)));
+                Assert.True(telemetryEvents.ContainsKey(
+                    string.Format(TelemetryConstants.ExecuteActionStepName, projectId)));
+
+            }
+        }
+
+        private void VerifyPreviewActionsTelemetryEvents_PackagesConfig(string operationId, IDictionary<string, double> actual)
+        {
+            var key = string.Format(TelemetryConstants.GatherDependencyStepName, operationId);
+            Assert.True(actual.ContainsKey(key));
+
+            key = string.Format(TelemetryConstants.ResolveDependencyStepName, operationId);
+            Assert.True(actual.ContainsKey(key));
+
+            key = string.Format(TelemetryConstants.ResolvedActionsStepName, operationId);
+            Assert.True(actual.ContainsKey(key));
+        }
+
         private static void AddToPackagesFolder(PackageIdentity package, string root)
         {
             var dir = Path.Combine(root, $"{package.Id}.{package.Version.ToString()}");

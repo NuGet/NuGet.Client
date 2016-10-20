@@ -2,13 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.VisualStudio.Telemetry;
 using VsTelemetryEvent = Microsoft.VisualStudio.Telemetry.TelemetryEvent;
+using VsTelemetryService = Microsoft.VisualStudio.Telemetry.TelemetryService;
 
 namespace NuGet.VisualStudio.Facade.Telemetry
 {
     public class TelemetrySession : ITelemetrySession
     {
+        public static readonly TelemetrySession Instance = new TelemetrySession();
+
+        private TelemetrySession() { }
+
         public void PostEvent(TelemetryEvent telemetryEvent)
         {
             if (telemetryEvent == null)
@@ -23,7 +27,7 @@ namespace NuGet.VisualStudio.Facade.Telemetry
                 vsTelemetryEvent.Properties[pair.Key] = pair.Value;
             }
 
-            TelemetryService.DefaultSession.PostEvent(vsTelemetryEvent);
+            VsTelemetryService.DefaultSession.PostEvent(vsTelemetryEvent);
         }
     }
 }

@@ -43,8 +43,11 @@ namespace NuGet.PackageManagement.UI
             DependencyObject windowOwner,
             CancellationToken token)
         {
-            var stopWatch = new Stopwatch();
-            stopWatch.Start();
+            var operationType = NuGetOperationType.Install;
+            if (userAction.Action == NuGetProjectActionType.Uninstall)
+            {
+                operationType = NuGetOperationType.Uninstall;
+            }
 
             await PerformActionImplAsync(
                 uiService,
@@ -80,10 +83,8 @@ namespace NuGet.PackageManagement.UI
                     return ExecuteActionsAsync(actions, uiService.ProgressWindow, userAction, token);
                 },
                 windowOwner,
+                operationType,
                 token);
-
-            stopWatch.Stop();
-            uiService.ProgressWindow.Log(ProjectManagement.MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Operation_TotalTime, stopWatch.Elapsed));
         }
 
         /// <summary>
@@ -96,9 +97,6 @@ namespace NuGet.PackageManagement.UI
             DependencyObject windowOwner,
             CancellationToken token)
         {
-            var stopWatch = new Stopwatch();
-            stopWatch.Start();
-
             await PerformActionImplAsync(
                 uiService,
                 () =>
@@ -120,10 +118,8 @@ namespace NuGet.PackageManagement.UI
                         token);
                 },
                 windowOwner,
+                NuGetOperationType.Update,
                 token);
-
-            stopWatch.Stop();
-            uiService.ProgressWindow.Log(ProjectManagement.MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Operation_TotalTime, stopWatch.Elapsed));
         }
 
         /// <summary>
@@ -182,14 +178,50 @@ namespace NuGet.PackageManagement.UI
             Func<Task<IReadOnlyList<ResolvedAction>>> resolveActionsAsync,
             Func<IReadOnlyList<ResolvedAction>, Task> executeActionsAsync,
             DependencyObject windowOwner,
+            NuGetOperationType operationType,
             CancellationToken token)
         {
+            var status = NuGetOperationStatus.Succeeded;
+            var startTime = DateTimeOffset.Now;
+            var packageCount = 0;
+            var operationId = Guid.NewGuid().ToString();
+
+            // Enable granular level telemetry events for nuget ui operation
+            TelemetryServiceHelper.Instance.EnableTelemetryEvents();
+
             try
             {
                 uiService.ShowProgressDialog(windowOwner);
 
+                TelemetryUtility.StartorResumeTimer();
+
                 var actions = await resolveActionsAsync();
                 var results = GetPreviewResults(actions);
+
+                if (operationType == NuGetOperationType.Uninstall)
+                {
+                    packageCount = results.SelectMany(result => result.Deleted).
+                        Select(package => package.Id).Distinct().Count();
+                }
+                else
+                {
+                    var addCount = results.SelectMany(result => result.Added).
+                        Select(package => package.Id).Distinct().Count();
+
+                    var updateCount = results.SelectMany(result => result.Updated).
+                        Select(result => result.New.Id).Distinct().Count();
+
+                    // update packages count
+                    packageCount = addCount + updateCount;
+
+                    if (updateCount > 0)
+                    {
+                        // set operation type to update when there are packages being updated
+                        operationType = NuGetOperationType.Update;
+                    }
+                }
+
+                TelemetryUtility.StopTimer();
 
                 // Show the preview window.
                 if (uiService.DisplayPreviewWindow)
@@ -200,9 +232,14 @@ namespace NuGet.PackageManagement.UI
                         return;
                     }
                 }
-                
+
+                TelemetryUtility.StartorResumeTimer();
+
                 // Show the license acceptance window.
                 var accepted = await CheckLicenseAcceptanceAsync(uiService, results, token);
+
+                TelemetryUtility.StartorResumeTimer();
+
                 if (!accepted)
                 {
                     return;
@@ -212,6 +249,9 @@ namespace NuGet.PackageManagement.UI
                 if (uiService.DisplayDeprecatedFrameworkWindow)
                 {
                     var shouldContinue = ShouldContinueDueToDotnetDeprecation(uiService, actions, token);
+
+                    TelemetryUtility.StartorResumeTimer();
+
                     if (!shouldContinue)
                     {
                         return;
@@ -229,6 +269,7 @@ namespace NuGet.PackageManagement.UI
             }
             catch (System.Net.Http.HttpRequestException ex)
             {
+                status = NuGetOperationStatus.Failed;
                 if (ex.InnerException != null)
                 {
                     uiService.ShowError(ex.InnerException);
@@ -240,11 +281,29 @@ namespace NuGet.PackageManagement.UI
             }
             catch (Exception ex)
             {
+                status = NuGetOperationStatus.Failed;
                 uiService.ShowError(ex);
             }
             finally
             {
                 uiService.CloseProgressDialog();
+
+                TelemetryUtility.StopTimer();
+
+                var duration = TelemetryUtility.GetTimerElapsedTime();
+                uiService.ProgressWindow.Log(MessageLevel.Info,
+                    string.Format(CultureInfo.CurrentCulture, Resources.Operation_TotalTime, duration));
+
+                var actionTelemetryEvent = TelemetryUtility.GetActionTelemetryEvent(
+                    uiService.Projects,
+                    operationType,
+                    OperationSource.UI,
+                    startTime,
+                    status,
+                    packageCount,
+                    duration.TotalSeconds);
+
+                ActionsTelemetryService.Instance.EmitActionEvent(actionTelemetryEvent);
             }
         }
 
@@ -271,6 +330,8 @@ namespace NuGet.PackageManagement.UI
 
             var licenseMetadata = await GetPackageMetadataAsync(uiService, licenseCheck, token);
 
+            TelemetryServiceHelper.Instance.StopTimer();
+
             // show license agreement
             if (licenseMetadata.Any(e => e.RequireLicenseAcceptance))
             {
@@ -293,6 +354,8 @@ namespace NuGet.PackageManagement.UI
             CancellationToken token)
         {
             var projects = DotnetDeprecatedPrompt.GetAffectedProjects(actions);
+
+            TelemetryServiceHelper.Instance.StopTimer();
 
             if (projects.Any())
             {
@@ -482,14 +545,14 @@ namespace NuGet.PackageManagement.UI
         /// Get the package metadata to see if RequireLicenseAcceptance is true
         /// </summary>
         private async Task<List<IPackageSearchMetadata>> GetPackageMetadataAsync(
-            INuGetUI uiService, 
-            IEnumerable<PackageIdentity> packages, 
+            INuGetUI uiService,
+            IEnumerable<PackageIdentity> packages,
             CancellationToken token)
         {
             var results = new List<IPackageSearchMetadata>();
 
             // local sources
-            var sources = new List<SourceRepository>();            
+            var sources = new List<SourceRepository>();
             sources.Add(_packageManager.PackagesFolderSourceRepository);
             sources.AddRange(_packageManager.GlobalPackageFolderRepositories);
 

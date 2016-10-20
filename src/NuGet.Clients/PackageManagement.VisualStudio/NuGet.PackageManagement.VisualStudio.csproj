@@ -149,7 +149,6 @@
     <Compile Include="Telemetry\ProjectDependencyStatistics.cs" />
     <Compile Include="Telemetry\ProjectInformation.cs" />
     <Compile Include="Telemetry\NuGetProjectTelemetryService.cs" />
-    <Compile Include="Telemetry\NuGetTelemetryService.cs" />
     <Compile Include="Utility\EnvDTESolutionUtility.cs" />
     <Compile Include="Utility\FrameworkAssembly.cs" />
     <Compile Include="Utility\FrameworkAssemblyResolver.cs" />

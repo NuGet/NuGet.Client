@@ -56,7 +56,7 @@ namespace Test.Utility
             projectTargetFramework = projectTargetFramework ?? NuGetFramework.Parse("net45");
             var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext(),
                 projectFullPath, projectName);
-            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolder, projectFullPath);
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolder, projectFullPath, Guid.NewGuid().ToString());
             NuGetProjects.Add(msBuildNuGetProject);
             return msBuildNuGetProject;
         }
@@ -80,7 +80,7 @@ namespace Test.Utility
                 projectFullPath, projectName);
 
             var projectFilePath = Path.Combine(projectFullPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-            NuGetProject nuGetProject = new BuildIntegratedNuGetProject(projectJsonPath, projectFilePath, msBuildNuGetProjectSystem);
+            NuGetProject nuGetProject = new BuildIntegratedNuGetProject(projectJsonPath, projectFilePath, msBuildNuGetProjectSystem, Guid.NewGuid().ToString());
             NuGetProjects.Add(nuGetProject);
             return nuGetProject;
         }

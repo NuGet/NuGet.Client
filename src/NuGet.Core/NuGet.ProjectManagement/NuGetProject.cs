@@ -145,5 +145,7 @@ namespace NuGet.ProjectManagement
 
         // used by Project K projects
         public const string SupportedFrameworks = "SupportedFrameworks";
+
+        public const string ProjectId = "ProjectId";
     }
 }

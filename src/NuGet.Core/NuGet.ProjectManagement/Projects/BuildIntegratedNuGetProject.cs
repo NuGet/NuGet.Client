@@ -43,7 +43,8 @@ namespace NuGet.ProjectManagement.Projects
         public BuildIntegratedNuGetProject(
             string jsonConfig,
             string msBuildProjectPath,
-            IMSBuildNuGetProjectSystem msbuildProjectSystem)
+            IMSBuildNuGetProjectSystem msbuildProjectSystem,
+            string projectId = null)
         {
             if (jsonConfig == null)
             {
@@ -94,6 +95,11 @@ namespace NuGet.ProjectManagement.Projects
             InternalMetadata.Add(NuGetProjectMetadataKeys.TargetFramework, targetFramework);
             InternalMetadata.Add(NuGetProjectMetadataKeys.Name, msbuildProjectSystem.ProjectName);
             InternalMetadata.Add(NuGetProjectMetadataKeys.FullPath, msbuildProjectSystem.ProjectFullPath);
+
+            if (projectId != null)
+            {
+                InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
+            }
 
             var supported = new List<FrameworkName>
             {

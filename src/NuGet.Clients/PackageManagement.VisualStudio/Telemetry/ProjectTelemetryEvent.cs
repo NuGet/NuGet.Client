@@ -7,7 +7,7 @@ namespace NuGet.PackageManagement.Telemetry
 {
     public abstract class ProjectTelemetryEvent
     {
-        public ProjectTelemetryEvent(string nuGetVersion, Guid projectId)
+        public ProjectTelemetryEvent(string nuGetVersion, string projectId)
         {
             NuGetVersion = nuGetVersion;
             ProjectId = projectId;
@@ -21,6 +21,6 @@ namespace NuGet.PackageManagement.Telemetry
         /// <summary>
         /// The project ID related to this event.
         /// </summary>
-        public Guid ProjectId { get; }
+        public string ProjectId { get; }
     }
 }

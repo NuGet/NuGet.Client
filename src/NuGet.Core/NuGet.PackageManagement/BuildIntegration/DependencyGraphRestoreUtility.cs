@@ -63,7 +63,7 @@ namespace NuGet.PackageManagement
             return false;
         }
 
-        public static async Task RestoreAsync(
+        public static async Task<IReadOnlyList<RestoreSummary>> RestoreAsync(
             IEnumerable<IDependencyGraphProject> projects,
             IEnumerable<string> sources,
             ISettings settings,
@@ -116,10 +116,13 @@ namespace NuGet.PackageManagement
                     };
 
                     var restoreSummaries = await RestoreRunner.Run(restoreContext);
-
                     RestoreSummary.Log(referenceContext.Logger, restoreSummaries);
+
+                    return restoreSummaries;
                 }
             }
+
+            return new List<RestoreSummary>();
         }
     }
 }

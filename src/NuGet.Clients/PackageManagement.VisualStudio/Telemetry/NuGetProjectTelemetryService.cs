@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -10,6 +11,7 @@ using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
+using NuGet.VisualStudio.Facade.Telemetry;
 using EnvDTEProject = EnvDTE.Project;
 using Task = System.Threading.Tasks.Task;
 
@@ -25,72 +27,38 @@ namespace NuGet.PackageManagement.Telemetry
         private static readonly Lazy<string> NuGetVersion
             = new Lazy<string>(() => ClientVersionUtility.GetNuGetAssemblyVersion());
 
-        public static NuGetProjectTelemetryService Instance = new NuGetProjectTelemetryService(
-            NuGetTelemetryService.Instance);
+        public static NuGetProjectTelemetryService Instance =
+            new NuGetProjectTelemetryService(TelemetrySession.Instance);
 
-        private readonly NuGetTelemetryService _nuGetTelemetryService;
+        private readonly ITelemetrySession telemetrySession;
 
-        public NuGetProjectTelemetryService(NuGetTelemetryService telemetryService)
+        public NuGetProjectTelemetryService(ITelemetrySession telemetryService)
         {
             if (telemetryService == null)
             {
                 throw new ArgumentNullException(nameof(telemetryService));
             }
 
-            _nuGetTelemetryService = telemetryService;
+            telemetrySession = telemetryService;
         }
 
-        public void EmitNuGetProject(EnvDTEProject vsProject, NuGetProject nuGetProject)
+        public void EmitNuGetProject(NuGetProject nuGetProject)
         {
-            if (vsProject == null)
-            {
-                throw new ArgumentNullException(nameof(vsProject));
-            }
-
             if (nuGetProject == null)
             {
                 throw new ArgumentNullException(nameof(nuGetProject));
             }
 
             // Fire and forget. Emit the events.
-            Task.Run(() => EmitNuGetProjectAsync(vsProject, nuGetProject));
+            Task.Run(() => EmitNuGetProjectAsync(nuGetProject));
         }
 
-        private async Task EmitNuGetProjectAsync(EnvDTEProject vsProject, NuGetProject nuGetProject)
+        private async Task EmitNuGetProjectAsync(NuGetProject nuGetProject)
         {
             // Get the project details.
             var projectUniqueName = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
-            var projectId = Guid.Empty;
-            try
-            {
-                projectId = await ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
-                {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    
-                    // Get the project ID.
-                    var vsHierarchyItem = VsHierarchyUtility.GetHierarchyItemForProject(vsProject);
-                    Guid id;
-                    if (!vsHierarchyItem.TryGetProjectId(out id))
-                    {
-                        id = Guid.Empty;
-                    }
+            var projectId = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
 
-                    return id;
-                });
-            }
-            catch (Exception ex)
-            {
-                var message =
-                    $"Failed to get project name or project ID. Exception:" +
-                    Environment.NewLine +
-                    ex.ToString();
-
-                ActivityLog.LogWarning(ExceptionHelper.LogEntrySource, message);
-                Debug.Fail(message);
-
-                return;
-            }
-            
             // Emit the project information.
             try
             {
@@ -117,7 +85,7 @@ namespace NuGet.PackageManagement.Telemetry
                     projectId,
                     projectType);
 
-                _nuGetTelemetryService.EmitProjectInformation(projectInformation);
+                EmitProjectInformation(projectInformation);
             }
             catch (Exception ex)
             {
@@ -141,7 +109,7 @@ namespace NuGet.PackageManagement.Telemetry
                     projectId,
                     installedPackagesCount);
 
-                _nuGetTelemetryService.EmitProjectDependencyStatistics(projectDependencyStatistics);
+                EmitProjectDependencyStatistics(projectDependencyStatistics);
             }
             catch (Exception ex)
             {
@@ -154,5 +122,32 @@ namespace NuGet.PackageManagement.Telemetry
                 Debug.Fail(message);
             }
         }
+
+        public void EmitProjectInformation(ProjectInformation projectInformation)
+        {
+            var telemetryEvent = new TelemetryEvent(
+                TelemetryConstants.ProjectInformationEventName,
+                new Dictionary<string, object>
+                {
+                    { TelemetryConstants.NuGetProjectTypePropertyName, projectInformation.NuGetProjectType },
+                    { TelemetryConstants.NuGetVersionPropertyName, projectInformation.NuGetVersion },
+                    { TelemetryConstants.ProjectIdPropertyName, projectInformation.ProjectId.ToString() }
+                });
+            telemetrySession.PostEvent(telemetryEvent);
+        }
+
+        public void EmitProjectDependencyStatistics(ProjectDependencyStatistics projectDependencyStatistics)
+        {
+            var telemetryEvent = new TelemetryEvent(
+                TelemetryConstants.ProjectDependencyStatisticsEventName,
+                new Dictionary<string, object>
+                {
+                    { TelemetryConstants.InstalledPackageCountPropertyName, projectDependencyStatistics.InstalledPackageCount },
+                    { TelemetryConstants.NuGetVersionPropertyName, projectDependencyStatistics.NuGetVersion },
+                    { TelemetryConstants.ProjectIdPropertyName, projectDependencyStatistics.ProjectId.ToString() }
+                });
+            telemetrySession.PostEvent(telemetryEvent);
+        }
+
     }
 }

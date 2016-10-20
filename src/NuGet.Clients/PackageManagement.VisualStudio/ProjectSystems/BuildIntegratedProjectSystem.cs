@@ -28,8 +28,9 @@ namespace NuGet.PackageManagement.VisualStudio
             string msbuildProjectFilePath,
             EnvDTEProject envDTEProject,
             IMSBuildNuGetProjectSystem msbuildProjectSystem,
-            string uniqueName)
-            : base(jsonConfigPath, msbuildProjectFilePath, msbuildProjectSystem)
+            string uniqueName,
+            string projectId)
+            : base(jsonConfigPath, msbuildProjectFilePath, msbuildProjectSystem, projectId)
         {
             _envDTEProject = envDTEProject;
 
