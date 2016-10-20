@@ -16,8 +16,9 @@ namespace NuGet.PackageManagement.VisualStudio
     public static class FrameworkAssemblyResolver
     {
         // (dotNetFrameworkVersion + dotNetFrameworkProfile) is the key
-        private static readonly ConcurrentDictionary<string, List<AssemblyName>> FrameworkAssembliesDictionary = new ConcurrentDictionary<string, List<AssemblyName>>();
+        private static readonly ConcurrentDictionary<string, List<FrameworkAssembly>> FrameworkAssembliesDictionary = new ConcurrentDictionary<string, List<FrameworkAssembly>>();
         private const string NETFrameworkIdentifier = ".NETFramework";
+        private const string NETFrameworkFacadesDirectoryName = "Facades";
         internal const string FrameworkListFileName = "RedistList\\FrameworkList.xml";
 
         /// <summary>
@@ -35,43 +36,140 @@ namespace NuGet.PackageManagement.VisualStudio
         /// This function checks if there is a framework assembly of assemblyName and of version > availableVersion
         /// in targetFramework. NOTE that this function is only applicable for .NETFramework and returns false for
         /// all the other targetFrameworks
+        /// This is non-private only to facilitate unit testing.
         /// </summary>
         internal static bool IsHigherAssemblyVersionInFramework(string simpleAssemblyName,
             Version availableVersion,
             FrameworkName targetFrameworkName,
             Func<FrameworkName, IList<string>> getPathToReferenceAssembliesFunc,
-            ConcurrentDictionary<string, List<AssemblyName>> frameworkAssembliesDictionary)
+            ConcurrentDictionary<string, List<FrameworkAssembly>> frameworkAssembliesDictionary)
         {
-            if (!String.Equals(targetFrameworkName.Identifier, NETFrameworkIdentifier, StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(simpleAssemblyName))
+            {
+                throw new ArgumentException(ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(simpleAssemblyName));
+            }
+
+            if (availableVersion == null)
+            {
+                throw new ArgumentNullException(nameof(availableVersion));
+            }
+
+            if (targetFrameworkName == null)
+            {
+                throw new ArgumentNullException(nameof(targetFrameworkName));
+            }
+
+            if (getPathToReferenceAssembliesFunc == null)
+            {
+                throw new ArgumentNullException(nameof(getPathToReferenceAssembliesFunc));
+            }
+
+            if (frameworkAssembliesDictionary == null)
+            {
+                throw new ArgumentNullException(nameof(frameworkAssembliesDictionary));
+            }
+
+            if (!string.Equals(targetFrameworkName.Identifier, NETFrameworkIdentifier, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
 
-            string dotNetFrameworkVersion = targetFrameworkName.Version + targetFrameworkName.Profile;
+            var dotNetFrameworkVersion = targetFrameworkName.Version + targetFrameworkName.Profile;
 
             if (!frameworkAssembliesDictionary.ContainsKey(dotNetFrameworkVersion))
             {
-                IList<string> frameworkListFiles = getPathToReferenceAssembliesFunc(targetFrameworkName);
-                List<AssemblyName> frameworkAssemblies = GetFrameworkAssemblies(frameworkListFiles);
+                var frameworkListFiles = getPathToReferenceAssembliesFunc(targetFrameworkName);
+                var frameworkAssemblies = GetFrameworkAssemblies(frameworkListFiles);
+
                 frameworkAssembliesDictionary.AddOrUpdate(dotNetFrameworkVersion, frameworkAssemblies, (d, f) => frameworkAssemblies);
             }
 
-            // Find a frameworkAssembly with the same name as assemblyName. If one exists, see if its version is greater than that of the availableversion
-            return frameworkAssembliesDictionary[dotNetFrameworkVersion].Any(p => (String.Equals(p.Name, simpleAssemblyName, StringComparison.OrdinalIgnoreCase) && p.Version > availableVersion));
+            // Find a frameworkAssembly with the same name as assemblyName.
+            // If one exists, see if its version is greater than that of the available version.
+            return frameworkAssembliesDictionary[dotNetFrameworkVersion].Any(p =>
+                string.Equals(p.AssemblyName.Name, simpleAssemblyName, StringComparison.OrdinalIgnoreCase)
+                    && p.AssemblyName.Version > availableVersion);
         }
 
         /// <summary>
-        /// Returns the list of framework assemblies as specified in frameworklist.xml under the ReferenceAssemblies
-        /// for .NETFramework. If the file is not present, an empty list is returned
+        /// Determines if there is a facade with the simple assembly name for the given target .NET Framework.
         /// </summary>
-        private static List<AssemblyName> GetFrameworkAssemblies(IList<string> pathToFrameworkListFiles)
+        /// <param name="simpleAssemblyName">The simple assembly name (e.g.:  System.Runtime) without file extension.</param>
+        /// <param name="targetFrameworkName">The target .NET Framework.</param>
+        /// <returns><c>true</c> if the assembly is a .NET Framework facade assembly; otherwise, <c>false</c>.</returns>
+        public static bool IsFrameworkFacade(string simpleAssemblyName, FrameworkName targetFrameworkName)
         {
-            List<AssemblyName> frameworkAssemblies = new List<AssemblyName>();
-            foreach (var pathToFrameworkListFile in pathToFrameworkListFiles)
+            return IsFrameworkFacade(simpleAssemblyName, targetFrameworkName,
+                ToolLocationHelper.GetPathToReferenceAssemblies, FrameworkAssembliesDictionary);
+        }
+
+        /// <summary>
+        /// Determines if there is a facade with the simple assembly name for the given target .NET Framework.
+        /// This is non-private only to facilitate unit testing.
+        /// </summary>
+        /// <param name="simpleAssemblyName">The simple assembly name (e.g.:  System.Runtime) without file extension.</param>
+        /// <param name="targetFrameworkName">The target .NET Framework.</param>
+        /// <param name="getPathToReferenceAssembliesFunc">A function that returns .NET Framework reference assemblies directories.</param>
+        /// <param name="frameworkAssembliesDictionary">A dictionary mapping frameworks to lists of assemblies.
+        /// The dictionary may be mutated by this function.</param>
+        /// <returns><c>true</c> if the assembly is a .NET Framework facade assembly; otherwise, <c>false</c>.</returns>
+        internal static bool IsFrameworkFacade(string simpleAssemblyName,
+            FrameworkName targetFrameworkName,
+            Func<FrameworkName, IList<string>> getPathToReferenceAssembliesFunc,
+            ConcurrentDictionary<string, List<FrameworkAssembly>> frameworkAssembliesDictionary)
+        {
+            if (string.IsNullOrEmpty(simpleAssemblyName))
             {
-                if (!String.IsNullOrEmpty(pathToFrameworkListFile))
+                throw new ArgumentException(ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(simpleAssemblyName));
+            }
+
+            if (targetFrameworkName == null)
+            {
+                throw new ArgumentNullException(nameof(targetFrameworkName));
+            }
+
+            if (getPathToReferenceAssembliesFunc == null)
+            {
+                throw new ArgumentNullException(nameof(getPathToReferenceAssembliesFunc));
+            }
+
+            if (frameworkAssembliesDictionary == null)
+            {
+                throw new ArgumentNullException(nameof(frameworkAssembliesDictionary));
+            }
+
+            if (!string.Equals(targetFrameworkName.Identifier, NETFrameworkIdentifier, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            var dotNetFrameworkVersion = targetFrameworkName.Version + targetFrameworkName.Profile;
+
+            if (!frameworkAssembliesDictionary.ContainsKey(dotNetFrameworkVersion))
+            {
+                var frameworkListFiles = getPathToReferenceAssembliesFunc(targetFrameworkName);
+                var frameworkAssemblies = GetFrameworkAssemblies(frameworkListFiles);
+
+                frameworkAssembliesDictionary.AddOrUpdate(dotNetFrameworkVersion, frameworkAssemblies, (d, f) => frameworkAssemblies);
+            }
+
+            return frameworkAssembliesDictionary[dotNetFrameworkVersion].Any(p =>
+                p.IsFacade && string.Equals(p.AssemblyName.Name, simpleAssemblyName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Returns the list of framework assemblies as specified in  RedistList\FrameworkList.xml under the
+        /// ReferenceAssemblies directory for .NETFramework. If the file is not present, an empty list is returned.
+        /// </summary>
+        private static List<FrameworkAssembly> GetFrameworkAssemblies(IList<string> referenceAssembliesPaths)
+        {
+            var frameworkAssemblies = new List<FrameworkAssembly>();
+
+            foreach (var referenceAssembliesPath in referenceAssembliesPaths)
+            {
+                if (!string.IsNullOrEmpty(referenceAssembliesPath))
                 {
-                    frameworkAssemblies.AddRange(GetFrameworkAssemblies(pathToFrameworkListFile));
+                    frameworkAssemblies.AddRange(GetFrameworkAssemblies(referenceAssembliesPath));
                 }
             }
 
@@ -79,17 +177,20 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <summary>
-        /// Given a fileSystem to the path containing RedistList\Frameworklist.xml file
-        /// return the list of assembly names read out from the xml file
+        /// Given a file system path containing RedistList\FrameworkList.xml file
+        /// return the list of assembly names read out from the XML file.
         /// </summary>
-        internal static List<AssemblyName> GetFrameworkAssemblies(string pathToFrameworkListFile)
+        private static List<FrameworkAssembly> GetFrameworkAssemblies(string referenceAssembliesPath)
         {
-            List<AssemblyName> frameworkAssemblies = new List<AssemblyName>();
+            var frameworkAssemblies = new List<FrameworkAssembly>();
+
             try
             {
-                if (FileSystemUtility.FileExists(pathToFrameworkListFile, FrameworkListFileName))
+                if (FileSystemUtility.FileExists(referenceAssembliesPath, FrameworkListFileName))
                 {
-                    using (Stream stream = File.OpenRead(FileSystemUtility.GetFullPath(pathToFrameworkListFile, FrameworkListFileName)))
+                    var facadeNames = GetFrameworkFacadeNames(referenceAssembliesPath);
+
+                    using (var stream = File.OpenRead(FileSystemUtility.GetFullPath(referenceAssembliesPath, FrameworkListFileName)))
                     {
                         var document = XmlUtility.LoadSafe(stream);
                         var root = document.Root;
@@ -97,8 +198,8 @@ namespace NuGet.PackageManagement.VisualStudio
                         {
                             foreach (var element in root.Elements("File"))
                             {
-                                string simpleAssemblyName = element.GetOptionalAttributeValue("AssemblyName");
-                                string version = element.GetOptionalAttributeValue("Version");
+                                var simpleAssemblyName = element.GetOptionalAttributeValue("AssemblyName");
+                                var version = element.GetOptionalAttributeValue("Version");
                                 if (simpleAssemblyName == null
                                     || version == null)
                                 {
@@ -107,10 +208,15 @@ namespace NuGet.PackageManagement.VisualStudio
                                     frameworkAssemblies.Clear();
                                     break;
                                 }
-                                AssemblyName assemblyName = new AssemblyName();
+
+                                var assemblyName = new AssemblyName();
                                 assemblyName.Name = simpleAssemblyName;
                                 assemblyName.Version = new Version(version);
-                                frameworkAssemblies.Add(assemblyName);
+
+                                var isFacade = facadeNames.Contains(simpleAssemblyName);
+                                var frameworkAssembly = new FrameworkAssembly(assemblyName, isFacade);
+
+                                frameworkAssemblies.Add(frameworkAssembly);
                             }
                         }
                     }
@@ -121,6 +227,24 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return frameworkAssemblies;
+        }
+
+        private static ISet<string> GetFrameworkFacadeNames(string frameworkDirectory)
+        {
+            var facadeNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            if (!FileSystemUtility.DirectoryExists(frameworkDirectory, NETFrameworkFacadesDirectoryName))
+            {
+                return facadeNames;
+            }
+
+            foreach (var facadeName in FileSystemUtility.GetFiles(frameworkDirectory, NETFrameworkFacadesDirectoryName, "*.dll", recursive: false)
+                                                        .Select(filePath => Path.GetFileNameWithoutExtension(filePath)))
+            {
+                facadeNames.Add(facadeName);
+            }
+
+            return facadeNames;
         }
     }
 }

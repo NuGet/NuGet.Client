@@ -147,6 +147,7 @@
     <Compile Include="Telemetry\NuGetProjectTelemetryService.cs" />
     <Compile Include="Telemetry\NuGetTelemetryService.cs" />
     <Compile Include="Utility\EnvDTESolutionUtility.cs" />
+    <Compile Include="Utility\FrameworkAssembly.cs" />
     <Compile Include="Utility\FrameworkAssemblyResolver.cs" />
     <Compile Include="Utility\MessageHelper.cs" />
     <Compile Include="Utility\NativeMethods.cs" />
