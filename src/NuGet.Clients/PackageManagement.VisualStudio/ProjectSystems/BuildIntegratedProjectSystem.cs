@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement.VisualStudio
     /// <summary>
     /// A nuget aware project system containing a .json file instead of a packages.config file
     /// </summary>
-    public class BuildIntegratedProjectSystem : BuildIntegratedNuGetProject
+    public class BuildIntegratedProjectSystem : ProjectJsonBuildIntegratedNuGetProject
     {
         private readonly EnvDTEProject _envDTEProject;
         private IScriptExecutor _scriptExecutor;
@@ -28,9 +28,8 @@ namespace NuGet.PackageManagement.VisualStudio
             string jsonConfigPath,
             string msbuildProjectFilePath,
             EnvDTEProject envDTEProject,
-            IMSBuildNuGetProjectSystem msbuildProjectSystem,
             string uniqueName)
-            : base(jsonConfigPath, msbuildProjectFilePath, msbuildProjectSystem)
+            : base(jsonConfigPath, msbuildProjectFilePath)
         {
             _envDTEProject = envDTEProject;
 

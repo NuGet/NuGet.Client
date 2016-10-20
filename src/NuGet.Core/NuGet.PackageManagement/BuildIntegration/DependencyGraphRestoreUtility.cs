@@ -165,7 +165,7 @@ namespace NuGet.PackageManagement
             request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
 
             // Add the existing lock file if it exists
-            var lockFilePath = ProjectJsonPathUtilities.GetLockFilePath(project.JsonConfigPath);
+            var lockFilePath = project.AssetsFilePath;
             request.LockFilePath = lockFilePath;
             request.ExistingLockFile = LockFileUtilities.GetLockFile(lockFilePath, logger);
 
@@ -226,7 +226,7 @@ namespace NuGet.PackageManagement
                 // Restore
                 var result = await PreviewRestoreAsync(
                     project,
-                    project.PackageSpec,
+                    await project.GetPackageSpecAsync(context),
                     context,
                     providers,
                     cacheContext,
