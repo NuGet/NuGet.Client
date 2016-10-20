@@ -39,7 +39,15 @@
           <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.15.0.183-pre\lib\net451\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
           <EmbedInteropTypes>True</EmbedInteropTypes>
         </Reference>
-      </ItemGroup>
+        <Reference Include="VSLangProj140, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+          <HintPath>$(MSBuildToolsPath)\..\..\..\Common7\IDE\PublicAssemblies\VSLangProj140.dll</HintPath>
+          <SpecificVersion>False</SpecificVersion>
+          <EmbedInteropTypes>True</EmbedInteropTypes>
+        </Reference>
+        <Reference Include="VSLangProj150">
+          <HintPath>$(EnlistmentRoot)\lib\VSLangProj150.dll</HintPath>
+          <EmbedInteropTypes>True</EmbedInteropTypes>
+        </Reference>      </ItemGroup>
     </When>
   </Choose>
   <ItemGroup>
