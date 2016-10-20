@@ -87,7 +87,8 @@ namespace NuGet.PackageManagement.VisualStudio
             // Find a frameworkAssembly with the same name as assemblyName.
             // If one exists, see if its version is greater than that of the available version.
             return frameworkAssembliesDictionary[dotNetFrameworkVersion].Any(p =>
-                string.Equals(p.AssemblyName.Name, simpleAssemblyName, StringComparison.OrdinalIgnoreCase)
+                !p.IsFacade
+                    && string.Equals(p.AssemblyName.Name, simpleAssemblyName, StringComparison.OrdinalIgnoreCase)
                     && p.AssemblyName.Version > availableVersion);
         }
 
