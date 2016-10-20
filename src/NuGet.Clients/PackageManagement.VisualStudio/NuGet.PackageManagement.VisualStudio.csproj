@@ -39,6 +39,10 @@
           <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.15.0.183-pre\lib\net451\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
           <EmbedInteropTypes>True</EmbedInteropTypes>
         </Reference>
+        <Reference Include="Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime">
+          <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime.15.0.0\lib\\Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime.dll</HintPath>
+          <EmbedInteropTypes>True</EmbedInteropTypes>
+        </Reference>
       </ItemGroup>
     </When>
   </Choose>
