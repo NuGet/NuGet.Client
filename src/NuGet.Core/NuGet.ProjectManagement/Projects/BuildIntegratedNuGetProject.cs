@@ -193,18 +193,56 @@ namespace NuGet.ProjectManagement.Projects
             }
         }
 
-        public Task<PackageSpec> GetPackageSpecAsync(DependencyGraphCacheContext context)
+        public async Task<PackageSpec> GetPackageSpecAsync(DependencyGraphCacheContext context)
         {
             PackageSpec packageSpec = null;
             if (context != null && context.PackageSpecCache.TryGetValue(MSBuildProjectPath, out packageSpec))
             {
-                return Task.FromResult<PackageSpec>(packageSpec);
+
             }
             else
             {
+                packageSpec = PackageSpec;
+                var metadata = new ProjectRestoreMetadata();
+                packageSpec.RestoreMetadata = metadata;
+
+                metadata.OutputType = RestoreOutputType.UAP;
+                metadata.ProjectPath = MSBuildProjectPath;
+                metadata.ProjectJsonPath = packageSpec.FilePath;
+                metadata.ProjectName = packageSpec.Name;
+                metadata.ProjectUniqueName = MSBuildProjectPath;
+
+                IReadOnlyList<IDependencyGraphProject> references = await GetDirectProjectReferencesAsync(context);
+                if (references != null && references.Count > 0)
+                {
+                    // Add msbuild reference groups for each TFM in the project
+                    foreach (var framework in packageSpec.TargetFrameworks.Select(e => e.FrameworkName))
+                    {
+                        metadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(framework));
+                    }
+
+                    foreach (var reference in references)
+                    {
+                        // This reference applies to all frameworks
+                        // Include/exclude flags may be applied later when merged with project.json
+                        var projectReference = new ProjectRestoreReference
+                        {
+                            ProjectUniqueName = reference.MSBuildProjectPath,
+                            ProjectPath = reference.MSBuildProjectPath
+                        };
+
+                        // Add the reference for all TFM groups, there are no conditional project
+                        // references in UWP. There should also be just one TFM.
+                        foreach (var frameworkInfo in metadata.TargetFrameworks)
+                        {
+                            frameworkInfo.ProjectReferences.Add(projectReference);
+                        }
+                    }
+                }
+
                 context?.PackageSpecCache.Add(MSBuildProjectPath, PackageSpec);
-                return Task.FromResult<PackageSpec>(PackageSpec);
             }
+            return packageSpec;
         }
 
         public virtual async Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(DependencyGraphCacheContext context)

@@ -32,9 +32,9 @@ namespace NuGet.ProjectManagement
             new Dictionary<string, PackageSpec>(StringComparer.Ordinal);
 
         /// <summary>
-        /// Unique name to last modified
+        /// Cache for direct project references of a project
         /// </summary>
-        public Dictionary<string, DateTimeOffset> LastModified { get; set; } = new Dictionary<string, DateTimeOffset>(StringComparer.Ordinal);
+        public Dictionary<string, IReadOnlyList<IDependencyGraphProject>> DirectReferenceCache { get; set; } = new Dictionary<string, IReadOnlyList<IDependencyGraphProject>>(StringComparer.Ordinal);
 
         public DependencyGraphSpec SolutionSpec { get; set; }
 

@@ -100,22 +100,33 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override Task<IReadOnlyList<IDependencyGraphProject>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)
         {
-            var solutionManager = (VSSolutionManager)ServiceLocator.GetInstance<ISolutionManager>();
-            var list = new List<IDependencyGraphProject>();
-            if (solutionManager != null && EnvDTEProjectUtility.SupportsReferences(_envDTEProject))
+            IReadOnlyList<IDependencyGraphProject> references = null;
+            if (context != null && context.DirectReferenceCache.TryGetValue(MSBuildProjectPath, out references))
             {
-                foreach (var referencedProject in EnvDTEProjectUtility.GetReferencedProjects(_envDTEProject))
+
+            }
+            else
+            {
+                var solutionManager = (VSSolutionManager)ServiceLocator.GetInstance<ISolutionManager>();
+                var list = new List<IDependencyGraphProject>();
+                if (solutionManager != null && EnvDTEProjectUtility.SupportsReferences(_envDTEProject))
                 {
-                    var nugetProject = EnvDTEProjectUtility.GetNuGetProject(referencedProject, solutionManager);
-                    var dependencyGraphProject = nugetProject as IDependencyGraphProject;
-                    if (dependencyGraphProject != null)
+                    foreach (var referencedProject in EnvDTEProjectUtility.GetReferencedProjects(_envDTEProject))
                     {
-                        list.Add(dependencyGraphProject);
+                        var nugetProject = EnvDTEProjectUtility.GetNuGetProject(referencedProject, solutionManager);
+                        var dependencyGraphProject = nugetProject as IDependencyGraphProject;
+                        if (dependencyGraphProject != null)
+                        {
+                            list.Add(dependencyGraphProject);
+                        }
                     }
                 }
+
+                references = list.AsReadOnly();
+                context?.DirectReferenceCache.Add(MSBuildProjectPath, references);
             }
 
-            return Task.FromResult<IReadOnlyList<IDependencyGraphProject>>(list.AsReadOnly());
+            return Task.FromResult<IReadOnlyList<IDependencyGraphProject>>(references);
         }
     }
 }
