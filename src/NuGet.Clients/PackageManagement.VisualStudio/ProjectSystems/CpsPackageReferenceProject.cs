@@ -23,7 +23,7 @@ namespace NuGet.PackageManagement.VisualStudio
     /// Key feature/difference is the project restore info is pushed by nomination API and stored in 
     /// a cache. Factory method retrieving the info from the cache should be provided.
     /// </summary>
-    public class CpsPackageReferenceProject : NuGetProject, INuGetIntegratedProject, IDependencyGraphProject
+    public class CpsPackageReferenceProject : BuildIntegratedNuGetProject
     {
         private readonly string _projectName;
         private readonly string _projectUniqueName;
@@ -60,51 +60,70 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #region IDependencyGraphProject
 
+        public override string AssetsFilePath { get; }
+
         /// <summary>
         /// Making this timestamp as the current time means that a restore with this project in the graph
         /// will never no-op. We do this to keep this work-around implementation simple.
         /// </summary>
-        public DateTimeOffset LastModified => DateTimeOffset.Now;
+        public override DateTimeOffset LastModified => DateTimeOffset.Now;
 
-        public string MSBuildProjectPath => _projectFullPath;
+        public override string MSBuildProjectPath => _projectFullPath;
 
-        public IReadOnlyList<PackageSpec> GetPackageSpecsForRestore(
-            ExternalProjectReferenceContext context)
+
+
+        public override Tasks.Task<PackageSpec> GetPackageSpecAsync(DependencyGraphCacheContext context)
         {
-            var packageSpec = _packageSpecFactory();
-            if (packageSpec != null)
-            {
-                return new[] { packageSpec };
-            }
-
-            return new PackageSpec[0];
+            throw new NotImplementedException();
         }
 
-        public async Tasks.Task<IReadOnlyList<ExternalProjectReference>> GetProjectReferenceClosureAsync(
-            ExternalProjectReferenceContext context)
+        public override Tasks.Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(DependencyGraphCacheContext context)
         {
-            await Tasks.TaskScheduler.Default;
-
-            var externalProjectReferences = new HashSet<ExternalProjectReference>();
-
-            var packageSpec = _packageSpecFactory();
-            if (packageSpec != null)
-            {
-                var projectReferences = GetProjectReferences(packageSpec);
-
-                var reference = new ExternalProjectReference(
-                    packageSpec.RestoreMetadata.ProjectPath,
-                    packageSpec,
-                    packageSpec.RestoreMetadata.ProjectPath,
-                    projectReferences);
-
-                externalProjectReferences.Add(reference);
-            }
-
-            return DependencyGraphProjectCacheUtility
-                .GetExternalClosure(_projectFullPath, externalProjectReferences)
-                .ToList();
+            throw new NotImplementedException();
         }
+
+        public override Tasks.Task<IReadOnlyList<IDependencyGraphProject>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        //public IReadOnlyList<PackageSpec> GetPackageSpecsForRestore(
+        //    DependencyGraphCacheContext context)
+        //{
+        //    var packageSpec = _packageSpecFactory();
+        //    if (packageSpec != null)
+        //    {
+        //        return new[] { packageSpec };
+        //    }
+
+        //    return new PackageSpec[0];
+        //}
+
+        //public async Tasks.Task<IReadOnlyList<ExternalProjectReference>> GetProjectReferenceClosureAsync(
+        //    DependencyGraphCacheContext context)
+        //{
+        //    await Tasks.TaskScheduler.Default;
+
+        //    var externalProjectReferences = new HashSet<ExternalProjectReference>();
+
+        //    var packageSpec = _packageSpecFactory();
+        //    if (packageSpec != null)
+        //    {
+        //        var projectReferences = GetProjectReferences(packageSpec);
+
+        //        var reference = new ExternalProjectReference(
+        //            packageSpec.RestoreMetadata.ProjectPath,
+        //            packageSpec,
+        //            packageSpec.RestoreMetadata.ProjectPath,
+        //            projectReferences);
+
+        //        externalProjectReferences.Add(reference);
+        //    }
+
+        //    return DependencyGraphProjectCacheUtility
+        //        .GetExternalClosure(_projectFullPath, externalProjectReferences)
+        //        .ToList();
+        //}
 
         private static string[] GetProjectReferences(PackageSpec packageSpec)
         {
@@ -122,15 +141,23 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Select(l => l.Name);
         }
 
-        public bool IsRestoreRequired(IEnumerable<VersionFolderPathResolver> pathResolvers, ISet<PackageIdentity> packagesChecked, ExternalProjectReferenceContext context)
+        public override Tasks.Task<bool> IsRestoreRequired(IEnumerable<VersionFolderPathResolver> pathResolvers, ISet<PackageIdentity> packagesChecked, DependencyGraphCacheContext context)
         {
             // TODO: when the real implementation of NuGetProject for CPS PackageReference is completed, more
             // sophisticated restore no-op detection logic is required. Always returning true means that every build
             // will result in a restore.
 
             var packageSpec = _packageSpecFactory();
-            return packageSpec != null;
+            return Tasks.Task.FromResult<bool>(packageSpec != null);
         }
+
+        public override Tasks.Task<bool> ExecuteInitScriptAsync(PackageIdentity identity, string packageInstallPath, INuGetProjectContext projectContext,
+            bool throwOnFailure)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override string ProjectName { get; }
 
         #endregion
 
