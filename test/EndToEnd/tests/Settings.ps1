@@ -64,5 +64,5 @@ function Test-GetMachineWideSettingBaseDirectoryInVSIX {
 	$machineWideSettingsBaseDirActual = [NuGet.Common.NuGetEnvironment]::GetFolderPath([NuGet.Common.NuGetFolderPath]::MachineWideSettingsBaseDirectory)
 
 	# Assert
-	Assert-StringEqual $machineWideSettingsBaseDirActual  $machineWideSettingsBaseDirExpected $True
+	Assert-StringEqual $machineWideSettingsBaseDirActual  $machineWideSettingsBaseDirExpected -CaseSensitive $True
 }
