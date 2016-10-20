@@ -255,6 +255,22 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.False(actualResult);
             Assert.Equal(0, _dictionary.Count);
         }
+
+        [Theory]
+        [InlineData("System.Collections")]
+        [InlineData("System.Runtime")]
+        public void FrameworkAssemblyResolver_IsHigherAssemblyVersionInFramework_DoesNotSupportFacadeAssemblies(string simpleAssemblyName)
+        {
+            var actualResult = FrameworkAssemblyResolver.IsHigherAssemblyVersionInFramework(
+                simpleAssemblyName,
+                new Version("3.0.0"),
+                _frameworkName,
+                frameworkName => new List<string>() { _fixture.Path },
+                _dictionary);
+
+            Assert.False(actualResult);
+            Assert.Equal(1, _dictionary.Count);
+        }
     }
 
     /*
