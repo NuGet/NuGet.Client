@@ -22,5 +22,10 @@ namespace NuGet.SolutionRestoreManager
         /// Target frameworks metadata.
         /// </summary>
         IVsTargetFrameworks TargetFrameworks { get; }
+
+        /// <summary>
+        /// Collection of tool references.
+        /// </summary>
+        IVsReferenceItems ToolReferences { get; }
     }
 }
