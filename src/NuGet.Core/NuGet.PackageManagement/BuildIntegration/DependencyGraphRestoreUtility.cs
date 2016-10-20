@@ -80,6 +80,48 @@ namespace NuGet.PackageManagement
             return restoreContext;
         }
 
+        public static async Task RestoreAsync(
+           IEnumerable<IDependencyGraphProject> projects,
+           IEnumerable<string> sources,
+           ISettings settings,
+           DependencyGraphCacheContext cacheContext)
+        {
+            var pathContext = NuGetPathContext.Create(settings);
+            var dgSpec = cacheContext.SolutionSpec;
+
+            // Check if there are actual projects to restore before running.
+            if (dgSpec.Restore.Count > 0)
+            {
+                using (var sourceCacheContext = new SourceCacheContext())
+                {
+                    var providers = new List<IPreLoadedRestoreRequestProvider>();
+                    var providerCache = new RestoreCommandProvidersCache();
+                    providers.Add(new DependencyGraphSpecRequestProvider(providerCache, dgSpec));
+
+                    var sourceProvider = new CachingSourceProvider(new PackageSourceProvider(settings));
+
+                    var restoreContext = new RestoreArgs
+                    {
+                        CacheContext = sourceCacheContext,
+                        LockFileVersion = LockFileFormat.Version,
+                        ConfigFile = null,
+                        DisableParallel = false,
+                        GlobalPackagesFolder = pathContext.UserPackageFolder,
+                        Log = cacheContext.Logger,
+                        MachineWideSettings = new XPlatMachineWideSetting(),
+                        PreLoadedRequestProviders = providers,
+                        CachingSourceProvider = sourceProvider,
+                        Sources = sources.ToList(),
+                        FallbackSources = pathContext.FallbackPackageFolders.ToList()
+                    };
+
+                    var restoreSummaries = await RestoreRunner.Run(restoreContext);
+
+                    RestoreSummary.Log(cacheContext.Logger, restoreSummaries);
+                }
+            }
+        }
+
         /// <summary>
         /// Restore without writing the lock file
         /// </summary>
@@ -97,8 +139,8 @@ namespace NuGet.PackageManagement
                 Strings.BuildIntegratedPackageRestoreStarted,
                 project.ProjectName));
 
-            var dgFile = await project.GetDependencyGraphSpecAsync();
-            var args = GetRestoreArgs()
+            //var dgFile = await project.GetDependencyGraphSpecAsync();
+            //var args = GetRestoreArgs();
 
             var request = new RestoreRequest(packageSpec, providers, cacheContext, logger);
             request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
@@ -180,6 +222,79 @@ namespace NuGet.PackageManagement
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Find the list of child projects direct or indirect references of target project in
+        /// reverse dependency order like the least dependent package first.
+        /// </summary>
+        public static IEnumerable<BuildIntegratedNuGetProject> GetChildProjectsInClosure(
+            BuildIntegratedNuGetProject target,
+            IReadOnlyList<BuildIntegratedNuGetProject> projects,
+            DependencyGraphSpec cache)
+        {
+            if (projects == null)
+            {
+                throw new ArgumentNullException(nameof(projects));
+            }
+
+            if (target == null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
+
+            var orderedChildren = new List<BuildIntegratedNuGetProject>();
+
+            var listOfPackageSpecs = cache.GetClosure(target.MSBuildProjectPath);
+
+            foreach (var spec in listOfPackageSpecs)
+            {
+                var proj = projects.FirstOrDefault(p => p.MSBuildProjectPath == spec.RestoreMetadata.ProjectUniqueName);
+                orderedChildren.Add(proj);
+            }
+
+            return orderedChildren;
+        }
+
+        /// <summary>
+        /// Restore a build integrated project and update the lock file
+        /// </summary>
+        public static async Task<RestoreResult> RestoreProjectAsync(
+            BuildIntegratedNuGetProject project,
+            DependencyGraphCacheContext context,
+            IEnumerable<SourceRepository> sources,
+            string effectiveGlobalPackagesFolder,
+            IEnumerable<string> fallbackPackageFolders,
+            Action<SourceCacheContext> cacheContextModifier,
+            CancellationToken token)
+        {
+            using (var cacheContext = new SourceCacheContext())
+            {
+                cacheContextModifier(cacheContext);
+
+                var providers = RestoreCommandProviders.Create(effectiveGlobalPackagesFolder,
+                    fallbackPackageFolders,
+                    sources,
+                    cacheContext,
+                    context.Logger);
+
+                // Restore
+                var result = await PreviewRestoreAsync(
+                    project,
+                    await project.GetPackageSpecAsync(context),
+                    context,
+                    providers,
+                    cacheContext,
+                    token);
+
+                // Throw before writing if this has been canceled
+                token.ThrowIfCancellationRequested();
+
+                // Write out the lock file and msbuild files
+                await result.CommitAsync(context.Logger, token);
+
+                return result;
+            }
         }
     }
 }

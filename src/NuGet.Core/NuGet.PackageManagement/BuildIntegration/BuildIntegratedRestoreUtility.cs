@@ -130,5 +130,48 @@ namespace NuGet.PackageManagement
 
             return results;
         }
+
+        /// <summary>
+        /// Find the list of parent projects which directly or indirectly reference the child project.
+        /// </summary>
+        public static IReadOnlyList<BuildIntegratedNuGetProject> GetParentProjectsInClosure(
+            IReadOnlyList<BuildIntegratedNuGetProject> projects,
+            BuildIntegratedNuGetProject target,
+            DependencyGraphSpec cache)
+        {
+            if (projects == null)
+            {
+                throw new ArgumentNullException(nameof(projects));
+            }
+
+            if (target == null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
+
+            if (cache == null)
+            {
+                throw new ArgumentNullException(nameof(cache));
+            }
+
+            var listOfParents = cache.GetParents(target.MSBuildProjectPath);
+
+            var parentNuGetprojects = new HashSet<BuildIntegratedNuGetProject>();
+
+            foreach (var parent in listOfParents)
+            {
+                // do not count the target as a parent
+                var nugetProject = projects.FirstOrDefault(r => r.MSBuildProjectPath == parent);
+                if (nugetProject != null && !nugetProject.Equals(target))
+                {
+                    parentNuGetprojects.Add(nugetProject);
+                }
+            }
+
+            // sort parents by path to make this more deterministic during restores
+            return parentNuGetprojects
+                .OrderBy(parent => parent.MSBuildProjectPath, StringComparer.Ordinal)
+                .ToList();
+        }
     }
 }
