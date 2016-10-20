@@ -59,6 +59,7 @@ gci -r project.json | %{ $_.FullName } | ReplaceTextInFiles -old $OldVersion -ne
 
 $miscFiles = @(
     "src\NuGet.Clients\VsExtension\NuGetPackage.cs",
+    "src\NuGet.Clients\NuGet.CommandLine\NuGet.CommandLine.nuspec",
     "build\common.props",
     "build\common.ps1",
     ".teamcity.properties",

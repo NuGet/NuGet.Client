@@ -1,5 +1,5 @@
 {
-  "version": "3.6.0-*",
+  "version": "4.0.0-*",
   "dependencies": {
     "NuGet.Protocol.Core.v3": {
       "target": "project"
