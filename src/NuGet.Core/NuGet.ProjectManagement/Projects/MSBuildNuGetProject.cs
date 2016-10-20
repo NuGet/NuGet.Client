@@ -599,18 +599,12 @@ namespace NuGet.ProjectManagement
             return Task.FromResult<bool>(false);
         }
 
-        public Task<PackageSpec> GetPackageSpecAsync()
+        public async Task<PackageSpec> GetPackageSpecAsync(DependencyGraphCacheContext context)
         {
-            return GetPackageSpecAsync(new DependencyGraphCacheContext());
-        }
-
-        public Task<PackageSpec> GetPackageSpecAsync(DependencyGraphCacheContext context)
-        {
-            DependencyGraphSpec dgSpec = null;
             PackageSpec packageSpec = null;
-            if (context != null && context.Cache.TryGetValue(MSBuildNuGetProjectSystem.ProjectFileFullPath, out dgSpec))
+            if (context != null && context.PackageSpecCache.TryGetValue(MSBuildNuGetProjectSystem.ProjectFileFullPath, out packageSpec))
             {
-               packageSpec =  dgSpec.GetProjectSpec(MSBuildNuGetProjectSystem.ProjectFileFullPath);
+               
             }
             else
             {
@@ -634,21 +628,38 @@ namespace NuGet.ProjectManagement
                 metadata.ProjectPath = MSBuildNuGetProjectSystem.ProjectFileFullPath;
                 metadata.ProjectName = MSBuildNuGetProjectSystem.ProjectName;
                 metadata.ProjectUniqueName = MSBuildNuGetProjectSystem.ProjectFileFullPath;
-                
-                // Do we need to cache this package spec?
-            }
-            return Task.FromResult<PackageSpec>(packageSpec);
-        }
 
-        public Task<DependencyGraphSpec> GetDependencyGraphSpecAsync()
-        {
-            return GetDependencyGraphSpecAsync(new DependencyGraphCacheContext());
+                IReadOnlyList<IDependencyGraphProject> references = await GetDirectProjectReferencesAsync(context);
+                if (references != null && references.Count > 0)
+                {
+                    // Add framework group
+                    var frameworkGroup = new ProjectRestoreMetadataFrameworkInfo(MSBuildNuGetProjectSystem.TargetFramework);
+                    metadata.TargetFrameworks.Add(frameworkGroup);
+
+                    foreach (var reference in references)
+                    {
+                        // This reference applies to all frameworks
+                        // Include/exclude flags are not possible for this project type
+                        var projectReference = new ProjectRestoreReference
+                        {
+                            ProjectUniqueName = reference.MSBuildProjectPath,
+                            ProjectPath = reference.MSBuildProjectPath
+                        };
+
+                        frameworkGroup.ProjectReferences.Add(projectReference);
+                    }
+                }
+
+                context?.PackageSpecCache.Add(MSBuildProjectPath, packageSpec);
+            }
+
+            return packageSpec;
         }
 
         public async Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(DependencyGraphCacheContext context)
         {
             DependencyGraphSpec dgSpec = null;
-            if (context != null && context.Cache.TryGetValue(MSBuildNuGetProjectSystem.ProjectFileFullPath, out dgSpec))
+            if (context != null && context.DependencyGraphCache.TryGetValue(MSBuildNuGetProjectSystem.ProjectFileFullPath, out dgSpec))
             {
                 return dgSpec;
             }
@@ -668,62 +679,6 @@ namespace NuGet.ProjectManagement
             return Task.FromResult<IReadOnlyList<IDependencyGraphProject>>(
                 Enumerable.Empty<IDependencyGraphProject>().ToList());
         }
-
-        //public virtual Task<IReadOnlyList<ExternalProjectReference>> GetProjectReferenceClosureAsync(
-        //    ExternalProjectReferenceContext context)
-        //{
-        //    // This cannot be resolved with DTE currently, it is overridden at a higher level
-        //    return Task.FromResult<IReadOnlyList<ExternalProjectReference>>(
-        //        Enumerable.Empty<ExternalProjectReference>().ToList());
-        //}
-
-        //public IReadOnlyList<PackageSpec> GetPackageSpecsForRestore(ExternalProjectReferenceContext referenceContext)
-        //{
-        //    var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>
-        //    {
-        //        new TargetFrameworkInformation
-        //        {
-        //            FrameworkName = MSBuildNuGetProjectSystem.TargetFramework
-        //        }
-        //    });
-        //    packageSpec.Name = MSBuildNuGetProjectSystem.ProjectName;
-        //    packageSpec.FilePath = MSBuildNuGetProjectSystem.ProjectFileFullPath;
-
-        //    // A packages.config project does not follow the typical restore flow so there is no need to add package
-        //    // dependencides to the package spec. Packages.config package restoration is done elsewhere.
-
-        //    var metadata = new ProjectRestoreMetadata();
-        //    packageSpec.RestoreMetadata = metadata;
-
-        //    metadata.OutputType = RestoreOutputType.Unknown;
-        //    metadata.ProjectPath = MSBuildNuGetProjectSystem.ProjectFileFullPath;
-        //    metadata.ProjectName = MSBuildNuGetProjectSystem.ProjectName;
-        //    metadata.ProjectUniqueName = MSBuildNuGetProjectSystem.ProjectFileFullPath;
-
-        //    IReadOnlyList<ExternalProjectReference> references = null;
-        //    if (referenceContext.DirectReferenceCache.TryGetValue(metadata.ProjectPath, out references)
-        //        && references.Count > 0)
-        //    {
-        //        // Add framework group
-        //        var frameworkGroup = new ProjectRestoreMetadataFrameworkInfo(MSBuildNuGetProjectSystem.TargetFramework);
-        //        metadata.TargetFrameworks.Add(frameworkGroup);
-
-        //        foreach (var reference in references)
-        //        {
-        //            // This reference applies to all frameworks
-        //            // Include/exclude flags are not possible for this project type
-        //            var projectReference = new ProjectRestoreReference
-        //            {
-        //                ProjectUniqueName = reference.UniqueName,
-        //                ProjectPath = reference.MSBuildProjectPath
-        //            };
-
-        //            frameworkGroup.ProjectReferences.Add(projectReference);
-        //        }
-        //    }
-
-        //    return new List<PackageSpec>() { packageSpec };
-        //}
     }
 
     public static class PowerShellScripts

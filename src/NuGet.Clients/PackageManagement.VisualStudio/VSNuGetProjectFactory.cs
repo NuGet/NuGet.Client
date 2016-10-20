@@ -102,7 +102,6 @@ namespace NuGet.PackageManagement.VisualStudio
                                 projectJsonPath,
                                 msbuildProjectFile.FullName,
                                 envDTEProject,
-                                msBuildNuGetProjectSystem,
                                 EnvDTEProjectUtility.GetCustomUniqueName(envDTEProject));
                         }
                     }

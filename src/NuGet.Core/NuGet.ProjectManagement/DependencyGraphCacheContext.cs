@@ -22,13 +22,19 @@ namespace NuGet.ProjectManagement
         /// <summary>
         /// Unique name to dg
         /// </summary>
-        public Dictionary<string, DependencyGraphSpec> Cache { get; set; } =
+        public Dictionary<string, DependencyGraphSpec> DependencyGraphCache { get; set; } =
             new Dictionary<string, DependencyGraphSpec>(StringComparer.Ordinal);
 
         /// <summary>
-        /// Unique name to last modified
+        /// Unique name to PackageSpec
         /// </summary>
-        public Dictionary<string, DateTimeOffset> LastModified { get; set; } = new Dictionary<string, DateTimeOffset>(StringComparer.Ordinal);
+        public Dictionary<string, PackageSpec> PackageSpecCache { get; set; } =
+            new Dictionary<string, PackageSpec>(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Cache for direct project references of a project
+        /// </summary>
+        public Dictionary<string, IReadOnlyList<IDependencyGraphProject>> DirectReferenceCache { get; set; } = new Dictionary<string, IReadOnlyList<IDependencyGraphProject>>(StringComparer.Ordinal);
 
         public DependencyGraphSpec SolutionSpec { get; set; }
 

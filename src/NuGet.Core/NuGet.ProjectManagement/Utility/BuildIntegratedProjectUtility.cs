@@ -57,7 +57,7 @@ namespace NuGet.ProjectManagement
         /// </summary>
         public static LockFile GetLockFileOrNull(BuildIntegratedNuGetProject buildIntegratedProject)
         {
-            var lockFilePath = ProjectJsonPathUtilities.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
+            var lockFilePath = buildIntegratedProject.AssetsFilePath;
             return GetLockFileOrNull(lockFilePath);
         }
 

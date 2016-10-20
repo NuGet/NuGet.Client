@@ -92,7 +92,6 @@
     <Compile Include="IDE\EnvDTEProjectName.cs" />
     <Compile Include="IDE\IScriptExecutor.cs" />
     <Compile Include="ScriptExecutionRequest.cs" />
-    <Compile Include="IDE\VSProjectReferenceUtility.cs" />
     <Compile Include="ProjectSystems\VSMSBuildNuGetProject.cs" />
     <Compile Include="Telemetry\ProjectTelemetryEvent.cs" />
     <Compile Include="IDE\PackageInitPS1State.cs" />

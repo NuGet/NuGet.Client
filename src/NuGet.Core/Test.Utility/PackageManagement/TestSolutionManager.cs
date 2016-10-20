@@ -80,7 +80,7 @@ namespace Test.Utility
                 projectFullPath, projectName);
 
             var projectFilePath = Path.Combine(projectFullPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-            NuGetProject nuGetProject = new BuildIntegratedNuGetProject(projectJsonPath, projectFilePath, msBuildNuGetProjectSystem);
+            NuGetProject nuGetProject = new ProjectJsonBuildIntegratedNuGetProject(projectJsonPath, projectFilePath);
             NuGetProjects.Add(nuGetProject);
             return nuGetProject;
         }

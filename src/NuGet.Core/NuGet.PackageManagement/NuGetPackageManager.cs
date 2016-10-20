@@ -2251,22 +2251,19 @@ namespace NuGet.PackageManagement
             LockFile originalLockFile = null;
             var lockFileFormat = new LockFileFormat();
 
-            var lockFilePath = ProjectJsonPathUtilities.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
+            var lockFilePath = buildIntegratedProject.AssetsFilePath;
 
             if (File.Exists(lockFilePath))
             {
                 originalLockFile = lockFileFormat.Read(lockFilePath);
             }
 
-            // Read project.json
-            JObject rawPackageSpec;
-            using (var streamReader = new StreamReader(buildIntegratedProject.JsonConfigPath))
-            {
-                var reader = new JsonTextReader(streamReader);
-                rawPackageSpec = JObject.Load(reader);
-            }
-
             var logger = new ProjectContextLogger(nuGetProjectContext);
+            var dependencyGraphContext = new DependencyGraphCacheContext(logger);
+
+            // Get Package Spec as json object
+            JObject rawPackageSpec = new JObject();
+            JsonPackageSpecWriter.WritePackageSpec(await buildIntegratedProject.GetPackageSpecAsync(dependencyGraphContext), rawPackageSpec);
 
             var pathContext = NuGetPathContext.Create(Settings);
 
@@ -2278,8 +2275,6 @@ namespace NuGet.PackageManagement
             using (var cacheContext = new SourceCacheContext())
             {
                 cacheContext.MaxAge = DateTimeOffset.UtcNow;
-
-                var dependencyGraphContext = new DependencyGraphCacheContext(logger);
 
                 var providers = RestoreCommandProviders.Create(
                     pathContext.UserPackageFolder,
@@ -2294,7 +2289,7 @@ namespace NuGet.PackageManagement
                     var originalPackageSpec = JsonPackageSpecReader.GetPackageSpec(
                         rawPackageSpec.ToString(),
                         buildIntegratedProject.ProjectName,
-                        buildIntegratedProject.JsonConfigPath);
+                        buildIntegratedProject.AssetsFilePath);
 
                     var originalRestoreResult = await DependencyGraphRestoreUtility.PreviewRestoreAsync(
                         buildIntegratedProject,
@@ -2323,7 +2318,7 @@ namespace NuGet.PackageManagement
                 // Create a package spec from the modified json
                 var packageSpec = JsonPackageSpecReader.GetPackageSpec(rawPackageSpec.ToString(),
                     buildIntegratedProject.ProjectName,
-                    buildIntegratedProject.JsonConfigPath);
+                    buildIntegratedProject.AssetsFilePath);
 
                 // Restore based on the modified package spec. This operation does not write the lock file to disk.
                 var restoreResult = await DependencyGraphRestoreUtility.PreviewRestoreAsync(
@@ -2403,12 +2398,15 @@ namespace NuGet.PackageManagement
             {
                 // Write out project.json
                 // This can be replaced with the PackageSpec writer once it has been added to the library
-                using (var writer = new StreamWriter(
-                    buildIntegratedProject.JsonConfigPath,
+                if (buildIntegratedProject is ProjectJsonBuildIntegratedNuGetProject)
+                {
+                    using (var writer = new StreamWriter(
+                    (buildIntegratedProject as ProjectJsonBuildIntegratedNuGetProject).JsonConfigPath,
                     append: false,
                     encoding: Encoding.UTF8))
-                {
-                    await writer.WriteAsync(projectAction.UpdatedProjectJson.ToString());
+                    {
+                        await writer.WriteAsync(projectAction.UpdatedProjectJson.ToString());
+                    }
                 }
 
                 var logger = new ProjectContextLogger(nuGetProjectContext);
