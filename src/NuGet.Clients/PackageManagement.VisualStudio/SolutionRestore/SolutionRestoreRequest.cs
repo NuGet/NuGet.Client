@@ -12,11 +12,6 @@ namespace NuGet.PackageManagement.VisualStudio
     public sealed class SolutionRestoreRequest
     {
         /// <summary>
-        /// Should the request be executed in background.
-        /// </summary>
-        public bool DelayStart { get; }
-
-        /// <summary>
         /// Should the restore discard previous assets and clean the cache.
         /// </summary>
         public bool ForceRestore { get; }
@@ -37,13 +32,11 @@ namespace NuGet.PackageManagement.VisualStudio
         public bool ForceStatusWrite { get; }
 
         public SolutionRestoreRequest(
-            bool delayStart,
             bool forceRestore, 
             bool showOptOutMessage,
             bool logError,
             bool forceStatusWrite)
         {
-            DelayStart = delayStart;
             ForceRestore = forceRestore;
             ShowOptOutMessage = showOptOutMessage;
             LogError = logError;
@@ -59,7 +52,6 @@ namespace NuGet.PackageManagement.VisualStudio
         public static SolutionRestoreRequest OnBuild(bool forceRestore)
         {
             return new SolutionRestoreRequest(
-                delayStart: false,
                 forceRestore: forceRestore, 
                 showOptOutMessage: true,
                 logError: false,
@@ -74,7 +66,6 @@ namespace NuGet.PackageManagement.VisualStudio
         public static SolutionRestoreRequest ByMenu()
         {
             return new SolutionRestoreRequest(
-                delayStart: false,
                 forceRestore: true, 
                 showOptOutMessage: false,
                 logError: true,
@@ -89,9 +80,8 @@ namespace NuGet.PackageManagement.VisualStudio
         public static SolutionRestoreRequest OnUpdate()
         {
             return new SolutionRestoreRequest(
-                delayStart: true,
                 forceRestore: false, 
-                showOptOutMessage: true,
+                showOptOutMessage: false,
                 logError: false,
                 forceStatusWrite: false);
         }

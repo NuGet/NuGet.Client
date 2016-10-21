@@ -16,6 +16,8 @@ namespace NuGet.SolutionRestoreManager
 
         public IVsTargetFrameworks TargetFrameworks { get; }
 
+        public IVsReferenceItems ToolReferences { get; }
+
         public VsProjectRestoreInfo(string baseIntermediatePath, IVsTargetFrameworks targetFrameworks)
         {
             if (string.IsNullOrEmpty(baseIntermediatePath))
@@ -23,7 +25,7 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentException(ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(baseIntermediatePath));
             }
 
-            if(targetFrameworks == null)
+            if (targetFrameworks == null)
             {
                 throw new ArgumentNullException(nameof(targetFrameworks));
             }

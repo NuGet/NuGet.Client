@@ -121,6 +121,7 @@
     <Compile Include="ProjectSystems\CpsPackageReferenceProjectProvider.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
     <Compile Include="ProjectSystems\ProjectSystemProviderContext.cs" />
     <Compile Include="SolutionRestore\ISolutionRestoreJob.cs" />
+    <Compile Include="SolutionRestore\RestoreOperationProgressUI.cs" />
     <Compile Include="SolutionRestore\SolutionRestoreRequest.cs" />
     <Compile Include="SolutionRestore\SolutionRestoreJobContext.cs" />
     <Compile Include="ScriptExecutionRequest.cs" />
@@ -129,7 +130,7 @@
     <Compile Include="SolutionRestore\SolutionRestoreJob.cs" />
     <Compile Include="SolutionRestore\SolutionRestoreWorker.cs" />
     <Compile Include="SolutionRestore\VerbosityLevel.cs" />
-    <Compile Include="SolutionRestore\WaitDialogLogger.cs" />
+    <Compile Include="SolutionRestore\RestoreOperationLogger.cs" />
     <Compile Include="Telemetry\ProjectTelemetryEvent.cs" />
     <Compile Include="IDE\PackageInitPS1State.cs" />
     <Compile Include="IDE\VsCommonOperations.cs" />

@@ -7,9 +7,9 @@ using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
-using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 using Task = System.Threading.Tasks.Task;
 
@@ -27,13 +27,9 @@ namespace NuGet.PackageManagement.VisualStudio
         private const int SanePromoteAttemptsLimit = 150;
 
         private readonly IServiceProvider _serviceProvider;
-        private readonly EnvDTE.DTE _dte;
-        private readonly IVsSolutionManager _solutionManager;
-        private readonly IPackageRestoreManager _packageRestoreManager;
-        private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
-        private readonly ISettings _settings;
         private readonly ErrorListProvider _errorListProvider;
         private readonly EnvDTE.SolutionEvents _solutionEvents;
+        private readonly Lazy<IComponentModel> _componentModel;
 
         private CancellationTokenSource _workerCts;
         private Lazy<Task> _backgroundJobRunner;
@@ -48,45 +44,20 @@ namespace NuGet.PackageManagement.VisualStudio
         [ImportingConstructor]
         public SolutionRestoreWorker(
             [Import(typeof(SVsServiceProvider))]
-            IServiceProvider serviceProvider,
-            IVsSolutionManager solutionManager,
-            IPackageRestoreManager packageRestoreManager,
-            ISourceRepositoryProvider sourceRepositoryProvider,
-            ISettings settings)
+            IServiceProvider serviceProvider)
         {
             if (serviceProvider == null)
             {
                 throw new ArgumentNullException(nameof(serviceProvider));
             }
 
-            if (solutionManager == null)
-            {
-                throw new ArgumentNullException(nameof(solutionManager));
-            }
-
-            if (packageRestoreManager == null)
-            {
-                throw new ArgumentNullException(nameof(packageRestoreManager));
-            }
-
-            if (sourceRepositoryProvider == null)
-            {
-                throw new ArgumentNullException(nameof(sourceRepositoryProvider));
-            }
-
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
-
             _serviceProvider = serviceProvider;
-            _solutionManager = solutionManager;
-            _packageRestoreManager = packageRestoreManager;
-            _sourceRepositoryProvider = sourceRepositoryProvider;
-            _settings = settings;
 
-            _dte = _serviceProvider.GetDTE();
-            _solutionEvents = _dte.Events.SolutionEvents;
+            _componentModel = new Lazy<IComponentModel>(
+                () => _serviceProvider.GetService<SComponentModel, IComponentModel>());
+
+            var dte = _serviceProvider.GetDTE();
+            _solutionEvents = dte.Events.SolutionEvents;
             _solutionEvents.AfterClosing += SolutionEvents_AfterClosing;
 
             _errorListProvider = new ErrorListProvider(_serviceProvider);
@@ -296,16 +267,10 @@ namespace NuGet.PackageManagement.VisualStudio
             // To be sure, switch to main thread before doing anything on this method
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            using (var logger = new WaitDialogLogger(
-                _serviceProvider,
-                _errorListProvider))
-            using (var job = new SolutionRestoreJob(
-                _serviceProvider,
-                _packageRestoreManager,
-                _solutionManager,
-                _sourceRepositoryProvider,
-                _settings,
-                logger))
+            _errorListProvider.Tasks.Clear();
+
+            using (var logger = new RestoreOperationLogger(_serviceProvider, _errorListProvider))
+            using (var job = new SolutionRestoreJob(_serviceProvider, _componentModel.Value, logger))
             {
                 return await job.ExecuteAsync(jobArgs, _restoreJobContext, token);
             }

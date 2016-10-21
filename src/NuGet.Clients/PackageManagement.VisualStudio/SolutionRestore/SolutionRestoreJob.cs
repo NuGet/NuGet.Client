@@ -8,12 +8,12 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
-using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using Task = System.Threading.Tasks.Task;
 
@@ -30,7 +30,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly ISolutionManager _solutionManager;
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly ISettings _settings;
-        private readonly WaitDialogLogger _logger;
+        private readonly RestoreOperationLogger _logger;
 
         private int _dependencyGraphProjectCacheHash;
         private INuGetProjectContext _nuGetProjectContext;
@@ -50,40 +50,22 @@ namespace NuGet.PackageManagement.VisualStudio
         private int _totalCount;
         private int _currentCount;
 
-        private readonly CancellationTokenSource _jobCts = new CancellationTokenSource();
-        private CancellationToken Token => _jobCts.Token;
+        private CancellationTokenSource _jobCts;
+        private CancellationToken Token => _jobCts?.Token ?? CancellationToken.None;
 
         public SolutionRestoreJob(
             IServiceProvider serviceProvider,
-            IPackageRestoreManager packageRestoreManager,
-            ISolutionManager solutionManager,
-            ISourceRepositoryProvider sourceRepositoryProvider,
-            ISettings settings,
-            WaitDialogLogger logger)
+            IComponentModel componentModel,
+            RestoreOperationLogger logger)
         {
             if (serviceProvider == null)
             {
                 throw new ArgumentNullException(nameof(serviceProvider));
             }
 
-            if (packageRestoreManager == null)
+            if (componentModel == null)
             {
-                throw new ArgumentNullException(nameof(packageRestoreManager));
-            }
-
-            if (solutionManager == null)
-            {
-                throw new ArgumentNullException(nameof(solutionManager));
-            }
-
-            if (sourceRepositoryProvider == null)
-            {
-                throw new ArgumentNullException(nameof(sourceRepositoryProvider));
-            }
-
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
+                throw new ArgumentNullException(nameof(componentModel));
             }
 
             if (logger == null)
@@ -91,12 +73,35 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            _dte = serviceProvider.GetDTE();
+            _packageRestoreManager = componentModel.GetService<IPackageRestoreManager>();
 
-            _packageRestoreManager = packageRestoreManager;
-            _solutionManager = solutionManager;
-            _sourceRepositoryProvider = sourceRepositoryProvider;
-            _settings = settings;
+            if (_packageRestoreManager == null)
+            {
+                throw new ArgumentNullException(nameof(_packageRestoreManager));
+            }
+
+            _solutionManager = componentModel.GetService<IVsSolutionManager>();
+
+            if (_solutionManager == null)
+            {
+                throw new ArgumentNullException(nameof(_solutionManager));
+            }
+
+            _sourceRepositoryProvider = componentModel.GetService<ISourceRepositoryProvider>();
+
+            if (_sourceRepositoryProvider == null)
+            {
+                throw new ArgumentNullException(nameof(_sourceRepositoryProvider));
+            }
+
+            _settings = componentModel.GetService<ISettings>();
+
+            if (_settings == null)
+            {
+                throw new ArgumentNullException(nameof(_settings));
+            }
+
+            _dte = serviceProvider.GetDTE();
             _logger = logger;
         }
 
@@ -114,8 +119,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
             _hasOptOutBeenShown = !request.ShowOptOutMessage;
 
+            _jobCts = CancellationTokenSource.CreateLinkedTokenSource(token);
+
             using (var ctr1 = Token.Register(() => { _cancelled = true; _logger.SetCancelled(); }))
-            using (var ctr2 = token.Register(() => _jobCts.Cancel()))
             {
                 try
                 {
@@ -244,7 +250,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     // NOTE: During restore for build integrated projects,
                     //       We might show the dialog even if there are no packages to restore
                     // When both currentStep and totalSteps are 0, we get a marquee on the dialog
-                    await RunWithWaitDialogAsync(async () =>
+                    await RunWithProgressAsync(async p =>
                     {
                         // Display the restore opt out message if it has not been shown yet
                         DisplayOptOutMessage();
@@ -272,25 +278,20 @@ namespace NuGet.PackageManagement.VisualStudio
             object sender,
             PackageRestoredEventArgs args)
         {
-            if (_cancelled)
-            {
-                return;
-            }
-
-            if (args.Restored)
+            if (!_cancelled && args.Restored)
             {
                 var packageIdentity = args.Package;
                 Interlocked.Increment(ref _currentCount);
 
                 ThreadHelper.JoinableTaskFactory.RunAsync(() =>
                 {
-                    return _logger.ReportProgressAsync(
+                    return RestoreOperationProgressUI.Current.ReportProgressAsync(
                         string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.RestoredPackage,
                             packageIdentity),
-                        _currentCount,
-                        _totalCount);
+                        (uint)_currentCount,
+                        (uint)_totalCount);
                 });
             }
         }
@@ -368,12 +369,14 @@ namespace NuGet.PackageManagement.VisualStudio
                     return;
                 }
 
+                System.Threading.AsyncLocal<bool> a = new System.Threading.AsyncLocal<bool>();
+
                 var missingPackagesList = packages.Where(p => p.IsMissing).ToList();
                 _totalCount = missingPackagesList.Count;
                 if (_totalCount > 0)
                 {
                     // Only show the wait dialog, when there are some packages to restore
-                    await RunWithWaitDialogAsync(async () =>
+                    await RunWithProgressAsync(async p =>
                     {
                         // Display the restore opt out message if it has not been shown yet
                         DisplayOptOutMessage();
@@ -390,10 +393,10 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 // When the user consent is not granted, missing packages may not be restored.
                 // So, we just check for them, and report them as warning(s) on the error list window
-                await RunWithWaitDialogAsync(() =>
+                await RunWithProgressAsync(p =>
                 {
                     CheckForMissingPackages(packages);
-                    return Task.FromResult(0);
+                    return Task.CompletedTask;
                 });
             }
 
@@ -402,12 +405,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 Token);
         }
 
-        private async Task RunWithWaitDialogAsync(Func<Task> asyncMethod)
+        private async Task RunWithProgressAsync(Func<RestoreOperationProgressUI,Task> asyncMethod)
         {
-            using (var session = _logger.StartWaitDialog())
-            using (var ctr = session.UserCancellationToken.Register(() => _jobCts.Cancel()))
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            using (var session = await _logger.StartProgressSessionAsync(Token))
+            using (var ctr = session.RegisterUserCancellationAction(() => _jobCts.Cancel()))
             {
-                await asyncMethod();
+                await asyncMethod(session);
             }
         }
 
@@ -525,7 +530,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public void Dispose()
         {
-            _jobCts.Dispose();
+            _jobCts?.Dispose();
         }
 
         private class ProjectInfo
