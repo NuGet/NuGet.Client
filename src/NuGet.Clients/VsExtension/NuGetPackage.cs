@@ -1075,8 +1075,11 @@ namespace NuGetVSExtension
                 // Enable the 'Manage NuGet Packages For Solution' dialog menu
                 // a) if the console is NOT busy executing a command, AND
                 // b) if the solution exists and not debugging and not building AND
-                // c) if there are no NuGetProjects. This means that there no loaded, supported projects
-                command.Enabled = !ConsoleStatus.IsBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() && SolutionManager.GetNuGetProjects().Any();
+                // c) if the solution is DPL enabled or there are NuGetProjects. This means that there loaded, supported projects
+                // Checking for DPL more is a temporary code until we've the capability to get nuget projects 
+                // even in DPL mode. See https://github.com/NuGet/Home/issues/3711
+                command.Enabled = !ConsoleStatus.IsBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() &&
+                    (SolutionManager.IsSolutionDPLEnabled || SolutionManager.GetNuGetProjects().Any());
             });
         }
 
@@ -1091,8 +1094,11 @@ namespace NuGetVSExtension
                 // Enable the 'Restore NuGet Packages' dialog menu
                 // a) if the console is NOT busy executing a command, AND
                 // b) if the solution exists and not debugging and not building AND
-                // c) if there are no NuGetProjects. This means that there no loaded, supported projects
-                command.Enabled = !ConsoleStatus.IsBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() && SolutionManager.GetNuGetProjects().Any();
+                // c) if the solution is DPL enabled or there are NuGetProjects. This means that there loaded, supported projects
+                // Checking for DPL more is a temporary code until we've the capability to get nuget projects 
+                // even in DPL mode. See https://github.com/NuGet/Home/issues/3711
+                command.Enabled = !ConsoleStatus.IsBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() &&
+                    (SolutionManager.IsSolutionDPLEnabled || SolutionManager.GetNuGetProjects().Any());
             });
         }
 
