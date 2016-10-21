@@ -71,6 +71,7 @@ namespace NuGet.PackageManagement
         /// Restore without writing the lock file
         /// </summary>
         internal static async Task<RestoreResultPair> PreviewRestoreAsync(
+            ISolutionManager solutionManager,
             BuildIntegratedNuGetProject project,
             PackageSpec packageSpec,
             DependencyGraphCacheContext context,
@@ -85,7 +86,7 @@ namespace NuGet.PackageManagement
             var logger = context.Logger;
 
             // Add the new spec to the dg file and fill in the rest.
-            var dgFile = await project.GetDependencyGraphSpecAsync(context);
+            var dgFile = await GetSolutionRestoreSpec(solutionManager, context);
 
             dgFile = dgFile.WithoutRestores()
                 .WithReplacedSpec(packageSpec);
@@ -110,6 +111,7 @@ namespace NuGet.PackageManagement
         /// Restore a build integrated project and update the lock file
         /// </summary>
         public static async Task<RestoreResult> RestoreProjectAsync(
+            ISolutionManager solutionManager,
             BuildIntegratedNuGetProject project,
             DependencyGraphCacheContext context,
             RestoreCommandProvidersCache providerCache,
@@ -120,9 +122,14 @@ namespace NuGet.PackageManagement
             CancellationToken token)
         {
             // Restore
+            var specs = await project.GetPackageSpecsAsync(context);
+            var spec = specs.Single(e => e.RestoreMetadata.OutputType == RestoreOutputType.NETCore
+                || e.RestoreMetadata.OutputType == RestoreOutputType.UAP);
+
             var result = await PreviewRestoreAsync(
+                solutionManager,
                 project,
-                await project.GetPackageSpecAsync(context),
+                spec,
                 context,
                 providerCache,
                 cacheContextModifier,
@@ -186,6 +193,15 @@ namespace NuGet.PackageManagement
             return false;
         }
 
+        public static async Task<PackageSpec> GetProjectSpec(IDependencyGraphProject project, DependencyGraphCacheContext context)
+        {
+            var specs = await project.GetPackageSpecsAsync(context);
+
+            return specs.Where(e => e.RestoreMetadata.OutputType != RestoreOutputType.Standalone
+                && e.RestoreMetadata.OutputType != RestoreOutputType.DotnetCliTool)
+                .FirstOrDefault();
+        }
+
         /// <summary>
         /// Find the list of child projects direct or indirect references of target project in
         /// reverse dependency order like the least dependent package first.
@@ -227,16 +243,19 @@ namespace NuGet.PackageManagement
 
             foreach (var project in projects)
             {
-                var packageSpec = await project.GetPackageSpecAsync(context);
+                var packageSpecs = await project.GetPackageSpecsAsync(context);
 
-                dgSpec.AddProject(packageSpec);
-
-                if (packageSpec.RestoreMetadata.OutputType == RestoreOutputType.NETCore ||
-                    packageSpec.RestoreMetadata.OutputType == RestoreOutputType.UAP ||
-                    packageSpec.RestoreMetadata.OutputType == RestoreOutputType.DotnetCliTool ||
-                    packageSpec.RestoreMetadata.OutputType == RestoreOutputType.Standalone)
+                foreach (var packageSpec in packageSpecs)
                 {
-                    dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
+                    dgSpec.AddProject(packageSpec);
+
+                    if (packageSpec.RestoreMetadata.OutputType == RestoreOutputType.NETCore ||
+                        packageSpec.RestoreMetadata.OutputType == RestoreOutputType.UAP ||
+                        packageSpec.RestoreMetadata.OutputType == RestoreOutputType.DotnetCliTool ||
+                        packageSpec.RestoreMetadata.OutputType == RestoreOutputType.Standalone)
+                    {
+                        dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
+                    }
                 }
             }
             // Return dg file

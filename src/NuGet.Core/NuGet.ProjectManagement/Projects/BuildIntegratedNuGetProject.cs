@@ -44,9 +44,9 @@ namespace NuGet.ProjectManagement.Projects
         public abstract string AssetsFilePath { get; }
 
         public abstract DateTimeOffset LastModified { get; }
-        public abstract Task<PackageSpec> GetPackageSpecAsync(DependencyGraphCacheContext context);
+        public abstract Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context);
 
-        public abstract Task<IReadOnlyList<IDependencyGraphProject>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context);
+        //public abstract Task<IReadOnlyList<IDependencyGraphProject>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context);
         public abstract Task<bool> IsRestoreRequired(IEnumerable<VersionFolderPathResolver> pathResolvers, ISet<PackageIdentity> packagesChecked, DependencyGraphCacheContext context);
 
         /// <summary>
@@ -58,23 +58,23 @@ namespace NuGet.ProjectManagement.Projects
             INuGetProjectContext projectContext,
             bool throwOnFailure);
 
-        public virtual async Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(DependencyGraphCacheContext context)
-        {
-            DependencyGraphSpec dgSpec = null;
-            if (context == null || !context.DependencyGraphCache.TryGetValue(MSBuildProjectPath, out dgSpec))
-            {
-                var projectReferences = await GetDirectProjectReferencesAsync(context);
-                var listOfDgSpecs = projectReferences.Select(async r => await r.GetDependencyGraphSpecAsync(context)).Select(r => r.Result).ToList();
+        //public virtual async Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(DependencyGraphCacheContext context)
+        //{
+        //    DependencyGraphSpec dgSpec = null;
+        //    if (context == null || !context.DependencyGraphCache.TryGetValue(MSBuildProjectPath, out dgSpec))
+        //    {
+        //        var projectReferences = await GetDirectProjectReferencesAsync(context);
+        //        var listOfDgSpecs = projectReferences.Select(async r => await r.GetDependencyGraphSpecAsync(context)).Select(r => r.Result).ToList();
 
-                dgSpec = DependencyGraphSpec.Union(listOfDgSpecs);
-                dgSpec.AddProject(await GetPackageSpecAsync(context));
-                dgSpec.AddRestore(MSBuildProjectPath);
+        //        dgSpec = DependencyGraphSpec.Union(listOfDgSpecs);
+        //        dgSpec.AddProject(await GetPackageSpecAsync(context));
+        //        dgSpec.AddRestore(MSBuildProjectPath);
 
-                //Cache this DG File
-                context?.DependencyGraphCache.Add(MSBuildProjectPath, dgSpec);
-            }
+        //        //Cache this DG File
+        //        context?.DependencyGraphCache.Add(MSBuildProjectPath, dgSpec);
+        //    }
 
-            return dgSpec;
-        }
+        //    return dgSpec;
+        //}
     }
 }

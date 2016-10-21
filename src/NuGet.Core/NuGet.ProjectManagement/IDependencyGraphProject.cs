@@ -28,19 +28,10 @@ namespace NuGet.ProjectManagement
         DateTimeOffset LastModified { get; }
         
         /// <summary>
-        /// Project spec
+        /// Project specs related to this project. This must include the project's own spec, and may
+        /// optionally include more specs to restore such as tools.
         /// </summary>
-        Task<PackageSpec> GetPackageSpecAsync(DependencyGraphCacheContext context);
-        
-        /// <summary>
-        /// Full project closure and tools.
-        /// </summary>
-        Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(DependencyGraphCacheContext context);
-
-        /// <summary>
-        /// Direct project references of the project.
-        /// </summary>
-        Task<IReadOnlyList<IDependencyGraphProject>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context);
+        Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context);
 
         Task<bool> IsRestoreRequired(
             IEnumerable<VersionFolderPathResolver> pathResolvers,

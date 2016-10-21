@@ -599,7 +599,7 @@ namespace NuGet.ProjectManagement
             return Task.FromResult<bool>(false);
         }
 
-        public async Task<PackageSpec> GetPackageSpecAsync(DependencyGraphCacheContext context)
+        public async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
         {
             PackageSpec packageSpec = null;
             if (context != null && context.PackageSpecCache.TryGetValue(MSBuildNuGetProjectSystem.ProjectFileFullPath, out packageSpec))
@@ -653,29 +653,29 @@ namespace NuGet.ProjectManagement
                 context?.PackageSpecCache.Add(MSBuildProjectPath, packageSpec);
             }
 
-            return packageSpec;
+            return new[] { packageSpec };
         }
 
-        public async Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(DependencyGraphCacheContext context)
-        {
-            DependencyGraphSpec dgSpec = null;
-            if (context != null && context.DependencyGraphCache.TryGetValue(MSBuildNuGetProjectSystem.ProjectFileFullPath, out dgSpec))
-            {
-                return dgSpec;
-            }
-            else
-            {
-                dgSpec = new DependencyGraphSpec();
-                dgSpec.AddProject(await GetPackageSpecAsync(context));
-                var projectReferences = await GetDirectProjectReferencesAsync(context);
-                var listOfDgSpecs = projectReferences.Select(async r => await r.GetDependencyGraphSpecAsync(context)).Select(r => r.Result).ToList();
-                listOfDgSpecs.Add(dgSpec);
-                var finalDgSpec =  DependencyGraphSpec.Union(listOfDgSpecs);
-                //Cache this DG File
-                context?.DependencyGraphCache.Add(MSBuildProjectPath, finalDgSpec);
-                return finalDgSpec;
-            }
-        }
+        //public async Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(DependencyGraphCacheContext context)
+        //{
+        //    DependencyGraphSpec dgSpec = null;
+        //    if (context != null && context.DependencyGraphCache.TryGetValue(MSBuildNuGetProjectSystem.ProjectFileFullPath, out dgSpec))
+        //    {
+        //        return dgSpec;
+        //    }
+        //    else
+        //    {
+        //        dgSpec = new DependencyGraphSpec();
+        //        dgSpec.AddProject(await GetPackageSpecAsync(context));
+        //        var projectReferences = await GetDirectProjectReferencesAsync(context);
+        //        var listOfDgSpecs = projectReferences.Select(async r => await r.GetDependencyGraphSpecAsync(context)).Select(r => r.Result).ToList();
+        //        listOfDgSpecs.Add(dgSpec);
+        //        var finalDgSpec =  DependencyGraphSpec.Union(listOfDgSpecs);
+        //        //Cache this DG File
+        //        context?.DependencyGraphCache.Add(MSBuildProjectPath, finalDgSpec);
+        //        return finalDgSpec;
+        //    }
+        //}
 
         public virtual Task<IReadOnlyList<IDependencyGraphProject>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)
         {

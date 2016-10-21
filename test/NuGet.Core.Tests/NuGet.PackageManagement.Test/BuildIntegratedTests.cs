@@ -1528,23 +1528,25 @@ namespace NuGet.Test
                 return base.ExecuteInitScriptAsync(identity, packageInstallPath, projectContext, throwOnFailure);
             }
 
-            public override Task<IReadOnlyList<IDependencyGraphProject>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)
-            {
-                return Task.FromResult<IReadOnlyList<IDependencyGraphProject>>(ProjectReferences
-                    .Select(e => e.Project)
-                    .Where(e => e != null)
-                    .ToList());
-            }
+            //public override Task<IReadOnlyList<IDependencyGraphProject>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)
+            //{
+            //    return Task.FromResult<IReadOnlyList<IDependencyGraphProject>>(ProjectReferences
+            //        .Select(e => e.Project)
+            //        .Where(e => e != null)
+            //        .ToList());
+            //}
 
-            public override async Task<PackageSpec> GetPackageSpecAsync(DependencyGraphCacheContext context)
+            public override async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
             {
-                var spec = await base.GetPackageSpecAsync(context);
+                var specs = await base.GetPackageSpecsAsync(context);
 
                 var projectRefs = ProjectReferences.Select(e => new ProjectRestoreReference()
                 {
                     ProjectUniqueName = e.MSBuildProjectPath,
                     ProjectPath = e.MSBuildProjectPath,
                 });
+
+                var spec = specs.Single();
 
                 spec.RestoreMetadata.TargetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>()
                 {
@@ -1554,7 +1556,7 @@ namespace NuGet.Test
                     }
                 };
 
-                return spec;
+                return specs;
             }
         }
 
@@ -1577,9 +1579,9 @@ namespace NuGet.Test
                     .ToList());
             }
 
-            public Task<PackageSpec> GetPackageSpecAsync(DependencyGraphCacheContext context)
+            public Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
             {
-                return Task.FromResult(PackageSpec);
+                return Task.FromResult<IReadOnlyList<PackageSpec>>(new List<PackageSpec>() { PackageSpec });
             }
 
             public Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(DependencyGraphCacheContext context)

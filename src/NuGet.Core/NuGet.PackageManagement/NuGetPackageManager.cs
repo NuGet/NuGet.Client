@@ -2259,8 +2259,8 @@ namespace NuGet.PackageManagement
             var dependencyGraphContext = new DependencyGraphCacheContext(logger);
 
             // Get Package Spec as json object
-            var originalPackageSpec = await buildIntegratedProject.GetPackageSpecAsync(dependencyGraphContext);
-            var updatedPackageSpec = await buildIntegratedProject.GetPackageSpecAsync(dependencyGraphContext);
+            var originalPackageSpec = await DependencyGraphRestoreUtility.GetProjectSpec(buildIntegratedProject, dependencyGraphContext);
+            var updatedPackageSpec = await DependencyGraphRestoreUtility.GetProjectSpec(buildIntegratedProject, dependencyGraphContext);
 
             var pathContext = NuGetPathContext.Create(Settings);
             var providerCache = new RestoreCommandProvidersCache();
@@ -2277,6 +2277,7 @@ namespace NuGet.PackageManagement
             if (originalLockFile == null)
             {
                 var originalRestoreResult = await DependencyGraphRestoreUtility.PreviewRestoreAsync(
+                    SolutionManager,
                     buildIntegratedProject,
                     originalPackageSpec,
                     dependencyGraphContext,
@@ -2305,6 +2306,7 @@ namespace NuGet.PackageManagement
 
             // Restore based on the modified package spec. This operation does not write the lock file to disk.
             var restoreResult = await DependencyGraphRestoreUtility.PreviewRestoreAsync(
+                SolutionManager,
                 buildIntegratedProject,
                 updatedPackageSpec,
                 dependencyGraphContext,
@@ -2418,6 +2420,7 @@ namespace NuGet.PackageManagement
                     isProjectUpdated)
                 {
                     await DependencyGraphRestoreUtility.RestoreProjectAsync(
+                            SolutionManager,
                             buildIntegratedProject,
                             referenceContext,
                             GetRestoreProviderCache(),
@@ -2497,6 +2500,7 @@ namespace NuGet.PackageManagement
                     {
                         // Restore and commit the lock file to disk regardless of the result
                         var parentResult = await DependencyGraphRestoreUtility.RestoreProjectAsync(
+                            SolutionManager,
                             parent,
                             referenceContext,
                             GetRestoreProviderCache(),
