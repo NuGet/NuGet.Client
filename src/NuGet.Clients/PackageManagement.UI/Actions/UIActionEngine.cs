@@ -187,7 +187,8 @@ namespace NuGet.PackageManagement.UI
             var operationId = Guid.NewGuid().ToString();
 
             // Enable granular level telemetry events for nuget ui operation
-            TelemetryServiceHelper.Instance.EnableTelemetryEvents();
+            var telemetryService = new TelemetryServiceHelper();
+            uiService.ProgressWindow.TelemetryService = telemetryService;
 
             try
             {
@@ -303,7 +304,7 @@ namespace NuGet.PackageManagement.UI
                     packageCount,
                     duration.TotalSeconds);
 
-                ActionsTelemetryService.Instance.EmitActionEvent(actionTelemetryEvent);
+                ActionsTelemetryService.Instance.EmitActionEvent(actionTelemetryEvent, telemetryService.TelemetryEvents);
             }
         }
 
@@ -330,7 +331,7 @@ namespace NuGet.PackageManagement.UI
 
             var licenseMetadata = await GetPackageMetadataAsync(uiService, licenseCheck, token);
 
-            TelemetryServiceHelper.Instance.StopTimer();
+            TelemetryUtility.StopTimer();
 
             // show license agreement
             if (licenseMetadata.Any(e => e.RequireLicenseAcceptance))
@@ -355,7 +356,7 @@ namespace NuGet.PackageManagement.UI
         {
             var projects = DotnetDeprecatedPrompt.GetAffectedProjects(actions);
 
-            TelemetryServiceHelper.Instance.StopTimer();
+            TelemetryUtility.StopTimer();
 
             if (projects.Any())
             {

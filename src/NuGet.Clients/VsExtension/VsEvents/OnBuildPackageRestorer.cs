@@ -213,7 +213,6 @@ namespace NuGetVSExtension
             _status = NuGetOperationStatus.Succeeded;
 
             // start timer for telemetry event
-            TelemetryServiceHelper.Instance.StartorResumeTimer();
             TelemetryUtility.StartorResumeTimer();
 
             var projects = Enumerable.Empty<NuGetProject>();

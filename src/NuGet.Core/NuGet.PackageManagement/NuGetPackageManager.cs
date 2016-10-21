@@ -877,8 +877,8 @@ namespace NuGet.PackageManagement
             var projectId = string.Empty;
             nuGetProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
 
-            var telemetryHelper = TelemetryServiceHelper.Instance;
-            telemetryHelper.StartorResumeTimer();
+            var telemetryHelper = nuGetProjectContext.TelemetryService;
+            TelemetryServiceUtility.StartTimer(telemetryHelper);
 
             var projectInstalledPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
             var oldListOfInstalledPackages = projectInstalledPackageReferences.Select(p => p.PackageIdentity);
@@ -1027,10 +1027,8 @@ namespace NuGet.PackageManagement
                 var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherAsync(gatherContext, token);
 
                 // emit gather dependency telemetry event and restart timer
-                telemetryHelper.StopTimer();
-                telemetryHelper.AddTelemetryEvent(
+                TelemetryServiceUtility.EmitEventAndRestartTimer(telemetryHelper,
                     string.Format(TelemetryConstants.GatherDependencyStepName, projectId));
-                telemetryHelper.StartorResumeTimer();
 
                 if (!availablePackageDependencyInfoWithSourceSet.Any())
                 {
@@ -1109,10 +1107,8 @@ namespace NuGet.PackageManagement
                 var newListOfInstalledPackages = packageResolver.Resolve(packageResolverContext, token);
 
                 // emit resolve dependency telemetry event and restart timer
-                telemetryHelper.StopTimer();
-                telemetryHelper.AddTelemetryEvent(
+                TelemetryServiceUtility.EmitEventAndRestartTimer(telemetryHelper,
                     string.Format(TelemetryConstants.ResolveDependencyStepName, projectId));
-                telemetryHelper.StartorResumeTimer();
 
                 if (newListOfInstalledPackages == null)
                 {
@@ -1143,8 +1139,7 @@ namespace NuGet.PackageManagement
                     isDependencyBehaviorIgnore);
 
                 // emit resolve actions telemetry event
-                telemetryHelper.StopTimer();
-                telemetryHelper.AddTelemetryEvent(
+                TelemetryServiceUtility.EmitEvent(telemetryHelper,
                     string.Format(TelemetryConstants.ResolvedActionsStepName, projectId));
 
                 if (nuGetProjectActions.Count == 0)
@@ -1465,8 +1460,8 @@ namespace NuGet.PackageManagement
             var projectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
             var projectId = string.Empty;
             nuGetProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
-            var telemetryHelper = TelemetryServiceHelper.Instance;
-            telemetryHelper.StartorResumeTimer();
+            var telemetryHelper = nuGetProjectContext.TelemetryService;
+            TelemetryServiceUtility.StartTimer(telemetryHelper);
 
             var projectInstalledPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
             var oldListOfInstalledPackages = projectInstalledPackageReferences.Select(p => p.PackageIdentity);
@@ -1522,10 +1517,8 @@ namespace NuGet.PackageManagement
                     var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherAsync(gatherContext, token);
 
                     // emit gather dependency telemetry event and restart timer
-                    telemetryHelper.StopTimer();
-                    telemetryHelper.AddTelemetryEvent(
+                    TelemetryServiceUtility.EmitEventAndRestartTimer(telemetryHelper,
                         string.Format(TelemetryConstants.GatherDependencyStepName, projectId));
-                    telemetryHelper.StartorResumeTimer();
 
                     if (!availablePackageDependencyInfoWithSourceSet.Any())
                     {
@@ -1583,10 +1576,8 @@ namespace NuGet.PackageManagement
                     var newListOfInstalledPackages = packageResolver.Resolve(packageResolverContext, token);
 
                     // emit resolve dependency telemetry event and restart timer
-                    telemetryHelper.StopTimer();
-                    telemetryHelper.AddTelemetryEvent(
+                    TelemetryServiceUtility.EmitEventAndRestartTimer(telemetryHelper,
                         string.Format(TelemetryConstants.ResolveDependencyStepName, projectId));
-                    telemetryHelper.StartorResumeTimer();
 
                     if (newListOfInstalledPackages == null)
                     {
@@ -1671,8 +1662,7 @@ namespace NuGet.PackageManagement
             }
 
             // emit resolve actions telemetry event
-            telemetryHelper.StopTimer();
-            telemetryHelper.AddTelemetryEvent(
+            TelemetryServiceUtility.EmitEvent(telemetryHelper,
                 string.Format(TelemetryConstants.ResolvedActionsStepName, projectId));
 
             nuGetProjectContext.Log(ProjectManagement.MessageLevel.Info, Strings.ResolvedActionsToInstallPackage, packageIdentity);
@@ -2031,7 +2021,8 @@ namespace NuGet.PackageManagement
 
             var projectId = string.Empty;
             nuGetProject.TryGetMetadata<string>(NuGetProjectMetadataKeys.ProjectId, out projectId);
-            TelemetryServiceHelper.Instance.StartorResumeTimer();
+
+            var stopWatch = Stopwatch.StartNew();
 
             ExceptionDispatchInfo exceptionInfo = null;
 
@@ -2247,16 +2238,15 @@ namespace NuGet.PackageManagement
 
 
             // calculate total time taken to execute all nuget actions
-            TelemetryServiceHelper.Instance.StopTimer();
-            var duration = TelemetryServiceHelper.Instance.GetTimerElapsedTime();
+            stopWatch.Stop();
             nuGetProjectContext.Log(
                 MessageLevel.Info, Strings.NugetActionsTotalTime,
-                DatetimeUtility.ToReadableTimeFormat(duration));
+                DatetimeUtility.ToReadableTimeFormat(stopWatch.Elapsed));
 
             // emit resolve actions telemetry event
-            TelemetryServiceHelper.Instance.AddTelemetryEvent(
+            TelemetryServiceUtility.EmitEvent(nuGetProjectContext.TelemetryService,
                 string.Format(TelemetryConstants.ExecuteActionStepName, projectId),
-                duration.TotalSeconds);
+                stopWatch.Elapsed.TotalSeconds);
 
             if (exceptionInfo != null)
             {
@@ -2413,7 +2403,7 @@ namespace NuGet.PackageManagement
                 }
 
                 stopWatch.Stop();
-                TelemetryServiceHelper.Instance.AddTelemetryEvent(
+                TelemetryServiceUtility.EmitEvent(nuGetProjectContext.TelemetryService,
                     string.Format(TelemetryConstants.PreviewBuildIntegratedStepName, projectId),
                     stopWatch.Elapsed.TotalSeconds);
 
@@ -2661,7 +2651,7 @@ namespace NuGet.PackageManagement
 
                     if (!string.IsNullOrEmpty(packageFolderPath))
                     {
-                        readmeFilePath = Path.Combine(packageFolderPath, ProjectManagement.Constants.ReadmeFileName);
+                        readmeFilePath = Path.Combine(packageFolderPath, Constants.ReadmeFileName);
                     }
                 }
                 else
@@ -2670,7 +2660,7 @@ namespace NuGet.PackageManagement
 
                     if (!string.IsNullOrEmpty(packagePath))
                     {
-                        readmeFilePath = Path.Combine(Path.GetDirectoryName(packagePath), ProjectManagement.Constants.ReadmeFileName);
+                        readmeFilePath = Path.Combine(Path.GetDirectoryName(packagePath), Constants.ReadmeFileName);
                     }
                 }
 

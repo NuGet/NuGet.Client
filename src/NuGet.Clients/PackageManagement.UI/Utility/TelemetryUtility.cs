@@ -3,10 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using NuGet.Common;
-using NuGet.ProjectManagement;
 using System.Diagnostics;
+using System.Linq;
+using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.UI
 {

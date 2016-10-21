@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using NuGet.Common;
 using NuGet.VisualStudio.Facade.Telemetry;
+using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -21,14 +21,12 @@ namespace NuGet.PackageManagement.UI
         {
         }
 
-        public void EmitActionEvent(ActionsTelemetryEvent actionTelemetryData)
+        public void EmitActionEvent(ActionsTelemetryEvent actionTelemetryData, IReadOnlyDictionary<string, double> detailedEvents)
         {
             if (actionTelemetryData == null)
             {
                 throw new ArgumentNullException(nameof(actionTelemetryData));
             }
-
-            var detailedEvents = TelemetryServiceHelper.Instance.GetTelemetryEvents();
 
             if (detailedEvents != null)
             {

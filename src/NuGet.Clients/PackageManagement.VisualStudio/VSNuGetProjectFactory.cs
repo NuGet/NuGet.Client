@@ -54,8 +54,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
             NuGetProject result = null;
 
-            var projectId = VsHierarchyUtility.GetProjectId(envDTEProject);
-
             var projectK = GetProjectKProject(envDTEProject);
             if (projectK != null)
             {
@@ -63,7 +61,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     projectK,
                     envDTEProject.Name,
                     EnvDTEProjectUtility.GetCustomUniqueName(envDTEProject),
-                    projectId);
+                    VsHierarchyUtility.GetProjectId(envDTEProject));
             }
             else if ((result = GetMSBuildShellOutNuGetProject(envDTEProject)) != null)
             {
@@ -110,8 +108,7 @@ namespace NuGet.PackageManagement.VisualStudio
                                 msbuildProjectFile.FullName,
                                 envDTEProject,
                                 msBuildNuGetProjectSystem,
-                                EnvDTEProjectUtility.GetCustomUniqueName(envDTEProject),
-                                projectId);
+                                EnvDTEProjectUtility.GetCustomUniqueName(envDTEProject));
                         }
                     }
                 }
@@ -128,8 +125,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         envDTEProject,
                         msBuildNuGetProjectSystem,
                         folderNuGetProjectFullPath,
-                        packagesConfigFolderPath,
-                        projectId);
+                        packagesConfigFolderPath);
                 }
             }
 

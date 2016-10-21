@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using Moq;
-using NuGet.Common;
 using NuGet.VisualStudio.Facade.Telemetry;
 using Xunit;
+using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.UI.Test
 {
@@ -40,10 +40,10 @@ namespace NuGet.PackageManagement.UI.Test
                 packageCount: 1,
                 endTime: DateTime.Now,
                 duration: 2.10);
-            var service = new ActionsTelemetryService(telemetrySession);
+            var service = new ActionsTelemetryService(telemetrySession.Object);
 
             // Act
-            service.EmitActionEvent(actionTelemetryData);
+            service.EmitActionEvent(actionTelemetryData, null);
 
             // Assert
             VerifyTelemetryEventData(actionTelemetryData, lastTelemetryEvent);
@@ -77,10 +77,10 @@ namespace NuGet.PackageManagement.UI.Test
                 packageCount: 1,
                 endTime: DateTime.Now,
                 duration: 1.30);
-            var service = new ActionsTelemetryService(telemetrySession);
+            var service = new ActionsTelemetryService(telemetrySession.Object);
 
             // Act
-            service.EmitActionEvent(actionTelemetryData);
+            service.EmitActionEvent(actionTelemetryData, null);
 
             // Assert
             VerifyTelemetryEventData(actionTelemetryData, lastTelemetryEvent);
@@ -111,10 +111,10 @@ namespace NuGet.PackageManagement.UI.Test
                 packageCount: 1,
                 endTime: DateTime.Now,
                 duration: .40);
-            var service = new ActionsTelemetryService(telemetrySession);
+            var service = new ActionsTelemetryService(telemetrySession.Object);
 
             // Act
-            service.EmitActionEvent(actionTelemetryData);
+            service.EmitActionEvent(actionTelemetryData, null);
 
             // Assert
             VerifyTelemetryEventData(actionTelemetryData, lastTelemetryEvent);
@@ -134,7 +134,7 @@ namespace NuGet.PackageManagement.UI.Test
             string operationId = Guid.NewGuid().ToString();
             var duration = 1.12;
             var stepNameWithProject = string.Format(stepName, "testProject");
-            var service = new ActionsTelemetryService(telemetrySession);
+            var service = new ActionsTelemetryService(telemetrySession.Object);
 
             // Act
             service.EmitActionStepsEvent(operationId, stepNameWithProject, duration);
@@ -162,12 +162,12 @@ namespace NuGet.PackageManagement.UI.Test
         {
             Assert.NotNull(actual);
             Assert.Equal(TelemetryConstants.NugetActionEventName, actual.Name);
-            Assert.Equal(10, actual.Properties.Count);
+            Assert.Equal(9, actual.Properties.Count);
 
             Assert.Equal(expected.OperationType.ToString(), actual.Properties[TelemetryConstants.OperationTypePropertyName].ToString());
             Assert.Equal(expected.Source.ToString(), actual.Properties[TelemetryConstants.OperationSourcePropertyName].ToString());
 
-            TelemetryUtilityTest.VerifyTelemetryEventData(expected, actual);
+            TestTelemetryUtility.VerifyTelemetryEventData(expected, actual);
         }
     }
 }

@@ -52,7 +52,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             var startTime = DateTimeOffset.Now;
 
             // Set to log telemetry granular events for this install operation 
-            TelemetryServiceHelper.Instance.EnableTelemetryEvents();
+            TelemetryService = new TelemetryServiceHelper();
 
             // start timer for telemetry event
             TelemetryUtility.StartorResumeTimer();
@@ -86,7 +86,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 TelemetryUtility.GetTimerElapsedTimeInSeconds());
 
             // emit telemetry event along with granular level events
-            ActionsTelemetryService.Instance.EmitActionEvent(actionTelemetryEvent);
+            ActionsTelemetryService.Instance.EmitActionEvent(actionTelemetryEvent, TelemetryService.TelemetryEvents);
         }
 
         /// <summary>

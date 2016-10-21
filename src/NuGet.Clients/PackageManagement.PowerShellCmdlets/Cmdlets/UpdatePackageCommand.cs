@@ -101,7 +101,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             var startTime = DateTimeOffset.Now;
 
             // Set to log telemetry granular events for this update operation 
-            TelemetryServiceHelper.Instance.EnableTelemetryEvents();
+            TelemetryService = new TelemetryServiceHelper();
 
             // start timer for telemetry event
             TelemetryUtility.StartorResumeTimer();
@@ -124,7 +124,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 TelemetryUtility.GetTimerElapsedTimeInSeconds());
 
             // emit telemetry event along with granular level for update operation
-            ActionsTelemetryService.Instance.EmitActionEvent(actionTelemetryEvent);
+            ActionsTelemetryService.Instance.EmitActionEvent(actionTelemetryEvent, TelemetryService.TelemetryEvents);
         }
 
         /// <summary>
@@ -289,17 +289,17 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private async Task ExecuteActions(IEnumerable<NuGetProjectAction> actions)
         {
             // stop telemetry event timer to avoid ui interaction
-            TelemetryServiceHelper.Instance.StopTimer();
+            TelemetryUtility.StopTimer();
 
             if (!ShouldContinueDueToDotnetDeprecation(actions, WhatIf.IsPresent))
             {
                 // resume telemetry event timer after ui interaction
-                TelemetryServiceHelper.Instance.StartorResumeTimer();
+                TelemetryUtility.StartorResumeTimer();
                 return;
             }
 
             // resume telemetry event timer after ui interaction
-            TelemetryServiceHelper.Instance.StartorResumeTimer();
+            TelemetryUtility.StartorResumeTimer();
 
             if (WhatIf.IsPresent)
             {

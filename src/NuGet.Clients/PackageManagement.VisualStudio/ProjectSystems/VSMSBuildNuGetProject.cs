@@ -22,14 +22,16 @@ namespace NuGet.PackageManagement.VisualStudio
             EnvDTEProject project,
             IMSBuildNuGetProjectSystem msbuildNuGetProjectSystem,
             string folderNuGetProjectPath,
-            string packagesConfigFolderPath,
-            string projectId) : base(
+            string packagesConfigFolderPath) : base(
                 msbuildNuGetProjectSystem,
                 folderNuGetProjectPath,
-                packagesConfigFolderPath,
-                projectId)
+                packagesConfigFolderPath)
         {
             _project = project;
+
+            // set project id
+            var projectId = VsHierarchyUtility.GetProjectId(project);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
         }
 
         public override async Task<IReadOnlyList<ExternalProjectReference>> GetProjectReferenceClosureAsync(

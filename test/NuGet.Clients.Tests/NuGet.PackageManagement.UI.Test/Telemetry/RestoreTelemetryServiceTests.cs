@@ -3,9 +3,9 @@
 
 using System;
 using Moq;
-using NuGet.Common;
 using NuGet.VisualStudio.Facade.Telemetry;
 using Xunit;
+using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.UI.Test
 {
@@ -36,11 +36,10 @@ namespace NuGet.PackageManagement.UI.Test
                 source: source,
                 startTime: DateTime.Now.AddSeconds(-3),
                 status: status,
-                statusMessage: stausMessage,
                 packageCount: 2,
                 endTime: DateTime.Now,
                 duration: 2.10);
-            var service = new RestoreTelemetryService(telemetrySession);
+            var service = new RestoreTelemetryService(telemetrySession.Object);
 
             // Act
             service.EmitRestoreEvent(restoreTelemetryData);
@@ -53,11 +52,11 @@ namespace NuGet.PackageManagement.UI.Test
         {
             Assert.NotNull(actual);
             Assert.Equal(TelemetryConstants.RestoreActionEventName, actual.Name);
-            Assert.Equal(9, actual.Properties.Count);
+            Assert.Equal(8, actual.Properties.Count);
 
             Assert.Equal(expected.Source.ToString(), actual.Properties[TelemetryConstants.OperationSourcePropertyName].ToString());
 
-            TelemetryUtilityTest.VerifyTelemetryEventData(expected, actual);
+            TestTelemetryUtility.VerifyTelemetryEventData(expected, actual);
         }
     }
 }

@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using NuGet.Common;
 using NuGet.VisualStudio.Facade.Telemetry;
+using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.UI
 {

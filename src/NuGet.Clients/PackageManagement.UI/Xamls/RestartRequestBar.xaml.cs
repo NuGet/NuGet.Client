@@ -35,6 +35,8 @@ namespace NuGet.PackageManagement.UI
 
         public NuGetActionType ActionType { get; set; }
 
+        public TelemetryServiceHelper TelemetryService { get; set; }
+
         public RestartRequestBar(IDeleteOnRestartManager deleteOnRestartManager, IVsShell4 vsRestarter)
         {
             InitializeComponent();

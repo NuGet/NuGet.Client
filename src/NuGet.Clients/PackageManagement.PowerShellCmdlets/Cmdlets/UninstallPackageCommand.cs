@@ -58,7 +58,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             _packageCount = 1;
 
             // Enable granular level events for this uninstall operation
-            TelemetryServiceHelper.Instance.EnableTelemetryEvents();
+            TelemetryService = new TelemetryServiceHelper();
             TelemetryUtility.StartorResumeTimer();
 
             Preprocess();
@@ -79,7 +79,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 TelemetryUtility.GetTimerElapsedTimeInSeconds());
 
             // emit telemetry event with granular level events
-            ActionsTelemetryService.Instance.EmitActionEvent(actionTelemetryEvent);
+            ActionsTelemetryService.Instance.EmitActionEvent(actionTelemetryEvent, TelemetryService.TelemetryEvents);
         }
 
         protected override void EndProcessing()

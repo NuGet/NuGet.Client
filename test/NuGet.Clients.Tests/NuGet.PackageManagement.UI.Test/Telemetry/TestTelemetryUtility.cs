@@ -1,13 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using NuGet.Common;
+using NuGet.ProjectManagement;
 using NuGet.VisualStudio.Facade.Telemetry;
 using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test
 {
-    public class TelemetryUtilityTest
+    public class TestTelemetryUtility
     {
         public static void VerifyTelemetryEventData(ActionEventBase expected, TelemetryEvent actual)
         {

@@ -45,7 +45,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Actions\UIActionEngine.cs" />
-    <Compile Include="Actions\ProjectContext.cs" />
     <Compile Include="Actions\UpdatePreviewResult.cs" />
     <Compile Include="Common\ErrorFloodGate.cs" />
     <Compile Include="Common\IOptionsPageActivator.cs" />
