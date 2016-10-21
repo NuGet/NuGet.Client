@@ -165,6 +165,13 @@ namespace NuGet.PackageManagement
             var projects = solutionManager.GetNuGetProjects().OfType<IDependencyGraphProject>().ToArray();
 
             var solutionDgSpec = await GetSolutionRestoreSpec(solutionManager, cacheContext);
+
+            if (solutionDgSpec.Restore.Count < 1)
+            {
+                // Nothing to restore
+                return false;
+            }
+
             var newDependencyGraphSpecHash = solutionDgSpec.GetHashCode();
             cacheContext.SolutionSpec = solutionDgSpec;
             cacheContext.SolutionSpecHash = newDependencyGraphSpecHash;

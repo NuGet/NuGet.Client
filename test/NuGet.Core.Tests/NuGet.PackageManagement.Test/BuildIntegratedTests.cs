@@ -154,6 +154,8 @@ namespace NuGet.Test
                         }
                     };
 
+                    testSolutionManager.NuGetProjects.Add(normalProject);
+
                     var normalReference = new TestExternalProjectReference(normalProject);
 
                     buildIntegratedProjects[0].ProjectReferences.Add(reference1);
@@ -1528,14 +1530,6 @@ namespace NuGet.Test
                 return base.ExecuteInitScriptAsync(identity, packageInstallPath, projectContext, throwOnFailure);
             }
 
-            //public override Task<IReadOnlyList<IDependencyGraphProject>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)
-            //{
-            //    return Task.FromResult<IReadOnlyList<IDependencyGraphProject>>(ProjectReferences
-            //        .Select(e => e.Project)
-            //        .Where(e => e != null)
-            //        .ToList());
-            //}
-
             public override async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
             {
                 var specs = await base.GetPackageSpecsAsync(context);
@@ -1560,7 +1554,7 @@ namespace NuGet.Test
             }
         }
 
-        private class TestNonBuildIntegratedNuGetProject : IDependencyGraphProject
+        private class TestNonBuildIntegratedNuGetProject : NuGetProject, IDependencyGraphProject
         {
             public List<TestExternalProjectReference> ProjectReferences { get; }
                 = new List<TestExternalProjectReference>();
@@ -1570,6 +1564,11 @@ namespace NuGet.Test
             public DateTimeOffset LastModified { get; set; }
 
             public PackageSpec PackageSpec { get; set; }
+
+            public TestNonBuildIntegratedNuGetProject()
+                : base()
+            {
+            }
 
             public Task<IReadOnlyList<IDependencyGraphProject>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)
             {
@@ -1594,6 +1593,21 @@ namespace NuGet.Test
             }
 
             public Task<bool> IsRestoreRequired(IEnumerable<VersionFolderPathResolver> pathResolvers, ISet<PackageIdentity> packagesChecked, DependencyGraphCacheContext context)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, DownloadResourceResult downloadResourceResult, INuGetProjectContext nuGetProjectContext, CancellationToken token)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
             {
                 throw new NotImplementedException();
             }
