@@ -209,38 +209,6 @@ namespace NuGet.PackageManagement
                 .FirstOrDefault();
         }
 
-        /// <summary>
-        /// Find the list of child projects direct or indirect references of target project in
-        /// reverse dependency order like the least dependent package first.
-        /// </summary>
-        public static IEnumerable<BuildIntegratedNuGetProject> GetChildProjectsInClosure(
-            BuildIntegratedNuGetProject target,
-            IReadOnlyList<BuildIntegratedNuGetProject> projects,
-            DependencyGraphSpec cache)
-        {
-            if (projects == null)
-            {
-                throw new ArgumentNullException(nameof(projects));
-            }
-
-            if (target == null)
-            {
-                throw new ArgumentNullException(nameof(target));
-            }
-
-            var orderedChildren = new List<BuildIntegratedNuGetProject>();
-
-            var listOfPackageSpecs = cache.GetClosure(target.MSBuildProjectPath);
-
-            foreach (var spec in listOfPackageSpecs)
-            {
-                var proj = projects.FirstOrDefault(p => p.MSBuildProjectPath == spec.RestoreMetadata.ProjectUniqueName);
-                orderedChildren.Add(proj);
-            }
-
-            return orderedChildren;
-        }
-
         public static async Task<DependencyGraphSpec> GetSolutionRestoreSpec(
             ISolutionManager solutionManager,
             DependencyGraphCacheContext context)

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -26,6 +27,7 @@ namespace NuGet.ProjectManagement.Projects
     /// A NuGet integrated MSBuild project.k
     /// These projects contain a project.json
     /// </summary>
+    [DebuggerDisplay("{ProjectName}")]
     public class ProjectJsonBuildIntegratedNuGetProject : BuildIntegratedNuGetProject
     {
         private readonly FileInfo _jsonConfig;

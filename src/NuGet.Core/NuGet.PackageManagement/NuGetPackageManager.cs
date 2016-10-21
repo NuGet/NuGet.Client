@@ -1888,29 +1888,32 @@ namespace NuGet.PackageManagement
                 var referenceContext = new DependencyGraphCacheContext(logger);
                 _buildIntegratedProjectsUpdateDict = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
 
+                var projectUniqueNamesForBuildIntToUpdate 
+                    = buildIntegratedProjectsToUpdate.ToDictionary((project) => project.MSBuildProjectPath);
+
                 // get all build integrated projects of the solution which will be used to map project references
                 // of the target projects
                 var allBuildIntegratedProjects =
                     SolutionManager.GetNuGetProjects().OfType<BuildIntegratedNuGetProject>().ToList();
 
-                _buildIntegratedProjectsCache =
-                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(SolutionManager, referenceContext);
+                var dgFile = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(SolutionManager, referenceContext);
+                _buildIntegratedProjectsCache = dgFile;
+                var allSortedProjects = DependencyGraphSpec.SortPackagesByDependencyOrder(dgFile.Projects);
 
-                IEnumerable<BuildIntegratedNuGetProject> orderedChildren = null;
                 var msbuildProjectPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-                foreach (var project in buildIntegratedProjectsToUpdate)
+                foreach (var projectUniqueName in allSortedProjects.Select(e => e.RestoreMetadata.ProjectUniqueName))
                 {
-                    orderedChildren = DependencyGraphRestoreUtility.GetChildProjectsInClosure(
-                        project,
-                        allBuildIntegratedProjects,
-                       _buildIntegratedProjectsCache);
+                    BuildIntegratedNuGetProject project;
+                    if (projectUniqueNamesForBuildIntToUpdate.TryGetValue(projectUniqueName, out project))
+                    {
+                        sortedProjectsToUpdate.Add(project);
+                    }
                 }
-                sortedProjectsToUpdate.AddRange(orderedChildren);
 
                 // cache these projects which will be used to avoid duplicate restore as part of parent projects
                 _buildIntegratedProjectsUpdateDict.AddRange(
-                    orderedChildren.Select(child => new KeyValuePair<string, bool>(child.MSBuildProjectPath, false)));
+                    allSortedProjects.Select(child => new KeyValuePair<string, bool>(child.RestoreMetadata.ProjectUniqueName, false)));
             }
 
             // execute all nuget project actions

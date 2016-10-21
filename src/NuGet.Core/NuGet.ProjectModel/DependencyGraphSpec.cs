@@ -264,7 +264,7 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// Order dependencies by children first.
         /// </summary>
-        internal static IReadOnlyList<PackageSpec> SortPackagesByDependencyOrder(
+        public static IReadOnlyList<PackageSpec> SortPackagesByDependencyOrder(
             IEnumerable<PackageSpec> packages)
         {
             var sorted = new List<PackageSpec>();

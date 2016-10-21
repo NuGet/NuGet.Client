@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using NuGet.LibraryModel;
@@ -14,6 +15,7 @@ namespace NuGet.ProjectModel
     /// <summary>
     /// Represents the specification of a package that can be built.
     /// </summary>
+    [DebuggerDisplay("{Name}")]
     public class PackageSpec
     {
         public static readonly string PackageSpecFileName = "project.json";
