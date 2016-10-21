@@ -14,6 +14,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
@@ -322,7 +323,7 @@ namespace NuGetVSExtension
 
                 // No-op all project closures are up to date and all packages exist on disk.
                 if (await DependencyGraphRestoreUtility.IsRestoreRequiredAsync(
-                    projects,
+                    SolutionManager,
                     forceRestore,
                     pathContext,
                     cacheContext,
@@ -357,14 +358,20 @@ namespace NuGetVSExtension
 
                         var sources = SourceRepositoryProvider
                             .GetRepositories()
-                            .Select(s => s.PackageSource.Source)
                             .ToList();
 
+                        var providerCache = new RestoreCommandProvidersCache();
+                        Action<SourceCacheContext> cacheModifier = (cache) => { };
+
                         await DependencyGraphRestoreUtility.RestoreAsync(
-                            projects,
+                            SolutionManager,
+                            cacheContext,
+                            providerCache,
+                            cacheModifier,
                             sources,
                             Settings,
-                            cacheContext);
+                            cacheContext.Logger,
+                            Token);
                     }
                 }
             }

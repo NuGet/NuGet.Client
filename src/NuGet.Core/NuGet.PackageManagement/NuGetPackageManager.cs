@@ -1894,8 +1894,7 @@ namespace NuGet.PackageManagement
                     SolutionManager.GetNuGetProjects().OfType<BuildIntegratedNuGetProject>().ToList();
 
                 _buildIntegratedProjectsCache =
-                    await DependencyGraphProjectCacheUtility.GetSolutionRestoreSpec(allBuildIntegratedProjects,
-                        referenceContext);
+                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(SolutionManager, referenceContext);
 
                 IEnumerable<BuildIntegratedNuGetProject> orderedChildren = null;
                 var msbuildProjectPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -2271,71 +2270,73 @@ namespace NuGet.PackageManagement
             // but a previous cache entry does not yet have it.
             // So we want to capture the time once here, then pass it down to the two
             // restores happening in this flow.
-            using (var cacheContext = new SourceCacheContext())
+            var now = DateTimeOffset.UtcNow;
+            Action<SourceCacheContext> cacheModifier = (cache) => cache.MaxAge = now;
+
+            // If the lock file does not exist, restore before starting the operations
+            if (originalLockFile == null)
             {
-                cacheContext.MaxAge = DateTimeOffset.UtcNow;
-
-                // If the lock file does not exist, restore before starting the operations
-                if (originalLockFile == null)
-                {
-                    var originalRestoreResult = await DependencyGraphRestoreUtility.PreviewRestoreAsync(
-                        buildIntegratedProject,
-                        originalPackageSpec,
-                        dependencyGraphContext,
-                        providerCache,
-                        Settings,
-                        cacheContext,
-                        token);
-
-                    originalLockFile = originalRestoreResult.Result.LockFile;
-                }
-
-                // Modify the package spec
-                foreach (var action in nuGetProjectActions)
-                {
-                    if (action.NuGetProjectActionType == NuGetProjectActionType.Uninstall)
-                    {
-                        PackageSpecOperations.RemoveDependency(updatedPackageSpec, action.PackageIdentity.Id);
-                    }
-                    else if (action.NuGetProjectActionType == NuGetProjectActionType.Install)
-                    {
-                        PackageSpecOperations.AddDependency(updatedPackageSpec, action.PackageIdentity);
-                    }
-                }
-
-                // Restore based on the modified package spec. This operation does not write the lock file to disk.
-                var restoreResult = await DependencyGraphRestoreUtility.PreviewRestoreAsync(
+                var originalRestoreResult = await DependencyGraphRestoreUtility.PreviewRestoreAsync(
                     buildIntegratedProject,
-                    updatedPackageSpec,
+                    originalPackageSpec,
                     dependencyGraphContext,
                     providerCache,
+                    cacheModifier,
+                    sources,
                     Settings,
-                    cacheContext,
+                    logger,
                     token);
 
-                InstallationCompatibility.EnsurePackageCompatibility(
-                    buildIntegratedProject,
-                    pathContext,
-                    nuGetProjectActions,
-                    restoreResult.Result);
-
-                // If this build integrated project action represents only uninstalls, mark the entire operation
-                // as an uninstall. Otherwise, mark it as an install. This is important because install operations
-                // are a bit more sensitive to errors (thus resulting in rollbacks).
-                var actionType = NuGetProjectActionType.Install;
-                if (nuGetProjectActions.All(x => x.NuGetProjectActionType == NuGetProjectActionType.Uninstall))
-                {
-                    actionType = NuGetProjectActionType.Uninstall;
-                }
-
-                return new BuildIntegratedProjectAction(buildIntegratedProject,
-                    nuGetProjectActions.First().PackageIdentity,
-                    actionType,
-                    originalLockFile,
-                    restoreResult,
-                    sources.ToList(),
-                    nuGetProjectActions.ToList());
+                originalLockFile = originalRestoreResult.Result.LockFile;
             }
+
+            // Modify the package spec
+            foreach (var action in nuGetProjectActions)
+            {
+                if (action.NuGetProjectActionType == NuGetProjectActionType.Uninstall)
+                {
+                    PackageSpecOperations.RemoveDependency(updatedPackageSpec, action.PackageIdentity.Id);
+                }
+                else if (action.NuGetProjectActionType == NuGetProjectActionType.Install)
+                {
+                    PackageSpecOperations.AddDependency(updatedPackageSpec, action.PackageIdentity);
+                }
+            }
+
+            // Restore based on the modified package spec. This operation does not write the lock file to disk.
+            var restoreResult = await DependencyGraphRestoreUtility.PreviewRestoreAsync(
+                buildIntegratedProject,
+                updatedPackageSpec,
+                dependencyGraphContext,
+                providerCache,
+                cacheModifier,
+                sources,
+                Settings,
+                logger,
+                token);
+
+            InstallationCompatibility.EnsurePackageCompatibility(
+                buildIntegratedProject,
+                pathContext,
+                nuGetProjectActions,
+                restoreResult.Result);
+
+            // If this build integrated project action represents only uninstalls, mark the entire operation
+            // as an uninstall. Otherwise, mark it as an install. This is important because install operations
+            // are a bit more sensitive to errors (thus resulting in rollbacks).
+            var actionType = NuGetProjectActionType.Install;
+            if (nuGetProjectActions.All(x => x.NuGetProjectActionType == NuGetProjectActionType.Uninstall))
+            {
+                actionType = NuGetProjectActionType.Uninstall;
+            }
+
+            return new BuildIntegratedProjectAction(buildIntegratedProject,
+                nuGetProjectActions.First().PackageIdentity,
+                actionType,
+                originalLockFile,
+                restoreResult,
+                sources.ToList(),
+                nuGetProjectActions.ToList());
         }
 
         /// <summary>
@@ -2421,6 +2422,7 @@ namespace NuGet.PackageManagement
                             referenceContext,
                             GetRestoreProviderCache(),
                             cacheContextModifier,
+                            projectAction.Sources,
                             Settings,
                             logger,
                             token);
@@ -2474,8 +2476,7 @@ namespace NuGet.PackageManagement
                 if (_buildIntegratedProjectsCache == null)
                 {
                     _buildIntegratedProjectsCache = await
-                        DependencyGraphProjectCacheUtility.GetSolutionRestoreSpec(projects,
-                            referenceContext);
+                        DependencyGraphRestoreUtility.GetSolutionRestoreSpec(SolutionManager, referenceContext);
                 }
 
                 // Restore parent projects. These will be updated to include the transitive changes.
@@ -2500,6 +2501,7 @@ namespace NuGet.PackageManagement
                             referenceContext,
                             GetRestoreProviderCache(),
                             cacheContextModifier,
+                            projectAction.Sources,
                             Settings,
                             logger,
                             token);

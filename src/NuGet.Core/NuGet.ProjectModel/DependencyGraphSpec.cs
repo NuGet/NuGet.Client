@@ -59,6 +59,11 @@ namespace NuGet.ProjectModel
 
         public PackageSpec GetProjectSpec(string projectUniqueName)
         {
+            if (projectUniqueName == null)
+            {
+                throw new ArgumentNullException(nameof(projectUniqueName));
+            }
+
             PackageSpec project;
             _projects.TryGetValue(projectUniqueName, out project);
 
@@ -298,11 +303,11 @@ namespace NuGet.ProjectModel
             return count;
         }
 
-        public static DependencyGraphSpec WithoutRestores(DependencyGraphSpec spec)
+        public DependencyGraphSpec WithoutRestores()
         {
             var newSpec = new DependencyGraphSpec();
 
-            foreach (var project in spec.Projects)
+            foreach (var project in Projects)
             {
                 newSpec.AddProject(project);
             }
@@ -310,15 +315,37 @@ namespace NuGet.ProjectModel
             return newSpec;
         }
 
-        public static DependencyGraphSpec WithReplacedSpec(DependencyGraphSpec dgSpec, PackageSpec project)
+        public DependencyGraphSpec WithReplacedSpec(PackageSpec project)
         {
             var newSpec = new DependencyGraphSpec();
             newSpec.AddProject(project);
             newSpec.AddRestore(project.RestoreMetadata.ProjectUniqueName);
 
-            foreach (var child in dgSpec.Projects)
+            foreach (var child in Projects)
             {
                 newSpec.AddProject(child);
+            }
+
+            return newSpec;
+        }
+
+        public DependencyGraphSpec WithoutTools()
+        {
+            var newSpec = new DependencyGraphSpec();
+
+            foreach (var project in Projects)
+            {
+                if (project.RestoreMetadata.OutputType != RestoreOutputType.DotnetCliTool)
+                {
+                    // Add all non-tool projects
+                    newSpec.AddProject(project);
+
+                    // Add to restore if it existed in the current dg file
+                    if (_restore.Contains(project.RestoreMetadata.ProjectUniqueName))
+                    {
+                        newSpec.AddRestore(project.RestoreMetadata.ProjectUniqueName);
+                    }
+                }
             }
 
             return newSpec;

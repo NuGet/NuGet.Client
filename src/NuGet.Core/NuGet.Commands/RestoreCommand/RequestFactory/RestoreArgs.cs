@@ -37,6 +37,15 @@ namespace NuGet.Commands
 
         public ILogger Log { get; set; }
 
+        /// <summary>
+        /// Sources to use for restore. Overrides Sources
+        /// </summary>
+        public List<SourceRepository> SourceRepositories { get; set; } = new List<SourceRepository>();
+
+        /// <summary>
+        /// Sources to use for restore. This is not used if SourceRepositories contains the 
+        /// already built SourceRepository objects.
+        /// </summary>
         public List<string> Sources { get; set; } = new List<string>();
 
         public List<string> FallbackSources { get; set; } = new List<string>();
@@ -118,6 +127,12 @@ namespace NuGet.Commands
 
         private List<SourceRepository> GetEffectiveSourcesCore(ISettings settings)
         {
+            if (SourceRepositories.Count > 0)
+            {
+                // SourceRepositories overrides
+                return SourceRepositories;
+            }
+
             var sourceObjects = new Dictionary<string, PackageSource>(StringComparer.Ordinal);
             var packageSourceProvider = new PackageSourceProvider(settings);
             var packageSourcesFromProvider = packageSourceProvider.LoadPackageSources();

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +14,6 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
-using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement
@@ -27,44 +25,44 @@ namespace NuGet.PackageManagement
     /// </summary>
     public static class DependencyGraphRestoreUtility
     {
+        /// <summary>
+        /// Restore a solution and cache the dg spec to context.
+        /// </summary>
         public static async Task RestoreAsync(
-           IEnumerable<IDependencyGraphProject> projects,
-           IEnumerable<string> sources,
-           ISettings settings,
-           DependencyGraphCacheContext cacheContext)
+            ISolutionManager solutionManager,
+            DependencyGraphCacheContext context,
+            RestoreCommandProvidersCache providerCache,
+            Action<SourceCacheContext> cacheContextModifier,
+            IEnumerable<SourceRepository> sources,
+            ISettings settings,
+            ILogger log,
+            CancellationToken token)
         {
-            var pathContext = NuGetPathContext.Create(settings);
-            var dgSpec = cacheContext.SolutionSpec;
+            // Get full dg spec
+            var dgSpec = await GetSolutionRestoreSpec(solutionManager, context);
+
+            // Cache spec
+            context.SolutionSpec = dgSpec;
 
             // Check if there are actual projects to restore before running.
             if (dgSpec.Restore.Count > 0)
             {
                 using (var sourceCacheContext = new SourceCacheContext())
                 {
-                    var providers = new List<IPreLoadedRestoreRequestProvider>();
-                    var providerCache = new RestoreCommandProvidersCache();
-                    providers.Add(new DependencyGraphSpecRequestProvider(providerCache, dgSpec));
+                    // Update cache context
+                    cacheContextModifier(sourceCacheContext);
 
-                    var sourceProvider = new CachingSourceProvider(new PackageSourceProvider(settings));
-
-                    var restoreContext = new RestoreArgs
-                    {
-                        CacheContext = sourceCacheContext,
-                        LockFileVersion = LockFileFormat.Version,
-                        ConfigFile = null,
-                        DisableParallel = false,
-                        GlobalPackagesFolder = pathContext.UserPackageFolder,
-                        Log = cacheContext.Logger,
-                        MachineWideSettings = new XPlatMachineWideSetting(),
-                        PreLoadedRequestProviders = providers,
-                        CachingSourceProvider = sourceProvider,
-                        Sources = sources.ToList(),
-                        FallbackSources = pathContext.FallbackPackageFolders.ToList()
-                    };
+                    var restoreContext = GetRestoreContext(
+                        context,
+                        providerCache,
+                        settings,
+                        sourceCacheContext,
+                        sources,
+                        dgSpec);
 
                     var restoreSummaries = await RestoreRunner.Run(restoreContext);
 
-                    RestoreSummary.Log(cacheContext.Logger, restoreSummaries);
+                    RestoreSummary.Log(log, restoreSummaries);
                 }
             }
         }
@@ -77,35 +75,75 @@ namespace NuGet.PackageManagement
             PackageSpec packageSpec,
             DependencyGraphCacheContext context,
             RestoreCommandProvidersCache providerCache,
+            Action<SourceCacheContext> cacheContextModifier,
+            IEnumerable<SourceRepository> sources,
             ISettings settings,
-            SourceCacheContext sourceCacheContext,
+            ILogger log,
             CancellationToken token)
         {
             // Restoring packages
             var logger = context.Logger;
 
             // Add the new spec to the dg file and fill in the rest.
-            var dgFile = DependencyGraphSpec.WithReplacedSpec(await project.GetDependencyGraphSpecAsync(context), packageSpec);
+            var dgFile = await project.GetDependencyGraphSpecAsync(context);
+
+            dgFile = dgFile.WithoutRestores()
+                .WithReplacedSpec(packageSpec);
+
             dgFile.AddRestore(project.MSBuildProjectPath);
 
-            // Settings passed here will be used to populate the restore requests.
-            var dgProvider = new DependencyGraphSpecRequestProvider(providerCache, dgFile, settings);
-
-            var restoreContext = new RestoreArgs()
+            using (var sourceCacheContext = new SourceCacheContext())
             {
-                CacheContext = sourceCacheContext,
-                PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider>() { dgProvider },
-                Log = context.Logger
-            };
+                // Update cache context
+                cacheContextModifier(sourceCacheContext);
 
-            var requests = await RestoreRunner.GetRequests(restoreContext);
-            var results = await RestoreRunner.RunWithoutCommit(requests, restoreContext);
+                // Settings passed here will be used to populate the restore requests.
+                RestoreArgs restoreContext = GetRestoreContext(context, providerCache, settings, sourceCacheContext, sources, dgFile);
 
-            return results.Single();
+                var requests = await RestoreRunner.GetRequests(restoreContext);
+                var results = await RestoreRunner.RunWithoutCommit(requests, restoreContext);
+                return results.Single();
+            }
+        }
+
+        /// <summary>
+        /// Restore a build integrated project and update the lock file
+        /// </summary>
+        public static async Task<RestoreResult> RestoreProjectAsync(
+            BuildIntegratedNuGetProject project,
+            DependencyGraphCacheContext context,
+            RestoreCommandProvidersCache providerCache,
+            Action<SourceCacheContext> cacheContextModifier,
+            IEnumerable<SourceRepository> sources,
+            ISettings settings,
+            ILogger log,
+            CancellationToken token)
+        {
+            // Restore
+            var result = await PreviewRestoreAsync(
+                project,
+                await project.GetPackageSpecAsync(context),
+                context,
+                providerCache,
+                cacheContextModifier,
+                sources,
+                settings,
+                log,
+                token);
+
+            // Throw before writing if this has been canceled
+            token.ThrowIfCancellationRequested();
+
+            // Write out the lock file and msbuild files
+            var summary = await RestoreRunner.Commit(result);
+
+            RestoreSummary.Log(log, new[] { summary });
+
+            return result.Result;
         }
 
         public static async Task<bool> IsRestoreRequiredAsync(
-            IEnumerable<IDependencyGraphProject> projects,
+            ISolutionManager solutionManager,
             bool forceRestore,
             INuGetPathContext pathContext,
             DependencyGraphCacheContext cacheContext,
@@ -117,7 +155,9 @@ namespace NuGet.PackageManagement
                 return true;
             }
 
-            var solutionDgSpec = await DependencyGraphProjectCacheUtility.GetSolutionRestoreSpec(projects, cacheContext);
+            var projects = solutionManager.GetNuGetProjects().OfType<IDependencyGraphProject>().ToArray();
+
+            var solutionDgSpec = await GetSolutionRestoreSpec(solutionManager, cacheContext);
             var newDependencyGraphSpecHash = solutionDgSpec.GetHashCode();
             cacheContext.SolutionSpec = solutionDgSpec;
             cacheContext.SolutionSpecHash = newDependencyGraphSpecHash;
@@ -178,40 +218,53 @@ namespace NuGet.PackageManagement
             return orderedChildren;
         }
 
+        public static async Task<DependencyGraphSpec> GetSolutionRestoreSpec(
+            ISolutionManager solutionManager,
+            DependencyGraphCacheContext context)
+        {
+            var dgSpec = new DependencyGraphSpec();
+            var projects = solutionManager.GetNuGetProjects().OfType<IDependencyGraphProject>();
+
+            foreach (var project in projects)
+            {
+                var packageSpec = await project.GetPackageSpecAsync(context);
+
+                dgSpec.AddProject(packageSpec);
+
+                if (packageSpec.RestoreMetadata.OutputType == RestoreOutputType.NETCore ||
+                    packageSpec.RestoreMetadata.OutputType == RestoreOutputType.UAP ||
+                    packageSpec.RestoreMetadata.OutputType == RestoreOutputType.DotnetCliTool ||
+                    packageSpec.RestoreMetadata.OutputType == RestoreOutputType.Standalone)
+                {
+                    dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
+                }
+            }
+            // Return dg file
+            return dgSpec;
+        }
+
         /// <summary>
-        /// Restore a build integrated project and update the lock file
+        /// Create a restore context.
         /// </summary>
-        public static async Task<RestoreResult> RestoreProjectAsync(
-            BuildIntegratedNuGetProject project,
+        private static RestoreArgs GetRestoreContext(
             DependencyGraphCacheContext context,
             RestoreCommandProvidersCache providerCache,
-            Action<SourceCacheContext> cacheContextModifier,
             ISettings settings,
-            ILogger log,
-            CancellationToken token)
+            SourceCacheContext sourceCacheContext,
+            IEnumerable<SourceRepository> sources,
+            DependencyGraphSpec dgFile)
         {
-            using (var cacheContext = new SourceCacheContext())
+            var dgProvider = new DependencyGraphSpecRequestProvider(providerCache, dgFile, settings);
+
+            var restoreContext = new RestoreArgs()
             {
-                cacheContextModifier(cacheContext);
+                CacheContext = sourceCacheContext,
+                PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider>() { dgProvider },
+                Log = context.Logger,
+                SourceRepositories = sources.ToList()
+            };
 
-                // Restore
-                var result = await PreviewRestoreAsync(
-                    project,
-                    await project.GetPackageSpecAsync(context),
-                    context,
-                    providerCache,
-                    settings,
-                    cacheContext,
-                    token);
-
-                // Throw before writing if this has been canceled
-                token.ThrowIfCancellationRequested();
-
-                // Write out the lock file and msbuild files
-                var summary = await RestoreRunner.Commit(result);
-
-                return result.Result;
-            }
+            return restoreContext;
         }
     }
 }

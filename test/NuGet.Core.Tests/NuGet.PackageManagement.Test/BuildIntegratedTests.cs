@@ -22,6 +22,7 @@ using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
 using NuGet.Protocol.Core.Types;
+using NuGet.Packaging;
 
 namespace NuGet.Test
 {
@@ -124,20 +125,46 @@ namespace NuGet.Test
                     var reference1 = new TestExternalProjectReference(buildIntegratedProjects[1], buildIntegratedProjects[2]);
                     var reference2 = new TestExternalProjectReference(buildIntegratedProjects[2], buildIntegratedProjects[3]);
                     var reference3 = new TestExternalProjectReference(buildIntegratedProjects[3]);
-                    var normalReference = new TestExternalProjectReference("myproj");
 
-                    buildIntegratedProjects[0].ProjectReferences.Add(reference0);
+                    var myProjFolder = TestDirectory.Create();
+                    projectFolderPaths.Add(myProjFolder);
+
+                    var myProjPath = Path.Combine(myProjFolder, "myproj.csproj");
+
+                    var normalProject = new TestNonBuildIntegratedNuGetProject()
+                    {
+                        MSBuildProjectPath = myProjPath,
+                        PackageSpec = new PackageSpec(new List<TargetFrameworkInformation>()
+                        {
+                            new TargetFrameworkInformation()
+                            {
+                                FrameworkName = projectTargetFramework,
+                            }
+                        })
+                        {
+                            RestoreMetadata = new ProjectRestoreMetadata()
+                            {
+                                ProjectName = "myproj",
+                                ProjectUniqueName = myProjPath,
+                                OutputType = RestoreOutputType.Unknown,
+                                ProjectPath = myProjPath
+                            },
+                            Name = myProjPath,
+                            FilePath = myProjPath
+                        }
+                    };
+
+                    var normalReference = new TestExternalProjectReference(normalProject);
+
                     buildIntegratedProjects[0].ProjectReferences.Add(reference1);
                     buildIntegratedProjects[0].ProjectReferences.Add(reference2);
                     buildIntegratedProjects[0].ProjectReferences.Add(reference3);
                     buildIntegratedProjects[0].ProjectReferences.Add(normalReference);
 
-                    buildIntegratedProjects[1].ProjectReferences.Add(reference1);
                     buildIntegratedProjects[1].ProjectReferences.Add(reference2);
                     buildIntegratedProjects[1].ProjectReferences.Add(reference3);
                     buildIntegratedProjects[1].ProjectReferences.Add(normalReference);
 
-                    buildIntegratedProjects[2].ProjectReferences.Add(reference2);
                     buildIntegratedProjects[2].ProjectReferences.Add(reference3);
                     buildIntegratedProjects[2].ProjectReferences.Add(normalReference);
 
@@ -1501,12 +1528,73 @@ namespace NuGet.Test
                 return base.ExecuteInitScriptAsync(identity, packageInstallPath, projectContext, throwOnFailure);
             }
 
-            //public override Task<IReadOnlyList<ExternalProjectReference>> GetProjectReferenceClosureAsync(
-            //    ExternalProjectReferenceContext context)
-            //{
-            //    return Task.FromResult<IReadOnlyList<ExternalProjectReference>>(
-            //        ProjectReferences.Select(proj => proj.ExternalProjectReference).ToList());
-            //}
+            public override Task<IReadOnlyList<IDependencyGraphProject>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)
+            {
+                return Task.FromResult<IReadOnlyList<IDependencyGraphProject>>(ProjectReferences
+                    .Select(e => e.Project)
+                    .Where(e => e != null)
+                    .ToList());
+            }
+
+            public override async Task<PackageSpec> GetPackageSpecAsync(DependencyGraphCacheContext context)
+            {
+                var spec = await base.GetPackageSpecAsync(context);
+
+                var projectRefs = ProjectReferences.Select(e => new ProjectRestoreReference()
+                {
+                    ProjectUniqueName = e.MSBuildProjectPath,
+                    ProjectPath = e.MSBuildProjectPath,
+                });
+
+                spec.RestoreMetadata.TargetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>()
+                {
+                    new ProjectRestoreMetadataFrameworkInfo(spec.TargetFrameworks.First().FrameworkName)
+                    {
+                        ProjectReferences = projectRefs.ToList()
+                    }
+                };
+
+                return spec;
+            }
+        }
+
+        private class TestNonBuildIntegratedNuGetProject : IDependencyGraphProject
+        {
+            public List<TestExternalProjectReference> ProjectReferences { get; }
+                = new List<TestExternalProjectReference>();
+
+            public string MSBuildProjectPath { get; set; }
+
+            public DateTimeOffset LastModified { get; set; }
+
+            public PackageSpec PackageSpec { get; set; }
+
+            public Task<IReadOnlyList<IDependencyGraphProject>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)
+            {
+                return Task.FromResult<IReadOnlyList<IDependencyGraphProject>>(ProjectReferences
+                    .Select(e => e.Project)
+                    .Where(e => e != null)
+                    .ToList());
+            }
+
+            public Task<PackageSpec> GetPackageSpecAsync(DependencyGraphCacheContext context)
+            {
+                return Task.FromResult(PackageSpec);
+            }
+
+            public Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(DependencyGraphCacheContext context)
+            {
+                var dgSpec = new DependencyGraphSpec();
+                dgSpec.AddProject(PackageSpec);
+                dgSpec.AddRestore(PackageSpec.RestoreMetadata.ProjectUniqueName);
+
+                return Task.FromResult(dgSpec);
+            }
+
+            public Task<bool> IsRestoreRequired(IEnumerable<VersionFolderPathResolver> pathResolvers, ISet<PackageIdentity> packagesChecked, DependencyGraphCacheContext context)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private ExternalProjectReference CreateReference(string name)
@@ -1516,49 +1604,20 @@ namespace NuGet.Test
 
         private class TestExternalProjectReference
         {
-            public BuildIntegratedNuGetProject Project { get; set; }
+            public IDependencyGraphProject Project { get; set; }
 
-            public BuildIntegratedNuGetProject[] Children { get; set; }
-
-            public string ProjectName { get; set; }
-
-            public TestExternalProjectReference(string name)
-            {
-                ProjectName = name;
-            }
+            public IDependencyGraphProject[] Children { get; set; }
 
             public TestExternalProjectReference(
-                BuildIntegratedNuGetProject project,
-                params BuildIntegratedNuGetProject[] children)
+                IDependencyGraphProject project,
+                params IDependencyGraphProject[] children)
             {
                 Project = project;
                 Children = children;
+                MSBuildProjectPath = project.MSBuildProjectPath;
             }
 
-            //public ExternalProjectReference ExternalProjectReference
-            //{
-            //    get
-            //    {
-            //        if (ProjectName != null)
-            //        {
-            //            return new ExternalProjectReference(
-            //                ProjectName,
-            //                null,
-            //                null,
-            //                Enumerable.Empty<string>());
-            //        }
-            //        else
-            //        {
-            //            var childConfigs = Children.Select(child => child.ProjectName).ToList();
-
-            //            return new ExternalProjectReference(
-            //                Project.ProjectName,
-            //                Project.GetPackageSpecAsync().Result,
-            //                Project.MSBuildNuGetProjectSystem.ProjectFullPath,
-            //                childConfigs);
-            //        }
-            //    }
-            //}
+            public string MSBuildProjectPath { get; set; }
         }
     }
 }
