@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
@@ -238,7 +239,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 // No-op all project closures are up to date and all packages exist on disk.
                 if (await DependencyGraphRestoreUtility.IsRestoreRequiredAsync(
-                    projects,
+                    _solutionManager,
                     forceRestore,
                     pathContext,
                     cacheContext,
@@ -260,14 +261,20 @@ namespace NuGet.PackageManagement.VisualStudio
 
                         var sources = _sourceRepositoryProvider
                             .GetRepositories()
-                            .Select(s => s.PackageSource.Source)
                             .ToList();
 
+                        var providerCache = new RestoreCommandProvidersCache();
+                        Action<SourceCacheContext> cacheModifier = (cache) => { };
+
                         await DependencyGraphRestoreUtility.RestoreAsync(
-                            projects,
+                            _solutionManager,
+                            cacheContext,
+                            providerCache,
+                            cacheModifier,
                             sources,
                             _settings,
-                            cacheContext);
+                            _logger,
+                            Token);
                     });
                 }
             }
