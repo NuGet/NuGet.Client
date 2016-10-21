@@ -69,6 +69,7 @@ namespace NuGet.PackageManagement
 
             // Cache spec
             context.SolutionSpec = dgSpec;
+            context.SolutionSpecHash = dgSpec.GetHashCode();
 
             // Check if there are actual projects to restore before running.
             if (dgSpec.Restore.Count > 0)
