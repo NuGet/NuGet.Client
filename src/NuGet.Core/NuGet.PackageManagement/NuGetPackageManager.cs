@@ -2383,17 +2383,23 @@ namespace NuGet.PackageManagement
             // For uninstalls continue even if the restore failed to avoid blocking the user
             if (restoreResult.Success || uninstallOnly)
             {
-                var installActions = projectAction
-                    .OriginalActions
-                    .Where(r => r.NuGetProjectActionType == NuGetProjectActionType.Install);
-                var ids = new HashSet<PackageIdentity>(installActions.Select(x => x.PackageIdentity));
+                // Get all install actions
+                var ignoreActions = new HashSet<NuGetProjectAction>();
+                var installedIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-                var actualUninstalls = projectAction
-                    .OriginalActions
-                    .Where(a => !ids.Contains(a.PackageIdentity));
+                foreach (var action in projectAction.OriginalActions.Reverse())
+                {
+                    if (action.NuGetProjectActionType == NuGetProjectActionType.Install)
+                    {
+                        installedIds.Add(action.PackageIdentity.Id);
+                    }
+                    else if (installedIds.Contains(action.PackageIdentity.Id))
+                    {
+                        ignoreActions.Add(action);
+                    }
+                }
 
-                var totalActions = installActions.Concat(actualUninstalls);
-                foreach (var originalAction in totalActions)
+                foreach (var originalAction in projectAction.OriginalActions.Where(e => !ignoreActions.Contains(e)))
                 {
                     if (originalAction.NuGetProjectActionType == NuGetProjectActionType.Install)
                     {
