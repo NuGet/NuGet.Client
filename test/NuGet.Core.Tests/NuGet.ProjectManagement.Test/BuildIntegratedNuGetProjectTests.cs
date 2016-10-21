@@ -25,7 +25,7 @@ namespace ProjectManagement.Test
     public class BuildIntegratedNuGetProjectTests
     {
         [Fact]
-        public void BuildIntegratedNuGetProject_GetPackageSpecForRestore_NoReferences()
+        public async Task BuildIntegratedNuGetProject_GetPackageSpecForRestore_NoReferences()
         {
             // Arrange
             using (var randomProjectFolderPath = TestDirectory.Create())
@@ -37,12 +37,12 @@ namespace ProjectManagement.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new BuildIntegratedNuGetProject(projectJsonPath, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(projectJsonPath, projectFilePath, msBuildNuGetProjectSystem);
 
-                var referenceContext = new ExternalProjectReferenceContext(new TestLogger());
+                var referenceContext = new DependencyGraphCacheContext(new TestLogger());
 
                 // Act
-                var actual = buildIntegratedProject.GetPackageSpecsForRestore(referenceContext).SingleOrDefault();
+                var actual = (await buildIntegratedProject.GetPackageSpecsAsync(referenceContext)).SingleOrDefault();
 
                 // Assert
                 Assert.NotNull(actual);
@@ -60,58 +60,6 @@ namespace ProjectManagement.Test
                 Assert.Empty(actual.Dependencies);
                 Assert.Empty(actual.TargetFrameworks[0].Dependencies);
                 Assert.Empty(actual.RestoreMetadata.TargetFrameworks.SelectMany(e => e.ProjectReferences));
-            }
-        }
-
-        [Fact]
-        public void BuildIntegratedNuGetProject_GetPackageSpecForRestore_WithReferences()
-        {
-            // Arrange
-            using (var randomProjectFolderPath = TestDirectory.Create())
-            {
-                var projectJsonPath = Path.Combine(randomProjectFolderPath, "project.json");
-                CreateConfigJson(projectJsonPath);
-
-                var projectTargetFramework = NuGetFramework.Parse("netcore50");
-                var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
-                var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new BuildIntegratedNuGetProject(projectJsonPath, projectFilePath, msBuildNuGetProjectSystem);
-
-                var referenceContext = new ExternalProjectReferenceContext(new TestLogger());
-                referenceContext.DirectReferenceCache[projectFilePath] = new List<ExternalProjectReference>
-                {
-                    new ExternalProjectReference(
-                        uniqueName: "uniqueName",
-                        packageSpecProjectName: null,
-                        packageSpecPath: null,
-                        msbuildProjectPath: "msbuildProjectPath",
-                        projectReferences: Enumerable.Empty<string>())
-                };
-
-                // Act
-                var actual = buildIntegratedProject.GetPackageSpecsForRestore(referenceContext).SingleOrDefault();
-
-                // Assert
-                Assert.NotNull(actual);
-                Assert.Equal(msBuildNuGetProjectSystem.ProjectName, actual.Name);
-                Assert.Equal(projectJsonPath, actual.FilePath);
-                Assert.NotNull(actual.RestoreMetadata);
-                Assert.Equal(RestoreOutputType.UAP, actual.RestoreMetadata.OutputType);
-                Assert.Equal(projectFilePath, actual.RestoreMetadata.ProjectPath);
-                Assert.Equal(msBuildNuGetProjectSystem.ProjectName, actual.RestoreMetadata.ProjectName);
-                Assert.Equal(projectFilePath, actual.RestoreMetadata.ProjectUniqueName);
-                Assert.Equal(1, actual.TargetFrameworks.Count);
-                Assert.Equal(projectTargetFramework, actual.TargetFrameworks[0].FrameworkName);
-                Assert.Empty(actual.TargetFrameworks[0].Imports);
-
-                Assert.Equal(0, actual.Dependencies.Count);
-                Assert.Empty(actual.TargetFrameworks[0].Dependencies);
-
-                var projectReferences = actual.RestoreMetadata.TargetFrameworks.SelectMany(e => e.ProjectReferences).ToList();
-                Assert.Equal(1, projectReferences.Count);
-                Assert.Equal("uniqueName", projectReferences[0].ProjectUniqueName);
-                Assert.Equal("msbuildProjectPath", projectReferences[0].ProjectPath);
             }
         }
 
@@ -210,7 +158,7 @@ namespace ProjectManagement.Test
         }
 
         [Fact]
-        public void TestBuildIntegratedNuGetPackageSpecNameMatchesFilePath_ProjectNameJson()
+        public async Task TestBuildIntegratedNuGetPackageSpecNameMatchesFilePath_ProjectNameJson()
         {
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
@@ -234,17 +182,19 @@ namespace ProjectManagement.Test
 
                 var projectFilePath = Path.Combine(randomProjectFolderPath, "fileName.csproj");
 
-                var buildIntegratedProject = new BuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+
+                var spec = await buildIntegratedProject.GetPackageSpecsAsync(new DependencyGraphCacheContext());
 
                 // Assert
                 Assert.Equal(projectFilePath, buildIntegratedProject.MSBuildProjectPath);
                 Assert.Equal("fileName", buildIntegratedProject.ProjectName);
-                Assert.Equal("fileName", buildIntegratedProject.PackageSpec.Name);
+                Assert.Equal("fileName", spec.Single().Name);
             }
         }
 
         [Fact]
-        public void TestBuildIntegratedNuGetPackageSpecNameMatchesFilePath()
+        public async Task TestBuildIntegratedNuGetPackageSpecNameMatchesFilePath()
         {
             // Arrange
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
@@ -268,12 +218,14 @@ namespace ProjectManagement.Test
 
                 var projectFilePath = Path.Combine(randomProjectFolderPath, "fileName.csproj");
 
-                var buildIntegratedProject = new BuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+
+                var spec = await buildIntegratedProject.GetPackageSpecsAsync(new DependencyGraphCacheContext());
 
                 // Assert
                 Assert.Equal(projectFilePath, buildIntegratedProject.MSBuildProjectPath);
                 Assert.Equal("fileName", buildIntegratedProject.ProjectName);
-                Assert.Equal("fileName", buildIntegratedProject.PackageSpec.Name);
+                Assert.Equal("fileName", spec.Single().Name);
             }
         }
 
@@ -295,7 +247,7 @@ namespace ProjectManagement.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new BuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyContentPackage(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
@@ -334,7 +286,7 @@ namespace ProjectManagement.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new BuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyContentPackage(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
@@ -378,7 +330,7 @@ namespace ProjectManagement.Test
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
-                var buildIntegratedProject = new BuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
+                var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
 
                 var packageFileInfo = TestPackagesGroupedByFolder.GetLegacyContentPackage(randomTestPackageSourcePath,
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
