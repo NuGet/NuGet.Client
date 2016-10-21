@@ -4,6 +4,7 @@
   <Import Project="..\..\..\Build\Common.props" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <DefineConstants Condition="'$(VisualStudioVersion)' == '15.0'">$(DefineConstants);VS15</DefineConstants>
     <ProjectGuid>{306CDDFA-FF0B-4299-930C-9EC6C9308160}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -36,7 +37,7 @@
           <EmbedInteropTypes>True</EmbedInteropTypes>
         </Reference>
         <Reference Include="Microsoft.VisualStudio.ProjectSystem.Interop">
-          <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.15.0.183-pre\lib\net451\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
+          <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.15.0.530-pre-g355f3866ef\lib\net46\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
           <EmbedInteropTypes>True</EmbedInteropTypes>
         </Reference>
         <Reference Include="VSLangProj140, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -47,7 +48,11 @@
         <Reference Include="VSLangProj150">
           <HintPath>$(EnlistmentRoot)\lib\VSLangProj150.dll</HintPath>
           <EmbedInteropTypes>True</EmbedInteropTypes>
-        </Reference>      </ItemGroup>
+        </Reference>
+        <Reference Include="Microsoft.VisualStudio.ProjectSystem">
+          <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.15.0.530-pre-g355f3866ef\lib\net46\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
+        </Reference>
+      </ItemGroup>
     </When>
   </Choose>
   <ItemGroup>
@@ -103,7 +108,7 @@
     <Compile Include="BindingRedirectBehavior.cs" />
     <Compile Include="CommonResources.cs" />
     <Compile Include="IDE\IVsSolutionManager.cs" />
-    <Compile Include="ProjectSystems\CpsPackageReferenceProject.cs" />
+    <Compile Include="ProjectSystems\CpsPackageReferenceProject.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
     <Compile Include="ProjectSystems\IProjectSystemProvider.cs" />
     <Compile Include="ProjectSystems\MSBuildNuGetProjectProvider.cs" />
     <Compile Include="ProjectSystems\ProjectKNuGetProjectProvider.cs" />
@@ -111,7 +116,7 @@
     <Compile Include="ProjectSystems\ProjectNames.cs" />
     <Compile Include="IDE\IScriptExecutor.cs" />
     <Compile Include="ProjectSystems\IProjectSystemCache.cs" />
-    <Compile Include="ProjectSystems\CpsPackageReferenceProjectProvider.cs" />
+    <Compile Include="ProjectSystems\CpsPackageReferenceProjectProvider.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
     <Compile Include="ProjectSystems\ProjectSystemProviderContext.cs" />
     <Compile Include="ScriptExecutionRequest.cs" />
     <Compile Include="ProjectSystems\VSMSBuildNuGetProject.cs" />
@@ -175,6 +180,7 @@
     <Compile Include="Utility\ProjectRetargetingUtility.cs" />
     <Compile Include="Utility\RefreshFileUtility.cs" />
     <Compile Include="Utility\RuntimeHelpers.cs" />
+    <Compile Include="Utility\ScriptExecutorUtil.cs" />
     <Compile Include="Utility\SettingsHelper.cs" />
     <Compile Include="Utility\VCProjectHelper.cs" />
     <Compile Include="Utility\VSVersionHelper.cs" />

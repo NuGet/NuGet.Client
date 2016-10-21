@@ -670,7 +670,10 @@ namespace NuGet.ProjectManagement
                 var projectReferences = await GetDirectProjectReferencesAsync(context);
                 var listOfDgSpecs = projectReferences.Select(async r => await r.GetDependencyGraphSpecAsync(context)).Select(r => r.Result).ToList();
                 listOfDgSpecs.Add(dgSpec);
-                return DependencyGraphSpec.Union(listOfDgSpecs);
+                var finalDgSpec =  DependencyGraphSpec.Union(listOfDgSpecs);
+                //Cache this DG File
+                context?.DependencyGraphCache.Add(MSBuildProjectPath, finalDgSpec);
+                return finalDgSpec;
             }
         }
 

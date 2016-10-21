@@ -107,11 +107,12 @@ namespace NuGet.PackageManagement.Telemetry
                 {
                     projectType = NuGetProjectType.XProjProjectJson;
                 }
+#if VS15
                 else if(nuGetProject is CpsPackageReferenceProject)
                 {
                     projectType = NuGetProjectType.CPSBasedPackageRefs;
                 }
-
+#endif
                 var projectInformation = new ProjectInformation(
                     NuGetVersion.Value,
                     projectId,

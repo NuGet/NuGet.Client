@@ -13,7 +13,11 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     [Export(typeof(IProjectSystemProvider))]
     [Name(nameof(MSBuildNuGetProjectProvider))]
+#if VS15
     [Order(After = nameof(CpsPackageReferenceProjectProvider))]
+#else
+    [Order(After = nameof(ProjectKNuGetProjectProvider))]
+#endif
     public class MSBuildNuGetProjectProvider : IProjectSystemProvider
     {
         public bool TryCreateNuGetProject(EnvDTE.Project envDTEProject, ProjectSystemProviderContext context, out NuGetProject result)

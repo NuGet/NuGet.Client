@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -55,46 +56,10 @@ namespace NuGet.PackageManagement.VisualStudio
             INuGetProjectContext projectContext,
             bool throwOnFailure)
         {
-            if (ScriptExecutor != null)
-            {
-                var packageReader = new PackageFolderReader(packageInstallPath);
-
-                var toolItemGroups = packageReader.GetToolItems();
-
-                if (toolItemGroups != null)
-                {
-                    // Init.ps1 must be found at the root folder, target frameworks are not recognized here,
-                    // since this is run for the solution.
-                    var toolItemGroup = toolItemGroups
-                                        .Where(group => group.TargetFramework.IsAny)
-                                        .FirstOrDefault();
-
-                    if (toolItemGroup != null)
-                    {
-                        var initPS1RelativePath = toolItemGroup.Items
-                            .Where(p => p.StartsWith(
-                                PowerShellScripts.InitPS1RelativePath,
-                                StringComparison.OrdinalIgnoreCase))
-                            .FirstOrDefault();
-
-                        if (!string.IsNullOrEmpty(initPS1RelativePath))
-                        {
-                            initPS1RelativePath = PathUtility
-                                .ReplaceAltDirSeparatorWithDirSeparator(initPS1RelativePath);
-
-                            return await ScriptExecutor.ExecuteAsync(
-                                identity,
-                                packageInstallPath,
-                                initPS1RelativePath,
-                                _envDTEProject,
-                                projectContext,
-                                throwOnFailure);
-                        }
-                    }
-                }
-            }
-
-            return false;
+            return
+                await
+                    ScriptExecutorUtil.ExecuteScriptAsync(identity, packageInstallPath, projectContext, ScriptExecutor,
+                        _envDTEProject, throwOnFailure);
         }
 
         public override Task<IReadOnlyList<IDependencyGraphProject>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)
