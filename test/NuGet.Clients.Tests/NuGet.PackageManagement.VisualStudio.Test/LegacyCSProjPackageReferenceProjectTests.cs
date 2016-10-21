@@ -12,7 +12,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 {
     public class LegacyCSProjPackageReferenceProjectTests
     {
-        [Fact]
+/*        [Fact]
         public void LCPRP_AssetsFileLocation()
         {
             // Arrange
@@ -64,6 +64,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Equal("foo1", installedPackages.ElementAt(0).PackageIdentity.Id);
             Assert.Equal("1.0.0", installedPackages.ElementAt(0).PackageIdentity.Version.ToString());
             //Add additional verification
-        }
+        }*/
     }
 }
