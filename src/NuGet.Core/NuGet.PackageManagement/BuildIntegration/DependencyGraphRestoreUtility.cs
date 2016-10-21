@@ -28,12 +28,38 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Restore a solution and cache the dg spec to context.
         /// </summary>
+        public static Task RestoreAsync(
+            ISolutionManager solutionManager,
+            DependencyGraphCacheContext context,
+            RestoreCommandProvidersCache providerCache,
+            Action<SourceCacheContext> cacheContextModifier,
+            IEnumerable<SourceRepository> sources,
+            ISettings settings,
+            ILogger log,
+            CancellationToken token)
+        {
+            return RestoreAsync(
+                solutionManager,
+                context,
+                providerCache,
+                cacheContextModifier,
+                sources,
+                userPackagesPath: null,
+                settings: settings,
+                log: log,
+                token: token);
+        }
+
+        /// <summary>
+        /// Restore a solution and cache the dg spec to context.
+        /// </summary>
         public static async Task RestoreAsync(
             ISolutionManager solutionManager,
             DependencyGraphCacheContext context,
             RestoreCommandProvidersCache providerCache,
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
+            string userPackagesPath,
             ISettings settings,
             ILogger log,
             CancellationToken token)
@@ -58,13 +84,43 @@ namespace NuGet.PackageManagement
                         settings,
                         sourceCacheContext,
                         sources,
-                        dgSpec);
+                        dgSpec,
+                        userPackagesPath);
 
                     var restoreSummaries = await RestoreRunner.Run(restoreContext);
 
                     RestoreSummary.Log(log, restoreSummaries);
                 }
             }
+        }
+
+        /// <summary>
+        /// Restore without writing the lock file
+        /// </summary>
+        internal static Task<RestoreResultPair> PreviewRestoreAsync(
+            ISolutionManager solutionManager,
+            BuildIntegratedNuGetProject project,
+            PackageSpec packageSpec,
+            DependencyGraphCacheContext context,
+            RestoreCommandProvidersCache providerCache,
+            Action<SourceCacheContext> cacheContextModifier,
+            IEnumerable<SourceRepository> sources,
+            ISettings settings,
+            ILogger log,
+            CancellationToken token)
+        {
+            return PreviewRestoreAsync(
+                solutionManager,
+                project,
+                packageSpec,
+                context,
+                providerCache,
+                cacheContextModifier,
+                sources,
+                userPackagesPath: null,
+                settings: settings,
+                log: log,
+                token: token);
         }
 
         /// <summary>
@@ -78,6 +134,7 @@ namespace NuGet.PackageManagement
             RestoreCommandProvidersCache providerCache,
             Action<SourceCacheContext> cacheContextModifier,
             IEnumerable<SourceRepository> sources,
+            string userPackagesPath,
             ISettings settings,
             ILogger log,
             CancellationToken token)
@@ -99,7 +156,7 @@ namespace NuGet.PackageManagement
                 cacheContextModifier(sourceCacheContext);
 
                 // Settings passed here will be used to populate the restore requests.
-                RestoreArgs restoreContext = GetRestoreContext(context, providerCache, settings, sourceCacheContext, sources, dgFile);
+                RestoreArgs restoreContext = GetRestoreContext(context, providerCache, settings, sourceCacheContext, sources, dgFile, userPackagesPath);
 
                 var requests = await RestoreRunner.GetRequests(restoreContext);
                 var results = await RestoreRunner.RunWithoutCommit(requests, restoreContext);
@@ -246,7 +303,8 @@ namespace NuGet.PackageManagement
             ISettings settings,
             SourceCacheContext sourceCacheContext,
             IEnumerable<SourceRepository> sources,
-            DependencyGraphSpec dgFile)
+            DependencyGraphSpec dgFile,
+            string userPackagesPath)
         {
             var dgProvider = new DependencyGraphSpecRequestProvider(providerCache, dgFile, settings);
 
@@ -255,7 +313,8 @@ namespace NuGet.PackageManagement
                 CacheContext = sourceCacheContext,
                 PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider>() { dgProvider },
                 Log = context.Logger,
-                SourceRepositories = sources.ToList()
+                SourceRepositories = sources.ToList(),
+                GlobalPackagesFolder = userPackagesPath // Optional, this will load from settings if null
             };
 
             return restoreContext;
