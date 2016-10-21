@@ -98,12 +98,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return new[] { await GetPackageSpec() };
         }
 
-        public override Task<Boolean> IsRestoreRequired(IEnumerable<VersionFolderPathResolver> pathResolvers, ISet<PackageIdentity> packagesChecked, DependencyGraphCacheContext context)
-        {
-            //TODO: Make a real evaluation here.
-            return Task.FromResult<bool>(true);
-        }
-
         public override async Task<bool> ExecuteInitScriptAsync(
             PackageIdentity identity,
             string packageInstallPath,

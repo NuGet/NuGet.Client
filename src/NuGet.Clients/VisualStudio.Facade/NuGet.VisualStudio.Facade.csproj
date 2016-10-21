@@ -17,10 +17,6 @@
     <Reference Include="envdte, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
-    <Reference Include="Microsoft.Build">
-      <HintPath>$(MSBuildToolsPath)\Microsoft.Build.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -46,6 +42,10 @@
         <Reference Include="Microsoft.VisualStudio.ProjectSystem.V14Only, Version=14.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
           <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.14.1.127-pre\lib\net451\Microsoft.VisualStudio.ProjectSystem.V14Only.dll</HintPath>
         </Reference>
+        <Reference Include="Microsoft.Build">
+          <HintPath>$(MSBuildToolsPath)\Microsoft.Build.dll</HintPath>
+          <Private>False</Private>
+        </Reference>
       </ItemGroup>
     </When>
     <When Condition="'$(VisualStudioVersion)' == '15.0'">
@@ -56,6 +56,10 @@
         </ProjectReference>
         <Reference Include="Microsoft.VisualStudio.ProjectSystem">
           <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.15.0.530-pre-g355f3866ef\lib\net46\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
+        </Reference>
+        <Reference Include="Microsoft.Build">
+          <HintPath>$(EnlistmentRoot)\packages\Microsoft.Build.15.1.262-preview5\lib\net46\Microsoft.Build.dll</HintPath>
+          <Private>False</Private>
         </Reference>
       </ItemGroup>
     </When>

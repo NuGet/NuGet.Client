@@ -95,7 +95,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         _envDTEProject, throwOnFailure);
         }
 
-        public override string AssetsFilePath { get; }
+        public override string AssetsFilePath => _packageSpecFactory()?.RestoreMetadata.OutputPath;
 
         #region IDependencyGraphProject
 
@@ -106,7 +106,8 @@ namespace NuGet.PackageManagement.VisualStudio
         public override DateTimeOffset LastModified => DateTimeOffset.Now;
 
         public override string MSBuildProjectPath => _projectFullPath;
-
+        
+        public override string ProjectName => _projectName;
 
         public override Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
         {
@@ -135,18 +136,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Where(l => l.LibraryRange.TypeConstraint == LibraryDependencyTarget.ExternalProject)
                 .Select(l => l.Name);
         }
-
-        public override Task<bool> IsRestoreRequired(IEnumerable<VersionFolderPathResolver> pathResolvers, ISet<PackageIdentity> packagesChecked, DependencyGraphCacheContext context)
-        {
-            // TODO: when the real implementation of NuGetProject for CPS PackageReference is completed, more
-            // sophisticated restore no-op detection logic is required. Always returning true means that every build
-            // will result in a restore.
-
-            var packageSpec = _packageSpecFactory();
-            return Task.FromResult<bool>(packageSpec != null);
-        }
-
-        public override string ProjectName { get; }
 
         #endregion
 
@@ -221,7 +210,7 @@ namespace NuGet.PackageManagement.VisualStudio
             await configuredProject.Services.PackageReferences.RemoveAsync(packageIdentity.Id);
             return true;
         }
-
+        
         #endregion
     }
 }
