@@ -24,7 +24,7 @@ namespace NuGet.SolutionRestoreManager
     [Guid(PackageGuidString)]
     public sealed class RestoreManagerPackage : AsyncPackage
     {
-        public const string ProductVersion = "3.6.0";
+        public const string ProductVersion = "4.0.0";
 
         /// <summary>
         /// RestoreManagerPackage GUID string.
