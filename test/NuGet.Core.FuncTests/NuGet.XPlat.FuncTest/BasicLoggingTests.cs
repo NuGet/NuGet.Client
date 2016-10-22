@@ -40,8 +40,7 @@ namespace NuGet.XPlat.FuncTest
             {
                 "--verbosity", "error", // Set the verbosity at a global level.
                 "restore",
-                "--configfile", "MyNuGet.config", // Cause a failure since we don't want a real restore to happen.
-                "--disable-parallel", // Generate a verbose level log.
+                "--configfile", "MyNuGet.config", // Cause an exception. These a full logged at verbose level.
                 "--verbosity", "verbose" // Set the verbosity at the command level.
             };
 
@@ -49,7 +48,7 @@ namespace NuGet.XPlat.FuncTest
             Program.MainInternal(args, log);
 
             // Assert
-            Assert.Contains("Running non-parallel restore.", log.ShowMessages());
+            Assert.Contains("System.AggregateException: ", log.ShowVerboseMessages());
         }
 
         [Fact]
@@ -62,8 +61,7 @@ namespace NuGet.XPlat.FuncTest
             {
                 "--verbosity", "verbose", // Set the verbosity at a global level.
                 "restore",
-                "--configfile", "MyNuGet.config", // Cause a failure since we don't want a real restore to happen.
-                "--disable-parallel", // Generate a verbose level log.
+                "--configfile", "MyNuGet.config", // Cause an exception. These a full logged at verbose level.
                 "--verbosity", "error" // Set the verbosity at the command level.
             };
 
@@ -71,7 +69,7 @@ namespace NuGet.XPlat.FuncTest
             Program.MainInternal(args, log);
 
             // Assert
-            Assert.DoesNotContain("Running non-parallel restore.", log.ShowMessages());
+            Assert.DoesNotContain("System.AggregateException: ", log.ShowVerboseMessages());
         }
 
         [Fact]
@@ -84,15 +82,14 @@ namespace NuGet.XPlat.FuncTest
             {
                 "--verbosity", "verbose", // Set the verbosity at a global level.
                 "restore",
-                "--configfile", "MyNuGet.config", // Cause a failure since we don't want a real restore to happen.
-                "--disable-parallel", // Generate a verbose level log.
+                "--configfile", "MyNuGet.config", // Cause an exception. These a full logged at verbose level.
             };
 
             // Act
             Program.MainInternal(args, log);
 
             // Assert
-            Assert.Contains("Running non-parallel restore.", log.ShowMessages());
+            Assert.Contains("System.AggregateException: ", log.ShowVerboseMessages());
         }
 
         [Fact]

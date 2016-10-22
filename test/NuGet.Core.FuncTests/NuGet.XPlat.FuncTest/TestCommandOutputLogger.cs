@@ -100,5 +100,10 @@ namespace NuGet.XPlat.FuncTest
         {
             return string.Join(Environment.NewLine, ErrorMessages);
         }
+
+        public string ShowVerboseMessages()
+        {
+            return string.Join(Environment.NewLine, VerboseMessages);
+        }
     }
 }
