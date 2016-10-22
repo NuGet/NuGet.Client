@@ -202,7 +202,7 @@
     <value>Package source '{0}' is not matching any of the enabled package sources.</value>
   </data>
   <data name="Cmdlet_ProjectNotFound" xml:space="preserve">
-    <value>Project '{0}' is not found.</value>
+    <value>Project '{0}' is not found. Please check ActivityLog.xml for more detail.</value>
   </data>
   <data name="Cmdlet_PrompToDisplayMorePackages" xml:space="preserve">
     <value>There may be more packages to display. Do you want to continue?</value>
