@@ -280,7 +280,8 @@ namespace NuGetVSExtension
             _dteEvents = _dte.Events.DTEEvents;
             _dteEvents.OnBeginShutdown += OnBeginShutDown;
 
-            _outputConsoleLogger = new OutputConsoleLogger(this);
+            var serviceProvider = await ServiceLocator.GetInstanceSafeAsync<System.IServiceProvider>();
+            _outputConsoleLogger = new OutputConsoleLogger(serviceProvider);
 
             SetDefaultCredentialProvider();
 
@@ -320,7 +321,7 @@ namespace NuGetVSExtension
             _vsSourceControlTracker = await ServiceLocator.GetInstanceSafeAsync<IVsSourceControlTracker>();
 
             // This instantiates a decoupled ICommand instance responsible to locate and display output pane by a UI control
-            var serviceProvider = await ServiceLocator.GetInstanceSafeAsync<System.IServiceProvider>();
+            
             UI.Commands.ShowErrorsCommand = new ShowErrorsCommand(serviceProvider);
         }
 

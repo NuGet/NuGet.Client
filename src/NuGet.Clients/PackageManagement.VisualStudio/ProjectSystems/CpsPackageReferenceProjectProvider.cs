@@ -3,10 +3,12 @@
 
 using System;
 using System.ComponentModel.Composition;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Utilities;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Properties;
+using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 
@@ -51,13 +53,14 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // The project must be an IVsHierarchy.
             var hierarchy = VsHierarchyUtility.ToVsHierarchy(dteProject);
+            
             if (hierarchy == null)
             {
                 return false;
             }
 
             if (!hierarchy.IsCapabilityMatch("CPS") ||
-                !hierarchy.IsCapabilityMatch("PackageReference"))
+                !hierarchy.IsCapabilityMatch("PackageReferences"))
             {
                 return false;
             }

@@ -121,22 +121,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return Task.FromResult<IReadOnlyList<PackageSpec>>(new[] { packageSpec });
         }
 
-        private static string[] GetProjectReferences(PackageSpec packageSpec)
-        {
-            return packageSpec?
-                .TargetFrameworks
-                .SelectMany(f => GetProjectReferences(f.Dependencies, f.FrameworkName))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToArray();
-        }
-
-        private static IEnumerable<string> GetProjectReferences(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework)
-        {
-            return libraries
-                .Where(l => l.LibraryRange.TypeConstraint == LibraryDependencyTarget.ExternalProject)
-                .Select(l => l.Name);
-        }
-
         #endregion
 
         #region NuGetProject
@@ -193,12 +177,14 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var configuredProject = await _unconfiguredProject.GetSuggestedConfiguredProjectAsync();
             var result = await
-                configuredProject.Services.PackageReferences.AddAsync
-                (packageIdentity.Id, packageIdentity.Version.ToString());
-            var existingReference = result.Reference;
-            if (!result.Added)
+                configuredProject?.Services.PackageReferences.AddAsync
+                (packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
+            
+            // This is the update operation
+            if (result != null && !result.Added)
             {
-                await existingReference.Metadata.SetPropertyValueAsync("Version", packageIdentity.Version.ToFullString());
+                var existingReference = result.Reference;
+                await existingReference?.Metadata.SetPropertyValueAsync("Version", packageIdentity.Version.ToNormalizedString());
             }
 
             return true;
@@ -207,7 +193,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public override async Task<Boolean> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             var configuredProject = await _unconfiguredProject.GetSuggestedConfiguredProjectAsync();
-            await configuredProject.Services.PackageReferences.RemoveAsync(packageIdentity.Id);
+            await configuredProject?.Services.PackageReferences.RemoveAsync(packageIdentity.Id);
             return true;
         }
         
