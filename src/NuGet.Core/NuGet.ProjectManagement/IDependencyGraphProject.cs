@@ -21,11 +21,6 @@ namespace NuGet.ProjectManagement
         /// Gets the path to the MSBuild project file. This is an absolute path.
         /// </summary>
         string MSBuildProjectPath { get; }
-
-        /// <summary>
-        /// Get the time when the project was last modified. This is used for cache invalidation.
-        /// </summary>
-        DateTimeOffset LastModified { get; }
         
         /// <summary>
         /// Project specs related to this project. This must include the project's own spec, and may

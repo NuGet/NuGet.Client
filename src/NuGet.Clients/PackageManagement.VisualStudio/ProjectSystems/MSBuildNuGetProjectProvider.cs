@@ -70,7 +70,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                     if (File.Exists(projectJsonPath))
                     {
-                        result = new BuildIntegratedProjectSystem(
+                        result = new ProjectJsonBuildIntegratedProjectSystem(
                             projectJsonPath,
                             msbuildProjectFile.FullName,
                             envDTEProject,

@@ -61,7 +61,6 @@ namespace NuGet.ProjectManagement
         public PackagesConfigNuGetProject PackagesConfigNuGetProject { get; }
 
         public string MSBuildProjectPath => MSBuildNuGetProjectSystem.ProjectFileFullPath;
-        public DateTimeOffset LastModified => DateTimeOffset.MinValue;
 
         private readonly IDictionary<FileTransformExtensions, IPackageFileTransformer> FileTransformers =
             new Dictionary<FileTransformExtensions, IPackageFileTransformer>

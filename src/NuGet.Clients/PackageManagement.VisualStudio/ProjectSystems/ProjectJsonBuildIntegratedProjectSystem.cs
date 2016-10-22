@@ -20,12 +20,12 @@ namespace NuGet.PackageManagement.VisualStudio
     /// <summary>
     /// A nuget aware project system containing a .json file instead of a packages.config file
     /// </summary>
-    public class BuildIntegratedProjectSystem : ProjectJsonBuildIntegratedNuGetProject
+    public class ProjectJsonBuildIntegratedProjectSystem : ProjectJsonBuildIntegratedNuGetProject
     {
         private readonly EnvDTEProject _envDTEProject;
         private IScriptExecutor _scriptExecutor;
 
-        public BuildIntegratedProjectSystem(
+        public ProjectJsonBuildIntegratedProjectSystem(
             string jsonConfigPath,
             string msbuildProjectFilePath,
             EnvDTEProject envDTEProject,
@@ -65,36 +65,5 @@ namespace NuGet.PackageManagement.VisualStudio
                     ScriptExecutorUtil.ExecuteScriptAsync(identity, packageInstallPath, projectContext, ScriptExecutor,
                         _envDTEProject, throwOnFailure);
         }
-
-        //public override Task<IReadOnlyList<IDependencyGraphProject>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)
-        //{
-        //    IReadOnlyList<IDependencyGraphProject> references = null;
-        //    if (context != null && context.DirectReferenceCache.TryGetValue(MSBuildProjectPath, out references))
-        //    {
-
-        //    }
-        //    else
-        //    {
-        //        var solutionManager = (VSSolutionManager)ServiceLocator.GetInstance<ISolutionManager>();
-        //        var list = new List<IDependencyGraphProject>();
-        //        if (solutionManager != null && EnvDTEProjectUtility.SupportsReferences(_envDTEProject))
-        //        {
-        //            foreach (var referencedProject in EnvDTEProjectUtility.GetReferencedProjects(_envDTEProject))
-        //            {
-        //                var nugetProject = EnvDTEProjectUtility.GetNuGetProject(referencedProject, solutionManager);
-        //                var dependencyGraphProject = nugetProject as IDependencyGraphProject;
-        //                if (dependencyGraphProject != null)
-        //                {
-        //                    list.Add(dependencyGraphProject);
-        //                }
-        //            }
-        //        }
-
-        //        references = list.AsReadOnly();
-        //        context?.DirectReferenceCache.Add(MSBuildProjectPath, references);
-        //    }
-
-        //    return Task.FromResult<IReadOnlyList<IDependencyGraphProject>>(references);
-        //}
     }
 }

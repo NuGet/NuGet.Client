@@ -136,21 +136,6 @@ namespace NuGet.ProjectManagement.Projects
             }
         }
 
-        public override DateTimeOffset LastModified
-        {
-            get
-            {
-                var output = DateTimeOffset.MinValue;
-
-                if (File.Exists(JsonConfigPath))
-                {
-                    output = File.GetLastWriteTimeUtc(JsonConfigPath);
-                }
-
-                return output;
-            }
-        }
-
         public override string MSBuildProjectPath { get; }
         /// <summary>
         /// Project name

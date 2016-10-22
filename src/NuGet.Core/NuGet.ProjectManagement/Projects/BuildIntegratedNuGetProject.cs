@@ -43,7 +43,6 @@ namespace NuGet.ProjectManagement.Projects
         /// </summary>
         public abstract string AssetsFilePath { get; }
 
-        public abstract DateTimeOffset LastModified { get; }
         public abstract Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context);
 
         /// <summary>

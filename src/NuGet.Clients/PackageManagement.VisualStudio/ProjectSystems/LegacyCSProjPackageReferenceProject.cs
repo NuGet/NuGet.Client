@@ -66,13 +66,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public override string AssetsFilePath { get; }
 
         public override string ProjectName { get; }
-
-        /// <summary>
-        /// Making this timestamp as the current time means that a restore with this project in the graph
-        /// will never no-op. We do this to keep this work-around implementation simple.
-        /// </summary>
-        public override DateTimeOffset LastModified => DateTimeOffset.Now;
-
+        
         public override string MSBuildProjectPath => _project.ProjectFullPath;
 
         private IScriptExecutor ScriptExecutor
