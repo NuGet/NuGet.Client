@@ -125,8 +125,15 @@ namespace NuGet.PackageManagement.VisualStudio
                 ErrorHandler.ThrowOnFailure(hr);
             }
 
-            UserAgent.SetUserAgentString(
-                new UserAgentStringBuilder().WithVisualStudioSKU(VSVersionHelper.GetFullVsVersionString()));
+            // Allow this constructor to be invoked from either the UI or a worker thread. This JTF call should be
+            // cheap (minimal context switch cost) when we are already on the UI thread.
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                UserAgent.SetUserAgentString(
+                    new UserAgentStringBuilder().WithVisualStudioSKU(VSVersionHelper.GetFullVsVersionString()));
+            });
 
             _solutionEvents.BeforeClosing += OnBeforeClosing;
             _solutionEvents.AfterClosing += OnAfterClosing;
@@ -287,6 +294,47 @@ namespace NuGet.PackageManagement.VisualStudio
                     return Path.IsPathRooted(globalPackagesFolder);
                 });
             }
+        }
+
+        public bool IsSolutionDPLEnabled
+        {
+            get
+            {
+#if VS14
+                // for Dev14 always return false since DPL not exists there.
+                return false;
+#else
+                return ThreadHelper.JoinableTaskFactory.Run(async delegate
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    var vsSolution7 = _vsSolution as IVsSolution7;
+
+                    if (vsSolution7 != null && vsSolution7.IsSolutionLoadDeferred())
+                    {
+                        return true;
+                    }
+
+                    return false;
+                });
+#endif
+            }
+        }
+
+        public void EnsureSolutionIsLoaded()
+        {
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                var vsSolution4 = _vsSolution as IVsSolution4;
+
+                if (vsSolution4 != null)
+                {
+                    // ignore result and continue. Since results may be incomplete if user canceled.
+                    vsSolution4.EnsureSolutionIsLoaded((uint)__VSBSLFLAGS.VSBSLFLAGS_None);
+                }
+            });
         }
 
         public string SolutionDirectory
@@ -606,7 +654,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 // Emit project specific telemetry as we are adding the project to the cache.
                 // This ensures we do not emit the events over and over while the solution is
                 // open.
-                NuGetProjectTelemetryService.Instance.EmitNuGetProject(envDTEProject, nuGetProject);
+                NuGetProjectTelemetryService.Instance.EmitNuGetProject(nuGetProject);
             }
 
             if (string.IsNullOrEmpty(DefaultNuGetProjectName) ||
@@ -813,7 +861,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var projectSafeName = await EnvDTEProjectUtility.GetCustomUniqueNameAsync(project);
             var nuGetProject = GetNuGetProject(projectSafeName);
 
-            // if the project does not exist in the solution (this is true for new templates) 
+            // if the project does not exist in the solution (this is true for new templates)
             // create it manually
             if (nuGetProject == null)
             {

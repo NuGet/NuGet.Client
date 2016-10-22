@@ -29,6 +29,10 @@ namespace NuGet.PackageManagement.VisualStudio
                 packagesConfigFolderPath)
         {
             _project = project;
+
+            // set project id
+            var projectId = VsHierarchyUtility.GetProjectId(project);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
         }
 
         public override Task<IReadOnlyList<IDependencyGraphProject>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)

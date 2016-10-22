@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.VisualStudio;
@@ -10,6 +9,7 @@ using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Configuration;
+using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
@@ -31,23 +31,32 @@ namespace NuGet.SolutionRestoreManager
         /// </summary>
         public const string PackageGuidString = "2b52ac92-4551-426d-bd34-c6d7d9fdd1c5";
 
-        private ISolutionRestoreWorker _restoreWorker;
-        private ISettings _settings;
+        private Lazy<ISolutionRestoreWorker> _restoreWorker;
+        private Lazy<ISettings> _settings;
+        private Lazy<ISolutionManager> _solutionManager;
 
         // keeps a reference to BuildEvents so that our event handler
         // won't get disconnected.
         private EnvDTE.BuildEvents _buildEvents;
+
+        private ISolutionRestoreWorker SolutionRestoreWorker => _restoreWorker.Value;
+        private ISettings Settings => _settings.Value;
+        private ISolutionManager SolutionManager => _solutionManager.Value;
 
         protected override async Task InitializeAsync(
             CancellationToken cancellationToken, 
             IProgress<ServiceProgressData> progress)
         {
             var componentModel = await GetServiceAsync(typeof(SComponentModel)) as IComponentModel;
-            _restoreWorker = componentModel?.GetService<ISolutionRestoreWorker>();
-            Debug.Assert(_restoreWorker != null);
 
-            _settings = componentModel?.GetService<ISettings>();
-            Debug.Assert(_settings != null);
+            _restoreWorker = new Lazy<ISolutionRestoreWorker>(
+                () => componentModel.GetService<ISolutionRestoreWorker>());
+
+            _settings = new Lazy<ISettings>(
+                () => componentModel.GetService<ISettings>());
+
+            _solutionManager = new Lazy<ISolutionManager>(
+                () => componentModel.GetService<ISolutionManager>());
 
             var dte = (EnvDTE.DTE)await GetServiceAsync(typeof(SDTE));
             _buildEvents = dte.Events.BuildEvents;
@@ -62,8 +71,14 @@ namespace NuGet.SolutionRestoreManager
             if (Action == EnvDTE.vsBuildAction.vsBuildActionClean)
             {
                 // Clear the project.json restore cache on clean to ensure that the next build restores again
-                _restoreWorker.CleanCache();
+                SolutionRestoreWorker.CleanCache();
 
+                return;
+            }
+
+            // Check if solution is DPL enabled, then don't restore
+            if (SolutionManager.IsSolutionDPLEnabled)
+            {
                 return;
             }
 
@@ -75,7 +90,7 @@ namespace NuGet.SolutionRestoreManager
             var forceRestore = Action == EnvDTE.vsBuildAction.vsBuildActionRebuildAll;
 
             // Execute
-            _restoreWorker.Restore(SolutionRestoreRequest.OnBuild(forceRestore));
+            SolutionRestoreWorker.Restore(SolutionRestoreRequest.OnBuild(forceRestore));
         }
 
         /// <summary>
@@ -85,7 +100,7 @@ namespace NuGet.SolutionRestoreManager
         {
             get
             {
-                var packageRestoreConsent = new PackageRestoreConsent(_settings);
+                var packageRestoreConsent = new PackageRestoreConsent(Settings);
                 return packageRestoreConsent.IsAutomatic;
             }
         }

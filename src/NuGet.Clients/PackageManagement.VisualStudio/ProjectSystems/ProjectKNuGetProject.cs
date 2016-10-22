@@ -59,11 +59,12 @@ namespace NuGet.PackageManagement.VisualStudio
             return base.PreProcessAsync(nuGetProjectContext, token);
         }
 
-        public ProjectKNuGetProject(INuGetPackageManager project, string projectName, string uniqueName)
+        public ProjectKNuGetProject(INuGetPackageManager project, string projectName, string uniqueName, string projectId)
         {
             _project = project;
             InternalMetadata.Add(NuGetProjectMetadataKeys.Name, projectName);
             InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, uniqueName);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
 
             var supportedFrameworks = _project.GetSupportedFrameworksAsync(CancellationToken.None)
                 .Result

@@ -34,6 +34,8 @@ namespace NuGet.ProjectManagement
         XDocument OriginalPackagesConfig { get; set; }
 
         NuGetActionType ActionType { get; set; }
+
+        TelemetryServiceHelper TelemetryService { get; set; }
     }
 
     /// <summary>

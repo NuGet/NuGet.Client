@@ -67,7 +67,7 @@ namespace NuGetVSExtension
     public sealed class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
         // It is displayed in the Help - About box of Visual Studio
-        public const string ProductVersion = "3.6.0";
+        public const string ProductVersion = "4.0.0";
         private static readonly object _credentialsPromptLock = new object();
 
         private static readonly string[] _visualizerSupportedSKUs = { "Premium", "Ultimate" };
@@ -332,34 +332,13 @@ namespace NuGetVSExtension
         {
             var credentialService = GetCredentialService();
 
-            HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(credentialService);
-
             HttpHandlerResourceV3.CredentialService = credentialService;
-
-            HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>
-            {
-                // v2 stack credentials update
-                CredentialStore.Instance.Add(uri, credentials);
-            };
         }
 
         private NuGet.Configuration.ICredentialService GetCredentialService()
         {
             // Initialize the credential providers.
-            var credentialProviders = new List<NuGet.Credentials.ICredentialProvider>();
-
-            TryAddCredentialProviders(
-                credentialProviders,
-                Resources.CredentialProviderFailed_LegacyCredentialProvider,
-                () =>
-                {
-                    var packageSourceProvider = new PackageSourceProvider(new SettingsToLegacySettings(Settings));
-
-                    return new NuGet.Credentials.ICredentialProvider[] {
-                        new CredentialProviderAdapter(new SettingsCredentialProvider(
-                        NullCredentialProvider.Instance,
-                        packageSourceProvider)) };
-                });
+            var credentialProviders = new List<ICredentialProvider>();
 
             TryAddCredentialProviders(
                 credentialProviders,
@@ -891,6 +870,9 @@ namespace NuGetVSExtension
                 throw new InvalidOperationException(Strings.SolutionIsNotSaved);
             }
 
+            // make sure all projects are loaded before showing manager ui even with DPL enabled.
+            solutionManager.EnsureSolutionIsLoaded();
+
             var projects = solutionManager.GetNuGetProjects();
             if (!projects.Any())
             {
@@ -1058,8 +1040,11 @@ namespace NuGetVSExtension
                 // Enable the 'Manage NuGet Packages For Solution' dialog menu
                 // a) if the console is NOT busy executing a command, AND
                 // b) if the solution exists and not debugging and not building AND
-                // c) if there are no NuGetProjects. This means that there no loaded, supported projects
-                command.Enabled = !ConsoleStatus.IsBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() && SolutionManager.GetNuGetProjects().Any();
+                // c) if the solution is DPL enabled or there are NuGetProjects. This means that there loaded, supported projects
+                // Checking for DPL more is a temporary code until we've the capability to get nuget projects
+                // even in DPL mode. See https://github.com/NuGet/Home/issues/3711
+                command.Enabled = !ConsoleStatus.IsBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() &&
+                    (SolutionManager.IsSolutionDPLEnabled || SolutionManager.GetNuGetProjects().Any());
             });
         }
 
@@ -1134,9 +1119,6 @@ namespace NuGetVSExtension
         {
             _dteEvents.OnBeginShutdown -= OnBeginShutDown;
             _dteEvents = null;
-
-            // Clean up optimized zips used by NuGet.Core as part of the V2 Protocol
-            OptimizedZipPackage.PurgeCache();
         }
 
         private async Tasks.Task LoadSettingsAsync()

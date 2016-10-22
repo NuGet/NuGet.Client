@@ -312,13 +312,23 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 try
                 {
-                    // Add a reference to the project
                     AddGacReference(name);
 
                     NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, Strings.Debug_AddGacReference, name, ProjectName);
                 }
                 catch (Exception e)
                 {
+                    if (IsReferenceUnavailableException(e))
+                    {
+                        var frameworkName = EnvDTEProjectUtility.GetDotNetFrameworkName(EnvDTEProject);
+
+                        if (FrameworkAssemblyResolver.IsFrameworkFacade(name, frameworkName))
+                        {
+                            NuGetProjectContext.Log(ProjectManagement.MessageLevel.Info, Strings.FailedToAddFacadeReference, name, packageId);
+                            return;
+                        }
+                    }
+
                     throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Strings.FailedToAddGacReference, packageId, name), e);
                 }
             });
@@ -950,6 +960,20 @@ namespace NuGet.PackageManagement.VisualStudio
                 return from p in childItems
                        select p.Name;
             });
+        }
+
+        private static bool IsReferenceUnavailableException(Exception e)
+        {
+            var comException = e as COMException;
+
+            if (comException == null)
+            {
+                return false;
+            }
+
+            // If VSLangProj.References.Add(...) fails because it could not find the assembly,
+            // the HRESULT will be E_FAIL (0x80004005) and the message will be "Reference unavailable."
+            return comException.HResult == unchecked((int)0x80004005);
         }
     }
 }

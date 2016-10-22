@@ -70,7 +70,7 @@
       Semantic Version. See http://semver.org for full details.
       Update for every public release.
     -->
-    <SemanticVersion>3.6.0</SemanticVersion>
+    <SemanticVersion>4.0.0</SemanticVersion>
     <PreReleaseVersion>0</PreReleaseVersion>
   </PropertyGroup>
 

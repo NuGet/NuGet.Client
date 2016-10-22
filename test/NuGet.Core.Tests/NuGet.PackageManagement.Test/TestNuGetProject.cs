@@ -28,6 +28,7 @@ namespace NuGet.Test
             {
                 { NuGetProjectMetadataKeys.Name, nameof(TestNuGetProject) },
                 { NuGetProjectMetadataKeys.TargetFramework, NuGetFramework.Parse("net45") },
+                { NuGetProjectMetadataKeys.ProjectId, Guid.NewGuid().ToString() },
             };
         }
 

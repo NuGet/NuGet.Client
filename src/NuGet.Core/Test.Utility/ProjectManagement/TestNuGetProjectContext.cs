@@ -46,6 +46,8 @@ namespace Test.Utility
         }
 
         public NuGetActionType ActionType { get; set; }
+
+        public TelemetryServiceHelper TelemetryService { get; set; }
     }
 
     public class TestExecutionContext : ExecutionContext

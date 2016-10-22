@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using Moq;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.VisualStudio.Facade.Telemetry;
@@ -9,12 +11,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Telemetry
     public class NuGetTelemetryServiceTests
     {
         [Theory]
-        [InlineData(NuGetProjectType.Unsupported, 0)]
-        [InlineData(NuGetProjectType.Unknown, 1)]
-        [InlineData(NuGetProjectType.PackagesConfig, 2)]
-        [InlineData(NuGetProjectType.UwpProjectJson, 3)]
-        [InlineData(NuGetProjectType.XProjProjectJson, 4)]
-        public void NuGetTelemetryService_EmitProjectInformation(NuGetProjectType projectType, int expectedProjectType)
+        [InlineData(NuGetProjectType.Unsupported)]
+        [InlineData(NuGetProjectType.Unknown)]
+        [InlineData(NuGetProjectType.PackagesConfig)]
+        [InlineData(NuGetProjectType.UwpProjectJson)]
+        [InlineData(NuGetProjectType.XProjProjectJson)]
+        public void NuGetTelemetryService_EmitProjectInformation(NuGetProjectType projectType)
         {
             // Arrange
             var telemetrySession = new Mock<ITelemetrySession>();
@@ -25,9 +27,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Telemetry
 
             var projectInformation = new ProjectInformation(
                 "3.5.0-beta2",
-                new Guid("15e9591f-9391-4ddf-a246-ca9e0351277d"),
+                "15e9591f-9391-4ddf-a246-ca9e0351277d",
                 projectType);
-            var target = new NuGetTelemetryService(telemetrySession.Object);
+            var target = new NuGetProjectTelemetryService(telemetrySession.Object);
 
             // Act
             target.EmitProjectInformation(projectInformation);
@@ -50,8 +52,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Telemetry
 
             object actualProjectType;
             Assert.True(lastTelemetryEvent.Properties.TryGetValue("VS.NuGet.NuGetProjectType", out actualProjectType));
-            Assert.IsType<int>(actualProjectType);
-            Assert.Equal(expectedProjectType, actualProjectType);
+            Assert.IsType<NuGetProjectType>(actualProjectType);
+            Assert.Equal(projectInformation.NuGetProjectType, actualProjectType);
         }
 
         [Fact]
@@ -66,9 +68,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Telemetry
 
             var projectInformation = new ProjectDependencyStatistics(
                 "3.5.0-beta2",
-                new Guid("15e9591f-9391-4ddf-a246-ca9e0351277d"),
+                "15e9591f-9391-4ddf-a246-ca9e0351277d",
                 3);
-            var target = new NuGetTelemetryService(telemetrySession.Object);
+            var target = new NuGetProjectTelemetryService(telemetrySession.Object);
 
             // Act
             target.EmitProjectDependencyStatistics(projectInformation);

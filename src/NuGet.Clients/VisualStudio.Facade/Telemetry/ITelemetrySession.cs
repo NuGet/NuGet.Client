@@ -3,6 +3,9 @@
 
 namespace NuGet.VisualStudio.Facade.Telemetry
 {
+    /// <summary>
+    /// Interface to post telemetry events.
+    /// </summary>
     public interface ITelemetrySession
     {
         void PostEvent(TelemetryEvent telemetryEvent);

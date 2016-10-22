@@ -59,6 +59,14 @@ namespace NuGet.PackageManagement
         /// </summary>
         bool IsSolutionAvailable { get; }
 
+        /// <summary>
+        /// Returns true if the solution is loaded with DPL enabled.
+        /// That is, when no project is loaded by default.
+        /// This is only applicable for VS15, for VS14 it will always return false.
+        /// </summary>
+        bool IsSolutionDPLEnabled { get; }
+
+
         INuGetProjectContext NuGetProjectContext { get; set; }
 
         IEnumerable<NuGetProject> GetNuGetProjects();
@@ -96,6 +104,13 @@ namespace NuGet.PackageManagement
         /// </summary>
         /// <param name="nuGetProject"></param>
         void SaveProject(NuGetProject nuGetProject);
+		
+        /// <summary>
+        /// It ensure to completely load the solution before continue if it was loaded with DPL.
+        /// That is, not all the projects were loaded when solution was open.
+        /// This will only be applicable for VS15 and will do nothing for VS14.
+        /// </summary>
+        void EnsureSolutionIsLoaded();
     }
 
     public class NuGetProjectEventArgs : EventArgs

@@ -10,6 +10,7 @@ using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Text;
 using System.Threading;
+using NuGet.Common;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
@@ -108,10 +109,29 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 var actions = await PackageManager.PreviewInstallPackageAsync(project, identity, resolutionContext, projectContext, PrimarySourceRepositories, null, CancellationToken.None);
 
+                if (!actions.Any())
+                {
+                    // nuget operation status is set to NoOp to log under telemetry event
+                    _status = NuGetOperationStatus.NoOp;
+                }
+                else
+                {
+                    // update packages count to be logged under telemetry event
+                    _packageCount = actions.Select(action => action.PackageIdentity.Id).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+                }
+
+                // stop telemetry event timer to avoid UI interaction
+                TelemetryUtility.StopTimer();
+
                 if (!ShouldContinueDueToDotnetDeprecation(actions, isPreview))
                 {
+                    // resume telemetry event timer after ui confirmation
+                    TelemetryUtility.StartorResumeTimer();
                     return;
                 }
+
+                // resume telemetry event timer after ui confirmation
+                TelemetryUtility.StartorResumeTimer();
 
                 if (isPreview)
                 {
@@ -128,6 +148,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 if (ex.InnerException is PackageAlreadyInstalledException)
                 {
+                    // Set nuget operation status to NoOp for telemetry event when package
+                    // is already installed.
+                    _status = NuGetOperationStatus.NoOp;
                     Log(MessageLevel.Info, ex.Message);
                 }
                 else
@@ -154,10 +177,31 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 var actions = await PackageManager.PreviewInstallPackageAsync(project, packageId, resolutionContext, projectContext, PrimarySourceRepositories, null, CancellationToken.None);
 
+                if (!actions.Any())
+                {
+                    // nuget operation status is set to NoOp to log under telemetry event when
+                    // there is no preview action.
+                    _status = NuGetOperationStatus.NoOp;
+                }
+                else
+                {
+                    // update packages count to be logged under telemetry event
+                    _packageCount = actions.Select(
+                        action => action.PackageIdentity.Id).Distinct().Count();
+                }
+
+                // stop telemetry event timer to avoid UI interaction
+                TelemetryUtility.StopTimer();
+
                 if (!ShouldContinueDueToDotnetDeprecation(actions, isPreview))
                 {
+                    // resume telemetry event timer after ui confirmation
+                    TelemetryUtility.StartorResumeTimer();
                     return;
                 }
+
+                // resume telemetry event timer after ui confirmation
+                TelemetryUtility.StartorResumeTimer();
 
                 if (isPreview)
                 {
@@ -175,6 +219,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 if (ex.InnerException is PackageAlreadyInstalledException)
                 {
+                    // Set nuget operation status to NoOp for telemetry event when package
+                    // is already installed.
+                    _status = NuGetOperationStatus.NoOp;
                     Log(MessageLevel.Info, ex.Message);
                 }
                 else

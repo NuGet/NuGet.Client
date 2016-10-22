@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
-using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.PackageManagement.UI;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Resolver;
@@ -98,11 +98,33 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected override void ProcessRecordCore()
         {
+            var startTime = DateTimeOffset.Now;
+
+            // Set to log telemetry granular events for this update operation 
+            TelemetryService = new TelemetryServiceHelper();
+
+            // start timer for telemetry event
+            TelemetryUtility.StartorResumeTimer();
+
             Preprocess();
 
             SubscribeToProgressEvents();
             PerformPackageUpdatesOrReinstalls();
             UnsubscribeFromProgressEvents();
+
+            // stop timer for telemetry event and create action telemetry event instance
+            TelemetryUtility.StopTimer();
+            var actionTelemetryEvent = TelemetryUtility.GetActionTelemetryEvent(
+                new[] { Project },
+                NuGetOperationType.Update,
+                OperationSource.PMC,
+                startTime,
+                _status,
+                _packageCount,
+                TelemetryUtility.GetTimerElapsedTimeInSeconds());
+
+            // emit telemetry event along with granular level for update operation
+            ActionsTelemetryService.Instance.EmitActionEvent(actionTelemetryEvent, TelemetryService.TelemetryEvents);
         }
 
         /// <summary>
@@ -140,10 +162,20 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     PrimarySourceRepositories,
                     Token);
 
+                if (!actions.Any())
+                {
+                    _status = NuGetOperationStatus.NoOp;
+                }
+                else
+                {
+                    _packageCount = actions.Select(action => action.PackageIdentity.Id).Distinct().Count();
+                }
+
                 await ExecuteActions(actions);
             }
             catch (Exception ex)
             {
+                _status = NuGetOperationStatus.Failed;
                 Log(MessageLevel.Error, ExceptionUtilities.DisplayMessage(ex));
             }
             finally
@@ -169,11 +201,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }
                 else
                 {
+                    // set nuget operation status to NoOp when package is not even installed
+                    _status = NuGetOperationStatus.NoOp;
                     Log(MessageLevel.Error, Resources.Cmdlet_PackageNotInstalledInAnyProject, Id);
                 }
             }
             catch (Exception ex)
             {
+                _status = NuGetOperationStatus.Failed;
                 Log(MessageLevel.Error, ExceptionUtilities.DisplayMessage(ex));
             }
             finally
@@ -214,6 +249,16 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     Token);
             }
 
+            if (!actions.Any())
+            {
+                _status = NuGetOperationStatus.NoOp;
+            }
+            else
+            {
+                _packageCount = actions.Select(
+                    action => action.PackageIdentity.Id).Distinct().Count();
+            }
+
             await ExecuteActions(actions);
         }
 
@@ -243,10 +288,18 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <returns></returns>
         private async Task ExecuteActions(IEnumerable<NuGetProjectAction> actions)
         {
+            // stop telemetry event timer to avoid ui interaction
+            TelemetryUtility.StopTimer();
+
             if (!ShouldContinueDueToDotnetDeprecation(actions, WhatIf.IsPresent))
             {
+                // resume telemetry event timer after ui interaction
+                TelemetryUtility.StartorResumeTimer();
                 return;
             }
+
+            // resume telemetry event timer after ui interaction
+            TelemetryUtility.StartorResumeTimer();
 
             if (WhatIf.IsPresent)
             {

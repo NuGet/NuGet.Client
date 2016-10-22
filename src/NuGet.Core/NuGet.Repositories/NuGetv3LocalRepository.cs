@@ -17,9 +17,15 @@ namespace NuGet.Repositories
     /// </summary>
     public class NuGetv3LocalRepository
     {
+        // Folder path -> Package
+        private readonly ConcurrentDictionary<string, LocalPackageInfo> _packageCache
+            = new ConcurrentDictionary<string, LocalPackageInfo>(StringComparer.Ordinal);
+
+        // Id -> Packages
         private readonly ConcurrentDictionary<string, IEnumerable<LocalPackageInfo>> _cache
             = new ConcurrentDictionary<string, IEnumerable<LocalPackageInfo>>(StringComparer.OrdinalIgnoreCase);
 
+        // Per package id locks
         private readonly ConcurrentDictionary<string, object> _idLocks
             = new ConcurrentDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
@@ -81,25 +87,40 @@ namespace NuGet.Repositories
 
             foreach (var fullVersionDir in Directory.EnumerateDirectories(packageIdRoot))
             {
-                var versionPart = fullVersionDir.Substring(packageIdRoot.Length).TrimStart(Path.DirectorySeparatorChar);
-
-                // Get the version part and parse it
-                NuGetVersion version;
-                if (!NuGetVersion.TryParse(versionPart, out version))
+                LocalPackageInfo package;
+                if (!_packageCache.TryGetValue(fullVersionDir, out package))
                 {
-                    continue;
+                    var versionPart = fullVersionDir.Substring(packageIdRoot.Length).TrimStart(Path.DirectorySeparatorChar);
+
+                    // Get the version part and parse it
+                    NuGetVersion version;
+                    if (!NuGetVersion.TryParse(versionPart, out version))
+                    {
+                        continue;
+                    }
+
+                    var hashPath = PathResolver.GetHashPath(id, version);
+
+                    // The hash file is written last. If this file does not exist then the package is
+                    // incomplete and should not be used.
+                    if (File.Exists(hashPath))
+                    {
+                        var manifestPath = PathResolver.GetManifestFilePath(id, version);
+                        var zipPath = PathResolver.GetPackageFilePath(id, version);
+
+                        package = new LocalPackageInfo(id, version, fullVersionDir, manifestPath, zipPath);
+
+                        // Cache the package, if it is valid it will not change
+                        // for the life of this restore.
+                        // Locking is done at a higher level around the id
+                        _packageCache.TryAdd(fullVersionDir, package);
+                    }
                 }
 
-                var hashPath = PathResolver.GetHashPath(id, version);
-
-                // The hash file is written last. If this file does not exist then the package is
-                // incomplete and should not be used.
-                if (File.Exists(hashPath))
+                // Add the package if it is valid
+                if (package != null)
                 {
-                    var manifestPath = PathResolver.GetManifestFilePath(id, version);
-                    var zipPath = PathResolver.GetPackageFilePath(id, version);
-
-                    packages.Add(new LocalPackageInfo(id, version, fullVersionDir, manifestPath, zipPath));
+                    packages.Add(package);
                 }
             }
 

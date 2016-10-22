@@ -34,6 +34,10 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             _envDTEProject = envDTEProject;
 
+            // set project id
+            var projectId = VsHierarchyUtility.GetProjectId(envDTEProject);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
+
             InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, uniqueName);
         }
 

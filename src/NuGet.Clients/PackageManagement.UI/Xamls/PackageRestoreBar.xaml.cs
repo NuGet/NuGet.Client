@@ -39,6 +39,8 @@ namespace NuGet.PackageManagement.UI
 
         public NuGetActionType ActionType { get; set; }
 
+        public TelemetryServiceHelper TelemetryService { get; set; }
+
         public PackageRestoreBar(ISolutionManager solutionManager, IPackageRestoreManager packageRestoreManager)
         {
             InitializeComponent();

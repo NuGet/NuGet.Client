@@ -72,6 +72,8 @@
     <Compile Include="Common\TypeHelper.cs" />
     <Compile Include="Common\Verbosity.cs" />
     <Compile Include="ConsoleExtensions.cs" />
+    <Compile Include="Credentials\CredentialProviderAdapter.cs" />
+    <Compile Include="Credentials\CredentialServiceAdapter.cs" />
     <Compile Include="DebugHelper.cs" />
     <Compile Include="DiagnosticCommands.cs" />
     <Compile Include="ExtensionLocator.cs" />

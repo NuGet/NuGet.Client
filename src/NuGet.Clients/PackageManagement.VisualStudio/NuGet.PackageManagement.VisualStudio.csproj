@@ -52,6 +52,10 @@
           <HintPath>$(EnlistmentRoot)\lib\VSLangProj150.dll</HintPath>
           <EmbedInteropTypes>True</EmbedInteropTypes>
         </Reference>
+        <Reference Include="Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime">
+          <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime.15.0.0\lib\\Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime.dll</HintPath>
+          <EmbedInteropTypes>True</EmbedInteropTypes>
+        </Reference>
       </ItemGroup>
     </When>
   </Choose>
@@ -181,8 +185,8 @@
     <Compile Include="Telemetry\ProjectDependencyStatistics.cs" />
     <Compile Include="Telemetry\ProjectInformation.cs" />
     <Compile Include="Telemetry\NuGetProjectTelemetryService.cs" />
-    <Compile Include="Telemetry\NuGetTelemetryService.cs" />
     <Compile Include="Utility\EnvDTESolutionUtility.cs" />
+    <Compile Include="Utility\FrameworkAssembly.cs" />
     <Compile Include="Utility\FrameworkAssemblyResolver.cs" />
     <Compile Include="Utility\MessageHelper.cs" />
     <Compile Include="Utility\NativeMethods.cs" />

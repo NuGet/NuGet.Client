@@ -354,6 +354,10 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     return;
                 }
 
+                // make sure all projects are loaded before start to execute init scripts. Since
+                // projects might not be loaded when DPL is enabled.
+                _solutionManager.EnsureSolutionIsLoaded();
+
                 // invoke init.ps1 files in the order of package dependency.
                 // if A -> B, we invoke B's init.ps1 before A's.
 

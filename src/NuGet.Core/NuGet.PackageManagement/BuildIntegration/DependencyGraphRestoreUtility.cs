@@ -28,7 +28,7 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Restore a solution and cache the dg spec to context.
         /// </summary>
-        public static Task RestoreAsync(
+        public static Task<IReadOnlyList<RestoreSummary>> RestoreAsync(
             ISolutionManager solutionManager,
             DependencyGraphCacheContext context,
             RestoreCommandProvidersCache providerCache,
@@ -53,7 +53,7 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Restore a solution and cache the dg spec to context.
         /// </summary>
-        public static async Task RestoreAsync(
+        public static async Task<IReadOnlyList<RestoreSummary>> RestoreAsync(
             ISolutionManager solutionManager,
             DependencyGraphCacheContext context,
             RestoreCommandProvidersCache providerCache,
@@ -91,8 +91,12 @@ namespace NuGet.PackageManagement
                     var restoreSummaries = await RestoreRunner.Run(restoreContext);
 
                     RestoreSummary.Log(log, restoreSummaries);
+
+                    return restoreSummaries;
                 }
             }
+
+            return new List<RestoreSummary>();
         }
 
         /// <summary>

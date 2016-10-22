@@ -60,5 +60,7 @@ namespace NuGet.CommandLine
         }
 
         public NuGetActionType ActionType { get; set; }
+
+        public TelemetryServiceHelper TelemetryService { get; set; }
     }
 }

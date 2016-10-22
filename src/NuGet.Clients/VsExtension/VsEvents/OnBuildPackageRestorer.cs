@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -18,11 +19,13 @@ using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
+using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
+using NuGet.VisualStudio.Facade.Telemetry;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGetVSExtension
@@ -35,7 +38,7 @@ namespace NuGetVSExtension
 
         private int _dependencyGraphProjectCacheHash = Int32.MinValue;
 
-        // The value of the "MSBuild project build output verbosity" setting 
+        // The value of the "MSBuild project build output verbosity" setting
         // of VS. From 0 (quiet) to 4 (Diagnostic).
         private int _msBuildOutputVerbosity;
 
@@ -76,6 +79,8 @@ namespace NuGetVSExtension
         private bool _displayRestoreSummary;
         // If false the opt out message should be displayed
         private bool _hasOptOutBeenShown;
+        private NuGetOperationStatus _status;
+        private int _packageCount;
 
         private enum VerbosityLevel
         {
@@ -166,6 +171,12 @@ namespace NuGetVSExtension
                     return;
                 }
 
+                // Check if solution is DPL enabled, then don't restore
+                if (SolutionManager.IsSolutionDPLEnabled)
+                {
+                    return;
+                }
+
                 if (!IsAutomatic(Settings))
                 {
                     return;
@@ -198,6 +209,14 @@ namespace NuGetVSExtension
             _displayRestoreSummary = false;
             _hasOptOutBeenShown = !showOptOutMessage;
 
+            var startTime = DateTimeOffset.Now;
+            _status = NuGetOperationStatus.Succeeded;
+
+            // start timer for telemetry event
+            TelemetryUtility.StartorResumeTimer();
+
+            var projects = Enumerable.Empty<NuGetProject>();
+
             try
             {
                 _errorListProvider.Tasks.Clear();
@@ -212,9 +231,13 @@ namespace NuGetVSExtension
                     // Get MSBuildOutputVerbosity from _dte
                     _msBuildOutputVerbosity = GetMSBuildOutputVerbositySetting(_dte);
 
+                    // make sure all projects are loaded before start to restore. Since
+                    // projects might not be loaded when DPL is enabled.
+                    SolutionManager.EnsureSolutionIsLoaded();
+
                     // Get the projects from the SolutionManager
                     // Note that projects that are not supported by NuGet, will not show up in this list
-                    var projects = SolutionManager.GetNuGetProjects().ToList();
+                    projects = SolutionManager.GetNuGetProjects().ToList();
 
                     // Check if there are any projects that are not INuGetIntegratedProject, that is,
                     // projects with packages.config. If so, perform package restore on them
@@ -240,7 +263,45 @@ namespace NuGetVSExtension
             {
                 PackageRestoreManager.PackageRestoredEvent -= PackageRestoreManager_PackageRestored;
                 PackageRestoreManager.PackageRestoreFailedEvent -= PackageRestoreManager_PackageRestoreFailedEvent;
+
+                TelemetryUtility.StopTimer();
+
+                var source = showOptOutMessage == true ? RestoreOperationSource.OnBuild : RestoreOperationSource.Explicit;
+
+                // Emit telemetry event for restore operation
+                EmitRestoreTelemetryEvent(
+                    projects,
+                    source,
+                    startTime,
+                    _status,
+                    _packageCount,
+                    TelemetryUtility.GetTimerElapsedTimeInSeconds());
             }
+        }
+
+        private void EmitRestoreTelemetryEvent(IEnumerable<NuGetProject> projects,
+            RestoreOperationSource source,
+            DateTimeOffset startTime,
+            NuGetOperationStatus status,
+            int packageCount,
+            double duration)
+        {
+            var sortedProjects = projects.OrderBy(
+                project => project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName));
+            var projectIds = sortedProjects.Select(
+                project => project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId)).ToArray();
+
+            var restoreTelemetryEvent = new RestoreTelemetryEvent(
+                Guid.NewGuid().ToString(),
+                projectIds,
+                source,
+                startTime,
+                status,
+                packageCount,
+                DateTimeOffset.Now,
+                duration);
+
+            RestoreTelemetryService.Instance.EmitRestoreEvent(restoreTelemetryEvent);
         }
 
         private void LogException(Exception ex, bool logError)
@@ -283,7 +344,7 @@ namespace NuGetVSExtension
                 WriteLine(VerbosityLevel.Quiet, Resources.PackageRestoreOptOutMessage);
             }
         }
-        
+
         private async Task RestorePackageSpecProjectsAsync(
             List<IDependencyGraphProject> projects,
             bool forceRestore,
@@ -317,17 +378,19 @@ namespace NuGetVSExtension
                     }
                 }
 
-                // Cache p2ps discovered from DTE 
+                // Cache p2ps discovered from DTE
                 var cacheContext = new DependencyGraphCacheContext(this);
                 var pathContext = NuGetPathContext.Create(Settings);
 
-                // No-op all project closures are up to date and all packages exist on disk.
-                if (await DependencyGraphRestoreUtility.IsRestoreRequiredAsync(
+                var isRestoreRequired = await DependencyGraphRestoreUtility.IsRestoreRequiredAsync(
                     SolutionManager,
                     forceRestore,
                     pathContext,
                     cacheContext,
                     _dependencyGraphProjectCacheHash))
+
+                // No-op all project closures are up to date and all packages exist on disk.
+                if (isRestoreRequired)
                 {
                     // Save the project between operations.
                     _dependencyGraphProjectCacheHash = cacheContext.SolutionSpecHash;
@@ -372,7 +435,18 @@ namespace NuGetVSExtension
                             Settings,
                             cacheContext.Logger,
                             Token);
+
+                        _packageCount += restoreSummaries.Select(summary => summary.InstallCount).Sum();
+                        var isRestoreFailed = restoreSummaries.Any(summary => summary.Success == false);
+                        if (isRestoreFailed)
+                        {
+                            _status = NuGetOperationStatus.Failed;
+                        }
                     }
+                }
+                else
+                {
+                    _status = NuGetOperationStatus.NoOp;
                 }
             }
         }
@@ -427,6 +501,7 @@ namespace NuGetVSExtension
                 // HasErrors will be used to show a message in the output window, that, Package restore failed
                 // If Canceled is not already set to true
                 _hasErrors = true;
+                _status = NuGetOperationStatus.Failed;
                 ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
                     {
                         // Switch to main thread to update the error list window or output window
@@ -468,14 +543,14 @@ namespace NuGetVSExtension
                 return;
             }
 
-            var packages = await PackageRestoreManager.GetPackagesInSolutionAsync(solutionDirectory,
-                CancellationToken.None);
+            var packages = (await PackageRestoreManager.GetPackagesInSolutionAsync(solutionDirectory,
+                CancellationToken.None)).ToList();
 
             if (IsConsentGranted(Settings))
             {
                 CurrentCount = 0;
 
-                if (!packages.Any())
+                if (packages.Count == 0)
                 {
                     if (!isSolutionAvailable
                         && GetProjectFolderPath().Any(p => CheckPackagesConfig(p.ProjectPath, p.ProjectName)))
@@ -495,6 +570,7 @@ namespace NuGetVSExtension
                     return;
                 }
 
+                _packageCount += packages.Count;
                 var missingPackagesList = packages.Where(p => p.IsMissing).ToList();
                 TotalCount = missingPackagesList.Count;
                 if (TotalCount > 0)

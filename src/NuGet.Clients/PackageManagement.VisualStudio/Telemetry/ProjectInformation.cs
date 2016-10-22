@@ -9,7 +9,7 @@ namespace NuGet.PackageManagement.Telemetry
     {
         public ProjectInformation(
             string nuGetVersion,
-            Guid projectId,
+            string projectId,
             NuGetProjectType nuGetProjectType)
             : base(nuGetVersion, projectId)
         {

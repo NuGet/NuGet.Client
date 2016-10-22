@@ -1,5 +1,5 @@
 {
-  "version": "3.6.0-*",
+  "version": "4.0.0-*",
   "copyright": "Copyright .NET Foundation. All rights reserved.",
   "packOptions": {
     "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
@@ -18,7 +18,7 @@
     }
   },
   "dependencies": {
-    "Microsoft.VisualStudio.ProjectSystem.Interop":{
+    "Microsoft.VisualStudio.ProjectSystem.Interop": {
       "type": "build",
       "version": "1.0.0-*"
     },

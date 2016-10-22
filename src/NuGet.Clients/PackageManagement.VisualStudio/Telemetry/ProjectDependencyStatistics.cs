@@ -9,7 +9,7 @@ namespace NuGet.PackageManagement.Telemetry
     {
         public ProjectDependencyStatistics(
             string nuGetVersion,
-            Guid projectId,
+            string projectId,
             int installedPackageCount)
             : base(nuGetVersion, projectId)
         {
