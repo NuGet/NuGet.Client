@@ -141,8 +141,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 return fullName;
             }
 
-            Debug.Fail("Unable to find the project path");
-
             return null;
         }
 

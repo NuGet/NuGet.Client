@@ -44,8 +44,8 @@ namespace NuGet.PackageManagement.VisualStudio
             string projectFullPath,
             Func<PackageSpec> packageSpecFactory,
             EnvDTEProject envDTEProject,
-            UnconfiguredProject unconfiguredProject
-            )
+            UnconfiguredProject unconfiguredProject,
+            string projectId)
         {
             if (projectFullPath == null)
             {
@@ -68,6 +68,7 @@ namespace NuGet.PackageManagement.VisualStudio
             InternalMetadata.Add(NuGetProjectMetadataKeys.Name, _projectName);
             InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, _projectUniqueName);
             InternalMetadata.Add(NuGetProjectMetadataKeys.FullPath, _projectFullPath);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
         }
 
         private IScriptExecutor ScriptExecutor

@@ -6,24 +6,33 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.Shell;
 using NuGet.ProjectManagement;
+using Microsoft.VisualStudio.Utilities;
+using System.ComponentModel.Composition;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
     /// <summary>
-    /// Composite provider chaining calls to other providers.
+    /// Project system factory imlemented as a composite provider chaining calls to other providers.
     /// </summary>
-    public class NuGetProjectFactory : IProjectSystemProvider
+    [Export(typeof(NuGetProjectFactory))]
+    internal sealed class NuGetProjectFactory
     {
         private readonly IProjectSystemProvider[] _providers;
 
-        public NuGetProjectFactory(IEnumerable<IProjectSystemProvider> providers)
+        [ImportingConstructor]
+        public NuGetProjectFactory(
+            [ImportMany(typeof(IProjectSystemProvider))]
+            IEnumerable<Lazy<IProjectSystemProvider, IOrderable>> providers)
         {
             if (providers == null)
             {
                 throw new ArgumentNullException(nameof(providers));
             }
 
-            _providers = providers.ToArray();
+            _providers = Orderer
+                .Order(providers)
+                .Select(p => p.Value)
+                .ToArray();
         }
 
         public bool TryCreateNuGetProject(EnvDTE.Project dteProject, ProjectSystemProviderContext context, out NuGetProject result)

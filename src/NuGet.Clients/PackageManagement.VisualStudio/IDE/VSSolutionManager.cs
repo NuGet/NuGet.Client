@@ -14,7 +14,6 @@ using EnvDTE80;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Utilities;
 using NuGet.Configuration;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.ProjectManagement;
@@ -38,7 +37,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly uint _solutionLoadedUICookie;
         private readonly IVsSolution _vsSolution;
         private readonly IProjectSystemCache _projectSystemCache;
-        private readonly IList<Lazy<IProjectSystemProvider, IOrderable>> _providers;
+        private readonly NuGetProjectFactory _projectSystemFactory;
 
         private bool _initialized;
         private bool _cacheInitialized;
@@ -88,24 +87,22 @@ namespace NuGet.PackageManagement.VisualStudio
         public event EventHandler<ActionsExecutedEventArgs> ActionsExecuted;
 
         [ImportingConstructor]
-        public VSSolutionManager(
+        internal VSSolutionManager(
             IProjectSystemCache projectSystemCache,
-            [ImportMany(typeof(IProjectSystemProvider))]
-            IEnumerable<Lazy<IProjectSystemProvider, IOrderable>> providers)
+            NuGetProjectFactory projectSystemFactory)
         {
             if (projectSystemCache == null)
             {
                 throw new ArgumentNullException(nameof(projectSystemCache));
             }
 
-            if (providers == null)
+            if (projectSystemFactory == null)
             {
-                throw new ArgumentNullException(nameof(providers));
+                throw new ArgumentNullException(nameof(projectSystemFactory));
             }
 
             _projectSystemCache = projectSystemCache;
-
-            _providers = Orderer.Order(providers);
+            _projectSystemFactory = projectSystemFactory;
 
             _dte = ServiceLocator.GetInstance<DTE>();
             _vsSolution = ServiceLocator.GetGlobalService<SVsSolution, IVsSolution>();
@@ -744,11 +741,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 projectContext ?? EmptyNuGetProjectContext,
                 () => PackagesFolderPathUtility.GetPackagesFolderPath(this, settings));
 
-            var providers = _providers.Select(p => p.Value);
-            var factory = new NuGetProjectFactory(providers);
-
             NuGetProject result;
-            if (factory.TryCreateNuGetProject(envDTEProject, context, out result))
+            if (_projectSystemFactory.TryCreateNuGetProject(envDTEProject, context, out result))
             {
                 return result;
             }

@@ -1,22 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Design;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Threading;
-using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using NuGet;
 using NuGet.Common;
 using NuGet.Credentials;
 using NuGet.Options;
@@ -28,11 +18,21 @@ using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGetConsole;
 using NuGetConsole.Implementation;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.Design;
+using System.Diagnostics;
+using System.Globalization;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Threading;
+using System.Threading.Tasks;
 using IMachineWideSettings = NuGet.Configuration.IMachineWideSettings;
 using ISettings = NuGet.Configuration.ISettings;
 using Resx = NuGet.PackageManagement.UI.Resources;
 using Strings = NuGet.PackageManagement.VisualStudio.Strings;
-using Tasks = System.Threading.Tasks;
+using Task = System.Threading.Tasks.Task;
 using UI = NuGet.PackageManagement.UI;
 
 namespace NuGetVSExtension
@@ -257,9 +257,13 @@ namespace NuGetVSExtension
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
         /// where you can put all the initialization code that rely on services provided by VisualStudio.
         /// </summary>
-        protected override async Tasks.Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
+        protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            await LoadSettingsAsync();
+            var componentModel = await GetServiceAsync(typeof(SComponentModel)) as IComponentModel;
+
+            _settings = componentModel.GetService<ISettings>();
+            Debug.Assert(_settings != null);
+
             Styles.LoadVsStyles();
             Brushes.LoadVsBrushes();
 
@@ -280,8 +284,7 @@ namespace NuGetVSExtension
             _dteEvents = _dte.Events.DTEEvents;
             _dteEvents.OnBeginShutdown += OnBeginShutDown;
 
-            var serviceProvider = await ServiceLocator.GetInstanceSafeAsync<System.IServiceProvider>();
-            _outputConsoleLogger = new OutputConsoleLogger(serviceProvider);
+            _outputConsoleLogger = new OutputConsoleLogger(this);
 
             SetDefaultCredentialProvider();
 
@@ -321,8 +324,7 @@ namespace NuGetVSExtension
             _vsSourceControlTracker = await ServiceLocator.GetInstanceSafeAsync<IVsSourceControlTracker>();
 
             // This instantiates a decoupled ICommand instance responsible to locate and display output pane by a UI control
-            
-            UI.Commands.ShowErrorsCommand = new ShowErrorsCommand(serviceProvider);
+            UI.Commands.ShowErrorsCommand = new ShowErrorsCommand(this);
         }
 
         /// <summary>
@@ -1120,19 +1122,6 @@ namespace NuGetVSExtension
         {
             _dteEvents.OnBeginShutdown -= OnBeginShutDown;
             _dteEvents = null;
-        }
-
-        private async Tasks.Task LoadSettingsAsync()
-        {
-            try
-            {
-                _settings = await ServiceLocator.GetInstanceAsync<ISettings>();
-                Debug.Assert(_settings != null);
-            }
-            catch (Exception e)
-            {
-                MessageHelper.ShowErrorMessage(ExceptionUtilities.DisplayMessage(e), Resources.ErrorDialogBoxTitle);
-            }
         }
 
         #region IVsPersistSolutionOpts implementation

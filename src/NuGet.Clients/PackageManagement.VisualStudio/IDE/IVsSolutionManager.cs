@@ -19,5 +19,12 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="projectContext">Context object for new instance creation.</param>
         /// <returns>Existing or new <see cref="NuGetProject"/> instance.</returns>
         Task<NuGetProject> GetOrCreateProjectAsync(EnvDTE.Project project, INuGetProjectContext projectContext);
+
+        /// <summary>
+        /// Retrieves instance of <see cref="EnvDTE.Project"/> associated with project name, path, or id.
+        /// </summary>
+        /// <param name="name">Project name, full path or unique name.</param>
+        /// <returns>Desired project object.</returns>
+        EnvDTE.Project GetDTEProject(string name);
     }
 }

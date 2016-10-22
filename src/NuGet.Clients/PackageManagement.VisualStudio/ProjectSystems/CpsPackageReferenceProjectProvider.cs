@@ -86,7 +86,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 fullProjectPath,
                 packageSpecFactory,
                 dteProject,
-                unconfiguredProject);
+                unconfiguredProject,
+                VsHierarchyUtility.GetProjectId(dteProject));
 
             return true;
         }

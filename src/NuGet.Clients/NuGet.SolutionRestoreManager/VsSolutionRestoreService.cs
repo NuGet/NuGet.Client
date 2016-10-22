@@ -74,29 +74,43 @@ namespace NuGet.SolutionRestoreManager
 
             if (projectRestoreInfo.TargetFrameworks == null)
             {
-                throw new InvalidOperationException("No target frameworks");
+                throw new InvalidOperationException("TargetFrameworks cannot be null.");
             }
 
-            ActivityLog.LogInformation(
-                ExceptionHelper.LogEntrySource,
-                $"The nominate API is called for '{projectUniqueName}'.");
-
-            var projectNames = await FindMatchingDteProjectAsync(projectUniqueName);
-            if (projectNames != null)
+            try
             {
-                var packageSpec = ToPackageSpec(projectNames, projectRestoreInfo);
+                ActivityLog.LogInformation(
+                    ExceptionHelper.LogEntrySource,
+                    $"The nominate API is called for '{projectUniqueName}'.");
 
-                DumpProjectRestoreInfo(packageSpec);
+                var projectNames = await FindMatchingDteProjectAsync(projectUniqueName);
+                if (projectNames != null)
+                {
+                    var packageSpec = ToPackageSpec(projectNames, projectRestoreInfo);
+#if DEBUG
+                    DumpProjectRestoreInfo(packageSpec);
+#endif
+                    _projectSystemCache.AddProjectRestoreInfo(projectNames, packageSpec);
 
-                _projectSystemCache.AddProjectRestoreInfo(projectNames, packageSpec);
+                    // returned task completes when scheduled restore operation completes.
+                    // it should be discarded as we don't want to block CPS on that.
+                    var ignored = _restoreWorker.ScheduleRestoreAsync(
+                        SolutionRestoreRequest.OnUpdate(),
+                        token);
 
-                // returned task completes when scheduled restore operation completes.
-                // it should be discarded as we don't want to block CPS on that.
-                var ignored = _restoreWorker.ScheduleRestoreAsync(
-                    SolutionRestoreRequest.OnUpdate(), 
-                    token);
-
-                return true;
+                    return true;
+                }
+                else
+                {
+                    ActivityLog.LogError(
+                        ExceptionHelper.LogEntrySource,
+                        $"Nominated project '{projectUniqueName}' cannot be found in DTE");
+                }
+            }
+            catch (Exception e)
+            {
+                ExceptionHelper.WriteToActivityLog(e);
+                throw;
             }
 
             return false;
@@ -111,12 +125,13 @@ namespace NuGet.SolutionRestoreManager
 
                 try
                 {
-                    var dteProject = TryGetDteProject(projectUniqueName);
+                    var dteProject = await TryGetDteProjectAsync(projectUniqueName);
                     if (dteProject != null)
                     {
                         // Get information about the project from DTE.
                         // TODO: Get rid off all DTE calls in this method
                         // TODO: cache should be indexed by full project path only.
+                        // NuGet/Home#3729
                         return new ProjectNames(
                             fullName: projectUniqueName, // dteProject.FullName throws here
                             uniqueName: EnvDTEProjectUtility.GetUniqueName(dteProject),
@@ -135,7 +150,7 @@ namespace NuGet.SolutionRestoreManager
             return projectNames;
         }
 
-        private EnvDTE.Project TryGetDteProject(String projectUniqueName)
+        private async Task<EnvDTE.Project> TryGetDteProjectAsync(String projectUniqueName)
         {
             EnvDTE.Project dteProject = null;
             if (_projectSystemCache.TryGetDTEProject(projectUniqueName, out dteProject))
@@ -143,7 +158,7 @@ namespace NuGet.SolutionRestoreManager
                 return dteProject;
             }
 
-            var lookup = EnvDTESolutionUtility.GetPathToDTEProjectLookup(_dte.Solution);
+            var lookup = await EnvDTESolutionUtility.GetPathToDTEProjectLookupAsync(_dte);
             if (lookup.ContainsKey(projectUniqueName))
             {
                 dteProject = lookup[projectUniqueName];
@@ -167,7 +182,7 @@ namespace NuGet.SolutionRestoreManager
                 dgFile.AddRestore(packageSpec.RestoreMetadata.ProjectName);
                 dgFile.AddProject(packageSpec);
 
-                var dgPath = Path.Combine(outputPath, $"{Guid.NewGuid()}.dg2");
+                var dgPath = Path.Combine(outputPath, $"{Guid.NewGuid()}.dg");
                 dgFile.Save(dgPath);
             }
             catch(Exception ex)

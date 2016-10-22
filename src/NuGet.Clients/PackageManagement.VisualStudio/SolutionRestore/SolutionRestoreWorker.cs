@@ -96,7 +96,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         cancellationToken: _workerCts.Token));
 
                 _pendingRequests = new BlockingCollection<SolutionRestoreRequest>(SaneRequestQueueLimit);
-                _pendingRestore = new BackgroundRestoreOperation();
+                _pendingRestore = new BackgroundRestoreOperation(blockingUi: false);
                 _activeRestoreTask = Task.FromResult(true);
                 _restoreJobContext = new SolutionRestoreJobContext();
             }
@@ -132,7 +132,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     // Hop onto a background pool thread
                     await TaskScheduler.Default;
 
-                    using (var restoreOperation = new BackgroundRestoreOperation())
+                    using (var restoreOperation = new BackgroundRestoreOperation(blockingUi: true))
                     {
                         await PromoteTaskToActiveAsync(restoreOperation, _workerCts.Token);
 
@@ -190,7 +190,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         // Replaces pending restore operation with a new one.
                         // Older value is ignored.
                         var ignore = Interlocked.CompareExchange(
-                            ref _pendingRestore, new BackgroundRestoreOperation(), restoreOperation);
+                            ref _pendingRestore, new BackgroundRestoreOperation(blockingUi: false), restoreOperation);
 
                         token.ThrowIfCancellationRequested();
 
@@ -221,7 +221,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // Start the restore job in a separate task
             // it will switch into main thread.
             var joinableTask = ThreadHelper.JoinableTaskFactory.RunAsync(
-                () => StartRestoreJobAsync(request, token));
+                () => StartRestoreJobAsync(request, restoreOperation.BlockingUI, token));
 
             await joinableTask
                 .Task
@@ -262,14 +262,14 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         private async Task<bool> StartRestoreJobAsync(
-            SolutionRestoreRequest jobArgs, CancellationToken token)
+            SolutionRestoreRequest jobArgs, bool blockingUi, CancellationToken token)
         {
             // To be sure, switch to main thread before doing anything on this method
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             _errorListProvider.Tasks.Clear();
 
-            using (var logger = new RestoreOperationLogger(_serviceProvider, _errorListProvider))
+            using (var logger = new RestoreOperationLogger(_serviceProvider, _errorListProvider, blockingUi))
             using (var job = new SolutionRestoreJob(_serviceProvider, _componentModel.Value, logger))
             {
                 return await job.ExecuteAsync(jobArgs, _restoreJobContext, token);
@@ -287,6 +287,13 @@ namespace NuGet.PackageManagement.VisualStudio
             public System.Runtime.CompilerServices.TaskAwaiter<bool> GetAwaiter() => Task.GetAwaiter();
 
             public static explicit operator Task<bool>(BackgroundRestoreOperation restoreOperation) => restoreOperation.Task;
+
+            public bool BlockingUI { get; }
+
+            public BackgroundRestoreOperation(bool blockingUi)
+            {
+                BlockingUI = blockingUi;
+            }
 
             public void ContinuationAction(Task<bool> targetTask)
             {

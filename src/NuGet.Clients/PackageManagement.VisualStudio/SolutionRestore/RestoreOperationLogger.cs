@@ -20,12 +20,12 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     internal sealed class RestoreOperationLogger : ILogger, IDisposable
     {
-        private const string LogEntrySource = "NuGet PackageRestorer";
         private static readonly string BuildWindowPaneGuid = VSConstants.BuildOutput.ToString("B");
 
         private readonly IServiceProvider _serviceProvider;
         private readonly ErrorListProvider _errorListProvider;
         private readonly Lazy<EnvDTE.OutputWindowPane> _buildOutputPane;
+        private readonly Func<CancellationToken, Task<RestoreOperationProgressUI>> _progressFactory;
 
         private bool _cancelled;
 
@@ -39,7 +39,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public RestoreOperationLogger(
             IServiceProvider serviceProvider,
-            ErrorListProvider errorListProvider)
+            ErrorListProvider errorListProvider,
+            bool blockingUi)
         {
             if (serviceProvider == null)
             {
@@ -53,6 +54,15 @@ namespace NuGet.PackageManagement.VisualStudio
 
             _serviceProvider = serviceProvider;
             _errorListProvider = errorListProvider;
+
+            if (blockingUi)
+            {
+                _progressFactory = t => WaitDialogProgress.StartAsync(serviceProvider, t);
+            }
+            else
+            {
+                _progressFactory = t => StatusBarProgress.StartAsync(serviceProvider, t);
+            }
 
             var dte = serviceProvider.GetDTE();
 
@@ -222,7 +232,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 WriteLine(VerbosityLevel.Quiet, message);
             }
 
-            ActivityLog.LogError(LogEntrySource, message);
+            ExceptionHelper.WriteToActivityLog(ex);
         }
 
         public void ShowError(string errorText)
@@ -253,11 +263,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return 0;
         }
 
-        public Task<RestoreOperationProgressUI> StartProgressSessionAsync(CancellationToken token)
-        {
-            return Task.FromResult(WaitDialogProgress.Start(_serviceProvider));
-                // StatusBarProgress.StartAsync(_serviceProvider, token);
-        }
+        public Task<RestoreOperationProgressUI> StartProgressSessionAsync(CancellationToken token) => _progressFactory(token);
 
         private class WaitDialogProgress : RestoreOperationProgressUI
         {
@@ -269,7 +275,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 UserCancellationToken = _session.UserCancellationToken;
             }
 
-            public static RestoreOperationProgressUI Start(IServiceProvider serviceProvider)
+            public static Task<RestoreOperationProgressUI> StartAsync(IServiceProvider serviceProvider, CancellationToken token)
             {
                 var waitDialogFactory = serviceProvider.GetService<
                     SVsThreadedWaitDialogFactory, IVsThreadedWaitDialogFactory>();
@@ -284,10 +290,10 @@ namespace NuGet.PackageManagement.VisualStudio
                         currentStep: 0,
                         totalSteps: 0));
 
-                var progress = new WaitDialogProgress(session);
+                RestoreOperationProgressUI progress = new WaitDialogProgress(session);
                 _instance.Value = progress;
 
-                return progress;
+                return Task.FromResult(progress);
             }
 
             public override void Dispose()
