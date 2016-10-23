@@ -10,7 +10,9 @@ namespace NuGet.Common.Test
 {
     public class CultureUtilityTests
     {
-        [Fact]
+        // Disabled due to flakiness on the CI. Fix tracked here:
+        // https://github.com/NuGet/Home/issues/3722
+        // [Fact]
         public void CultureUtility_DisablesLocalization()
         {
             // Arrange
