@@ -103,32 +103,6 @@ namespace ProjectManagement.Test
         }
 
         [Fact]
-        public void MSBuildNuGetProject_LastModified_IsAlwaysMinDateTimeOffset()
-        {
-            // Arrange
-            using (var randomPackagesFolderPath = TestDirectory.Create())
-            using (var randomPackagesConfigFolderPath = TestDirectory.Create())
-            {
-                var projectTargetFramework = NuGetFramework.Parse("net45");
-                var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
-                    projectTargetFramework,
-                    testNuGetProjectContext);
-
-                var msBuildNuGetProject = new MSBuildNuGetProject(
-                    msBuildNuGetProjectSystem,
-                    randomPackagesFolderPath,
-                    randomPackagesConfigFolderPath);
-                
-                // Act
-                var actual = msBuildNuGetProject.LastModified;
-
-                // Assert
-                Assert.Equal(DateTimeOffset.MinValue, actual);
-            }
-        }
-
-        [Fact]
         public async Task TestMSBuildNuGetProjectEmptyPackageFoldersAreNotAdded()
         {
             // Arrange
