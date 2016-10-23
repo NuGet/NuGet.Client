@@ -318,25 +318,30 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(name));
             }
 
-            projectNames = null;
-
             _readerWriterLock.EnterReadLock();
 
             try
             {
-                HashSet<ProjectNames> values;
-                if (_shortNameCache.TryGetValue(name, out values))
-                {
-                    // Get the item at the front of the queue
-                    projectNames = values.Count == 1 ? values.Single() : null;
-
-                    // Only return true if the short name is unambiguous
-                    return projectNames != null;
-                }
+                return TryGetProjectNameByShortNameWithoutLock(name, out projectNames);
             }
             finally
             {
                 _readerWriterLock.ExitReadLock();
+            }
+        }
+
+        private bool TryGetProjectNameByShortNameWithoutLock(string name, out ProjectNames projectNames)
+        {
+            projectNames = null;
+
+            HashSet<ProjectNames> values;
+            if (_shortNameCache.TryGetValue(name, out values))
+            {
+                // Get the item at the front of the queue
+                projectNames = values.Count == 1 ? values.Single() : null;
+
+                // Only return true if the short name is unambiguous
+                return projectNames != null;
             }
 
             return false;
@@ -432,7 +437,8 @@ namespace NuGet.PackageManagement.VisualStudio
             try
             {
                 ProjectNames primaryKey;
-                if (_projectNamesCache.TryGetValue(secondaryKey, out primaryKey))
+                if (TryGetProjectNameByShortNameWithoutLock(secondaryKey, out primaryKey) ||
+                    _projectNamesCache.TryGetValue(secondaryKey, out primaryKey))
                 {
                     return _primaryCache.TryGetValue(primaryKey, out cacheEntry);
                 }
