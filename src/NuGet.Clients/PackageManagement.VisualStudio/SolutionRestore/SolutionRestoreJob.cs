@@ -131,7 +131,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 try
                 {
-                    await RestoreAsync(request.ForceRestore, request.ShowOptOutMessage);
+                    await RestoreAsync(request.ForceRestore, request.RestoreSource);
                 }
                 catch (Exception ex)
                 {
@@ -154,7 +154,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return !_cancelled && !_hasErrors;
         }
 
-        private async Task RestoreAsync(bool forceRestore, bool showOptOutMessage)
+        private async Task RestoreAsync(bool forceRestore, RestoreOperationSource restoreSource)
         {
             var startTime = DateTimeOffset.Now;
             _status = NuGetOperationStatus.Succeeded;
@@ -205,12 +205,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 TelemetryUtility.StopTimer();
 
-                var source = showOptOutMessage == true ? RestoreOperationSource.OnBuild : RestoreOperationSource.Explicit;
-
                 // Emit telemetry event for restore operation
                 EmitRestoreTelemetryEvent(
                     projects,
-                    source,
+                    restoreSource,
                     startTime,
                     _status,
                     _packageCount,

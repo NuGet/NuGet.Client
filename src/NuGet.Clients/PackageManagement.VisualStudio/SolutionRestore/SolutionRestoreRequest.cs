@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using NuGet.PackageManagement.UI;
+
 namespace NuGet.PackageManagement.VisualStudio
 {
     /// <summary>
@@ -31,16 +33,20 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public bool ForceStatusWrite { get; }
 
+        public RestoreOperationSource RestoreSource { get; }
+
         public SolutionRestoreRequest(
             bool forceRestore, 
             bool showOptOutMessage,
             bool logError,
-            bool forceStatusWrite)
+            bool forceStatusWrite,
+            RestoreOperationSource restoreSource)
         {
             ForceRestore = forceRestore;
             ShowOptOutMessage = showOptOutMessage;
             LogError = logError;
             ForceStatusWrite = forceStatusWrite;
+            RestoreSource = restoreSource;
         }
 
         /// <summary>
@@ -55,7 +61,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 forceRestore: forceRestore, 
                 showOptOutMessage: true,
                 logError: false,
-                forceStatusWrite: false);
+                forceStatusWrite: false,
+                restoreSource: RestoreOperationSource.OnBuild);
         }
 
         /// <summary>
@@ -69,7 +76,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 forceRestore: true, 
                 showOptOutMessage: false,
                 logError: true,
-                forceStatusWrite: true);
+                forceStatusWrite: true,
+                restoreSource: RestoreOperationSource.Explicit);
         }
 
         /// <summary>
@@ -83,7 +91,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 forceRestore: false, 
                 showOptOutMessage: false,
                 logError: false,
-                forceStatusWrite: false);
+                forceStatusWrite: false,
+                restoreSource: RestoreOperationSource.Implicit);
         }
     }
 }
