@@ -68,10 +68,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Build">
-      <HintPath>$(MSBuildToolsPath)\Microsoft.Build.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
@@ -102,6 +98,24 @@
     </Reference>
     <Reference Include="WindowsBase" />
   </ItemGroup>
+  <Choose>
+    <When Condition="'$(VisualStudioVersion)' == '14.0'">
+      <ItemGroup>
+        <Reference Include="Microsoft.Build">
+          <HintPath>$(MSBuildToolsPath)\Microsoft.Build.dll</HintPath>
+          <Private>False</Private>
+        </Reference>
+      </ItemGroup>
+    </When>
+    <When Condition="'$(VisualStudioVersion)' == '15.0'">
+      <ItemGroup>
+        <Reference Include="Microsoft.Build">
+          <HintPath>$(EnlistmentRoot)\packages\Microsoft.Build.15.1.262-preview5\lib\net46\Microsoft.Build.dll</HintPath>
+          <Private>False</Private>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
   <ItemGroup Condition="'$(VisualStudioVersion)' == '15.0'">
     <Compile Include="ProjectSystems\LegacyCSProjPackageReferenceProject.cs" />
     <Compile Include="ProjectSystems\LegacyCSProjPackageReferenceProjectProvider.cs" />
