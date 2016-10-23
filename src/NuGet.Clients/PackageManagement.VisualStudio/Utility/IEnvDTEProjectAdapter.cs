@@ -37,6 +37,11 @@ namespace NuGet.PackageManagement.VisualStudio
         string ProjectFullPath { get; }
 
         /// <summary>
+        /// Base intermediate path (e.g. c:\projFoo\obj)
+        /// </summary>
+        string BaseIntermediatePath { get; }
+
+        /// <summary>
         /// Project supports extracting reference collections
         /// </summary>
         bool SupportsReferences { get; }
@@ -50,11 +55,6 @@ namespace NuGet.PackageManagement.VisualStudio
         /// All dependency graph projects referenced by project
         /// </summary>
         IEnumerable<IDependencyGraphProject> ReferencedDependencyGraphProjects { get; }
-
-        /// <summary>
-        /// Base intermediate path (e.g. c:\projFoo\obj)
-        /// </summary>
-        Task<string> GetBaseIntermediatePath();
 
         /// <summary>
         /// Project's target framework

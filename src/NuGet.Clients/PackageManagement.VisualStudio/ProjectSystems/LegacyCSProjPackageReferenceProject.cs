@@ -15,6 +15,7 @@ using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -24,7 +25,6 @@ namespace NuGet.PackageManagement.VisualStudio
 /// </summary>
     public class LegacyCSProjPackageReferenceProject : BuildIntegratedNuGetProject
     {
-        private const string _assetsFileName = "project.assets.json";
         private const string _includeAssets = "IncludeAssets";
         private const string _excludeAssets = "ExcludeAssets";
         private const string _privateAssets = "PrivateAssets";
@@ -34,6 +34,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly IEnvDTEProjectAdapter _project;
 
         private IScriptExecutor _scriptExecutor;
+        private string _baseIntermediatePath;
 
         static LegacyCSProjPackageReferenceProject()
         {
@@ -52,8 +53,6 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             _project = project;
-
-            AssetsFilePath = Path.Combine(_project.GetBaseIntermediatePath().Result ?? "", _assetsFileName);
             ProjectName = _project.Name;
 
             InternalMetadata.Add(NuGetProjectMetadataKeys.Name, _project.Name);
@@ -61,9 +60,12 @@ namespace NuGet.PackageManagement.VisualStudio
             InternalMetadata.Add(NuGetProjectMetadataKeys.FullPath, _project.ProjectFullPath);
         }
 
-        #region IDependencyGraphProject
+        public override async Task<string> GetAssetsFilePathAsync()
+        {
+            return Path.Combine(await GetBaseIntermediatePathAsync(), LockFileFormat.AssetsFileName); ;
+        }
 
-        public override string AssetsFilePath { get; }
+        #region IDependencyGraphProject
 
         public override string ProjectName { get; }
         
@@ -156,6 +158,25 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #endregion
 
+        private async Task<string> GetBaseIntermediatePathAsync()
+        {
+            if (string.IsNullOrEmpty(_baseIntermediatePath))
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                var intermediatePath = _project.BaseIntermediatePath;
+
+                if (string.IsNullOrEmpty(intermediatePath) || !Directory.Exists(intermediatePath))
+                {
+                    throw new InvalidDataException(nameof(_project.BaseIntermediatePath));
+                }
+
+                _baseIntermediatePath = intermediatePath;
+            }
+
+            return _baseIntermediatePath;
+        }
+
         private static string[] GetProjectReferences(PackageSpec packageSpec)
         {
             // There is only one target framework for legacy csproj projects
@@ -225,7 +246,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 RestoreMetadata = new ProjectRestoreMetadata
                 {
                     OutputType = RestoreOutputType.NETCore,
-                    OutputPath = await _project.GetBaseIntermediatePath(),
+                    OutputPath = await GetBaseIntermediatePathAsync(),
                     ProjectPath = _project.ProjectFullPath,
                     ProjectName = _project.Name ?? _project.UniqueName,
                     ProjectUniqueName = _project.ProjectFullPath,

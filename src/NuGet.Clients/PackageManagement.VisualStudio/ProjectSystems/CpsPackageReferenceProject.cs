@@ -95,7 +95,10 @@ namespace NuGet.PackageManagement.VisualStudio
                         _envDTEProject, throwOnFailure);
         }
 
-        public override string AssetsFilePath => _packageSpecFactory()?.RestoreMetadata.OutputPath;
+        public override Task<String> GetAssetsFilePathAsync()
+        {
+            return Task.FromResult<string>(_packageSpecFactory()?.RestoreMetadata.OutputPath);
+        }
 
         #region IDependencyGraphProject
         

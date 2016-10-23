@@ -14,7 +14,7 @@ using NuGet.Repositories;
 
 namespace NuGet.Commands
 {
-    internal static class LockFileUtils
+    public static class LockFileUtils
     {
         public static LockFileTargetLibrary CreateLockFileTargetLibrary(
             LockFileLibrary library,

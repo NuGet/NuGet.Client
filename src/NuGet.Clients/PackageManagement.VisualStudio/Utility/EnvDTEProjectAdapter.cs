@@ -114,6 +114,36 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        public string BaseIntermediatePath
+        {
+            get
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
+                if (string.IsNullOrEmpty(_baseIntermediatePath))
+                {
+                    if (AsIVsBuildPropertyStorage != null)
+                    {
+                        var intermediateDirectory = GetMSBuildProperty(AsIVsBuildPropertyStorage, "BaseIntermediateOutputPath");
+                        var projectDirectory = Path.GetDirectoryName(ProjectFullPath);
+                        if (string.IsNullOrEmpty(intermediateDirectory))
+                        {
+                            _baseIntermediatePath = Path.GetDirectoryName(projectDirectory);
+                        }
+                        else
+                        {
+                            if (!Path.IsPathRooted(intermediateDirectory))
+                            {
+                                _baseIntermediatePath = Path.Combine(projectDirectory, intermediateDirectory);
+                            }
+                        }
+                    }
+                }
+
+                return _baseIntermediatePath;
+            }
+        }
+
         public bool SupportsReferences
         {
             get
@@ -137,25 +167,6 @@ namespace NuGet.PackageManagement.VisualStudio
                     }
                 }
             }
-        }
-
-        public async Task<string> GetBaseIntermediatePath()
-        {
-            if (string.IsNullOrEmpty(_baseIntermediatePath))
-            {
-                if (AsIVsBuildPropertyStorage != null)
-                {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    var relativeBaseIntermediatePath = GetMSBuildProperty(AsIVsBuildPropertyStorage, "BaseIntermediateOutputPath");
-                    if (!string.IsNullOrEmpty(relativeBaseIntermediatePath) && !string.IsNullOrEmpty(ProjectFullPath))
-                    {
-                        var projectDirectory = Path.GetDirectoryName(ProjectFullPath);
-                        _baseIntermediatePath = Path.Combine(projectDirectory, relativeBaseIntermediatePath);
-                    }
-                }
-            }
-
-            return _baseIntermediatePath;
         }
 
         private IVsHierarchy AsIVsHierarchy

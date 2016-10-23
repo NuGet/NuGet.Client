@@ -10,6 +10,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
+using System.Threading.Tasks;
 
 namespace NuGet.ProjectManagement
 {
@@ -22,10 +23,10 @@ namespace NuGet.ProjectManagement
         /// Orders all package dependencies in a project.
         /// Project must be restored.
         /// </summary>
-        public static IReadOnlyList<PackageIdentity> GetOrderedProjectPackageDependencies(
+        public static async Task<IReadOnlyList<PackageIdentity>> GetOrderedProjectPackageDependencies(
             BuildIntegratedNuGetProject buildIntegratedProject)
         {
-            var lockFile = GetLockFileOrNull(buildIntegratedProject);
+            var lockFile = await GetLockFileOrNull(buildIntegratedProject);
 
             if (lockFile != null)
             {
@@ -36,28 +37,11 @@ namespace NuGet.ProjectManagement
         }
 
         /// <summary>
-        /// Orders all dependencies in a project. This includes both packages and projects.
-        /// Project must be restored.
-        /// </summary>
-        public static IReadOnlyList<LibraryIdentity> GetOrderedProjectDependencies(
-            BuildIntegratedNuGetProject buildIntegratedProject)
-        {
-            var lockFile = GetLockFileOrNull(buildIntegratedProject);
-
-            if (lockFile != null)
-            {
-                return GetOrderedLockFileDependencies(lockFile);
-            }
-
-            return new List<LibraryIdentity>();
-        }
-
-        /// <summary>
         /// Read lock file
         /// </summary>
-        public static LockFile GetLockFileOrNull(BuildIntegratedNuGetProject buildIntegratedProject)
+        public static async Task<LockFile> GetLockFileOrNull(BuildIntegratedNuGetProject buildIntegratedProject)
         {
-            var lockFilePath = buildIntegratedProject.AssetsFilePath;
+            var lockFilePath = await buildIntegratedProject.GetAssetsFilePathAsync();
             return GetLockFileOrNull(lockFilePath);
         }
 

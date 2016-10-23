@@ -2301,7 +2301,7 @@ namespace NuGet.PackageManagement
             LockFile originalLockFile = null;
             var lockFileFormat = new LockFileFormat();
 
-            var lockFilePath = buildIntegratedProject.AssetsFilePath;
+            var lockFilePath = await buildIntegratedProject.GetAssetsFilePathAsync();
 
             if (File.Exists(lockFilePath))
             {

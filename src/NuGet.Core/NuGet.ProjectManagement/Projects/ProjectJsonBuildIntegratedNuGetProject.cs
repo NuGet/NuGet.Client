@@ -109,12 +109,9 @@ namespace NuGet.ProjectManagement.Projects
             InternalMetadata.Add(NuGetProjectMetadataKeys.SupportedFrameworks, supported);
         }
 
-        public override string AssetsFilePath
+        public override Task<string> GetAssetsFilePathAsync()
         {
-            get
-            {
-                return ProjectJsonPathUtilities.GetLockFilePath(JsonConfigPath);
-            }
+            return Task.FromResult<string>(ProjectJsonPathUtilities.GetLockFilePath(JsonConfigPath));
         }
 
         /// <summary>

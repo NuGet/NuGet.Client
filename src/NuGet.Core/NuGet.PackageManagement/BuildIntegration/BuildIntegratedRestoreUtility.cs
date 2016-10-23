@@ -33,7 +33,7 @@ namespace NuGet.PackageManagement
             INuGetProjectContext projectContext)
         {
             // Find all dependencies in sorted order
-            var sortedPackages = BuildIntegratedProjectUtility.GetOrderedProjectPackageDependencies(project);
+            var sortedPackages = await BuildIntegratedProjectUtility.GetOrderedProjectPackageDependencies(project);
 
             // Keep track of the packages that need to be executed.
             var packagesToExecute = new HashSet<PackageIdentity>(packages, PackageIdentity.Comparer);

@@ -41,7 +41,7 @@ namespace NuGet.ProjectManagement.Projects
         /// <summary>
         /// Returns the path to the assets file or the lock file.
         /// </summary>
-        public abstract string AssetsFilePath { get; }
+        public abstract Task<string> GetAssetsFilePathAsync();
 
         public abstract Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context);
 
@@ -59,7 +59,7 @@ namespace NuGet.ProjectManagement.Projects
                     ISet<PackageIdentity> packagesChecked,
                     DependencyGraphCacheContext context)
         {
-            var lockFilePath = AssetsFilePath;
+            var lockFilePath = await GetAssetsFilePathAsync();
 
             if (!File.Exists(lockFilePath))
             {
