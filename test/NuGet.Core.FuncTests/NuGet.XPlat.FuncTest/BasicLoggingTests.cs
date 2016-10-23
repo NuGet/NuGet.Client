@@ -40,6 +40,7 @@ namespace NuGet.XPlat.FuncTest
             {
                 "--verbosity", "error", // Set the verbosity at a global level.
                 "restore",
+                "project.json",
                 "--configfile", "MyNuGet.config", // Cause an exception. These a full logged at verbose level.
                 "--verbosity", "verbose" // Set the verbosity at the command level.
             };
@@ -82,6 +83,7 @@ namespace NuGet.XPlat.FuncTest
             {
                 "--verbosity", "verbose", // Set the verbosity at a global level.
                 "restore",
+                "project.json",
                 "--configfile", "MyNuGet.config", // Cause an exception. These a full logged at verbose level.
             };
 
