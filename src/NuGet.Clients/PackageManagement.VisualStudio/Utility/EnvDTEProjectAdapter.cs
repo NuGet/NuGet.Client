@@ -47,37 +47,6 @@ namespace NuGet.PackageManagement.VisualStudio
             _project = project;
         }
 
-        public bool IsLegacyCSProjPackageReferenceProject
-        {
-            get
-            {
-                if (!_isLegacyCSProjPackageReferenceProject.HasValue)
-                {
-                    // A legacy CSProj can't be CPS, must cast to VSProject4 and *must* have at least one package
-                    // reference already in the CSProj. In the future this logic may change. For now a user must
-                    // hand code their first package reference. Laid out in longhand for readability.
-                    if (AsIVsHierarchy?.IsCapabilityMatch("CPS") ?? true)
-                    {
-                        _isLegacyCSProjPackageReferenceProject = false;
-                    }
-                    else if (AsVSProject4 == null)
-                    {
-                        _isLegacyCSProjPackageReferenceProject = false;
-                    }
-                    else if ((AsVSProject4.PackageReferences?.InstalledPackages?.Length ?? 0) == 0)
-                    {
-                        _isLegacyCSProjPackageReferenceProject = false;
-                    }
-                    else
-                    {
-                        _isLegacyCSProjPackageReferenceProject = true;
-                    }
-                }
-
-                return _isLegacyCSProjPackageReferenceProject.Value;
-            }
-        }
-
         public Project DTEProject
         {
             get
@@ -90,6 +59,8 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
                 // Uncached, in case project is renamed
                 return _project.Name;
             }
@@ -99,6 +70,8 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
                 // Uncached, in case project is renamed
                 return _project.UniqueName;
             }
@@ -108,6 +81,8 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
                 return string.IsNullOrEmpty(_projectFullPath) ?
                     (_projectFullPath = EnvDTEProjectUtility.GetFullProjectPath(_project)) :
                     _projectFullPath;
@@ -144,28 +119,47 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public bool SupportsReferences
+        public bool IsLegacyCSProjPackageReferenceProject
         {
             get
             {
-                return EnvDTEProjectUtility.SupportsReferences(_project);
+                ThreadHelper.ThrowIfNotOnUIThread();
+
+                if (!_isLegacyCSProjPackageReferenceProject.HasValue)
+                {
+                    // A legacy CSProj can't be CPS, must cast to VSProject4 and *must* have at least one package
+                    // reference already in the CSProj. In the future this logic may change. For now a user must
+                    // hand code their first package reference. Laid out in longhand for readability.
+                    if (AsIVsHierarchy?.IsCapabilityMatch("CPS") ?? true)
+                    {
+                        _isLegacyCSProjPackageReferenceProject = false;
+                    }
+                    else if (AsVSProject4 == null)
+                    {
+                        _isLegacyCSProjPackageReferenceProject = false;
+                    }
+                    else if ((AsVSProject4.PackageReferences?.InstalledPackages?.Length ?? 0) == 0)
+                    {
+                        _isLegacyCSProjPackageReferenceProject = false;
+                    }
+                    else
+                    {
+                        _isLegacyCSProjPackageReferenceProject = true;
+                    }
+                }
+
+                return _isLegacyCSProjPackageReferenceProject.Value;
             }
         }
 
-        public IEnumerable<IDependencyGraphProject> ReferencedDependencyGraphProjects
+        public NuGetFramework TargetNuGetFramework
         {
             get
             {
-                var references = EnvDTEProjectUtility.GetReferencedProjects(_project);
+                ThreadHelper.ThrowIfNotOnUIThread();
 
-                foreach(var reference in references)
-                {
-                    var dependencyGraphProject = reference as IDependencyGraphProject;
-                    if (dependencyGraphProject != null)
-                    {
-                        yield return dependencyGraphProject;
-                    }
-                }
+                // Uncached, in case project file edited
+                return EnvDTEProjectUtility.GetTargetNuGetFramework(_project);
             }
         }
 
@@ -173,6 +167,8 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
                 return _asIVsHierarchy ?? (_asIVsHierarchy = VsHierarchyUtility.ToVsHierarchy(_project));
             }
         }
@@ -181,6 +177,8 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
                 return _asIVsBuildPropertyStorage ?? (_asIVsBuildPropertyStorage = AsIVsHierarchy as IVsBuildPropertyStorage);
             }
         }
@@ -189,6 +187,8 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
                 return _asVSProject ?? (_asVSProject = _project.Object as VSProject);
             }
         }
@@ -197,63 +197,21 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
                 return _asVSProject4 ?? (_asVSProject4 = _project.Object as VSProject4);
             }
         }
 
-        public async Task<NuGetFramework> GetTargetNuGetFramework()
-        {
-           // Uncached, in case project file edited
-           await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-           return EnvDTEProjectUtility.GetTargetNuGetFramework(_project);
-        }
-
-        public async Task<IEnumerable<LegacyCSProjProjectReference>> GetLegacyCSProjProjectReferencesAsync(Array desiredMetadata)
+        public IEnumerable<LegacyCSProjProjectReference> GetLegacyCSProjProjectReferences(Array desiredMetadata)
         {
             if (!IsLegacyCSProjPackageReferenceProject)
             {
                 throw new InvalidOperationException("Project reference call made on a non-legacy CSProj project");
             }
 
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            return GetLegacyCSProjProjectReferences(desiredMetadata);
-        }
+            ThreadHelper.ThrowIfNotOnUIThread();
 
-        public async Task<IEnumerable<LegacyCSProjPackageReference>> GetLegacyCSProjPackageReferencesAsync(Array desiredMetadata)
-        {
-            if (!IsLegacyCSProjPackageReferenceProject)
-            {
-                throw new InvalidOperationException("Package reference call made on a non-legacy CSProj project");
-            }
-
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            return GetLegacyCSProjPackageReferences(desiredMetadata);
-        }
-
-        public async Task AddOrUpdateLegacyCSProjPackageAsync(string packageName, string packageVersion, string[] metadataElements, string[] metadataValues)
-        {
-            if (!IsLegacyCSProjPackageReferenceProject || AsVSProject4 == null)
-            {
-                throw new InvalidOperationException("Cannot add packages to a project which is not a legacy CSProj package reference project");
-            }
-
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            AsVSProject4.PackageReferences.AddOrUpdate(packageName, packageVersion, metadataElements, metadataValues);
-        }
-
-        public async Task RemoveLegacyCSProjPackageAsync(string packageName)
-        {
-            if (!IsLegacyCSProjPackageReferenceProject || AsVSProject4 == null)
-            {
-                throw new InvalidOperationException("Cannot remove packages from a project which is not a legacy CSProj package reference project");
-            }
-
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            AsVSProject4.PackageReferences.Remove(packageName);
-        }
-
-        private IEnumerable<LegacyCSProjProjectReference> GetLegacyCSProjProjectReferences(Array desiredMetadata)
-        {
             foreach (Reference reference in AsVSProject.References)
             {
                 if (reference.SourceProject != null)
@@ -267,8 +225,15 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        private IEnumerable<LegacyCSProjPackageReference> GetLegacyCSProjPackageReferences(Array desiredMetadata)
+        public IEnumerable<LegacyCSProjPackageReference> GetLegacyCSProjPackageReferences(Array desiredMetadata)
         {
+            if (!IsLegacyCSProjPackageReferenceProject)
+            {
+                throw new InvalidOperationException("Package reference call made on a non-legacy CSProj project");
+            }
+
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             var installedPackages = AsVSProject4.PackageReferences.InstalledPackages;
             var packageReferences = new List<LegacyCSProjPackageReference>();
 
@@ -288,10 +253,34 @@ namespace NuGet.PackageManagement.VisualStudio
                         Version = version,
                         MetadataElements = metadataElements,
                         MetadataValues = metadataValues,
-                        TargetNuGetFramework = GetTargetNuGetFramework().Result
+                        TargetNuGetFramework = TargetNuGetFramework
                     };
                 }
             }
+        }
+
+        public void AddOrUpdateLegacyCSProjPackage(string packageName, string packageVersion, string[] metadataElements, string[] metadataValues)
+        {
+            if (!IsLegacyCSProjPackageReferenceProject || AsVSProject4 == null)
+            {
+                throw new InvalidOperationException("Cannot add packages to a project which is not a legacy CSProj package reference project");
+            }
+
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            AsVSProject4.PackageReferences.AddOrUpdate(packageName, packageVersion, metadataElements, metadataValues);
+        }
+
+        public void RemoveLegacyCSProjPackage(string packageName)
+        {
+            if (!IsLegacyCSProjPackageReferenceProject || AsVSProject4 == null)
+            {
+                throw new InvalidOperationException("Cannot remove packages from a project which is not a legacy CSProj package reference project");
+            }
+
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            AsVSProject4.PackageReferences.Remove(packageName);
         }
 
         private static string GetMSBuildProperty(IVsBuildPropertyStorage buildPropertyStorage, string name)

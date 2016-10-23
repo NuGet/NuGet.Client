@@ -34,7 +34,9 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly IEnvDTEProjectAdapter _project;
 
         private IScriptExecutor _scriptExecutor;
-        private string _baseIntermediatePath;
+        private string _projectName;
+        private string _projectUniqueName;
+        private string _projectFullPath;
 
         static LegacyCSProjPackageReferenceProject()
         {
@@ -47,29 +49,25 @@ namespace NuGet.PackageManagement.VisualStudio
         public LegacyCSProjPackageReferenceProject(
             IEnvDTEProjectAdapter project)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (project == null)
             {
                 throw new ArgumentNullException(nameof(project));
             }
 
             _project = project;
-            ProjectName = _project.Name;
+            _projectName = _project.Name;
+            _projectUniqueName = _project.UniqueName;
+            _projectFullPath = _project.ProjectFullPath;
 
-            InternalMetadata.Add(NuGetProjectMetadataKeys.Name, _project.Name);
-            InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, _project.UniqueName);
-            InternalMetadata.Add(NuGetProjectMetadataKeys.FullPath, _project.ProjectFullPath);
+
+            InternalMetadata.Add(NuGetProjectMetadataKeys.Name, _projectName);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, _projectUniqueName);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.FullPath, _projectFullPath);
         }
 
-        public override async Task<string> GetAssetsFilePathAsync()
-        {
-            return Path.Combine(await GetBaseIntermediatePathAsync(), LockFileFormat.AssetsFileName); ;
-        }
-
-        #region IDependencyGraphProject
-
-        public override string ProjectName { get; }
-        
-        public override string MSBuildProjectPath => _project.ProjectFullPath;
+        public override string ProjectName => _projectName;
 
         private IScriptExecutor ScriptExecutor
         {
@@ -84,18 +82,9 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public override async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
+        public override async Task<string> GetAssetsFilePathAsync()
         {
-            PackageSpec packageSpec;
-            if (context.PackageSpecCache.TryGetValue(_project.ProjectFullPath, out packageSpec))
-            {
-                return new[] { packageSpec };
-            }
-
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            packageSpec = await GetPackageSpec();
-            context.PackageSpecCache.Add(_project.ProjectFullPath, packageSpec);
-            return new[] { packageSpec };
+            return Path.Combine(await GetBaseIntermediatePathAsync(), LockFileFormat.AssetsFileName); ;
         }
 
         public override async Task<bool> ExecuteInitScriptAsync(
@@ -110,71 +99,100 @@ namespace NuGet.PackageManagement.VisualStudio
                         _project.DTEProject, throwOnFailure);
         }
 
+        #region IDependencyGraphProject
+
+        public override string MSBuildProjectPath => _projectFullPath;
+
+        public override async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
+        {
+            PackageSpec packageSpec;
+            if (context.PackageSpecCache.TryGetValue(_projectFullPath, out packageSpec))
+            {
+                return new[] { packageSpec };
+            }
+
+            packageSpec = await GetPackageSpec();
+            context.PackageSpecCache.Add(_projectFullPath, packageSpec);
+            return new[] { packageSpec };
+        }
+
         #endregion
 
         #region NuGetProject
 
         public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
         {
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
             return GetPackageReferences(await GetPackageSpec());
         }
 
-        public override async Task<Boolean> InstallPackageAsync(PackageIdentity packageIdentity, DownloadResourceResult downloadResourceResult, INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        public override async Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, DownloadResourceResult downloadResourceResult, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
-            try
+            var success = false;
+            await ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
-                // We don't adjust package reference metadata from UI
-                await _project.AddOrUpdateLegacyCSProjPackageAsync(
-                    packageIdentity.Id,
-                    packageIdentity.Version.ToString(),
-                    new string[] { },
-                    new string[] { });
-            }
-            catch (Exception e)
-            {
-                nuGetProjectContext.Log(MessageLevel.Warning, e.Message, packageIdentity, _project.Name);
-                return false;
-            }
+                try
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            return true;
+                    // We don't adjust package reference metadata from UI
+                    _project.AddOrUpdateLegacyCSProjPackage(
+                        packageIdentity.Id,
+                        packageIdentity.Version.ToString(),
+                        new string[] { },
+                        new string[] { });
+                }
+                catch (Exception e)
+                {
+                    nuGetProjectContext.Log(MessageLevel.Warning, e.Message, packageIdentity, _projectName);
+                }
+
+                success = true;
+            });
+
+            return success;
         }
 
         public override async Task<Boolean> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
-            try
+            var success = false;
+            await ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
-                await _project.RemoveLegacyCSProjPackageAsync(packageIdentity.Id);
-            }
-            catch (Exception e)
-            {
-                nuGetProjectContext.Log(MessageLevel.Warning, e.Message, packageIdentity, _project.Name);
-                return false;
-            }
+                try
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            return true;
+                    _project.RemoveLegacyCSProjPackage(packageIdentity.Id);
+                }
+                catch (Exception e)
+                {
+                    nuGetProjectContext.Log(MessageLevel.Warning, e.Message, packageIdentity, _projectName);
+                }
+
+                success = true;
+            });
+
+            return success;
         }
 
         #endregion
 
         private async Task<string> GetBaseIntermediatePathAsync()
         {
-            if (string.IsNullOrEmpty(_baseIntermediatePath))
+            string baseIntermediatePath = String.Empty;
+
+            await ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                var intermediatePath = _project.BaseIntermediatePath;
+                baseIntermediatePath = _project.BaseIntermediatePath;
 
-                if (string.IsNullOrEmpty(intermediatePath) || !Directory.Exists(intermediatePath))
+                if (string.IsNullOrEmpty(baseIntermediatePath) || !Directory.Exists(baseIntermediatePath))
                 {
                     throw new InvalidDataException(nameof(_project.BaseIntermediatePath));
                 }
+            });
 
-                _baseIntermediatePath = intermediatePath;
-            }
-
-            return _baseIntermediatePath;
+            return baseIntermediatePath;
         }
 
         private static string[] GetProjectReferences(PackageSpec packageSpec)
@@ -223,44 +241,48 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task<PackageSpec> GetPackageSpec()
         {
-            var projectReferences = _project.GetLegacyCSProjProjectReferencesAsync(_desiredPackageReferenceMetadata)
-                .Result
-                .Select(ToProjectRestoreReference);
-
-            var packageReferences = _project.GetLegacyCSProjPackageReferencesAsync(_desiredPackageReferenceMetadata)
-                .Result
-                .Select(ToPackageLibraryDependency);
-
-            var projectTfi = new TargetFrameworkInformation()
+            PackageSpec packageSpec = null;
+            await ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
-                FrameworkName = await _project.GetTargetNuGetFramework(),
-                Dependencies = packageReferences.ToList()
-            };
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            // In legacy CSProj, we only have one target framework per project
-            var tfis = new TargetFrameworkInformation[] { projectTfi };
-            var packageSpec = new PackageSpec(tfis)
-            {
-                Name = _project.Name ?? _project.UniqueName,
-                FilePath = _project.ProjectFullPath,
-                RestoreMetadata = new ProjectRestoreMetadata
+                var projectReferences = _project.GetLegacyCSProjProjectReferences(_desiredPackageReferenceMetadata)
+                    .Select(ToProjectRestoreReference);
+
+                var packageReferences = _project.GetLegacyCSProjPackageReferences(_desiredPackageReferenceMetadata)
+                    .Select(ToPackageLibraryDependency);
+
+                var projectTfi = new TargetFrameworkInformation()
                 {
-                    OutputType = RestoreOutputType.NETCore,
-                    OutputPath = await GetBaseIntermediatePathAsync(),
-                    ProjectPath = _project.ProjectFullPath,
-                    ProjectName = _project.Name ?? _project.UniqueName,
-                    ProjectUniqueName = _project.ProjectFullPath,
-                    OriginalTargetFrameworks = tfis
-                        .Select(tfi => tfi.FrameworkName.GetShortFolderName())
-                        .ToList(),
-                    TargetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>() {
-                        new ProjectRestoreMetadataFrameworkInfo(tfis[0].FrameworkName)
-                        {
-                            ProjectReferences = projectReferences.ToList()
+                    FrameworkName = _project.TargetNuGetFramework,
+                    Dependencies = packageReferences.ToList()
+                };
+
+                // In legacy CSProj, we only have one target framework per project
+                var tfis = new TargetFrameworkInformation[] { projectTfi };
+                packageSpec = new PackageSpec(tfis)
+                {
+                    Name = _projectName ?? _projectUniqueName,
+                    FilePath = _projectFullPath,
+                    RestoreMetadata = new ProjectRestoreMetadata
+                    {
+                        OutputType = RestoreOutputType.NETCore,
+                        OutputPath = await GetBaseIntermediatePathAsync(),
+                        ProjectPath = _projectFullPath,
+                        ProjectName = _projectName ?? _projectUniqueName,
+                        ProjectUniqueName = _projectFullPath,
+                        OriginalTargetFrameworks = tfis
+                            .Select(tfi => tfi.FrameworkName.GetShortFolderName())
+                            .ToList(),
+                        TargetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>() {
+                            new ProjectRestoreMetadataFrameworkInfo(tfis[0].FrameworkName)
+                            {
+                                ProjectReferences = projectReferences.ToList()
+                            }
                         }
                     }
-                }
-            };
+                };
+            });
 
             return packageSpec;
         }
