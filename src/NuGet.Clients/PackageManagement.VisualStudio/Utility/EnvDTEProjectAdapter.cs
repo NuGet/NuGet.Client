@@ -51,6 +51,8 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
+                // Note that we don't throw when not on UI thread for extracting this object. It is completely uncurated
+                // access to the DTE project object, and any code using it must be responsible in its thread management.
                 return _project;
             }
         }
