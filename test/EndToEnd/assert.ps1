@@ -5,11 +5,11 @@ function Build-ErrorMessage {
         [string]$BaseMessage,
         [string]$Message
     )
-    
+
     if($Message) {
         $BaseMessage += ". $Message"
     }
-    
+
     $BaseMessage
 }
 
@@ -19,12 +19,12 @@ function Get-AssertError {
         [string]$BaseMessage,
         [string]$Message
     )
-    
+
     $Message = Build-ErrorMessage $BaseMessage $Message
-        
+
     # Get the last non assert call
     $lastCall = Get-PSCallStack | Select -Skip 1 | ?{ !$_.Command.StartsWith('Assert') } | Select -First 1
-    
+
     "$Message. At $($lastCall.Location)"
 }
 
@@ -33,7 +33,7 @@ function Assert-Fail {
         [parameter(Mandatory = $true)]
         [string]$Message
     )
-    
+
     Write-Error (Get-AssertError "Failed" $Message)
 }
 
@@ -42,7 +42,7 @@ function Assert-True {
         $Value,
         [string]$Message
     )
-    
+
     if($Value -eq $false) {
         Write-Error (Get-AssertError "Value is not true" $Message)
     }
@@ -53,7 +53,7 @@ function Assert-False {
         $Value,
         [string]$Message
     )
-    
+
     if($Value -eq $true) {
         Write-Error (Get-AssertError "Value is not false" $Message)
     }
@@ -64,7 +64,7 @@ function Assert-NotNull {
         $Value,
         [string]$Message
     )
-    
+
     if(!$Value) {
         Write-Error (Get-AssertError "Value is null" $Message)
     }
@@ -75,7 +75,7 @@ function Assert-Null {
         $Value,
         [string]$Message
     )
-    
+
     if($Value) {
         Write-Error (Get-AssertError "Value is not null" $Message)
     }
@@ -84,24 +84,24 @@ function Assert-Null {
 function Assert-AreEqual {
     param(
          [parameter(Mandatory = $true)]
-         $Expected, 
+         $Expected,
          [parameter(Mandatory = $true)]
          $Actual,
          [string]$Message
     )
-    
+
     if($Expected -ne $Actual) {
         Write-Error (Get-AssertError "Expected <$Expected> but got <$Actual>" $Message)
-    } 
+    }
 }
 
 function Assert-PathExists {
     param(
           [parameter(Mandatory = $true)]
-          [string]$Path, 
+          [string]$Path,
           [string]$Message
     )
-    
+
     if(!(Test-Path $Path)) {
         Write-Error (Get-AssertError "The path `"$Path`" does not exist" $Message)
     }
@@ -110,10 +110,10 @@ function Assert-PathExists {
 function Assert-PathNotExists {
     param(
           [parameter(Mandatory = $true)]
-          [string]$Path, 
+          [string]$Path,
           [string]$Message
     )
-    
+
     if((Test-Path $Path)) {
         Write-Error (Get-AssertError "The path `"$Path`" DOES exist" $Message)
     }
@@ -122,31 +122,31 @@ function Assert-PathNotExists {
 function Assert-Reference {
     param(
          [parameter(Mandatory = $true)]
-         $Project, 
+         $Project,
          [parameter(Mandatory = $true)]
          [string]$Reference,
          [string]$Version
     )
-    
+
     $assemblyReference = Get-AssemblyReference $Project $Reference
     Assert-NotNull $assemblyReference "Reference `"$Reference`" does not exist"
-    
+
     $path = $assemblyReference.Path
-    
+
     # Support for websites
     if(!$path) {
         $path = $assemblyReference.FullPath
     }
-    
+
     Assert-NotNull $path "Reference `"$Reference`" exists but is broken"
     Assert-PathExists $path "Reference `"$Reference`" exists but is broken"
-    
+
     if($Version) {
         $assemblyVersion = $assemblyReference.Version
         if(!$assemblyVersion) {
             $assemblyVersion = [System.Reflection.AssemblyName]::GetAssemblyName($path).Version
         }
-        
+
         $actualVersion = [Version]::Parse($Version)
         Assert-AreEqual $actualVersion $assemblyVersion
     }
@@ -165,7 +165,7 @@ function Assert-Throws {
     try {
         & $Action
     }
-    catch {        
+    catch {
        Assert-AreEqual $ExceptionMessage $_.Exception.Message
        $exceptionThrown = $true
     }
@@ -188,12 +188,12 @@ function Assert-BindingRedirect {
         [parameter(Mandatory = $true)]
         $NewVersion
     )
-    
+
     $config = [xml](Get-Content (Get-ProjectItemPath $Project $ConfigPath))
     Assert-NotNull $config.configuration.runtime
     Assert-NotNull $config.configuration.runtime.assemblyBinding
     Assert-NotNull $config.configuration.runtime.assemblyBinding.dependentAssembly
-    $bindings = @($config.configuration.runtime.assemblyBinding.dependentAssembly | ?{ $_.assemblyIdentity.name -eq $Name -and 
+    $bindings = @($config.configuration.runtime.assemblyBinding.dependentAssembly | ?{ $_.assemblyIdentity.name -eq $Name -and
                                                                                     $_.bindingRedirect.oldVersion -eq $OldVersion -and
                                                                                     $_.bindingRedirect.newVersion -eq $NewVersion })
 
@@ -226,9 +226,25 @@ function Assert-NoBindingRedirect {
         return
     }
 
-    $bindings = @($config.configuration.runtime.assemblyBinding.dependentAssembly | ?{ $_.assemblyIdentity.name -eq $Name -and 
+    $bindings = @($config.configuration.runtime.assemblyBinding.dependentAssembly | ?{ $_.assemblyIdentity.name -eq $Name -and
                                                                                     $_.bindingRedirect.oldVersion -eq $OldVersion -and
                                                                                     $_.bindingRedirect.newVersion -eq $NewVersion })
 
     Assert-True ($bindings.Count -eq 0) "Binding redirect matching $Name, $OldVersion, $NewVersion found in project $($Project.Name)"
+}
+
+function Assert-StringEqual {
+    param(
+        [parameter(Mandatory = $true)]
+        $StringA,
+        [parameter(Mandatory = $true)]
+        $StringB,
+        [parameter(Mandatory = $true)]
+        $CaseSensitive
+    )
+
+	$comparison = if ($CaseSensitive) { [StringComparison]::Ordinal } else { [StringComparison]::OrdinalIgnoreCase }
+	$areEqual = [string]::Equals($stringA, $stringB, $comparison)
+
+	Assert-True ($areEqual) "Strings `"$stringA`" and `"$stringB`" are not equal."
 }

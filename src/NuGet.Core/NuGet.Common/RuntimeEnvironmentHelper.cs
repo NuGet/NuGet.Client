@@ -6,6 +6,8 @@ namespace NuGet.Common
     {
         private static Lazy<bool> _isMono = new Lazy<bool>(() => Type.GetType("Mono.Runtime") != null);
 
+        public static bool IsDev14 { get; set; }
+
         public static bool IsWindows
         {
             get

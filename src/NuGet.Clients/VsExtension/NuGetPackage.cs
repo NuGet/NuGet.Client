@@ -103,6 +103,9 @@ namespace NuGetVSExtension
 
         public NuGetPackage()
         {
+#if VS14
+            RuntimeEnvironmentHelper.IsDev14 = true;
+#endif
             ServiceLocator.InitializePackageServiceProvider(this);
             StandaloneSwitch.IsRunningStandalone = false;
             _nugetSettings = new NuGetSettings();
@@ -1108,6 +1111,7 @@ namespace NuGetVSExtension
         }
 
         #region IVsPackageExtensionProvider implementation
+
         public dynamic CreateExtensionInstance(ref Guid extensionPoint, ref Guid instance)
         {
             if (instance == typeof(NuGetSearchProvider).GUID)
@@ -1116,7 +1120,8 @@ namespace NuGetVSExtension
             }
             return null;
         }
-        #endregion // IVsPackageExtensionProvider implementation
+
+        #endregion IVsPackageExtensionProvider implementation
 
         private void OnBeginShutDown()
         {
@@ -1125,6 +1130,7 @@ namespace NuGetVSExtension
         }
 
         #region IVsPersistSolutionOpts implementation
+
         public int LoadUserOptions(IVsSolutionPersistence pPersistence, uint grfLoadOpts)
         {
             return VSConstants.S_OK;
@@ -1173,6 +1179,7 @@ namespace NuGetVSExtension
 
             return VSConstants.S_OK;
         }
-        #endregion // IVsPersistSolutionOpts implementation
+
+        #endregion IVsPersistSolutionOpts implementation
     }
 }
