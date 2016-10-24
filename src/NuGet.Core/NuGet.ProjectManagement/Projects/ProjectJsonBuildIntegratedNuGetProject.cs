@@ -173,10 +173,10 @@ namespace NuGet.ProjectManagement.Projects
             return Task.FromResult(false);
         }
 
-        public Task<IReadOnlyList<IDependencyGraphProject>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)
+        public virtual Task<IReadOnlyList<ProjectRestoreReference>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)
         {
-            return Task.FromResult<IReadOnlyList<IDependencyGraphProject>>(
-                Enumerable.Empty<IDependencyGraphProject>().ToList());
+            return Task.FromResult<IReadOnlyList<ProjectRestoreReference>>(
+                Enumerable.Empty<ProjectRestoreReference>().ToList());
         }
 
         public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
@@ -229,17 +229,11 @@ namespace NuGet.ProjectManagement.Projects
                     {
                         // This reference applies to all frameworks
                         // Include/exclude flags may be applied later when merged with project.json
-                        var projectReference = new ProjectRestoreReference
-                        {
-                            ProjectUniqueName = reference.MSBuildProjectPath,
-                            ProjectPath = reference.MSBuildProjectPath
-                        };
-
                         // Add the reference for all TFM groups, there are no conditional project
                         // references in UWP. There should also be just one TFM.
                         foreach (var frameworkInfo in metadata.TargetFrameworks)
                         {
-                            frameworkInfo.ProjectReferences.Add(projectReference);
+                            frameworkInfo.ProjectReferences.Add(reference);
                         }
                     }
                 }

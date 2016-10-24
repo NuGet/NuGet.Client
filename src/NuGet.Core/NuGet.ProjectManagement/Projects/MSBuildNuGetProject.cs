@@ -600,12 +600,13 @@ namespace NuGet.ProjectManagement
 
         public async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
         {
-            PackageSpec packageSpec = null;
-            if (context != null && context.PackageSpecCache.TryGetValue(MSBuildNuGetProjectSystem.ProjectFileFullPath, out packageSpec))
+            if (context == null)
             {
-               
+                throw new ArgumentNullException(nameof(context));
             }
-            else
+
+            PackageSpec packageSpec = null;
+            if (!context.PackageSpecCache.TryGetValue(MSBuildNuGetProjectSystem.ProjectFileFullPath, out packageSpec))
             {
                 packageSpec = new PackageSpec(new List<TargetFrameworkInformation>
                 {
@@ -628,7 +629,7 @@ namespace NuGet.ProjectManagement
                 metadata.ProjectName = MSBuildNuGetProjectSystem.ProjectName;
                 metadata.ProjectUniqueName = MSBuildNuGetProjectSystem.ProjectFileFullPath;
 
-                IReadOnlyList<IDependencyGraphProject> references = await GetDirectProjectReferencesAsync(context);
+                var references = await GetDirectProjectReferencesAsync(context);
                 if (references != null && references.Count > 0)
                 {
                     // Add framework group
@@ -639,47 +640,20 @@ namespace NuGet.ProjectManagement
                     {
                         // This reference applies to all frameworks
                         // Include/exclude flags are not possible for this project type
-                        var projectReference = new ProjectRestoreReference
-                        {
-                            ProjectUniqueName = reference.MSBuildProjectPath,
-                            ProjectPath = reference.MSBuildProjectPath
-                        };
-
-                        frameworkGroup.ProjectReferences.Add(projectReference);
+                        frameworkGroup.ProjectReferences.Add(reference);
                     }
                 }
 
-                context?.PackageSpecCache.Add(MSBuildProjectPath, packageSpec);
+                context.PackageSpecCache.Add(MSBuildProjectPath, packageSpec);
             }
 
             return new[] { packageSpec };
         }
 
-        //public async Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(DependencyGraphCacheContext context)
-        //{
-        //    DependencyGraphSpec dgSpec = null;
-        //    if (context != null && context.DependencyGraphCache.TryGetValue(MSBuildNuGetProjectSystem.ProjectFileFullPath, out dgSpec))
-        //    {
-        //        return dgSpec;
-        //    }
-        //    else
-        //    {
-        //        dgSpec = new DependencyGraphSpec();
-        //        dgSpec.AddProject(await GetPackageSpecAsync(context));
-        //        var projectReferences = await GetDirectProjectReferencesAsync(context);
-        //        var listOfDgSpecs = projectReferences.Select(async r => await r.GetDependencyGraphSpecAsync(context)).Select(r => r.Result).ToList();
-        //        listOfDgSpecs.Add(dgSpec);
-        //        var finalDgSpec =  DependencyGraphSpec.Union(listOfDgSpecs);
-        //        //Cache this DG File
-        //        context?.DependencyGraphCache.Add(MSBuildProjectPath, finalDgSpec);
-        //        return finalDgSpec;
-        //    }
-        //}
-
-        public virtual Task<IReadOnlyList<IDependencyGraphProject>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)
+        public virtual Task<IReadOnlyList<ProjectRestoreReference>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)
         {
-            return Task.FromResult<IReadOnlyList<IDependencyGraphProject>>(
-                Enumerable.Empty<IDependencyGraphProject>().ToList());
+            return Task.FromResult<IReadOnlyList<ProjectRestoreReference>>(
+                Enumerable.Empty<ProjectRestoreReference>().ToList());
         }
     }
 

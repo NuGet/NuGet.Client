@@ -100,6 +100,47 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
+        /// Restore a dg spec. This will not update the context cache.
+        /// </summary>
+        public static async Task<IReadOnlyList<RestoreSummary>> RestoreAsync(
+            DependencyGraphSpec dgSpec,
+            DependencyGraphCacheContext context,
+            RestoreCommandProvidersCache providerCache,
+            Action<SourceCacheContext> cacheContextModifier,
+            IEnumerable<SourceRepository> sources,
+            ISettings settings,
+            ILogger log,
+            CancellationToken token)
+        {
+            // Check if there are actual projects to restore before running.
+            if (dgSpec.Restore.Count > 0)
+            {
+                using (var sourceCacheContext = new SourceCacheContext())
+                {
+                    // Update cache context
+                    cacheContextModifier(sourceCacheContext);
+
+                    var restoreContext = GetRestoreContext(
+                        context,
+                        providerCache,
+                        settings,
+                        sourceCacheContext,
+                        sources,
+                        dgSpec,
+                        userPackagesPath: null);
+
+                    var restoreSummaries = await RestoreRunner.Run(restoreContext);
+
+                    RestoreSummary.Log(log, restoreSummaries);
+
+                    return restoreSummaries;
+                }
+            }
+
+            return new List<RestoreSummary>();
+        }
+
+        /// <summary>
         /// Restore without writing the lock file
         /// </summary>
         internal static Task<RestoreResultPair> PreviewRestoreAsync(

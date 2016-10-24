@@ -72,8 +72,27 @@ namespace NuGet.ProjectModel
 
         public IReadOnlyList<string> GetParents(string rootUniqueName)
         {
-            return Projects.Select(p => p.RestoreMetadata.ProjectUniqueName)
-                .Where(id => GetClosure(id).Any(p => p.RestoreMetadata.ProjectUniqueName == rootUniqueName))
+            var parents = new List<PackageSpec>();
+
+            foreach (var project in Projects)
+            {
+                if (!StringComparer.OrdinalIgnoreCase.Equals(
+                    project.RestoreMetadata.ProjectUniqueName,
+                    rootUniqueName))
+                {
+                    var closure = GetClosureWithoutSorting(project.RestoreMetadata.ProjectUniqueName);
+
+                    if (closure.Any(e => StringComparer.OrdinalIgnoreCase.Equals(
+                        e.RestoreMetadata.ProjectUniqueName,
+                        rootUniqueName)))
+                    {
+                        parents.Add(project);
+                    }
+                }
+            }
+
+            return SortPackagesByDependencyOrder(parents)
+                .Select(e => e.RestoreMetadata.ProjectUniqueName)
                 .ToList();
         }
 
@@ -81,6 +100,18 @@ namespace NuGet.ProjectModel
         /// Retrieve the full project closure including the root project itself.
         /// </summary>
         public IReadOnlyList<PackageSpec> GetClosure(string rootUniqueName)
+        {
+            if (rootUniqueName == null)
+            {
+                throw new ArgumentNullException(nameof(rootUniqueName));
+            }
+
+            var closure = GetClosureWithoutSorting(rootUniqueName);
+
+            return SortPackagesByDependencyOrder(closure);
+        }
+
+        private IReadOnlyList<PackageSpec> GetClosureWithoutSorting(string rootUniqueName)
         {
             if (rootUniqueName == null)
             {
@@ -114,7 +145,8 @@ namespace NuGet.ProjectModel
                     }
                 }
             }
-            return SortPackagesByDependencyOrder(closure);
+
+            return closure;
         }
 
         private static IEnumerable<string> GetProjectReferenceNames(PackageSpec spec)

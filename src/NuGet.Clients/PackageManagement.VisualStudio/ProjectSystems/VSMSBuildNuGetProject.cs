@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -35,34 +36,14 @@ namespace NuGet.PackageManagement.VisualStudio
             InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
         }
 
-        public override Task<IReadOnlyList<IDependencyGraphProject>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)
+        public override Task<IReadOnlyList<ProjectRestoreReference>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)
         {
-            IReadOnlyList<IDependencyGraphProject> references = null;
-            if (context != null && context.DirectReferenceCache.TryGetValue(MSBuildProjectPath, out references))
+            if (context == null)
             {
-
-            }
-            else
-            {
-                var solutionManager = (VSSolutionManager)ServiceLocator.GetInstance<ISolutionManager>();
-                var list = new List<IDependencyGraphProject>();
-                if (solutionManager != null && EnvDTEProjectUtility.SupportsReferences(_project))
-                {
-                    foreach (var referencedProject in EnvDTEProjectUtility.GetReferencedProjects(_project))
-                    {
-                        var nugetProject = EnvDTEProjectUtility.GetNuGetProject(referencedProject, solutionManager);
-                        var dependencyGraphProject = nugetProject as IDependencyGraphProject;
-                        if (dependencyGraphProject != null)
-                        {
-                            list.Add(dependencyGraphProject);
-                        }
-                    }
-                }
-                references = list.AsReadOnly();
-                context?.DirectReferenceCache.Add(MSBuildProjectPath, references);
+                throw new ArgumentNullException(nameof(context));
             }
 
-            return Task.FromResult<IReadOnlyList<IDependencyGraphProject>>(references);
+            return VSProjectRestoreReferenceUtility.GetDirectProjectReferences(_project, context.Logger);
         }
     }
 }

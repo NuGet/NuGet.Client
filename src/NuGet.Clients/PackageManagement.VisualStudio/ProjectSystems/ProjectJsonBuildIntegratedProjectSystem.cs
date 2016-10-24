@@ -65,5 +65,15 @@ namespace NuGet.PackageManagement.VisualStudio
                     ScriptExecutorUtil.ExecuteScriptAsync(identity, packageInstallPath, projectContext, ScriptExecutor,
                         _envDTEProject, throwOnFailure);
         }
+
+        public override Task<IReadOnlyList<ProjectRestoreReference>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return VSProjectRestoreReferenceUtility.GetDirectProjectReferences(_envDTEProject, context.Logger);
+        }
     }
 }

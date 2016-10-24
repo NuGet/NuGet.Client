@@ -1948,7 +1948,7 @@ namespace NuGet.PackageManagement
 
                 // cache these projects which will be used to avoid duplicate restore as part of parent projects
                 _buildIntegratedProjectsUpdateDict.AddRange(
-                    allSortedProjects.Select(child => new KeyValuePair<string, bool>(child.RestoreMetadata.ProjectUniqueName, false)));
+                    buildIntegratedProjectsToUpdate.Select(child => new KeyValuePair<string, bool>(child.MSBuildProjectPath, false)));
             }
 
             // execute all nuget project actions
@@ -2313,7 +2313,9 @@ namespace NuGet.PackageManagement
 
             // Get Package Spec as json object
             var originalPackageSpec = await DependencyGraphRestoreUtility.GetProjectSpec(buildIntegratedProject, dependencyGraphContext);
-            var updatedPackageSpec = await DependencyGraphRestoreUtility.GetProjectSpec(buildIntegratedProject, dependencyGraphContext);
+
+            // Create a copy to avoid modifying the original spec which may be shared.
+            var updatedPackageSpec = originalPackageSpec.Clone();
 
             var pathContext = NuGetPathContext.Create(Settings);
             var providerCache = new RestoreCommandProvidersCache();
@@ -2562,6 +2564,9 @@ namespace NuGet.PackageManagement
                     buildIntegratedProject,
                     _buildIntegratedProjectsCache);
 
+                var dgSpecForParents = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(SolutionManager, referenceContext);
+                dgSpecForParents = dgSpecForParents.WithoutRestores();
+
                 foreach (var parent in parents)
                 {
                     // if this parent exists in update cache, then update it's entry to be re-evaluated
@@ -2572,18 +2577,24 @@ namespace NuGet.PackageManagement
                     }
                     else
                     {
-                        // Restore and commit the lock file to disk regardless of the result
-                        var parentResult = await DependencyGraphRestoreUtility.RestoreProjectAsync(
-                            SolutionManager,
-                            parent,
-                            referenceContext,
-                            GetRestoreProviderCache(),
-                            cacheContextModifier,
-                            projectAction.Sources,
-                            Settings,
-                            logger,
-                            token);
+                        // Mark project for restore
+                        dgSpecForParents.AddRestore(parent.MSBuildProjectPath);
                     }
+                }
+
+                if (dgSpecForParents.Restore.Count > 0)
+                {
+                    // Restore and commit the lock file to disk regardless of the result
+                    // This will restore all parents in a single restore
+                    await DependencyGraphRestoreUtility.RestoreAsync(
+                        dgSpecForParents,
+                        referenceContext,
+                        GetRestoreProviderCache(),
+                        cacheContextModifier,
+                        projectAction.Sources,
+                        Settings,
+                        logger,
+                        token);
                 }
             }
             else

@@ -10,8 +10,8 @@
 
 namespace NuGet.PackageManagement.VisualStudio {
     using System;
-
-
+    
+    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -23,15 +23,15 @@ namespace NuGet.PackageManagement.VisualStudio {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Strings {
-
+        
         private static global::System.Resources.ResourceManager resourceMan;
-
+        
         private static global::System.Globalization.CultureInfo resourceCulture;
-
+        
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal Strings() {
         }
-
+        
         /// <summary>
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
@@ -45,7 +45,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return resourceMan;
             }
         }
-
+        
         /// <summary>
         ///   Overrides the current thread's CurrentUICulture property for all
         ///   resource lookups using this strongly typed resource class.
@@ -59,7 +59,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 resourceCulture = value;
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Value must be greater than or equal to {0}..
         /// </summary>
@@ -68,7 +68,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("Argument_Must_Be_GreaterThanOrEqualTo", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to NuGet operation failed.
         /// </summary>
@@ -77,7 +77,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("ConfigErrorDialogBoxTitle", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Added file &apos;{0}&apos; to project &apos;{1}&apos;..
         /// </summary>
@@ -86,7 +86,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("Debug_AddedFileToProject", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Added reference &apos;{0}&apos; in the Global Assembly Cache to project &apos;{1}&apos;.
         /// </summary>
@@ -95,7 +95,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("Debug_AddGacReference", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Added reference &apos;{0}&apos; to project &apos;{1}&apos;..
         /// </summary>
@@ -104,7 +104,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("Debug_AddReference", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Removed file &apos;{0}&apos;.
         /// </summary>
@@ -113,7 +113,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("Debug_RemovedFile", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Removed file &apos;{0}&apos; from folder &apos;{1}&apos;.
         /// </summary>
@@ -122,7 +122,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("Debug_RemovedFileFromFolder", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Removed reference &apos;{0}&apos; from project &apos;{1}&apos;.
         /// </summary>
@@ -131,7 +131,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("Debug_RemoveReference", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to NuGet Package Manager.
         /// </summary>
@@ -140,7 +140,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("DialogTitle", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to The project &apos;{0}&apos; is unsupported.
         /// </summary>
@@ -149,7 +149,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("DTE_ProjectUnsupported", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Failed to create parent folder for file &apos;{0}&apos; in project {1}..
         /// </summary>
@@ -158,7 +158,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("Error_FailedToCreateParentFolder", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Failed to load &apos;{0}&apos;, while updating binding redirects. {1}.
         /// </summary>
@@ -167,7 +167,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("Error_WhileLoadingConfigForBindingRedirects", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Error occurred while restoring NuGet packages: {0}.
         /// </summary>
@@ -176,7 +176,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("ErrorOccurredRestoringPackages", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Failed to add reference to &apos;{0}&apos;. The package &apos;{1}&apos; tried to add a framework reference to &apos;{0}&apos;. This reference is not required to be explicitly added by a package..
         /// </summary>
@@ -185,7 +185,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("FailedToAddFacadeReference", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Failed to add reference. The package &apos;{0}&apos; tried to add a framework reference to &apos;{1}&apos; which was not found in the GAC. This is possibly a bug in the package. Please contact the package owners for assistance..
         /// </summary>
@@ -194,7 +194,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("FailedToAddGacReference", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Failed to add reference to &apos;{0}&apos;..
         /// </summary>
@@ -203,7 +203,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("FailedToAddReference", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Case insensitive search for reference &apos;{0}&apos;, to be removed, returned more than 1 match. Request could not be performed..
         /// </summary>
@@ -212,7 +212,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("FailedToRemoveReference", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Failed to update binding redirects for {0} : {1}.
         /// </summary>
@@ -221,7 +221,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("FailedToUpdateBindingRedirects", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Installing NuGet package {0}..
         /// </summary>
@@ -230,7 +230,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("InstallingPackage", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to All packages are already installed and there is nothing to restore..
         /// </summary>
@@ -239,7 +239,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("NothingToRestore", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to One or more NuGet packages need to be restored but couldn&apos;t be because consent has not been granted. To give consent, open the Visual Studio Options dialog, click on the Package Manager node and check &apos;Allow NuGet to download missing packages during build.&apos; You can also give consent by setting the environment variable &apos;EnableNuGetPackageRestore&apos; to &apos;true&apos;.
         ///
@@ -250,7 +250,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("PackageNotRestoredBecauseOfNoConsent", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to NuGet package restore canceled..
         /// </summary>
@@ -259,7 +259,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("PackageRestoreCanceled", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to NuGet Package restore failed for project {0}: {1}..
         /// </summary>
@@ -268,7 +268,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("PackageRestoreFailedForProject", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to NuGet package restore finished..
         /// </summary>
@@ -277,7 +277,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("PackageRestoreFinished", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to NuGet Package restore finished for project &apos;{0}&apos;..
         /// </summary>
@@ -286,7 +286,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("PackageRestoreFinishedForProject", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to NuGet package restore failed..
         /// </summary>
@@ -295,7 +295,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("PackageRestoreFinishedWithError", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Restoring NuGet packages...
         ///To prevent NuGet from restoring packages during build, open the Visual Studio Options dialog, click on the Package Manager node and uncheck &apos;Allow NuGet to download missing packages during build.&apos;.
@@ -305,7 +305,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("PackageRestoreOptOutMessage", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Path &apos;{0}&apos; to existing file is not found on disk. Cannot add to project &apos;{1}&apos;.
         /// </summary>
@@ -314,7 +314,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("PathToExistingFileNotPresent", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to &apos;globalPackagesFolder&apos; from nuget.config file or the environment variable is &apos;{0}&apos;, a relative path and the solution is not saved. Please save your solution or configure a &apos;globalPackagesFolder&apos; which is a full path..
         /// </summary>
@@ -323,7 +323,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("RelativeGlobalPackagesFolder", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Restored NuGet package {0}..
         /// </summary>
@@ -332,7 +332,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("RestoredPackage", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Restoring NuGet packages....
         /// </summary>
@@ -341,7 +341,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("RestoringPackages", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Solution is not saved. Please save your solution before managing NuGet packages..
         /// </summary>
@@ -350,7 +350,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("SolutionIsNotSaved", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Uninstalling NuGet package {0}..
         /// </summary>
@@ -359,16 +359,16 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("UninstallingPackage", resourceCulture);
             }
         }
-
+        
         /// <summary>
-        ///   Looks up a localized string similar to Failed to resolve all project references for &apos;{0}&apos;. The package restore result for &apos;{1}&apos; may be incomplete..
+        ///   Looks up a localized string similar to Failed to resolve all project references. The package restore result for &apos;{0}&apos; or a dependant project may be incomplete..
         /// </summary>
         public static string Warning_ErrorDuringProjectClosureWalk {
             get {
                 return ResourceManager.GetString("Warning_ErrorDuringProjectClosureWalk", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Failed to remove package directories that were marked for deletion on Visual Studio restart: {0}.
         /// </summary>
@@ -377,7 +377,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("Warning_FailedToDeleteMarkedPackageDirectories", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Failed to remove package directory &apos;{0}&apos; that was marked for deletion on Visual Studio restart..
         /// </summary>
@@ -386,7 +386,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("Warning_FailedToDeleteMarkedPackageDirectory", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Failed to find match for removing reference &apos;{0}&apos;..
         /// </summary>
@@ -395,7 +395,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("Warning_FailedToFindMatchForRemoveReference", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Failed to mark package directory &apos;{0}&apos; for deletion on Visual Studio restart: {1}.
         /// </summary>
@@ -404,7 +404,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("Warning_FailedToMarkPackageDirectoryForDeletion", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; already exists. Skipping....
         /// </summary>
@@ -413,7 +413,7 @@ namespace NuGet.PackageManagement.VisualStudio {
                 return ResourceManager.GetString("Warning_FileAlreadyExists", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to No exact match found for removing reference &apos;{0}&apos;. Trying No No exact match found for removing reference &apos;{0}&apos;. Trying case-insensitive search...-.
         /// </summary>

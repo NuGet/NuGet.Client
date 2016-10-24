@@ -114,5 +114,20 @@ namespace NuGet.ProjectModel
         /// those not recognized by the parser.
         /// </summary>
         public JObject Properties { get; }
+
+        /// <summary>
+        /// Clone a PackageSpec and underlying JObject.
+        /// </summary>
+        public PackageSpec Clone()
+        {
+            var copy = new JObject();
+            JsonPackageSpecWriter.WritePackageSpec(this, copy);
+
+            var spec = JsonPackageSpecReader.GetPackageSpec(copy);
+            spec.Name = this.Name;
+            spec.FilePath = this.FilePath;
+
+            return spec;
+        }
     }
 }

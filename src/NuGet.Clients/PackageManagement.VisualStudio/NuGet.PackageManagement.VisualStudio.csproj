@@ -212,6 +212,7 @@
     <Compile Include="Utility\ServiceProviderExtensions.cs" />
     <Compile Include="Utility\SettingsHelper.cs" />
     <Compile Include="Utility\VCProjectHelper.cs" />
+    <Compile Include="Utility\VSProjectRestoreReferenceUtility.cs" />
     <Compile Include="Utility\VSVersionHelper.cs" />
     <Compile Include="VSMachineWideSettings.cs" />
     <Compile Include="ProjectSystems\NuGetProjectFactory.cs" />

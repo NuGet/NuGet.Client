@@ -12,6 +12,28 @@ namespace NuGet.ProjectModel.Test
     public class DependencyGraphSpecTests
     {
         [Fact]
+        public void DependencyGraphSpec_GetParents()
+        {
+            // Arrange
+            var json = JObject.Parse(ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.test1.dg", typeof(DependencyGraphSpecTests)));
+
+            // Act
+            var dg = DependencyGraphSpec.Load(json);
+
+            var xParents = dg.GetParents("A55205E7-4D08-4672-8011-0925467CC45F");
+            var yParents = dg.GetParents("78A6AD3F-9FA5-47F6-A54E-84B46A48CB2F");
+            var zParents = dg.GetParents("44B29B8D-8413-42D2-8DF4-72225659619B");
+
+            // Assert
+            Assert.Equal(0, xParents.Count);
+            Assert.Equal(1, yParents.Count);
+            Assert.Equal("A55205E7-4D08-4672-8011-0925467CC45F", yParents.Single());
+
+            Assert.Equal(1, zParents.Count);
+            Assert.Equal("A55205E7-4D08-4672-8011-0925467CC45F", zParents.Single());
+        }
+
+        [Fact]
         public void DependencyGraphSpec_ReadFileWithProjects_GetClosures()
         {
             // Arrange
