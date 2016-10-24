@@ -13,10 +13,10 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     [Export(typeof(IProjectSystemProvider))]
     [Name(nameof(MSBuildNuGetProjectProvider))]
-#if VS15
-    [Order(After = nameof(LegacyCSProjPackageReferenceProjectProvider))]
-#else
+#if VS14
     [Order(After = nameof(ProjectKNuGetProjectProvider))]
+#else
+    [Order(After = nameof(LegacyCSProjPackageReferenceProjectProvider))]
 #endif
     public class MSBuildNuGetProjectProvider : IProjectSystemProvider
     {

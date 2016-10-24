@@ -4,7 +4,6 @@
   <Import Project="..\..\..\Build\Common.props" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <DefineConstants Condition="'$(VisualStudioVersion)' == '15.0'">$(DefineConstants);VS15</DefineConstants>
     <ProjectGuid>{306CDDFA-FF0B-4299-930C-9EC6C9308160}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>

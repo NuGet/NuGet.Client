@@ -218,11 +218,11 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 if (reference.SourceProject != null)
                 {
-                    yield return new LegacyCSProjProjectReference()
-                    {
-                        UniqueName = reference.SourceProject.FullName
-                        // When metadata API is available, each project's metadata can be inserted into this instance
-                    };
+                    // When metadata API is available, each project's metadata can be inserted into this instance
+                    yield return new LegacyCSProjProjectReference(
+                        uniqueName: reference.SourceProject.FullName, 
+                        metadataElements: null, 
+                        metadataValues: null);
                 }
             }
         }
@@ -249,14 +249,12 @@ namespace NuGet.PackageManagement.VisualStudio
                     Array metadataValues;
                     AsVSProject4.PackageReferences.TryGetReference(installedPackageName, desiredMetadata, out version, out metadataElements, out metadataValues);
 
-                    yield return new LegacyCSProjPackageReference()
-                    {
-                        Name = installedPackageName,
-                        Version = version,
-                        MetadataElements = metadataElements,
-                        MetadataValues = metadataValues,
-                        TargetNuGetFramework = TargetNuGetFramework
-                    };
+                    yield return new LegacyCSProjPackageReference(
+                        name: installedPackageName,
+                        version: version,
+                        metadataElements: metadataElements,
+                        metadataValues: metadataValues,
+                        targetNuGetFramework: TargetNuGetFramework);
                 }
             }
         }

@@ -11,8 +11,15 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public class LegacyCSProjProjectReference
     {
-        public string UniqueName;
-        public Array MetadataElements;
-        public Array MetadataValues;
+        public LegacyCSProjProjectReference(string uniqueName, Array metadataElements, Array metadataValues)
+        {
+            UniqueName = uniqueName;
+            MetadataElements = metadataElements;
+            MetadataValues = metadataValues;
+        }
+
+        public string UniqueName { get; }
+        public Array MetadataElements { get; }
+        public Array MetadataValues { get; }
     }
 }

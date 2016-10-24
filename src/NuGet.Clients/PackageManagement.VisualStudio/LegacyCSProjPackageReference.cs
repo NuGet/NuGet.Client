@@ -11,10 +11,24 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public class LegacyCSProjPackageReference
     {
-        public string Name;
-        public string Version;
-        public Array MetadataElements;
-        public Array MetadataValues;
-        public NuGetFramework TargetNuGetFramework;
+        public LegacyCSProjPackageReference(
+            string name,
+            string version,
+            Array metadataElements,
+            Array metadataValues,
+            NuGetFramework targetNuGetFramework)
+        {
+            Name = name;
+            Version = version;
+            MetadataElements = metadataElements;
+            MetadataValues = metadataValues;
+            TargetNuGetFramework = targetNuGetFramework;
+        }
+
+        public string Name { get; private set; }
+        public string Version  { get; private set; }
+        public Array MetadataElements { get; private set; }
+        public Array MetadataValues { get; private set; }
+        public NuGetFramework TargetNuGetFramework { get; private set; }
     }
 }
