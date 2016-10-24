@@ -12,7 +12,14 @@
         $ProgramFilesPath = ${env:ProgramFiles(x86)}
     }
 
-    $VSFolderPath = Join-Path $ProgramFilesPath ("Microsoft Visual Studio " + $VSVersion)
+    if ($VSVersion -Eq "15.0")
+    {
+        $VSFolderPath = Join-Path $ProgramFilesPath "Microsoft Visual Studio\2017\Enterprise"
+    }
+    else
+    {
+        $VSFolderPath = Join-Path $ProgramFilesPath ("Microsoft Visual Studio " + $VSVersion)    
+    }
 
     return $VSFolderPath
 }
