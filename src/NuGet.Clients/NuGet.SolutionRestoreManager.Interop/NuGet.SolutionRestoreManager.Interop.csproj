@@ -23,6 +23,8 @@
     <None Include="NuGet.SolutionRestoreManager.Interop.nuspec" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IVsProjectProperties.cs" />
+    <Compile Include="IVsProjectProperty.cs" />
     <Compile Include="IVsProjectRestoreInfo.cs" />
     <Compile Include="IVsReferenceItem.cs" />
     <Compile Include="IVsReferenceProperties.cs" />
@@ -49,10 +51,7 @@
       <Nuspec Include="*.nuspec" />
       <PackageInclude Include="install.ps1" />
     </ItemGroup>
-    <Copy
-      SourceFiles="%(PackageInclude.Identity)"
-      DestinationFolder="$(TargetDir)" />
-    <Exec
-      Command="$(NuGetExe) pack %(Nuspec.Identity) -Version $(PackageVersion) -BasePath $(TargetDir) -OutputDirectory $(PublishDestination) -Verbosity detailed" />
+    <Copy SourceFiles="%(PackageInclude.Identity)" DestinationFolder="$(TargetDir)" />
+    <Exec Command="$(NuGetExe) pack %(Nuspec.Identity) -Version $(PackageVersion) -BasePath $(TargetDir) -OutputDirectory $(PublishDestination) -Verbosity detailed" />
   </Target>
 </Project>
