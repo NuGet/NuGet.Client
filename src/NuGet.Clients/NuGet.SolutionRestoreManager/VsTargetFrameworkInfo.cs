@@ -11,6 +11,8 @@ namespace NuGet.SolutionRestoreManager
 
         public IVsReferenceItems ProjectReferences { get; }
 
+        public IVsProjectProperties Properties { get; }
+
         public String TargetFrameworkMoniker { get; }
 
         public VsTargetFrameworkInfo(

@@ -14,6 +14,8 @@ namespace NuGet.SolutionRestoreManager
     {
         public String BaseIntermediatePath { get; }
 
+        public string OriginalTargetFrameworks { get; }
+
         public IVsTargetFrameworks TargetFrameworks { get; }
 
         public IVsReferenceItems ToolReferences { get; }
