@@ -393,6 +393,15 @@ namespace NuGet.ProjectManagement {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to The operation failed as details for project {0} could not be loaded..
+        /// </summary>
+        public static string ProjectNotLoaded_RestoreFailed {
+            get {
+                return ResourceManager.GetString("ProjectNotLoaded_RestoreFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Removed package &apos;{0}&apos; from folder &apos;{1}&apos;.
         /// </summary>
         public static string RemovedPackageFromFolder {

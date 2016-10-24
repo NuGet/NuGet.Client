@@ -316,6 +316,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The operation failed as details for project {0} could not be loaded..
+        /// </summary>
+        public static string ProjectNotLoaded_RestoreFailed {
+            get {
+                return ResourceManager.GetString("ProjectNotLoaded_RestoreFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;globalPackagesFolder&apos; from nuget.config file or the environment variable is &apos;{0}&apos;, a relative path and the solution is not saved. Please save your solution or configure a &apos;globalPackagesFolder&apos; which is a full path..
         /// </summary>
         public static string RelativeGlobalPackagesFolder {
