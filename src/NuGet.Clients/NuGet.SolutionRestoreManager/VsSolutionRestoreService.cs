@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
+using NuGet.Commands;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.PackageManagement.VisualStudio;
@@ -27,6 +28,10 @@ namespace NuGet.SolutionRestoreManager
     [Export(typeof(IVsSolutionRestoreService))]
     internal sealed class VsSolutionRestoreService : IVsSolutionRestoreService
     {
+        private const string IncludeAssets = "IncludeAssets";
+        private const string ExcludeAssets = "ExcludeAssets";
+        private const string PrivateAssets = "PrivateAssets";
+
         private readonly EnvDTE.DTE _dte;
         private readonly IProjectSystemCache _projectSystemCache;
         private readonly ISolutionRestoreWorker _restoreWorker;
@@ -307,6 +312,12 @@ namespace NuGet.SolutionRestoreManager
                     typeConstraint: LibraryDependencyTarget.Package)
             };
 
+            MSBuildRestoreUtility.ApplyIncludeFlags(
+                dependency,
+                includeAssets: GetPropertyValueOrDefault(item, IncludeAssets),
+                excludeAssets: GetPropertyValueOrDefault(item, ExcludeAssets),
+                privateAssets: GetPropertyValueOrDefault(item, PrivateAssets));
+
             return dependency;
         }
 
@@ -320,12 +331,18 @@ namespace NuGet.SolutionRestoreManager
                     typeConstraint: LibraryDependencyTarget.ExternalProject)
             };
 
+            MSBuildRestoreUtility.ApplyIncludeFlags(
+                dependency,
+                includeAssets: GetPropertyValueOrDefault(item, IncludeAssets),
+                excludeAssets: GetPropertyValueOrDefault(item, ExcludeAssets),
+                privateAssets: GetPropertyValueOrDefault(item, PrivateAssets));
+
             return dependency;
         }
 
         private static VersionRange GetVersionRange(IVsReferenceItem item)
         {
-            var versionRange = TryGetProperty(item, "Version");
+            var versionRange = GetPropertyValueOrDefault(item, "Version");
 
             if (!string.IsNullOrEmpty(versionRange))
             {
@@ -348,7 +365,7 @@ namespace NuGet.SolutionRestoreManager
         private static ProjectRestoreReference ToProjectRestoreReference(
             IVsReferenceItem item)
         {
-            var projectPath = TryGetProperty(item, "ProjectFileFullPath");
+            var projectPath = GetPropertyValueOrDefault(item, "ProjectFileFullPath");
             return new ProjectRestoreReference
             {
                 ProjectUniqueName = item.Name,
@@ -356,27 +373,19 @@ namespace NuGet.SolutionRestoreManager
             };
         }
 
-        private static string TryGetProperty(IVsReferenceItem item, string propertyName)
+        private static string GetPropertyValueOrDefault(
+            IVsReferenceItem item, string propertyName, string defaultValue = "")
         {
-            if (item.Properties == null)
-            {
-                // this happens in unit tests
-                return null;
-            }
-
             try
             {
-                IVsReferenceProperty property = item.Properties.Item(propertyName);
-                if (property != null)
-                {
-                    return property.Value;
-                }
+                IVsReferenceProperty property = item.Properties?.Item(propertyName);
+                return property?.Value ?? defaultValue;
             }
             catch (ArgumentException)
             {
             }
 
-            return null;
+            return defaultValue;
         }
     }
 }
