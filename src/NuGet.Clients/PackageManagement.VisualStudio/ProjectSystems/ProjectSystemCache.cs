@@ -332,15 +332,17 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private bool TryGetProjectNameByShortNameWithoutLock(string name, out ProjectNames projectNames)
         {
+            Debug.Assert(_readerWriterLock.IsReadLockHeld);
+
             projectNames = null;
 
             HashSet<ProjectNames> values;
             if (_shortNameCache.TryGetValue(name, out values))
             {
-                // Get the item at the front of the queue
+                // If there is only one project name instance, that means the short name is unambiguous, in which
+                // case we can return that one project.
                 projectNames = values.Count == 1 ? values.Single() : null;
-
-                // Only return true if the short name is unambiguous
+                
                 return projectNames != null;
             }
 
@@ -437,8 +439,8 @@ namespace NuGet.PackageManagement.VisualStudio
             try
             {
                 ProjectNames primaryKey;
-                if (TryGetProjectNameByShortNameWithoutLock(secondaryKey, out primaryKey) ||
-                    _projectNamesCache.TryGetValue(secondaryKey, out primaryKey))
+                if (_projectNamesCache.TryGetValue(secondaryKey, out primaryKey) ||
+                    TryGetProjectNameByShortNameWithoutLock(secondaryKey, out primaryKey))
                 {
                     return _primaryCache.TryGetValue(primaryKey, out cacheEntry);
                 }
