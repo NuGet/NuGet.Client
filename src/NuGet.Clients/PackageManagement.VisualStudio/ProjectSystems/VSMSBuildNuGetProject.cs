@@ -2,11 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using NuGet.ProjectManagement;
-using NuGet.ProjectModel;
 using EnvDTEProject = EnvDTE.Project;
+
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -35,17 +34,14 @@ namespace NuGet.PackageManagement.VisualStudio
             InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
         }
 
-        public override Task<IReadOnlyList<IDependencyGraphProject>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)
+        public override async Task<IReadOnlyList<IDependencyGraphProject>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)
         {
             IReadOnlyList<IDependencyGraphProject> references = null;
-            if (context != null && context.DirectReferenceCache.TryGetValue(MSBuildProjectPath, out references))
-            {
-
-            }
-            else
+            if (context == null || !context.DirectReferenceCache.TryGetValue(MSBuildProjectPath, out references))
             {
                 var solutionManager = (VSSolutionManager)ServiceLocator.GetInstance<ISolutionManager>();
                 var list = new List<IDependencyGraphProject>();
+                await Microsoft.VisualStudio.Shell.ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 if (solutionManager != null && EnvDTEProjectUtility.SupportsReferences(_project))
                 {
                     foreach (var referencedProject in EnvDTEProjectUtility.GetReferencedProjects(_project))
@@ -62,7 +58,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 context?.DirectReferenceCache.Add(MSBuildProjectPath, references);
             }
 
-            return Task.FromResult<IReadOnlyList<IDependencyGraphProject>>(references);
+            return await Task.FromResult<IReadOnlyList<IDependencyGraphProject>>(references);
         }
     }
 }
