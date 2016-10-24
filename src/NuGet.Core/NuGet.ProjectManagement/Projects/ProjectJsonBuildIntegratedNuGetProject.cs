@@ -207,6 +207,11 @@ namespace NuGet.ProjectManagement.Projects
             if (context == null || !context.PackageSpecCache.TryGetValue(MSBuildProjectPath, out packageSpec))
             {
                 packageSpec = JsonPackageSpec;
+                if (packageSpec == null)
+                {
+                    throw new InvalidOperationException(
+                        string.Format(Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
+                }
                 var metadata = new ProjectRestoreMetadata();
                 packageSpec.RestoreMetadata = metadata;
 

@@ -114,6 +114,11 @@ namespace NuGet.PackageManagement.VisualStudio
             if (context == null || !context.PackageSpecCache.TryGetValue(MSBuildProjectPath, out packageSpec))
             {
                 packageSpec = _packageSpecFactory();
+                if (packageSpec == null)
+                {
+                    throw new InvalidOperationException(
+                        string.Format(Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
+                }
                 context?.PackageSpecCache.Add(MSBuildProjectPath, packageSpec);
             }
 

@@ -106,13 +106,17 @@ namespace NuGet.PackageManagement.VisualStudio
         public override async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
         {
             PackageSpec packageSpec;
-            if (context.PackageSpecCache.TryGetValue(_projectFullPath, out packageSpec))
+            if (context == null || !context.PackageSpecCache.TryGetValue(MSBuildProjectPath, out packageSpec))
             {
-                return new[] { packageSpec };
+                packageSpec = await GetPackageSpecAsync();
+                if (packageSpec == null)
+                {
+                    throw new InvalidOperationException(
+                        string.Format(Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
+                }
+                context?.PackageSpecCache.Add(_projectFullPath, packageSpec);
             }
 
-            packageSpec = await GetPackageSpecAsync();
-            context.PackageSpecCache.Add(_projectFullPath, packageSpec);
             return new[] { packageSpec };
         }
 

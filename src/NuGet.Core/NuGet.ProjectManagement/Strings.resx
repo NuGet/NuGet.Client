@@ -228,6 +228,9 @@
   <data name="PackageStreamShouldBeSeekable" xml:space="preserve">
     <value>Package stream should be seekable</value>
   </data>
+  <data name="ProjectNotLoaded_RestoreFailed" xml:space="preserve">
+    <value>The operation failed as details for project {0} could not be loaded.</value>
+  </data>
   <data name="RemovedPackageFromFolder" xml:space="preserve">
     <value>Removed package '{0}' from folder '{1}'</value>
   </data>

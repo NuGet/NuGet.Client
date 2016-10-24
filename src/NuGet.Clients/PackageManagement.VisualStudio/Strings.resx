@@ -242,4 +242,7 @@ Missing packages: {0}</value>
     <comment>{0} is the framework facade reference name
 {1} is the package name</comment>
   </data>
+  <data name="ProjectNotLoaded_RestoreFailed" xml:space="preserve">
+    <value>The operation failed as details for project {0} could not be loaded.</value>
+  </data>
 </root>
