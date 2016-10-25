@@ -64,13 +64,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 _progressFactory = t => StatusBarProgress.StartAsync(serviceProvider, t);
             }
 
-            var dte = serviceProvider.GetDTE();
-
             _msbuildOutputVerbosity = new Lazy<int>(
-                valueFactory: () => GetMSBuildOutputVerbositySetting(dte));
+                valueFactory: () => GetMSBuildOutputVerbositySetting(serviceProvider));
 
             _buildOutputPane = new Lazy<EnvDTE.OutputWindowPane>(
-                valueFactory: () => GetBuildOutputPane(dte));
+                valueFactory: () => GetBuildOutputPane(serviceProvider));
         }
 
         public void Dispose()
@@ -194,16 +192,20 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        private static EnvDTE.OutputWindowPane GetBuildOutputPane(EnvDTE.DTE dte)
+        private static EnvDTE.OutputWindowPane GetBuildOutputPane(IServiceProvider serviceProvider)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                // Switch to main thread to use DTE
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var dte2 = (DTE2)dte;
-            var pane = dte2.ToolWindows.OutputWindow
-                .OutputWindowPanes
-                .Cast<EnvDTE.OutputWindowPane>()
-                .FirstOrDefault(p => StringComparer.OrdinalIgnoreCase.Equals(p.Guid, BuildWindowPaneGuid));
-            return pane;
+                var dte2 = (DTE2)serviceProvider.GetDTE();
+                var pane = dte2.ToolWindows.OutputWindow
+                    .OutputWindowPanes
+                    .Cast<EnvDTE.OutputWindowPane>()
+                    .FirstOrDefault(p => StringComparer.OrdinalIgnoreCase.Equals(p.Guid, BuildWindowPaneGuid));
+                return pane;
+            });
         }
 
         public void LogException(Exception ex, bool logError)
@@ -252,15 +254,23 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <remarks>
         /// 0 is Quiet, while 4 is diagnostic.
         /// </remarks>
-        private static int GetMSBuildOutputVerbositySetting(EnvDTE.DTE dte)
+        private static int GetMSBuildOutputVerbositySetting(IServiceProvider serviceProvider)
         {
-            var properties = dte.get_Properties("Environment", "ProjectsAndSolution");
-            var value = properties.Item("MSBuildOutputVerbosity").Value;
-            if (value is int)
+            return ThreadHelper.JoinableTaskFactory.Run<int>(async delegate
             {
-                return (int)value;
-            }
-            return 0;
+                // Switch to main thread to use DTE
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                var dte = serviceProvider.GetDTE();
+
+                var properties = dte.get_Properties("Environment", "ProjectsAndSolution");
+                var value = properties.Item("MSBuildOutputVerbosity").Value;
+                if (value is int)
+                {
+                    return (int)value;
+                }
+                return 0;
+            });
         }
 
         public Task<RestoreOperationProgressUI> StartProgressSessionAsync(CancellationToken token) => _progressFactory(token);
