@@ -52,7 +52,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 return false;
             }
 
-            result = new LegacyCSProjPackageReferenceProject(project);
+            result = new LegacyCSProjPackageReferenceProject(
+                project,
+                VsHierarchyUtility.GetProjectId(dteProject));
 
             return true;
         }

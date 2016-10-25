@@ -38,6 +38,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private string _projectName;
         private string _projectUniqueName;
         private string _projectFullPath;
+        private readonly String _projectId;
 
         static LegacyCSProjPackageReferenceProject()
         {
@@ -48,7 +49,8 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         public LegacyCSProjPackageReferenceProject(
-            IEnvDTEProjectAdapter project)
+            IEnvDTEProjectAdapter project,
+            string projectId)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -61,11 +63,12 @@ namespace NuGet.PackageManagement.VisualStudio
             _projectName = _project.Name;
             _projectUniqueName = _project.UniqueName;
             _projectFullPath = _project.ProjectFullPath;
-
+            _projectId = projectId;
 
             InternalMetadata.Add(NuGetProjectMetadataKeys.Name, _projectName);
             InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, _projectUniqueName);
             InternalMetadata.Add(NuGetProjectMetadataKeys.FullPath, _projectFullPath);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, _projectId);
         }
 
         public override string ProjectName => _projectName;
