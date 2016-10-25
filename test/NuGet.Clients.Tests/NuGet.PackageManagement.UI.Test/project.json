@@ -4,7 +4,7 @@
     "Test.Utility": "4.0.0-*",
     "xunit": "2.1.0",
     "xunit.runner.visualstudio": "2.1.0",
-    "Newtonsoft.Json": "6.0.0"
+    "Newtonsoft.Json": "6.0.4"
   },
   "frameworks": {
     "net46": {
