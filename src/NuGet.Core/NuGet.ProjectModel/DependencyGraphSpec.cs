@@ -1,10 +1,13 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NuGet.Packaging;
+using NuGet.Common;
 
 namespace NuGet.ProjectModel
 {
@@ -177,7 +180,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        public static  DependencyGraphSpec Union(IEnumerable<DependencyGraphSpec> dgSpecs )
+        public static DependencyGraphSpec Union(IEnumerable<DependencyGraphSpec> dgSpecs)
         {
             var projects =
                 dgSpecs.SelectMany(e => e.Projects)
@@ -207,42 +210,22 @@ namespace NuGet.ProjectModel
 
         public void Save(string path)
         {
-            var json = GetJson(spec: this);
+            var json = GetJson();
 
             using (var fileStream = new FileStream(path, FileMode.Create))
             using (var textWriter = new StreamWriter(fileStream))
-            using (var jsonWriter = new JsonTextWriter(textWriter))
             {
-                jsonWriter.Formatting = Formatting.Indented;
-                json.WriteTo(jsonWriter);
+                textWriter.Write(json);
             }
         }
 
-        public static JObject GetJson(DependencyGraphSpec spec)
+        private string GetJson()
         {
-            var json = new JObject();
-            var restoreObj = new JObject();
-            var projectsObj = new JObject();
-            var toolsArray = new JArray();
-            json["format"] = 1;
-            json["restore"] = restoreObj;
-            json["projects"] = projectsObj;
+            var writer = new RuntimeModel.JsonObjectWriter();
 
-            foreach (var restoreName in spec.Restore)
-            {
-                restoreObj[restoreName] = new JObject();
-            }
+            Write(writer);
 
-            foreach (var project in spec.Projects)
-            {
-                // Convert package spec to json
-                var projectObj = new JObject();
-                JsonPackageSpecWriter.WritePackageSpec(project, projectObj);
-
-                projectsObj[project.RestoreMetadata.ProjectUniqueName] = projectObj;
-            }
-
-            return json;
+            return writer.GetJson();
         }
 
         private void ParseJson(JObject json)
@@ -286,11 +269,45 @@ namespace NuGet.ProjectModel
             return json;
         }
 
-        public override int GetHashCode()
+        public string GetHash()
         {
-            //TODO : Write a better hash function
-            var jobject = GetJson(this);
-            return jobject.ToString().GetHashCode();
+            using (var hashFunc = new Sha512HashFunction())
+            using (var writer = new HashObjectWriter(hashFunc))
+            {
+                Write(writer);
+
+                return writer.GetHash();
+            }
+        }
+
+        private void Write(RuntimeModel.IObjectWriter writer)
+        {
+            writer.WriteNameValue("format", 1);
+
+            writer.WriteObjectStart("restore");
+
+            // Preserve default sort order
+            foreach (var restoreName in _restore)
+            {
+                writer.WriteObjectStart(restoreName);
+                writer.WriteObjectEnd();
+            }
+
+            writer.WriteObjectEnd();
+
+            writer.WriteObjectStart("projects");
+
+            // Preserve default sort order
+            foreach (var pair in _projects)
+            {
+                var project = pair.Value;
+
+                writer.WriteObjectStart(project.RestoreMetadata.ProjectUniqueName);
+                PackageSpecWriter.Write(project, writer);
+                writer.WriteObjectEnd();
+            }
+
+            writer.WriteObjectEnd();
         }
 
         /// <summary>
@@ -325,8 +342,8 @@ namespace NuGet.ProjectModel
 
             foreach (var package in packages)
             {
-                if (package.RestoreMetadata.TargetFrameworks.SelectMany(r=> r.ProjectReferences).Any(dependency =>
-                        string.Equals(projectUniqueName, dependency.ProjectUniqueName, StringComparison.OrdinalIgnoreCase)))
+                if (package.RestoreMetadata.TargetFrameworks.SelectMany(r => r.ProjectReferences).Any(dependency =>
+                    string.Equals(projectUniqueName, dependency.ProjectUniqueName, StringComparison.OrdinalIgnoreCase)))
                 {
                     count++;
                 }

@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
@@ -7,6 +10,7 @@ using NuGet.LibraryModel;
 using NuGet.Test.Utility;
 using Xunit;
 using NuGet.Versioning;
+using System.IO;
 
 namespace NuGet.ProjectModel.Test
 {
@@ -227,11 +231,11 @@ namespace NuGet.ProjectModel.Test
             msbuildMetadata.CrossTargeting = true;
             msbuildMetadata.LegacyPackagesDirectory = true;
 
-            JObject json = new JObject();
-
             // Act
-            JsonPackageSpecWriter.WritePackageSpec(spec, json);
-            var readSpec = JsonPackageSpecReader.GetPackageSpec(json.ToString(), "x", "c:\\fake\\project.json");
+            var writer = new RuntimeModel.JsonObjectWriter();
+            PackageSpecWriter.Write(spec, writer);
+            var json = writer.GetJson();
+            var readSpec = JsonPackageSpecReader.GetPackageSpec(json, "x", "c:\\fake\\project.json");
             var msbuildMetadata2 = readSpec.RestoreMetadata;
 
             // Assert
@@ -298,11 +302,12 @@ namespace NuGet.ProjectModel.Test
             tfmGroup2.ProjectReferences.Add(ref1);
             tfmGroup2.ProjectReferences.Add(ref2);
 
-            JObject json = new JObject();
+            var writer = new RuntimeModel.JsonObjectWriter();
 
             // Act
-            JsonPackageSpecWriter.WritePackageSpec(spec, json);
-            var readSpec = JsonPackageSpecReader.GetPackageSpec(json.ToString(), "x", "c:\\fake\\project.json");
+            PackageSpecWriter.Write(spec, writer);
+            var json = writer.GetJson();
+            var readSpec = JsonPackageSpecReader.GetPackageSpec(json, "x", "c:\\fake\\project.json");
 
             // Assert
             Assert.Equal(2, readSpec.RestoreMetadata.TargetFrameworks.Count);
@@ -319,6 +324,43 @@ namespace NuGet.ProjectModel.Test
                 Assert.Equal(LibraryIncludeFlags.All, references[1].IncludeAssets);
                 Assert.Equal(LibraryIncludeFlags.None, references[1].ExcludeAssets);
                 Assert.Equal(LibraryIncludeFlagUtils.DefaultSuppressParent, references[1].PrivateAssets);
+            }
+        }
+
+        [Fact]
+        public void DependencyGraphSpec_Save_SerializesMembersAsJson()
+        {
+            var expectedJson = ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.DependencyGraphSpec_Save_SerializesMembersAsJson.json", typeof(DependencyGraphSpecTests));
+            var dependencyGraphSpec = CreateDependencyGraphSpec();
+            var actualJson = GetJson(dependencyGraphSpec);
+
+            Assert.Equal(expectedJson, actualJson);
+        }
+
+        private static DependencyGraphSpec CreateDependencyGraphSpec()
+        {
+            var dgSpec = new DependencyGraphSpec();
+
+            dgSpec.AddRestore("b");
+            dgSpec.AddRestore("a");
+            dgSpec.AddRestore("c");
+
+            dgSpec.AddProject(new PackageSpec(rawProperties: null) { RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = "b" } });
+            dgSpec.AddProject(new PackageSpec(rawProperties: null) { RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = "a" } });
+            dgSpec.AddProject(new PackageSpec(rawProperties: null) { RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = "c" } });
+
+            return dgSpec;
+        }
+
+        private static string GetJson(DependencyGraphSpec dgSpec)
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var filePath = Path.Combine(testDirectory.Path, "out.json");
+
+                dgSpec.Save(filePath);
+
+                return File.ReadAllText(filePath);
             }
         }
     }

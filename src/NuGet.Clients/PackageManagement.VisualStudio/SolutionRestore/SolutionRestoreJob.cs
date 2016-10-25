@@ -34,7 +34,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly ISettings _settings;
         private readonly RestoreOperationLogger _logger;
 
-        private int _dependencyGraphProjectCacheHash;
+        private string _dependencyGraphProjectCacheHash;
         private INuGetProjectContext _nuGetProjectContext;
 
         // Restore summary
