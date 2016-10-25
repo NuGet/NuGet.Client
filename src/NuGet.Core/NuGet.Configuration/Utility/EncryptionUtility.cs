@@ -27,7 +27,7 @@ namespace NuGet.Configuration
 
         public static string DecryptString(string encryptedString)
         {
-            if (!RuntimeEnvironmentHelper.IsWindows && !RuntimeEnvironmentHelper.isMono)
+            if (!RuntimeEnvironmentHelper.IsWindows && !RuntimeEnvironmentHelper.IsMono)
             {
                 throw new NotSupportedException(Resources.Error_EncryptionUnsupported);
             }
