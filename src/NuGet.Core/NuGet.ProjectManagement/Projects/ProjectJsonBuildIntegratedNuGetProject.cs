@@ -149,7 +149,7 @@ namespace NuGet.ProjectManagement.Projects
         /// Install a package using the global packages folder.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801")]
-        public async Task<bool> AddDependency(PackageDependency dependency,
+        public async Task<bool> AddDependencyAsync(PackageDependency dependency,
             CancellationToken token)
         {
             var json = await GetJsonAsync();
@@ -248,22 +248,22 @@ namespace NuGet.ProjectManagement.Projects
             return new[] { packageSpec };
         }
 
-        public override async Task<bool> InstallPackageAsync(
-                    PackageIdentity packageIdentity,
-            DownloadResourceResult downloadResourceResult,
+        public async override Task<bool> InstallPackageAsync(PackageIdentity packageIdentity,
             INuGetProjectContext nuGetProjectContext,
+            IEnumerable<NuGetFramework> successfulFrameworks,
+            IEnumerable<NuGetFramework> unsucessfulFrameworks,
             CancellationToken token)
         {
             var dependency = new PackageDependency(packageIdentity.Id, new VersionRange(packageIdentity.Version));
 
-            return await AddDependency(dependency, token);
+            return await AddDependencyAsync(dependency, token);
         }
 
         /// <summary>
         /// Uninstall a package from the config file.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801")]
-        public async Task<bool> RemoveDependency(string packageId,
+        public async Task<bool> RemoveDependencyAsync(string packageId,
             INuGetProjectContext nuGetProjectContext,
             CancellationToken token)
         {
@@ -278,7 +278,7 @@ namespace NuGet.ProjectManagement.Projects
 
         public override async Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
-            return await RemoveDependency(packageIdentity.Id, nuGetProjectContext, token);
+            return await RemoveDependencyAsync(packageIdentity.Id, nuGetProjectContext, token);
         }
         private JObject GetJson()
         {

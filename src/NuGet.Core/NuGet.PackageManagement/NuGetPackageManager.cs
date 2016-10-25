@@ -2346,12 +2346,15 @@ namespace NuGet.PackageManagement
                 originalLockFile = originalRestoreResult.Result.LockFile;
             }
 
+            var allFrameworks =
+                        updatedPackageSpec.TargetFrameworks.Select(t => t.FrameworkName).Distinct();
             // Modify the package spec
             foreach (var action in nuGetProjectActions)
             {
                 if (action.NuGetProjectActionType == NuGetProjectActionType.Uninstall)
                 {
-                    PackageSpecOperations.RemoveDependency(updatedPackageSpec, action.PackageIdentity.Id);
+                    // Remove from all frameworks and dependencies section
+                    PackageSpecOperations.RemoveDependency(updatedPackageSpec, action.PackageIdentity.Id, allFrameworks);
                 }
                 else if (action.NuGetProjectActionType == NuGetProjectActionType.Install)
                 {
@@ -2378,6 +2381,44 @@ namespace NuGet.PackageManagement
                 nuGetProjectActions,
                 restoreResult.Result);
 
+            var nugetProjectActionsList = nuGetProjectActions.ToArray();
+            IEnumerable<NuGetFramework> frameworksWhereRestoredSuccessfully = allFrameworks;
+            IEnumerable<NuGetFramework> frameworksWhereRestoreUnsuccessful = Enumerable.Empty<NuGetFramework>();
+
+            // if the restore failed, and this was a a single pacakge install action
+            if (!restoreResult.Result.Success && nugetProjectActionsList.Count() == 1 && nugetProjectActionsList[0].NuGetProjectActionType == NuGetProjectActionType.Install)
+            {
+                var originalAction = nuGetProjectActions.ElementAt(0);
+
+                frameworksWhereRestoreUnsuccessful = restoreResult.
+                    Result.
+                    CompatibilityCheckResults.
+                    Where(t => !t.Success).
+                    Select(t => t.Graph.Framework).
+                    Distinct();
+
+                frameworksWhereRestoredSuccessfully =
+                    frameworksWhereRestoredSuccessfully.Except(frameworksWhereRestoreUnsuccessful);
+                
+                // if the package installed to some TFMs successfully, but failed for others, we should remove the package from the failed framework, and try to do
+                // a preview restore again.
+                if (frameworksWhereRestoredSuccessfully.Any() && frameworksWhereRestoreUnsuccessful.Any())
+                {
+                    PackageSpecOperations.RemoveDependency(updatedPackageSpec, originalAction.PackageIdentity.Id, frameworksWhereRestoreUnsuccessful);
+                    restoreResult = await DependencyGraphRestoreUtility.PreviewRestoreAsync(
+                        SolutionManager,
+                        buildIntegratedProject,
+                        updatedPackageSpec,
+                        dependencyGraphContext,
+                        providerCache,
+                        cacheModifier,
+                        sources,
+                        Settings,
+                        logger,
+                        token);
+                }
+            }
+
             // If this build integrated project action represents only uninstalls, mark the entire operation
             // as an uninstall. Otherwise, mark it as an install. This is important because install operations
             // are a bit more sensitive to errors (thus resulting in rollbacks).
@@ -2398,7 +2439,9 @@ namespace NuGet.PackageManagement
                 originalLockFile,
                 restoreResult,
                 sources.ToList(),
-                nuGetProjectActions.ToList());
+                nugetProjectActionsList,
+                frameworksWhereRestoredSuccessfully,
+                frameworksWhereRestoreUnsuccessful);
         }
 
         /// <summary>
@@ -2466,8 +2509,9 @@ namespace NuGet.PackageManagement
                         // Install the package to the project
                         await buildIntegratedProject.InstallPackageAsync(
                             originalAction.PackageIdentity,
-                            downloadResourceResult: null,
-                            nuGetProjectContext: nuGetProjectContext,
+                            nuGetProjectContext,
+                            projectAction.SuccessfulFrameworksForPreviewRestore,
+                            projectAction.UnsuccessfulFrameworksForPreviewRestore,
                             token: token);
                     }
                     else if (originalAction.NuGetProjectActionType == NuGetProjectActionType.Uninstall)

@@ -254,7 +254,7 @@ namespace ProjectManagement.Test
                 using (var packageStream = GetDownloadResourceResult(packageFileInfo))
                 {
                     // Act
-                    await buildIntegratedProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
+                    await buildIntegratedProject.InstallPackageAsync(packageIdentity, testNuGetProjectContext, null, null, token);
                 }
 
                 // Assert
@@ -294,8 +294,8 @@ namespace ProjectManagement.Test
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
                 using (var packageStream = GetDownloadResourceResult(packageFileInfo))
                 {
-                    await buildIntegratedProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
-                    await buildIntegratedProject.InstallPackageAsync(packageIdentity2, packageStream, testNuGetProjectContext, token);
+                    await buildIntegratedProject.InstallPackageAsync(packageIdentity, testNuGetProjectContext, null, null, token);
+                    await buildIntegratedProject.InstallPackageAsync(packageIdentity2, testNuGetProjectContext, null, null, token);
 
                     // Act
                     await buildIntegratedProject.UninstallPackageAsync(packageIdentity2, new TestNuGetProjectContext(), CancellationToken.None);
@@ -338,8 +338,8 @@ namespace ProjectManagement.Test
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
                 using (var packageStream = GetDownloadResourceResult(packageFileInfo))
                 {
-                    await buildIntegratedProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
-                    await buildIntegratedProject.InstallPackageAsync(packageIdentity2, packageStream, testNuGetProjectContext, token);
+                    await buildIntegratedProject.InstallPackageAsync(packageIdentity, testNuGetProjectContext, null, token);
+                    await buildIntegratedProject.InstallPackageAsync(packageIdentity2, testNuGetProjectContext, null, token);
 
                     // Act
                     await buildIntegratedProject.UninstallPackageAsync(packageIdentity2, new TestNuGetProjectContext(), CancellationToken.None);

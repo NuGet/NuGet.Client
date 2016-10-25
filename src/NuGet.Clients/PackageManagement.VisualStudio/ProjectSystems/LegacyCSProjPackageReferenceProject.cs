@@ -135,7 +135,11 @@ namespace NuGet.PackageManagement.VisualStudio
             return GetPackageReferences(await GetPackageSpecAsync());
         }
 
-        public override async Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, DownloadResourceResult downloadResourceResult, INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        public override async Task<Boolean> InstallPackageAsync(PackageIdentity packageIdentity,
+            INuGetProjectContext nuGetProjectContext,
+            IEnumerable<NuGetFramework> successfulFrameworks,
+            IEnumerable<NuGetFramework> unsuccessfulFrameworks,
+            CancellationToken token)
         {
             var success = false;
             await ThreadHelper.JoinableTaskFactory.RunAsync(async delegate

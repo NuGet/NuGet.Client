@@ -172,7 +172,11 @@ namespace NuGet.PackageManagement.VisualStudio
             return new PackageReference(identity, targetFramework);
         }
 
-        public override async Task<Boolean> InstallPackageAsync(PackageIdentity packageIdentity, DownloadResourceResult downloadResourceResult, INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        public override async Task<Boolean> InstallPackageAsync(PackageIdentity packageIdentity,
+            INuGetProjectContext nuGetProjectContext,
+            IEnumerable<NuGetFramework> successfulFrameworks,
+            IEnumerable<NuGetFramework> unsuccessfulFrameworks,
+            CancellationToken token)
         {
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.InstallingPackage, packageIdentity);
