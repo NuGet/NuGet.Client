@@ -38,9 +38,14 @@ namespace NuGet.PackageManagement.VisualStudio
         string ProjectFullPath { get; }
 
         /// <summary>
-        /// Base intermediate path (e.g. c:\projFoo\obj)
+        /// BaseIntermediateOutputPath DTE property (e.g. c:\projFoo\obj)
         /// </summary>
-        string BaseIntermediatePath { get; }
+        string BaseIntermediateOutputPath { get; }
+
+        /// <summary>
+        /// PackageTargetFallback DTE property
+        /// </summary>
+        string PackageTargetFallback { get; }
 
         /// <summary>
         /// Is this project a non-CPS package reference based csproj?

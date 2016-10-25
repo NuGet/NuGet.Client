@@ -89,15 +89,15 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public string BaseIntermediatePath
+        public string BaseIntermediateOutputPath
         {
             get
             {
                 ThreadHelper.ThrowIfNotOnUIThread();
 
-                var intermediateDirectory = GetMSBuildProperty(AsIVsBuildPropertyStorage, "BaseIntermediateOutputPath");
+                var baseIntermediateOutputPath = GetMSBuildProperty(AsIVsBuildPropertyStorage, "BaseIntermediateOutputPath");
 
-                if (string.IsNullOrEmpty(intermediateDirectory))
+                if (string.IsNullOrEmpty(baseIntermediateOutputPath))
                 {
                     throw new InvalidOperationException(string.Format(
                         Strings.BaseIntermediateOutputPathNotFound,
@@ -106,7 +106,22 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 var projectDirectory = Path.GetDirectoryName(ProjectFullPath);
 
-                return Path.Combine(projectDirectory, intermediateDirectory);
+                return Path.Combine(projectDirectory, baseIntermediateOutputPath);
+            }
+        }
+
+        public string PackageTargetFallback
+        {
+            get
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
+                if (AsIVsBuildPropertyStorage == null)
+                {
+                    return String.Empty;
+                }
+
+                return GetMSBuildProperty(AsIVsBuildPropertyStorage, "PackageTargetFallback");
             }
         }
 
@@ -324,6 +339,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            // Note that API behavior is:
+            // - specify a metadata element name with a value => add/replace that metadata item on the package reference
+            // - specify a metadata element name with no value => remove that metadata item from the project reference
+            // - don't specify a particular metadata name => if it exists on the package reference, don't change it (e.g. for user defined metadata)
             AsVSProject4.PackageReferences.AddOrUpdate(packageName, packageVersion, metadataElements, metadataValues);
         }
 

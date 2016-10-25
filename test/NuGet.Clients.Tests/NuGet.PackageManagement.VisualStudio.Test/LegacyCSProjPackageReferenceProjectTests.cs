@@ -2,68 +2,107 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Threading;
+using Microsoft.VisualStudio.Shell;
 using Moq;
 using NuGet.Frameworks;
+using NuGet.ProjectManagement;
+using NuGet.ProjectModel;
+using NuGet.RuntimeModel;
+using NuGet.Test.Utility;
 using Xunit;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
     public class LegacyCSProjPackageReferenceProjectTests
     {
-/*        [Fact]
-        public void LCPRP_AssetsFileLocation()
+        [Fact]
+        public async Task LCPRP_AssetsFileLocation()
         {
             // Arrange
-            var testEnvDTEProjectAdapter = new Mock<IEnvDTEProjectAdapter>();
-            testEnvDTEProjectAdapter.Setup(x => x.GetBaseIntermediatePath().Result).Returns(@"C:\foo\obj");
+            using (var randomTestFolder = TestDirectory.Create())
+            {
+                var testBaseIntermediateOutputPath = Path.Combine(randomTestFolder, "obj");
+                TestDirectory.Create(testBaseIntermediateOutputPath);
+                var testEnvDTEProjectAdapter = new Mock<IEnvDTEProjectAdapter>();
+                testEnvDTEProjectAdapter
+                    .Setup(x => x.BaseIntermediateOutputPath)
+                    .Returns(testBaseIntermediateOutputPath);
 
-            var testProject = new LegacyCSProjPackageReferenceProject(testEnvDTEProjectAdapter.Object);
+                var testProject = new LegacyCSProjPackageReferenceProject(
+                    project: testEnvDTEProjectAdapter.Object, 
+                    projectId: String.Empty, 
+                    callerIsUnitTest: true);
 
-            // Act
-            var assetsPath = testProject.AssetsFilePath;
+                // Act
+                var assetsPath = await testProject.GetAssetsFilePathAsync();
 
-            // Assert
-            Assert.Equal(@"C:\foo\obj\project.assets.json", assetsPath);
+                // Assert
+                Assert.Equal(Path.Combine(testBaseIntermediateOutputPath, "project.assets.json"), assetsPath);
+            }
         }
 
         [Fact]
-        public void LCPRP_InstalledPackages()
+        public async Task LCPRP_PackageTargetFallback()
         {
             // Arrange
-            System.Diagnostics.Debugger.Launch();
-            var testEnvDTEProjectAdapter = new Mock<IEnvDTEProjectAdapter>();
-            var metadataElements1 = Array.CreateInstance(typeof(string), 3);
-            metadataElements1.SetValue("IncludeAssets", 0);
-            metadataElements1.SetValue("ExcludeAssets", 1);
-            metadataElements1.SetValue("PrivateAssets", 2);
-            var metadataValues1 = Array.CreateInstance(typeof(string), 3);
-            metadataValues1.SetValue("None", 0);
-            metadataValues1.SetValue("All", 1);
-            metadataValues1.SetValue("Compile;Runtime;ContentFiles", 2);
-            testEnvDTEProjectAdapter.Setup(x => x.GetLegacyCSProjPackageReferencesAsync(It.IsAny<Array>()))
-                .ReturnsAsync(new LegacyCSProjPackageReference[] {
-                    new LegacyCSProjPackageReference()
-                    {
-                        Name = "foo1",
-                        Version = "1.0.0",
-                        TargetNuGetFramework = new NuGetFramework("net45"),
-                        MetadataElements = metadataElements1,
-                        MetadataValues = metadataValues1
-                    }
-                });
+            using (var randomTestFolder = TestDirectory.Create())
+            {
+                var testEnvDTEProjectAdapter = new EnvDTEProjectAdapterMock(randomTestFolder);
+                testEnvDTEProjectAdapter
+                    .Setup(x => x.PackageTargetFallback)
+                    .Returns("portable-net45+win8;dnxcore50");
+                testEnvDTEProjectAdapter
+                    .Setup(x => x.TargetNuGetFramework)
+                    .Returns(new NuGetFramework("netstandard13"));
 
-            var testProject = new LegacyCSProjPackageReferenceProject(testEnvDTEProjectAdapter.Object);
+                var testProject = new LegacyCSProjPackageReferenceProject(
+                    project: testEnvDTEProjectAdapter.Object,
+                    projectId: "",
+                    callerIsUnitTest: true);
 
-            // Act
-            var installedPackages = testProject.GetInstalledPackagesAsync(CancellationToken.None).Result;
+                var testDependencyGraphCacheContext = new DependencyGraphCacheContext();
 
-            // Assert
-            Assert.Equal(1, installedPackages.Count());
-            Assert.Equal("foo1", installedPackages.ElementAt(0).PackageIdentity.Id);
-            Assert.Equal("1.0.0", installedPackages.ElementAt(0).PackageIdentity.Version.ToString());
-            //Add additional verification
-        }*/
+                // Act
+                var installedPackages = await testProject.GetPackageSpecsAsync(testDependencyGraphCacheContext);
+
+                // Assert
+                Assert.Equal(
+                    new List<NuGetFramework>() { NuGetFramework.Parse("portable-net45+win8"), NuGetFramework.Parse("dnxcore50") },
+                    installedPackages.First().TargetFrameworks.First().Imports.ToList());
+                Assert.IsType(typeof(FallbackFramework), installedPackages.First().TargetFrameworks.First().FrameworkName);
+                Assert.Equal(new List<NuGetFramework>() { NuGetFramework.Parse("portable-net45+win8"), NuGetFramework.Parse("dnxcore50") },
+                    ((FallbackFramework)(installedPackages.First().TargetFrameworks.First().FrameworkName)).Fallback);
+            }
+        }
+
+        private class EnvDTEProjectAdapterMock : Mock<IEnvDTEProjectAdapter>
+        {
+            public EnvDTEProjectAdapterMock()
+            {
+                Setup(x => x.GetLegacyCSProjPackageReferences(It.IsAny<Array>()))
+                    .Returns(Array.Empty<LegacyCSProjPackageReference>);
+                Setup(x => x.GetLegacyCSProjProjectReferences(It.IsAny<Array>()))
+                    .Returns(Array.Empty<LegacyCSProjProjectReference>);
+                Setup(x => x.Runtimes)
+                    .Returns(Enumerable.Empty<RuntimeDescription>);
+                Setup(x => x.Supports)
+                    .Returns(Enumerable.Empty<CompatibilityProfile>);
+            }
+
+            public EnvDTEProjectAdapterMock(string fullPath): this()
+            {
+                Setup(x => x.ProjectFullPath)
+                    .Returns(Path.Combine(fullPath, "foo.csproj"));
+
+                var testBaseIntermediateOutputPath = Path.Combine(fullPath, "obj");
+                TestDirectory.Create(testBaseIntermediateOutputPath);
+                Setup(x => x.BaseIntermediateOutputPath)
+                    .Returns(testBaseIntermediateOutputPath);
+            }
+        }
     }
 }
