@@ -19,11 +19,6 @@ namespace NuGet.SolutionRestoreManager
         string BaseIntermediatePath { get; }
 
         /// <summary>
-        /// Original raw value of TargetFrameworks property as set in a project file.
-        /// </summary>
-        string OriginalTargetFrameworks { get; }
-
-        /// <summary>
         /// Target frameworks metadata.
         /// </summary>
         IVsTargetFrameworks TargetFrameworks { get; }
@@ -32,5 +27,10 @@ namespace NuGet.SolutionRestoreManager
         /// Collection of tool references.
         /// </summary>
         IVsReferenceItems ToolReferences { get; }
+
+        /// <summary>
+        /// Original raw value of TargetFrameworks property as set in a project file.
+        /// </summary>
+        string OriginalTargetFrameworks { get; }
     }
 }

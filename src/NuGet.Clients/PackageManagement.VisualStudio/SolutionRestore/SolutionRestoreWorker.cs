@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
-using NuGet.Protocol.Core.Types;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -29,7 +28,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly IServiceProvider _serviceProvider;
         private readonly ErrorListProvider _errorListProvider;
         private readonly EnvDTE.SolutionEvents _solutionEvents;
-        private readonly Lazy<IComponentModel> _componentModel;
+        private readonly IComponentModel _componentModel;
 
         private CancellationTokenSource _workerCts;
         private Lazy<Task> _backgroundJobRunner;
@@ -53,8 +52,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             _serviceProvider = serviceProvider;
 
-            _componentModel = new Lazy<IComponentModel>(
-                () => _serviceProvider.GetService<SComponentModel, IComponentModel>());
+            _componentModel = _serviceProvider.GetService<SComponentModel, IComponentModel>();
 
             var dte = _serviceProvider.GetDTE();
             _solutionEvents = dte.Events.SolutionEvents;
@@ -129,9 +127,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return ThreadHelper.JoinableTaskFactory.Run(
                 async () =>
                 {
-                    // Hop onto a background pool thread
-                    await TaskScheduler.Default;
-
                     using (var restoreOperation = new BackgroundRestoreOperation(blockingUi: true))
                     {
                         await PromoteTaskToActiveAsync(restoreOperation, _workerCts.Token);
@@ -218,13 +213,12 @@ namespace NuGet.PackageManagement.VisualStudio
             SolutionRestoreRequest request,
             CancellationToken token)
         {
-            // Start the restore job in a separate task
-            // it will switch into main thread.
-            var joinableTask = ThreadHelper.JoinableTaskFactory.RunAsync(
+            // Start the restore job in a separate task on a background thread
+            // it will switch into main thread when necessary.
+            var joinableTask = Task.Run(
                 () => StartRestoreJobAsync(request, restoreOperation.BlockingUI, token));
 
             await joinableTask
-                .Task
                 .ContinueWith(t => restoreOperation.ContinuationAction(t));
 
             return await restoreOperation;
@@ -264,19 +258,18 @@ namespace NuGet.PackageManagement.VisualStudio
         private async Task<bool> StartRestoreJobAsync(
             SolutionRestoreRequest jobArgs, bool blockingUi, CancellationToken token)
         {
-            // To be sure, switch to main thread before doing anything on this method
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            _errorListProvider.Tasks.Clear();
-
-            using (var logger = new RestoreOperationLogger(_serviceProvider, _errorListProvider, blockingUi))
-            using (var job = new SolutionRestoreJob(_serviceProvider, _componentModel.Value, logger))
+            using (var jobCts = CancellationTokenSource.CreateLinkedTokenSource(token))
+            using (var logger = await RestoreOperationLogger.StartAsync(
+                _serviceProvider, _errorListProvider, blockingUi, jobCts))
+            using (var job = await SolutionRestoreJob.CreateAsync(
+                _serviceProvider, _componentModel, logger, jobCts.Token))
             {
-                return await job.ExecuteAsync(jobArgs, _restoreJobContext, token);
+                return await job.ExecuteAsync(jobArgs, _restoreJobContext, jobCts.Token);
             }
         }
 
-        private class BackgroundRestoreOperation : IEquatable<BackgroundRestoreOperation>, IDisposable
+        private class BackgroundRestoreOperation
+            : IEquatable<BackgroundRestoreOperation>, IDisposable
         {
             private readonly Guid _id = Guid.NewGuid();
 

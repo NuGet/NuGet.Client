@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading;
-using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -11,11 +10,21 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         protected static readonly AsyncLocal<RestoreOperationProgressUI> _instance = new AsyncLocal<RestoreOperationProgressUI>();
 
-        public static RestoreOperationProgressUI Current => _instance.Value;
+        public static RestoreOperationProgressUI Current
+        {
+            get
+            {
+                return _instance.Value;
+            }
+            set
+            {
+                _instance.Value = value;
+            }
+        }
 
         public CancellationToken UserCancellationToken { get; protected set; } = CancellationToken.None;
 
-        public abstract Task ReportProgressAsync(
+        public abstract void ReportProgress(
             string progressMessage,
             uint currentStep = 0,
             uint totalSteps = 0);

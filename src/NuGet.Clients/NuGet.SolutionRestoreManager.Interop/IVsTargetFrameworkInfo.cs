@@ -19,12 +19,6 @@ namespace NuGet.SolutionRestoreManager
         string TargetFrameworkMoniker { get; }
 
         /// <summary>
-        /// Collection of project level properties evaluated per each Target Framework,
-        /// e.g. PackageTargetFallback.
-        /// </summary>
-        IVsProjectProperties Properties { get; }
-
-        /// <summary>
         /// Collection of project references.
         /// </summary>
         IVsReferenceItems ProjectReferences { get; }
@@ -33,5 +27,11 @@ namespace NuGet.SolutionRestoreManager
         /// Collection of package references.
         /// </summary>
         IVsReferenceItems PackageReferences { get; }
+
+        /// <summary>
+        /// Collection of project level properties evaluated per each Target Framework,
+        /// e.g. PackageTargetFallback.
+        /// </summary>
+        IVsProjectProperties Properties { get; }
     }
 }

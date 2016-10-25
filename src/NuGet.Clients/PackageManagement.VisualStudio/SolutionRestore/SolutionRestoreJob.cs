@@ -17,7 +17,6 @@ using NuGet.PackageManagement.UI;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
-using NuGet.VisualStudio.Facade.Telemetry;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -56,29 +55,11 @@ namespace NuGet.PackageManagement.VisualStudio
         private int _totalCount;
         private int _currentCount;
 
-        private CancellationTokenSource _jobCts;
-        private CancellationToken Token => _jobCts?.Token ?? CancellationToken.None;
-
-        public SolutionRestoreJob(
+        private SolutionRestoreJob(
             IServiceProvider serviceProvider,
             IComponentModel componentModel,
             RestoreOperationLogger logger)
         {
-            if (serviceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(serviceProvider));
-            }
-
-            if (componentModel == null)
-            {
-                throw new ArgumentNullException(nameof(componentModel));
-            }
-
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
             _packageRestoreManager = componentModel.GetService<IPackageRestoreManager>();
 
             if (_packageRestoreManager == null)
@@ -111,6 +92,34 @@ namespace NuGet.PackageManagement.VisualStudio
             _logger = logger;
         }
 
+        public static async Task<SolutionRestoreJob> CreateAsync(
+            IServiceProvider serviceProvider,
+            IComponentModel componentModel,
+            RestoreOperationLogger logger,
+            CancellationToken token)
+        {
+            if (serviceProvider == null)
+            {
+                throw new ArgumentNullException(nameof(serviceProvider));
+            }
+
+            if (componentModel == null)
+            {
+                throw new ArgumentNullException(nameof(componentModel));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            return await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                return new SolutionRestoreJob(serviceProvider, componentModel, logger);
+            });
+        }
+
         /// <summary>
         /// Restore job entry point. Not re-entrant.
         /// </summary>
@@ -125,18 +134,16 @@ namespace NuGet.PackageManagement.VisualStudio
 
             _hasOptOutBeenShown = !request.ShowOptOutMessage;
 
-            _jobCts = CancellationTokenSource.CreateLinkedTokenSource(token);
-
-            using (var ctr1 = Token.Register(() => { _cancelled = true; _logger.SetCancelled(); }))
+            using (var ctr1 = token.Register(() => _cancelled = true))
             {
                 try
                 {
-                    await RestoreAsync(request.ForceRestore, request.RestoreSource);
+                    await RestoreAsync(request.ForceRestore, request.RestoreSource, token);
                 }
                 catch (Exception ex)
                 {
                     // Log the exception to the console and activity log
-                    _logger.LogException(ex, request.LogError);
+                    await _logger.LogExceptionAsync(ex, request.LogError);
                 }
                 finally
                 {
@@ -148,13 +155,13 @@ namespace NuGet.PackageManagement.VisualStudio
             if (request.ForceStatusWrite || _displayRestoreSummary)
             {
                 // Always write out the final status message, even if no actions took place.
-                WriteLine(_cancelled, _hasMissingPackages, _hasErrors, request.ForceStatusWrite);
+                await WriteSummaryAsync(_cancelled, _hasMissingPackages, _hasErrors, request.ForceStatusWrite);
             }
 
             return !_cancelled && !_hasErrors;
         }
 
-        private async Task RestoreAsync(bool forceRestore, RestoreOperationSource restoreSource)
+        private async Task RestoreAsync(bool forceRestore, RestoreOperationSource restoreSource, CancellationToken token)
         {
             var startTime = DateTimeOffset.Now;
             _status = NuGetOperationStatus.Succeeded;
@@ -186,7 +193,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     await RestorePackagesOrCheckForMissingPackagesAsync(
                         solutionDirectory,
-                        isSolutionAvailable);
+                        isSolutionAvailable,
+                        token);
                 }
 
                 var dependencyGraphProjects = projects
@@ -196,7 +204,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 await RestorePackageSpecProjectsAsync(
                     dependencyGraphProjects,
                     forceRestore,
-                    isSolutionAvailable);
+                    isSolutionAvailable,
+                    token);
             }
             finally
             {
@@ -242,30 +251,32 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
 
-        private void DisplayOptOutMessage()
+        private async Task DisplayOptOutMessageAsync()
         {
             if (!_hasOptOutBeenShown)
             {
                 _hasOptOutBeenShown = true;
 
-                // Only write the PackageRestoreOptOutMessage to output window,
-                // if, there are packages to restore
-                _logger.WriteLine(VerbosityLevel.Quiet, Strings.PackageRestoreOptOutMessage);
+                await _logger.DoAsync((l, _) =>
+                {
+                    // Only write the PackageRestoreOptOutMessage to output window,
+                    // if, there are packages to restore
+                    l.WriteLine(VerbosityLevel.Quiet, Strings.PackageRestoreOptOutMessage);
+                });
             }
         }
 
         private async Task RestorePackageSpecProjectsAsync(
             List<IDependencyGraphProject> projects,
             bool forceRestore,
-            bool isSolutionAvailable)
+            bool isSolutionAvailable,
+            CancellationToken token)
         {
             // Only continue if there are some projects.
             if (!projects.Any())
             {
                 return;
             }
-
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             if (IsConsentGranted(_settings))
             {
@@ -274,12 +285,15 @@ namespace NuGet.PackageManagement.VisualStudio
                     var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(_settings);
                     if (!Path.IsPathRooted(globalPackagesFolder))
                     {
-                        var message = string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.RelativeGlobalPackagesFolder,
-                            globalPackagesFolder);
+                        await _logger.DoAsync((l, _) =>
+                        {
+                            var message = string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.RelativeGlobalPackagesFolder,
+                                globalPackagesFolder);
 
-                        _logger.WriteLine(VerbosityLevel.Quiet, message);
+                            l.WriteLine(VerbosityLevel.Quiet, message);
+                        });
 
                         // Cannot restore packages since globalPackagesFolder is a relative path
                         // and the solution is not available
@@ -307,38 +321,37 @@ namespace NuGet.PackageManagement.VisualStudio
                     // NOTE: During restore for build integrated projects,
                     //       We might show the dialog even if there are no packages to restore
                     // When both currentStep and totalSteps are 0, we get a marquee on the dialog
-                    await RunWithProgressAsync(async p =>
-                    {
-                        // Display the restore opt out message if it has not been shown yet
-                        DisplayOptOutMessage();
-
-                        // Switch back to the background thread for the restore work.
-                        await TaskScheduler.Current;
-
-                        var sources = _sourceRepositoryProvider
-                            .GetRepositories()
-                            .ToList();
-
-                        var providerCache = new RestoreCommandProvidersCache();
-                        Action<SourceCacheContext> cacheModifier = (cache) => { };
-
-                        var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                            _solutionManager,
-                            cacheContext,
-                            providerCache,
-                            cacheModifier,
-                            sources,
-                            _settings,
-                            _logger,
-                            Token);
-
-                        _packageCount += restoreSummaries.Select(summary => summary.InstallCount).Sum();
-                        var isRestoreFailed = restoreSummaries.Any(summary => summary.Success == false);
-                        if (isRestoreFailed)
+                    await _logger.RunWithProgressAsync(
+                        async (l, _, t) =>
                         {
-                            _status = NuGetOperationStatus.Failed;
-                        }
-                    });
+                            // Display the restore opt out message if it has not been shown yet
+                            await DisplayOptOutMessageAsync();
+
+                            var sources = _sourceRepositoryProvider
+                                .GetRepositories()
+                                .ToList();
+
+                            var providerCache = new RestoreCommandProvidersCache();
+                            Action<SourceCacheContext> cacheModifier = (cache) => { };
+
+                            var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
+                                _solutionManager,
+                                cacheContext,
+                                providerCache,
+                                cacheModifier,
+                                sources,
+                                _settings,
+                                l,
+                                t);
+
+                            _packageCount += restoreSummaries.Select(summary => summary.InstallCount).Sum();
+                            var isRestoreFailed = restoreSummaries.Any(summary => summary.Success == false);
+                            if (isRestoreFailed)
+                            {
+                                _status = NuGetOperationStatus.Failed;
+                            }
+                        },
+                        token);
                 }
                 else
                 {
@@ -357,9 +370,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 var packageIdentity = args.Package;
                 Interlocked.Increment(ref _currentCount);
 
-                ThreadHelper.JoinableTaskFactory.RunAsync(() =>
+                _logger.Do((_, progress) => 
                 {
-                    return RestoreOperationProgressUI.Current.ReportProgressAsync(
+                    progress?.ReportProgress(
                         string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.RestoredPackage,
@@ -388,24 +401,23 @@ namespace NuGet.PackageManagement.VisualStudio
                 // If Canceled is not already set to true
                 _hasErrors = true;
                 _status = NuGetOperationStatus.Failed;
-                ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
-                {
-                    // Switch to main thread to update the error list window or output window
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
+                _logger.Do((l, _) =>
+                {
                     foreach (var projectName in args.ProjectNames)
                     {
-                        var exceptionMessage = _logger.OutputVerbosity >= (int)VerbosityLevel.Detailed ?
-                            args.Exception.ToString() :
-                            args.Exception.Message;
+                        var exceptionMessage =
+                            l.OutputVerbosity >= (int)VerbosityLevel.Detailed
+                                ? args.Exception.ToString()
+                                : args.Exception.Message;
                         var message = string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.PackageRestoreFailedForProject,
                             projectName,
                             exceptionMessage);
-                        _logger.WriteLine(VerbosityLevel.Quiet, message);
-                        _logger.ShowError(message);
-                        _logger.WriteLine(VerbosityLevel.Normal, Strings.PackageRestoreFinishedForProject, projectName);
+                        l.WriteLine(VerbosityLevel.Quiet, message);
+                        l.ShowError(message);
+                        l.WriteLine(VerbosityLevel.Normal, Strings.PackageRestoreFinishedForProject, projectName);
                     }
                 });
             }
@@ -413,7 +425,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task RestorePackagesOrCheckForMissingPackagesAsync(
             string solutionDirectory,
-            bool isSolutionAvailable)
+            bool isSolutionAvailable,
+            CancellationToken token)
         {
             if (string.IsNullOrEmpty(solutionDirectory))
             {
@@ -421,11 +434,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 return;
             }
 
-            // To be sure, switch to main thread before doing anything on this method
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
             var packages = (await _packageRestoreManager.GetPackagesInSolutionAsync(
-                solutionDirectory, Token)).ToList();
+                solutionDirectory, token)).ToList();
 
             if (IsConsentGranted(_settings))
             {
@@ -434,10 +444,13 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (packages.Count == 0)
                 {
                     if (!isSolutionAvailable
-                        && GetProjectFolderPath().Any(p => CheckPackagesConfig(p.ProjectPath, p.ProjectName)))
+                        && await CheckPackagesConfigAsync())
                     {
-                        _logger.ShowError(Strings.SolutionIsNotSaved);
-                        _logger.WriteLine(VerbosityLevel.Quiet, Strings.SolutionIsNotSaved);
+                        await _logger.DoAsync((l, _) =>
+                        {
+                            l.ShowError(Strings.SolutionIsNotSaved);
+                            l.WriteLine(VerbosityLevel.Quiet, Strings.SolutionIsNotSaved);
+                        });
                     }
 
                     // Restore is not applicable, since, there is no project with installed packages
@@ -450,13 +463,15 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (_totalCount > 0)
                 {
                     // Only show the wait dialog, when there are some packages to restore
-                    await RunWithProgressAsync(async p =>
-                    {
-                        // Display the restore opt out message if it has not been shown yet
-                        DisplayOptOutMessage();
+                    await _logger.RunWithProgressAsync(
+                        async (_, __, t) =>
+                        {
+                            // Display the restore opt out message if it has not been shown yet
+                            await DisplayOptOutMessageAsync();
 
-                        await RestoreMissingPackagesInSolutionAsync(solutionDirectory, packages);
-                    });
+                            await RestoreMissingPackagesInSolutionAsync(solutionDirectory, packages, t);
+                        },
+                        token);
 
                     // Mark that work is being done during this restore
                     _hasMissingPackages = true;
@@ -467,27 +482,14 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 // When the user consent is not granted, missing packages may not be restored.
                 // So, we just check for them, and report them as warning(s) on the error list window
-                await RunWithProgressAsync(p =>
-                {
-                    CheckForMissingPackages(packages);
-                    return Task.CompletedTask;
-                });
+                await _logger.RunWithProgressAsync(
+                    (_, __, ___) => CheckForMissingPackages(packages),
+                    token);
             }
 
             await _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(
                 solutionDirectory,
-                Token);
-        }
-
-        private async Task RunWithProgressAsync(Func<RestoreOperationProgressUI,Task> asyncMethod)
-        {
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            using (var session = await _logger.StartProgressSessionAsync(Token))
-            using (var ctr = session.RegisterUserCancellationAction(() => _jobCts.Cancel()))
-            {
-                await asyncMethod(session);
-            }
+                token);
         }
 
         /// <summary>
@@ -498,16 +500,21 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (missingPackages.Any())
             {
-                var errorText = string.Format(CultureInfo.CurrentCulture,
-                    Strings.PackageNotRestoredBecauseOfNoConsent,
-                    string.Join(", ", missingPackages.Select(p => p.ToString())));
-                _logger.ShowError(errorText);
+                _logger.Do((l, _) =>
+                {
+                    var errorText = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.PackageNotRestoredBecauseOfNoConsent,
+                        string.Join(", ", missingPackages.Select(p => p.ToString())));
+                    l.ShowError(errorText);
+                });
             }
         }
 
         private async Task RestoreMissingPackagesInSolutionAsync(
             string solutionDirectory,
-            IEnumerable<PackageRestoreData> packages)
+            IEnumerable<PackageRestoreData> packages,
+            CancellationToken token)
         {
             await TaskScheduler.Default;
 
@@ -520,7 +527,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     packages,
                     _nuGetProjectContext,
                     downloadContext,
-                    Token);
+                    token);
             }
         }
 
@@ -544,67 +551,62 @@ namespace NuGet.PackageManagement.VisualStudio
             return packageRestoreConsent.IsAutomatic;
         }
 
-        private void WriteLine(bool canceled, bool hasMissingPackages, bool hasErrors, bool forceStatusWrite)
+        private Task WriteSummaryAsync(bool canceled, bool hasMissingPackages, bool hasErrors, bool forceStatusWrite)
         {
-            // Write just "PackageRestore Canceled" message if package restore has been canceled
-            if (canceled)
+            return _logger.DoAsync((l, _) =>
             {
-                _logger.WriteLine(
-                    forceStatusWrite ? VerbosityLevel.Quiet : VerbosityLevel.Minimal,
-                    Strings.PackageRestoreCanceled);
+                // Write just "PackageRestore Canceled" message if package restore has been canceled
+                if (canceled)
+                {
+                    l.WriteLine(
+                        forceStatusWrite ? VerbosityLevel.Quiet : VerbosityLevel.Minimal,
+                        Strings.PackageRestoreCanceled);
 
-                return;
-            }
+                    return;
+                }
 
-            // Write just "Nothing to restore" message when there are no missing packages.
-            if (!hasMissingPackages)
-            {
-                _logger.WriteLine(
-                    forceStatusWrite ? VerbosityLevel.Quiet : VerbosityLevel.Detailed,
-                    Strings.NothingToRestore);
+                // Write just "Nothing to restore" message when there are no missing packages.
+                if (!hasMissingPackages)
+                {
+                    l.WriteLine(
+                        forceStatusWrite ? VerbosityLevel.Quiet : VerbosityLevel.Detailed,
+                        Strings.NothingToRestore);
 
-                return;
-            }
+                    return;
+                }
 
-            // Here package restore has happened. It can finish with/without error.
-            if (hasErrors)
-            {
-                _logger.WriteLine(
-                    forceStatusWrite ? VerbosityLevel.Quiet : VerbosityLevel.Minimal,
-                    Strings.PackageRestoreFinishedWithError);
-            }
-            else
-            {
-                _logger.WriteLine(
-                    forceStatusWrite ? VerbosityLevel.Quiet : VerbosityLevel.Normal,
-                    Strings.PackageRestoreFinished);
-            }
+                // Here package restore has happened. It can finish with/without error.
+                if (hasErrors)
+                {
+                    l.WriteLine(
+                        forceStatusWrite ? VerbosityLevel.Quiet : VerbosityLevel.Minimal,
+                        Strings.PackageRestoreFinishedWithError);
+                }
+                else
+                {
+                    l.WriteLine(
+                        forceStatusWrite ? VerbosityLevel.Quiet : VerbosityLevel.Normal,
+                        Strings.PackageRestoreFinished);
+                }
+            });
         }
 
-        private IEnumerable<ProjectInfo> GetProjectFolderPath()
+        private async Task<bool> CheckPackagesConfigAsync()
         {
-            var projects = _dte.Solution.Projects;
-            return projects
-                .OfType<EnvDTE.Project>()
-                .Select(p => new ProjectInfo(EnvDTEProjectUtility.GetFullPath(p), p.Name));
-        }
+            return await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-        private bool CheckPackagesConfig(string folderPath, string projectName)
-        {
-            if (folderPath == null)
-            {
-                return false;
-            }
-            else
-            {
-                return File.Exists(Path.Combine(folderPath, "packages.config"))
-                    || File.Exists(Path.Combine(folderPath, "packages." + projectName + ".config"));
-            }
+                var projects = _dte.Solution.Projects;
+                return projects
+                    .OfType<EnvDTE.Project>()
+                    .Select(p => new ProjectInfo(EnvDTEProjectUtility.GetFullPath(p), p.Name))
+                    .Any(p => p.CheckPackagesConfig());
+            });
         }
 
         public void Dispose()
         {
-            _jobCts?.Dispose();
         }
 
         private class ProjectInfo
@@ -617,6 +619,19 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 ProjectPath = projectPath;
                 ProjectName = projectName;
+            }
+
+            public bool CheckPackagesConfig()
+            {
+                if (ProjectPath == null)
+                {
+                    return false;
+                }
+                else
+                {
+                    return File.Exists(Path.Combine(ProjectPath, "packages.config"))
+                        || File.Exists(Path.Combine(ProjectPath, $"packages.{ProjectName}.config"));
+                }
             }
         }
     }
