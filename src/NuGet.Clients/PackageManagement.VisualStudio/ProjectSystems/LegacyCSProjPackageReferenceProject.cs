@@ -16,6 +16,7 @@ using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Task = System.Threading.Tasks.Task;
+using NuGet.RuntimeModel;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -267,12 +268,18 @@ namespace NuGet.PackageManagement.VisualStudio
                 Dependencies = packageReferences.ToList()
             };
 
+            // Build up runtime information.
+            var runtimes = _project.Runtimes;
+            var supports = _project.Supports;
+            var runtimeGraph = new RuntimeGraph(runtimes, supports);
+
             // In legacy CSProj, we only have one target framework per project
             var tfis = new TargetFrameworkInformation[] { projectTfi };
             return new PackageSpec(tfis)
             {
                 Name = _projectName ?? _projectUniqueName,
                 FilePath = _projectFullPath,
+                RuntimeGraph = runtimeGraph,
                 RestoreMetadata = new ProjectRestoreMetadata
                 {
                     OutputType = RestoreOutputType.NETCore,
