@@ -1,6 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using NuGet.Commands;
+using NuGet.Common;
+using NuGet.ProjectModel;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,9 +13,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using NuGet.Commands;
-using NuGet.Common;
-using NuGet.ProjectModel;
+using System.Threading.Tasks;
 
 namespace NuGet.CommandLine
 {
@@ -166,29 +167,33 @@ namespace NuGet.CommandLine
 
                 using (var process = Process.Start(processStartInfo))
                 {
-                    var finished = process.WaitForExit(timeOut);
-
-                    if (!finished)
+                    var errors = new StringBuilder();
+                    using (var errorTask = ConsumeStreamReaderAsync(process.StandardError, errors))
                     {
-                        try
+                        var finished = process.WaitForExit(timeOut);
+                        if (!finished)
                         {
-                            process.Kill();
-                        }
-                        catch (Exception ex)
-                        {
+                            try
+                            {
+                                process.Kill();
+                            }
+                            catch (Exception ex)
+                            {
+                                throw new CommandLineException(
+                                    LocalizedResourceManager.GetString(nameof(NuGetResources.Error_CannotKillMsBuild)) + " : " +
+                                    ex.Message,
+                                    ex);
+                            }
+
                             throw new CommandLineException(
-                                LocalizedResourceManager.GetString(nameof(NuGetResources.Error_CannotKillMsBuild)) + " : " +
-                                ex.Message,
-                                ex);
+                                LocalizedResourceManager.GetString(nameof(NuGetResources.Error_MsBuildTimedOut)));
                         }
 
-                        throw new CommandLineException(
-                            LocalizedResourceManager.GetString(nameof(NuGetResources.Error_MsBuildTimedOut)));
-                    }
-
-                    if (process.ExitCode != 0)
-                    {
-                        throw new CommandLineException(process.StandardError.ReadToEnd());
+                        if (process.ExitCode != 0)
+                        {
+                            errorTask.Wait();
+                            throw new CommandLineException(errors.ToString());
+                        }
                     }
                 }
 
@@ -205,6 +210,17 @@ namespace NuGet.CommandLine
                 }
 
                 return spec;
+            }
+        }
+
+        private static async Task ConsumeStreamReaderAsync(StreamReader reader, StringBuilder lines)
+        {
+            await Task.Yield();
+
+            string line;
+            while ((line = await reader.ReadLineAsync()) != null)
+            {
+                lines.AppendLine(line);
             }
         }
 
@@ -313,25 +329,28 @@ namespace NuGet.CommandLine
             {
                 using (var process = Process.Start(processStartInfo))
                 {
-                    process.WaitForExit(MsBuildWaitTime);
-
-                    if (process.ExitCode == 0)
+                    var output = new StringBuilder();
+                    using (var outputTask = ConsumeStreamReaderAsync(process.StandardOutput, output))
                     {
-                        var output = process.StandardOutput.ReadToEnd();
-
-                        // The output of msbuid /version /nologo with MSBuild 12 & 14 is something like:
-                        // 14.0.23107.0
-                        var lines = output.Split(
-                            new[] { Environment.NewLine },
-                            StringSplitOptions.RemoveEmptyEntries);
-
-                        var versionString = lines.LastOrDefault(
-                            line => !string.IsNullOrWhiteSpace(line));
-
-                        Version version;
-                        if (Version.TryParse(versionString, out version))
+                        process.WaitForExit(MsBuildWaitTime);
+                        if (process.ExitCode == 0)
                         {
-                            return version;
+                            outputTask.Wait();
+
+                            // The output of msbuid /version /nologo with MSBuild 12 & 14 is something like:
+                            // 14.0.23107.0
+                            var lines = output.ToString().Split(
+                                new[] { Environment.NewLine },
+                                StringSplitOptions.RemoveEmptyEntries);
+
+                            var versionString = lines.LastOrDefault(
+                                line => !string.IsNullOrWhiteSpace(line));
+
+                            Version version;
+                            if (Version.TryParse(versionString, out version))
+                            {
+                                return version;
+                            }
                         }
                     }
                 }
@@ -500,7 +519,6 @@ namespace NuGet.CommandLine
                    "Microsoft.Build.Evaluation.ProjectCollection",
                    throwOnError: true);
                 var projectCollection = Activator.CreateInstance(projectCollectionType) as IDisposable;
-
 
                 using (projectCollection)
                 {
@@ -749,7 +767,6 @@ namespace NuGet.CommandLine
             {
                 return Path.Combine(msbuildDirectory, "msbuild.exe");
             }
-
         }
 
         /// <summary>

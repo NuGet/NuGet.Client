@@ -4,7 +4,10 @@ namespace NuGet.Test.Utility
 {
     public class CommandRunnerResult
     {
-        internal CommandRunnerResult(Process process, int exitCode, LockedStringBuilder output, LockedStringBuilder error)
+        private readonly string _output;
+        private readonly string _error;
+
+        internal CommandRunnerResult(Process process, int exitCode, string output, string error)
         {
             Process = process;
             Item1 = exitCode;
@@ -12,12 +15,9 @@ namespace NuGet.Test.Utility
             _error = error;
         }
 
-        private readonly LockedStringBuilder _output;
-        private readonly LockedStringBuilder _error;
-
         public Process Process { get; }
         public int Item1 { get; }
-        public string Item2 => _output.ToString();
-        public string Item3 => _error.ToString();
+        public string Item2 => _output;
+        public string Item3 => _error;
     }
 }
