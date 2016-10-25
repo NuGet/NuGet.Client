@@ -12,7 +12,6 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.VisualStudio.Facade.Telemetry;
-using EnvDTEProject = EnvDTE.Project;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.Telemetry

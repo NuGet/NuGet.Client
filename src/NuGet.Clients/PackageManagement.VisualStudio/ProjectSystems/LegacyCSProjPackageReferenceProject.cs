@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,16 +17,15 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
-using NuGet.Versioning;
-using Task = System.Threading.Tasks.Task;
 using NuGet.RuntimeModel;
+using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-/// <summary>
-/// An implementation of <see cref="NuGetProject"/> that interfaces with VS project APIs to coordinate
-/// packages in a legacy CSProj with package references.
-/// </summary>
+    /// <summary>
+    /// An implementation of <see cref="NuGetProject"/> that interfaces with VS project APIs to coordinate
+    /// packages in a legacy CSProj with package references.
+    /// </summary>
     public class LegacyCSProjPackageReferenceProject : BuildIntegratedNuGetProject
     {
         private const string _includeAssets = "IncludeAssets";
