@@ -3,7 +3,7 @@
 
 using System;
 
-namespace NuGet.SolutionRestoreManager
+namespace NuGet.SolutionRestoreManager.Test
 {
     /// <summary>
     /// Root object containing project restore info.

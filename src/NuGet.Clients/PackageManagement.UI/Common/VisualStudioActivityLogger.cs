@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.Shell;
 
 namespace NuGet.PackageManagement.UI
@@ -6,7 +9,9 @@ namespace NuGet.PackageManagement.UI
     /// <summary>
     /// Logger routing messages into VS ActivityLog
     /// </summary>
-    internal class VisualStudioActivityLogger : Common.ILogger
+    /// 
+    [Export(typeof(VisualStudioActivityLogger))]
+    public sealed class VisualStudioActivityLogger : NuGet.Common.ILogger
     {
         private const string LogEntrySource = "NuGet Package Manager";
 

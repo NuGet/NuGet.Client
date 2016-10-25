@@ -3,28 +3,23 @@
 
 using System;
 
-namespace NuGet.SolutionRestoreManager
+namespace NuGet.SolutionRestoreManager.Test
 {
-    internal class VsReferenceItem : IVsReferenceItem
+    internal class VsReferenceProperty : IVsReferenceProperty
     {
         public String Name { get; }
 
-        public IVsReferenceProperties Properties { get; }
+        public String Value { get; }
 
-        public VsReferenceItem(string name, IVsReferenceProperties properties)
+        public VsReferenceProperty(string name, string value)
         {
             if (string.IsNullOrEmpty(name))
             {
                 throw new ArgumentException(ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(name));
             }
 
-            if (properties == null)
-            {
-                throw new ArgumentNullException(nameof(properties));
-            }
-
             Name = name;
-            Properties = properties;
+            Value = value;
         }
     }
 }

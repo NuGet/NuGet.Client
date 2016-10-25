@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
@@ -11,10 +12,11 @@ using Microsoft.VisualStudio.Shell;
 using NuGet.Commands;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
-using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
+using NuGet.RuntimeModel;
 using NuGet.Versioning;
 
 namespace NuGet.SolutionRestoreManager
@@ -26,22 +28,29 @@ namespace NuGet.SolutionRestoreManager
     /// </summary>
     [PartCreationPolicy(CreationPolicy.Shared)]
     [Export(typeof(IVsSolutionRestoreService))]
-    internal sealed class VsSolutionRestoreService : IVsSolutionRestoreService
+    public sealed class VsSolutionRestoreService : IVsSolutionRestoreService
     {
         private const string IncludeAssets = "IncludeAssets";
         private const string ExcludeAssets = "ExcludeAssets";
         private const string PrivateAssets = "PrivateAssets";
+        private const string PackageTargetFallback = "PackageTargetFallback";
+        private const string RuntimeIdentifier = "RuntimeIdentifier";
+        private const string RuntimeIdentifiers = "RuntimeIdentifiers";
+        private const string RuntimeSupports = "RuntimeSupports";
 
         private readonly EnvDTE.DTE _dte;
         private readonly IProjectSystemCache _projectSystemCache;
         private readonly ISolutionRestoreWorker _restoreWorker;
+        private readonly NuGet.Common.ILogger _logger;
 
         [ImportingConstructor]
         public VsSolutionRestoreService(
             [Import(typeof(SVsServiceProvider))]
             IServiceProvider serviceProvider,
             IProjectSystemCache projectSystemCache,
-            ISolutionRestoreWorker restoreWorker)
+            ISolutionRestoreWorker restoreWorker,
+            [Import(typeof(VisualStudioActivityLogger))]
+            NuGet.Common.ILogger logger)
         {
             if (serviceProvider == null)
             {
@@ -58,9 +67,15 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentNullException(nameof(restoreWorker));
             }
 
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
             _dte = serviceProvider.GetDTE();
             _projectSystemCache = projectSystemCache;
             _restoreWorker = restoreWorker;
+            _logger = logger;
         }
 
         public Task<bool> CurrentRestoreOperation => _restoreWorker.CurrentRestoreOperation;
@@ -84,8 +99,7 @@ namespace NuGet.SolutionRestoreManager
 
             try
             {
-                ActivityLog.LogInformation(
-                    ExceptionHelper.LogEntrySource,
+                _logger.LogInformation(
                     $"The nominate API is called for '{projectUniqueName}'.");
 
                 var projectNames = await FindMatchingDteProjectAsync(projectUniqueName);
@@ -107,14 +121,13 @@ namespace NuGet.SolutionRestoreManager
                 }
                 else
                 {
-                    ActivityLog.LogError(
-                        ExceptionHelper.LogEntrySource,
+                    _logger.LogError(
                         $"Nominated project '{projectUniqueName}' cannot be found in DTE");
                 }
             }
             catch (Exception e)
             {
-                ExceptionHelper.WriteToActivityLog(e);
+                _logger.LogError(e.ToString());
                 throw;
             }
 
@@ -124,9 +137,9 @@ namespace NuGet.SolutionRestoreManager
         // Try matching the nominated project to a DTE counterpart
         private async Task<ProjectNames> FindMatchingDteProjectAsync(string projectUniqueName)
         {
-            var projectNames = await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            var projectNames = await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 try
                 {
@@ -139,14 +152,14 @@ namespace NuGet.SolutionRestoreManager
                         // NuGet/Home#3729
                         return new ProjectNames(
                             fullName: projectUniqueName, // dteProject.FullName throws here
-                            uniqueName: EnvDTEProjectUtility.GetUniqueName(dteProject),
-                            shortName: EnvDTEProjectUtility.GetName(dteProject),
-                            customUniqueName: EnvDTEProjectUtility.GetCustomUniqueName(dteProject));
+                            uniqueName: dteProject.UniqueName,
+                            shortName: dteProject.Name,
+                            customUniqueName: dteProject.UniqueName);
                     }
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    ExceptionHelper.WriteToActivityLog(ex);
+                    _logger.LogError(e.ToString());
                 }
 
                 return null;
@@ -155,7 +168,7 @@ namespace NuGet.SolutionRestoreManager
             return projectNames;
         }
 
-        private async Task<EnvDTE.Project> TryGetDteProjectAsync(String projectUniqueName)
+        private async Task<EnvDTE.Project> TryGetDteProjectAsync(string projectUniqueName)
         {
             EnvDTE.Project dteProject = null;
             if (_projectSystemCache.TryGetDTEProject(projectUniqueName, out dteProject))
@@ -172,7 +185,7 @@ namespace NuGet.SolutionRestoreManager
             return dteProject;
         }
 
-        private static void DumpProjectRestoreInfo(PackageSpec packageSpec)
+        private void DumpProjectRestoreInfo(PackageSpec packageSpec)
         {
             try
             {
@@ -190,21 +203,40 @@ namespace NuGet.SolutionRestoreManager
                 var dgPath = Path.Combine(outputPath, $"{Guid.NewGuid()}.dg");
                 dgFile.Save(dgPath);
             }
-            catch(Exception ex)
+            catch (Exception e)
             {
-                ExceptionHelper.WriteToActivityLog(ex);
+                _logger.LogError(e.ToString());
             }
         }
 
         private static PackageSpec ToPackageSpec(ProjectNames projectNames, IVsProjectRestoreInfo projectRestoreInfo)
         {
-            var tfis = projectRestoreInfo.TargetFrameworks
+            var tfis = projectRestoreInfo
+                .TargetFrameworks
                 .Cast<IVsTargetFrameworkInfo>()
                 .Select(ToTargetFrameworkInformation)
                 .ToArray();
 
             var projectFullPath = Path.GetFullPath(projectNames.FullName);
             var projectDirectory = Path.GetDirectoryName(projectFullPath);
+
+            // TODO: Remove temporary integration code NuGet/Home#3810
+            // Initialize OTF and CT values when original value of OTF property is not provided.
+            var originalTargetFrameworks = tfis
+                .Select(tfi => tfi.FrameworkName.GetShortFolderName())
+                .ToList();
+            var crossTargeting = originalTargetFrameworks.Count > 1;
+
+            // if "TargetFrameworks" property presents in the project file prefer the raw value.
+            if (!string.IsNullOrWhiteSpace(projectRestoreInfo.OriginalTargetFrameworks))
+            {
+                originalTargetFrameworks = projectRestoreInfo
+                    .OriginalTargetFrameworks
+                    .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                    .ToList();
+                // cross-targeting is always ON even in case of a single tfm in the list.
+                crossTargeting = true;
+            }
 
             var packageSpec = new PackageSpec(tfis)
             {
@@ -220,17 +252,46 @@ namespace NuGet.SolutionRestoreManager
                             projectDirectory,
                             projectRestoreInfo.BaseIntermediatePath)),
                     OutputType = RestoreOutputType.NETCore,
-                    OriginalTargetFrameworks = tfis
-                        .Select(tfi => tfi.FrameworkName.GetShortFolderName())
-                        .ToList(),
                     TargetFrameworks = projectRestoreInfo.TargetFrameworks
                         .Cast<IVsTargetFrameworkInfo>()
-                        .Select(item => ToProjectRestoreTargetFrameworkInformation(item, projectFullPath))
+                        .Select(item => ToProjectRestoreMetadataFrameworkInfo(item, projectDirectory))
                         .ToList(),
-                }
+                    OriginalTargetFrameworks = originalTargetFrameworks,
+                    CrossTargeting = crossTargeting
+                },
+                RuntimeGraph = GetRuntimeGraph(projectRestoreInfo)
             };
 
             return packageSpec;
+        }
+
+        private static RuntimeGraph GetRuntimeGraph(IVsProjectRestoreInfo projectRestoreInfo)
+        {
+            var runtimes = projectRestoreInfo
+                .TargetFrameworks
+                .Cast<IVsTargetFrameworkInfo>()
+                .SelectMany(tfi => new[]
+                {
+                    GetPropertyValueOrDefault(tfi.Properties, RuntimeIdentifier),
+                    GetPropertyValueOrDefault(tfi.Properties, RuntimeIdentifiers),
+                })
+                .SelectMany(s => s.Split(';'))
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .Distinct(StringComparer.Ordinal)
+                .Select(rid => new RuntimeDescription(rid))
+                .ToList();
+
+            var supports = projectRestoreInfo
+                .TargetFrameworks
+                .Cast<IVsTargetFrameworkInfo>()
+                .Select(tfi => GetPropertyValueOrDefault(tfi.Properties, RuntimeSupports))
+                .SelectMany(s => s.Split(';'))
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .Distinct(StringComparer.Ordinal)
+                .Select(s => new CompatibilityProfile(s))
+                .ToList();
+
+            return new RuntimeGraph(runtimes, supports);
         }
 
         private static TargetFrameworkInformation ToTargetFrameworkInformation(
@@ -240,6 +301,23 @@ namespace NuGet.SolutionRestoreManager
             {
                 FrameworkName = NuGetFramework.Parse(targetFrameworkInfo.TargetFrameworkMoniker)
             };
+
+            var ptf = GetPropertyValueOrDefault(targetFrameworkInfo.Properties, PackageTargetFallback);
+            if (!string.IsNullOrEmpty(ptf))
+            {
+                var fallbackList = ptf
+                    .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(NuGetFramework.Parse)
+                    .ToList();
+
+                tfi.Imports = fallbackList;
+
+                // Update the PackageSpec framework to include fallback frameworks
+                if (tfi.Imports.Count != 0)
+                {
+                    tfi.FrameworkName = new FallbackFramework(tfi.FrameworkName, fallbackList);
+                }
+            }
 
             if (targetFrameworkInfo.PackageReferences != null)
             {
@@ -252,9 +330,9 @@ namespace NuGet.SolutionRestoreManager
             return tfi;
         }
 
-        private static ProjectRestoreMetadataFrameworkInfo ToProjectRestoreTargetFrameworkInformation(
+        private static ProjectRestoreMetadataFrameworkInfo ToProjectRestoreMetadataFrameworkInfo(
             IVsTargetFrameworkInfo targetFrameworkInfo,
-            string projectPath)
+            string projectDirectory)
         {
             var tfi = new ProjectRestoreMetadataFrameworkInfo
             {
@@ -266,56 +344,10 @@ namespace NuGet.SolutionRestoreManager
                 tfi.ProjectReferences.AddRange(
                     targetFrameworkInfo.ProjectReferences
                         .Cast<IVsReferenceItem>()
-                        .Select(item => ToProjectLibraryDependency(item, projectPath)));
+                        .Select(item => ToProjectRestoreReference(item, projectDirectory)));
             }
 
             return tfi;
-        }
-
-        private static PackageReference[] GetPackageReferences(
-            IVsProjectRestoreInfo projectRestoreInfo)
-        {
-            var packageReferences = projectRestoreInfo
-                .TargetFrameworks
-                .Cast<IVsTargetFrameworkInfo>()
-                .GroupBy(
-                    keySelector: tfm =>
-                        NuGetFramework.Parse(tfm.TargetFrameworkMoniker),
-                    resultSelector: (key, tfms) =>
-                        tfms.SelectMany(tfm =>
-                            tfm.PackageReferences
-                                .Cast<IVsReferenceItem>()
-                                .Select(p => ToPackageReference(p, key))))
-                .SelectMany(l => l)
-                .ToList();
-
-            var frameworkSorter = new NuGetFrameworkSorter();
-            return packageReferences
-                .GroupBy(
-                    keySelector: p => p.PackageIdentity,
-                    resultSelector: (id, ps) =>
-                        ps.OrderBy(p => p.TargetFramework, frameworkSorter).First())
-                .ToArray();
-        }
-
-        private static ProjectRestoreReference[] GetProjectReferences(
-            IVsProjectRestoreInfo projectRestoreInfo)
-        {
-            var projectReferences = projectRestoreInfo
-                .TargetFrameworks
-                .Cast<IVsTargetFrameworkInfo>()
-                .SelectMany(tfm =>
-                    tfm.ProjectReferences
-                        .Cast<IVsReferenceItem>()
-                        .Select(ToProjectRestoreReference))
-                .ToList();
-
-            return projectReferences
-                .GroupBy(
-                    keySelector: p => p.ProjectPath,
-                    resultSelector: (id, ps) => ps.First(),
-                    comparer: StringComparer.OrdinalIgnoreCase)
-                .ToArray();
         }
 
         private static LibraryDependency ToPackageLibraryDependency(IVsReferenceItem item)
@@ -337,15 +369,12 @@ namespace NuGet.SolutionRestoreManager
             return dependency;
         }
 
-        private static ProjectRestoreReference ToProjectLibraryDependency(IVsReferenceItem item, string projectPath)
+        private static ProjectRestoreReference ToProjectRestoreReference(IVsReferenceItem item, string projectDirectory)
         {
-            // The path may be a relative path, to match the project unique name as a 
+            // The path may be a relative path, to match the project unique name as a
             // string this should be the full path to the project
-            var parentProjectDirectory = Path.GetDirectoryName(projectPath);
-            var referenceCombinedPath = Path.Combine(parentProjectDirectory, item.Name);
-
             // Remove ../../ and any other relative parts of the path that were used in the project file
-            var referencePath = Path.GetFullPath(referenceCombinedPath);
+            var referencePath = Path.GetFullPath(Path.Combine(projectDirectory, item.Name));
 
             var dependency = new ProjectRestoreReference
             {
@@ -374,36 +403,34 @@ namespace NuGet.SolutionRestoreManager
             return VersionRange.All;
         }
 
-        private static PackageReference ToPackageReference(
-            IVsReferenceItem item, NuGetFramework framework)
-        {
-            var versionRange = GetVersionRange(item);
-            var packageId = new PackageIdentity(item.Name, versionRange.MinVersion);
-            var packageReference = new PackageReference(packageId, framework);
-
-            return packageReference;
-        }
-
-        private static ProjectRestoreReference ToProjectRestoreReference(
-            IVsReferenceItem item)
-        {
-            var projectPath = GetPropertyValueOrDefault(item, "ProjectFileFullPath");
-            return new ProjectRestoreReference
-            {
-                ProjectUniqueName = item.Name,
-                ProjectPath = projectPath
-            };
-        }
-
         private static string GetPropertyValueOrDefault(
             IVsReferenceItem item, string propertyName, string defaultValue = "")
         {
             try
             {
-                IVsReferenceProperty property = item.Properties?.Item(propertyName);
-                return property?.Value ?? defaultValue;
+                return item.Properties?.Item(propertyName)?.Value ?? defaultValue;
             }
             catch (ArgumentException)
+            {
+            }
+            catch (KeyNotFoundException)
+            {
+            }
+
+            return defaultValue;
+        }
+
+        private static string GetPropertyValueOrDefault(
+            IVsProjectProperties properties, string propertyName, string defaultValue = "")
+        {
+            try
+            {
+                return properties?.Item(propertyName)?.Value ?? defaultValue;
+            }
+            catch (ArgumentException)
+            {
+            }
+            catch (KeyNotFoundException)
             {
             }
 

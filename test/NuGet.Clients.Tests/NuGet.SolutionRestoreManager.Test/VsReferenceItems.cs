@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace NuGet.SolutionRestoreManager
+namespace NuGet.SolutionRestoreManager.Test
 {
     internal class VsReferenceItems : VsItemList<IVsReferenceItem>, IVsReferenceItems
     {

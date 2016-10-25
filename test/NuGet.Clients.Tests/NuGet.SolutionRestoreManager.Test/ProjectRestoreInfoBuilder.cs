@@ -6,7 +6,7 @@ using NuGet.ProjectModel;
 using System;
 using System.Linq;
 
-namespace NuGet.SolutionRestoreManager
+namespace NuGet.SolutionRestoreManager.Test
 {
     /// <summary>
     /// Helper class providing a method of building <see cref="IVsProjectRestoreInfo"/>
@@ -19,7 +19,7 @@ namespace NuGet.SolutionRestoreManager
         /// </summary>
         /// <param name="packageSpec">Source project restore object</param>
         /// <returns>Desired project restore object</returns>
-        public static IVsProjectRestoreInfo Build(PackageSpec packageSpec)
+        public static IVsProjectRestoreInfo Build(PackageSpec packageSpec, string baseIntermediatePath)
         {
             if (packageSpec == null)
             {
@@ -37,7 +37,7 @@ namespace NuGet.SolutionRestoreManager
                     .Select(ToTargetFrameworkInfo));
 
             return new VsProjectRestoreInfo(
-                packageSpec.RestoreMetadata.OutputPath,
+                baseIntermediatePath,
                 targetFrameworks);
         }
 
