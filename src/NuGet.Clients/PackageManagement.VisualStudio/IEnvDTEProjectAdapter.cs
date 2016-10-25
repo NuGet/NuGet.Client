@@ -8,6 +8,7 @@ using EnvDTE;
 using NuGet.Frameworks;
 using NuGet.ProjectManagement;
 using Task = System.Threading.Tasks.Task;
+using NuGet.RuntimeModel;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -50,6 +51,16 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Project's target framework
         /// </summary>
         NuGetFramework TargetNuGetFramework { get; }
+
+        /// <summary>
+        /// Project's runtime identifiers. Should never be null but can be an empty sequence.
+        /// </summary>
+        IEnumerable<RuntimeDescription> Runtimes { get; }
+
+        /// <summary>
+        /// Project's supports (a.k.a guardrails). Should never be null but can be an empty sequence.
+        /// </summary>
+        IEnumerable<CompatibilityProfile> Supports { get; }
 
         /// <summary>
         /// Project references for legacy CSProj project

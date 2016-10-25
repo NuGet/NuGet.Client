@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,15 +17,15 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
+using NuGet.RuntimeModel;
 using NuGet.Versioning;
-using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-/// <summary>
-/// An implementation of <see cref="NuGetProject"/> that interfaces with VS project APIs to coordinate
-/// packages in a legacy CSProj with package references.
-/// </summary>
+    /// <summary>
+    /// An implementation of <see cref="NuGetProject"/> that interfaces with VS project APIs to coordinate
+    /// packages in a legacy CSProj with package references.
+    /// </summary>
     public class LegacyCSProjPackageReferenceProject : BuildIntegratedNuGetProject
     {
         private const string _includeAssets = "IncludeAssets";
@@ -37,6 +40,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private string _projectName;
         private string _projectUniqueName;
         private string _projectFullPath;
+        private readonly String _projectId;
 
         static LegacyCSProjPackageReferenceProject()
         {
@@ -47,7 +51,8 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         public LegacyCSProjPackageReferenceProject(
-            IEnvDTEProjectAdapter project)
+            IEnvDTEProjectAdapter project,
+            string projectId)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -60,11 +65,12 @@ namespace NuGet.PackageManagement.VisualStudio
             _projectName = _project.Name;
             _projectUniqueName = _project.UniqueName;
             _projectFullPath = _project.ProjectFullPath;
-
+            _projectId = projectId;
 
             InternalMetadata.Add(NuGetProjectMetadataKeys.Name, _projectName);
             InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, _projectUniqueName);
             InternalMetadata.Add(NuGetProjectMetadataKeys.FullPath, _projectFullPath);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, _projectId);
         }
 
         public override string ProjectName => _projectName;
@@ -267,12 +273,18 @@ namespace NuGet.PackageManagement.VisualStudio
                 Dependencies = packageReferences.ToList()
             };
 
+            // Build up runtime information.
+            var runtimes = _project.Runtimes;
+            var supports = _project.Supports;
+            var runtimeGraph = new RuntimeGraph(runtimes, supports);
+
             // In legacy CSProj, we only have one target framework per project
             var tfis = new TargetFrameworkInformation[] { projectTfi };
             return new PackageSpec(tfis)
             {
                 Name = _projectName ?? _projectUniqueName,
                 FilePath = _projectFullPath,
+                RuntimeGraph = runtimeGraph,
                 RestoreMetadata = new ProjectRestoreMetadata
                 {
                     OutputType = RestoreOutputType.NETCore,

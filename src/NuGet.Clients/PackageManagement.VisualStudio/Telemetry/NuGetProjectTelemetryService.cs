@@ -12,7 +12,6 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.VisualStudio.Facade.Telemetry;
-using EnvDTEProject = EnvDTE.Project;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.Telemetry
@@ -67,7 +66,17 @@ namespace NuGet.PackageManagement.Telemetry
                 {
                     projectType = NuGetProjectType.PackagesConfig;
                 }
-                else if (nuGetProject is BuildIntegratedNuGetProject)
+#if VS15
+                else if (nuGetProject is CpsPackageReferenceProject)
+                {
+                    projectType = NuGetProjectType.CPSBasedPackageRefs;
+                }
+                else if (nuGetProject is LegacyCSProjPackageReferenceProject)
+                {
+                    projectType = NuGetProjectType.LegacyProjectSystemWithPackageRefs;
+                }
+#endif
+                else if (nuGetProject is ProjectJsonBuildIntegratedProjectSystem)
                 {
                     projectType = NuGetProjectType.UwpProjectJson;
                 }
@@ -75,12 +84,7 @@ namespace NuGet.PackageManagement.Telemetry
                 {
                     projectType = NuGetProjectType.XProjProjectJson;
                 }
-#if VS15
-                else if(nuGetProject is CpsPackageReferenceProject)
-                {
-                    projectType = NuGetProjectType.CPSBasedPackageRefs;
-                }
-#endif
+
                 var projectInformation = new ProjectInformation(
                     NuGetVersion.Value,
                     projectId,

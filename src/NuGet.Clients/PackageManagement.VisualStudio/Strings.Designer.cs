@@ -70,6 +70,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The BaseIntermediateOutputPath could not be found for project &apos;{0}&apos;..
+        /// </summary>
+        public static string BaseIntermediateOutputPathNotFound {
+            get {
+                return ResourceManager.GetString("BaseIntermediateOutputPathNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to NuGet operation failed.
         /// </summary>
         public static string ConfigErrorDialogBoxTitle {
@@ -312,6 +321,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         public static string PathToExistingFileNotPresent {
             get {
                 return ResourceManager.GetString("PathToExistingFileNotPresent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The .csproj &apos;{0}&apos; could not be casted to a build property storage interace..
+        /// </summary>
+        public static string ProjectCouldNotBeCastedToBuildPropertyStorage {
+            get {
+                return ResourceManager.GetString("ProjectCouldNotBeCastedToBuildPropertyStorage", resourceCulture);
             }
         }
         

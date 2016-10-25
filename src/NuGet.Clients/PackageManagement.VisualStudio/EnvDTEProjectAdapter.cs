@@ -4,15 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
+using System.Linq;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Frameworks;
-using NuGet.ProjectManagement;
+using NuGet.RuntimeModel;
 using VSLangProj;
 using VSLangProj150;
-using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -34,7 +33,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         // Property caches
         private string _projectFullPath;
-        private string _baseIntermediatePath;
         private bool? _isLegacyCSProjPackageReferenceProject;
 
         public EnvDTEProjectAdapter(Project project)
@@ -97,27 +95,18 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 ThreadHelper.ThrowIfNotOnUIThread();
 
-                if (string.IsNullOrEmpty(_baseIntermediatePath))
+                var intermediateDirectory = GetMSBuildProperty(AsIVsBuildPropertyStorage, "BaseIntermediateOutputPath");
+
+                if (string.IsNullOrEmpty(intermediateDirectory))
                 {
-                    if (AsIVsBuildPropertyStorage != null)
-                    {
-                        var intermediateDirectory = GetMSBuildProperty(AsIVsBuildPropertyStorage, "BaseIntermediateOutputPath");
-                        var projectDirectory = Path.GetDirectoryName(ProjectFullPath);
-                        if (string.IsNullOrEmpty(intermediateDirectory))
-                        {
-                            _baseIntermediatePath = Path.GetDirectoryName(projectDirectory);
-                        }
-                        else
-                        {
-                            if (!Path.IsPathRooted(intermediateDirectory))
-                            {
-                                _baseIntermediatePath = Path.Combine(projectDirectory, intermediateDirectory);
-                            }
-                        }
-                    }
+                    throw new InvalidOperationException(string.Format(
+                        Strings.BaseIntermediateOutputPathNotFound,
+                        ProjectFullPath));
                 }
 
-                return _baseIntermediatePath;
+                var projectDirectory = Path.GetDirectoryName(ProjectFullPath);
+
+                return Path.Combine(projectDirectory, intermediateDirectory);
             }
         }
 
@@ -165,6 +154,62 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        public IEnumerable<RuntimeDescription> Runtimes
+        {
+            get
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
+                var unparsedRuntimeIdentifer = GetMSBuildProperty(AsIVsBuildPropertyStorage, "RuntimeIdentifier");
+                var unparsedRuntimeIdentifers = GetMSBuildProperty(AsIVsBuildPropertyStorage, "RuntimeIdentifiers");
+
+                var runtimes = Enumerable.Empty<string>();
+
+                if (unparsedRuntimeIdentifer != null)
+                {
+                    runtimes = runtimes.Concat(new[] { unparsedRuntimeIdentifer });
+                }
+
+                if (unparsedRuntimeIdentifers != null)
+                {
+                    runtimes = runtimes.Concat(unparsedRuntimeIdentifers.Split(';'));
+                }
+
+                runtimes = runtimes
+                    .Select(x => x.Trim())
+                    .Where(x => !string.IsNullOrEmpty(x));
+
+                return runtimes
+                    .Select(runtime => new RuntimeDescription(runtime));
+            }
+        }
+
+        public IEnumerable<CompatibilityProfile> Supports
+        {
+            get
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
+                if (AsIVsBuildPropertyStorage == null)
+                {
+                    return Enumerable.Empty<CompatibilityProfile>();
+                }
+
+                var unparsedRuntimeSupports = GetMSBuildProperty(AsIVsBuildPropertyStorage, "RuntimeSupports");
+                
+                if (unparsedRuntimeSupports == null)
+                {
+                    return Enumerable.Empty<CompatibilityProfile>();
+                }
+
+                return unparsedRuntimeSupports
+                    .Split(';')
+                    .Select(x => x.Trim())
+                    .Where(x => !string.IsNullOrEmpty(x))
+                    .Select(support => new CompatibilityProfile(support));
+            }
+        }
+
         private IVsHierarchy AsIVsHierarchy
         {
             get
@@ -181,7 +226,18 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 ThreadHelper.ThrowIfNotOnUIThread();
 
-                return _asIVsBuildPropertyStorage ?? (_asIVsBuildPropertyStorage = AsIVsHierarchy as IVsBuildPropertyStorage);
+                var output =
+                    _asIVsBuildPropertyStorage ??
+                    (_asIVsBuildPropertyStorage = AsIVsHierarchy as IVsBuildPropertyStorage);
+
+                if (output == null)
+                {
+                    throw new InvalidOperationException(string.Format(
+                        Strings.ProjectCouldNotBeCastedToBuildPropertyStorage,
+                        ProjectFullPath));
+                }
+
+                return output;
             }
         }
 
