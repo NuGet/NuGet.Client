@@ -213,7 +213,7 @@ namespace NuGet.SolutionRestoreManager
                 RestoreMetadata = new ProjectRestoreMetadata
                 {
                     ProjectName = projectNames.ShortName,
-                    ProjectUniqueName = projectNames.UniqueName,
+                    ProjectUniqueName = projectFullPath,
                     ProjectPath = projectFullPath,
                     OutputPath = Path.GetFullPath(
                         Path.Combine(
