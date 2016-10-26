@@ -52,7 +52,6 @@
     <Compile Include="NuGetSearchTask.cs" />
     <Compile Include="NuGetSettings.cs" />
     <Compile Include="NuGetStaticSearchResult.cs" />
-    <Compile Include="OutputConsoleLogger.cs" />
     <Compile Include="PackageManagerWindowPane.cs" />
     <Compile Include="PkgCmdID.cs" />
     <Compile Include="NuGetPackage.cs" />

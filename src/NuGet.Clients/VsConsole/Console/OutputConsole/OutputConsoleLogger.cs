@@ -55,13 +55,18 @@ namespace NuGetConsole
 
         public void End()
         {
-            OutputConsole.WriteLine(Resources.Finished);
-
-            if (ErrorListProvider.Tasks.Count > 0)
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                ErrorListProvider.BringToFront();
-                ErrorListProvider.ForceShowErrors();
-            }
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                OutputConsole.WriteLine(Resources.Finished);
+
+                if (ErrorListProvider.Tasks.Count > 0)
+                {
+                    ErrorListProvider.BringToFront();
+                    ErrorListProvider.ForceShowErrors();
+                }
+            });
         }
 
         public void Log(MessageLevel level, string message, params object[] args)
@@ -75,8 +80,8 @@ namespace NuGetConsole
                 {
                     message = string.Format(CultureInfo.CurrentCulture, message, args);
                 }
-                
-                OutputConsole.WriteLine(message);
+
+                RunTaskOnUI(() => OutputConsole.WriteLine(message));
             }
         }
 
@@ -105,10 +110,15 @@ namespace NuGetConsole
 
         public void Start()
         {
-            ActivateOutputWindow();
-            _verbosityLevel = GetMSBuildVerbosityLevel();
-            ErrorListProvider.Tasks.Clear();
-            OutputConsole.Clear();
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                ActivateOutputWindow();
+                _verbosityLevel = GetMSBuildVerbosityLevel();
+                ErrorListProvider.Tasks.Clear();
+                OutputConsole.Clear();
+            });
         }
 
         public void ReportError(string message)
@@ -119,7 +129,29 @@ namespace NuGetConsole
             retargetErrorTask.Category = TaskCategory.User;
             retargetErrorTask.Priority = TaskPriority.High;
             retargetErrorTask.HierarchyItem = null;
-            ErrorListProvider.Tasks.Add(retargetErrorTask);
+
+            RunTaskOnUI(() => ErrorListProvider.Tasks.Add(retargetErrorTask));
+        }
+
+        private static void RunTaskOnUI(Action action)
+        {
+            // Optimization for when this is already on the UI thread since
+            // RunAsync cannot be used.
+            if (ThreadHelper.CheckAccess())
+            {
+                // Run directly
+                action();
+            }
+            else
+            {
+                // Run in JTF
+                ThreadHelper.JoinableTaskFactory.Run(async delegate
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    action();
+                });
+            }
         }
     }
 }
