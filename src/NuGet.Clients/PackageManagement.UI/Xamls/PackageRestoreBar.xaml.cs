@@ -100,7 +100,11 @@ namespace NuGet.PackageManagement.UI
 
         private void OnPackagesMissingStatusChanged(object sender, PackagesMissingStatusEventArgs e)
         {
-            UpdateRestoreBar(e.PackagesMissing);
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                UpdateRestoreBar(e.PackagesMissing);
+            });
         }
 
         private void UpdateRestoreBar(bool packagesMissing)
@@ -177,7 +181,7 @@ namespace NuGet.PackageManagement.UI
             {
                 message = string.Format(CultureInfo.CurrentCulture, message, args);
             }
-            
+
             ShowMessage(message);
         }
 
@@ -194,7 +198,7 @@ namespace NuGet.PackageManagement.UI
         private void PackageRestoreFailedEvent(object sender, PackageRestoreFailedEventArgs e)
         {
             // We just store any one of the package restore failures and show it on the yellow bar
-            if(RestoreException == null)
+            if (RestoreException == null)
             {
                 RestoreException = e.Exception;
             }

@@ -431,7 +431,12 @@ namespace NuGet.PackageManagement.UI
             // only when package is missing last time and is not missing this time, we need to refresh
             if (!e.PackagesMissing && _missingPackageStatus)
             {
-                UpdateAfterPackagesMissingStatusChanged();
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    UpdateAfterPackagesMissingStatusChanged();
+                });
             }
             _missingPackageStatus = e.PackagesMissing;
         }
