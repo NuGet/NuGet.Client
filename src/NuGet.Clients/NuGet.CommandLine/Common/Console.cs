@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security;
+using NuGet.Common;
 
 namespace NuGet.CommandLine
 {
@@ -13,6 +14,9 @@ namespace NuGet.CommandLine
         /// avoid color mismatches during parallel operations.
         /// </summary>
         private readonly static object _writerLock = new object();
+
+        [System.Runtime.InteropServices.DllImport("libc", EntryPoint = "isatty")]
+        extern static int _isatty(int fd);
 
         public Console()
         {
@@ -328,6 +332,10 @@ namespace NuGet.CommandLine
 
         private static void ReadSecureStringFromConsole(SecureString secureString)
         {
+            if (!RuntimeEnvironmentHelper.IsWindows && RuntimeEnvironmentHelper.IsMono && _isatty(1) == 1)
+            {
+                throw new InvalidOperationException();
+            }
             ConsoleKeyInfo keyInfo;
             while ((keyInfo = System.Console.ReadKey(intercept: true)).Key != ConsoleKey.Enter)
             {
