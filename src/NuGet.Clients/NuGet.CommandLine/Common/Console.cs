@@ -332,7 +332,9 @@ namespace NuGet.CommandLine
 
         private static void ReadSecureStringFromConsole(SecureString secureString)
         {
-            if (!RuntimeEnvironmentHelper.IsWindows && RuntimeEnvironmentHelper.IsMono && _isatty(1) == 1)
+            // When you redirect nuget.exe input, either from the shell with "<" or
+            // from code with ProcessStartInfo, throw exception on mono.
+            if (!RuntimeEnvironmentHelper.IsWindows && RuntimeEnvironmentHelper.IsMono && _isatty(0) == 0)
             {
                 throw new InvalidOperationException();
             }
