@@ -145,7 +145,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MSBuild
       Condition="'$(IncludeBuildOutput)' == 'true'"
       Projects="$(MSBuildProjectFullPath)"
-      Targets="BuiltProjectOutputGroup"
+      Targets="BuiltProjectOutputGroup;DocumentationProjectOutputGroup"
       Properties="TargetFramework=%(_TargetFrameworks.Identity);
               %(_MSBuildProjectReferenceExistent.SetConfiguration);
               %(_MSBuildProjectReferenceExistent.SetPlatform);
