@@ -100,6 +100,7 @@ namespace NuGet.PackageManagement.UI
 
         private void OnPackagesMissingStatusChanged(object sender, PackagesMissingStatusEventArgs e)
         {
+            // make sure update happens on the UI thread.
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -109,13 +110,7 @@ namespace NuGet.PackageManagement.UI
 
         private void UpdateRestoreBar(bool packagesMissing)
         {
-            if (!UIDispatcher.CheckAccess())
-            {
-                UIDispatcher.Invoke(
-                    (Action<bool>)UpdateRestoreBar,
-                    packagesMissing);
-                return;
-            }
+            ThreadHelper.ThrowIfNotOnUIThread();
 
             if (packagesMissing)
             {

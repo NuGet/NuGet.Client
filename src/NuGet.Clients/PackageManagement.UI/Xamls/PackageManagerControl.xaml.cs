@@ -18,6 +18,7 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using Resx = NuGet.PackageManagement.UI;
+using VSThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -164,7 +165,7 @@ namespace NuGet.PackageManagement.UI
                 e.NuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.FullPath, out newFullPath);
                 if (currentFullPath == newFullPath)
                 {
-                    Model.Context.Projects = new[] {e.NuGetProject};
+                    Model.Context.Projects = new[] { e.NuGetProject };
                     SetTitle();
                 }
             }
@@ -425,20 +426,22 @@ namespace NuGet.PackageManagement.UI
 
         private void packageRestoreManager_PackagesMissingStatusChanged(object sender, PackagesMissingStatusEventArgs e)
         {
-            // TODO: PackageRestoreManager fires this event even when solution is closed.
-            // Don't do anything if solution is closed.
-            // Add MissingPackageStatus to keep previous packageMissing status to avoid unnecessarily refresh
-            // only when package is missing last time and is not missing this time, we need to refresh
-            if (!e.PackagesMissing && _missingPackageStatus)
+            // make sure update happens on the UI thread.
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
+                // TODO: PackageRestoreManager fires this event even when solution is closed.
+                // Don't do anything if solution is closed.
+                // Add MissingPackageStatus to keep previous packageMissing status to avoid unnecessarily refresh
+                // only when package is missing last time and is not missing this time, we need to refresh
+                if (!e.PackagesMissing && _missingPackageStatus)
+                {
                     UpdateAfterPackagesMissingStatusChanged();
-                });
-            }
-            _missingPackageStatus = e.PackagesMissing;
+                }
+
+                _missingPackageStatus = e.PackagesMissing;
+            });
         }
 
         // Refresh the UI after packages are restored.
@@ -447,12 +450,7 @@ namespace NuGet.PackageManagement.UI
         // method needs to use _uiDispatcher.
         private void UpdateAfterPackagesMissingStatusChanged()
         {
-            if (!_uiDispatcher.CheckAccess())
-            {
-                _uiDispatcher.Invoke(UpdateAfterPackagesMissingStatusChanged);
-
-                return;
-            }
+            VSThreadHelper.ThrowIfNotOnUIThread();
 
             Refresh();
             _packageDetail.Refresh();
@@ -560,7 +558,7 @@ namespace NuGet.PackageManagement.UI
                 _loadCts = new CancellationTokenSource();
 
                 // start SearchAsync task for initial loading of packages
-                var searchResultTask = loader.SearchAsync(continuationToken:null, cancellationToken: _loadCts.Token);
+                var searchResultTask = loader.SearchAsync(continuationToken: null, cancellationToken: _loadCts.Token);
 
                 // this will wait for searchResultTask to complete instead of creating a new task
                 _packageList.LoadItems(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token);
