@@ -61,22 +61,27 @@ namespace NuGetVSExtension
 
         public void Start()
         {
-            SetStatus(VsSearchTaskStatus.Started);
-
-            SetStatus(VsSearchTaskStatus.Completed);
-            OleMenuCommand supportedManagePackageCommand = GetSupportedManagePackageCommand();
-
-            if (!String.IsNullOrEmpty(SearchQuery.SearchString)
-                && null != supportedManagePackageCommand)
+            ThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                var result = new NuGetStaticSearchResult(SearchQuery.SearchString, _provider, supportedManagePackageCommand);
-                _searchCallback.ReportResult(this, result);
-                _searchCallback.ReportComplete(this, 1);
-            }
-            else
-            {
-                _searchCallback.ReportComplete(this, 0);
-            }
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                SetStatus(VsSearchTaskStatus.Started);
+
+                SetStatus(VsSearchTaskStatus.Completed);
+                var supportedManagePackageCommand = GetSupportedManagePackageCommand();
+
+                if (!string.IsNullOrEmpty(SearchQuery.SearchString)
+                    && null != supportedManagePackageCommand)
+                {
+                    var result = new NuGetStaticSearchResult(SearchQuery.SearchString, _provider, supportedManagePackageCommand);
+                    _searchCallback.ReportResult(this, result);
+                    _searchCallback.ReportComplete(this, 1);
+                }
+                else
+                {
+                    _searchCallback.ReportComplete(this, 0);
+                }
+            });
         }
 
         public void Stop()

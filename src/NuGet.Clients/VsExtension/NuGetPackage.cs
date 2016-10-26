@@ -275,8 +275,8 @@ namespace NuGetVSExtension
             //    ServiceLocator.GetInstance<IDebugConsoleController>());
 
             // Add our command handlers for menu (commands must exist in the .vsct file)
-            AddMenuCommandHandlers();
-            RestorePackagesCommand.Initialize(this);
+            await AddMenuCommandHandlersAsync();
+            await RestorePackagesCommand.InitializeAsync(this);
 
             // IMPORTANT: Do NOT do anything that can lead to a call to ServiceLocator.GetGlobalService().
             // Doing so is illegal and may cause VS to hang.
@@ -431,9 +431,9 @@ namespace NuGetVSExtension
                 exception);
         }
 
-        private void AddMenuCommandHandlers()
+        private async Task AddMenuCommandHandlersAsync()
         {
-            _mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
+            _mcs = await GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
             if (null != _mcs)
             {
                 // menu command for opening Package Manager Console
@@ -609,7 +609,7 @@ namespace NuGetVSExtension
 
             // Find existing hierarchy and item id of the document window if it's
             // already registered.
-            var rdt = (IVsRunningDocumentTable)GetService(typeof(IVsRunningDocumentTable));
+            var rdt = await GetServiceAsync(typeof(IVsRunningDocumentTable)) as IVsRunningDocumentTable;
             IVsHierarchy hier;
             uint itemId;
             IntPtr docData = IntPtr.Zero;
@@ -696,7 +696,7 @@ namespace NuGetVSExtension
                 project.Name);
 
             IVsWindowFrame windowFrame;
-            IVsUIShell uiShell = (IVsUIShell)GetService(typeof(SVsUIShell));
+            var uiShell = await GetServiceAsync(typeof(SVsUIShell)) as IVsUIShell;
 
             IntPtr ppunkDocView = IntPtr.Zero;
             IntPtr ppunkDocData = IntPtr.Zero;
@@ -788,9 +788,9 @@ namespace NuGetVSExtension
             });
         }
 
-        private IVsWindowFrame FindExistingSolutionWindowFrame()
+        private async Task<IVsWindowFrame> FindExistingSolutionWindowFrameAsync()
         {
-            IVsUIShell uiShell = (IVsUIShell)GetService(typeof(SVsUIShell));
+            var uiShell = await GetServiceAsync(typeof(SVsUIShell)) as IVsUIShell;
             foreach (var windowFrame in VsUtility.GetDocumentWindows(uiShell))
             {
                 object property;
@@ -864,7 +864,7 @@ namespace NuGetVSExtension
         {
             IVsWindowFrame windowFrame = null;
             IVsSolution solution = ServiceLocator.GetInstance<IVsSolution>();
-            IVsUIShell uiShell = (IVsUIShell)GetService(typeof(SVsUIShell));
+            var uiShell = await GetServiceAsync(typeof(SVsUIShell)) as IVsUIShell;
             uint windowFlags =
                 (uint)_VSRDTFLAGS.RDT_DontAddToMRU |
                 (uint)_VSRDTFLAGS.RDT_DontSaveAs;
@@ -962,7 +962,7 @@ namespace NuGetVSExtension
 
             ThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                var windowFrame = FindExistingSolutionWindowFrame();
+                var windowFrame = await FindExistingSolutionWindowFrameAsync();
                 if (windowFrame == null)
                 {
                     // Create the window frame

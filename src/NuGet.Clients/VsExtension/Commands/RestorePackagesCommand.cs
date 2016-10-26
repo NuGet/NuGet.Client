@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.Shell;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGetConsole;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGetVSExtension
 {
@@ -18,6 +19,8 @@ namespace NuGetVSExtension
     /// </summary>
     internal sealed class RestorePackagesCommand
     {
+        private static RestorePackagesCommand _instance;
+
         private const int CommandId = PkgCmdIDList.cmdidRestorePackages;
         private static readonly Guid CommandSet = GuidList.guidNuGetDialogCmdSet;
 
@@ -30,21 +33,12 @@ namespace NuGetVSExtension
         private ISolutionManager SolutionManager => _solutionManager.Value;
         private IConsoleStatus ConsoleStatus => _consoleStatus.Value;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RestorePackagesCommand"/> class.
-        /// Adds our command handlers for menu (commands must exist in the command table file)
-        /// </summary>
-        /// <param name="package">Owner package, not null.</param>
-        private RestorePackagesCommand(NuGetPackage package)
+        private RestorePackagesCommand(
+            NuGetPackage package,
+            IComponentModel componentModel,
+            IMenuCommandService commandService)
         {
-            if (package == null)
-            {
-                throw new ArgumentNullException(nameof(package));
-            }
-
             _package = package;
-
-            var componentModel = package.GetService<SComponentModel, IComponentModel>();
 
             _restoreWorker = new Lazy<ISolutionRestoreWorker>(
                 () => componentModel.GetService<ISolutionRestoreWorker>());
@@ -58,22 +52,24 @@ namespace NuGetVSExtension
             var menuCommandId = new CommandID(CommandSet, CommandId);
             var menuItem = new OleMenuCommand(
                 OnRestorePackages, null, BeforeQueryStatusForPackageRestore, menuCommandId);
-            var commandService = package.GetService<IMenuCommandService, OleMenuCommandService>();
             commandService?.AddCommand(menuItem);
         }
-
-        /// <summary>
-        /// Gets the instance of the command.
-        /// </summary>
-        public static RestorePackagesCommand Instance { get; private set; }
 
         /// <summary>
         /// Initializes the singleton instance of the command.
         /// </summary>
         /// <param name="package">Owner package, not null.</param>
-        public static void Initialize(NuGetPackage package)
+        public static async Task InitializeAsync(NuGetPackage package)
         {
-            Instance = new RestorePackagesCommand(package);
+            if (package == null)
+            {
+                throw new ArgumentNullException(nameof(package));
+            }
+
+            var componentModel = await package.GetServiceAsync(typeof(SComponentModel)) as IComponentModel;
+            var commandService = await package.GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
+
+            _instance = new RestorePackagesCommand(package, componentModel, commandService);
         }
 
         /// <summary>
