@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Moq;
+using Newtonsoft.Json.Linq;
+using NuGet.ProjectModel;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
@@ -129,6 +131,66 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Assert
             Assert.False(success, "The project should not have been fetched from the cache by short name.");
             Assert.Null(actual);
+        }
+
+        [Fact]
+        public void AddProjectBeforeAddProjectRestoreInfo()
+        {
+            // Arrange
+            var target = new ProjectSystemCache();
+            var projectNames = new ProjectNames(
+                fullName: @"C:\src\project\project.csproj",
+                uniqueName: @"folder\project",
+                shortName: "project",
+                customUniqueName: @"folder\project");
+            var projectNamesFromFullPath = ProjectNames.FromFullProjectPath(@"C:\src\project\project.csproj");
+            var packageSpec = new PackageSpec(new JObject());
+
+            // Act
+            target.AddProject(projectNames, dteProject: null, nuGetProject: null);
+            target.AddProjectRestoreInfo(projectNamesFromFullPath, packageSpec);
+
+            // Assert
+            PackageSpec actual;
+            ProjectNames names;
+
+            var getPackageSpecSuccess = target.TryGetProjectRestoreInfo(projectNames.FullName, out actual);
+            var getProjectNameSuccess = target.TryGetProjectNames(projectNames.UniqueName, out names);
+
+            Assert.True(getPackageSpecSuccess);
+            Assert.True(getProjectNameSuccess);
+            Assert.Same(packageSpec, actual);
+            Assert.Equal(@"folder\project", names.CustomUniqueName);
+        }
+
+        [Fact]
+        public void AddProjectRestoreInfoBeforeAddProject()
+        {
+            // Arrange
+            var target = new ProjectSystemCache();
+            var projectNames = new ProjectNames(
+                fullName: @"C:\src\project\project.csproj",
+                uniqueName: @"folder\project",
+                shortName: "project",
+                customUniqueName: @"folder\project");
+            var projectNamesFromFullPath = ProjectNames.FromFullProjectPath(@"C:\src\project\project.csproj");
+            var packageSpec = new PackageSpec(new JObject());
+
+            // Act
+            target.AddProjectRestoreInfo(projectNamesFromFullPath, packageSpec);
+            target.AddProject(projectNames, dteProject: null, nuGetProject: null);
+
+            // Assert
+            PackageSpec actual;
+            ProjectNames names;
+
+            var getPackageSpecSuccess = target.TryGetProjectRestoreInfo(projectNames.FullName, out actual);
+            var getProjectNameSuccess = target.TryGetProjectNames(projectNames.UniqueName, out names);
+
+            Assert.True(getPackageSpecSuccess);
+            Assert.True(getProjectNameSuccess);
+            Assert.Same(packageSpec, actual);
+            Assert.Equal(@"folder\project", names.CustomUniqueName);
         }
     }
 }

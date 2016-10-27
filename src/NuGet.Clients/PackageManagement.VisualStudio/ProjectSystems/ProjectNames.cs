@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using Microsoft.VisualStudio.Shell;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -68,6 +69,15 @@ namespace NuGet.PackageManagement.VisualStudio
                 uniqueName: EnvDTEProjectUtility.GetUniqueName(dteProject),
                 shortName: EnvDTEProjectUtility.GetName(dteProject),
                 customUniqueName: EnvDTEProjectUtility.GetCustomUniqueName(dteProject));
+        }
+
+        public static ProjectNames FromFullProjectPath(string name)
+        {
+            return new ProjectNames(
+                fullName: name,
+                uniqueName: name,
+                shortName: Path.GetFileNameWithoutExtension(name),
+                customUniqueName: name);
         }
 
         /// <summary>
