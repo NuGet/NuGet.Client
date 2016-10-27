@@ -37,7 +37,7 @@ namespace NuGet.Build.Tasks
 
         public void LogInformationSummary(string data)
         {
-            LogInformation(data);
+            _taskLogging.LogMessage(MessageImportance.High, data);
         }
 
         public void LogMinimal(string data)
