@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
@@ -41,11 +42,11 @@ namespace NuGet.ProjectModel
             }
         }
 
-        public static void RemoveDependency(PackageSpec spec, string packageId)
+        public static void RemoveDependency(PackageSpec spec, string packageId, IEnumerable<NuGetFramework> unsuccessfulFrameworks)
         {
             var depList = new List<IList<LibraryDependency>>();
             depList.Add(spec.Dependencies);
-            depList.AddRange(spec.TargetFrameworks.Select(e => e.Dependencies));
+            depList.AddRange(spec.TargetFrameworks.Where(t => unsuccessfulFrameworks.Contains(t.FrameworkName)).Select(e => e.Dependencies));
 
             foreach (var list in depList)
             {

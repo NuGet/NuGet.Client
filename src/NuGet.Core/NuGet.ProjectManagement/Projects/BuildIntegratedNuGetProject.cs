@@ -54,6 +54,21 @@ namespace NuGet.ProjectManagement.Projects
             INuGetProjectContext projectContext,
             bool throwOnFailure);
 
+        public abstract Task<bool> InstallPackageAsync(PackageIdentity packageIdentity,
+            INuGetProjectContext nuGetProjectContext,
+            IEnumerable<NuGetFramework> successfulFrameworks,
+            IEnumerable<NuGetFramework> unsucessfulFrameworks,
+            CancellationToken token);
+
+        public override sealed Task<bool> InstallPackageAsync(
+                    PackageIdentity packageIdentity,
+            DownloadResourceResult downloadResourceResult,
+            INuGetProjectContext nuGetProjectContext,
+            CancellationToken token)
+        {
+            throw  new NotImplementedException("This API should not be called for BuildIntegratedNuGetProject");
+        }
+
         public virtual async Task<bool> IsRestoreRequired(
                     IEnumerable<VersionFolderPathResolver> pathResolvers,
                     ISet<PackageIdentity> packagesChecked,

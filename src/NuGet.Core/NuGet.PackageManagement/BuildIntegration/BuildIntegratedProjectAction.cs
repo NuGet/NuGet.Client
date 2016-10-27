@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using NuGet.Commands;
+using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
@@ -39,13 +40,28 @@ namespace NuGet.PackageManagement
         /// </summary>
         public IReadOnlyList<NuGetProjectAction> OriginalActions { get; }
 
+        /// <summary>
+        /// Shows the frameworks for which a preview restore operation was successful. Only use it
+        /// in case of single package install case, and only for CpsPackageReference projects.
+        /// </summary>
+        public IEnumerable<NuGetFramework> SuccessfulFrameworksForPreviewRestore { get; }
+
+        /// <summary>
+        /// Shows the frameworks for which a preview restore operation was unsuccessful. Only use it
+        /// in case of single package install case, and only for CpsPackageReference projects.
+        /// </summary>
+        public IEnumerable<NuGetFramework> UnsuccessfulFrameworksForPreviewRestore { get; }
+
+
         public BuildIntegratedProjectAction(NuGetProject project,
             PackageIdentity packageIdentity,
             NuGetProjectActionType nuGetProjectActionType,
             LockFile originalLockFile,
             RestoreResultPair restoreResultPair,
             IReadOnlyList<SourceRepository> sources,
-            IReadOnlyList<NuGetProjectAction> originalActions)
+            IReadOnlyList<NuGetProjectAction> originalActions,
+            IEnumerable<NuGetFramework> successfulFrameworks,
+            IEnumerable<NuGetFramework> unsuccessfulFrameworks )
             : base(packageIdentity, nuGetProjectActionType, project)
         {
             if (packageIdentity == null)
@@ -73,6 +89,8 @@ namespace NuGet.PackageManagement
             RestoreResultPair = restoreResultPair;
             Sources = sources;
             OriginalActions = originalActions;
+            SuccessfulFrameworksForPreviewRestore = successfulFrameworks;
+            UnsuccessfulFrameworksForPreviewRestore = unsuccessfulFrameworks;
         }
 
         public IReadOnlyList<NuGetProjectAction> GetProjectActions()
