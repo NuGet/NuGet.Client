@@ -18,6 +18,7 @@ using NuGet.Configuration;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
+using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -642,6 +643,16 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // Then create the project name from the project.
             var newEnvDTEProjectName = ProjectNames.FromDTEProject(envDTEProject);
+
+            PackageSpec packageSpec;
+
+            _projectSystemCache.TryGetProjectRestoreInfo(newEnvDTEProjectName.FullName, out packageSpec);
+
+            if (packageSpec != null)
+            {
+                _projectSystemCache.RemoveProject(newEnvDTEProjectName.FullName);
+                _projectSystemCache.AddProjectRestoreInfo(newEnvDTEProjectName, packageSpec);
+            }
 
             // Finally, try to add the project to the cache.
             var added = _projectSystemCache.AddProject(newEnvDTEProjectName, envDTEProject, nuGetProject);

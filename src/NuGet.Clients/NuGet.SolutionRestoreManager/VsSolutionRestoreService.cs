@@ -103,35 +103,29 @@ namespace NuGet.SolutionRestoreManager
                     $"The nominate API is called for '{projectUniqueName}'.");
 
                 var projectNames = await FindMatchingDteProjectAsync(projectUniqueName);
-                if (projectNames != null)
+                if (projectNames == null)
                 {
-                    var packageSpec = ToPackageSpec(projectNames, projectRestoreInfo);
+                    projectNames = ProjectNames.GetTempProjectNames(projectUniqueName);
+                }
+                var packageSpec = ToPackageSpec(projectNames, projectRestoreInfo);
 #if DEBUG
-                    DumpProjectRestoreInfo(packageSpec);
+                DumpProjectRestoreInfo(packageSpec);
 #endif
-                    _projectSystemCache.AddProjectRestoreInfo(projectNames, packageSpec);
+                _projectSystemCache.AddProjectRestoreInfo(projectNames, packageSpec);
 
-                    // returned task completes when scheduled restore operation completes.
-                    // it should be discarded as we don't want to block CPS on that.
-                    var ignored = _restoreWorker.ScheduleRestoreAsync(
-                        SolutionRestoreRequest.OnUpdate(),
-                        token);
+                // returned task completes when scheduled restore operation completes.
+                // it should be discarded as we don't want to block CPS on that.
+                var ignored = _restoreWorker.ScheduleRestoreAsync(
+                    SolutionRestoreRequest.OnUpdate(),
+                    token);
 
-                    return true;
-                }
-                else
-                {
-                    _logger.LogError(
-                        $"Nominated project '{projectUniqueName}' cannot be found in DTE");
-                }
+                return true;
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
                 throw;
             }
-
-            return false;
         }
 
         // Try matching the nominated project to a DTE counterpart
@@ -203,7 +197,11 @@ namespace NuGet.SolutionRestoreManager
                 var dgPath = Path.Combine(outputPath, $"{Guid.NewGuid()}.dg");
                 dgFile.Save(dgPath);
             }
+<<<<<<< HEAD
             catch (Exception e)
+=======
+            catch (Exception ex)
+>>>>>>> 25ff03c... removed DTE queries in Nominate API
             {
                 _logger.LogError(e.ToString());
             }

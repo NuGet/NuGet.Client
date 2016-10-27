@@ -70,6 +70,15 @@ namespace NuGet.PackageManagement.VisualStudio
                 customUniqueName: EnvDTEProjectUtility.GetCustomUniqueName(dteProject));
         }
 
+        public static ProjectNames GetTempProjectNames(string name)
+        {
+            return new ProjectNames(
+                fullName: name,
+                uniqueName: name,
+                shortName: name,
+                customUniqueName: name);
+        }
+
         /// <summary>
         /// Two projects are equal if they share the same FullNames.
         /// </summary>
