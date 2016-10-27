@@ -61,6 +61,7 @@
                 <GetScriptBlock>
                     switch ($this.Kind) {
                         "{262852C6-CD72-467D-83FE-5EEB1973A190}" {"JavaScript"}
+                        "{9A19103F-16F7-4668-BE54-9A1E7A4F7556}" {"C#"}
                         default { "Unknown" }
                     }
                 </GetScriptBlock>
