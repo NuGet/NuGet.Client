@@ -1,7 +1,10 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
@@ -10,52 +13,118 @@ namespace NuGet.ProjectModel
 {
     public static class PackageSpecOperations
     {
-        public static void AddDependency(PackageSpec spec, PackageIdentity package)
+        public static void AddOrUpdateDependency(PackageSpec spec, PackageIdentity identity)
         {
-            AddDependency(spec, package.Id, new VersionRange(package.Version));
-        }
+            var existing = GetExistingDependencies(spec, identity.Id);
 
-        public static void AddDependency(PackageSpec spec, string packageId, VersionRange range)
-        {
-            var dependencies = spec.Dependencies
-                .Concat(spec.TargetFrameworks.SelectMany(e => e.Dependencies))
-                .Where(e => StringComparer.OrdinalIgnoreCase.Equals(e.Name, packageId))
-                .ToList();
+            var range = new VersionRange(identity.Version);
 
-            var updated = false;
-
-            foreach (var dependency in dependencies)
+            foreach (var dependency in existing)
             {
-                // Update the range
                 dependency.LibraryRange.VersionRange = range;
-                updated = true;
             }
 
-            if (!updated)
+            if (!existing.Any())
             {
-                // Add a new dependency
-                spec.Dependencies.Add(new LibraryDependency()
-                {
-                    LibraryRange = new LibraryRange(packageId, range, LibraryDependencyTarget.Package)
-                });
+                AddDependency(spec.Dependencies, identity.Id, range);
             }
         }
 
-        public static void RemoveDependency(PackageSpec spec, string packageId)
+        public static bool HasPackage(PackageSpec spec, string packageId)
         {
-            var depList = new List<IList<LibraryDependency>>();
-            depList.Add(spec.Dependencies);
-            depList.AddRange(spec.TargetFrameworks.Select(e => e.Dependencies));
+            return GetExistingDependencies(spec, packageId).Any();
+        }
 
-            foreach (var list in depList)
+        public static void AddDependency(
+            PackageSpec spec,
+            PackageIdentity identity,
+            IEnumerable<NuGetFramework> frameworksToAdd)
+        {
+            var lists = GetDependencyLists(
+                spec,
+                includeGenericDependencies: false,
+                frameworksToConsider: frameworksToAdd);
+
+            var range = new VersionRange(identity.Version);
+
+            foreach (var list in lists)
             {
-                foreach (var dependency in list.Where(e => 
-                    StringComparer.OrdinalIgnoreCase.Equals(e.Name, packageId))
-                    .ToArray())
+                AddDependency(list, identity.Id, range);
+            }
+        }
+
+        public static void RemoveDependency(
+            PackageSpec spec,
+            string packageId)
+        {
+            var lists = GetDependencyLists(
+                spec,
+                includeGenericDependencies: true,
+                frameworksToConsider: null);
+
+            foreach (var list in lists)
+            {
+                var matchingDependencies = list
+                    .Where(e => StringComparer.OrdinalIgnoreCase.Equals(e.Name, packageId))
+                    .ToList();
+
+                foreach (var dependency in matchingDependencies)
                 {
                     list.Remove(dependency);
                 }
             }
+        }
+
+        /// <summary>
+        /// Get the list of dependencies in the package spec. Unless null is provided, the
+        /// <paramref name="frameworksToConsider"/> set can be used to get the dependency lists for only for the
+        /// provided target frameworks. If null is provided, all framework dependency lists are returned.
+        /// </summary>
+        /// <param name="spec">The package spec.</param>
+        /// <param name="includeGenericDependencies">
+        /// Whether or not the generic dependency list should be returned (dependencies that apply to all target
+        /// frameworks.
+        /// </param>
+        /// <param name="frameworksToConsider">The frameworks to consider.</param>
+        /// <returns>The sequence of dependency lists.</returns>
+        private static IEnumerable<IList<LibraryDependency>> GetDependencyLists(
+            PackageSpec spec,
+            IEnumerable<NuGetFramework> frameworksToConsider,
+            bool includeGenericDependencies)
+        {
+            if (includeGenericDependencies)
+            {
+                yield return spec.Dependencies;
+            }
+
+            foreach (var targetFramework in spec.TargetFrameworks)
+            {
+                if (frameworksToConsider == null || frameworksToConsider.Contains(targetFramework.FrameworkName))
+                {
+                    yield return targetFramework.Dependencies;
+                }
+            }
+        }
+
+        private static List<LibraryDependency> GetExistingDependencies(PackageSpec spec, string packageId)
+        {
+            return GetDependencyLists(spec, frameworksToConsider: null, includeGenericDependencies: true)
+                    .SelectMany(list => list)
+                    .Where(library => StringComparer.OrdinalIgnoreCase.Equals(library.Name, packageId))
+                    .ToList();
+        }
+
+        private static void AddDependency(
+            IList<LibraryDependency> list,
+            string packageId,
+            VersionRange range)
+        {
+            var dependency = new LibraryDependency
+            {
+                LibraryRange = new LibraryRange(packageId, range, LibraryDependencyTarget.Package)
+            };
+
+            list.Add(dependency);
         }
     }
 }

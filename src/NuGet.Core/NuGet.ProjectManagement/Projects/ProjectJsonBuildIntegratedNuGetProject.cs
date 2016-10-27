@@ -14,11 +14,9 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
-using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
-using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
 namespace NuGet.ProjectManagement.Projects
@@ -111,7 +109,7 @@ namespace NuGet.ProjectManagement.Projects
 
         public override Task<string> GetAssetsFilePathAsync()
         {
-            return Task.FromResult<string>(ProjectJsonPathUtilities.GetLockFilePath(JsonConfigPath));
+            return Task.FromResult(ProjectJsonPathUtilities.GetLockFilePath(JsonConfigPath));
         }
 
         /// <summary>
@@ -146,22 +144,6 @@ namespace NuGet.ProjectManagement.Projects
         }
 
         /// <summary>
-        /// Install a package using the global packages folder.
-        /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801")]
-        public async Task<bool> AddDependency(PackageDependency dependency,
-            CancellationToken token)
-        {
-            var json = await GetJsonAsync();
-
-            JsonConfigUtility.AddDependency(json, dependency);
-
-            await SaveJsonAsync(json);
-
-            return true;
-        }
-
-        /// <summary>
         /// Script executor hook
         /// </summary>
         public override Task<bool> ExecuteInitScriptAsync(
@@ -173,7 +155,8 @@ namespace NuGet.ProjectManagement.Projects
             return Task.FromResult(false);
         }
 
-        public virtual Task<IReadOnlyList<ProjectRestoreReference>> GetDirectProjectReferencesAsync(DependencyGraphCacheContext context)
+        public virtual Task<IReadOnlyList<ProjectRestoreReference>> GetDirectProjectReferencesAsync(
+            DependencyGraphCacheContext context)
         {
             return Task.FromResult<IReadOnlyList<ProjectRestoreReference>>(
                 Enumerable.Empty<ProjectRestoreReference>().ToList());
@@ -245,25 +228,32 @@ namespace NuGet.ProjectManagement.Projects
 
                 context?.PackageSpecCache.Add(MSBuildProjectPath, packageSpec);
             }
+
             return new[] { packageSpec };
         }
 
-        public override async Task<bool> InstallPackageAsync(
-                    PackageIdentity packageIdentity,
-            DownloadResourceResult downloadResourceResult,
+        public async override Task<bool> InstallPackageAsync(
+            PackageIdentity packageIdentity,
             INuGetProjectContext nuGetProjectContext,
+            IEnumerable<NuGetFramework> successfulFrameworks,
+            IEnumerable<NuGetFramework> unsucessfulFrameworks,
             CancellationToken token)
         {
             var dependency = new PackageDependency(packageIdentity.Id, new VersionRange(packageIdentity.Version));
 
-            return await AddDependency(dependency, token);
+            var json = await GetJsonAsync();
+
+            JsonConfigUtility.AddDependency(json, dependency);
+
+            await SaveJsonAsync(json);
+
+            return true;
         }
 
         /// <summary>
         /// Uninstall a package from the config file.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801")]
-        public async Task<bool> RemoveDependency(string packageId,
+        public async Task<bool> RemoveDependencyAsync(string packageId,
             INuGetProjectContext nuGetProjectContext,
             CancellationToken token)
         {
@@ -278,7 +268,7 @@ namespace NuGet.ProjectManagement.Projects
 
         public override async Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
-            return await RemoveDependency(packageIdentity.Id, nuGetProjectContext, token);
+            return await RemoveDependencyAsync(packageIdentity.Id, nuGetProjectContext, token);
         }
         private JObject GetJson()
         {

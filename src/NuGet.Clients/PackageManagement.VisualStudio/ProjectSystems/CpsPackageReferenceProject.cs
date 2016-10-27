@@ -3,19 +3,20 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.ProjectSystem;
+using Microsoft.VisualStudio.ProjectSystem.References;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
-using NuGet.Protocol.Core.Types;
 using EnvDTEProject = EnvDTE.Project;
+using PackageReference = NuGet.Packaging.PackageReference;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -27,6 +28,8 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public class CpsPackageReferenceProject : BuildIntegratedNuGetProject
     {
+        private const string TargetFrameworkCondition = "TargetFramework";
+
         private readonly string _projectName;
         private readonly string _projectUniqueName;
         private readonly string _projectFullPath;
@@ -96,7 +99,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override Task<String> GetAssetsFilePathAsync()
         {
-            return Task.FromResult<string>(_packageSpecFactory()?.RestoreMetadata.OutputPath);
+            return Task.FromResult(Path.Combine(
+                _packageSpecFactory().RestoreMetadata.OutputPath,
+                LockFileFormat.AssetsFileName));
         }
 
         #region IDependencyGraphProject
@@ -172,21 +177,49 @@ namespace NuGet.PackageManagement.VisualStudio
             return new PackageReference(identity, targetFramework);
         }
 
-        public override async Task<Boolean> InstallPackageAsync(PackageIdentity packageIdentity, DownloadResourceResult downloadResourceResult, INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        public override async Task<Boolean> InstallPackageAsync(PackageIdentity packageIdentity,
+            INuGetProjectContext nuGetProjectContext,
+            IEnumerable<NuGetFramework> successfulFrameworks,
+            IEnumerable<NuGetFramework> unsuccessfulFrameworks,
+            CancellationToken token)
         {
-
             nuGetProjectContext.Log(MessageLevel.Info, Strings.InstallingPackage, packageIdentity);
 
-            var configuredProject = await _unconfiguredProject.GetSuggestedConfiguredProjectAsync();
-            var result = await
-                configuredProject?.Services.PackageReferences.AddAsync
-                (packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-            
-            // This is the update operation
-            if (result != null && !result.Added)
+            if (successfulFrameworks.Any() && unsuccessfulFrameworks.Any())
             {
-                var existingReference = result.Reference;
-                await existingReference?.Metadata.SetPropertyValueAsync("Version", packageIdentity.Version.ToNormalizedString());
+                var conditionalService = _unconfiguredProject
+                    .Services
+                    .ExportProvider
+                    .GetExportedValue<IConditionalPackageReferencesService>();
+
+                if (conditionalService == null)
+                {
+                    return true;
+                }
+
+                foreach (var framework in successfulFrameworks)
+                {
+                    await conditionalService.AddAsync(
+                        packageIdentity.Id,
+                        packageIdentity.Version.ToNormalizedString(),
+                        TargetFrameworkCondition,
+                        framework.GetShortFolderName());
+                }
+            }
+            else
+            {
+                var configuredProject = await _unconfiguredProject.GetSuggestedConfiguredProjectAsync();
+                var result = await configuredProject?
+                    .Services
+                    .PackageReferences
+                    .AddAsync(packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
+
+                // This is the update operation
+                if (result != null && !result.Added)
+                {
+                    var existingReference = result.Reference;
+                    await existingReference?.Metadata.SetPropertyValueAsync("Version", packageIdentity.Version.ToNormalizedString());
+                }
             }
 
             return true;

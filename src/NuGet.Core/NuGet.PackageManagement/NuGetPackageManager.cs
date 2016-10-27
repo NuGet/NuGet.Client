@@ -2345,17 +2345,17 @@ namespace NuGet.PackageManagement
 
                 originalLockFile = originalRestoreResult.Result.LockFile;
             }
-
-            // Modify the package spec
+            
             foreach (var action in nuGetProjectActions)
             {
                 if (action.NuGetProjectActionType == NuGetProjectActionType.Uninstall)
                 {
+                    // Remove the package from all frameworks and dependencies section.
                     PackageSpecOperations.RemoveDependency(updatedPackageSpec, action.PackageIdentity.Id);
                 }
                 else if (action.NuGetProjectActionType == NuGetProjectActionType.Install)
                 {
-                    PackageSpecOperations.AddDependency(updatedPackageSpec, action.PackageIdentity);
+                    PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, action.PackageIdentity);
                 }
             }
 
@@ -2371,6 +2371,55 @@ namespace NuGet.PackageManagement
                 Settings,
                 logger,
                 token);
+
+            var nugetProjectActionsList = nuGetProjectActions.ToList();
+
+            var allFrameworks = updatedPackageSpec
+                .TargetFrameworks
+                .Select(t => t.FrameworkName)
+                .ToList();
+
+            var unsuccessfulFrameworks = restoreResult
+                .Result
+                .CompatibilityCheckResults
+                .Where(t => !t.Success)
+                .Select(t => t.Graph.Framework)
+                .ToList();
+
+            var successfulFrameworks = allFrameworks
+                .Except(unsuccessfulFrameworks)
+                .ToList();
+
+            var firstAction = nugetProjectActionsList[0];
+
+            // If the restore failed and this was a single package install, try to install the package to a subset of
+            // the target frameworks.
+            if (nugetProjectActionsList.Count == 1 &&
+                firstAction.NuGetProjectActionType == NuGetProjectActionType.Install &&
+                successfulFrameworks.Any() &&
+                unsuccessfulFrameworks.Any() &&
+                !restoreResult.Result.Success &&
+                !PackageSpecOperations.HasPackage(originalPackageSpec, firstAction.PackageIdentity.Id))
+            {
+                updatedPackageSpec = originalPackageSpec.Clone();
+
+                PackageSpecOperations.AddDependency(
+                    updatedPackageSpec,
+                    firstAction.PackageIdentity,
+                    successfulFrameworks);
+
+                restoreResult = await DependencyGraphRestoreUtility.PreviewRestoreAsync(
+                    SolutionManager,
+                    buildIntegratedProject,
+                    updatedPackageSpec,
+                    dependencyGraphContext,
+                    providerCache,
+                    cacheModifier,
+                    sources,
+                    Settings,
+                    logger,
+                    token);
+            }
 
             InstallationCompatibility.EnsurePackageCompatibility(
                 buildIntegratedProject,
@@ -2392,13 +2441,16 @@ namespace NuGet.PackageManagement
                 string.Format(TelemetryConstants.PreviewBuildIntegratedStepName, projectId),
                 stopWatch.Elapsed.TotalSeconds);
 
-            return new BuildIntegratedProjectAction(buildIntegratedProject,
+            return new BuildIntegratedProjectAction(
+                buildIntegratedProject,
                 nuGetProjectActions.First().PackageIdentity,
                 actionType,
                 originalLockFile,
                 restoreResult,
                 sources.ToList(),
-                nuGetProjectActions.ToList());
+                nugetProjectActionsList,
+                successfulFrameworks,
+                unsuccessfulFrameworks);
         }
 
         /// <summary>
@@ -2466,8 +2518,9 @@ namespace NuGet.PackageManagement
                         // Install the package to the project
                         await buildIntegratedProject.InstallPackageAsync(
                             originalAction.PackageIdentity,
-                            downloadResourceResult: null,
-                            nuGetProjectContext: nuGetProjectContext,
+                            nuGetProjectContext,
+                            projectAction.SuccessfulFrameworksForPreviewRestore,
+                            projectAction.UnsuccessfulFrameworksForPreviewRestore,
                             token: token);
                     }
                     else if (originalAction.NuGetProjectActionType == NuGetProjectActionType.Uninstall)
