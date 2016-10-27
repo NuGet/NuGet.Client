@@ -341,7 +341,11 @@ namespace NuGet.SolutionRestoreManager
         {
             // The path may be a relative path, to match the project unique name as a 
             // string this should be the full path to the project
-            var referencePath = Path.GetFullPath(Path.Combine(projectPath, item.Name));
+            var parentProjectDirectory = Path.GetDirectoryName(projectPath);
+            var referenceCombinedPath = Path.Combine(parentProjectDirectory, item.Name);
+
+            // Remove ../../ and any other relative parts of the path that were used in the project file
+            var referencePath = Path.GetFullPath(referenceCombinedPath);
 
             var dependency = new ProjectRestoreReference
             {
