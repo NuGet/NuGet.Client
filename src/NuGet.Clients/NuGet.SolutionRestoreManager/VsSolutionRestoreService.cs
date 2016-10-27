@@ -203,7 +203,7 @@ namespace NuGet.SolutionRestoreManager
                 .Select(ToTargetFrameworkInformation)
                 .ToArray();
 
-            var projectFullPath = projectNames.FullName;
+            var projectFullPath = Path.GetFullPath(projectNames.FullName);
             var projectDirectory = Path.GetDirectoryName(projectFullPath);
 
             var packageSpec = new PackageSpec(tfis)
@@ -222,7 +222,11 @@ namespace NuGet.SolutionRestoreManager
                     OutputType = RestoreOutputType.NETCore,
                     OriginalTargetFrameworks = tfis
                         .Select(tfi => tfi.FrameworkName.GetShortFolderName())
-                        .ToList()
+                        .ToList(),
+                    TargetFrameworks = projectRestoreInfo.TargetFrameworks
+                        .Cast<IVsTargetFrameworkInfo>()
+                        .Select(item => ToProjectRestoreTargetFrameworkInformation(item, projectFullPath))
+                        .ToList(),
                 }
             };
 
@@ -245,12 +249,24 @@ namespace NuGet.SolutionRestoreManager
                         .Select(ToPackageLibraryDependency));
             }
 
+            return tfi;
+        }
+
+        private static ProjectRestoreMetadataFrameworkInfo ToProjectRestoreTargetFrameworkInformation(
+            IVsTargetFrameworkInfo targetFrameworkInfo,
+            string projectPath)
+        {
+            var tfi = new ProjectRestoreMetadataFrameworkInfo
+            {
+                FrameworkName = NuGetFramework.Parse(targetFrameworkInfo.TargetFrameworkMoniker)
+            };
+
             if (targetFrameworkInfo.ProjectReferences != null)
             {
-                tfi.Dependencies.AddRange(
+                tfi.ProjectReferences.AddRange(
                     targetFrameworkInfo.ProjectReferences
                         .Cast<IVsReferenceItem>()
-                        .Select(ToProjectLibraryDependency));
+                        .Select(item => ToProjectLibraryDependency(item, projectPath)));
             }
 
             return tfi;
@@ -321,14 +337,16 @@ namespace NuGet.SolutionRestoreManager
             return dependency;
         }
 
-        private static LibraryDependency ToProjectLibraryDependency(IVsReferenceItem item)
+        private static ProjectRestoreReference ToProjectLibraryDependency(IVsReferenceItem item, string projectPath)
         {
-            var dependency = new LibraryDependency
+            // The path may be a relative path, to match the project unique name as a 
+            // string this should be the full path to the project
+            var referencePath = Path.GetFullPath(Path.Combine(projectPath, item.Name));
+
+            var dependency = new ProjectRestoreReference
             {
-                LibraryRange = new LibraryRange(
-                    name: item.Name,
-                    versionRange: VersionRange.All,
-                    typeConstraint: LibraryDependencyTarget.ExternalProject)
+                ProjectPath = referencePath,
+                ProjectUniqueName = referencePath,
             };
 
             MSBuildRestoreUtility.ApplyIncludeFlags(
