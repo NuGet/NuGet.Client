@@ -93,8 +93,8 @@ namespace NuGet.SolutionRestoreManager.Test
             PackageSpec actualRestoreSpec = null;
 
             Mock.Get(cache)
-                .Setup(x => x.AddProjectRestoreInfo(projectFullPath,
-                    It.IsAny<PackageSpec>(), It.IsAny<ProjectNames>()))
+                .Setup(x => x.AddProjectRestoreInfo(It.IsAny<ProjectNames>(),
+                    It.IsAny<PackageSpec>()))
                 .Callback<ProjectNames, PackageSpec>(
                     (_, ps) => { actualRestoreSpec = ps; }
                 )
