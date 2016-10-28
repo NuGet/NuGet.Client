@@ -80,7 +80,7 @@ namespace NuGet.SolutionRestoreManager
 
         public Task<bool> CurrentRestoreOperation => _restoreWorker.CurrentRestoreOperation;
 
-        public Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo projectRestoreInfo, CancellationToken token)
+        public async Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo projectRestoreInfo, CancellationToken token)
         {
             if (string.IsNullOrEmpty(projectUniqueName))
             {
@@ -116,7 +116,7 @@ namespace NuGet.SolutionRestoreManager
                     SolutionRestoreRequest.OnUpdate(),
                     token);
 
-                return System.Threading.Tasks.Task.FromResult(true);
+                return await System.Threading.Tasks.Task.FromResult(true);
             }
             catch (Exception e)
             {
