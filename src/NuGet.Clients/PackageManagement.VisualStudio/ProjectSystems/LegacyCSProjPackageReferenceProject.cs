@@ -138,8 +138,7 @@ namespace NuGet.PackageManagement.VisualStudio
             string packageId,
             VersionRange range,
             INuGetProjectContext nuGetProjectContext,
-            IEnumerable<NuGetFramework> successfulFrameworks,
-            IEnumerable<NuGetFramework> unsuccessfulFrameworks,
+            BuildIntegratedInstallationContext installationContext,
             CancellationToken token)
         {
             var success = false;

@@ -182,8 +182,7 @@ namespace NuGet.PackageManagement.VisualStudio
             string packageId,
             VersionRange range,
             INuGetProjectContext nuGetProjectContext,
-            IEnumerable<NuGetFramework> successfulFrameworks,
-            IEnumerable<NuGetFramework> unsuccessfulFrameworks,
+            BuildIntegratedInstallationContext installationContext,
             CancellationToken token)
         {
             // Right now, the UI only handles installation of specific versions, which is just the minimum version of
@@ -192,8 +191,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.InstallingPackage, $"{packageId} {formattedRange}");
 
-            if (successfulFrameworks.Any() && unsuccessfulFrameworks.Any())
-            {
+            if (installationContext.SuccessfulFrameworks.Any() && installationContext.UnsuccessfulFrameworks.Any())
+            {   
                 // This is the "partial install" case. That is, install the package to only a subset of the frameworks
                 // supported by this project.
                 var conditionalService = _unconfiguredProject
@@ -208,13 +207,19 @@ namespace NuGet.PackageManagement.VisualStudio
                         _projectFullPath));
                 }
 
-                foreach (var framework in successfulFrameworks)
+                foreach (var framework in installationContext.SuccessfulFrameworks)
                 {
+                    string originalFramework;
+                    if (!installationContext.OriginalFrameworks.TryGetValue(framework, out originalFramework))
+                    {
+                        originalFramework = framework.GetShortFolderName();
+                    }
+
                     await conditionalService.AddAsync(
                         packageId,
                         formattedRange,
                         TargetFrameworkCondition,
-                        framework.GetShortFolderName());
+                        originalFramework);
                 }
             }
             else

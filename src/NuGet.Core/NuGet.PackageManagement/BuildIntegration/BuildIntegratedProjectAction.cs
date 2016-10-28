@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
 using NuGet.Commands;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
@@ -41,16 +40,9 @@ namespace NuGet.PackageManagement
         public IReadOnlyList<NuGetProjectAction> OriginalActions { get; }
 
         /// <summary>
-        /// Shows the frameworks for which a preview restore operation was successful. Only use it
-        /// in case of single package install case, and only for CpsPackageReference projects.
+        /// The context necessary for installing a package.
         /// </summary>
-        public IEnumerable<NuGetFramework> SuccessfulFrameworksForPreviewRestore { get; }
-
-        /// <summary>
-        /// Shows the frameworks for which a preview restore operation was unsuccessful. Only use it
-        /// in case of single package install case, and only for CpsPackageReference projects.
-        /// </summary>
-        public IEnumerable<NuGetFramework> UnsuccessfulFrameworksForPreviewRestore { get; }
+        public BuildIntegratedInstallationContext InstallationContext { get; }
 
         public BuildIntegratedProjectAction(NuGetProject project,
             PackageIdentity packageIdentity,
@@ -59,8 +51,7 @@ namespace NuGet.PackageManagement
             RestoreResultPair restoreResultPair,
             IReadOnlyList<SourceRepository> sources,
             IReadOnlyList<NuGetProjectAction> originalActions,
-            IEnumerable<NuGetFramework> successfulFrameworks,
-            IEnumerable<NuGetFramework> unsuccessfulFrameworks)
+            BuildIntegratedInstallationContext installationContext)
             : base(packageIdentity, nuGetProjectActionType, project)
         {
             if (packageIdentity == null)
@@ -88,12 +79,7 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(sources));
             }
 
-            if (successfulFrameworks == null)
-            {
-                throw new ArgumentNullException(nameof(sources));
-            }
-
-            if (unsuccessfulFrameworks == null)
+            if (installationContext == null)
             {
                 throw new ArgumentNullException(nameof(sources));
             }
@@ -103,8 +89,7 @@ namespace NuGet.PackageManagement
             RestoreResultPair = restoreResultPair;
             Sources = sources;
             OriginalActions = originalActions;
-            SuccessfulFrameworksForPreviewRestore = successfulFrameworks;
-            UnsuccessfulFrameworksForPreviewRestore = unsuccessfulFrameworks;
+            InstallationContext = installationContext;
         }
 
         public IReadOnlyList<NuGetProjectAction> GetProjectActions()

@@ -1393,13 +1393,11 @@ namespace NuGet.Test
                     VersionRange.Parse("1.0.8.3533"),
                     new TestNuGetProjectContext(),
                     null,
-                    null,
                     token);
                 await buildIntegratedProject.InstallPackageAsync(
                     "newtonsoft.json",
                     VersionRange.Parse("6.0.8"),
                     new TestNuGetProjectContext(),
-                    null,
                     null,
                     token);
 

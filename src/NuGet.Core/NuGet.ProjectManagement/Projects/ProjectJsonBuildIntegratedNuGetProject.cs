@@ -236,8 +236,7 @@ namespace NuGet.ProjectManagement.Projects
             string packageId,
             VersionRange range,
             INuGetProjectContext nuGetProjectContext,
-            IEnumerable<NuGetFramework> successfulFrameworks,
-            IEnumerable<NuGetFramework> unsucessfulFrameworks,
+            BuildIntegratedInstallationContext installationContext,
             CancellationToken token)
         {
             var dependency = new PackageDependency(packageId, range);

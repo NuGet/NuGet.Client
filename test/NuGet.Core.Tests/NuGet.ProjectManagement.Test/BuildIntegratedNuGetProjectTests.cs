@@ -258,9 +258,8 @@ namespace ProjectManagement.Test
                         packageIdentity.Id,
                         new VersionRange(packageIdentity.Version),
                         testNuGetProjectContext,
-                        null,
-                        null,
-                        token);
+                        installationContext: null,
+                        token: token);
                 }
 
                 // Assert
@@ -304,16 +303,14 @@ namespace ProjectManagement.Test
                         packageIdentity.Id,
                         new VersionRange(packageIdentity.Version),
                         testNuGetProjectContext,
-                        null,
-                        null,
-                        token);
+                        installationContext: null,
+                        token: token);
                     await buildIntegratedProject.InstallPackageAsync(
                         packageIdentity2.Id,
                         new VersionRange(packageIdentity2.Version),
                         testNuGetProjectContext,
-                        null,
-                        null,
-                        token);
+                        installationContext: null,
+                        token: token);
 
                     // Act
                     await buildIntegratedProject.UninstallPackageAsync(packageIdentity2, new TestNuGetProjectContext(), CancellationToken.None);
@@ -360,16 +357,14 @@ namespace ProjectManagement.Test
                         packageIdentity.Id,
                         new VersionRange(packageIdentity.Version),
                         testNuGetProjectContext,
-                        Enumerable.Empty<NuGetFramework>(),
-                        Enumerable.Empty<NuGetFramework>(),
-                        token);
+                        installationContext: null,
+                        token: token);
                     await buildIntegratedProject.InstallPackageAsync(
                         packageIdentity2.Id,
                         new VersionRange(packageIdentity2.Version),
                         testNuGetProjectContext,
-                        Enumerable.Empty<NuGetFramework>(),
-                        Enumerable.Empty<NuGetFramework>(),
-                        token);
+                        installationContext: null,
+                        token: token);
 
                     // Act
                     await buildIntegratedProject.UninstallPackageAsync(packageIdentity2, new TestNuGetProjectContext(), CancellationToken.None);

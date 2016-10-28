@@ -2424,6 +2424,17 @@ namespace NuGet.PackageManagement
                     token);
             }
 
+            // Build the installation context
+            var originalFrameworks = updatedPackageSpec
+                .RestoreMetadata
+                .OriginalTargetFrameworks
+                .GroupBy(x => NuGetFramework.Parse(x))
+                .ToDictionary(x => x.Key, x => x.First());
+            var installationContext = new BuildIntegratedInstallationContext(
+                successfulFrameworks,
+                unsuccessfulFrameworks,
+                originalFrameworks);
+
             InstallationCompatibility.EnsurePackageCompatibility(
                 buildIntegratedProject,
                 pathContext,
@@ -2452,8 +2463,7 @@ namespace NuGet.PackageManagement
                 restoreResult,
                 sources.ToList(),
                 nugetProjectActionsList,
-                successfulFrameworks,
-                unsuccessfulFrameworks);
+                installationContext);
         }
 
         /// <summary>
@@ -2523,8 +2533,7 @@ namespace NuGet.PackageManagement
                             originalAction.PackageIdentity.Id,
                             new VersionRange(originalAction.PackageIdentity.Version),
                             nuGetProjectContext,
-                            projectAction.SuccessfulFrameworksForPreviewRestore,
-                            projectAction.UnsuccessfulFrameworksForPreviewRestore,
+                            projectAction.InstallationContext,
                             token: token);
                     }
                     else if (originalAction.NuGetProjectActionType == NuGetProjectActionType.Uninstall)
