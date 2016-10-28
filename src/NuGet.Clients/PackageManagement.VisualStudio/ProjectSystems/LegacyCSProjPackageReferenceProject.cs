@@ -135,7 +135,8 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         public override async Task<Boolean> InstallPackageAsync(
-            PackageIdentity packageIdentity,
+            string packageId,
+            VersionRange range,
             INuGetProjectContext nuGetProjectContext,
             IEnumerable<NuGetFramework> successfulFrameworks,
             IEnumerable<NuGetFramework> unsuccessfulFrameworks,
@@ -149,10 +150,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 // We don't adjust package reference metadata from UI
                 _project.AddOrUpdateLegacyCSProjPackage(
-                    packageIdentity.Id,
-                    packageIdentity.Version.ToNormalizedString(),
-                    metadataElements: new string[] { },
-                    metadataValues: new string[] { });
+                    packageId,
+                    range.MinVersion.ToNormalizedString(),
+                    metadataElements: new string[0],
+                    metadataValues: new string[0]);
 
                 success = true;
             });

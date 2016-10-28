@@ -233,13 +233,14 @@ namespace NuGet.ProjectManagement.Projects
         }
 
         public async override Task<bool> InstallPackageAsync(
-            PackageIdentity packageIdentity,
+            string packageId,
+            VersionRange range,
             INuGetProjectContext nuGetProjectContext,
             IEnumerable<NuGetFramework> successfulFrameworks,
             IEnumerable<NuGetFramework> unsucessfulFrameworks,
             CancellationToken token)
         {
-            var dependency = new PackageDependency(packageIdentity.Id, new VersionRange(packageIdentity.Version));
+            var dependency = new PackageDependency(packageId, range);
 
             var json = await GetJsonAsync();
 

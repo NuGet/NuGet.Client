@@ -2377,6 +2377,7 @@ namespace NuGet.PackageManagement
             var allFrameworks = updatedPackageSpec
                 .TargetFrameworks
                 .Select(t => t.FrameworkName)
+                .Distinct()
                 .ToList();
 
             var unsuccessfulFrameworks = restoreResult
@@ -2384,6 +2385,7 @@ namespace NuGet.PackageManagement
                 .CompatibilityCheckResults
                 .Where(t => !t.Success)
                 .Select(t => t.Graph.Framework)
+                .Distinct()
                 .ToList();
 
             var successfulFrameworks = allFrameworks
@@ -2399,6 +2401,7 @@ namespace NuGet.PackageManagement
                 successfulFrameworks.Any() &&
                 unsuccessfulFrameworks.Any() &&
                 !restoreResult.Result.Success &&
+                // Exclude upgrades, for now we take the simplest case.
                 !PackageSpecOperations.HasPackage(originalPackageSpec, firstAction.PackageIdentity.Id))
             {
                 updatedPackageSpec = originalPackageSpec.Clone();
@@ -2517,7 +2520,8 @@ namespace NuGet.PackageManagement
                     {
                         // Install the package to the project
                         await buildIntegratedProject.InstallPackageAsync(
-                            originalAction.PackageIdentity,
+                            originalAction.PackageIdentity.Id,
+                            new VersionRange(originalAction.PackageIdentity.Version),
                             nuGetProjectContext,
                             projectAction.SuccessfulFrameworksForPreviewRestore,
                             projectAction.UnsuccessfulFrameworksForPreviewRestore,

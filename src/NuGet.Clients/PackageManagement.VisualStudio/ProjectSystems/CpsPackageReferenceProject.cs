@@ -15,6 +15,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
+using NuGet.Versioning;
 using EnvDTEProject = EnvDTE.Project;
 using PackageReference = NuGet.Packaging.PackageReference;
 using Task = System.Threading.Tasks.Task;
@@ -177,16 +178,24 @@ namespace NuGet.PackageManagement.VisualStudio
             return new PackageReference(identity, targetFramework);
         }
 
-        public override async Task<Boolean> InstallPackageAsync(PackageIdentity packageIdentity,
+        public override async Task<bool> InstallPackageAsync(
+            string packageId,
+            VersionRange range,
             INuGetProjectContext nuGetProjectContext,
             IEnumerable<NuGetFramework> successfulFrameworks,
             IEnumerable<NuGetFramework> unsuccessfulFrameworks,
             CancellationToken token)
         {
-            nuGetProjectContext.Log(MessageLevel.Info, Strings.InstallingPackage, packageIdentity);
+            // Right now, the UI only handles installation of specific versions, which is just the minimum version of
+            // the provided version range.
+            var formattedRange = range.MinVersion.ToNormalizedString();
+
+            nuGetProjectContext.Log(MessageLevel.Info, Strings.InstallingPackage, $"{packageId} {formattedRange}");
 
             if (successfulFrameworks.Any() && unsuccessfulFrameworks.Any())
             {
+                // This is the "partial install" case. That is, install the package to only a subset of the frameworks
+                // supported by this project.
                 var conditionalService = _unconfiguredProject
                     .Services
                     .ExportProvider
@@ -194,31 +203,35 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (conditionalService == null)
                 {
-                    return true;
+                    throw new InvalidOperationException(string.Format(
+                        Strings.UnableToGetCPSPackageInstallationService,
+                        _projectFullPath));
                 }
 
                 foreach (var framework in successfulFrameworks)
                 {
                     await conditionalService.AddAsync(
-                        packageIdentity.Id,
-                        packageIdentity.Version.ToNormalizedString(),
+                        packageId,
+                        formattedRange,
                         TargetFrameworkCondition,
                         framework.GetShortFolderName());
                 }
             }
             else
             {
+                // Install the package to all frameworks.
                 var configuredProject = await _unconfiguredProject.GetSuggestedConfiguredProjectAsync();
+                
                 var result = await configuredProject?
                     .Services
                     .PackageReferences
-                    .AddAsync(packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
+                    .AddAsync(packageId, formattedRange);
 
                 // This is the update operation
                 if (result != null && !result.Added)
                 {
                     var existingReference = result.Reference;
-                    await existingReference?.Metadata.SetPropertyValueAsync("Version", packageIdentity.Version.ToNormalizedString());
+                    await existingReference?.Metadata.SetPropertyValueAsync("Version", formattedRange);
                 }
             }
 

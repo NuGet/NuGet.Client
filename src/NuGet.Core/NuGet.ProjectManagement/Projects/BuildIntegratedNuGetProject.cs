@@ -13,6 +13,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 
 namespace NuGet.ProjectManagement.Projects
 {
@@ -50,7 +51,8 @@ namespace NuGet.ProjectManagement.Projects
             bool throwOnFailure);
 
         public abstract Task<bool> InstallPackageAsync(
-            PackageIdentity packageIdentity,
+            string packageId,
+            VersionRange range,
             INuGetProjectContext nuGetProjectContext,
             IEnumerable<NuGetFramework> successfulFrameworks,
             IEnumerable<NuGetFramework> unsucessfulFrameworks,
@@ -62,7 +64,7 @@ namespace NuGet.ProjectManagement.Projects
             INuGetProjectContext nuGetProjectContext,
             CancellationToken token)
         {
-            throw new NotImplementedException("This API should not be called for BuildIntegratedNuGetProject");
+            throw new NotImplementedException("This API should not be called for BuildIntegratedNuGetProject.");
         }
 
         public virtual async Task<bool> IsRestoreRequired(

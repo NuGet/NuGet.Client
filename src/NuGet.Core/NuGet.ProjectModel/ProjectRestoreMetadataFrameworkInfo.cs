@@ -14,6 +14,12 @@ namespace NuGet.ProjectModel
         public NuGetFramework FrameworkName { get; set; }
 
         /// <summary>
+        /// The original string before parsing the framework name. In some cases, it is important to keep this around
+        /// because MSBuild framework conditions require the framework name to be the original string (non-normalized).
+        /// </summary>
+        public string OriginalFrameworkName { get; set; }
+
+        /// <summary>
         /// Project references
         /// </summary>
         public IList<ProjectRestoreReference> ProjectReferences { get; set; } = new List<ProjectRestoreReference>();
