@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Moq;
+using Newtonsoft.Json.Linq;
 using NuGet.ProjectModel;
 using Xunit;
 
@@ -21,7 +22,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 customUniqueName: @"folder\project");
             var dteProject = new Mock<EnvDTE.Project>();
 
-            target.AddProject(projectNames.FullName, dteProject.Object, nuGetProject: null, projectNames: projectNames);
+            target.AddProject(projectNames, dteProject.Object, nuGetProject: null);
             EnvDTE.Project actual;
 
             // Act
@@ -44,7 +45,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 customUniqueName: @"custom");
             var dteProject = new Mock<EnvDTE.Project>();
 
-            target.AddProject(projectNames.FullName, dteProject.Object, nuGetProject: null, projectNames: projectNames);
+            target.AddProject(projectNames, dteProject.Object, nuGetProject: null);
             EnvDTE.Project actual;
 
             // Act
@@ -67,7 +68,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 customUniqueName: @"folder\project");
             var dteProject = new Mock<EnvDTE.Project>();
 
-            target.AddProject(projectNames.FullName, dteProject.Object, nuGetProject: null, projectNames: projectNames);
+            target.AddProject(projectNames, dteProject.Object, nuGetProject: null);
             EnvDTE.Project actual;
 
             // Act
@@ -90,7 +91,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 customUniqueName: @"folder\project");
             var dteProject = new Mock<EnvDTE.Project>();
 
-            target.AddProject(projectNames.FullName, dteProject.Object, nuGetProject: null, projectNames: projectNames);
+            target.AddProject(projectNames, dteProject.Object, nuGetProject: null);
             EnvDTE.Project actual;
 
             // Act
@@ -119,8 +120,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 shortName: projectNamesA.ShortName,
                 customUniqueName: @"folderB\project");
             
-            target.AddProject(projectNamesA.FullName, dteProject: null, nuGetProject: null, projectNames: projectNamesA);
-            target.AddProject(projectNamesB.FullName, dteProject: null, nuGetProject: null, projectNames: projectNamesB);
+            target.AddProject(projectNamesA, dteProject: null, nuGetProject: null);
+            target.AddProject(projectNamesB, dteProject: null, nuGetProject: null);
 
             EnvDTE.Project actual;
 
@@ -143,23 +144,23 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 shortName: "project",
                 customUniqueName: @"folder\project");
             var projectNamesFromFullPath = ProjectNames.FromFullProjectPath(@"C:\src\project\project.csproj");
-            var packageSpec = new Mock<PackageSpec>();
+            var packageSpec = new PackageSpec(new JObject());
 
             // Act
-            target.AddProject(projectNames.FullName, dteProject: null, nuGetProject: null, projectNames: projectNames);
-            target.AddProjectRestoreInfo(projectNamesFromFullPath.FullName, packageSpec.Object, projectNamesFromFullPath);
+            target.AddProject(projectNames, dteProject: null, nuGetProject: null);
+            target.AddProjectRestoreInfo(projectNamesFromFullPath, packageSpec);
 
             // Assert
             PackageSpec actual;
             ProjectNames names;
 
             var getPackageSpecSuccess = target.TryGetProjectRestoreInfo(projectNames.FullName, out actual);
-            var getProjectNameSuccess = target.TryGetProjectNames(projectNames.FullName, out names);
+            var getProjectNameSuccess = target.TryGetProjectNames(projectNames.UniqueName, out names);
 
             Assert.True(getPackageSpecSuccess);
             Assert.True(getProjectNameSuccess);
-            Assert.Same(packageSpec.Object, actual);
-            Assert.Equal(@"folder\project", projectNames.CustomUniqueName);
+            Assert.Same(packageSpec, actual);
+            Assert.Equal(@"folder\project", names.CustomUniqueName);
         }
 
         [Fact]
@@ -173,23 +174,23 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 shortName: "project",
                 customUniqueName: @"folder\project");
             var projectNamesFromFullPath = ProjectNames.FromFullProjectPath(@"C:\src\project\project.csproj");
-            var packageSpec = new Mock<PackageSpec>();
+            var packageSpec = new PackageSpec(new JObject());
 
             // Act
-            target.AddProjectRestoreInfo(projectNamesFromFullPath.FullName, packageSpec.Object, projectNamesFromFullPath);
-            target.AddProject(projectNames.FullName, dteProject: null, nuGetProject: null, projectNames: projectNames);
+            target.AddProjectRestoreInfo(projectNamesFromFullPath, packageSpec);
+            target.AddProject(projectNames, dteProject: null, nuGetProject: null);
 
             // Assert
             PackageSpec actual;
             ProjectNames names;
 
             var getPackageSpecSuccess = target.TryGetProjectRestoreInfo(projectNames.FullName, out actual);
-            var getProjectNameSuccess = target.TryGetProjectNames(projectNames.FullName, out names);
+            var getProjectNameSuccess = target.TryGetProjectNames(projectNames.UniqueName, out names);
 
             Assert.True(getPackageSpecSuccess);
             Assert.True(getProjectNameSuccess);
-            Assert.Same(packageSpec.Object, actual);
-            Assert.Equal(@"folder\project", projectNames.CustomUniqueName);
+            Assert.Same(packageSpec, actual);
+            Assert.Equal(@"folder\project", names.CustomUniqueName);
         }
     }
 }

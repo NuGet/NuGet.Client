@@ -87,7 +87,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="dteProject">The VS project.</param>
         /// <param name="nuGetProject">The NuGet project.</param>
         /// <returns>Returns true if the project was successfully added to the cache.</returns>
-        bool AddProject(string name, EnvDTE.Project dteProject, NuGetProject nuGetProject, ProjectNames projectName);
+        bool AddProject(ProjectNames projectName, EnvDTE.Project dteProject, NuGetProject nuGetProject);
 
         /// <summary>
         /// Adds or updates project restore info in the project cache.
@@ -95,7 +95,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="projectName">Primary key.</param>
         /// <param name="packageSpec">The project restore info.</param>
         /// <returns>Return true if operation succeeded.</returns>
-        bool AddProjectRestoreInfo(string name, PackageSpec packageSpec, ProjectNames projectName);
+        bool AddProjectRestoreInfo(ProjectNames projectName, PackageSpec packageSpec);
 
         /// <summary>
         /// Removes a project associated with given name out of the cache.

@@ -209,16 +209,16 @@ namespace NuGet.PackageManagement.VisualStudio
             return false;
         }
 
-        public bool AddProject(string name, EnvDTE.Project dteProject, NuGetProject nuGetProject, ProjectNames projectNames)
+        public bool AddProject(ProjectNames projectNames, EnvDTE.Project dteProject, NuGetProject nuGetProject)
         {
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
             if (projectNames == null)
             {
                 throw new ArgumentNullException(nameof(projectNames));
+            }
+
+            if (projectNames.FullName == null)
+            {
+                throw new ArgumentNullException(nameof(projectNames.FullName));
             }
 
             _readerWriterLock.EnterWriteLock();
@@ -228,7 +228,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 UpdateProjectNamesCache(projectNames);
 
                 AddOrUpdateCacheEntry(
-                    name,
+                    projectNames.FullName,
                     addEntryFactory: k => new CacheEntry
                     {
                         NuGetProject = nuGetProject,
@@ -251,16 +251,16 @@ namespace NuGet.PackageManagement.VisualStudio
             return true;
         }
 
-        public bool AddProjectRestoreInfo(string name, PackageSpec packageSpec, ProjectNames projectNames)
+        public bool AddProjectRestoreInfo(ProjectNames projectNames, PackageSpec packageSpec)
         {
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
             if (projectNames == null)
             {
                 throw new ArgumentNullException(nameof(projectNames));
+            }
+
+            if (projectNames.FullName == null)
+            {
+                throw new ArgumentNullException(nameof(projectNames.FullName));
             }
 
             _readerWriterLock.EnterWriteLock();
@@ -270,7 +270,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 UpdateProjectNamesCache(projectNames);
 
                 AddOrUpdateCacheEntry(
-                    name,
+                    projectNames.FullName,
                     addEntryFactory: k => new CacheEntry
                     {
                         ProjectRestoreInfo = packageSpec
@@ -428,7 +428,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        private bool TryGetCacheEntry(string primaryKey, out CacheEntry cacheEntry)
+        private bool TryGetCacheEntry(string secondaryKey, out CacheEntry cacheEntry)
         {
             cacheEntry = null;
 
@@ -436,13 +436,21 @@ namespace NuGet.PackageManagement.VisualStudio
 
             try
             {
-                return _primaryCache.TryGetValue(primaryKey, out cacheEntry);
+                ProjectNames primaryKey;
+                if (_projectNamesCache.TryGetValue(secondaryKey, out primaryKey) ||
+                    TryGetProjectNameByShortNameWithoutLock(secondaryKey, out primaryKey))
+                {
+                    return _primaryCache.TryGetValue(primaryKey.FullName, out cacheEntry);
+                }
             }
             finally
             {
                 _readerWriterLock.ExitReadLock();
             }
+
+            return false;
         }
+
 
         private class CacheEntry
         {

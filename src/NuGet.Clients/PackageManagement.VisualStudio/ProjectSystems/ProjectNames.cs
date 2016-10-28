@@ -76,7 +76,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return new ProjectNames(
                 fullName: name,
                 uniqueName: name,
-                shortName: Path.GetFileName(name),
+                shortName: Path.GetFileNameWithoutExtension(name),
                 customUniqueName: name);
         }
 

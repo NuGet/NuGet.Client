@@ -108,7 +108,7 @@ namespace NuGet.SolutionRestoreManager
 #if DEBUG
                 DumpProjectRestoreInfo(packageSpec);
 #endif
-                _projectSystemCache.AddProjectRestoreInfo(projectUniqueName, packageSpec, projectNames);
+                _projectSystemCache.AddProjectRestoreInfo(projectNames, packageSpec);
 
                 // returned task completes when scheduled restore operation completes.
                 // it should be discarded as we don't want to block CPS on that.

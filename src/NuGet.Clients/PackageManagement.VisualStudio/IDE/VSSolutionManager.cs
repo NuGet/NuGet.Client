@@ -645,7 +645,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var newEnvDTEProjectName = ProjectNames.FromDTEProject(envDTEProject);
 
             // Finally, try to add the project to the cache.
-            var added = _projectSystemCache.AddProject(newEnvDTEProjectName.FullName, envDTEProject, nuGetProject, newEnvDTEProjectName);
+            var added = _projectSystemCache.AddProject(newEnvDTEProjectName, envDTEProject, nuGetProject);
 
             if (added)
             {
