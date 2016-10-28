@@ -197,11 +197,7 @@ namespace NuGet.SolutionRestoreManager
                 var dgPath = Path.Combine(outputPath, $"{Guid.NewGuid()}.dg");
                 dgFile.Save(dgPath);
             }
-<<<<<<< HEAD
             catch (Exception e)
-=======
-            catch (Exception ex)
->>>>>>> 25ff03c... removed DTE queries in Nominate API
             {
                 _logger.LogError(e.ToString());
             }
