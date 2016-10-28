@@ -230,6 +230,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     .OutputWindowPanes
                     .Cast<EnvDTE.OutputWindowPane>()
                     .FirstOrDefault(p => StringComparer.OrdinalIgnoreCase.Equals(p.Guid, BuildWindowPaneGuid));
+                pane?.Activate();
                 return pane;
             });
         }
