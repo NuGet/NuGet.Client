@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using NuGet.Common;
 
@@ -107,10 +108,7 @@ namespace NuGet.Commands
                 GenerateMSBuildErrorFile(TargetsPath);
 
                 // Clean up any props that exist
-                if (File.Exists(PropsPath))
-                {
-                    File.Delete(PropsPath);
-                }
+                FileUtility.Delete(PropsPath);
             }
             else
             {
@@ -121,9 +119,9 @@ namespace NuGet.Commands
 
                     GenerateImportsFile(TargetsPath, Targets, forceWrite, log);
                 }
-                else if (File.Exists(TargetsPath))
+                else
                 {
-                    File.Delete(TargetsPath);
+                    FileUtility.Delete(TargetsPath);
                 }
 
                 if (Props.Any(group => group.Imports.Count > 0))
@@ -132,9 +130,9 @@ namespace NuGet.Commands
 
                     GenerateImportsFile(PropsPath, Props, forceWrite, log);
                 }
-                else if (File.Exists(PropsPath))
+                else
                 {
-                    File.Delete(PropsPath);
+                    FileUtility.Delete(PropsPath);
                 }
             }
         }
@@ -172,10 +170,7 @@ namespace NuGet.Commands
                         new XElement(ns + "Warning",
                             new XAttribute("Text", Strings.MSBuildWarning_MultiTarget)))));
 
-            using (var output = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
-            {
-                doc.Save(output);
-            }
+            WriteXML(path, doc);
         }
 
         private void GenerateImportsFile(string path, IList<MSBuildRestoreImportGroup> groups, bool forceWrite, ILogger log)
@@ -219,15 +214,24 @@ namespace NuGet.Commands
             {
                 log.LogDebug($"Writing imports file to disk: {path}");
 
-                using (var output = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
-                {
-                    doc.Save(output);
-                }
+                WriteXML(path, doc);
             }
             else
             {
                 log.LogDebug($"No changes found. Skipping write of imports file to disk: {path}");
             }
+        }
+
+        private static void WriteXML(string path, XDocument doc)
+        {
+            FileUtility.Replace((outputPath) =>
+            {
+                using (var output = new FileStream(outputPath, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
+                {
+                    doc.Save(output);
+                }
+            },
+            path);
         }
 
         private string GetImportPath(string importPath)
