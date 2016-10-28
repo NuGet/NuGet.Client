@@ -169,22 +169,18 @@ namespace NuGet.Commands
                     {
                         log.LogDebug($"Writing tool lock file to disk. Path: {result.LockFilePath}");
 
-                        await ConcurrencyUtilities.ExecuteWithFileLockedAsync(
-                            result.LockFilePath,
-                            lockedToken =>
-                            {
-                                lockFileFormat.Write(result.LockFilePath, result.LockFile);
-
-                                return Task.FromResult(0);
-                            },
-                            token);
+                        await FileUtility.ReplaceWithLock(
+                            (outputPath) => lockFileFormat.Write(outputPath, result.LockFile),
+                            result.LockFilePath);
                     }
                 }
                 else
                 {
                     log.LogMinimal($"Writing lock file to disk. Path: {result.LockFilePath}");
 
-                    lockFileFormat.Write(result.LockFilePath, result.LockFile);
+                    FileUtility.Replace(
+                        (outputPath) => lockFileFormat.Write(outputPath, result.LockFile),
+                        result.LockFilePath);
                 }
             }
             else
@@ -198,18 +194,6 @@ namespace NuGet.Commands
                     log.LogMinimal($"Lock file has not changed. Skipping lock file write. Path: {result.LockFilePath}");
                 }
             }
-        }
-
-        private static void WriteLockFile(
-            LockFileFormat lockFileFormat,
-            IRestoreResult result,
-            bool createDirectory)
-        {
-            if (createDirectory)
-            {
-            }
-            
-            lockFileFormat.Write(result.LockFilePath, result.LockFile);
         }
     }
 }
