@@ -70,7 +70,7 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The BaseIntermediateOutputPath could not be found for project &apos;{0}&apos;..
+        ///   Looks up a localized string similar to The BaseIntermediateOutputPath MSBuild property could not be found for project &apos;{0}&apos;..
         /// </summary>
         public static string BaseIntermediateOutputPathNotFound {
             get {
@@ -325,7 +325,7 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The .csproj &apos;{0}&apos; could not be casted to a build property storage interace..
+        ///   Looks up a localized string similar to The project &apos;{0}&apos; could not be casted to a build property storage interace, which is required to get MSBuild properties inside Visual Studio..
         /// </summary>
         public static string ProjectCouldNotBeCastedToBuildPropertyStorage {
             get {
@@ -375,6 +375,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         public static string SolutionIsNotSaved {
             get {
                 return ResourceManager.GetString("SolutionIsNotSaved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to get the project&apos;s package installation service for project &apos;{0}&apos;..
+        /// </summary>
+        public static string UnableToGetCPSPackageInstallationService {
+            get {
+                return ResourceManager.GetString("UnableToGetCPSPackageInstallationService", resourceCulture);
             }
         }
         

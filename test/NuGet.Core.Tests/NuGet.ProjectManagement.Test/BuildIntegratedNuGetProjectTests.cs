@@ -254,7 +254,12 @@ namespace ProjectManagement.Test
                 using (var packageStream = GetDownloadResourceResult(packageFileInfo))
                 {
                     // Act
-                    await buildIntegratedProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
+                    await buildIntegratedProject.InstallPackageAsync(
+                        packageIdentity.Id,
+                        new VersionRange(packageIdentity.Version),
+                        testNuGetProjectContext,
+                        installationContext: null,
+                        token: token);
                 }
 
                 // Assert
@@ -294,8 +299,18 @@ namespace ProjectManagement.Test
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
                 using (var packageStream = GetDownloadResourceResult(packageFileInfo))
                 {
-                    await buildIntegratedProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
-                    await buildIntegratedProject.InstallPackageAsync(packageIdentity2, packageStream, testNuGetProjectContext, token);
+                    await buildIntegratedProject.InstallPackageAsync(
+                        packageIdentity.Id,
+                        new VersionRange(packageIdentity.Version),
+                        testNuGetProjectContext,
+                        installationContext: null,
+                        token: token);
+                    await buildIntegratedProject.InstallPackageAsync(
+                        packageIdentity2.Id,
+                        new VersionRange(packageIdentity2.Version),
+                        testNuGetProjectContext,
+                        installationContext: null,
+                        token: token);
 
                     // Act
                     await buildIntegratedProject.UninstallPackageAsync(packageIdentity2, new TestNuGetProjectContext(), CancellationToken.None);
@@ -338,8 +353,18 @@ namespace ProjectManagement.Test
                     packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
                 using (var packageStream = GetDownloadResourceResult(packageFileInfo))
                 {
-                    await buildIntegratedProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
-                    await buildIntegratedProject.InstallPackageAsync(packageIdentity2, packageStream, testNuGetProjectContext, token);
+                    await buildIntegratedProject.InstallPackageAsync(
+                        packageIdentity.Id,
+                        new VersionRange(packageIdentity.Version),
+                        testNuGetProjectContext,
+                        installationContext: null,
+                        token: token);
+                    await buildIntegratedProject.InstallPackageAsync(
+                        packageIdentity2.Id,
+                        new VersionRange(packageIdentity2.Version),
+                        testNuGetProjectContext,
+                        installationContext: null,
+                        token: token);
 
                     // Act
                     await buildIntegratedProject.UninstallPackageAsync(packageIdentity2, new TestNuGetProjectContext(), CancellationToken.None);

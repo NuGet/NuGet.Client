@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
 using NuGet.Commands;
+using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
@@ -39,13 +39,19 @@ namespace NuGet.PackageManagement
         /// </summary>
         public IReadOnlyList<NuGetProjectAction> OriginalActions { get; }
 
+        /// <summary>
+        /// The context necessary for installing a package.
+        /// </summary>
+        public BuildIntegratedInstallationContext InstallationContext { get; }
+
         public BuildIntegratedProjectAction(NuGetProject project,
             PackageIdentity packageIdentity,
             NuGetProjectActionType nuGetProjectActionType,
             LockFile originalLockFile,
             RestoreResultPair restoreResultPair,
             IReadOnlyList<SourceRepository> sources,
-            IReadOnlyList<NuGetProjectAction> originalActions)
+            IReadOnlyList<NuGetProjectAction> originalActions,
+            BuildIntegratedInstallationContext installationContext)
             : base(packageIdentity, nuGetProjectActionType, project)
         {
             if (packageIdentity == null)
@@ -68,11 +74,22 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(sources));
             }
 
+            if (originalActions == null)
+            {
+                throw new ArgumentNullException(nameof(sources));
+            }
+
+            if (installationContext == null)
+            {
+                throw new ArgumentNullException(nameof(sources));
+            }
+
             OriginalLockFile = originalLockFile;
             RestoreResult = restoreResultPair.Result;
             RestoreResultPair = restoreResultPair;
             Sources = sources;
             OriginalActions = originalActions;
+            InstallationContext = installationContext;
         }
 
         public IReadOnlyList<NuGetProjectAction> GetProjectActions()

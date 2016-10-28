@@ -1388,8 +1388,18 @@ namespace NuGet.Test
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
                 var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(randomConfig, projectFilePath, msBuildNuGetProjectSystem);
 
-                await buildIntegratedProject.InstallPackageAsync(new PackageIdentity("dotnetrdf", NuGetVersion.Parse("1.0.8.3533")), null, new TestNuGetProjectContext(), token);
-                await buildIntegratedProject.InstallPackageAsync(new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.8")), null, new TestNuGetProjectContext(), token);
+                await buildIntegratedProject.InstallPackageAsync(
+                    "dotnetrdf",
+                    VersionRange.Parse("1.0.8.3533"),
+                    new TestNuGetProjectContext(),
+                    null,
+                    token);
+                await buildIntegratedProject.InstallPackageAsync(
+                    "newtonsoft.json",
+                    VersionRange.Parse("6.0.8"),
+                    new TestNuGetProjectContext(),
+                    null,
+                    token);
 
                 // Check that there are no packages returned by PackagesConfigProject
                 var installedPackages = (await buildIntegratedProject.GetInstalledPackagesAsync(token)).ToList();

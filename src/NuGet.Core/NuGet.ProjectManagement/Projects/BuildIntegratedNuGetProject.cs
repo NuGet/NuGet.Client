@@ -3,16 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.Versioning;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
-using NuGet.Commands;
-using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
@@ -29,7 +23,9 @@ namespace NuGet.ProjectManagement.Projects
     /// </summary>
     public abstract class BuildIntegratedNuGetProject : NuGetProject, INuGetIntegratedProject, IDependencyGraphProject
     {
-        protected BuildIntegratedNuGetProject() { }
+        protected BuildIntegratedNuGetProject()
+        {
+        }
 
         /// <summary>
         /// Project name
@@ -53,6 +49,22 @@ namespace NuGet.ProjectManagement.Projects
             string packageInstallPath,
             INuGetProjectContext projectContext,
             bool throwOnFailure);
+
+        public abstract Task<bool> InstallPackageAsync(
+            string packageId,
+            VersionRange range,
+            INuGetProjectContext nuGetProjectContext,
+            BuildIntegratedInstallationContext installationContext,
+            CancellationToken token);
+
+        public override sealed Task<bool> InstallPackageAsync(
+            PackageIdentity packageIdentity,
+            DownloadResourceResult downloadResourceResult,
+            INuGetProjectContext nuGetProjectContext,
+            CancellationToken token)
+        {
+            throw new NotImplementedException("This API should not be called for BuildIntegratedNuGetProject.");
+        }
 
         public virtual async Task<bool> IsRestoreRequired(
                     IEnumerable<VersionFolderPathResolver> pathResolvers,

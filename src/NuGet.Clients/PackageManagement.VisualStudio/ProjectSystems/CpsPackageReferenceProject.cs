@@ -3,19 +3,21 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.ProjectSystem;
+using Microsoft.VisualStudio.ProjectSystem.References;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
-using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 using EnvDTEProject = EnvDTE.Project;
+using PackageReference = NuGet.Packaging.PackageReference;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -27,6 +29,8 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public class CpsPackageReferenceProject : BuildIntegratedNuGetProject
     {
+        private const string TargetFrameworkCondition = "TargetFramework";
+
         private readonly string _projectName;
         private readonly string _projectUniqueName;
         private readonly string _projectFullPath;
@@ -96,7 +100,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override Task<String> GetAssetsFilePathAsync()
         {
-            return Task.FromResult<string>(_packageSpecFactory()?.RestoreMetadata.OutputPath);
+            return Task.FromResult(Path.Combine(
+                _packageSpecFactory().RestoreMetadata.OutputPath,
+                LockFileFormat.AssetsFileName));
         }
 
         #region IDependencyGraphProject
@@ -172,21 +178,66 @@ namespace NuGet.PackageManagement.VisualStudio
             return new PackageReference(identity, targetFramework);
         }
 
-        public override async Task<Boolean> InstallPackageAsync(PackageIdentity packageIdentity, DownloadResourceResult downloadResourceResult, INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        public override async Task<bool> InstallPackageAsync(
+            string packageId,
+            VersionRange range,
+            INuGetProjectContext nuGetProjectContext,
+            BuildIntegratedInstallationContext installationContext,
+            CancellationToken token)
         {
+            // Right now, the UI only handles installation of specific versions, which is just the minimum version of
+            // the provided version range.
+            var formattedRange = range.MinVersion.ToNormalizedString();
 
-            nuGetProjectContext.Log(MessageLevel.Info, Strings.InstallingPackage, packageIdentity);
+            nuGetProjectContext.Log(MessageLevel.Info, Strings.InstallingPackage, $"{packageId} {formattedRange}");
 
-            var configuredProject = await _unconfiguredProject.GetSuggestedConfiguredProjectAsync();
-            var result = await
-                configuredProject?.Services.PackageReferences.AddAsync
-                (packageIdentity.Id, packageIdentity.Version.ToNormalizedString());
-            
-            // This is the update operation
-            if (result != null && !result.Added)
+            if (installationContext.SuccessfulFrameworks.Any() && installationContext.UnsuccessfulFrameworks.Any())
+            {   
+                // This is the "partial install" case. That is, install the package to only a subset of the frameworks
+                // supported by this project.
+                var conditionalService = _unconfiguredProject
+                    .Services
+                    .ExportProvider
+                    .GetExportedValue<IConditionalPackageReferencesService>();
+
+                if (conditionalService == null)
+                {
+                    throw new InvalidOperationException(string.Format(
+                        Strings.UnableToGetCPSPackageInstallationService,
+                        _projectFullPath));
+                }
+
+                foreach (var framework in installationContext.SuccessfulFrameworks)
+                {
+                    string originalFramework;
+                    if (!installationContext.OriginalFrameworks.TryGetValue(framework, out originalFramework))
+                    {
+                        originalFramework = framework.GetShortFolderName();
+                    }
+
+                    await conditionalService.AddAsync(
+                        packageId,
+                        formattedRange,
+                        TargetFrameworkCondition,
+                        originalFramework);
+                }
+            }
+            else
             {
-                var existingReference = result.Reference;
-                await existingReference?.Metadata.SetPropertyValueAsync("Version", packageIdentity.Version.ToNormalizedString());
+                // Install the package to all frameworks.
+                var configuredProject = await _unconfiguredProject.GetSuggestedConfiguredProjectAsync();
+                
+                var result = await configuredProject?
+                    .Services
+                    .PackageReferences
+                    .AddAsync(packageId, formattedRange);
+
+                // This is the update operation
+                if (result != null && !result.Added)
+                {
+                    var existingReference = result.Reference;
+                    await existingReference?.Metadata.SetPropertyValueAsync("Version", formattedRange);
+                }
             }
 
             return true;

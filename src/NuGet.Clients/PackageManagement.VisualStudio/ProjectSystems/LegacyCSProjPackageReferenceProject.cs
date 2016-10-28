@@ -89,7 +89,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override async Task<string> GetAssetsFilePathAsync()
         {
-            return Path.Combine(await GetBaseIntermediatePathAsync(), LockFileFormat.AssetsFileName); ;
+            return Path.Combine(await GetBaseIntermediatePathAsync(), LockFileFormat.AssetsFileName);
         }
 
         public override async Task<bool> ExecuteInitScriptAsync(
@@ -134,19 +134,25 @@ namespace NuGet.PackageManagement.VisualStudio
             return GetPackageReferences(await GetPackageSpecAsync());
         }
 
-        public override async Task<bool> InstallPackageAsync(PackageIdentity packageIdentity, DownloadResourceResult downloadResourceResult, INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        public override async Task<Boolean> InstallPackageAsync(
+            string packageId,
+            VersionRange range,
+            INuGetProjectContext nuGetProjectContext,
+            BuildIntegratedInstallationContext installationContext,
+            CancellationToken token)
         {
             var success = false;
+
             await ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // We don't adjust package reference metadata from UI
                 _project.AddOrUpdateLegacyCSProjPackage(
-                    packageIdentity.Id,
-                    packageIdentity.Version.ToNormalizedString(),
-                    metadataElements: new string[] { },
-                    metadataValues: new string[] { });
+                    packageId,
+                    range.MinVersion.ToNormalizedString(),
+                    metadataElements: new string[0],
+                    metadataValues: new string[0]);
 
                 success = true;
             });
