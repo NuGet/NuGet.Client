@@ -80,7 +80,7 @@ namespace NuGet.SolutionRestoreManager
 
         public Task<bool> CurrentRestoreOperation => _restoreWorker.CurrentRestoreOperation;
 
-        public async Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo projectRestoreInfo, CancellationToken token)
+        public Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo projectRestoreInfo, CancellationToken token)
         {
             if (string.IsNullOrEmpty(projectUniqueName))
             {
@@ -102,16 +102,13 @@ namespace NuGet.SolutionRestoreManager
                 _logger.LogInformation(
                     $"The nominate API is called for '{projectUniqueName}'.");
 
-                var projectNames = await FindMatchingDteProjectAsync(projectUniqueName);
-                if (projectNames == null)
-                {
-                    projectNames = ProjectNames.GetTempProjectNames(projectUniqueName);
-                }
+                var projectNames = ProjectNames.FromFullProjectPath(projectUniqueName);
+
                 var packageSpec = ToPackageSpec(projectNames, projectRestoreInfo);
 #if DEBUG
                 DumpProjectRestoreInfo(packageSpec);
 #endif
-                _projectSystemCache.AddProjectRestoreInfo(projectNames, packageSpec);
+                _projectSystemCache.AddProjectRestoreInfo(projectUniqueName, packageSpec, projectNames);
 
                 // returned task completes when scheduled restore operation completes.
                 // it should be discarded as we don't want to block CPS on that.
@@ -119,64 +116,13 @@ namespace NuGet.SolutionRestoreManager
                     SolutionRestoreRequest.OnUpdate(),
                     token);
 
-                return true;
+                return System.Threading.Tasks.Task.FromResult(true);
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
                 throw;
             }
-        }
-
-        // Try matching the nominated project to a DTE counterpart
-        private async Task<ProjectNames> FindMatchingDteProjectAsync(string projectUniqueName)
-        {
-            var projectNames = await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                try
-                {
-                    var dteProject = await TryGetDteProjectAsync(projectUniqueName);
-                    if (dteProject != null)
-                    {
-                        // Get information about the project from DTE.
-                        // TODO: Get rid off all DTE calls in this method
-                        // TODO: cache should be indexed by full project path only.
-                        // NuGet/Home#3729
-                        return new ProjectNames(
-                            fullName: projectUniqueName, // dteProject.FullName throws here
-                            uniqueName: dteProject.UniqueName,
-                            shortName: dteProject.Name,
-                            customUniqueName: dteProject.UniqueName);
-                    }
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e.ToString());
-                }
-
-                return null;
-            });
-
-            return projectNames;
-        }
-
-        private async Task<EnvDTE.Project> TryGetDteProjectAsync(string projectUniqueName)
-        {
-            EnvDTE.Project dteProject = null;
-            if (_projectSystemCache.TryGetDTEProject(projectUniqueName, out dteProject))
-            {
-                return dteProject;
-            }
-
-            var lookup = await EnvDTESolutionUtility.GetPathToDTEProjectLookupAsync(_dte);
-            if (lookup.ContainsKey(projectUniqueName))
-            {
-                dteProject = lookup[projectUniqueName];
-            }
-
-            return dteProject;
         }
 
         private void DumpProjectRestoreInfo(PackageSpec packageSpec)
