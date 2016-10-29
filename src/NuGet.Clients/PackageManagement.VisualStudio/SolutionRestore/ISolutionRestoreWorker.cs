@@ -17,6 +17,11 @@ namespace NuGet.PackageManagement.VisualStudio
         Task<bool> CurrentRestoreOperation { get; }
 
         /// <summary>
+        /// Returns true when it's executing a restore operation.
+        /// </summary>
+        bool IsBusy { get; }
+
+        /// <summary>
         /// Schedules backgroud restore operation.
         /// </summary>
         /// <param name="request">Restore request.</param>
