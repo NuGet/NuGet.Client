@@ -82,7 +82,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             result = new CpsPackageReferenceProject(
                 dteProject.Name,
-                dteProject.UniqueName,
+                EnvDTEProjectUtility.GetCustomUniqueName(dteProject),
                 fullProjectPath,
                 packageSpecFactory,
                 dteProject,

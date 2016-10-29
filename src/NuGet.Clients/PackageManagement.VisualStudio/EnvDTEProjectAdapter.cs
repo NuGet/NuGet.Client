@@ -73,7 +73,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 ThreadHelper.ThrowIfNotOnUIThread();
 
                 // Uncached, in case project is renamed
-                return _project.UniqueName;
+                return EnvDTEProjectUtility.GetCustomUniqueName(_project);
             }
         }
 
