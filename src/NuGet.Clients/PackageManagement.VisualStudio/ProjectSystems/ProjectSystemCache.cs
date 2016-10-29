@@ -457,7 +457,6 @@ namespace NuGet.PackageManagement.VisualStudio
             public NuGetProject NuGetProject { get; set; }
             public EnvDTE.Project EnvDTEProject { get; set; }
             public PackageSpec ProjectRestoreInfo { get; set; }
-
             public ProjectNames ProjectNames { get; set; }
         }
     }
