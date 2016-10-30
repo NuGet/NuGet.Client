@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
@@ -64,6 +65,12 @@ namespace NuGet.ProjectManagement.Projects
             CancellationToken token)
         {
             throw new NotImplementedException("This API should not be called for BuildIntegratedNuGetProject.");
+        }
+
+        public virtual Task<INuGetLock> GetProjectLockAsync()
+        {
+            // Return a lock that does nothing. This should be overridden at a higher level.
+            return Task.FromResult<INuGetLock>(NullNuGetLock.Instance);
         }
 
         public virtual async Task<bool> IsRestoreRequired(

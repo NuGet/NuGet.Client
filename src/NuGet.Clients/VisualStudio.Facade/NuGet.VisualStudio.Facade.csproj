@@ -23,6 +23,7 @@
     <Reference Include="System.ComponentModel.Composition" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ProjectSystem\CPSProjectLock.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProjectSystem\ProjectHelper.cs" />
     <Compile Include="Telemetry\ITelemetrySession.cs" />

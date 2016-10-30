@@ -9,6 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.References;
+using Microsoft.VisualStudio.Shell;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
@@ -16,6 +18,7 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Facade.ProjectSystem;
 using EnvDTEProject = EnvDTE.Project;
 using PackageReference = NuGet.Packaging.PackageReference;
 using Task = System.Threading.Tasks.Task;
@@ -226,7 +229,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 // Install the package to all frameworks.
                 var configuredProject = await _unconfiguredProject.GetSuggestedConfiguredProjectAsync();
-                
+
                 var result = await configuredProject?
                     .Services
                     .PackageReferences
@@ -249,7 +252,19 @@ namespace NuGet.PackageManagement.VisualStudio
             await configuredProject?.Services.PackageReferences.RemoveAsync(packageIdentity.Id);
             return true;
         }
-        
+
+        public override async Task<INuGetLock> GetProjectLockAsync()
+        {
+            return await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                var hierarchy = VsHierarchyUtility.ToVsHierarchy(_envDTEProject);
+
+                return ProjectHelper.GetProjectLock(_envDTEProject, hierarchy, _projectFullPath);
+            });
+        }
+
         #endregion
     }
 }

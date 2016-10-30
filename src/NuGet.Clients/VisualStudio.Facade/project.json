@@ -1,6 +1,7 @@
 ﻿{
   "dependencies": {
-    "Microsoft.VisualStudio.Shell.Interop": "7.10.6071"
+    "Microsoft.VisualStudio.Shell.Interop": "7.10.6071",
+    "NuGet.Common":  "4.0.0-*"
   },
   "frameworks": {
     "net46": {}
