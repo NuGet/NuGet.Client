@@ -14,35 +14,19 @@ namespace NuGet.LibraryModel
         /// <summary>
         /// Convert flag string into a LibraryTypeFlag.
         /// </summary>
-        public static LibraryDependencyTarget Parse(string flag)
+        public static LibraryDependencyTarget Parse(string flags)
         {
             // If the LibraryDependency does not have a flag value it is considered all
-            if (string.IsNullOrEmpty(flag))
+            if (string.IsNullOrEmpty(flags))
             {
                 return LibraryDependencyTarget.All;
             }
 
-            switch (flag.ToLowerInvariant())
-            {
-                case "package":
-                    return LibraryDependencyTarget.Package;
-                case "project":
-                    return LibraryDependencyTarget.Project;
-                case "externalproject":
-                    return LibraryDependencyTarget.ExternalProject;
-                case "reference":
-                    return LibraryDependencyTarget.Reference;
-                case "assembly":
-                    return LibraryDependencyTarget.Assembly;
-                case "winmd":
-                    return LibraryDependencyTarget.WinMD;
-                case "all":
-                    return LibraryDependencyTarget.All;
+            LibraryDependencyTarget target;
+            // None is a noop here
+            Enum.TryParse(flags, out target);
 
-                    // None is a noop here
-            }
-
-            return LibraryDependencyTarget.None;
+            return target;
         }
 
         /// <summary>
