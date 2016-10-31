@@ -315,8 +315,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 // No-op all project closures are up to date and all packages exist on disk.
                 if (isRestoreRequired)
                 {
-                    // Save the project between operations.
-                    _dependencyGraphProjectCacheHash = cacheContext.SolutionSpecHash;
+                    if(!forceRestore)
+                    {
+                        // Save the project between operations.
+                        _dependencyGraphProjectCacheHash = cacheContext.SolutionSpecHash;
+                    }
 
                     // NOTE: During restore for build integrated projects,
                     //       We might show the dialog even if there are no packages to restore
