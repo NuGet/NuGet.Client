@@ -91,18 +91,6 @@ namespace NuGet.ProjectManagement.Projects
                 return true;
             }
 
-            // Ignore tools here
-            var specs = await GetPackageSpecsAsync(context);
-
-            var packageSpec = specs.FirstOrDefault(e => e.RestoreMetadata.OutputType != RestoreOutputType.Standalone
-                && e.RestoreMetadata.OutputType != RestoreOutputType.DotnetCliTool);
-
-            if (!lockFile.IsValidForPackageSpec(packageSpec, LockFileFormat.Version))
-            {
-                // The project.json file has been changed and the lock file needs to be updated.
-                return true;
-            }
-
             // Verify all libraries are on disk
             var packages = lockFile.Libraries.Where(library => library.Type == LibraryType.Package);
 
