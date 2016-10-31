@@ -40,6 +40,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public Task<bool> CurrentRestoreOperation => _activeRestoreTask;
 
+        public bool IsBusy => !_activeRestoreTask.IsCompleted;
+
         [ImportingConstructor]
         public SolutionRestoreWorker(
             [Import(typeof(SVsServiceProvider))]

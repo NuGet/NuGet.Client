@@ -81,7 +81,10 @@ namespace NuGetVSExtension
         /// <param name="e">Event args.</param>
         private void OnRestorePackages(object sender, EventArgs args)
         {
-            SolutionRestoreWorker.Restore(SolutionRestoreRequest.ByMenu());
+            if (!SolutionRestoreWorker.IsBusy)
+            {
+                SolutionRestoreWorker.Restore(SolutionRestoreRequest.ByMenu());
+            }
         }
 
         private void BeforeQueryStatusForPackageRestore(object sender, EventArgs args)
@@ -93,12 +96,14 @@ namespace NuGetVSExtension
                 OleMenuCommand command = (OleMenuCommand)sender;
 
                 // Enable the 'Restore NuGet Packages' dialog menu
-                // a) if the console is NOT busy executing a command, AND
-                // b) if the solution exists and not debugging and not building AND
-                // c) if the solution is DPL enabled or there are NuGetProjects. This means that there loaded, supported projects
+                // - if the console is NOT busy executing a command, AND
+                // - if the restore worker is not executing restore operation, AND
+                // - if the solution exists and not debugging and not building AND
+                // - if the solution is DPL enabled or there are NuGetProjects. This means that there loaded, supported projects
                 // Checking for DPL more is a temporary code until we've the capability to get nuget projects
                 // even in DPL mode. See https://github.com/NuGet/Home/issues/3711
                 command.Enabled = !ConsoleStatus.IsBusy &&
+                    !SolutionRestoreWorker.IsBusy &&
                     _package.IsSolutionExistsAndNotDebuggingAndNotBuilding() &&
                     (SolutionManager.IsSolutionDPLEnabled || SolutionManager.GetNuGetProjects().Any());
             });
