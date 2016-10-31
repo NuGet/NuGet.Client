@@ -270,13 +270,15 @@ namespace NuGetVSExtension
             Styles.LoadVsStyles();
             Brushes.LoadVsBrushes();
 
+            _outputConsoleLogger = new OutputConsoleLogger(this);
+
             // ***
             // VsNuGetDiagnostics.Initialize(
             //    ServiceLocator.GetInstance<IDebugConsoleController>());
 
             // Add our command handlers for menu (commands must exist in the .vsct file)
             await AddMenuCommandHandlersAsync();
-            await RestorePackagesCommand.InitializeAsync(this);
+            await RestorePackagesCommand.InitializeAsync(this, _outputConsoleLogger);
 
             // IMPORTANT: Do NOT do anything that can lead to a call to ServiceLocator.GetGlobalService().
             // Doing so is illegal and may cause VS to hang.
@@ -286,8 +288,6 @@ namespace NuGetVSExtension
 
             _dteEvents = _dte.Events.DTEEvents;
             _dteEvents.OnBeginShutdown += OnBeginShutDown;
-
-            _outputConsoleLogger = new OutputConsoleLogger(this);
 
             SetDefaultCredentialProvider();
 

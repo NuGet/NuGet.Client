@@ -198,4 +198,7 @@
   <data name="CredentialProviderFailed_ImportedProvider" xml:space="preserve">
     <value>Failed to load credential provider from assembly {0}.</value>
   </data>
+  <data name="SolutionRestoreFailed_RestoreWorkerIsBusy" xml:space="preserve">
+    <value>Solution Restore cannot be started while an automatic restore is in progress.</value>
+  </data>
 </root>

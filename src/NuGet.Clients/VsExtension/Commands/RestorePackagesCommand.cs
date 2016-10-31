@@ -8,7 +8,9 @@ using System.Linq;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using NuGet.PackageManagement;
+using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.ProjectManagement;
 using NuGetConsole;
 using Task = System.Threading.Tasks.Task;
 
@@ -25,6 +27,7 @@ namespace NuGetVSExtension
         private static readonly Guid CommandSet = GuidList.guidNuGetDialogCmdSet;
 
         private readonly NuGetPackage _package;
+        private readonly INuGetUILogger _logger;
         private readonly Lazy<ISolutionRestoreWorker> _restoreWorker;
         private readonly Lazy<ISolutionManager> _solutionManager;
         private readonly Lazy<IConsoleStatus> _consoleStatus;
@@ -36,9 +39,11 @@ namespace NuGetVSExtension
         private RestorePackagesCommand(
             NuGetPackage package,
             IComponentModel componentModel,
-            IMenuCommandService commandService)
+            IMenuCommandService commandService,
+            INuGetUILogger logger)
         {
             _package = package;
+            _logger = logger;
 
             _restoreWorker = new Lazy<ISolutionRestoreWorker>(
                 () => componentModel.GetService<ISolutionRestoreWorker>());
@@ -59,17 +64,22 @@ namespace NuGetVSExtension
         /// Initializes the singleton instance of the command.
         /// </summary>
         /// <param name="package">Owner package, not null.</param>
-        public static async Task InitializeAsync(NuGetPackage package)
+        public static async Task InitializeAsync(NuGetPackage package, INuGetUILogger logger)
         {
             if (package == null)
             {
                 throw new ArgumentNullException(nameof(package));
             }
 
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
             var componentModel = await package.GetServiceAsync(typeof(SComponentModel)) as IComponentModel;
             var commandService = await package.GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
 
-            _instance = new RestorePackagesCommand(package, componentModel, commandService);
+            _instance = new RestorePackagesCommand(package, componentModel, commandService, logger);
         }
 
         /// <summary>
@@ -84,6 +94,12 @@ namespace NuGetVSExtension
             if (!SolutionRestoreWorker.IsBusy)
             {
                 SolutionRestoreWorker.Restore(SolutionRestoreRequest.ByMenu());
+            }
+            else
+            {
+                // QueryStatus should disable the context menu in most of the cases.
+                // Except when NuGetPackage was not loaded before VS won't send QueryStatus.
+                _logger.Log(MessageLevel.Info, Resources.SolutionRestoreFailed_RestoreWorkerIsBusy);
             }
         }
 

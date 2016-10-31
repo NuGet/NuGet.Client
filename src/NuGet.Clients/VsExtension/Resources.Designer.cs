@@ -302,5 +302,14 @@ namespace NuGetVSExtension {
                 return ResourceManager.GetString("SolutionIsNotSavedPromptReopen", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Solution Restore cannot be started while an automatic restore is in progress..
+        /// </summary>
+        internal static string SolutionRestoreFailed_RestoreWorkerIsBusy {
+            get {
+                return ResourceManager.GetString("SolutionRestoreFailed_RestoreWorkerIsBusy", resourceCulture);
+            }
+        }
     }
 }
