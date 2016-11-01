@@ -36,8 +36,9 @@ namespace NuGet.SolutionRestoreManager
         /// <param name="projectRestoreInfo">Metadata <see cref="IVsProjectRestoreInfo"/> needed for restoring the project.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>
-        /// Returns if the requested nuget restore operation for the given project
-        /// was a success or failure.
+        /// Returns a restore task corresponding to the nominated project request.
+        /// NuGet will batch restore requests so it's possible the same restore task will be returned for multiple projects.
+        /// When the requested restore operation for the given project completes the task will indicate operation success or failure.
         /// </returns>
         Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo projectRestoreInfo, CancellationToken token);
     }
