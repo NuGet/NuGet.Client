@@ -80,7 +80,7 @@ namespace NuGet.SolutionRestoreManager
 
         public Task<bool> CurrentRestoreOperation => _restoreWorker.CurrentRestoreOperation;
 
-        public async Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo projectRestoreInfo, CancellationToken token)
+        public Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo projectRestoreInfo, CancellationToken token)
         {
             if (string.IsNullOrEmpty(projectUniqueName))
             {
@@ -111,12 +111,11 @@ namespace NuGet.SolutionRestoreManager
                 _projectSystemCache.AddProjectRestoreInfo(projectNames, packageSpec);
 
                 // returned task completes when scheduled restore operation completes.
-                // it should be discarded as we don't want to block CPS on that.
-                var ignored = _restoreWorker.ScheduleRestoreAsync(
+                var restoreTask = _restoreWorker.ScheduleRestoreAsync(
                     SolutionRestoreRequest.OnUpdate(),
                     token);
 
-                return await System.Threading.Tasks.Task.FromResult(true);
+                return restoreTask;
             }
             catch (Exception e)
             {
