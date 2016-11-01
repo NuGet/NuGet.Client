@@ -273,6 +273,9 @@ namespace NuGet.PackageManagement
             cacheContext.SolutionSpec = solutionDgSpec;
             cacheContext.SolutionSpecHash = newDependencyGraphSpecHash;
 
+            // Comment by @emgarten from PR -
+            // Force is only done during a rebuild, all of the work done here to build the dg file is stored in the cache context and used again later on.
+            // The time different should only be the time it takes to create the hash, which @dtivel has perf numbers on.
             if (forceRestore || (oldDependencyGraphSpecHash != newDependencyGraphSpecHash))
             {
                 // A new project has been added
