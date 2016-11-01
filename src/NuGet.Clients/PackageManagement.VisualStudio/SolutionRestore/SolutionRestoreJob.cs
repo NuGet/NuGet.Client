@@ -40,12 +40,16 @@ namespace NuGet.PackageManagement.VisualStudio
         // Restore summary
         // True if any of restores had errors
         private bool _hasErrors;
+
         // True if any of the restores were canceled
         private bool _cancelled;
+
         // True if any restores failed to restore all packages
         private bool _hasMissingPackages;
+
         // True if restore actions were taken and the summary should be displayed
         private bool _displayRestoreSummary;
+
         // If false the opt out message should be displayed
         private bool _hasOptOutBeenShown;
 
@@ -250,7 +254,6 @@ namespace NuGet.PackageManagement.VisualStudio
             RestoreTelemetryService.Instance.EmitRestoreEvent(restoreTelemetryEvent);
         }
 
-
         private async Task DisplayOptOutMessageAsync()
         {
             if (!_hasOptOutBeenShown)
@@ -315,11 +318,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 // No-op all project closures are up to date and all packages exist on disk.
                 if (isRestoreRequired)
                 {
-                    if(!forceRestore)
-                    {
-                        // Save the project between operations.
-                        _dependencyGraphProjectCacheHash = cacheContext.SolutionSpecHash;
-                    }
+                    // Save the project between operations.
+                    _dependencyGraphProjectCacheHash = cacheContext.SolutionSpecHash;
 
                     // NOTE: During restore for build integrated projects,
                     //       We might show the dialog even if there are no packages to restore
@@ -373,7 +373,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 var packageIdentity = args.Package;
                 Interlocked.Increment(ref _currentCount);
 
-                _logger.Do((_, progress) => 
+                _logger.Do((_, progress) =>
                 {
                     progress?.ReportProgress(
                         string.Format(
