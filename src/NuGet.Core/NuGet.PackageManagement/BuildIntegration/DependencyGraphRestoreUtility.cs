@@ -259,12 +259,6 @@ namespace NuGet.PackageManagement
             DependencyGraphCacheContext cacheContext,
             int oldDependencyGraphSpecHash)
         {
-            if (forceRestore)
-            {
-                // The cache has been updated, now skip the check since we are doing a restore anyways.
-                return true;
-            }
-
             var projects = solutionManager.GetNuGetProjects().OfType<IDependencyGraphProject>().ToArray();
 
             var solutionDgSpec = await GetSolutionRestoreSpec(solutionManager, cacheContext);
@@ -279,7 +273,7 @@ namespace NuGet.PackageManagement
             cacheContext.SolutionSpec = solutionDgSpec;
             cacheContext.SolutionSpecHash = newDependencyGraphSpecHash;
 
-            if (oldDependencyGraphSpecHash != newDependencyGraphSpecHash)
+            if (forceRestore || (oldDependencyGraphSpecHash != newDependencyGraphSpecHash))
             {
                 // A new project has been added
                 return true;
