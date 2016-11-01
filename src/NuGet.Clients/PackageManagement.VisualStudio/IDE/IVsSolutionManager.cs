@@ -26,5 +26,10 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="name">Project name, full path or unique name.</param>
         /// <returns>Desired project object.</returns>
         EnvDTE.Project GetDTEProject(string name);
+
+        /// <summary>
+        /// Return true if all projects in the solution have been loaded in background.
+        /// </summary>
+        bool IsSolutionFullyLoaded { get; }
     }
 }

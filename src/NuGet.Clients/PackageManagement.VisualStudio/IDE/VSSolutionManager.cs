@@ -319,6 +319,21 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        public bool IsSolutionFullyLoaded
+        {
+            get
+            {
+                return ThreadHelper.JoinableTaskFactory.Run(async delegate
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    object value;
+                    _vsSolution.GetProperty((int)(__VSPROPID4.VSPROPID_IsSolutionFullyLoaded), out value);
+                    return (bool)value;
+                });
+            }
+        }
+
         public void EnsureSolutionIsLoaded()
         {
             ThreadHelper.JoinableTaskFactory.Run(async delegate
