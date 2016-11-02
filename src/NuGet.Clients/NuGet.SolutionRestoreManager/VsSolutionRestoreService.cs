@@ -38,25 +38,17 @@ namespace NuGet.SolutionRestoreManager
         private const string RuntimeIdentifiers = "RuntimeIdentifiers";
         private const string RuntimeSupports = "RuntimeSupports";
 
-        private readonly EnvDTE.DTE _dte;
         private readonly IProjectSystemCache _projectSystemCache;
         private readonly ISolutionRestoreWorker _restoreWorker;
         private readonly NuGet.Common.ILogger _logger;
 
         [ImportingConstructor]
         public VsSolutionRestoreService(
-            [Import(typeof(SVsServiceProvider))]
-            IServiceProvider serviceProvider,
             IProjectSystemCache projectSystemCache,
             ISolutionRestoreWorker restoreWorker,
             [Import(typeof(VisualStudioActivityLogger))]
             NuGet.Common.ILogger logger)
         {
-            if (serviceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(serviceProvider));
-            }
-
             if (projectSystemCache == null)
             {
                 throw new ArgumentNullException(nameof(projectSystemCache));
@@ -72,7 +64,6 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            _dte = serviceProvider.GetDTE();
             _projectSystemCache = projectSystemCache;
             _restoreWorker = restoreWorker;
             _logger = logger;
@@ -104,11 +95,11 @@ namespace NuGet.SolutionRestoreManager
 
                 var projectNames = ProjectNames.FromFullProjectPath(projectUniqueName);
 
-                var packageSpec = ToPackageSpec(projectNames, projectRestoreInfo);
+                var dgSpec = ToDependencyGraphSpec(projectNames, projectRestoreInfo);
 #if DEBUG
-                DumpProjectRestoreInfo(packageSpec);
+                DumpProjectRestoreInfo(projectUniqueName, dgSpec);
 #endif
-                _projectSystemCache.AddProjectRestoreInfo(projectNames, packageSpec);
+                _projectSystemCache.AddProjectRestoreInfo(projectNames, dgSpec);
 
                 // returned task completes when scheduled restore operation completes.
                 var restoreTask = _restoreWorker.ScheduleRestoreAsync(
@@ -124,28 +115,56 @@ namespace NuGet.SolutionRestoreManager
             }
         }
 
-        private void DumpProjectRestoreInfo(PackageSpec packageSpec)
+#if DEBUG
+        private void DumpProjectRestoreInfo(string projectUniqueName, DependencyGraphSpec projectRestoreInfo)
         {
             try
             {
+                var packageSpec = projectRestoreInfo.GetProjectSpec(projectUniqueName);
                 var outputPath = packageSpec.RestoreMetadata.OutputPath;
                 if (!Directory.Exists(outputPath))
                 {
                     Directory.CreateDirectory(outputPath);
                 }
 
-                // Create dg file
-                var dgFile = new DependencyGraphSpec();
-                dgFile.AddRestore(packageSpec.RestoreMetadata.ProjectName);
-                dgFile.AddProject(packageSpec);
-
                 var dgPath = Path.Combine(outputPath, $"{Guid.NewGuid()}.dg");
-                dgFile.Save(dgPath);
+                projectRestoreInfo.Save(dgPath);
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
             }
+        }
+#endif
+
+        private static DependencyGraphSpec ToDependencyGraphSpec(ProjectNames projectNames, IVsProjectRestoreInfo projectRestoreInfo)
+        {
+            var dgSpec = new DependencyGraphSpec();
+
+            var packageSpec = ToPackageSpec(projectNames, projectRestoreInfo);
+            dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
+            dgSpec.AddProject(packageSpec);
+
+            if (projectRestoreInfo.ToolReferences != null)
+            {
+                projectRestoreInfo
+                    .ToolReferences
+                    .Cast<IVsReferenceItem>()
+                    .Select(r => ToToolPackageSpec(projectNames, r))
+                    .ToList()
+                    .ForEach(ts =>
+                    {
+                        dgSpec.AddRestore(ts.RestoreMetadata.ProjectUniqueName);
+                        dgSpec.AddProject(ts);
+                    });
+            }
+
+            return dgSpec;
+        }
+
+        private static PackageSpec ToToolPackageSpec(ProjectNames projectNames, IVsReferenceItem item)
+        {
+            return ToolRestoreUtility.GetSpec(projectNames.FullName, item.Name, GetVersionRange(item), LockFile.ToolFramework);
         }
 
         private static PackageSpec ToPackageSpec(ProjectNames projectNames, IVsProjectRestoreInfo projectRestoreInfo)

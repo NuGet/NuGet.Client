@@ -35,7 +35,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly string _projectUniqueName;
         private readonly string _projectFullPath;
 
-        private readonly Func<PackageSpec> _packageSpecFactory;
+        private readonly IProjectSystemCache _projectSystemCache;
         private readonly EnvDTEProject _envDTEProject;
         private readonly UnconfiguredProject _unconfiguredProject;
         private IScriptExecutor _scriptExecutor;
@@ -44,7 +44,7 @@ namespace NuGet.PackageManagement.VisualStudio
             string projectName,
             string projectUniqueName,
             string projectFullPath,
-            Func<PackageSpec> packageSpecFactory,
+            IProjectSystemCache projectSystemCache,
             EnvDTEProject envDTEProject,
             UnconfiguredProject unconfiguredProject,
             string projectId)
@@ -54,16 +54,16 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(nameof(projectFullPath));
             }
 
-            if (packageSpecFactory == null)
+            if (projectSystemCache == null)
             {
-                throw new ArgumentNullException(nameof(packageSpecFactory));
+                throw new ArgumentNullException(nameof(projectSystemCache));
             }
 
             _projectName = projectName;
             _projectUniqueName = projectUniqueName;
             _projectFullPath = projectFullPath;
 
-            _packageSpecFactory = packageSpecFactory;
+            _projectSystemCache = projectSystemCache;
             _envDTEProject = envDTEProject;
             _unconfiguredProject = unconfiguredProject;
 
@@ -100,13 +100,34 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override Task<String> GetAssetsFilePathAsync()
         {
+            var packageSpec = GetPackageSpec();
+            if (packageSpec == null)
+            {
+                throw new InvalidOperationException(
+                    string.Format(Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
+            }
+
             return Task.FromResult(Path.Combine(
-                _packageSpecFactory().RestoreMetadata.OutputPath,
+                packageSpec.RestoreMetadata.OutputPath,
                 LockFileFormat.AssetsFileName));
         }
 
+        private PackageSpec GetPackageSpec()
+        {
+            DependencyGraphSpec projectRestoreInfo;
+            if (_projectSystemCache.TryGetProjectRestoreInfo(_projectFullPath, out projectRestoreInfo))
+            {
+                return projectRestoreInfo.GetProjectSpec(_projectFullPath);
+            }
+
+            // if restore data was not found in the cache, meaning project nomination
+            // didn't happen yet or failed.
+            return null;
+        }
+
+
         #region IDependencyGraphProject
-        
+
 
         public override string MSBuildProjectPath => _projectFullPath;
         
@@ -114,19 +135,29 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
         {
-            PackageSpec packageSpec = null;
-            if (context == null || !context.PackageSpecCache.TryGetValue(MSBuildProjectPath, out packageSpec))
+            DependencyGraphSpec projectRestoreInfo;
+            if (!_projectSystemCache.TryGetProjectRestoreInfo(_projectFullPath, out projectRestoreInfo))
             {
-                packageSpec = _packageSpecFactory();
-                if (packageSpec == null)
-                {
-                    throw new InvalidOperationException(
-                        string.Format(Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
-                }
-                context?.PackageSpecCache.Add(MSBuildProjectPath, packageSpec);
+                throw new InvalidOperationException(
+                    string.Format(Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
             }
 
-            return Task.FromResult<IReadOnlyList<PackageSpec>>(new[] { packageSpec });
+            var projects = projectRestoreInfo.Projects;
+
+            if (context != null)
+            {
+                PackageSpec ignore;
+                foreach (var project in projects
+                    .Where(p => !context.PackageSpecCache.TryGetValue(
+                        p.RestoreMetadata.ProjectUniqueName, out ignore)))
+                {
+                    context.PackageSpecCache.Add(
+                        project.RestoreMetadata.ProjectUniqueName, 
+                        project);
+                }
+            }
+
+            return Task.FromResult(projects);
         }
 
         #endregion
@@ -137,7 +168,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             PackageReference[] installedPackages;
 
-            var packageSpec = _packageSpecFactory();
+            var packageSpec = GetPackageSpec();
             if (packageSpec != null)
             {
                 installedPackages = GetPackageReferences(packageSpec);

@@ -3,14 +3,11 @@
 
 using System;
 using System.ComponentModel.Composition;
-using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Utilities;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Properties;
-using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Utilities;
 using NuGet.ProjectManagement;
-using NuGet.ProjectModel;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -69,22 +66,11 @@ namespace NuGet.PackageManagement.VisualStudio
             var fullProjectPath = EnvDTEProjectUtility.GetFullProjectPath(dteProject);
             var unconfiguredProject = GetUnconfiguredProject(dteProject);
 
-            Func<PackageSpec> packageSpecFactory = () =>
-            {
-                PackageSpec packageSpec;
-                if (_projectSystemCache.TryGetProjectRestoreInfo(fullProjectPath, out packageSpec))
-                {
-                    return packageSpec;
-                }
-
-                return null;
-            };
-
             result = new CpsPackageReferenceProject(
                 dteProject.Name,
                 EnvDTEProjectUtility.GetCustomUniqueName(dteProject),
                 fullProjectPath,
-                packageSpecFactory,
+                _projectSystemCache,
                 dteProject,
                 unconfiguredProject,
                 VsHierarchyUtility.GetProjectId(dteProject));

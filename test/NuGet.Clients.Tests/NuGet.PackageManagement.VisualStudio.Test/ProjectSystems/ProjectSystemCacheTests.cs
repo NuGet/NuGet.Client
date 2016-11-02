@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Moq;
-using Newtonsoft.Json.Linq;
 using NuGet.ProjectModel;
 using Xunit;
 
@@ -134,7 +133,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public void AddProjectBeforeAddProjectRestoreInfo()
+        public void AddProjectRestoreInfo_AfterAddProject_UpdatesCacheEntry()
         {
             // Arrange
             var target = new ProjectSystemCache();
@@ -144,14 +143,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 shortName: "project",
                 customUniqueName: @"folder\project");
             var projectNamesFromFullPath = ProjectNames.FromFullProjectPath(@"C:\src\project\project.csproj");
-            var packageSpec = new PackageSpec(new JObject());
+            var projectRestoreInfo = new DependencyGraphSpec();
+
+            target.AddProject(projectNames, dteProject: null, nuGetProject: null);
 
             // Act
-            target.AddProject(projectNames, dteProject: null, nuGetProject: null);
-            target.AddProjectRestoreInfo(projectNamesFromFullPath, packageSpec);
+            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
 
             // Assert
-            PackageSpec actual;
+            DependencyGraphSpec actual;
             ProjectNames names;
 
             var getPackageSpecSuccess = target.TryGetProjectRestoreInfo(projectNames.FullName, out actual);
@@ -159,12 +159,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             Assert.True(getPackageSpecSuccess);
             Assert.True(getProjectNameSuccess);
-            Assert.Same(packageSpec, actual);
+            Assert.Same(projectRestoreInfo, actual);
             Assert.Equal(@"folder\project", names.CustomUniqueName);
         }
 
         [Fact]
-        public void AddProjectRestoreInfoBeforeAddProject()
+        public void AddProject_AfterAddProjectRestoreInfo_UpdatesCacheEntry()
         {
             // Arrange
             var target = new ProjectSystemCache();
@@ -174,14 +174,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 shortName: "project",
                 customUniqueName: @"folder\project");
             var projectNamesFromFullPath = ProjectNames.FromFullProjectPath(@"C:\src\project\project.csproj");
-            var packageSpec = new PackageSpec(new JObject());
+            var projectRestoreInfo = new DependencyGraphSpec();
+
+            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
 
             // Act
-            target.AddProjectRestoreInfo(projectNamesFromFullPath, packageSpec);
             target.AddProject(projectNames, dteProject: null, nuGetProject: null);
 
             // Assert
-            PackageSpec actual;
+            DependencyGraphSpec actual;
             ProjectNames names;
 
             var getPackageSpecSuccess = target.TryGetProjectRestoreInfo(projectNames.FullName, out actual);
@@ -189,7 +190,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             Assert.True(getPackageSpecSuccess);
             Assert.True(getProjectNameSuccess);
-            Assert.Same(packageSpec, actual);
+            Assert.Same(projectRestoreInfo, actual);
             Assert.Equal(@"folder\project", names.CustomUniqueName);
         }
     }

@@ -34,9 +34,9 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Retrieves project restore info as of <see cref="PackageSpec"/> associated with project name.
         /// </summary>
         /// <param name="name">Project name, full path or unique name.</param>
-        /// <param name="packageSpec">Desired restore info object, not initialized if not found.</param>
+        /// <param name="projectRestoreInfo">Desired project restore info object, or null if not found.</param>
         /// <returns>True if found, false otherwise.</returns>
-        bool TryGetProjectRestoreInfo(string name, out PackageSpec packageSpec);
+        bool TryGetProjectRestoreInfo(string name, out DependencyGraphSpec projectRestoreInfo);
 
         /// <summary>
         /// Finds a project name by short name, unique name or custom unique name.
@@ -92,10 +92,10 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Adds or updates project restore info in the project cache.
         /// </summary>
-        /// <param name="projectName">Primary key.</param>
-        /// <param name="packageSpec">The project restore info.</param>
-        /// <returns>Return true if operation succeeded.</returns>
-        bool AddProjectRestoreInfo(ProjectNames projectName, PackageSpec packageSpec);
+        /// <param name="projectNames">Primary key.</param>
+        /// <param name="projectRestoreInfo">The project restore info including tools.</param>
+        /// <returns>True if operation succeeded.</returns>
+        bool AddProjectRestoreInfo(ProjectNames projectNames, DependencyGraphSpec projectRestoreInfo);
 
         /// <summary>
         /// Removes a project associated with given name out of the cache.

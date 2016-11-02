@@ -1,10 +1,10 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using NuGet.LibraryModel;
-using NuGet.ProjectModel;
 using System;
 using System.Linq;
+using NuGet.LibraryModel;
+using NuGet.ProjectModel;
 
 namespace NuGet.SolutionRestoreManager.Test
 {
@@ -12,7 +12,7 @@ namespace NuGet.SolutionRestoreManager.Test
     /// Helper class providing a method of building <see cref="IVsProjectRestoreInfo"/>
     /// out of <see cref="PackageSpec"/>.
     /// </summary>
-    public static class ProjectRestoreInfoBuilder
+    internal static class ProjectRestoreInfoBuilder
     {
         /// <summary>
         /// Creates project restore info object to be consumed by <see cref="IVsSolutionRestoreService"/>.
@@ -36,9 +36,17 @@ namespace NuGet.SolutionRestoreManager.Test
                     .TargetFrameworks
                     .Select(ToTargetFrameworkInfo));
 
-            return new VsProjectRestoreInfo(
+            var pri = new VsProjectRestoreInfo(
                 baseIntermediatePath,
                 targetFrameworks);
+
+            if (packageSpec.Tools != null)
+            {
+                pri.ToolReferences = new VsReferenceItems(
+                    packageSpec.Tools.Select(ToToolReference));
+            }
+
+            return pri;
         }
 
         private static VsTargetFrameworkInfo ToTargetFrameworkInfo(TargetFrameworkInformation tfm)
@@ -73,6 +81,14 @@ namespace NuGet.SolutionRestoreManager.Test
                 new[] { new VsReferenceProperty("ProjectFileFullPath", library.LibraryRange.Name) }
             );
             return new VsReferenceItem(library.Name, properties);
+        }
+
+        private static IVsReferenceItem ToToolReference(ToolDependency library)
+        {
+            var properties = new VsReferenceProperties(
+                new[] { new VsReferenceProperty("Version", library.LibraryRange.VersionRange.OriginalString) }
+            );
+            return new VsReferenceItem(library.LibraryRange.Name, properties);
         }
     }
 }

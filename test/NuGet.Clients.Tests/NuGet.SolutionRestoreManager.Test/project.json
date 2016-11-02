@@ -1,6 +1,7 @@
 ﻿{
   "dependencies": {
     "Moq": "4.2.1507.118",
+    "System.ValueTuple": "4.3.0-preview1-24530-04",
     "Test.Utility": "4.0.0-*",
     "xunit": "2.1.0",
     "xunit.runner.visualstudio": "2.1.0"

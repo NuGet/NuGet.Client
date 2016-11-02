@@ -61,22 +61,22 @@ namespace NuGet.PackageManagement.VisualStudio
             return project != null;
         }
 
-        public bool TryGetProjectRestoreInfo(string name, out PackageSpec packageSpec)
+        public bool TryGetProjectRestoreInfo(string name, out DependencyGraphSpec projectRestoreInfo)
         {
             if (string.IsNullOrEmpty(name))
             {
                 throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(name));
             }
 
-            packageSpec = null;
+            projectRestoreInfo = null;
 
             CacheEntry cacheEntry;
             if (TryGetCacheEntry(name, out cacheEntry))
             {
-                packageSpec = cacheEntry.ProjectRestoreInfo;
+                projectRestoreInfo = cacheEntry.ProjectRestoreInfo;
             }
 
-            return packageSpec != null;
+            return projectRestoreInfo != null;
         }
 
         public bool TryGetProjectNames(string name, out ProjectNames projectNames)
@@ -251,7 +251,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return true;
         }
 
-        public bool AddProjectRestoreInfo(ProjectNames projectNames, PackageSpec packageSpec)
+        public bool AddProjectRestoreInfo(ProjectNames projectNames, DependencyGraphSpec projectRestoreInfo)
         {
             if (projectNames == null)
             {
@@ -273,11 +273,11 @@ namespace NuGet.PackageManagement.VisualStudio
                     projectNames.FullName,
                     addEntryFactory: k => new CacheEntry
                     {
-                        ProjectRestoreInfo = packageSpec
+                        ProjectRestoreInfo = projectRestoreInfo
                     },
                     updateEntryFactory: (k, e) =>
                     {
-                        e.ProjectRestoreInfo = packageSpec;
+                        e.ProjectRestoreInfo = projectRestoreInfo;
                         return e;
                     });
             }
@@ -456,7 +456,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             public NuGetProject NuGetProject { get; set; }
             public EnvDTE.Project EnvDTEProject { get; set; }
-            public PackageSpec ProjectRestoreInfo { get; set; }
+            public DependencyGraphSpec ProjectRestoreInfo { get; set; }
             public ProjectNames ProjectNames { get; set; }
         }
     }

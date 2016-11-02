@@ -18,7 +18,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
         public IVsTargetFrameworks TargetFrameworks { get; }
 
-        public IVsReferenceItems ToolReferences { get; }
+        public IVsReferenceItems ToolReferences { get; set; }
 
         public VsProjectRestoreInfo(string baseIntermediatePath, IVsTargetFrameworks targetFrameworks)
         {
