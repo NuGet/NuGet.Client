@@ -109,6 +109,7 @@
   <Import Project="$(EnlistmentRoot)\build\common.targets" />
   <Import Project="$(EnlistmentRoot)\build\test.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy /diy $(ArtifactRoot)\TestableCredentialProvider\$(OutDirFx). $(TargetDir)TestableCredentialProvider</PostBuildEvent>
+    <PostBuildEvent>xcopy /diy $(ArtifactRoot)\TestableCredentialProvider\$(OutDirFx). $(TestTargetDir)\TestableCredentialProvider
+xcopy /diy $(ArtifactRoot)\SampleCommandLineExtensions\$(OutDirFx)SampleCommandLineExtensions.dll $(TestTargetDir)</PostBuildEvent>
   </PropertyGroup>
 </Project>

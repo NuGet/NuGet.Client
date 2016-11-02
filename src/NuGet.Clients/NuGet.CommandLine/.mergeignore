@@ -8,11 +8,10 @@
 # ignore individual unsolicited files
 Microsoft.CSharp.dll
 mscorlib.dll
-NuGet.Core.dll
-System.dll
 System.Collections.Concurrent.dll
 System.Collections.dll
 System.ComponentModel.Composition.dll
+System.dll
 System.Globalization.dll
 System.IdentityModel.dll
 System.IO.Compression.dll
