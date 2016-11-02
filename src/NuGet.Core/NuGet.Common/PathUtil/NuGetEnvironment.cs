@@ -20,6 +20,11 @@ namespace NuGet.Common
                     if (!RuntimeEnvironmentHelper.IsDev14 && RuntimeEnvironmentHelper.IsWindows)
                     {
                         machineWideBaseDir = GetFolderPath(SpecialFolder.ProgramFilesX86);
+                        if (string.IsNullOrEmpty(machineWideBaseDir))
+                        {
+                            // On 32-bit Windows
+                            machineWideBaseDir = GetFolderPath(SpecialFolder.ProgramFiles);
+                        }
                     }
                     else
                     {
