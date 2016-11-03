@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
 using NuGet.Configuration;
 
 namespace NuGet.ProjectModel
@@ -66,5 +69,11 @@ namespace NuGet.ProjectModel
         /// True if $(TargetFrameworks) is used and the build is using Cross Targeting.
         /// </summary>
         public bool CrossTargeting { get; set; }
+
+        /// <summary>
+        /// Whether or not to restore the packages directory using the legacy format, which write original case paths
+        /// instead of lowercase.
+        /// </summary>
+        public bool RestoreLegacyPackagesDirectory { get; set; }
     }
 }

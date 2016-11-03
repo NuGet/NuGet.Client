@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -126,7 +129,7 @@ namespace NuGet.Commands
 
                 if (!string.IsNullOrEmpty(typeString))
                 {
-                    Enum.TryParse<RestoreOutputType>(typeString, ignoreCase: true, result: out restoreType);
+                    Enum.TryParse(typeString, ignoreCase: true, result: out restoreType);
                 }
 
                 // Get base spec
@@ -194,6 +197,11 @@ namespace NuGet.Commands
 
                     // Add CrossTargeting flag
                     result.RestoreMetadata.CrossTargeting = IsPropertyTrue(specItem, "CrossTargeting");
+
+                    // Add RestoreLegacyPackagesDirectory flag
+                    result.RestoreMetadata.RestoreLegacyPackagesDirectory = IsPropertyTrue(
+                        specItem,
+                        "RestoreLegacyPackagesDirectory");
                 }
             }
 

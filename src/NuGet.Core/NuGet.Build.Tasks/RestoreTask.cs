@@ -66,11 +66,6 @@ namespace NuGet.Build.Tasks
         /// </summary>
         public bool RestoreRecursive { get; set; }
 
-        /// <summary>
-        /// Restore the legacy packages directory format, which has original case paths instead of lowercase.
-        /// </summary>
-        public bool RestoreLegacyPackagesDirectory { get; set; }
-
         public override bool Execute()
         {
             if (RestoreGraphItems.Length < 1)
@@ -91,7 +86,6 @@ namespace NuGet.Build.Tasks
             log.LogDebug($"(in) RestoreNoCache '{RestoreNoCache}'");
             log.LogDebug($"(in) RestoreIgnoreFailedSources '{RestoreIgnoreFailedSources}'");
             log.LogDebug($"(in) RestoreRecursive '{RestoreRecursive}'");
-            log.LogDebug($"(in) RestoreLegacyPackagesDirectory '{RestoreLegacyPackagesDirectory}'");
 
             // Convert to the internal wrapper
             var wrappedItems = RestoreGraphItems.Select(GetMSBuildItem);
@@ -137,8 +131,7 @@ namespace NuGet.Build.Tasks
                     Log = log,
                     MachineWideSettings = new XPlatMachineWideSetting(),
                     PreLoadedRequestProviders = providers,
-                    CachingSourceProvider = sourceProvider,
-                    IsLowercaseGlobalPackagesFolder = !RestoreLegacyPackagesDirectory
+                    CachingSourceProvider = sourceProvider
                 };
 
                 if (!string.IsNullOrEmpty(RestoreSources))
