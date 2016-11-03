@@ -124,6 +124,12 @@ namespace NuGet.Commands
 
             var isTool = OutputType == RestoreOutputType.DotnetCliTool;
 
+            // Commit targets/props to disk before the assets file.
+            // Visual Studio typically watches the assets file for changes
+            // and begins a reload when that file changes.
+            MSBuild.Commit(log);
+
+            // Commit the assets file to disk.
             await CommitAsync(
                 lockFileFormat,
                 result: this,
@@ -145,8 +151,6 @@ namespace NuGet.Commands
                         token: token);
                 }
             }
-
-            MSBuild.Commit(log);
         }
 
         private static async Task CommitAsync(
