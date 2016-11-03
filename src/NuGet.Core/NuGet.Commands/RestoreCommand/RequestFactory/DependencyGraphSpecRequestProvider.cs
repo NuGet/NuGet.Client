@@ -17,6 +17,8 @@ namespace NuGet.Commands
     /// </summary>
     public class DependencyGraphSpecRequestProvider : IPreLoadedRestoreRequestProvider
     {
+        private const bool DefaultRestoreLegacyPackagesDirectory = false;
+
         private readonly DependencyGraphSpec _dgFile;
         private readonly RestoreCommandProvidersCache _providerCache;
         private readonly Dictionary<string, PackageSpec> _projectJsonCache = new Dictionary<string, PackageSpec>(StringComparer.Ordinal);
@@ -174,7 +176,9 @@ namespace NuGet.Commands
             // Set properties from the restore metadata
             request.RestoreOutputType = project.PackageSpec?.RestoreMetadata?.OutputType ?? RestoreOutputType.Unknown;
             request.RestoreOutputPath = project.PackageSpec?.RestoreMetadata?.OutputPath ?? rootPath;
-            request.IsLowercasePackagesDirectory = !(project.PackageSpec?.RestoreMetadata?.RestoreLegacyPackagesDirectory ?? false);
+            var restoreLegacyPackagesDirectory = project.PackageSpec?.RestoreMetadata?.RestoreLegacyPackagesDirectory
+                ?? DefaultRestoreLegacyPackagesDirectory;
+            request.IsLowercasePackagesDirectory = !restoreLegacyPackagesDirectory;
 
             // Standard properties
             restoreContext.ApplyStandardProperties(request);
