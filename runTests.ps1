@@ -109,13 +109,13 @@ Invoke-BuildStep 'Building NuGet.Clients projects - VS14 Toolset' {
     -ev +BuildErrors
 
 Invoke-BuildStep 'Running NuGet.Clients unit-tests - VS14 Toolset' {
-        Test-ClientsProjects $Configuration -ToolsetVersion 14
+        Test-ClientsProjects $Configuration -ToolsetVersion 14 -CI:$CI
     } `
     -skip:($SkipVS14 -or $SkipUnitTests) `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Running NuGet.Clients functional tests - VS14 Toolset' {
-        Test-FuncClientsProjects $Configuration -ToolsetVersion 14
+        Test-FuncClientsProjects $Configuration -ToolsetVersion 14 -CI:$CI
     } `
     -skip:($SkipVS14 -or $SkipFuncTests) `
     -ev +BuildErrors
@@ -128,14 +128,14 @@ Invoke-BuildStep 'Building NuGet.Clients projects - VS15 Toolset' {
 
 Invoke-BuildStep 'Running NuGet.Clients tests - VS15 Toolset' {
         # We don't run command line tests on VS15 as we don't build a nuget.exe for this version
-        Test-ClientsProjects $Configuration -ToolsetVersion 15 -SkipProjects 'NuGet.CommandLine.Test'
+        Test-ClientsProjects $Configuration -ToolsetVersion 15 -SkipProjects 'NuGet.CommandLine.Test' -CI:$CI
     } `
     -skip:($SkipVS15 -or $SkipUnitTests) `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Running NuGet.Clients functional tests - VS15 Toolset' {
         # We don't run command line tests on VS15 as we don't build a nuget.exe for this version
-        Test-FuncClientsProjects $Configuration -ToolsetVersion 15 -SkipProjects 'NuGet.CommandLine.FuncTest'
+        Test-FuncClientsProjects $Configuration -ToolsetVersion 15 -SkipProjects 'NuGet.CommandLine.FuncTest' -CI:$CI
     } `
     -skip:($SkipVS15 -or $SkipFuncTests) `
     -ev +BuildErrors

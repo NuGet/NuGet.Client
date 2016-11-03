@@ -21,7 +21,7 @@ namespace NuGet.CommandLine.Test
                     "hello",
                     true);
 
-                Assert.Equal(result.Item2, "Hello!" + Environment.NewLine);
+                Assert.Equal("Hello!" + Environment.NewLine, result.Item2);
             }
         }
     }

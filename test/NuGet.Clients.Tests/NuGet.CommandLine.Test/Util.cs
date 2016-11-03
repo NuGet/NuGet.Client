@@ -396,14 +396,14 @@ namespace NuGet.CommandLine.Test
 
         public static string GetNuGetExePath()
         {
-            var targetDir = ConfigurationManager.AppSettings["TargetDir"] ?? Directory.GetCurrentDirectory();
+            var targetDir = ConfigurationManager.AppSettings["TestTargetDir"] ?? Directory.GetCurrentDirectory();
             var nugetexe = Path.Combine(targetDir, "nuget.exe");
             return nugetexe;
         }
 
         public static string GetTestablePluginPath()
         {
-            var targetDir = ConfigurationManager.AppSettings["TargetDir"] ?? Directory.GetCurrentDirectory();
+            var targetDir = ConfigurationManager.AppSettings["TestTargetDir"] ?? Directory.GetCurrentDirectory();
             var plugin = Path.Combine(targetDir, "TestableCredentialProvider", "CredentialProvider.Testable.exe");
             return plugin;
         }

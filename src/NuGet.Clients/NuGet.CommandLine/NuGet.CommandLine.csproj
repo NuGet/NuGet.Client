@@ -130,6 +130,9 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <None Include=".mergeallowdup">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="NuGet.CommandLine.nuspec" />
     <None Include="project.json" />
   </ItemGroup>

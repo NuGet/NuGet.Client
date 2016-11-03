@@ -13,6 +13,7 @@ $Nupkgs = Join-Path $NuGetClientRoot nupkgs
 $Artifacts = Join-Path $NuGetClientRoot artifacts
 $ReleaseNupkgs = Join-Path $Artifacts ReleaseNupkgs
 $ConfigureJson = Join-Path $Artifacts configure.json
+$ILMergeOutputDir = Join-Path $Artifacts "VS14"
 
 $DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
 $NuGetExe = Join-Path $NuGetClientRoot '.nuget\nuget.exe'
@@ -988,7 +989,8 @@ Function Test-ClientsProjects {
         [string]$Configuration = $DefaultConfiguration,
         [ValidateSet(14,15)]
         [int]$ToolsetVersion = $DefaultMSBuildVersion,
-        [string[]]$SkipProjects
+        [string[]]$SkipProjects,
+        [switch]$CI
     )
 
     $TestProjectsLocation = Join-Path $NuGetClientRoot test\NuGet.Clients.Tests -Resolve
@@ -997,7 +999,8 @@ Function Test-ClientsProjects {
         -Configuration $Configuration `
         -ToolsetVersion $ToolsetVersion `
         -SkipProjects $SkipProjects `
-        -TestProjectsLocation $TestProjectsLocation
+        -TestProjectsLocation $TestProjectsLocation `
+        -CI:$CI
 }
 
 Function Test-FuncClientsProjects {
@@ -1006,7 +1009,8 @@ Function Test-FuncClientsProjects {
         [string]$Configuration = $DefaultConfiguration,
         [ValidateSet(14,15)]
         [int]$ToolsetVersion = $DefaultMSBuildVersion,
-        [string[]]$SkipProjects
+        [string[]]$SkipProjects,
+        [switch]$CI
     )
 
     $TestProjectsLocation = Join-Path $NuGetClientRoot test\NuGet.Clients.FuncTests -Resolve
@@ -1015,7 +1019,8 @@ Function Test-FuncClientsProjects {
         -Configuration $Configuration `
         -ToolsetVersion $ToolsetVersion `
         -SkipProjects $SkipProjects `
-        -TestProjectsLocation $TestProjectsLocation
+        -TestProjectsLocation $TestProjectsLocation `
+        -CI:$CI
 }
 
 Function Test-ClientsProjectsHelper {
@@ -1024,19 +1029,21 @@ Function Test-ClientsProjectsHelper {
         [string]$TestProjectsLocation,
         [string]$Configuration,
         [int]$ToolsetVersion,
-        [string[]]$SkipProjects
+        [string[]]$SkipProjects,
+        [switch]$CI
     )
 
     if (-not $SkipProjects) {
         $SkipProjects = @()
     }
 
+
     $ExcludeFilter = ('WebAppTest', $SkipProjects) | %{ "$_.csproj" }
 
     $TestProjects = Get-ChildItem $TestProjectsLocation -Recurse -Filter '*.csproj' -Exclude $ExcludeFilter |
         %{ $_.FullName }
 
-    $TestProjects | Test-ClientProject -Configuration $Configuration -ToolsetVersion $ToolsetVersion
+    $TestProjects | Test-ClientProject -Configuration $Configuration -ToolsetVersion $ToolsetVersion -CI:$CI
 }
 
 Function Test-ClientProject {
@@ -1046,7 +1053,8 @@ Function Test-ClientProject {
         [string[]]$TestProjects,
         [string]$Configuration = $DefaultConfiguration,
         [ValidateSet(14,15)]
-        [int]$ToolsetVersion = $DefaultMSBuildVersion
+        [int]$ToolsetVersion = $DefaultMSBuildVersion,
+        [switch]$CI
     )
     Process{
         $TestProjects | %{
@@ -1054,6 +1062,10 @@ Function Test-ClientProject {
             $opts += "/t:RunTests", "/p:Configuration=$Configuration;RunTests=true"
             $opts += "/p:VisualStudioVersion=${ToolsetVersion}.0"
             $opts += "/tv:${ToolsetVersion}.0"
+
+            if ($CI) {
+                $opts += "/p:TestTargetDir=${ILMergeOutputDir}"
+            }
 
             if (-not $VerbosePreference) {
                 $opts += '/verbosity:minimal'
@@ -1081,9 +1093,6 @@ Function Invoke-ILMerge {
         [string]$KeyFile
     )
 
-    $nugetIntermediateExe='NuGet.intermediate.exe'
-    $nugetIntermediatePdb='NuGet.intermediate.pdb'
-    $nugetCore='NuGet.Core.dll'
     $ignoreList = Read-FileList (Join-Path $InputDir '.mergeignore')
     $buildArtifacts = Get-ChildItem $InputDir -Exclude $ignoreList | %{ $_.Name }
 
@@ -1097,14 +1106,27 @@ Function Invoke-ILMerge {
         Error-Log "Missing build artifacts listed in include list: $($notFound -join ', ')"
     }
 
-    $nugetIntermediateExePath="$OutputDir\$nugetIntermediateExe"
+    # Sort merged assemblies by the order in the .mergeinclude file.
+    $buildArtifacts = $includeList + $notInList
 
-    Trace-Log 'Creating the intermediate ilmerged nuget.exe'
+    $allowDupList = Read-FileList (Join-Path $InputDir '.mergeallowdup')
+
+    Trace-Log 'Creating the ilmerged nuget.exe'
     $opts = , "$InputDir\NuGet.exe"
     $opts += "/lib:$InputDir"
     $opts += $buildArtifacts
-    $opts += "/out:$nugetIntermediateExePath"
-    $opts += "/internalize"
+    if ($KeyFile) {
+        $opts += "/delaysign"
+        $opts += "/keyfile:$KeyFile"
+    }
+
+    $opts += "/out:$OutputDir\NuGet.exe"
+
+    foreach ($allowDup in $allowDupList) {
+        # /allowDup operates on type name, not namespace and type name
+        $typeName = $allowDup.Split('.')[-1]
+        $opts += "/allowDup:$typeName"
+    }
 
     if ($VerbosePreference) {
         $opts += '/log'
@@ -1114,30 +1136,6 @@ Function Invoke-ILMerge {
     & $ILMerge $opts 2>&1
 
     if (-not $?) {
-        Error-Log "ILMerge has failed during the intermediate stage. Code: $LASTEXITCODE"
-    }
-
-    $opts2 = , "$nugetIntermediateExePath"
-    $opts2 += "/lib:$InputDir"
-    $opts2 += $nugetCore
-    if ($KeyFile) {
-        $opts2 += "/delaysign"
-        $opts2 += "/keyfile:$KeyFile"
-    }
-
-    $opts2 += "/out:$OutputDir\NuGet.exe"
-
-    if ($VerbosePreference) {
-        $opts2 += '/log'
-    }
-
-    Trace-Log "$ILMerge $opts2"
-    & $ILMerge $opts2 2>&1
-
-    if (-not $?) {
         Error-Log "ILMerge has failed. Code: $LASTEXITCODE"
     }
-
-    Remove-Item $nugetIntermediateExePath
-    Remove-Item $OutputDir\$nugetIntermediatePdb
 }
