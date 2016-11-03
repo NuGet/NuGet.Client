@@ -118,7 +118,7 @@
         </Strings>
       </Button>
 
-      <!--<Button guid="guidToolsGroup" id="cmdIdVisualizer" priority="0xF150" type="Button">
+      <Button guid="guidToolsGroup" id="cmdIdVisualizer" priority="0xF150" type="Button">
           <Parent guid="guidToolsGroup" id="idToolsGroup" />
           <Icon guid="guidToolbarImages" id="bmpVisualizer" />
           <CommandFlag>DefaultInvisible</CommandFlag>
@@ -128,7 +128,7 @@
             <CommandName>cmdIdVisualizer</CommandName>
             <ButtonText>Package &amp;Visualizer</ButtonText>
           </Strings>
-        </Button>-->
+      </Button>
     </Buttons>
 
     <Combos>

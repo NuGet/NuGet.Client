@@ -478,6 +478,11 @@ namespace NuGetVSExtension
                 CommandID generalSettingsCommandID = new CommandID(GuidList.guidNuGetToolsGroupCmdSet, PkgCmdIDList.cmdIdGeneralSettings);
                 OleMenuCommand generalSettingsCommand = new OleMenuCommand(ShowGeneralSettingsOptionPage, generalSettingsCommandID);
                 _mcs.AddCommand(generalSettingsCommand);
+
+                //menu command for the visualizer
+                CommandID visualizerCommandID = new CommandID(GuidList.guidNuGetToolsGroupCmdSet, PkgCmdIDList.cmdIdVisualizer);
+                OleMenuCommand visualizerCommand = new OleMenuCommand(ExecuteVisualizer, null, QueryStatusForVisualizer, visualizerCommandID);
+                _mcs.AddCommand(visualizerCommand);
             }
         }
 
@@ -1003,6 +1008,12 @@ namespace NuGetVSExtension
             {
                 packageManagerControl.Search(searchText);
             }
+        }
+
+        private void QueryStatusForVisualizer(object sender, EventArgs args)
+        {
+            OleMenuCommand command = (OleMenuCommand)sender;
+            command.Visible = SolutionManager.IsSolutionOpen; //TODO NK - Does this restriction make sense? From feedback from users it seems like a useful tool && IsVisualizerSupported;
         }
 
         // For PowerShell, it's okay to query from the worker thread.
