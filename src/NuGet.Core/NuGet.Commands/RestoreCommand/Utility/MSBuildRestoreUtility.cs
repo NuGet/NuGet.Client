@@ -189,6 +189,9 @@ namespace NuGet.Commands
                 if (restoreType == RestoreOutputType.NETCore
                     || restoreType == RestoreOutputType.Standalone)
                 {
+                    // Set project version
+                    result.Version = GetVersion(specItem);
+
                     // Add RIDs and Supports
                     result.RuntimeGraph = GetRuntimeGraph(specItem);
 
@@ -513,6 +516,28 @@ namespace NuGet.Commands
         private static IEnumerable<IMSBuildItem> GetItemByType(IEnumerable<IMSBuildItem> items, string type)
         {
             return items.Where(e => type.Equals(e.GetProperty("Type"), StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Return the parsed version or 1.0.0 if the property does not exist.
+        /// </summary>
+        private static NuGetVersion GetVersion(IMSBuildItem item)
+        {
+            var versionString = item.GetProperty("Version");
+            NuGetVersion version = null;
+
+            if (string.IsNullOrEmpty(versionString))
+            {
+                // Default to 1.0.0 if the property does not exist
+                version = new NuGetVersion(1, 0, 0);
+            }
+            else
+            {
+                // Snapshot versions are not allowed in .NETCore
+                version = NuGetVersion.Parse(versionString);
+            }
+
+            return version;
         }
 
         public static void Dump(IEnumerable<IMSBuildItem> items, ILogger log)

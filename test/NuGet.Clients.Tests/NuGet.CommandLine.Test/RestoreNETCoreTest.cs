@@ -1637,6 +1637,190 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public void RestoreNetCore_ProjectToProject_NETCoreToNETCore_VerifyVersionForDependency()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETCoreApp1.0"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETStandard1.5"));
+
+                var projectC = SimpleTestProjectContext.CreateNETCore(
+                    "c",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETStandard1.5"));
+
+                var projectD = SimpleTestProjectContext.CreateNETCore(
+                    "d",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETStandard1.5"));
+
+                // A -> B
+                projectA.AddProjectToAllFrameworks(projectB);
+
+                // A -> C
+                projectA.AddProjectToAllFrameworks(projectC);
+
+                // C -> D
+                projectC.AddProjectToAllFrameworks(projectD);
+
+                // Set project versions
+                projectB.Version = "2.4.5-alpha.1.2+build.a.b.c";
+                projectC.Version = "2.4.5-ignorethis";
+                projectD.Version = "1.4.9-child.project";
+
+                // Override with PackageVersion
+                projectC.Properties.Add("PackageVersion", "2.4.5-alpha.7+use.this");                
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Projects.Add(projectC);
+                solution.Projects.Add(projectD);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var nugetexe = Util.GetNuGetExePath();
+
+                // Store the dg file for debugging
+                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
+                var envVars = new Dictionary<string, string>()
+                {
+                    { "NUGET_PERSIST_DG", "true" },
+                    { "NUGET_PERSIST_DG_PATH", dgPath }
+                };
+
+                string[] args = new string[] {
+                    "restore",
+                    projectA.ProjectPath,
+                    "-Verbosity",
+                    "detailed"
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    pathContext.WorkingDirectory.Path,
+                    string.Join(" ", args),
+                    waitForExit: true,
+                    environmentVariables: envVars);
+
+                // Assert
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var targetB = projectA.AssetsFile.Targets.Single(e => e.TargetFramework.Equals(NuGetFramework.Parse("NETCoreApp1.0"))).Libraries.SingleOrDefault(e => e.Name == "b");
+                var libB = projectA.AssetsFile.Libraries.SingleOrDefault(e => e.Name == "b");
+
+                var targetC = projectA.AssetsFile.Targets.Single(e => e.TargetFramework.Equals(NuGetFramework.Parse("NETCoreApp1.0"))).Libraries.SingleOrDefault(e => e.Name == "c");
+                var libC = projectA.AssetsFile.Libraries.SingleOrDefault(e => e.Name == "c");
+
+                var dDep = targetC.Dependencies.Single();
+
+                Assert.Equal("project", targetB.Type);
+                Assert.Equal("2.4.5-alpha.1.2", targetB.Version.ToNormalizedString());
+                Assert.Equal("2.4.5-alpha.1.2", libB.Version.ToNormalizedString());
+
+                Assert.Equal("project", targetC.Type);
+                Assert.Equal("2.4.5-alpha.7", targetC.Version.ToNormalizedString());
+                Assert.Equal("2.4.5-alpha.7", libC.Version.ToNormalizedString());
+
+                // Verify the correct version of D is shown under project C
+                Assert.Equal("[1.4.9-child.project, )", dDep.VersionRange.ToNormalizedString());
+            }
+        }
+
+        [Fact]
+        public void RestoreNetCore_ProjectToProject_NETCoreToNETCore_VerifyVersionForDependency_WithSnapshotsFails()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETCoreApp1.0"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETStandard1.5"));
+
+                var projectC = SimpleTestProjectContext.CreateNETCore(
+                    "c",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETStandard1.5"));
+
+                var projectD = SimpleTestProjectContext.CreateNETCore(
+                    "d",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETStandard1.5"));
+
+                // A -> B
+                projectA.AddProjectToAllFrameworks(projectB);
+
+                // A -> C
+                projectA.AddProjectToAllFrameworks(projectC);
+
+                // C -> D
+                projectC.AddProjectToAllFrameworks(projectD);
+
+                // Set project versions
+                projectA.Version = "2.0.0-a.*";
+                projectB.Version = "2.0.0-b.*";
+                projectC.Version = "2.0.0-c.*";
+                projectD.Version = "2.0.0-d.*";
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Projects.Add(projectC);
+                solution.Projects.Add(projectD);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var nugetexe = Util.GetNuGetExePath();
+
+                // Store the dg file for debugging
+                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
+                var envVars = new Dictionary<string, string>()
+                {
+                    { "NUGET_PERSIST_DG", "true" },
+                    { "NUGET_PERSIST_DG_PATH", dgPath }
+                };
+
+                string[] args = new string[] {
+                    "restore",
+                    projectA.ProjectPath,
+                    "-Verbosity",
+                    "detailed"
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    pathContext.WorkingDirectory.Path,
+                    string.Join(" ", args),
+                    waitForExit: true,
+                    environmentVariables: envVars);
+
+                // Assert
+                Assert.False(0 == r.Item1, r.Item2 + " " + r.Item3);
+            }
+        }
+
+        [Fact]
         public async Task RestoreNetCore_SingleProject()
         {
             // Arrange

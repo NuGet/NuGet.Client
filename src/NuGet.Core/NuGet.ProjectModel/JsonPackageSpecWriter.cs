@@ -37,7 +37,7 @@ namespace NuGet.ProjectModel
 
             if (!packageSpec.IsDefaultVersion)
             {
-                SetValue(json, "version", packageSpec.Version?.ToNormalizedString());
+                SetValue(json, "version", packageSpec.Version?.ToFullString());
             }
 
             SetValue(json, "description", packageSpec.Description);
