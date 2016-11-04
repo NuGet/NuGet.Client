@@ -276,7 +276,7 @@ namespace NuGet.Test.Utility
             {
                 AddProperties(xml, new Dictionary<string, string>()
                 {
-                    { "VersionPrefix", Version },
+                    { "Version", Version },
                     { "DebugType", "portable" },
                     { "TargetFrameworks", string.Join(";", Frameworks.Select(f => f.Framework.GetShortFolderName())) },
                 });

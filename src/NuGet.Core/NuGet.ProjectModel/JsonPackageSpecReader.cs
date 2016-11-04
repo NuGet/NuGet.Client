@@ -93,9 +93,9 @@ namespace NuGet.ProjectModel
             {
                 try
                 {
-                    bool hasVersionSnapshot;
-                    packageSpec.Version = SpecifySnapshot(version.Value<string>(), snapshotValue, out hasVersionSnapshot);
-                    packageSpec.HasVersionSnapshot = hasVersionSnapshot;
+                    var versionString = version.Value<string>();
+                    packageSpec.HasVersionSnapshot = PackageSpecUtility.IsSnapshotVersion(versionString);
+                    packageSpec.Version = PackageSpecUtility.SpecifySnapshot(versionString, snapshotValue);
                 }
                 catch (Exception ex)
                 {
@@ -188,25 +188,6 @@ namespace NuGet.ProjectModel
             }
 
             return packageSpec;
-        }
-
-        private static NuGetVersion SpecifySnapshot(string version, string snapshotValue, out bool hasVersionSnapshot)
-        {
-            hasVersionSnapshot = false;
-            if (version.EndsWith("-*"))
-            {
-                if (string.IsNullOrEmpty(snapshotValue))
-                {
-                    version = version.Substring(0, version.Length - 2);
-                }
-                else
-                {
-                    version = version.Substring(0, version.Length - 1) + snapshotValue;
-                    hasVersionSnapshot = true;
-                }
-            }
-
-            return new NuGetVersion(version);
         }
 
         private static ProjectRestoreMetadata GetMSBuildMetadata(PackageSpec packageSpec, JObject rawPackageSpec)

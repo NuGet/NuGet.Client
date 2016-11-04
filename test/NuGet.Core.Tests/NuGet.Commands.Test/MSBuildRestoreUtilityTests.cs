@@ -17,6 +17,60 @@ namespace NuGet.Commands.Test
     public class MSBuildRestoreUtilityTests
     {
         [Fact]
+        public void MSBuildRestoreUtility_GetPackageSpecVersion_UAP()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var project1Root = Path.Combine(workingDir, "a");
+                var project2Root = Path.Combine(workingDir, "b");
+
+                var project1JsonPath = Path.Combine(project1Root, "project.json");
+                var project2JsonPath = Path.Combine(project2Root, "project.json");
+                var project1Path = Path.Combine(project1Root, "a.csproj");
+                var project2Path = Path.Combine(project2Root, "b.csproj");
+
+                var items = new List<IDictionary<string, string>>();
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectJsonPath", project1JsonPath },
+                    { "ProjectName", "a" },
+                    { "OutputType", "uap" },
+                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectPath", project1Path },
+                });                
+
+                var project1Json = @"
+                {
+                    ""version"": ""2.0.0-beta.1+build"",
+                    ""description"": """",
+                    ""authors"": [ ""author"" ],
+                    ""tags"": [ """" ],
+                    ""projectUrl"": """",
+                    ""licenseUrl"": """",
+                    ""frameworks"": {
+                        ""net45"": {
+                        }
+                    }
+                }";
+
+                Directory.CreateDirectory(project1Root);
+                File.WriteAllText(project1JsonPath, project1Json);
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var project1Spec = dgSpec.Projects.Single(e => e.Name == "a");
+
+                // Assert
+                Assert.Equal("2.0.0-beta.1+build", project1Spec.Version.ToFullString());
+            }
+        }
+
+        [Fact]
         public void MSBuildRestoreUtility_GetPackageSpec_Tool()
         {
             using (var workingDir = TestDirectory.Create())
@@ -161,6 +215,7 @@ namespace NuGet.Commands.Test
                 items.Add(new Dictionary<string, string>()
                 {
                     { "Type", "ProjectSpec" },
+                    { "Version", "2.0.0-rc.2+a.b.c" },
                     { "ProjectName", "a" },
                     { "OutputType", "netcore" },
                     { "OutputPath", outputPath1 },
@@ -183,6 +238,7 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.Equal(project1Path, project1Spec.FilePath);
                 Assert.Equal("a", project1Spec.Name);
+                Assert.Equal("2.0.0-rc.2+a.b.c", project1Spec.Version.ToFullString());
                 Assert.Equal(RestoreOutputType.NETCore, project1Spec.RestoreMetadata.OutputType);
                 Assert.Equal("482C20DE-DFF9-4BD0-B90A-BD3201AA351A", project1Spec.RestoreMetadata.ProjectUniqueName);
                 Assert.Equal(project1Path, project1Spec.RestoreMetadata.ProjectPath);
@@ -198,6 +254,86 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, project1Spec.RuntimeGraph.Supports.Count);
                 Assert.True(project1Spec.RestoreMetadata.CrossTargeting);
                 Assert.True(project1Spec.RestoreMetadata.LegacyPackagesDirectory);
+            }
+        }
+
+        [Fact]
+        public void MSBuildRestoreUtility_GetPackageSpec_NetCoreVerifyDefaultVersion()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var project1Root = Path.Combine(workingDir, "a");
+                var project1Path = Path.Combine(project1Root, "a.csproj");
+                var outputPath1 = Path.Combine(project1Root, "obj");
+                var fallbackFolder = Path.Combine(project1Root, "fallback");
+                var packagesFolder = Path.Combine(project1Root, "packages");
+
+                var items = new List<IDictionary<string, string>>();
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "a" },
+                    { "OutputType", "netcore" },
+                    { "OutputPath", outputPath1 },
+                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectPath", project1Path },
+                    { "TargetFrameworks", "net46;netstandard16" },
+                    { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
+                    { "FallbackFolders", fallbackFolder },
+                    { "PackagesPath", packagesFolder },
+                    { "CrossTargeting", "true" },
+                    { "RestoreLegacyPackagesDirectory", "true" }
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var project1Spec = dgSpec.Projects.Single();
+
+                // Assert
+                Assert.Equal("1.0.0", project1Spec.Version.ToFullString());
+            }
+        }
+
+        [Fact]
+        public void MSBuildRestoreUtility_GetPackageSpec_NetCoreVerifyInvalidVersionThrowsOnParse()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var project1Root = Path.Combine(workingDir, "a");
+                var project1Path = Path.Combine(project1Root, "a.csproj");
+                var outputPath1 = Path.Combine(project1Root, "obj");
+                var fallbackFolder = Path.Combine(project1Root, "fallback");
+                var packagesFolder = Path.Combine(project1Root, "packages");
+
+                var items = new List<IDictionary<string, string>>();
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "Version", "notaversionstring" },
+                    { "ProjectName", "a" },
+                    { "OutputType", "netcore" },
+                    { "OutputPath", outputPath1 },
+                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectPath", project1Path },
+                    { "TargetFrameworks", "net46;netstandard16" },
+                    { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
+                    { "FallbackFolders", fallbackFolder },
+                    { "PackagesPath", packagesFolder },
+                    { "CrossTargeting", "true" },
+                    { "RestoreLegacyPackagesDirectory", "true" }
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act && Assert
+                Assert.Throws(typeof(ArgumentException), 
+                    () => MSBuildRestoreUtility.GetDependencySpec(wrappedItems));
             }
         }
 

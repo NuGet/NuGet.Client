@@ -6,6 +6,7 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Test.Utility;
 using Xunit;
+using NuGet.Versioning;
 
 namespace NuGet.ProjectModel.Test
 {
@@ -193,6 +194,7 @@ namespace NuGet.ProjectModel.Test
             });
 
             var spec = new PackageSpec(frameworks);
+            spec.Version = NuGetVersion.Parse("24.5.1.2-alpha.1.2+a.b.c");
             var msbuildMetadata = new ProjectRestoreMetadata();
             spec.RestoreMetadata = msbuildMetadata;
 
@@ -245,6 +247,9 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal("44B29B8D-8413-42D2-8DF4-72225659619B|c:\\a\\a.csproj|78A6AD3F-9FA5-47F6-A54E-84B46A48CB2F|c:\\b\\b.csproj", string.Join("|", msbuildMetadata2.TargetFrameworks.Single().ProjectReferences.Select(e => $"{e.ProjectUniqueName}|{e.ProjectPath}")));
             Assert.True(msbuildMetadata.CrossTargeting);
             Assert.True(msbuildMetadata.LegacyPackagesDirectory);
+
+            // Verify build metadata is not lost.
+            Assert.Equal("24.5.1.2-alpha.1.2+a.b.c", readSpec.Version.ToFullString());
         }
 
         [Fact]
