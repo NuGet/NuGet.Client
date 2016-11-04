@@ -197,7 +197,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, project1Spec.RuntimeGraph.Runtimes.Count);
                 Assert.Equal(0, project1Spec.RuntimeGraph.Supports.Count);
                 Assert.True(project1Spec.RestoreMetadata.CrossTargeting);
-                Assert.True(project1Spec.RestoreMetadata.RestoreLegacyPackagesDirectory);
+                Assert.True(project1Spec.RestoreMetadata.LegacyPackagesDirectory);
             }
         }
 
@@ -285,7 +285,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal(RestoreOutputType.NETCore, project1Spec.RestoreMetadata.OutputType);
                 Assert.Equal("netstandard1.6", string.Join("|", project1Spec.TargetFrameworks.Select(e => e.FrameworkName.GetShortFolderName())));
                 Assert.Equal("netstandard16", string.Join("|", project1Spec.RestoreMetadata.OriginalTargetFrameworks));
-                Assert.False(project1Spec.RestoreMetadata.RestoreLegacyPackagesDirectory);
+                Assert.False(project1Spec.RestoreMetadata.LegacyPackagesDirectory);
             }
         }
 
@@ -869,7 +869,7 @@ namespace NuGet.Commands.Test
 
                 // Assert
                 Assert.False(spec.RestoreMetadata.CrossTargeting);
-                Assert.False(spec.RestoreMetadata.RestoreLegacyPackagesDirectory);
+                Assert.False(spec.RestoreMetadata.LegacyPackagesDirectory);
             }
         }
 

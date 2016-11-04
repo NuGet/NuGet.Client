@@ -199,7 +199,7 @@ namespace NuGet.Commands
                     result.RestoreMetadata.CrossTargeting = IsPropertyTrue(specItem, "CrossTargeting");
 
                     // Add RestoreLegacyPackagesDirectory flag
-                    result.RestoreMetadata.RestoreLegacyPackagesDirectory = IsPropertyTrue(
+                    result.RestoreMetadata.LegacyPackagesDirectory = IsPropertyTrue(
                         specItem,
                         "RestoreLegacyPackagesDirectory");
                 }

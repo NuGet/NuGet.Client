@@ -2098,6 +2098,94 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Fact]
+        public async Task RestoreNetCore_LegacyPackagesDirectoryEnabledInProjectFile()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "PackageX",
+                    Version = "1.0.0-BETA"
+                };
+
+                packageX.AddFile("lib/net45/a.dll");
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                // Add imports property
+                projectA.Properties.Add("RestoreLegacyPackagesFolder", "true");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var r = RestoreSolution(pathContext);
+                var xTarget = projectA.AssetsFile.Libraries.Single();
+
+                // Assert
+                Assert.Equal("PackageX/1.0.0-BETA", xTarget.Path);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_LegacyPackagesDirectoryDisabledInProjectFile()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "PackageX",
+                    Version = "1.0.0-BETA"
+                };
+
+                packageX.AddFile("lib/net45/a.dll");
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                // Add imports property
+                projectA.Properties.Add("RestoreLegacyPackagesFolder", "false");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var r = RestoreSolution(pathContext);
+                var xTarget = projectA.AssetsFile.Libraries.Single();
+
+                // Assert
+                Assert.Equal("packagex/1.0.0-beta", xTarget.Path);
+            }
+        }
+
         private static CommandRunnerResult RestoreSolution(SimpleTestPathContext pathContext, int exitCode = 0)
         {
             var nugetexe = Util.GetNuGetExePath();

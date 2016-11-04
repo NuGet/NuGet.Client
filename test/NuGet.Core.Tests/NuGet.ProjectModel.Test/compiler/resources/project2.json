@@ -23,8 +23,6 @@
     "outputType": "netcore",
     "outputPath": "c:\\x\\obj\\bin",
     "packagesPath": "c:\\packages",
-    "crossTargeting": true,
-    "legacyPackagesDirectory": true,
     "sources": {
       "https://api.nuget.org/v3/index.json": {}
     },

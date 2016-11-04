@@ -118,6 +118,14 @@ namespace NuGet.ProjectModel
                 SetValue(rawMSBuildMetadata, "crossTargeting", msbuildMetadata.CrossTargeting.ToString());
             }
 
+            if (msbuildMetadata.LegacyPackagesDirectory)
+            {
+                SetValue(
+                    rawMSBuildMetadata,
+                    "legacyPackagesDirectory",
+                    msbuildMetadata.LegacyPackagesDirectory.ToString());
+            }
+
             SetValue(rawMSBuildMetadata, "packagesPath", msbuildMetadata.PackagesPath);
 
 

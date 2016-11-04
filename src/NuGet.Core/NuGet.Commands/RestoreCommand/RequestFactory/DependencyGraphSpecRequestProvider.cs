@@ -176,7 +176,7 @@ namespace NuGet.Commands
             // Set properties from the restore metadata
             request.RestoreOutputType = project.PackageSpec?.RestoreMetadata?.OutputType ?? RestoreOutputType.Unknown;
             request.RestoreOutputPath = project.PackageSpec?.RestoreMetadata?.OutputPath ?? rootPath;
-            var restoreLegacyPackagesDirectory = project.PackageSpec?.RestoreMetadata?.RestoreLegacyPackagesDirectory
+            var restoreLegacyPackagesDirectory = project.PackageSpec?.RestoreMetadata?.LegacyPackagesDirectory
                 ?? DefaultRestoreLegacyPackagesDirectory;
             request.IsLowercasePackagesDirectory = !restoreLegacyPackagesDirectory;
 
