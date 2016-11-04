@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -6,7 +9,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.ProjectModel;
-using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Commands
 {
@@ -15,6 +17,8 @@ namespace NuGet.Commands
     /// </summary>
     public class DependencyGraphSpecRequestProvider : IPreLoadedRestoreRequestProvider
     {
+        private const bool DefaultRestoreLegacyPackagesDirectory = false;
+
         private readonly DependencyGraphSpec _dgFile;
         private readonly RestoreCommandProvidersCache _providerCache;
         private readonly Dictionary<string, PackageSpec> _projectJsonCache = new Dictionary<string, PackageSpec>(StringComparer.Ordinal);
@@ -169,9 +173,12 @@ namespace NuGet.Commands
                 restoreContext.CacheContext,
                 restoreContext.Log);
 
-            // Set output type
+            // Set properties from the restore metadata
             request.RestoreOutputType = project.PackageSpec?.RestoreMetadata?.OutputType ?? RestoreOutputType.Unknown;
             request.RestoreOutputPath = project.PackageSpec?.RestoreMetadata?.OutputPath ?? rootPath;
+            var restoreLegacyPackagesDirectory = project.PackageSpec?.RestoreMetadata?.LegacyPackagesDirectory
+                ?? DefaultRestoreLegacyPackagesDirectory;
+            request.IsLowercasePackagesDirectory = !restoreLegacyPackagesDirectory;
 
             // Standard properties
             restoreContext.ApplyStandardProperties(request);

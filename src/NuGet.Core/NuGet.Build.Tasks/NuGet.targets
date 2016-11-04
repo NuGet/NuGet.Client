@@ -348,6 +348,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <RuntimeIdentifiers>$(RuntimeIdentifiers);$(RuntimeIdentifier)</RuntimeIdentifiers>
         <RuntimeSupports>$(RuntimeSupports)</RuntimeSupports>
         <CrossTargeting>$(_RestoreCrossTargeting)</CrossTargeting>
+        <RestoreLegacyPackagesDirectory>$(RestoreLegacyPackagesDirectory)</RestoreLegacyPackagesDirectory>
       </_RestoreGraphEntry>
     </ItemGroup>
 
