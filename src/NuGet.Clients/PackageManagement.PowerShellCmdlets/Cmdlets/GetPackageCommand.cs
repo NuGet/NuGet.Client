@@ -192,7 +192,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <param name="packagesToDisplay"></param>
         private async Task WriteUpdatePackagesFromRemoteSourceAsync(NuGetProject project)
         {
-            var frameworks = PowerShellCmdletsUtility.GetProjectTargetFrameworks(project);
             var installedPackages = await project.GetInstalledPackagesAsync(Token);
 
             VersionType versionType;
