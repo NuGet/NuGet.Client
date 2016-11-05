@@ -1,9 +1,9 @@
 {
   "dependencies": {
-    "NuGet.ProjectManagement": "4.0.0-*",
-    "NuGet.PackageManagement": "4.0.0-*",
-    "NuGet.Protocol.Core.v2": "4.0.0-*",
-    "NuGet.Build.Tasks": "4.0.0-*"
+    "NuGet.ProjectManagement": "4.0.0-rc-*",
+    "NuGet.PackageManagement": "4.0.0-rc-*",
+    "NuGet.Protocol.Core.v2": "4.0.0-rc-*",
+    "NuGet.Build.Tasks": "4.0.0-rc-*"
   },
   "frameworks": {
     "net45": {}
