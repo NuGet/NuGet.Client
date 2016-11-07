@@ -83,7 +83,7 @@ namespace NuGet.Build.Tasks.Pack
             packArgs.NoPackageAnalysis = NoPackageAnalysis;
             packArgs.PackTargetArgs = new MSBuildPackTargetArgs()
             {
-                TargetPathsToAssemblies = TargetPathsToAssemblies,
+                TargetPathsToAssemblies = GetTargetPathsToAssemblies(),
                 TargetPathsToSymbols = TargetPathsToSymbols,
                 Configuration = Configuration,
                 AssemblyName = AssemblyName,
@@ -113,6 +113,21 @@ namespace NuGet.Build.Tasks.Pack
             PackCommandRunner.SetupCurrentDirectory(packArgs);
 
             return packArgs;
+        }
+
+        private string[] GetTargetPathsToAssemblies()
+        {
+            if (TargetPathsToAssemblies == null)
+            {
+                return new string[0];
+            }
+
+            return TargetPathsToAssemblies
+                .Where(path => path != null)
+                .Select(path => path.Trim())
+                .Where(path => path != string.Empty)
+                .Distinct()
+                .ToArray();
         }
 
         private ISet<NuGetFramework> ParseFrameworks()
