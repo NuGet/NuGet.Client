@@ -31,15 +31,26 @@ namespace NuGet.Build.Tasks
 
         public string GetProperty(string property)
         {
+            return GetProperty(property, trim: true);
+        }
+
+        public string GetProperty(string property, bool trim)
+        {
             var val = Item.GetMetadata(property);
 
-            if (!string.IsNullOrEmpty(val))
+            if (trim && val != null)
             {
-                // Ignore empty strings
-                return val;
+                // Trim whitespace, MSBuild leaves this in place.
+                val = val.Trim();
             }
 
-            return null;
+            if (string.IsNullOrEmpty(val))
+            {
+                // Normalize empty values to null for consistency.
+                return null;
+            }
+
+            return val;
         }
 
         public MSBuildTaskItem(ITaskItem item)

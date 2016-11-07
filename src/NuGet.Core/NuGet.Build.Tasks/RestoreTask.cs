@@ -136,7 +136,7 @@ namespace NuGet.Build.Tasks
 
                 if (!string.IsNullOrEmpty(RestoreSources))
                 {
-                    var sources = RestoreSources.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                    var sources = MSBuildRestoreUtility.Split(RestoreSources);
                     restoreContext.Sources.AddRange(sources);
                 }
 
