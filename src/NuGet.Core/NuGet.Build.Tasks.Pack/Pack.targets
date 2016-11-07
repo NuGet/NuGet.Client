@@ -85,7 +85,7 @@ Copyright (c) .NET Foundation. All rights reserved.
               ReleaseNotes="$(PackageReleaseNotes)"
               Tags="$(PackageTags)"
               Configuration="$(Configuration)"
-              TargetPathsToAssemblies="@(_TargetPathsToAssemblies)"
+              TargetPathsToAssemblies="@(_TargetPathsToAssemblies->'%(FinalOutputPath)')"
               TargetPathsToSymbols="@(_TargetPathsToSymbols)"
               TargetFrameworks="@(_TargetFrameworks)"
               AssemblyName="$(AssemblyName)"
