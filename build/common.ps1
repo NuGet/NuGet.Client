@@ -25,6 +25,13 @@ Set-Alias nuget $NuGetExe
 Set-Alias xunit $XunitConsole
 Set-Alias ilmerge $ILMerge
 
+$Powershell = Get-Host
+$Version = New-Object -TypeName System.Version -ArgumentList "4.0"
+
+if ($Powershell.Version.CompareTo($Version) -le 0) {
+    Set-Alias wget Invoke-WebRequest
+}
+
 Function Read-PackageSources {
     param($NuGetConfig)
     $xml = New-Object xml

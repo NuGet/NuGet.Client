@@ -123,7 +123,13 @@ Function New-BuildToolset {
     $ToolsetObject
 }
 
-$MSBuildDefaultRoot = Join-Path ${env:ProgramFiles(x86)} MSBuild
+$ProgramFiles = ${env:ProgramFiles(x86)}
+
+if (-not $ProgramFiles -or -not (Test-Path $ProgramFiles)) {
+    $ProgramFiles = $env:ProgramFiles
+}
+
+$MSBuildDefaultRoot = Join-Path $ProgramFiles MSBuild
 $MSBuildRelativePath = 'bin\msbuild.exe'
 
 Invoke-BuildStep 'Validating VS14 toolset installation' {
