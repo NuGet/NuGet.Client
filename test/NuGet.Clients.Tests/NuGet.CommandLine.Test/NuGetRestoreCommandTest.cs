@@ -481,7 +481,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
             var nugetexe = Util.GetNuGetExePath();
 
 
-            var msbuildPath = @"C:\Program Files (x86)\MSBuild\14.0\Bin";
+            var msbuildPath = Util.GetMsbuildPathOnWindows();
             var os = Environment.GetEnvironmentVariable("OSTYPE");
             if (RuntimeEnvironmentHelper.IsMono && os != null && os.StartsWith("darwin"))
             {
@@ -540,7 +540,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
             var nugetexe = Util.GetNuGetExePath();
 
 
-            var msbuildPath = @"C:\Program Files (x86)\MSBuild\14.0\Bin";
+            var msbuildPath = Util.GetMsbuildPathOnWindows();
             var os = Environment.GetEnvironmentVariable("OSTYPE");
             if (RuntimeEnvironmentHelper.IsMono && os != null && os.StartsWith("darwin"))
             {

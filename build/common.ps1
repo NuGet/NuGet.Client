@@ -25,6 +25,12 @@ Set-Alias nuget $NuGetExe
 Set-Alias xunit $XunitConsole
 Set-Alias ilmerge $ILMerge
 
+$Version = New-Object -TypeName System.Version -ArgumentList "4.0"
+
+if ($PSVersionTable.PSVersion.CompareTo($Version) -lt 0) {
+    Set-Alias wget Invoke-WebRequest
+}
+
 Function Read-PackageSources {
     param($NuGetConfig)
     $xml = New-Object xml
@@ -111,7 +117,12 @@ Function Invoke-BuildStep {
         $PwdBefore = $PWD
 
         try {
-            Invoke-Command $Expression -ArgumentList $Arguments -ErrorVariable err
+            if (-not $Arguments) {
+                Invoke-Command $Expression -ErrorVariable err
+            }
+            else {
+                Invoke-Command $Expression -ArgumentList $Arguments -ErrorVariable err
+            }
             $completed = $true
         }
         finally {

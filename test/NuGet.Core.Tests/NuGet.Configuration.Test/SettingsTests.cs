@@ -40,9 +40,19 @@ namespace NuGet.Configuration.Test
             // Arrange
 #if IS_CORECLR
             var programFilesX86Data = Environment.GetEnvironmentVariable("PROGRAMFILES(X86)");
+            
+            if (string.IsNullOrEmpty(programFilesX86Data))
+            {
+                programFilesX86Data = Environment.GetEnvironmentVariable("PROGRAMFILES");
+            }
             var userSetting = Environment.GetEnvironmentVariable("APPDATA");
 #else
             var programFilesX86Data = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+
+            if (string.IsNullOrEmpty(programFilesX86Data))
+            {
+                programFilesX86Data = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+            }
             var userSetting = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 #endif
 

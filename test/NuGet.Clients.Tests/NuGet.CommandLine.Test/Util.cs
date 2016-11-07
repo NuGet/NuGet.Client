@@ -1067,6 +1067,17 @@ EndProject");
 </packages>";
         }
 
+        public static string GetMsbuildPathOnWindows()
+        {
+            var msbuildPath = @"C:\Program Files (x86)\MSBuild\14.0\Bin";
+            if (!Directory.Exists(msbuildPath))
+            {
+                msbuildPath = @"C:\Program Files\MSBuild\14.0\Bin";
+            }
+
+            return msbuildPath;
+        }
+
         private static bool IsProjectJson(string configFileName)
         {
             // Simply test the extension as that is all we care about
