@@ -103,19 +103,6 @@ namespace NuGet.Commands
             }
         }
 
-        public void ConvertToolRestoreResultToOriginalCase(ToolRestoreResult result)
-        {
-            // Tools have their own lock files that need to be converted.
-            ConvertLockFileToOriginalCase(result.LockFile);
-
-            // The path to the tool lock file contains the tool's ID and version, which need to be
-            // converted to original case.
-            result.LockFilePath = _toolPathResolver.GetLockFilePath(
-                result.FileTargetLibrary.Name,
-                result.FileTargetLibrary.Version,
-                result.LockFileTarget.TargetFramework);
-        }
-
         private VersionFolderPathContext GetPathContext(PackageIdentity packageIdentity, bool isLowercase)
         {
             return new VersionFolderPathContext(

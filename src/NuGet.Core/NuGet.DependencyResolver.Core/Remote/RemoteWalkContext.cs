@@ -28,7 +28,7 @@ namespace NuGet.DependencyResolver
             CacheContext = cacheContext;
             Logger = logger;
 
-            ProjectLibraryProviders = new List<IProjectDependencyProvider>();
+            ProjectLibraryProviders = new List<IDependencyProvider>();
             LocalLibraryProviders = new List<IRemoteDependencyProvider>();
             RemoteLibraryProviders = new List<IRemoteDependencyProvider>();
 
@@ -39,7 +39,7 @@ namespace NuGet.DependencyResolver
         public SourceCacheContext CacheContext { get; }
         public ILogger Logger { get; }
 
-        public IList<IProjectDependencyProvider> ProjectLibraryProviders { get; }
+        public IList<IDependencyProvider> ProjectLibraryProviders { get; }
         public IList<IRemoteDependencyProvider> LocalLibraryProviders { get; }
         public IList<IRemoteDependencyProvider> RemoteLibraryProviders { get; }
 

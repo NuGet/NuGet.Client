@@ -31,70 +31,6 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void BasicLogging_RestoreVerbosityCanBeMoreVerboseThanGlobal()
-        {
-            // Arrange
-            var log = new TestCommandOutputLogger(observeLogLevel: true);
-
-            var args = new string[]
-            {
-                "--verbosity", "error", // Set the verbosity at a global level.
-                "restore",
-                "project.json",
-                "--configfile", "MyNuGet.config", // Cause an exception. These a full logged at verbose level.
-                "--verbosity", "verbose" // Set the verbosity at the command level.
-            };
-
-            // Act
-            Program.MainInternal(args, log);
-
-            // Assert
-            Assert.Contains("System.AggregateException: ", log.ShowVerboseMessages());
-        }
-
-        [Fact]
-        public void BasicLogging_RestoreVerbosityCanBeLessVerboseThanGlobal()
-        {
-            // Arrange
-            var log = new TestCommandOutputLogger(observeLogLevel: true);
-
-            var args = new string[]
-            {
-                "--verbosity", "verbose", // Set the verbosity at a global level.
-                "restore",
-                "--configfile", "MyNuGet.config", // Cause an exception. These a full logged at verbose level.
-                "--verbosity", "error" // Set the verbosity at the command level.
-            };
-
-            // Act
-            Program.MainInternal(args, log);
-
-            // Assert
-            Assert.DoesNotContain("System.AggregateException: ", log.ShowVerboseMessages());
-        }
-
-        [Fact]
-        public void BasicLogging_RestoreVerbosityDefaultsToGlobalVerbosity()
-        {
-            // Arrange
-            var log = new TestCommandOutputLogger(observeLogLevel: true);
-
-            var args = new string[]
-            {
-                "--verbosity", "verbose", // Set the verbosity at a global level.
-                "restore",
-                "project.json",
-                "--configfile", "MyNuGet.config", // Cause an exception. These a full logged at verbose level.
-            };
-
-            // Act
-            Program.MainInternal(args, log);
-
-            // Assert
-            Assert.Contains("System.AggregateException: ", log.ShowVerboseMessages());
-        }
-
-        [Fact]
         public void BasicLogging_VerifyExceptionLoggedWhenVerbose()
         {
             // Arrange
@@ -158,49 +94,6 @@ namespace NuGet.XPlat.FuncTest
 
             // Assert
             Assert.Equal(0, exitCode);
-        }
-
-        [Fact]
-        public void BasicLogging_RestoreHelp_ExitCode()
-        {
-            // Arrange
-            var log = new TestCommandOutputLogger();
-
-            var args = new string[]
-            {
-                "restore",
-                "--help",
-            };
-
-            // Act
-            var exitCode = Program.MainInternal(args, log);
-
-            // Assert
-            Assert.Equal(0, exitCode);
-        }
-
-        [Fact]
-        public void BasicLogging_RestoreUnknownOption_ExitCode()
-        {
-            // Arrange
-            var log = new TestCommandOutputLogger();
-
-            var args = new string[]
-            {
-                "restore",
-                "--unknown",
-            };
-
-            // Act
-            var exitCode = Program.MainInternal(args, log);
-
-            // Assert
-            Assert.Equal(1, exitCode);
-            Assert.Equal(3, log.Messages.Count);
-            Assert.Equal(1, log.Errors);
-            Assert.Equal(0, log.Warnings);
-            Assert.Contains("--unknown", log.ShowErrors());  // error
-            Assert.Contains("NuGet.CommandLine.XPlat.Program.", log.ShowMessages()); // verbose stack trace
         }
     }
 }

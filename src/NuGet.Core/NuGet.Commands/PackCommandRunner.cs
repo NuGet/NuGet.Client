@@ -34,7 +34,6 @@ namespace NuGet.Commands
             ".nproj",
             ".btproj",
             ".dxjsproj",
-            ".xproj",
             ".json"
         };
 

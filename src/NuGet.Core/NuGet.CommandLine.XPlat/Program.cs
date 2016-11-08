@@ -75,7 +75,6 @@ namespace NuGet.CommandLine.XPlat
             DeleteCommand.Register(app, () => log);
             PackCommand.Register(app, () => log);
             PushCommand.Register(app, () => log);
-            RestoreCommand.Register(app, () => log);
             LocalsCommand.Register(app, () => log);
 
             app.OnExecute(() =>

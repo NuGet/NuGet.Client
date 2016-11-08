@@ -19,31 +19,20 @@ namespace NuGet.ProjectModel
     /// Handles both external references and projects discovered through directories
     /// If the type is set to external project directory discovery will be disabled.
     /// </summary>
-    public class PackageSpecReferenceDependencyProvider : IProjectDependencyProvider
+    public class PackageSpecReferenceDependencyProvider : IDependencyProvider
     {
-        private readonly IPackageSpecResolver _defaultResolver;
         private readonly Dictionary<string, ExternalProjectReference> _externalProjectsByPath
             = new Dictionary<string, ExternalProjectReference>(StringComparer.OrdinalIgnoreCase);
 
         private readonly Dictionary<string, ExternalProjectReference> _externalProjectsByUniqueName
             = new Dictionary<string, ExternalProjectReference>(StringComparer.OrdinalIgnoreCase);
 
-        // RootPath -> Resolver
-        private readonly ConcurrentDictionary<string, IPackageSpecResolver> _resolverCache
-            = new ConcurrentDictionary<string, IPackageSpecResolver>(StringComparer.Ordinal);
-
         private readonly ILogger _logger;
 
         public PackageSpecReferenceDependencyProvider(
-            IPackageSpecResolver projectResolver,
             IEnumerable<ExternalProjectReference> externalProjects,
             ILogger logger)
         {
-            if (projectResolver == null)
-            {
-                throw new ArgumentNullException(nameof(projectResolver));
-            }
-
             if (externalProjects == null)
             {
                 throw new ArgumentNullException(nameof(externalProjects));
@@ -54,11 +43,7 @@ namespace NuGet.ProjectModel
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            _defaultResolver = projectResolver;
             _logger = logger;
-
-            // The constructor is only executed by a single thread, so TryAdd is fine.
-            _resolverCache.TryAdd(projectResolver.RootPath, projectResolver);
 
             foreach (var project in externalProjects)
             {
@@ -94,31 +79,16 @@ namespace NuGet.ProjectModel
 
         public Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework)
         {
-            return GetLibrary(libraryRange, targetFramework, rootPath: _defaultResolver.RootPath);
-        }
-
-        public Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework, string rootPath)
-        {
             Library library = null;
             var name = libraryRange.Name;
 
             ExternalProjectReference externalReference = null;
             PackageSpec packageSpec = null;
-            bool resolvedUsingDirectory = false;
 
-            // Check the external references first
+            // This must exist in the external references
             if (_externalProjectsByUniqueName.TryGetValue(name, out externalReference))
             {
                 packageSpec = externalReference.PackageSpec;
-            }
-            else if (libraryRange.TypeConstraintAllows(LibraryDependencyTarget.Project)
-                && !string.IsNullOrEmpty(rootPath))
-            {
-                // Find the package spec resolver for this root path.
-                var specResolver = GetPackageSpecResolver(rootPath);
-
-                // Allow directory look ups unless this constrained to external
-                resolvedUsingDirectory = specResolver.TryResolvePackageSpec(name, out packageSpec);
             }
 
             if (externalReference == null && packageSpec == null)
@@ -138,7 +108,7 @@ namespace NuGet.ProjectModel
             }
             else
             {
-                // UWP and XProj
+                // UWP
                 dependencies.AddRange(GetDependenciesFromExternalReference(externalReference, packageSpec, targetFramework));
             }
 
@@ -186,7 +156,7 @@ namespace NuGet.ProjectModel
             }
 
             // Add msbuild path
-            var msbuildPath = GetMSBuildPath(externalReference, packageSpec);
+            var msbuildPath = externalReference?.MSBuildProjectPath;
             if (msbuildPath != null)
             {
                 library[KnownLibraryProperties.MSBuildProjectPath] = msbuildPath;
@@ -221,56 +191,15 @@ namespace NuGet.ProjectModel
                     .ToList();
 
                 library[KnownLibraryProperties.FrameworkAssemblies] = frameworkReferences;
-
-                // Add a compile asset for msbuild to xproj projects
-                if (targetFrameworkInfo.FrameworkName != null
-                    && msbuildPath?.EndsWith(".xproj", StringComparison.OrdinalIgnoreCase) == true)
-                {
-                    var tfmFolder = targetFrameworkInfo.FrameworkName.GetShortFolderName();
-
-                    // Projects under solution folders will have names such as src\\MyProject
-                    // For the purpose of finding the output assembly just take the last part of the name
-                    var projectName = packageSpec.Name.Split(
-                        new char[] { '/', '\\' },
-                        StringSplitOptions.RemoveEmptyEntries)
-                        .Last();
-
-                    // Currently the assembly name cannot be changed for xproj, we can construct the path to where
-                    // the output should be.
-                    var asset = $"{tfmFolder}/{projectName}.dll";
-                    library[KnownLibraryProperties.CompileAsset] = asset;
-                    library[KnownLibraryProperties.RuntimeAsset] = asset;
-                }
             }
         }
 
-        private static string GetMSBuildPath(ExternalProjectReference externalReference, PackageSpec packageSpec)
-        {
-            string msbuildPath = null;
-
-            if (externalReference == null)
-            {
-                // Build the path to the .xproj file
-                // If it exists add it to the library properties for the lock file
-                var projectDir = Path.GetDirectoryName(packageSpec.FilePath);
-                var xprojPath = Path.Combine(projectDir, packageSpec.Name + ".xproj");
-
-                if (File.Exists(xprojPath))
-                {
-                    msbuildPath = xprojPath;
-                }
-            }
-            else
-            {
-                msbuildPath = externalReference.MSBuildProjectPath;
-            }
-
-            return msbuildPath;
-        }
-
+        /// <summary>
+        /// .NETCore projects
+        /// </summary>
         private List<LibraryDependency> GetDependenciesFromSpecRestoreMetadata(PackageSpec packageSpec, NuGetFramework targetFramework)
         {
-            var dependencies = GetSpecDependencies(packageSpec, targetFramework, requireExternalProjects: true);
+            var dependencies = GetSpecDependencies(packageSpec, targetFramework);
 
             // Get the nearest framework
             var referencesForFramework = packageSpec.GetRestoreMetadataFramework(targetFramework);
@@ -318,13 +247,15 @@ namespace NuGet.ProjectModel
             return dependencies;
         }
 
+        /// <summary>
+        /// UWP Project.json
+        /// </summary>
         private List<LibraryDependency> GetDependenciesFromExternalReference(
             ExternalProjectReference externalReference,
             PackageSpec packageSpec,
             NuGetFramework targetFramework)
         {
-            var isMSBuildBased = XProjUtility.IsMSBuildBasedProject(externalReference?.MSBuildProjectPath);
-            var dependencies = GetSpecDependencies(packageSpec, targetFramework, requireExternalProjects: isMSBuildBased);
+            var dependencies = GetSpecDependencies(packageSpec, targetFramework);
 
             if (externalReference != null)
             {
@@ -336,33 +267,6 @@ namespace NuGet.ProjectModel
                 var filteredExternalDependencies = new HashSet<string>(
                     childReferenceNames,
                     StringComparer.OrdinalIgnoreCase);
-
-                // Non-Xproj projects may only have one TxM, all external references should be 
-                // included if this is an msbuild based project.
-                if (packageSpec != null
-                    && !XProjUtility.IsMSBuildBasedProject(externalReference.MSBuildProjectPath))
-                {
-                    // Create an exclude list of all references from the non-selected TxM
-                    // Start with all framework specific references
-                    var allFrameworkDependencies = GetProjectNames(
-                        packageSpec.TargetFrameworks.SelectMany(info => info.Dependencies));
-
-                    var excludedDependencies = new HashSet<string>(
-                        allFrameworkDependencies,
-                        StringComparer.OrdinalIgnoreCase);
-
-                    // Then clear out excluded dependencies that are found in the good dependency list
-                    foreach (var dependency in GetProjectNames(dependencies))
-                    {
-                        excludedDependencies.Remove(dependency);
-                    }
-
-                    // Remove excluded dependencies from the external list
-                    foreach (var excluded in excludedDependencies)
-                    {
-                        filteredExternalDependencies.Remove(excluded);
-                    }
-                }
 
                 // Set all dependencies from project.json to external if an external match was passed in
                 // This is viral and keeps p2ps from looking into directories when we are going down
@@ -395,8 +299,7 @@ namespace NuGet.ProjectModel
 
         private static List<LibraryDependency> GetSpecDependencies(
             PackageSpec packageSpec,
-            NuGetFramework targetFramework,
-            bool requireExternalProjects)
+            NuGetFramework targetFramework)
         {
             var dependencies = new List<LibraryDependency>();
 
@@ -413,45 +316,16 @@ namespace NuGet.ProjectModel
                 dependencies.RemoveAll(d => d.LibraryRange.TypeConstraint == LibraryDependencyTarget.Reference);
 
                 // Disallow projects (resolved by directory) for non-xproj msbuild projects.
-                // If there is no msbuild path then resolving by directory is allowed.
-                // CSProj does not allow directory to directory look up.
-                if (requireExternalProjects)
+                foreach (var dependency in dependencies)
                 {
-                    foreach (var dependency in dependencies)
-                    {
-                        // Remove "project" from the allowed types for this dependency
-                        // This will require that projects referenced by an msbuild project
-                        // must be external projects.
-                        dependency.LibraryRange.TypeConstraint &= ~LibraryDependencyTarget.Project;
-                    }
+                    // Remove "project" from the allowed types for this dependency
+                    // This will require that projects referenced by an msbuild project
+                    // must be external projects.
+                    dependency.LibraryRange.TypeConstraint &= ~LibraryDependencyTarget.Project;
                 }
             }
 
             return dependencies;
-        }
-
-        /// <summary>
-        /// Get and cache the package spec resolver.
-        /// </summary>
-        private IPackageSpecResolver GetPackageSpecResolver(string rootPath)
-        {
-            var specResolver = _defaultResolver;
-
-            if (!string.IsNullOrEmpty(rootPath))
-            {
-                specResolver = _resolverCache.GetOrAdd(
-                    rootPath,
-                    _createPackageSpecResolver);
-            }
-
-            return specResolver;
-        }
-
-        private static readonly Func<string, PackageSpecResolver> _createPackageSpecResolver = CreatePackageSpecResolver;
-
-        private static PackageSpecResolver CreatePackageSpecResolver(string rootPath)
-        {
-            return new PackageSpecResolver(rootPath);
         }
 
         /// <summary>

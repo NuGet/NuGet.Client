@@ -70,9 +70,6 @@ namespace NuGet.Commands.FuncTest
         public async Task RestoreCommand_LockFileHasOriginalVersionCase()
         {
             // Arrange
-            var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
-
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
             {
@@ -97,7 +94,21 @@ namespace NuGet.Commands.FuncTest
                 JsonPackageSpecWriter.WritePackageSpec(referenceSpec, referenceSpecPath);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(projectSpec, sources, packagesDir, logger);
+
+                var restoreContext = new RestoreArgs()
+                {
+                    Sources = new List<string>() { "https://www.nuget.org/api/v2/" },
+                    GlobalPackagesFolder = packagesDir,
+                    Log = logger,
+                    CacheContext = new SourceCacheContext()
+                };
+
+                // Modify specs for netcore
+                referenceSpec = referenceSpec.WithTestRestoreMetadata();
+                projectSpec = projectSpec.WithTestRestoreMetadata().WithTestProjectReference(referenceSpec);
+
+                var request = await ProjectJsonTestHelpers.GetRequestAsync(restoreContext, projectSpec, referenceSpec);
+
                 var command = new RestoreCommand(request);
 
                 // Act
@@ -170,8 +181,6 @@ namespace NuGet.Commands.FuncTest
         public async Task RestoreCommand_DependenciesOfDifferentCase()
         {
             // Arrange
-            var sources = new List<PackageSource> { new PackageSource("https://www.nuget.org/api/v2/") };
-
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
             {
@@ -222,10 +231,20 @@ namespace NuGet.Commands.FuncTest
                 var specA = JsonPackageSpecReader.GetPackageSpec("a", specPathA);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(specA, sources, packagesDir, logger)
+
+                var restoreContext = new RestoreArgs()
                 {
-                    LockFilePath = Path.Combine(specDirA, "project.lock.json")
+                    Sources = new List<string>() { "https://www.nuget.org/api/v2/" },
+                    GlobalPackagesFolder = packagesDir,
+                    Log = logger,
+                    CacheContext = new SourceCacheContext()
                 };
+
+                // Modify specs for netcore
+                specB = specB.WithTestRestoreMetadata();
+                specA = specA.WithTestRestoreMetadata().WithTestProjectReference(specB);
+
+                var request = await ProjectJsonTestHelpers.GetRequestAsync(restoreContext, specA, specB);
 
                 // Act
                 var command = new RestoreCommand(request);
