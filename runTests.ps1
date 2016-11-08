@@ -23,15 +23,20 @@ Skips running NuGet.Core.FuncTests and NuGet.Clients.FuncTests
 .PARAMETER CI
 Indicates the build script is invoked from CI
 
+.NOTES
+Some of the functional tests including NuGet server ecosystem will fail outside of Microsoft corpnet.
+
 .EXAMPLE
-Running full test suite:
 .\runTests.ps1 -Verbose
+Running full test suite
 
-Running functional tests only:
+.EXAMPLE
 .\runTests.ps1 -sut
+Running functional tests only
 
-Running core unit tests only:
+.EXAMPLE
 .\runTests.ps1 -sft -s14 -s15
+Running core unit tests only
 #>
 [CmdletBinding()]
 param (
