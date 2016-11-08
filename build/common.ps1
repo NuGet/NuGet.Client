@@ -117,7 +117,12 @@ Function Invoke-BuildStep {
         $PwdBefore = $PWD
 
         try {
-            Invoke-Command $Expression -ArgumentList $Arguments -ErrorVariable err
+            if (-not $Arguments) {
+                Invoke-Command $Expression -ErrorVariable err
+            }
+            else {
+                Invoke-Command $Expression -ArgumentList $Arguments -ErrorVariable err
+            }
             $completed = $true
         }
         finally {
