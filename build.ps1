@@ -113,8 +113,8 @@ Invoke-BuildStep 'Cleaning artifacts' {
     -skip:($Fast -or $SkipXProj) `
     -ev +BuildErrors
 
-Invoke-BuildStep 'Configure delay signing' {
-        Configure-DelaySigning -MSPFXPath:$MSPFXPath -NuGetPFXPath:$NuGetPFXPath -CI:$CI
+Invoke-BuildStep 'Set delay signing options' {
+        Set-DelaySigning $MSPFXPath $NuGetPFXPath -CI:$CI
     } `
     -ev +BuildErrors
 

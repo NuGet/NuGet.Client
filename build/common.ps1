@@ -334,7 +334,7 @@ Function Save-ProjectFile ($xproject, $fileName) {
     $xproject | ConvertTo-Json -Depth 100 | Out-File $fileName
 }
 
-Function Configure-DelaySigning {
+Function Set-DelaySigning {
     [CmdletBinding()]
     param(
         [string]$MSPFXPath,
