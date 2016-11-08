@@ -68,11 +68,7 @@ namespace NuGet.CommandLine
             project.FullPath = Path.Combine(project.DirectoryPath, "test.csproj");
 
             // Act
-            var msbuildPath = @"C:\Program Files (x86)\MSBuild\14.0\Bin";
-            if (!Directory.Exists(msbuildPath))
-            {
-                msbuildPath = @"C:\Program Files\MSBuild\14.0\Bin";
-            }
+            var msbuildPath = Util.GetMsbuildPathOnWindows();
             var factory = new ProjectFactory(msbuildPath, project) { Build = false };
             var packageBuilder = factory.CreateBuilder(basePath, new NuGetVersion("3.0.0"), "", true);
             var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
@@ -138,11 +134,7 @@ namespace NuGet.CommandLine
             var project = new Project(XmlReader.Create(new StringReader(projectXml)), cmdLineProperties, null);
             project.FullPath = Path.Combine(project.DirectoryPath, "test.csproj");
 
-            var msbuildPath = @"C:\Program Files (x86)\MSBuild\14.0\Bin";
-            if (!Directory.Exists(msbuildPath))
-            {
-                msbuildPath = @"C:\Program Files\MSBuild\14.0\Bin";
-            }
+            var msbuildPath = Util.GetMsbuildPathOnWindows();
             var factory = new ProjectFactory(msbuildPath, project) { Build = false };
             // Cmdline properties are added to the factory, see PackCommand.cs(351)
             factory.ProjectProperties["owner"] = "overriden";
@@ -209,11 +201,7 @@ namespace NuGet.CommandLine
             var project = new Project(XmlReader.Create(new StringReader(projectXml)), cmdLineProperties, null);
             project.FullPath = Path.Combine(project.DirectoryPath, "test.csproj");
 
-            var msbuildPath = @"C:\Program Files (x86)\MSBuild\14.0\Bin";
-            if (!Directory.Exists(msbuildPath))
-            {
-                msbuildPath = @"C:\Program Files\MSBuild\14.0\Bin";
-            }
+            var msbuildPath = Util.GetMsbuildPathOnWindows();
             var factory = new ProjectFactory(msbuildPath, project) { Build = false };
             // Cmdline properties are added to the factory, see PackCommand.cs
             factory.ProjectProperties.AddRange(cmdLineProperties);
@@ -280,11 +268,7 @@ namespace NuGet.CommandLine
             var project = new Project(XmlReader.Create(new StringReader(projectXml)), cmdLineProperties, null);
             project.FullPath = Path.Combine(project.DirectoryPath, "test.csproj");
 
-            var msbuildPath = @"C:\Program Files (x86)\MSBuild\14.0\Bin";
-            if (!Directory.Exists(msbuildPath))
-            {
-                msbuildPath = @"C:\Program Files\MSBuild\14.0\Bin";
-            }
+            var msbuildPath = Util.GetMsbuildPathOnWindows();
             var factory = new ProjectFactory(msbuildPath, project) { Build = false };
             // Cmdline properties are added to the factory, see PackCommand.cs
             factory.ProjectProperties.AddRange(cmdLineProperties);

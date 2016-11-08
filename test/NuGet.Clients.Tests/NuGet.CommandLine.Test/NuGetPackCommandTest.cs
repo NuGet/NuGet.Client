@@ -3282,11 +3282,7 @@ namespace Proj2
         }
     }
 }");
-                var msbuildPath = @"C:\Program Files (x86)\MSBuild\14.0\Bin";
-                if (!Directory.Exists(msbuildPath))
-                {
-                    msbuildPath = @"C:\Program Files\MSBuild\14.0\Bin";
-                }
+                var msbuildPath = Util.GetMsbuildPathOnWindows();
                 var os = Environment.GetEnvironmentVariable("OSTYPE");
                 if (RuntimeEnvironmentHelper.IsMono && os != null && os.StartsWith("darwin"))
                 {
@@ -3416,11 +3412,7 @@ namespace Proj2
         }
     }
 }");
-                var msbuildPath = @"C:\Program Files (x86)\MSBuild\14.0\Bin";
-                if (!Directory.Exists(msbuildPath))
-                {
-                    msbuildPath = @"C:\Program Files\MSBuild\14.0\Bin";
-                }
+                var msbuildPath = Util.GetMsbuildPathOnWindows();
                 var os = Environment.GetEnvironmentVariable("OSTYPE");
                 if (RuntimeEnvironmentHelper.IsMono && os != null && os.StartsWith("darwin"))
                 {
