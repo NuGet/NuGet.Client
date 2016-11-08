@@ -118,7 +118,7 @@ Function Invoke-BuildStep {
 
         try {
             if (-not $Arguments) {
-                Invoke-Command $Expression -ArgumentList -ErrorVariable err
+                Invoke-Command $Expression -ErrorVariable err
             }
             else {
                 Invoke-Command $Expression -ArgumentList $Arguments -ErrorVariable err
