@@ -91,7 +91,7 @@ namespace NuGet.PackageManagement.VisualStudio
             try
             {
                 return _projectNamesCache.TryGetValue(name, out projectNames) ||
-                       TryGetProjectNameByShortName(name, out projectNames);
+                       TryGetProjectNameByShortNameWithoutLock(name, out projectNames);
             }
             finally
             {
