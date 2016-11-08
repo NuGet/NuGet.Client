@@ -117,7 +117,6 @@ namespace NuGet.Protocol
             catch (Exception ex) when (!(ex is FatalProtocolException) && (!(ex is OperationCanceledException)))
             {
                 string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToReadServiceIndex, source.PackageSource.Source);
-                log.LogError(message + Environment.NewLine + ExceptionUtilities.DisplayMessage(ex));
 
                 throw new FatalProtocolException(message, ex);
             }

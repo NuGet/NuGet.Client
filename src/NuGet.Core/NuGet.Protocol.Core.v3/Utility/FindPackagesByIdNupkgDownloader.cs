@@ -254,7 +254,7 @@ namespace NuGet.Protocol
             ILogger logger,
             CancellationToken token)
         {
-            for (var retry = 0; retry != 3; ++retry)
+            for (var retry = 0; retry < 3; ++retry)
             {
                 var httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, retry);
 
@@ -267,7 +267,8 @@ namespace NuGet.Protocol
                             httpSourceCacheContext)
                         {
                             EnsureValidContents = stream => HttpStreamValidation.ValidateNupkg(url, stream),
-                            IgnoreNotFounds = true
+                            IgnoreNotFounds = true,
+                            MaxTries = 1
                         },
                         async httpSourceResult => await processAsync(httpSourceResult),
                         logger,

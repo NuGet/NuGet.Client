@@ -175,7 +175,10 @@ namespace NuGet.Protocol
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            for (var retry = 0; retry != 3; ++retry)
+            // Try each base URI 3 times.
+            var maxTries = 3 * _baseUris.Count;
+
+            for (var retry = 0; retry < maxTries; ++retry)
             {
                 var baseUri = _baseUris[retry % _baseUris.Count].OriginalString;
                 var uri = baseUri + id.ToLowerInvariant() + "/index.json";
@@ -190,7 +193,8 @@ namespace NuGet.Protocol
                             httpSourceCacheContext)
                         {
                             IgnoreNotFounds = true,
-                            EnsureValidContents = stream => HttpStreamValidation.ValidateJObject(uri, stream)
+                            EnsureValidContents = stream => HttpStreamValidation.ValidateJObject(uri, stream),
+                            MaxTries = 1
                         },
                         httpSourceResult =>
                         {
@@ -229,7 +233,6 @@ namespace NuGet.Protocol
                 catch (Exception ex) when (retry == 2)
                 {
                     var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToRetrievePackage, uri);
-                    logger.LogError(message + Environment.NewLine + ExceptionUtilities.DisplayMessage(ex));
 
                     throw new FatalProtocolException(message, ex);
                 }

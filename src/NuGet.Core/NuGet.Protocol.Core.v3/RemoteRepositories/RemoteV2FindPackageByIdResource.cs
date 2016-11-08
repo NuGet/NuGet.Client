@@ -183,7 +183,7 @@ namespace NuGet.Protocol
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            for (var retry = 0; retry != 3; ++retry)
+            for (var retry = 0; retry < 3; ++retry)
             {
                 var uri = _baseUri + "FindPackagesById()?id='" + id + "'";
                 var httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, retry);
@@ -214,7 +214,8 @@ namespace NuGet.Protocol
                                     new MediaTypeWithQualityHeaderValue("application/atom+xml"),
                                     new MediaTypeWithQualityHeaderValue("application/xml")
                                 },
-                                EnsureValidContents = stream => HttpStreamValidation.ValidateXml(uri, stream)
+                                EnsureValidContents = stream => HttpStreamValidation.ValidateXml(uri, stream),
+                                MaxTries = 1
                             },
                             httpSourceResult =>
                             {
@@ -273,9 +274,7 @@ namespace NuGet.Protocol
                 }
                 catch (Exception ex) when (retry == 2)
                 {
-                    // Fail silently by returning empty result list
                     var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToRetrievePackage, uri);
-                    logger.LogError(message + Environment.NewLine + ex.Message);
 
                     throw new FatalProtocolException(message, ex);
                 }

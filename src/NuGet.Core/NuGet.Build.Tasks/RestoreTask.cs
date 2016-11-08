@@ -4,10 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 using Newtonsoft.Json;
 using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
@@ -18,7 +19,7 @@ namespace NuGet.Build.Tasks
     /// <summary>
     /// .NET Core compatible restore task for csproj + project.json.
     /// </summary>
-    public class RestoreTask : Task
+    public class RestoreTask : Microsoft.Build.Utilities.Task
     {
         /// <summary>
         /// DG file entries
@@ -68,10 +69,10 @@ namespace NuGet.Build.Tasks
 
         public override bool Execute()
         {
-            if (RestoreGraphItems.Length < 1)
+            System.Console.WriteLine($"Process ID: {System.Diagnostics.Process.GetCurrentProcess().Id}");
+            while (!System.Diagnostics.Debugger.IsAttached)
             {
-                Log.LogWarning("Unable to find a project to restore!");
-                return true;
+                System.Threading.Thread.Sleep(100);
             }
 
             var log = new MSBuildLogger(Log);
@@ -86,6 +87,37 @@ namespace NuGet.Build.Tasks
             log.LogDebug($"(in) RestoreNoCache '{RestoreNoCache}'");
             log.LogDebug($"(in) RestoreIgnoreFailedSources '{RestoreIgnoreFailedSources}'");
             log.LogDebug($"(in) RestoreRecursive '{RestoreRecursive}'");
+
+            try
+            {
+                return ExecuteAsync(log).Result;
+            }
+            catch (Exception e)
+            {
+                // Log the error
+                if (ExceptionLogger.Instance.ShowStack)
+                {
+                    log.LogError(e.ToString());
+                }
+                else
+                {
+                    log.LogError(ExceptionUtilities.DisplayMessage(e));
+                }
+
+                // Log the stack trace as verbose output.
+                log.LogVerbose(e.ToString());
+
+                return false;
+            }
+        }
+
+        private async Task<bool> ExecuteAsync(Common.ILogger log)
+        {
+            if (RestoreGraphItems.Length < 1)
+            {
+                log.LogWarning("Unable to find a project to restore!");
+                return true;
+            }
 
             // Convert to the internal wrapper
             var wrappedItems = RestoreGraphItems.Select(GetMSBuildItem);
@@ -145,7 +177,7 @@ namespace NuGet.Build.Tasks
                     HttpSourceResourceProvider.Throttle = SemaphoreSlimThrottle.CreateBinarySemaphore();
                 }
 
-                var restoreSummaries = RestoreRunner.Run(restoreContext).Result;
+                var restoreSummaries = await RestoreRunner.Run(restoreContext);
 
                 // Summary
                 RestoreSummary.Log(log, restoreSummaries);

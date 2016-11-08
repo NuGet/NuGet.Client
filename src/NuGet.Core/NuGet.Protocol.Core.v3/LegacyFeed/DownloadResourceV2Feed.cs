@@ -82,9 +82,8 @@ namespace NuGet.Protocol
             }
             catch (Exception ex) when (!(ex is FatalProtocolException))
             {
-                // if the expcetion is not FatalProtocolException, catch it.
+                // if the exception is not FatalProtocolException, catch it.
                 string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorDownloading, identity, _feedParser.Source.Source);
-                logger.LogError(message + Environment.NewLine + ExceptionUtilities.DisplayMessage(ex));
 
                 throw new FatalProtocolException(message, ex);
             }
