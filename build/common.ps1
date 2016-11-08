@@ -338,8 +338,7 @@ Function Set-DelaySigning {
     [CmdletBinding()]
     param(
         [string]$MSPFXPath,
-        [string]$NuGetPFXPath,
-        [switch]$CI
+        [string]$NuGetPFXPath
     )
 
     if ($MSPFXPath -and (Test-Path $MSPFXPath)) {
@@ -366,17 +365,17 @@ Function Set-DelaySigning {
                 }
             }
     }
-    elseif (!$CI) {
+    else {
         Remove-Item Env:\DNX_BUILD_KEY_FILE -ErrorAction Ignore
         Remove-Item Env:\DNX_BUILD_DELAY_SIGN -ErrorAction Ignore
-        Remove-Item Env:\NUGET_PFX_PATH -ErrorAction Ignore
+        Remove-Item Env:\MS_PFX_PATH -ErrorAction Ignore
     }
 
     if ($NuGetPFXPath -and (Test-Path $NuGetPFXPath)) {
         Trace-Log "Setting NuGet.Clients solution to delay sign using $NuGetPFXPath"
         $env:NUGET_PFX_PATH= $NuGetPFXPath
     }
-    elseif (!$CI) {
+    else {
         Remove-Item Env:\NUGET_PFX_PATH -ErrorAction Ignore
     }
 }
