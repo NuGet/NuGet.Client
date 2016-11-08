@@ -334,14 +334,15 @@ Function Save-ProjectFile ($xproject, $fileName) {
     $xproject | ConvertTo-Json -Depth 100 | Out-File $fileName
 }
 
-# Enables delay signed build
-Function Enable-DelaySigning {
+Function Configure-DelaySigning {
     [CmdletBinding()]
     param(
-        $MSPFXPath,
-        $NuGetPFXPath
+        [string]$MSPFXPath,
+        [string]$NuGetPFXPath,
+        [switch]$CI
     )
-    if (Test-Path $MSPFXPath) {
+
+    if ($MSPFXPath -and (Test-Path $MSPFXPath)) {
         Trace-Log "Setting NuGet.Core solution to delay sign using $MSPFXPath"
         $env:DNX_BUILD_KEY_FILE=$MSPFXPath
         $env:DNX_BUILD_DELAY_SIGN=$true
@@ -365,10 +366,18 @@ Function Enable-DelaySigning {
                 }
             }
     }
+    elseif (!$CI) {
+        Remove-Item Env:\DNX_BUILD_KEY_FILE -ErrorAction Ignore
+        Remove-Item Env:\DNX_BUILD_DELAY_SIGN -ErrorAction Ignore
+        Remove-Item Env:\NUGET_PFX_PATH -ErrorAction Ignore
+    }
 
-    if (Test-Path $NuGetPFXPath) {
+    if ($NuGetPFXPath -and (Test-Path $NuGetPFXPath)) {
         Trace-Log "Setting NuGet.Clients solution to delay sign using $NuGetPFXPath"
         $env:NUGET_PFX_PATH= $NuGetPFXPath
+    }
+    elseif (!$CI) {
+        Remove-Item Env:\NUGET_PFX_PATH -ErrorAction Ignore
     }
 }
 
