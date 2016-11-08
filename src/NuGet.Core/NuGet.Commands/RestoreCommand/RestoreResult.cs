@@ -31,8 +31,6 @@ namespace NuGet.Commands
 
         public IEnumerable<CompatibilityCheckResult> CompatibilityCheckResults { get; }
 
-        public IEnumerable<ToolRestoreResult> ToolRestoreResults { get; }
-
         public RestoreOutputType OutputType { get; }
 
         /// <summary>
@@ -59,7 +57,6 @@ namespace NuGet.Commands
             LockFile previousLockFile,
             string lockFilePath,
             MSBuildRestoreResult msbuild,
-            IEnumerable<ToolRestoreResult> toolRestoreResults,
             RestoreOutputType outputType,
             TimeSpan elapsedTime)
         {
@@ -70,7 +67,6 @@ namespace NuGet.Commands
             LockFilePath = lockFilePath;
             MSBuild = msbuild;
             PreviousLockFile = previousLockFile;
-            ToolRestoreResults = toolRestoreResults;
             OutputType = outputType;
             ElapsedTime = elapsedTime;
         }
@@ -137,20 +133,6 @@ namespace NuGet.Commands
                 forceWrite: forceWrite,
                 toolCommit: isTool,
                 token: token);
-
-            foreach (var toolRestoreResult in ToolRestoreResults)
-            {
-                if (toolRestoreResult.LockFilePath != null && toolRestoreResult.LockFile != null)
-                {
-                    await CommitAsync(
-                        lockFileFormat,
-                        result: toolRestoreResult,
-                        log: log,
-                        forceWrite: forceWrite,
-                        toolCommit: true,
-                        token: token);
-                }
-            }
         }
 
         private static async Task CommitAsync(

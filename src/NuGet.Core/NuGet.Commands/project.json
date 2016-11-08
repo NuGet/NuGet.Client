@@ -42,7 +42,7 @@
     "NuGet.Configuration": {
       "target": "project"
     },
-    "NuGet.DependencyResolver": {
+    "NuGet.DependencyResolver.Core": {
       "target": "project"
     },
     "NuGet.RuntimeModel": {

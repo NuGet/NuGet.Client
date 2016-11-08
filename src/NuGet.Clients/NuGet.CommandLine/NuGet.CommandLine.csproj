@@ -79,7 +79,6 @@
     <Compile Include="ExtensionLocator.cs" />
     <Compile Include="FileConflictAction.cs" />
     <Compile Include="ICommandManager.cs" />
-    <Compile Include="MSBuildTasks\ProjectReferencesTask.cs" />
     <Compile Include="MsbuildToolSet.cs" />
     <Compile Include="MsBuildUtility.cs" />
     <Compile Include="NuGetCommand.Designer.cs">

@@ -34,8 +34,7 @@ namespace NuGet.Commands
             PackageSpec project,
             IEnumerable<RestoreTargetGraph> targetGraphs,
             IReadOnlyList<NuGetv3LocalRepository> localRepositories,
-            RemoteWalkContext context,
-            IEnumerable<ToolRestoreResult> toolRestoreResults)
+            RemoteWalkContext context)
         {
             var lockFile = new LockFile();
             lockFile.Version = _lockFileVersion;
@@ -301,8 +300,6 @@ namespace NuGet.Commands
 
             PopulateProjectFileToolGroups(project, lockFile);
 
-            PopulateTools(toolRestoreResults, lockFile);
-
             PopulatePackageFolders(localRepositories.Select(repo => repo.RepositoryRoot).Distinct(), lockFile);
 
             return lockFile;
@@ -377,34 +374,6 @@ namespace NuGet.Commands
                         .OrderBy(dependency => dependency, StringComparer.Ordinal));
 
                 lockFile.ProjectFileDependencyGroups.Add(dependencyGroup);
-            }
-        }
-
-        private static void PopulateTools(IEnumerable<ToolRestoreResult> toolRestoreResults, LockFile lockFile)
-        {
-            // Add the tool targets (this states what tools were actually restored)
-            var toolTargets = new Dictionary<string, LockFileTarget>();
-            foreach (var result in toolRestoreResults)
-            {
-                if (result.FileTargetLibrary == null)
-                {
-                    continue;
-                }
-
-                var newTarget = new LockFileTarget
-                {
-                    TargetFramework = result.LockFileTarget.TargetFramework,
-                    RuntimeIdentifier = result.LockFileTarget.RuntimeIdentifier
-                };
-                LockFileTarget existingTarget;
-                if (!toolTargets.TryGetValue(newTarget.Name, out existingTarget))
-                {
-                    toolTargets[newTarget.Name] = newTarget;
-                    existingTarget = newTarget;
-                    lockFile.Tools.Add(newTarget);
-                }
-
-                existingTarget.Libraries.Add(result.FileTargetLibrary);
             }
         }
 

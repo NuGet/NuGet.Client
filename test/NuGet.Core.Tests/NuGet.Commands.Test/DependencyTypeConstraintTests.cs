@@ -10,6 +10,7 @@ using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
+using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -115,13 +116,6 @@ namespace NuGet.Commands.Test
               }
             }";
 
-            var globalJson = @"
-            {
-                ""projects"": [
-                    ""projects""
-                ]
-            }";
-
             using (var workingDir = TestDirectory.Create())
             {
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
@@ -136,7 +130,6 @@ namespace NuGet.Commands.Test
 
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
                 File.WriteAllText(Path.Combine(packageBProject.FullName, "project.json"), packageBProjectJson);
-                File.WriteAllText(Path.Combine(workingDir, "global.json"), globalJson);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var specPath2 = Path.Combine(packageBProject.FullName, "project.json");
@@ -155,7 +148,20 @@ namespace NuGet.Commands.Test
                 await GlobalFolderUtility.AddPackageToGlobalFolderAsync(packageAPath, packagesDir);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
+
+                var restoreContext = new RestoreArgs()
+                {
+                    Sources = new List<string>() { packageSource.FullName },
+                    GlobalPackagesFolder = packagesDir.FullName,
+                    Log = logger,
+                    CacheContext = new SourceCacheContext()
+                };
+
+                // Modify specs for netcore
+                spec2 = spec2.WithTestRestoreMetadata();
+                spec1 = spec1.WithTestRestoreMetadata().WithTestProjectReference(spec2);
+
+                var request = await ProjectJsonTestHelpers.GetRequestAsync(restoreContext, spec1, spec2);
 
                 request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
@@ -213,13 +219,6 @@ namespace NuGet.Commands.Test
               }
             }";
 
-            var globalJson = @"
-            {
-                ""projects"": [
-                    ""projects""
-                ]
-            }";
-
             using (var workingDir = TestDirectory.Create())
             {
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
@@ -238,7 +237,6 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(packageAProject.FullName, "project.json"), packageAProjectJson);
                 File.WriteAllText(Path.Combine(packageAExternalProject.FullName, "project.json"),
                     packageAExternalProjectJson);
-                File.WriteAllText(Path.Combine(workingDir, "global.json"), globalJson);
 
                 var project1CSProjPath = Path.Combine(project1.FullName, "project1.csproj");
                 File.WriteAllText(project1CSProjPath, string.Empty);
@@ -333,13 +331,6 @@ namespace NuGet.Commands.Test
               }
             }";
 
-            var globalJson = @"
-            {
-                ""projects"": [
-                    ""projects""
-                ]
-            }";
-
             using (var workingDir = TestDirectory.Create())
             {
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
@@ -356,7 +347,6 @@ namespace NuGet.Commands.Test
 
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
                 File.WriteAllText(Path.Combine(packageAProject.FullName, "project.json"), packageAProjectJson);
-                File.WriteAllText(Path.Combine(workingDir, "global.json"), globalJson);
 
                 var project1ProjPath = Path.Combine(project1.FullName, "project1.xproj");
                 File.WriteAllText(project1ProjPath, string.Empty);
@@ -442,13 +432,6 @@ namespace NuGet.Commands.Test
               }
             }";
 
-            var globalJson = @"
-            {
-                ""projects"": [
-                    ""projects""
-                ]
-            }";
-
             using (var workingDir = TestDirectory.Create())
             {
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
@@ -463,7 +446,6 @@ namespace NuGet.Commands.Test
 
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
                 File.WriteAllText(Path.Combine(packageAProject.FullName, "project.json"), packageAProjectJson);
-                File.WriteAllText(Path.Combine(workingDir, "global.json"), globalJson);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var specPath2 = Path.Combine(packageAProject.FullName, "project.json");
@@ -478,7 +460,20 @@ namespace NuGet.Commands.Test
                 await GlobalFolderUtility.AddPackageToGlobalFolderAsync(packageAPath, packagesDir);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
+
+                var restoreContext = new RestoreArgs()
+                {
+                    Sources = new List<string>() { packageSource.FullName },
+                    GlobalPackagesFolder = packagesDir.FullName,
+                    Log = logger,
+                    CacheContext = new SourceCacheContext()
+                };
+
+                // Modify specs for netcore
+                spec2 = spec2.WithTestRestoreMetadata();
+                spec1 = spec1.WithTestRestoreMetadata().WithTestProjectReference(spec2);
+
+                var request = await ProjectJsonTestHelpers.GetRequestAsync(restoreContext, spec1, spec2);
 
                 request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 

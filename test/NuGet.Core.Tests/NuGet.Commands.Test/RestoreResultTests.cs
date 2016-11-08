@@ -31,7 +31,6 @@ namespace NuGet.Commands.Test
                     previousLockFile: null, // different lock file
                     lockFilePath: path,
                     msbuild: new MSBuildRestoreResult("project", td, true),
-                    toolRestoreResults: Enumerable.Empty<ToolRestoreResult>(),
                     outputType: RestoreOutputType.Unknown,
                     elapsedTime: TimeSpan.MinValue);
                 
@@ -63,7 +62,6 @@ namespace NuGet.Commands.Test
                     previousLockFile: new LockFile(), // same lock file
                     lockFilePath: path,
                     msbuild: new MSBuildRestoreResult("project", td, true),
-                    toolRestoreResults: Enumerable.Empty<ToolRestoreResult>(),
                     outputType: RestoreOutputType.Unknown,
                     elapsedTime: TimeSpan.MinValue);
                 
@@ -76,88 +74,6 @@ namespace NuGet.Commands.Test
                     logger.MinimalMessages);
                 Assert.False(File.Exists(path), $"The lock file should not have been written: {path}");
                 Assert.Equal(1, logger.Messages.Count);
-            }
-        }
-        
-        [Fact]
-        public async Task RestoreResult_WritesToolCommitToDebug()
-        {
-            // Arrange
-            using (var td = TestDirectory.Create())
-            {
-                var path = Path.Combine(td, ".tools", "project.lock.json");
-                var logger = new TestLogger();
-                var toolResult = new ToolRestoreResult(
-                    toolName: null,
-                    success: true,
-                    graphs: null,
-                    lockFileTarget: null,
-                    fileTargetLibrary: null,
-                    lockFilePath: path,
-                    lockFile: new LockFile(),
-                    previousLockFile: null);
-                var result = new RestoreResult(
-                    success: true,
-                    restoreGraphs: null,
-                    compatibilityCheckResults: null,
-                    lockFile: new LockFile(),
-                    previousLockFile: new LockFile(), // same lock file
-                    lockFilePath: null,
-                    msbuild: new MSBuildRestoreResult("project", td, true),
-                    toolRestoreResults: new[] { toolResult },
-                    outputType: RestoreOutputType.Unknown,
-                    elapsedTime: TimeSpan.MinValue);
-                
-                // Act
-                await result.CommitAsync(logger, CancellationToken.None);
-                
-                // Assert
-                Assert.Contains(
-                    $"Writing tool lock file to disk. Path: {path}",
-                    logger.DebugMessages);
-                Assert.True(File.Exists(path), $"The tool lock file should have been written: {path}");
-                Assert.Equal(1, logger.DebugMessages.Count);
-            }
-        }
-        
-        [Fact]
-        public async Task RestoreResult_WritesToolSkipCommitToDebug()
-        {
-            // Arrange
-            using (var td = TestDirectory.Create())
-            {
-                var path = Path.Combine(td, "tools", "project.lock.json");
-                var logger = new TestLogger();
-                var toolResult = new ToolRestoreResult(
-                    toolName: null,
-                    success: true,
-                    graphs: null,
-                    lockFileTarget: null,
-                    fileTargetLibrary: null,
-                    lockFilePath: path,
-                    lockFile: new LockFile(),
-                    previousLockFile: new LockFile()); // same lock file
-                var result = new RestoreResult(
-                    success: true,
-                    restoreGraphs: null,
-                    compatibilityCheckResults: null,
-                    lockFile: new LockFile(),
-                    previousLockFile: new LockFile(), // same lock file
-                    lockFilePath: null,
-                    msbuild: new MSBuildRestoreResult("project", td, true),
-                    toolRestoreResults: new[] { toolResult },
-                    outputType: RestoreOutputType.Unknown,
-                    elapsedTime: TimeSpan.MinValue);
-                
-                // Act
-                await result.CommitAsync(logger, CancellationToken.None);
-                
-                // Assert
-                Assert.Contains(
-                    $"Tool lock file has not changed. Skipping lock file write. Path: {path}",
-                    logger.DebugMessages);
-                Assert.False(File.Exists(path), $"The tool lock file should not have been written: {path}");
-                Assert.Equal(1, logger.DebugMessages.Count);
             }
         }
     }

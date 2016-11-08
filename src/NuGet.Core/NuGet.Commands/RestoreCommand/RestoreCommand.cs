@@ -80,26 +80,13 @@ namespace NuGet.Commands
                 contextForProject,
                 token);
 
-            // Only execute tool restore if the request lock file version is 2 or greater.
-            // Tools did not exist prior to v2 lock files.
-            // This will be removed once xproj support goes away, limit to Unknown restore types!
-            var toolRestoreResults = Enumerable.Empty<ToolRestoreResult>();
-            if (_request.LockFileVersion >= 2 && _request.RestoreOutputType == RestoreOutputType.Unknown)
-            {
-                toolRestoreResults = await ExecuteToolRestoresAsync(
-                                    _request.DependencyProviders.GlobalPackages,
-                                    _request.DependencyProviders.FallbackPackageFolders,
-                                    token);
-            }
-
             // Create assets file
             var lockFile = BuildLockFile(
                 _request.ExistingLockFile,
                 _request.Project,
                 graphs,
                 localRepositories,
-                contextForProject,
-                toolRestoreResults);
+                contextForProject);
 
             if (!ValidateRestoreGraphs(graphs, _logger))
             {
@@ -133,7 +120,7 @@ namespace NuGet.Commands
             DowngradeLockFileIfNeeded(lockFile);
 
             // Revert to the original case if needed
-            await FixCaseForLegacyReaders(graphs, toolRestoreResults, lockFile, token);
+            await FixCaseForLegacyReaders(graphs, lockFile, token);
 
             // Determine the lock file output path
             var projectLockFilePath = GetLockFilePath(lockFile);
@@ -156,7 +143,6 @@ namespace NuGet.Commands
                 _request.ExistingLockFile,
                 projectLockFilePath,
                 msbuild,
-                toolRestoreResults,
                 _request.RestoreOutputType,
                 restoreTime.Elapsed);
         }
@@ -212,7 +198,6 @@ namespace NuGet.Commands
 
         private async Task FixCaseForLegacyReaders(
             IEnumerable<RestoreTargetGraph> graphs,
-            IEnumerable<ToolRestoreResult> toolRestoreResults,
             LockFile lockFile,
             CancellationToken token)
         {
@@ -223,17 +208,8 @@ namespace NuGet.Commands
             {
                 var originalCase = new OriginalCaseGlobalPackageFolder(_request);
 
-                // Convert the case of all the packages used in the project restore and tool
-                // restores.
-                var allGraphs = graphs.Concat(toolRestoreResults.SelectMany(toolResult => toolResult.Graphs));
-                await originalCase.CopyPackagesToOriginalCaseAsync(allGraphs, token);
-
-                // Convert all of the tool results. This includes the tool lock file contents as
-                // well as the path to the tool lock files.
-                foreach (var toolResult in toolRestoreResults)
-                {
-                    originalCase.ConvertToolRestoreResultToOriginalCase(toolResult);
-                }
+                // Convert the case of all the packages used in the project restore
+                await originalCase.CopyPackagesToOriginalCaseAsync(graphs, token);
 
                 // Convert the project lock file contents.
                 originalCase.ConvertLockFileToOriginalCase(lockFile);
@@ -245,8 +221,7 @@ namespace NuGet.Commands
             PackageSpec project,
             IEnumerable<RestoreTargetGraph> graphs,
             IReadOnlyList<NuGetv3LocalRepository> localRepositories,
-            RemoteWalkContext contextForProject,
-            IEnumerable<ToolRestoreResult> toolRestoreResults)
+            RemoteWalkContext contextForProject)
         {
             // Build the lock file
             var lockFile = new LockFileBuilder(_request.LockFileVersion, _logger, _includeFlagGraphs)
@@ -255,8 +230,7 @@ namespace NuGet.Commands
                         project,
                         graphs,
                         localRepositories,
-                        contextForProject,
-                        toolRestoreResults);
+                        contextForProject);
 
             return lockFile;
         }
@@ -363,164 +337,6 @@ namespace NuGet.Commands
             return checkResults;
         }
 
-        private async Task<IEnumerable<ToolRestoreResult>> ExecuteToolRestoresAsync(
-            NuGetv3LocalRepository userPackageFolder,
-            IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders,
-            CancellationToken token)
-        {
-            var toolPathResolver = new ToolPathResolver(_request.PackagesDirectory);
-            var results = new List<ToolRestoreResult>();
-
-            var localRepositories = new List<NuGetv3LocalRepository>();
-            localRepositories.Add(userPackageFolder);
-            localRepositories.AddRange(fallbackPackageFolders);
-
-            foreach (var tool in _request.Project.Tools)
-            {
-                _logger.LogMinimal(string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.Log_RestoringToolPackages,
-                    tool.LibraryRange.Name,
-                    _request.Project.FilePath));
-
-                // Build the fallback framework (which uses the "imports").
-                var framework = LockFile.ToolFramework;
-                if (tool.Imports.Any())
-                {
-                    framework = new FallbackFramework(framework, tool.Imports);
-                }
-
-                // Build a package spec in memory to execute the tool restore as if it were
-                // its own project. For now, we always restore for a null runtime and a single
-                // constant framework.
-                var toolPackageSpec = ToolRestoreUtility.GetSpec(
-                    _request.Project.FilePath,
-                    tool.LibraryRange.Name,
-                    tool.LibraryRange.VersionRange,
-                    framework);
-
-                // Try to find the existing lock file. Since the existing lock file is pathed under
-                // a folder that includes the resolved tool's version, this is a bit of a chicken
-                // and egg problem. That is, we need to run the restore operation in order to resolve
-                // a tool version, but we need the tool version to find the existing project.lock.json
-                // file which is required before executing the restore! Fortunately, this is solved by
-                // looking at the tool's consuming project's lock file to see if the tool has been
-                // restored before.
-                LockFile existingToolLockFile = null;
-                if (_request.ExistingLockFile != null)
-                {
-                    var existingTarget = _request
-                        .ExistingLockFile
-                        .Tools
-                        .Where(t => t.RuntimeIdentifier == null)
-                        .Where(t => t.TargetFramework.Equals(LockFile.ToolFramework))
-                        .FirstOrDefault();
-
-                    var existingLibrary = existingTarget?.Libraries
-                        .Where(l => StringComparer.OrdinalIgnoreCase.Equals(l.Name, tool.LibraryRange.Name))
-                        .Where(l => tool.LibraryRange.VersionRange.Satisfies(l.Version))
-                        .FirstOrDefault();
-
-                    if (existingLibrary != null)
-                    {
-                        var existingLockFilePath = toolPathResolver.GetLockFilePath(
-                            existingLibrary.Name,
-                            existingLibrary.Version,
-                            existingTarget.TargetFramework);
-
-                        existingToolLockFile = LockFileUtilities.GetLockFile(existingLockFilePath, _logger);
-                    }
-                }
-
-                // Execute the restore.
-                var toolSuccess = true; // success for this individual tool restore
-                var runtimeIds = new HashSet<string>();
-                var projectFrameworkRuntimePairs = CreateFrameworkRuntimePairs(toolPackageSpec, runtimeIds);
-                var allInstalledPackages = new HashSet<LibraryIdentity>();
-                var contextForTool = CreateRemoteWalkContext(_request);
-                var walker = new RemoteDependencyWalker(contextForTool);
-                var projectRestoreRequest = new ProjectRestoreRequest(
-                    _request,
-                    toolPackageSpec,
-                    existingToolLockFile,
-                    new Dictionary<NuGetFramework, RuntimeGraph>(),
-                    _runtimeGraphCacheByPackage);
-                var projectRestoreCommand = new ProjectRestoreCommand(projectRestoreRequest);
-                var result = await projectRestoreCommand.TryRestore(
-                    tool.LibraryRange,
-                    projectFrameworkRuntimePairs,
-                    allInstalledPackages,
-                    userPackageFolder,
-                    fallbackPackageFolders,
-                    walker,
-                    contextForTool,
-                    forceRuntimeGraphCreation: false,
-                    token: token);
-
-                var graphs = result.Item2;
-                if (!result.Item1)
-                {
-                    toolSuccess = false;
-                    _success = false;
-                }
-
-                // Create the lock file (in memory).
-                var toolLockFile = BuildLockFile(
-                    existingToolLockFile,
-                    toolPackageSpec,
-                    graphs,
-                    localRepositories,
-                    contextForTool,
-                    Enumerable.Empty<ToolRestoreResult>());
-
-                // Build the path based off of the resolved tool. For now, we assume there is only
-                // ever one target.
-                var target = toolLockFile.Targets.Single();
-                var fileTargetLibrary = ToolRestoreUtility.GetToolTargetLibrary(toolLockFile, tool.LibraryRange.Name);
-                string toolLockFilePath = null;
-                if (fileTargetLibrary != null)
-                {
-                    toolLockFilePath = toolPathResolver.GetLockFilePath(
-                        fileTargetLibrary.Name,
-                        fileTargetLibrary.Version,
-                        target.TargetFramework);
-                }
-
-                // Validate the results.
-                if (!ValidateRestoreGraphs(graphs, _logger))
-                {
-                    toolSuccess = false;
-                    _success = false;
-                }
-
-                var checkResults = VerifyCompatibility(
-                    toolPackageSpec,
-                    new Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>>(),
-                    localRepositories,
-                    toolLockFile,
-                    graphs,
-                    _logger);
-
-                if (checkResults.Any(r => !r.Success))
-                {
-                    toolSuccess = false;
-                    _success = false;
-                }
-
-                results.Add(new ToolRestoreResult(
-                    tool.LibraryRange.Name,
-                    toolSuccess,
-                    graphs,
-                    target,
-                    fileTargetLibrary,
-                    toolLockFilePath,
-                    toolLockFile,
-                    existingToolLockFile));
-            }
-
-            return results;
-        }
-
         private async Task<IEnumerable<RestoreTargetGraph>> ExecuteRestoreAsync(
             NuGetv3LocalRepository userPackageFolder,
             IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders,
@@ -536,59 +352,18 @@ namespace NuGet.Commands
 
             _logger.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, _request.Project.FilePath));
 
-            // External references
-            var updatedExternalProjects = new List<ExternalProjectReference>(_request.ExternalProjects);
+            // Get external project references
+            // If the top level project already exists, update the package spec provided
+            // with the RestoreRequest spec.
+            var updatedExternalProjects = GetProjectReferences(context);
 
-            if (_request.ExternalProjects.Count > 0)
-            {
-                // There should be at most one match in the external projects.
-                var rootProjectMatches = _request.ExternalProjects.Where(proj =>
-                     string.Equals(
-                         _request.Project.Name,
-                         proj.PackageSpecProjectName,
-                         StringComparison.OrdinalIgnoreCase))
-                     .ToList();
-
-                if (rootProjectMatches.Count > 1)
-                {
-                    throw new InvalidOperationException($"Ambiguous project name '{_request.Project.Name}'.");
-                }
-
-                var rootProject = rootProjectMatches.SingleOrDefault();
-
-                if (rootProject != null)
-                {
-                    // Replace the project spec with the passed in package spec,
-                    // for installs which are done in memory first this will be
-                    // different from the one on disk
-                    updatedExternalProjects.RemoveAll(project =>
-                        project.UniqueName.Equals(rootProject.UniqueName, StringComparison.Ordinal));
-
-                    var updatedReference = new ExternalProjectReference(
-                        rootProject.UniqueName,
-                        _request.Project,
-                        rootProject.MSBuildProjectPath,
-                        rootProject.ExternalProjectReferences);
-
-                    updatedExternalProjects.Add(updatedReference);
-
-                    // Determine if the targets and props files should be written out.
-                    context.IsMsBuildBased = _request.RestoreOutputType != RestoreOutputType.DotnetCliTool
-                        && XProjUtility.IsMSBuildBasedProject(rootProject.MSBuildProjectPath);
-                }
-                else
-                {
-                    Debug.Fail("RestoreRequest.ExternaProjects contains references, but does not contain the top level references. Add the project we are restoring for.");
-                    throw new InvalidOperationException($"Missing external reference metadata for {_request.Project.Name}");
-                }
-            }
+            // Determine if the targets and props files should be written out.
+            context.IsMsBuildBased = _request.RestoreOutputType != RestoreOutputType.DotnetCliTool;
 
             // Load repositories
-
             // the external project provider is specific to the current restore project
-            var projectResolver = new PackageSpecResolver(_request.Project);
             context.ProjectLibraryProviders.Add(
-                    new PackageSpecReferenceDependencyProvider(projectResolver, updatedExternalProjects, _logger));
+                    new PackageSpecReferenceDependencyProvider(updatedExternalProjects, _logger));
 
             var remoteWalker = new RemoteDependencyWalker(context);
 
@@ -695,6 +470,64 @@ namespace NuGet.Commands
             return allGraphs;
         }
 
+        private List<ExternalProjectReference> GetProjectReferences(RemoteWalkContext context)
+        {
+            // External references
+            var updatedExternalProjects = new List<ExternalProjectReference>();
+
+            if (_request.ExternalProjects.Count == 0)
+            {
+                // If no projects exist add the current project.json file to the project
+                // list so that it can be resolved.
+                updatedExternalProjects.Add(ToExternalProjectReference(_request.Project));
+            }
+            else if (_request.ExternalProjects.Count > 0)
+            {
+                // There should be at most one match in the external projects.
+                var rootProjectMatches = _request.ExternalProjects.Where(proj =>
+                        string.Equals(
+                            _request.Project.Name,
+                            proj.PackageSpecProjectName,
+                            StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+
+                if (rootProjectMatches.Count > 1)
+                {
+                    throw new InvalidOperationException($"Ambiguous project name '{_request.Project.Name}'.");
+                }
+
+                var rootProject = rootProjectMatches.SingleOrDefault();
+
+                if (rootProject != null)
+                {
+                    // Replace the project spec with the passed in package spec,
+                    // for installs which are done in memory first this will be
+                    // different from the one on disk
+                    updatedExternalProjects.AddRange(_request.ExternalProjects
+                        .Where(project =>
+                            !project.UniqueName.Equals(rootProject.UniqueName, StringComparison.Ordinal)));
+
+                    var updatedReference = new ExternalProjectReference(
+                        rootProject.UniqueName,
+                        _request.Project,
+                        rootProject.MSBuildProjectPath,
+                        rootProject.ExternalProjectReferences);
+
+                    updatedExternalProjects.Add(updatedReference);
+                }
+            }
+            else
+            {
+                // External references were passed, but the top level project wasn't found.
+                // This is always due to an internal issue and typically caused by errors 
+                // building the project closure.
+                Debug.Fail("RestoreRequest.ExternalProjects contains references, but does not contain the top level references. Add the project we are restoring for.");
+                throw new InvalidOperationException($"Missing external reference metadata for {_request.Project.Name}");
+            }
+
+            return updatedExternalProjects;
+        }
+
         private static IEnumerable<FrameworkRuntimePair> CreateFrameworkRuntimePairs(
             PackageSpec packageSpec,
             ISet<string> runtimeIds)
@@ -768,6 +601,15 @@ namespace NuGet.Commands
             // Remove tools
             lockFile.Tools.Clear();
             lockFile.ProjectFileToolGroups.Clear();
+        }
+
+        private static ExternalProjectReference ToExternalProjectReference(PackageSpec project)
+        {
+            return new ExternalProjectReference(
+                project.Name,
+                project,
+                msbuildProjectPath: null,
+                projectReferences: Enumerable.Empty<string>());
         }
     }
 }

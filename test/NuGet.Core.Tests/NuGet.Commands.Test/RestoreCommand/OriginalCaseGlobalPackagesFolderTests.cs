@@ -211,67 +211,6 @@ namespace NuGet.Commands.Test
             Assert.Equal("project", projectLibrary.Path);
         }
 
-        [Fact]
-        public void OriginalCaseGlobalPackagesFolder_ConvertsToolRestoreResult()
-        {
-            // Arrange
-            var logger = new TestLogger();
-            var request = GetRestoreRequest("fake", logger);
-            var packageLibrary = new LockFileLibrary
-            {
-                Name = "PackageA",
-                Version = NuGetVersion.Parse("1.0.0-Beta"),
-                Path = "packagea/1.0.0-beta",
-                Type = LibraryType.Package
-            };
-            var projectLibrary = new LockFileLibrary
-            {
-                Name = "Project",
-                Version = NuGetVersion.Parse("1.0.0-Beta"),
-                Path = "project",
-                Type = LibraryType.Project
-            };
-            var lockFile = new LockFile
-            {
-                Libraries = { packageLibrary, projectLibrary }
-            };
-
-            var lockFileTarget = new LockFileTarget
-            {
-                TargetFramework = FrameworkConstants.CommonFrameworks.NetCoreApp10
-            };
-
-            var fileTargetLibrary = new LockFileTargetLibrary
-            {
-                Name = packageLibrary.Name,
-                Version = packageLibrary.Version,
-                Type = LibraryType.Package
-            };
-
-            var toolRestoreResult = new ToolRestoreResult(
-                "Tool",
-                success: true,
-                graphs: Enumerable.Empty<RestoreTargetGraph>(),
-                lockFileTarget: lockFileTarget,
-                fileTargetLibrary: fileTargetLibrary,
-                lockFilePath: "old-path",
-                lockFile: lockFile,
-                previousLockFile: null);
-
-            var target = new OriginalCaseGlobalPackageFolder(request);
-
-            // Act
-            target.ConvertToolRestoreResultToOriginalCase(toolRestoreResult);
-
-            // Assert
-            Assert.Equal("PackageA/1.0.0-Beta", packageLibrary.Path);
-            Assert.Equal("project", projectLibrary.Path);
-            Assert.Equal(
-                "fake/.tools/PackageA/1.0.0-Beta/netcoreapp1.0/project.assets.json",
-                PathUtility.GetPathWithForwardSlashes(toolRestoreResult.LockFilePath));
-
-        }
-
         private static RestoreRequest GetRestoreRequest(string packagesDirectory, TestLogger logger, params string[] fallbackDirectories)
         {
             return new TestRestoreRequest(

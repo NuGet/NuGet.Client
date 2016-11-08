@@ -23,7 +23,6 @@ NuGet.Common.dll
 NuGet.Configuration.dll
 NuGet.ContentModel.dll
 NuGet.DependencyResolver.Core.dll
-NuGet.DependencyResolver.dll
 NuGet.Frameworks.dll
 NuGet.Indexing.dll
 NuGet.LibraryModel.dll
