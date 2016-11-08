@@ -45,7 +45,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_TargetFrameworks Condition="'$(TargetFramework)' == ''" Include="$(TargetFrameworks.Split(';'))"/>
     <_TargetFrameworks Condition="'$(TargetFramework)' != ''" Include="$(TargetFramework)"/>
   </ItemGroup>
-  
+
   <!--
     ============================================================
     Pack
@@ -126,16 +126,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       <PackProjectInputFile>$(MSBuildProjectFullPath)</PackProjectInputFile>
     </PropertyGroup>
   </Target>
-  
+
   <Target Name="_WalkEachTargetPerFramework">
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GetProjectToProjectReferences"
       Properties="TargetFramework=%(_TargetFrameworks.Identity);
-              %(_MSBuildProjectReferenceExistent.SetConfiguration);
-              %(_MSBuildProjectReferenceExistent.SetPlatform);
-              BuildProjectReferences=false;"
-      RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
+                  BuildProjectReferences=false;">
 
       <Output
           TaskParameter="TargetOutputs"
@@ -147,10 +144,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       Projects="$(MSBuildProjectFullPath)"
       Targets="BuiltProjectOutputGroup;DocumentationProjectOutputGroup"
       Properties="TargetFramework=%(_TargetFrameworks.Identity);
-              %(_MSBuildProjectReferenceExistent.SetConfiguration);
-              %(_MSBuildProjectReferenceExistent.SetPlatform);
-              BuildProjectReferences=false;"
-      RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
+                  BuildProjectReferences=false;">
 
       <Output
           TaskParameter="TargetOutputs"
@@ -162,39 +156,30 @@ Copyright (c) .NET Foundation. All rights reserved.
       Projects="$(MSBuildProjectFullPath)"
       Targets="DebugSymbolsProjectOutputGroup"
       Properties="TargetFramework=%(_TargetFrameworks.Identity);
-              %(_MSBuildProjectReferenceExistent.SetConfiguration);
-              %(_MSBuildProjectReferenceExistent.SetPlatform);
-              BuildProjectReferences=false;"
-      RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
+                  BuildProjectReferences=false;">
 
       <Output
           TaskParameter="TargetOutputs"
           ItemName="_TargetPathsToSymbols" />
     </MSBuild>
-    
+
     <MSBuild
       Condition="'$(IncludeSource)' == 'true'"
       Projects="$(MSBuildProjectFullPath)"
       Targets="SourceFilesProjectOutputGroup"
       Properties="TargetFramework=%(_TargetFrameworks.Identity);
-              %(_MSBuildProjectReferenceExistent.SetConfiguration);
-              %(_MSBuildProjectReferenceExistent.SetPlatform);
-              BuildProjectReferences=false;"
-      RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
+                  BuildProjectReferences=false;">
 
       <Output
           TaskParameter="TargetOutputs"
           ItemName="_SourceFiles" />
     </MSBuild>
-    
+
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GetPackageReferences"
       Properties="TargetFramework=%(_TargetFrameworks.Identity);
-              %(_MSBuildProjectReferenceExistent.SetConfiguration);
-              %(_MSBuildProjectReferenceExistent.SetPlatform);
-              BuildProjectReferences=false;"
-      RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
+                  BuildProjectReferences=false;">
 
       <Output
           TaskParameter="TargetOutputs"
@@ -202,21 +187,23 @@ Copyright (c) .NET Foundation. All rights reserved.
     </MSBuild>
   </Target>
 
-  <Target Name="_AddMetadataToProjectReference"
+  <!--
+    ============================================================
+    _GetProjectMetadata
+    Collects metadata for pack from child projects to be used in
+    the generated .nuspec of the parent project.
+    ============================================================
+  -->
+  <Target Name="_GetProjectMetadata"
           Returns="@(_ProjectReferences)">
     <ItemGroup>
       <_ProjectReferences Include="$(MSBuildProjectFullPath)">
         <PackageId>$(PackageId)</PackageId>
         <PackageVersion>$(PackageVersion)</PackageVersion>
-        <IncludeAssets>$(IncludeAssets)</IncludeAssets>
-        <ExcludeAssets>$(ExcludeAssets)</ExcludeAssets>
-        <PrivateAssets>$(PrivateAssets)</PrivateAssets>
-        <TargetFramework>$(TargetFramework)</TargetFramework>
-        <Type>Package</Type>
       </_ProjectReferences>
     </ItemGroup>
   </Target>
-  
+
   <!--
     ============================================================
     _GetProjectToProjectReferences
@@ -224,7 +211,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GetProjectToProjectReferences"
-      Condition="$(TargetFramework) != ''"
+      Condition="'$(TargetFramework)' != ''"
       DependsOnTargets="ResolveProjectReferences"
       Returns="@(_ProjectReferences)">
 
@@ -236,21 +223,31 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <MSBuild
       Projects="@(ValidProjectInputForPackGraph)"
-      Targets="_AddMetadataToProjectReference"
-      Properties="%(_MSBuildProjectReferenceExistent.SetConfiguration);
-              %(_MSBuildProjectReferenceExistent.SetPlatform);
-              CustomAfterMicrosoftCommonTargets=$(MSBuildThisFileFullPath);
-              BuildProjectReferences=false;
-              TargetFramework=$(TargetFramework);
-              IncludeAssets=%(ValidProjectInputForPackGraph.IncludeAssets);
-              ExcludeAssets=%(ValidProjectInputForPackGraph.ExcludeAssets);
-              PrivateAssets=%(ValidProjectInputForPackGraph.PrivateAssets)"
-      RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
+      Targets="_GetProjectMetadata"
+      Properties="CustomAfterMicrosoftCommonTargets=$(MSBuildThisFileFullPath);
+                  CustomAfterMicrosoftCommonCrossTargetingTargets=$(MSBuildThisFileFullPath);
+                  BuildProjectReferences=false">
 
       <Output
           TaskParameter="TargetOutputs"
-          ItemName="_ProjectReferences" />
+          ItemName="_ProjectReferencesWithoutParentData" />
     </MSBuild>
+
+    <ItemGroup>
+      <_ProjectReferences Include="@(_ProjectReferencesWithoutParentData)">
+        <TargetFramework>$(TargetFramework)</TargetFramework>
+        <Type>Package</Type>
+      </_ProjectReferences>
+      <_ProjectReferences Condition="'%(_ProjectReferences.IncludeAssets)' == ''">
+        <IncludeAssets>all</IncludeAssets>
+      </_ProjectReferences>
+      <_ProjectReferences Condition="'%(_ProjectReferences.ExcludeAssets)' == ''">
+        <ExcludeAssets>none</ExcludeAssets>
+      </_ProjectReferences>
+      <_ProjectReferences Condition="'%(_ProjectReferences.PrivateAssets)' == ''">
+        <PrivateAssets>build;contentFiles;analyzers</PrivateAssets>
+      </_ProjectReferences>
+    </ItemGroup>
   </Target>
 
   <!--
@@ -263,7 +260,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <_PackageFilesToExclude Include="@(Content)" Condition="'%(Content.Pack)' == 'false'"/>
     </ItemGroup>
-     <!-- Include PackageFiles and Content of the project being packed -->
+    <!-- Include PackageFiles and Content of the project being packed -->
     <ItemGroup>
       <_PackageFiles Include="@(Content)" Condition=" %(Content.Pack) != 'false' " />
       <_PackageFiles Include="@(Compile)" Condition=" %(Compile.Pack) == 'true' " />
@@ -271,7 +268,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-<!--
+  <!--
     ============================================================
     _GetPackageReferences
     Entry point for getting the package references for a project and it's references
@@ -291,5 +288,5 @@ Copyright (c) .NET Foundation. All rights reserved.
         <Version>%(PackageReference.Version)</Version>
       </_PackageReferences>
     </ItemGroup>
-  </Target>  
+  </Target>
 </Project>

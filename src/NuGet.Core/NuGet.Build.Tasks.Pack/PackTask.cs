@@ -533,25 +533,40 @@ namespace NuGet.Build.Tasks.Pack
             }
         }
 
-        private void GetAssetMetadata(ITaskItem packageRef, out LibraryIncludeFlags include,
+        private void GetAssetMetadata(
+            ITaskItem packageRef,
+            out LibraryIncludeFlags include,
             out LibraryIncludeFlags suppressParent)
         {
-            var includeAssets = packageRef.GetMetadata("IncludeAssets")
-                .Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries);
-            var excludeAssets = packageRef.GetMetadata("ExcludeAssets")
-                .Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            var privateAssets = packageRef.GetMetadata("PrivateAssets")
-                .Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            var includeFlags = includeAssets.Any()
-                ? LibraryIncludeFlagUtils.GetFlags(includeAssets)
-                : LibraryIncludeFlags.All;
-            var excludeFlags = excludeAssets.Any()
-                ? LibraryIncludeFlagUtils.GetFlags(excludeAssets)
-                : LibraryIncludeFlags.None;
+            var includeFlags = ParseLibraryIncludeFlags(
+                packageRef.GetMetadata("IncludeAssets"),
+                LibraryIncludeFlags.All);
+
+            var excludeFlags = ParseLibraryIncludeFlags(
+                packageRef.GetMetadata("ExcludeAssets"),
+                LibraryIncludeFlags.None);
+
             include = includeFlags & ~excludeFlags;
-            suppressParent = privateAssets.Any()
-                ? LibraryIncludeFlagUtils.GetFlags(privateAssets)
-                : LibraryIncludeFlagUtils.DefaultSuppressParent;
+
+            suppressParent = ParseLibraryIncludeFlags(
+                packageRef.GetMetadata("PrivateAssets"),
+                LibraryIncludeFlagUtils.DefaultSuppressParent);
+        }
+
+        private LibraryIncludeFlags ParseLibraryIncludeFlags(string input, LibraryIncludeFlags defaultFlags)
+        {
+            if (input == null)
+            {
+                return defaultFlags;
+            }
+
+            var unparsedFlags = input
+                .Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(f => f.Trim())
+                .Where(f => f != string.Empty)
+                .ToArray();
+
+            return unparsedFlags.Any() ? LibraryIncludeFlagUtils.GetFlags(unparsedFlags) : defaultFlags;
         }
     }
 }
