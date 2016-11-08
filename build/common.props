@@ -57,11 +57,15 @@
   <PropertyGroup Condition="'$(VisualStudioVersion)' == '14.0'">
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
     <DefineConstants>$(DefineConstants);VS14</DefineConstants>
+    <VSSDKRoot>$(EnlistmentRoot)\packages\Microsoft.VSSDK.BuildTools.14.3.25420</VSSDKRoot>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(VSSDKRoot)\tools</VSToolsPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(VisualStudioVersion)' == '15.0'">
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <DefineConstants>$(DefineConstants);VS15</DefineConstants>
+    <VSSDKRoot>$(EnlistmentRoot)\packages\Microsoft.VSSDK.BuildTools.15.0.25728-Preview5</VSSDKRoot>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(VSSDKRoot)\tools</VSToolsPath>
   </PropertyGroup>
 
   <!--Semantic Version-->

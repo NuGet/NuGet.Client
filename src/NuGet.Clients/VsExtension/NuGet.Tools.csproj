@@ -2,11 +2,11 @@
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props')" />
   <Import Project="..\..\..\build\common.props" />
+  <Import Project="$(VSSDKRoot)\build\Microsoft.VSSDK.BuildTools.props" />
   <PropertyGroup>
     <NuGetPackageImportStamp>d386b432</NuGetPackageImportStamp>
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
     <PackagesDirectory>$(UserProfile)\.nuget\packages</PackagesDirectory>
-    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <TargetFrameworkProfile />
     <ProjectGuid>{D0F9864B-D782-4471-81A2-29555E5DC0D7}</ProjectGuid>
     <ProjectTypeGuids>{82b43b9b-a64c-4715-b499-d71e9ca2bd60};{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -20,7 +20,7 @@
     <IncludeDebugSymbolsInLocalVSIXDeployment>true</IncludeDebugSymbolsInLocalVSIXDeployment>
     <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
     <CopyOutputSymbolsToOutputDirectory>true</CopyOutputSymbolsToOutputDirectory>
-    <DeployExtension Condition=" '$(BuildingInsideVisualStudio)' != 'true' ">false</DeployExtension>
+    <DeployExtension>false</DeployExtension>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <AssemblyName>NuGet.Tools</AssemblyName>
     <VSSDKTargetPlatformRegRootSuffix>Exp</VSSDKTargetPlatformRegRootSuffix>
@@ -31,13 +31,12 @@
   <PropertyGroup Condition="'$(VisualStudioVersion)' == '15.0'">
     <VsixOutputDirName>VS15</VsixOutputDirName>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug'">
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' And '$(BuildingInsideVisualStudio)' == 'True'">
     <StartAction>Program</StartAction>
     <StartProgram>$(DevEnvDir)devenv.exe</StartProgram>
     <StartArguments>/rootsuffix Exp /log</StartArguments>
     <CreateVsixContainer>True</CreateVsixContainer>
     <DeployExtension>True</DeployExtension>
-    <NoWarn>1762;649</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Commands\RestorePackagesCommand.cs" />
@@ -320,7 +319,8 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(EnlistmentRoot)\build\common.targets" />
   <Import Project="$(EnlistmentRoot)\build\sign.targets" />
-  <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="Exists('$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets')" />
+  <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" />
+  <Import Project="$(VSSDKRoot)\build\Microsoft.VSSDK.BuildTools.targets" />
   <Target Name="FindSourceVsixManifest">
     <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
       <SourceVsixManifest Include="source.extension.vs14.vsixmanifest" />
