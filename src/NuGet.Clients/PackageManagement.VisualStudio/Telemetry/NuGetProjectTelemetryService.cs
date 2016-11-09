@@ -56,11 +56,13 @@ namespace NuGet.PackageManagement.Telemetry
         {
             // Get the project details.
             var projectUniqueName = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
-            var projectId = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
 
             // Emit the project information.
             try
             {
+                var projectId = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId);
+
+                // Get project type.
                 var projectType = NuGetProjectType.Unknown;
                 if (nuGetProject is MSBuildNuGetProject)
                 {
@@ -85,10 +87,15 @@ namespace NuGet.PackageManagement.Telemetry
                     projectType = NuGetProjectType.XProjProjectJson;
                 }
 
-                var projectInformation = new ProjectInformation(
+                // Get package count.
+                var installedPackages = await nuGetProject.GetInstalledPackagesAsync(CancellationToken.None);
+                var installedPackagesCount = installedPackages.Count();
+
+                var projectInformation = new ProjectTelemetryEvent(
                     NuGetVersion.Value,
                     projectId,
-                    projectType);
+                    projectType,
+                    installedPackagesCount);
 
                 EmitProjectInformation(projectInformation);
             }
@@ -102,57 +109,20 @@ namespace NuGet.PackageManagement.Telemetry
                 ActivityLog.LogWarning(ExceptionHelper.LogEntrySource, message);
                 Debug.Fail(message);
             }
-
-            // Emit the project dependency statistics.
-            try
-            {
-                var installedPackages = await nuGetProject.GetInstalledPackagesAsync(CancellationToken.None);
-                var installedPackagesCount = installedPackages.Count();
-
-                var projectDependencyStatistics = new ProjectDependencyStatistics(
-                    NuGetVersion.Value,
-                    projectId,
-                    installedPackagesCount);
-
-                EmitProjectDependencyStatistics(projectDependencyStatistics);
-            }
-            catch (Exception ex)
-            {
-                var message =
-                    $"Failed to emit project dependency statistics for project '{projectUniqueName}'. Exception:" +
-                    Environment.NewLine +
-                    ex.ToString();
-
-                ActivityLog.LogWarning(message, ExceptionHelper.LogEntrySource);
-                Debug.Fail(message);
-            }
         }
 
-        public void EmitProjectInformation(ProjectInformation projectInformation)
+        public void EmitProjectInformation(ProjectTelemetryEvent projectInformation)
         {
             var telemetryEvent = new TelemetryEvent(
                 TelemetryConstants.ProjectInformationEventName,
                 new Dictionary<string, object>
                 {
+                    { TelemetryConstants.InstalledPackageCountPropertyName, projectInformation.InstalledPackageCount },
                     { TelemetryConstants.NuGetProjectTypePropertyName, projectInformation.NuGetProjectType },
                     { TelemetryConstants.NuGetVersionPropertyName, projectInformation.NuGetVersion },
                     { TelemetryConstants.ProjectIdPropertyName, projectInformation.ProjectId.ToString() }
                 });
             telemetrySession.PostEvent(telemetryEvent);
         }
-
-        public void EmitProjectDependencyStatistics(ProjectDependencyStatistics projectDependencyStatistics)
-        {
-            var telemetryEvent = new TelemetryEvent(
-                TelemetryConstants.ProjectDependencyStatisticsEventName,
-                new Dictionary<string, object>
-                {
-                    { TelemetryConstants.InstalledPackageCountPropertyName, projectDependencyStatistics.InstalledPackageCount },
-                    { TelemetryConstants.NuGetVersionPropertyName, projectDependencyStatistics.NuGetVersion },
-                    { TelemetryConstants.ProjectIdPropertyName, projectDependencyStatistics.ProjectId.ToString() }
-                });
-            telemetrySession.PostEvent(telemetryEvent);
-        }
-
     }
 }

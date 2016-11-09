@@ -151,7 +151,6 @@
     <Compile Include="SolutionRestore\SolutionRestoreWorker.cs" />
     <Compile Include="SolutionRestore\VerbosityLevel.cs" />
     <Compile Include="SolutionRestore\RestoreOperationLogger.cs" />
-    <Compile Include="Telemetry\ProjectTelemetryEvent.cs" />
     <Compile Include="IDE\PackageInitPS1State.cs" />
     <Compile Include="IDE\VsCommonOperations.cs" />
     <Compile Include="IDE\VsHierarchyItem.cs" />
@@ -198,8 +197,7 @@
     <Compile Include="SourceControl\DTESourceControlUtility.cs" />
     <Compile Include="SourceControl\VsSourceControlTracker.cs" />
     <Compile Include="Telemetry\NuGetProjectType.cs" />
-    <Compile Include="Telemetry\ProjectDependencyStatistics.cs" />
-    <Compile Include="Telemetry\ProjectInformation.cs" />
+    <Compile Include="Telemetry\ProjectTelemetryEvent.cs" />
     <Compile Include="Telemetry\NuGetProjectTelemetryService.cs" />
     <Compile Include="Utility\EnvDTESolutionUtility.cs" />
     <Compile Include="Utility\FrameworkAssembly.cs" />
