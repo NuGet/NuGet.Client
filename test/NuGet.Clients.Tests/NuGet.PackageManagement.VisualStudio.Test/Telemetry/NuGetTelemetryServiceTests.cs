@@ -16,6 +16,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Telemetry
         [InlineData(NuGetProjectType.PackagesConfig)]
         [InlineData(NuGetProjectType.UwpProjectJson)]
         [InlineData(NuGetProjectType.XProjProjectJson)]
+        [InlineData(NuGetProjectType.CPSBasedPackageRefs)]
+        [InlineData(NuGetProjectType.LegacyProjectSystemWithPackageRefs)]
         public void NuGetTelemetryService_EmitProjectInformation(NuGetProjectType projectType)
         {
             // Arrange
@@ -25,10 +27,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Telemetry
                 .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
                 .Callback<TelemetryEvent>(x => lastTelemetryEvent = x);
 
-            var projectInformation = new ProjectInformation(
+            var projectInformation = new ProjectTelemetryEvent(
                 "3.5.0-beta2",
                 "15e9591f-9391-4ddf-a246-ca9e0351277d",
-                projectType);
+                projectType,
+                3);
             var target = new NuGetProjectTelemetryService(telemetrySession.Object);
 
             // Act
@@ -38,7 +41,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Telemetry
             telemetrySession.Verify(x => x.PostEvent(It.IsAny<TelemetryEvent>()), Times.Once);
             Assert.NotNull(lastTelemetryEvent);
             Assert.Equal("VS/NuGet/ProjectInformation", lastTelemetryEvent.Name);
-            Assert.Equal(3, lastTelemetryEvent.Properties.Count);
+            Assert.Equal(4, lastTelemetryEvent.Properties.Count);
 
             object nuGetVersion;
             Assert.True(lastTelemetryEvent.Properties.TryGetValue("VS.NuGet.NuGetVersion", out nuGetVersion));
@@ -54,42 +57,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Telemetry
             Assert.True(lastTelemetryEvent.Properties.TryGetValue("VS.NuGet.NuGetProjectType", out actualProjectType));
             Assert.IsType<NuGetProjectType>(actualProjectType);
             Assert.Equal(projectInformation.NuGetProjectType, actualProjectType);
-        }
-
-        [Fact]
-        public void NuGetTelemetryService_EmitProjectDependencyStatistics()
-        {
-            // Arrange
-            var telemetrySession = new Mock<ITelemetrySession>();
-            TelemetryEvent lastTelemetryEvent = null;
-            telemetrySession
-                .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
-                .Callback<TelemetryEvent>(x => lastTelemetryEvent = x);
-
-            var projectInformation = new ProjectDependencyStatistics(
-                "3.5.0-beta2",
-                "15e9591f-9391-4ddf-a246-ca9e0351277d",
-                3);
-            var target = new NuGetProjectTelemetryService(telemetrySession.Object);
-
-            // Act
-            target.EmitProjectDependencyStatistics(projectInformation);
-
-            // Assert
-            telemetrySession.Verify(x => x.PostEvent(It.IsAny<TelemetryEvent>()), Times.Once);
-            Assert.NotNull(lastTelemetryEvent);
-            Assert.Equal("VS/NuGet/DependencyStatistics", lastTelemetryEvent.Name);
-            Assert.Equal(3, lastTelemetryEvent.Properties.Count);
-
-            object nuGetVersion;
-            Assert.True(lastTelemetryEvent.Properties.TryGetValue("VS.NuGet.NuGetVersion", out nuGetVersion));
-            Assert.IsType<string>(nuGetVersion);
-            Assert.Equal(projectInformation.NuGetVersion, nuGetVersion);
-
-            object projectId;
-            Assert.True(lastTelemetryEvent.Properties.TryGetValue("VS.NuGet.ProjectId", out projectId));
-            Assert.IsType<string>(projectId);
-            Assert.Equal(projectInformation.ProjectId.ToString(), projectId);
 
             object installedPackageCount;
             Assert.True(lastTelemetryEvent.Properties.TryGetValue("VS.NuGet.InstalledPackageCount", out installedPackageCount));
