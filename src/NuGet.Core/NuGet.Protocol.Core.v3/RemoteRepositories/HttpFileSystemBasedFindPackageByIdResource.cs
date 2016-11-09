@@ -232,7 +232,11 @@ namespace NuGet.Protocol
                 }
                 catch (Exception ex) when (retry == 2)
                 {
-                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToRetrievePackage, uri);
+                    var message = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.Log_FailedToRetrievePackage,
+                        id,
+                        uri);
 
                     throw new FatalProtocolException(message, ex);
                 }

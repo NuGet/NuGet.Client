@@ -758,7 +758,7 @@ namespace NuGet.Protocol
                                        ex is UriFormatException ||
                                        ex is NotSupportedException)
             {
-                var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToRetrievePackage, root);
+                var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToVerifyRootDirectory, root);
 
                 throw new FatalProtocolException(message, ex);
             }
@@ -780,7 +780,7 @@ namespace NuGet.Protocol
             }
             catch (Exception ex) when (ex is ArgumentException || ex is IOException || ex is SecurityException)
             {
-                var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToRetrievePackage, fileUri.AbsoluteUri);
+                var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToVerifyValidFile, fileUri.AbsoluteUri);
 
                 throw new FatalProtocolException(message, ex);
             }

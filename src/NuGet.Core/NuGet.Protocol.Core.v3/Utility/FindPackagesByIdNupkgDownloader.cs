@@ -283,7 +283,11 @@ namespace NuGet.Protocol
                 }
                 catch (Exception ex) when (retry < 2)
                 {
-                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToDownloadPackage, url)
+                    var message = string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Log_FailedToDownloadPackage,
+                            identity,
+                            url)
                         + Environment.NewLine
                         + ExceptionUtilities.DisplayMessage(ex);
 
@@ -291,7 +295,11 @@ namespace NuGet.Protocol
                 }
                 catch (Exception ex) when (retry == 2)
                 {
-                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToDownloadPackage, url)
+                    var message = string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Log_FailedToDownloadPackage,
+                            identity,
+                            url)
                         + Environment.NewLine
                         + ExceptionUtilities.DisplayMessage(ex);
 

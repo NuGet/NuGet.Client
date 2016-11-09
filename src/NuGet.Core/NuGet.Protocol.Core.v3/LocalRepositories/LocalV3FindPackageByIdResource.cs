@@ -173,7 +173,11 @@ namespace NuGet.Protocol
 
             if (!Directory.Exists(_source))
             {
-                var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToRetrievePackage, _source);
+                var message = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.Log_FailedToRetrievePackage,
+                    id,
+                    _source);
 
                 throw new FatalProtocolException(message);
             }
