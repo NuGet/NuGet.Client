@@ -109,7 +109,7 @@ namespace NuGet.Build.Tasks
         {
             if (RestoreGraphItems.Length < 1)
             {
-                log.LogWarning("Unable to find a project to restore!");
+                log.LogWarning(Strings.NoProjectsProvidedToTask);
                 return true;
             }
 
@@ -132,7 +132,7 @@ namespace NuGet.Build.Tasks
                 if (dgFile.Restore.Count < 1)
                 {
                     // Restore will fail if given no inputs, but here we should skip it and provide a friendly message.
-                    log.LogMinimal("Nothing to do. None of the projects specified contain packages to restore.");
+                    log.LogMinimal(Strings.NoProjectsToRestore);
                     return true;
                 }
 
