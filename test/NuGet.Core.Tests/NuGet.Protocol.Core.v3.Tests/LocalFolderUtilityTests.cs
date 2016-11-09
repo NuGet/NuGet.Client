@@ -93,7 +93,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             var ex = Assert.Throws<FatalProtocolException>(() =>
                 LocalFolderUtility.GetAndVerifyRootDirectory(source));
             Assert.Equal(
-                $"Failed to retrieve information from remote source '{source}'.",
+                $"Failed to verify the root directory of local source '{source}'.",
                 ex.Message);
         }
 

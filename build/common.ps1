@@ -781,8 +781,14 @@ Function Test-CoreProjectsHelper {
         [string]$Configuration,
         [string]$XProjectsLocation
     )
+
+    # Restore both src and test core projects.
+    $srcLocation = Join-Path $NuGetClientRoot src\NuGet.Core -Resolve
+    $xprojs = Find-XProjects $srcLocation
     $xtests = Find-XProjects $XProjectsLocation
-    $xtests | Restore-XProjects
+    $xprojs + $xtests | Restore-XProjects
+
+    # Test all core test projects.
     $xtests | Test-XProject -Configuration $Configuration
 }
 

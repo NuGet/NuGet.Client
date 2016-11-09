@@ -303,7 +303,7 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Failed to download package from &apos;{0}&apos;..
+        ///    Looks up a localized string similar to Failed to download package &apos;{0}&apos; from &apos;{1}&apos;..
         /// </summary>
         public static string Log_FailedToDownloadPackage {
             get {
@@ -348,11 +348,29 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Failed to retrieve information from remote source &apos;{0}&apos;..
+        ///    Looks up a localized string similar to Failed to retrieve information about &apos;{0}&apos; from remote source &apos;{1}&apos;..
         /// </summary>
         public static string Log_FailedToRetrievePackage {
             get {
                 return ResourceManager.GetString("Log_FailedToRetrievePackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Failed to verify the root directory of local source &apos;{0}&apos;..
+        /// </summary>
+        public static string Log_FailedToVerifyRootDirectory {
+            get {
+                return ResourceManager.GetString("Log_FailedToVerifyRootDirectory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Failed to validate the file &apos;{0}&apos;..
+        /// </summary>
+        public static string Log_FailedToVerifyValidFile {
+            get {
+                return ResourceManager.GetString("Log_FailedToVerifyValidFile", resourceCulture);
             }
         }
         

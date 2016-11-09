@@ -127,7 +127,8 @@ namespace NuGet.Protocol
                                 "service_index",
                                 cacheContext)
                             {
-                                EnsureValidContents = stream => HttpStreamValidation.ValidateJObject(url, stream)
+                                EnsureValidContents = stream => HttpStreamValidation.ValidateJObject(url, stream),
+                                MaxTries = 1
                             },
                             httpSourceResult =>
                             {
@@ -148,7 +149,6 @@ namespace NuGet.Protocol
                     catch (Exception ex) when (retry == 2)
                     {
                         var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToReadServiceIndex, url);
-                        log.LogError(message + Environment.NewLine + ExceptionUtilities.DisplayMessage(ex));
 
                         throw new FatalProtocolException(message, ex);
                     }

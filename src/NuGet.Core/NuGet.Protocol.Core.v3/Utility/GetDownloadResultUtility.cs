@@ -59,14 +59,15 @@ namespace NuGet.Protocol
             }
 
             // Get the package from the source.
-            for (int i = 0; i < 3; i++)
+            for (var retry = 0; retry < 3; retry++)
             {
                 try
                 {
                     return await client.ProcessStreamAsync(
                         new HttpSourceRequest(uri, logger)
                         {
-                            IgnoreNotFounds = true
+                            IgnoreNotFounds = true,
+                            MaxTries = 1
                         },
                         async packageStream =>
                         {
@@ -100,10 +101,7 @@ namespace NuGet.Protocol
                 {
                     return new DownloadResourceResult(DownloadResourceResultStatus.Cancelled);
                 }
-                catch (Exception ex) when ((
-                        (ex is IOException && ex.InnerException is SocketException)
-                        || ex is TimeoutException)
-                    && i < 2)
+                catch (Exception ex) when (retry < 2)
                 {
                     string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorDownloading, identity, uri)
                         + Environment.NewLine
@@ -113,7 +111,6 @@ namespace NuGet.Protocol
                 catch (Exception ex)
                 {
                     string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorDownloading, identity, uri);
-                    logger.LogError(message + Environment.NewLine + ExceptionUtilities.DisplayMessage(ex));
 
                     throw new FatalProtocolException(message, ex);
                 }

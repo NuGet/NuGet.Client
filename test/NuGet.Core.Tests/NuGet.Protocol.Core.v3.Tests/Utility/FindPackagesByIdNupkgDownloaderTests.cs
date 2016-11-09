@@ -23,7 +23,7 @@ namespace NuGet.Protocol.Tests
         [Theory]
         [InlineData(HttpStatusCode.NoContent, 1)]
         [InlineData(HttpStatusCode.NotFound, 1)]
-        [InlineData(HttpStatusCode.InternalServerError, 9)] // There are two levels of retry (3 x 3).
+        [InlineData(HttpStatusCode.InternalServerError, 3)]
         public async Task CopyNupkgToStreamAsync_DoesNothingWithDestinationStreamWhenNupkgIsNotFound(
             HttpStatusCode statusCode,
             int expectedRequests)
@@ -55,7 +55,7 @@ namespace NuGet.Protocol.Tests
         [Theory]
         [InlineData(HttpStatusCode.NoContent, 1)]
         [InlineData(HttpStatusCode.NotFound, 1)]
-        [InlineData(HttpStatusCode.InternalServerError, 9)] // There are two levels of retry (3 x 3).
+        [InlineData(HttpStatusCode.InternalServerError, 3)]
         public async Task GetNuspecReaderFromNupkgAsync_ThrowsWhenNupkgIsNotFound(
             HttpStatusCode statusCode,
             int expectedRequests)
