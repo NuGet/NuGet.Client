@@ -101,10 +101,7 @@ namespace NuGet.Protocol
                 {
                     return new DownloadResourceResult(DownloadResourceResultStatus.Cancelled);
                 }
-                catch (Exception ex) when ((
-                        (ex is IOException && ex.InnerException is SocketException)
-                        || ex is TimeoutException)
-                    && retry < 2)
+                catch (Exception ex) when (retry < 2)
                 {
                     string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorDownloading, identity, uri)
                         + Environment.NewLine

@@ -1821,6 +1821,7 @@ namespace NuGet.Commands.FuncTest
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
+            using (var cacheContext = new SourceCacheContext())
             {
                 var configJson = JObject.Parse(@"
                 {
@@ -1836,7 +1837,7 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, cacheContext, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
