@@ -553,6 +553,82 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
+        public void MSBuildRestoreUtility_GetPackageSpec_NetCoreVerifyWhitespaceRemoved()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var project1Root = Path.Combine(workingDir, "a");
+                var project1Path = Path.Combine(project1Root, "a.csproj");
+                var outputPath1 = Path.Combine(project1Root, "obj");
+                var fallbackFolder = Path.Combine(project1Root, "fallback");
+                var packagesFolder = Path.Combine(project1Root, "packages");
+
+                var items = new List<IDictionary<string, string>>();
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "  a\n  " },
+                    { "OutputType", "netcore" },
+                    { "OutputPath", outputPath1 },
+                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectPath", project1Path },
+                    { "TargetFrameworks", "  net46  ;   netstandard16\n  " },
+                    { "Sources", "https://nuget.org/a/index.json; https://nuget.org/b/index.json\n" },
+                    { "FallbackFolders", fallbackFolder },
+                    { "PackagesPath", packagesFolder },
+                    { "CrossTargeting", "true" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "PackageTargetFallback", "   portable-net45+win8  ;   dnxcore50\n   ; ;  " },
+                    { "TargetFramework", " netstandard16\n  " }
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var project1Spec = dgSpec.Projects.Single();
+
+                var nsTFM = project1Spec.GetTargetFramework(NuGetFramework.Parse("netstandard16"));
+                var netTFM = project1Spec.GetTargetFramework(NuGetFramework.Parse("net46"));
+
+                // Assert
+                Assert.Equal("a", project1Spec.RestoreMetadata.ProjectName);
+                Assert.Equal(2, nsTFM.Imports.Count);
+                Assert.Equal(0, netTFM.Imports.Count);
+
+                Assert.Equal(NuGetFramework.Parse("portable-net45+win8"), nsTFM.Imports[0]);
+                Assert.Equal(NuGetFramework.Parse("dnxcore50"), nsTFM.Imports[1]);
+
+                // Verify fallback framework
+                var fallbackFramework = (FallbackFramework)project1Spec.TargetFrameworks
+                    .Single(e => e.FrameworkName.GetShortFolderName() == "netstandard1.6")
+                    .FrameworkName;
+
+                // net46 does not have imports
+                var fallbackFrameworkNet45 = project1Spec.TargetFrameworks
+                    .Single(e => e.FrameworkName.GetShortFolderName() == "net46")
+                    .FrameworkName
+                    as FallbackFramework;
+
+                Assert.Null(fallbackFrameworkNet45);
+                Assert.Equal(2, fallbackFramework.Fallback.Count);
+                Assert.Equal(NuGetFramework.Parse("portable-net45+win8"), fallbackFramework.Fallback[0]);
+                Assert.Equal(NuGetFramework.Parse("dnxcore50"), fallbackFramework.Fallback[1]);
+
+                // Verify original frameworks are trimmed
+                Assert.Equal("net46", project1Spec.RestoreMetadata.OriginalTargetFrameworks[0]);
+                Assert.Equal("netstandard16", project1Spec.RestoreMetadata.OriginalTargetFrameworks[1]);
+            }
+        }
+
+        [Fact]
         public void MSBuildRestoreUtility_GetPackageSpec_NetCoreVerifyRuntimes()
         {
             using (var workingDir = TestDirectory.Create())
@@ -1041,6 +1117,53 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, spec.RestoreMetadata.TargetFrameworks.SelectMany(e => e.ProjectReferences).Count());
                 Assert.Null(spec.RestoreMetadata.ProjectJsonPath);
             }
+        }
+
+        [Theory]
+        [InlineData("a", "a")]
+        [InlineData("", "")]
+        [InlineData(" ", "")]
+        [InlineData(null, "")]
+        [InlineData(";;;;;;", "")]
+        [InlineData("\n", "")]
+        [InlineData(" ;\n;\t;;  \n ", "")]
+        [InlineData("a;b;c", "a|b|c")]
+        [InlineData(" a ; b ; c ", "a|b|c")]
+        [InlineData("a;c \n ", "a|c")]
+        public void MSBuildRestoreUtility_Split(string input, string expected)
+        {
+            // Arrange && Act
+            var parts = MSBuildRestoreUtility.Split(input);
+            var output = string.Join("|", parts);
+
+            // Assert
+            Assert.Equal(expected, output);
+        }
+
+        [Theory]
+        [InlineData("a", "a")]
+        [InlineData(" ", null)]
+        [InlineData(null, null)]
+        [InlineData("\n", null)]
+        [InlineData(" a ; b ; c ", "a ; b ; c")]
+        [InlineData(" a;c\n ", "a;c")]
+        public void MSBuildRestoreUtility_GetProperty_Trim(string input, string expected)
+        {
+            // Arrange
+            var item = new MSBuildItem("a", new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "key", input }
+            });
+
+            // Act
+            var trimmed = item.GetProperty("key");
+            var raw = item.GetProperty("key", trim: false);            
+
+            // Assert
+            Assert.Equal(expected, trimmed);
+
+            // Verify the value was not changed when it was stored
+            Assert.Equal(input, raw);
         }
 
         private IMSBuildItem CreateItems(IDictionary<string, string> properties)

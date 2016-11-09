@@ -398,11 +398,20 @@ namespace NuGet.Commands
             }
         }
 
-        private static string[] Split(string s)
+        /// <summary>
+        /// Split on ; and trim. Null or empty inputs will return an 
+        /// empty array.
+        /// </summary>
+        public static string[] Split(string s)
         {
             if (!string.IsNullOrEmpty(s))
             {
-                return s.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                // Split on ; and trim all entries
+                // After trimming remove any entries that are now empty due to trim.
+                return s.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(entry => entry.Trim())
+                    .Where(entry => !string.IsNullOrEmpty(entry))
+                    .ToArray();
             }
 
             return new string[0];
@@ -507,7 +516,7 @@ namespace NuGet.Commands
             var frameworksString = item.GetProperty("TargetFrameworks");
             if (!string.IsNullOrEmpty(frameworksString))
             {
-                frameworks.UnionWith(frameworksString.Split(';'));
+                frameworks.UnionWith(Split(frameworksString));
             }
 
             return frameworks;

@@ -38,13 +38,33 @@ namespace NuGet.Commands
         }
 
         /// <summary>
+        /// Get property or null if empty. Trims whitespace from values.
+        /// </summary>
+        public string GetProperty(string property)
+        {
+            return GetProperty(property, trim: true);
+        }
+
+        /// <summary>
         /// Get property or null if empty.
         /// </summary>
-        public string GetProperty(string key)
+        public string GetProperty(string property, bool trim)
         {
             string val;
-            if (_metadata.TryGetValue(key, out val) && !string.IsNullOrEmpty(val))
+            if (_metadata.TryGetValue(property, out val) && val != null)
             {
+                if (trim)
+                {
+                    // Remove whitespace that occurs due to msbuild formatting.
+                    val = val.Trim();
+                }
+
+                if (string.IsNullOrEmpty(val))
+                {
+                    // Normalize empty values to null for consistency.
+                    val = null;
+                }
+
                 return val;
             }
 
