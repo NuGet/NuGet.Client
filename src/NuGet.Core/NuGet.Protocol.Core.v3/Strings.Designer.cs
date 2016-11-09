@@ -366,7 +366,7 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Failed to validate the file path &apos;{0}&apos;..
+        ///    Looks up a localized string similar to Failed to validate the file &apos;{0}&apos;..
         /// </summary>
         public static string Log_FailedToVerifyValidFile {
             get {
