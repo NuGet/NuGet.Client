@@ -364,8 +364,6 @@ Function Set-DelaySigning {
             }
     }
     else {
-        Remove-Item Env:\DNX_BUILD_KEY_FILE -ErrorAction Ignore
-        Remove-Item Env:\DNX_BUILD_DELAY_SIGN -ErrorAction Ignore
         Remove-Item Env:\MS_PFX_PATH -ErrorAction Ignore
     }
 
