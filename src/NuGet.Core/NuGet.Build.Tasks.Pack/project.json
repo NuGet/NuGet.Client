@@ -22,7 +22,8 @@
     ],
     "compile": {
       "include": [
-        "../../../Shared/*.cs"
+        "../../../Shared/*.cs",
+        "../NuGet.Build.Tasks/Common/*.cs"
       ]
     }
   },

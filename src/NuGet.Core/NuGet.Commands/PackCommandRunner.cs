@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -60,7 +63,7 @@ namespace NuGet.Commands
 
         private readonly HashSet<string> _excludes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        public bool GenerateNugetPackage { get; set; }
+        public bool GenerateNuGetPackage { get; set; }
         public IEnumerable<IPackageRule> Rules { get; set; }
 
         public PackCommandRunner(PackArgs packArgs, CreateProjectFactory createProjectFactory, PackageBuilder packageBuilder) : this(packArgs, createProjectFactory)
@@ -73,7 +76,7 @@ namespace NuGet.Commands
             this._createProjectFactory = createProjectFactory;
             this._packArgs = packArgs;
             Rules = DefaultPackageRuleSet.Rules;
-            GenerateNugetPackage = true;
+            GenerateNuGetPackage = true;
         }
 
         public void BuildPackage()
@@ -746,7 +749,7 @@ namespace NuGet.Commands
             InitCommonPackageBuilderProperties(mainPackageBuilder);
 
             // Build the main package
-            if (GenerateNugetPackage)
+            if (GenerateNuGetPackage)
             {
                 PackageArchiveReader package = BuildPackage(mainPackageBuilder);
 
@@ -782,7 +785,7 @@ namespace NuGet.Commands
 
                 InitCommonPackageBuilderProperties(symbolsBuilder);
 
-                if (GenerateNugetPackage)
+                if (GenerateNuGetPackage)
                 {
                     PackageArchiveReader symbolsPackage = BuildPackage(symbolsBuilder, outputPath);
                     return symbolsPackage;

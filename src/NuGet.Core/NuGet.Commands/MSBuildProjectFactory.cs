@@ -1,9 +1,11 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -14,7 +16,7 @@ namespace NuGet.Commands
 {
     public class MSBuildProjectFactory : IProjectFactory
     {
-        private Common.ILogger _logger;
+        private ILogger _logger;
         
         // Packaging folders
         private static readonly string ReferenceFolder = PackagingConstants.Folders.Lib;
@@ -22,24 +24,28 @@ namespace NuGet.Commands
         private static readonly string SourcesFolder = PackagingConstants.Folders.Source;
         
         // List of extensions to allow in the output path
-        private static readonly HashSet<string> _allowedOutputExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
-                ".dll",
-                ".exe",
-                ".xml",
-                ".json",
-                ".winmd"
-            };
+        private static readonly HashSet<string> _allowedOutputExtensions
+            = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ".dll",
+            ".exe",
+            ".xml",
+            ".json",
+            ".winmd"
+        };
 
         // List of extensions to allow in the output path if IncludeSymbols is set
-        private static readonly HashSet<string> _allowedOutputExtensionsForSymbols = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
-                ".dll",
-                ".exe",
-                ".xml",
-                ".winmd",
-                ".json",
-                ".pdb",
-                ".mdb"
-            };
+        private static readonly HashSet<string> _allowedOutputExtensionsForSymbols
+            = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ".dll",
+            ".exe",
+            ".xml",
+            ".winmd",
+            ".json",
+            ".pdb",
+            ".mdb"
+        };
 
         private MSBuildPackTargetArgs PackTargetArgs { get; set; }
         private PackArgs PackArgs { get; set; }
@@ -61,11 +67,11 @@ namespace NuGet.Commands
         public bool IsTool { get; set; }
         public ICollection<ManifestFile> Files { get; set; } 
         
-        public Common.ILogger Logger
+        public ILogger Logger
         {
             get
             {
-                return _logger ?? Common.NullLogger.Instance;
+                return _logger ?? NullLogger.Instance;
             }
             set
             {
@@ -73,7 +79,7 @@ namespace NuGet.Commands
             }
         }
 
-        public Configuration.IMachineWideSettings MachineWideSettings { get; set; }
+        public IMachineWideSettings MachineWideSettings { get; set; }
 
         public static IProjectFactory ProjectCreator(PackArgs packArgs, string path)
         {
@@ -108,9 +114,21 @@ namespace NuGet.Commands
             }
 
             Manifest manifest = new Manifest(new ManifestMetadata(builder), Files);
-            using (Stream stream = new FileStream(
-                        PackCommandRunner.GetOutputPath(builder, PackArgs, IncludeSymbols, builder.Version,
-                            PackTargetArgs.NuspecOutputPath, false), FileMode.Create))
+            var manifestPath = PackCommandRunner.GetOutputPath(
+                builder,
+                PackArgs,
+                IncludeSymbols,
+                builder.Version,
+                PackTargetArgs.NuspecOutputPath,
+                isNupkg: false);
+
+            var manifestDirectory = Path.GetDirectoryName(manifestPath);
+            if (!Directory.Exists(manifestDirectory))
+            {
+                Directory.CreateDirectory(manifestDirectory);
+            }
+
+            using (Stream stream = new FileStream(manifestPath, FileMode.Create))
             {
                 manifest.Save(stream);
             }
@@ -145,7 +163,7 @@ namespace NuGet.Commands
 
                 var targetFolder = PackTargetArgs.BuildOutputFolder;
                 
-                if(!IsTool)
+                if (!IsTool)
                 {
                     if (PackTargetArgs.TargetFrameworks.Count > 0)
                     {
@@ -168,12 +186,6 @@ namespace NuGet.Commands
                 };
                 AddFileToBuilder(packageFile);
             }
-            
-        }
-
-        private static IList<string> GetFiles(string path, string fileNameWithoutExtension, HashSet<string> allowedExtensions, SearchOption searchOption)
-        {
-            return allowedExtensions.Select(extension => Directory.GetFiles(path, fileNameWithoutExtension + extension, searchOption)).SelectMany(a => a).ToList();
         }
 
         private void AddFileToBuilder(ManifestFile packageFile)
@@ -190,20 +202,6 @@ namespace NuGet.Commands
                         Strings.FileNotAddedToPackage,
                         packageFile.Source,
                         packageFile.Target));
-            }
-        }
-
-        private void AddReferencedProjectsToOutputFiles(string ownerProjectOutputDirectory, HashSet<string> allowedExtensions, IList<string> outputFiles)
-        {
-            if (PackTargetArgs != null && PackTargetArgs.ProjectReferences.Any())
-            {
-                foreach (var p2pReference in PackTargetArgs.ProjectReferences)
-                {
-                    string targetFileName = p2pReference.AssemblyName;
-                    IEnumerable<string> referencedFilesInOwnerOutputDirectory = GetFiles(ownerProjectOutputDirectory,
-                        targetFileName, allowedExtensions, SearchOption.AllDirectories);
-                    outputFiles.AddRange(referencedFilesInOwnerOutputDirectory);
-                }
             }
         }
 

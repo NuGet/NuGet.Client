@@ -533,6 +533,42 @@ Function Invoke-DotnetPack {
     }
 }
 
+Function Invoke-DotnetBuild {
+    [CmdletBinding()]
+    param(
+        [parameter(ValueFromPipeline=$True, Mandatory=$True, Position=0)]
+        [string[]]$XProjectLocations,
+        [Alias('config')]
+        [string]$Configuration = $DefaultConfiguration
+    )
+    Begin {
+        $BuildNumber = Format-BuildNumber $BuildNumber
+
+        # Setting the Dotnet AssemblyFileVersion
+        $env:DOTNET_ASSEMBLY_FILE_VERSION=$BuildNumber
+    }
+    Process {
+        $XProjectLocations | % {
+            $projectName = Split-Path $_ -Leaf
+
+            $opts = @()
+
+            if ($VerbosePreference) {
+                $opts += '-v'
+            }
+
+            $opts += 'build', $_, '--configuration', $Configuration
+
+            Trace-Log "$DotNetExe $opts"
+
+            & $DotNetExe $opts
+            if (-not $?) {
+                Error-Log "Pack failed @""$_"". Code: $LASTEXITCODE"
+            }
+        }
+    }
+}
+
 Function Publish-CoreProject {
     [CmdletBinding()]
     param(
@@ -791,6 +827,10 @@ Function Test-CoreProjectsHelper {
     $xprojs = Find-XProjects $srcLocation
     $xtests = Find-XProjects $XProjectsLocation
     $xprojs + $xtests | Restore-XProjects
+
+    # Since NuGet.Build.Tasks.Pack has "type": "build" dependencies, we need to build it directly before running its
+    # tests. Otherwise, the build of its unit test project will fail.
+    $xprojs | ? { $_.Contains("NuGet.Build.Tasks.Pack") } | Invoke-DotnetBuild -Configuration $Configuration
 
     # Test all core test projects.
     $xtests | Test-XProject -Configuration $Configuration

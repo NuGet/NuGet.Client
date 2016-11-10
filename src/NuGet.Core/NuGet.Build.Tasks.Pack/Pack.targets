@@ -84,7 +84,6 @@ Copyright (c) .NET Foundation. All rights reserved.
               IconUrl="$(PackageIconUrl)"
               ReleaseNotes="$(PackageReleaseNotes)"
               Tags="$(PackageTags)"
-              Configuration="$(Configuration)"
               TargetPathsToAssemblies="@(_TargetPathsToAssemblies->'%(FinalOutputPath)')"
               TargetPathsToSymbols="@(_TargetPathsToSymbols)"
               TargetFrameworks="@(_TargetFrameworks)"

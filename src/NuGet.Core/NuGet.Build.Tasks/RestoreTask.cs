@@ -118,7 +118,7 @@ namespace NuGet.Build.Tasks
             ConfigureProtocol();
 
             // Convert to the internal wrapper
-            var wrappedItems = RestoreGraphItems.Select(GetMSBuildItem);
+            var wrappedItems = RestoreGraphItems.Select(MSBuildUtility.WrapMSBuildItem);
 
             //var graphLines = RestoreGraphItems;
             var providerCache = new RestoreCommandProvidersCache();
@@ -155,7 +155,7 @@ namespace NuGet.Build.Tasks
                 {
                     CacheContext = cacheContext,
                     LockFileVersion = LockFileFormat.Version,
-                    ConfigFile = GetNullForEmpty(RestoreConfigFile),
+                    ConfigFile = MSBuildUtility.TrimAndGetNullForEmpty(RestoreConfigFile),
                     DisableParallel = RestoreDisableParallel,
                     GlobalPackagesFolder = RestorePackagesPath,
                     Log = log,
@@ -183,7 +183,6 @@ namespace NuGet.Build.Tasks
                 return restoreSummaries.All(x => x.Success);
             }
         }
-
         private static void ConfigureProtocol()
         {
             // Set connection limit
@@ -196,18 +195,6 @@ namespace NuGet.Build.Tasks
             NetworkProtocolUtility.ConfigureSupportedSslProtocols();
         }
 
-        /// <summary>
-        /// Convert empty strings to null
-        /// </summary>
-        private static string GetNullForEmpty(string s)
-        {
-            return string.IsNullOrEmpty(s) ? null : s;
-        }
-
-        private static MSBuildTaskItem GetMSBuildItem(ITaskItem item)
-        {
-            return new MSBuildTaskItem(item);
-        }
 
         private static void SetUserAgent()
         {

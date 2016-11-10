@@ -93,6 +93,7 @@ $BuildErrors = @()
 Invoke-BuildStep 'Cleaning package cache' {
         Clear-PackageCache
     } `
+    -skip:(-not $CI) `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Running NuGet.Core unit-tests' {
@@ -145,6 +146,12 @@ Invoke-BuildStep 'Running NuGet.Clients functional tests - VS15 Toolset' {
     -skip:($SkipVS15 -or $SkipFuncTests) `
     -ev +BuildErrors
 
+Invoke-BuildStep 'Cleaning package cache' {
+        Clear-PackageCache
+    } `
+    -skip:(-not $CI) `
+    -ev +BuildErrors
+
 Trace-Log ('-' * 60)
 
 ## Calculating Build time
@@ -159,8 +166,5 @@ if ($BuildErrors) {
     Write-Error "Build's completed with $($BuildErrors.Count) error(s):`r`n$($ErrorLines -join "`r`n")" -ErrorAction Stop
 }
 
-Invoke-BuildStep 'Cleaning package cache' {
-        Clear-PackageCache
-    }
 
 Write-Host ("`r`n" * 3)

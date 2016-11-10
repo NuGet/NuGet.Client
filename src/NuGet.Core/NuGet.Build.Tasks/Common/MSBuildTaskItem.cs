@@ -1,16 +1,30 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Build.Framework;
 using NuGet.Commands;
 
-namespace NuGet.Build.Tasks
+namespace NuGet.Build
 {
     /// <summary>
     /// TaskItem wrapper
     /// </summary>
     public class MSBuildTaskItem : IMSBuildItem
     {
+        public MSBuildTaskItem(ITaskItem item)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            Item = item;
+        }
+
         public ITaskItem Item { get; }
 
         public string Identity
@@ -53,19 +67,14 @@ namespace NuGet.Build.Tasks
             return val;
         }
 
-        public MSBuildTaskItem(ITaskItem item)
-        {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
-
-            Item = item;
-        }
-
         public override string ToString()
         {
             return $"Type: {GetProperty("Type")} Project: {GetProperty("ProjectUniqueName")}";
+        }
+
+        public IDictionary CloneCustomMetadata()
+        {
+            return Item.CloneCustomMetadata();
         }
     }
 }

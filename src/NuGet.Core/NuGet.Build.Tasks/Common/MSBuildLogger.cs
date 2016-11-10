@@ -1,8 +1,7 @@
 ﻿using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using NuGet.Common;
 
-namespace NuGet.Build.Tasks.Pack
+namespace NuGet.Build
 {
     /// <summary>
     /// TaskLoggingHelper -> ILogger
@@ -23,8 +22,7 @@ namespace NuGet.Build.Tasks.Pack
 
         public void LogError(string data)
         {
-            // Log errors as warnings. Then log the error summary as actual errors.
-            LogWarning(data);
+            _taskLogging.LogError(data);
         }
 
         public void LogErrorSummary(string data)
@@ -39,7 +37,7 @@ namespace NuGet.Build.Tasks.Pack
 
         public void LogInformationSummary(string data)
         {
-            LogInformation(data);
+            _taskLogging.LogMessage(MessageImportance.High, data);
         }
 
         public void LogMinimal(string data)
