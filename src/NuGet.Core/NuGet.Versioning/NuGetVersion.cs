@@ -156,7 +156,8 @@ namespace NuGet.Versioning
             // Versions with SemVer 2.0.0 components are automatically normalized,
             // non-normalized strings are only allowed for backcompat with older versions
             // of nuget, and those did not support SemVer 2.0.0.
-            if (string.IsNullOrEmpty(_originalString) || IsSemVer2)
+            // OCTOPUS: Use the intended version wherever possible
+            if (string.IsNullOrEmpty(_originalString))// || IsSemVer2)
             {
                 return ToNormalizedString();
             }

@@ -770,7 +770,8 @@ namespace NuGet.Commands
             var package = new PackageArchiveReader(outputPath);
 
             WriteLine("Id: {0}", builder.Id);
-            WriteLine("Version: {0}", builder.Version.ToFullString());
+            // OCTOPUS: Use the original version string
+            WriteLine("Version: {0}", builder.Version.ToString());
             WriteLine("Authors: {0}", String.Join(", ", builder.Authors));
             WriteLine("Description: {0}", builder.Description);
             if (builder.LicenseUrl != null)
@@ -935,7 +936,8 @@ namespace NuGet.Commands
 
             if (nugetVersion != null)
             {
-                version = nugetVersion.ToFullString();
+                // OCTOPUS: Use the original version string
+                version = nugetVersion.ToString();
             }
             else
             {
@@ -950,7 +952,8 @@ namespace NuGet.Commands
                     }
                     else
                     {
-                        version = builder.Version.ToFullString();
+                        // OCTOPUS: Use the original version string
+                        version = builder.Version.ToString();
                     }
                 }
                 else

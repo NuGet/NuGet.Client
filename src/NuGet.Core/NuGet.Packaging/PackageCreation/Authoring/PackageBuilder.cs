@@ -867,7 +867,8 @@ namespace NuGet.Packaging
                     new XElement(dc + "creator", String.Join(", ", Authors)),
                     new XElement(dc + "description", Description),
                     new XElement(dc + "identifier", Id),
-                    new XElement(core + "version", Version.ToFullString()),
+                    // OCTOPUS: Use the original version string
+                    new XElement(core + "version", Version.ToString()),
                     //new XElement(core + "language", Language),
                     new XElement(core + "keywords", ((IPackageMetadata)this).Tags),
                     //new XElement(dc + "title", Title),

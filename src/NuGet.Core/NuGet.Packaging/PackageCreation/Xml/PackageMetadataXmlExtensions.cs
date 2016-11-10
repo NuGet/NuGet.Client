@@ -33,7 +33,8 @@ namespace NuGet.Packaging.Xml
             }
 
             elem.Add(new XElement(ns + "id", metadata.Id));
-            AddElementIfNotNull(elem, ns, "version", metadata.Version?.ToFullString());
+            // OCTOPUS: Use original version string
+            AddElementIfNotNull(elem, ns, "version", metadata.Version?.ToString());
             AddElementIfNotNull(elem, ns, "title", metadata.Title);
             AddElementIfNotNull(elem, ns, "authors", metadata.Authors, authors => string.Join(",", authors));
             AddElementIfNotNull(elem, ns, "owners", metadata.Owners, owners => string.Join(",", owners));
