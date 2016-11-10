@@ -311,5 +311,41 @@ namespace NuGetVSExtension {
                 return ResourceManager.GetString("SolutionRestoreFailed_RestoreWorkerIsBusy", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Installed Package.
+        /// </summary>
+        internal static string Visualizer_InstalledPackage {
+            get {
+                return ResourceManager.GetString("Visualizer_InstalledPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package.
+        /// </summary>
+        internal static string Visualizer_Package {
+            get {
+                return ResourceManager.GetString("Visualizer_Package", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package Dependency.
+        /// </summary>
+        internal static string Visualizer_PackageDependency {
+            get {
+                return ResourceManager.GetString("Visualizer_PackageDependency", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Project.
+        /// </summary>
+        internal static string Visualizer_Project {
+            get {
+                return ResourceManager.GetString("Visualizer_Project", resourceCulture);
+            }
+        }
     }
 }

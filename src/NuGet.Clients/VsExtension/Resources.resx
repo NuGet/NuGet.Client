@@ -201,4 +201,16 @@
   <data name="SolutionRestoreFailed_RestoreWorkerIsBusy" xml:space="preserve">
     <value>Solution Restore cannot be started while an automatic restore is in progress.</value>
   </data>
+  <data name="Visualizer_InstalledPackage" xml:space="preserve">
+    <value>Installed Package</value>
+  </data>
+  <data name="Visualizer_Package" xml:space="preserve">
+    <value>Package</value>
+  </data>
+  <data name="Visualizer_PackageDependency" xml:space="preserve">
+    <value>Package Dependency</value>
+  </data>
+  <data name="Visualizer_Project" xml:space="preserve">
+    <value>Project</value>
+  </data>
 </root>

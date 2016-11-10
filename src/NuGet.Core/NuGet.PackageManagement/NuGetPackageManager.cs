@@ -1313,10 +1313,17 @@ namespace NuGet.PackageManagement
             return result;
         }
 
-        /// <summary>
-        /// A walk through the dependencies to collect the additional package identities that are involved in the current set of packages to be installed
-        /// </summary>
-        private static void CollectDependencies(HashSet<string> result,
+        public async Task<IEnumerable<PackageDependencyInfo>> GetInstalledPackagesDependencyInfo(NuGetProject nuGetProject, CancellationToken token)
+       {
+            var targetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
+            var installedPackageIdentities = (await nuGetProject.GetInstalledPackagesAsync(token)).Select(pr => pr.PackageIdentity);
+            return await GetDependencyInfoFromPackagesFolder(installedPackageIdentities, targetFramework);
+        }
+
+    /// <summary>
+    /// A walk through the dependencies to collect the additional package identities that are involved in the current set of packages to be installed
+    /// </summary>
+    private static void CollectDependencies(HashSet<string> result,
             string id,
             IEnumerable<PackageIdentity> packages,
             IEnumerable<SourcePackageDependencyInfo> available, int depth)

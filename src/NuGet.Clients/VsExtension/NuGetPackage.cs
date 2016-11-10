@@ -70,7 +70,7 @@ namespace NuGetVSExtension
         public const string ProductVersion = "4.0.0";
         private static readonly object _credentialsPromptLock = new object();
 
-        private static readonly string[] _visualizerSupportedSKUs = { "Premium", "Ultimate" };
+        private static readonly string[] _visualizerSupportedSKUs = {"Premium", "Ultimate", "Enterprise"};
 
         private uint _solutionNotBuildingAndNotDebuggingContextCookie;
         private DTE _dte;
@@ -549,12 +549,11 @@ namespace NuGetVSExtension
         /// </summary>
         private void ExecuteVisualizer(object sender, EventArgs e)
         {
-            /* ***
-            var visualizer = new NuGet.Dialog.Visualizer(
-                ServiceLocator.GetInstance<IVsPackageManagerFactory>(),
-                ServiceLocator.GetInstance<ISolutionManager>());
+            var contextFactory = ServiceLocator.GetInstance<INuGetUIContextFactory>();
+
+            var visualizer = new NuGetVSExtension.PackageVisualizer(_solutionManager, contextFactory,this);
             string outputFile = visualizer.CreateGraph();
-            _dte.ItemOperations.OpenFile(outputFile); */
+            _dte.ItemOperations.OpenFile(outputFile);
         }
 
         private IVsWindowFrame FindExistingWindowFrame(
@@ -1013,7 +1012,7 @@ namespace NuGetVSExtension
         private void QueryStatusForVisualizer(object sender, EventArgs args)
         {
             OleMenuCommand command = (OleMenuCommand)sender;
-            command.Visible = SolutionManager.IsSolutionOpen; //TODO NK - Does this restriction make sense? From feedback from users it seems like a useful tool && IsVisualizerSupported;
+            command.Visible = SolutionManager.IsSolutionOpen && IsVisualizerSupported;
         }
 
         // For PowerShell, it's okay to query from the worker thread.
