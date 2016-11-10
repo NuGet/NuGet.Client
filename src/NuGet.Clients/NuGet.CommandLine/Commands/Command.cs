@@ -143,13 +143,13 @@ namespace NuGet.CommandLine
                     LocalizedResourceManager.GetString("OutputNuGetVersion"),
                     assemblyName.Name,
                     assemblyName.Version);
-                Console.WriteLine(message + " (Custom build for OctoPack. Built from https://github.com/OctopusDeploy/NuGet.Client/tree/octopack )");
+                Console.WriteLine(message + " (Custom build for OctoPack. See http://g.octopushq.com/VersioningInOctopusDeploy)");
             }
         }
 
         protected virtual bool ShouldOutputNuGetVersion
         {
-            get { return Console.Verbosity == Verbosity.Detailed; }
+            get { return Console.Verbosity != Verbosity.Quiet; }
         }
 
         /// <summary>
