@@ -146,7 +146,8 @@ namespace NuGet.CommandLine
                 {
                     throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, NuGetResources.InstallCommandPackageReferenceInvalidVersion, Version));
                 }
-                packArgs.Version = version.ToFullString();
+                // OCTOPUS: Take the intended version from the command-line as-is
+                packArgs.Version = Version;
             }
 
             PackCommandRunner packCommandRunner = new PackCommandRunner(packArgs, ProjectFactory.ProjectCreator);
