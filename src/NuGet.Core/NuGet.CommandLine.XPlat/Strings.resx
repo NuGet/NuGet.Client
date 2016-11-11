@@ -306,8 +306,8 @@
     <value>Use legacy behavior when the restore operation is interacting with the global packages directory. This means the ID and version folder names are written with the original package case rather than being normalized to lowercase.</value>
   </data>
   <data name="LocalsCommand_ArgumentDescription" xml:space="preserve">
-    <value>Specifies the cache location(s) to list or clear. 
-&lt;all | http-cache | global-packages | temp&gt; [-clear | -list]</value>
+    <value>Specifies the cache location(s) to list or clear.
+&lt;all | http-cache | global-packages | temp&gt;</value>
   </data>
   <data name="LocalsCommand_ClearDescription" xml:space="preserve">
     <value>Clear the selected local resources or cache location(s).</value>
