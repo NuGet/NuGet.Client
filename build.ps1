@@ -113,10 +113,9 @@ Invoke-BuildStep 'Cleaning artifacts' {
     -skip:($Fast -or $SkipXProj) `
     -ev +BuildErrors
 
-Invoke-BuildStep 'Enabling delay-signing' {
-        Enable-DelaySigning $MSPFXPath $NuGetPFXPath
+Invoke-BuildStep 'Set delay signing options' {
+        Set-DelaySigning $MSPFXPath $NuGetPFXPath
     } `
-    -skip:((-not $MSPFXPath) -and (-not $NuGetPFXPath)) `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Building NuGet.Core projects' {
