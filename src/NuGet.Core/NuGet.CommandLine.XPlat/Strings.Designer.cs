@@ -213,8 +213,8 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Specifies the cache location(s) to list or clear. 
-        ///&lt;all | http-cache | global-packages | temp&gt; [-clear | -list].
+        ///    Looks up a localized string similar to Specifies the cache location(s) to list or clear.
+        ///&lt;all | http-cache | global-packages | temp&gt;.
         /// </summary>
         public static string LocalsCommand_ArgumentDescription {
             get {
