@@ -159,7 +159,7 @@ namespace NuGet.Versioning
             // OCTOPUS: Use the intended version wherever possible
             if (string.IsNullOrEmpty(_originalString))// || IsSemVer2)
             {
-                return ToNormalizedString();
+                throw new InvalidOperationException("Octopus: We want to avoid using NormalizedVersion()");
             }
 
             return _originalString;
