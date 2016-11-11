@@ -46,7 +46,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         // This may result in deployment issues. To work around ths, we'll always attempt to add a file to the bin.
                         RefreshFileUtility.CreateRefreshFile(ProjectFullPath, PathUtility.GetAbsolutePath(ProjectFullPath, referencePath), this);
 
-                        NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, Strings.Debug_AddReference, name, ProjectName);
+                        NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, $"Added reference '{name}' to project:'{ProjectName}' ");
                     }
                     catch (Exception e)
                     {
