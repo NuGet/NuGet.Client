@@ -24,7 +24,7 @@ $MSBuildRoot = Join-Path ${env:ProgramFiles(x86)} 'MSBuild\'
 $MSBuildExeRelPath = 'bin\msbuild.exe'
 $NuGetExe = Join-Path $NuGetClientRoot '.nuget\nuget.exe'
 $XunitConsole = Join-Path $NuGetClientRoot 'packages\xunit.runner.console.2.1.0\tools\xunit.console.exe'
-$ILMerge = Join-Path $NuGetClientRoot 'packages\ILMerge.2.14.1208\tools\ILMerge.exe'
+$ILMerge = Join-Path $NuGetClientRoot 'tools\ILRepack.exe'
 
 Set-Alias dotnet $DotNetExe
 Set-Alias nuget $NuGetExe
@@ -753,6 +753,7 @@ Function Invoke-ILMerge {
     $nugetIntermediateExePath="$OutputDir\$nugetIntermediateExe"
 
     Trace-Log 'Creating the intermediate ilmerged nuget.exe'
+    pushd $InputDir
     $opts = , "$InputDir\NuGet.exe"
     $opts += "/lib:$InputDir"
     $opts += $buildArtifacts
@@ -790,6 +791,8 @@ Function Invoke-ILMerge {
     if (-not $?) {
         Error-Log "ILMerge has failed. Code: $LASTEXITCODE"
     }
+
+    popd
 
     Remove-Item $nugetIntermediateExePath
     Remove-Item $OutputDir\$nugetIntermediatePdb
