@@ -558,7 +558,7 @@ Function Build-ClientsProjects {
         [switch]$Fast
     )
 
-    $solutionPath = Join-Path $NuGetClientRoot NuGet.Clients.sln
+    $solutionPath = Join-Path $NuGetClientRoot NuGet.CommandLine.sln
     if (-not $SkipRestore) {
         # Restore packages for NuGet.Tooling solution
         Restore-SolutionPackages -path $solutionPath -MSBuildVersion $MSBuildVersion
