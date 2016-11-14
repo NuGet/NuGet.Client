@@ -64,7 +64,7 @@ namespace NuGet.CommandLine.XPlat
             TryParseVerbosity(args, verbosity, out logLevel);
             log.LogLevel = logLevel;
 
-            XPlatUtility.SetConnectionLimit();
+            NetworkProtocolUtility.SetConnectionLimit();
 
             XPlatUtility.SetUserAgent();
 

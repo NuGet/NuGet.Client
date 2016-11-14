@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.Build.Framework;
 using Newtonsoft.Json;
@@ -17,7 +18,7 @@ using NuGet.Protocol.Core.Types;
 namespace NuGet.Build.Tasks
 {
     /// <summary>
-    /// .NET Core compatible restore task for csproj + project.json.
+    /// .NET Core compatible restore task for PackageReference and UWP project.json projects.
     /// </summary>
     public class RestoreTask : Microsoft.Build.Utilities.Task
     {
@@ -113,6 +114,9 @@ namespace NuGet.Build.Tasks
                 return true;
             }
 
+            // Set user agent and connection settings.
+            ConfigureProtocol();
+
             // Convert to the internal wrapper
             var wrappedItems = RestoreGraphItems.Select(GetMSBuildItem);
 
@@ -180,6 +184,18 @@ namespace NuGet.Build.Tasks
             }
         }
 
+        private static void ConfigureProtocol()
+        {
+            // Set connection limit
+            NetworkProtocolUtility.SetConnectionLimit();
+
+            // Set user agent string used for network calls
+            SetUserAgent();
+
+            // This method has no effect on .NET Core.
+            NetworkProtocolUtility.ConfigureSupportedSslProtocols();
+        }
+
         /// <summary>
         /// Convert empty strings to null
         /// </summary>
@@ -191,6 +207,19 @@ namespace NuGet.Build.Tasks
         private static MSBuildTaskItem GetMSBuildItem(ITaskItem item)
         {
             return new MSBuildTaskItem(item);
+        }
+
+        private static void SetUserAgent()
+        {
+            var agent = "NuGet MSBuild Task";
+
+#if IS_CORECLR
+            UserAgent.SetUserAgentString(new UserAgentStringBuilder(agent)
+                .WithOSDescription(RuntimeInformation.OSDescription));
+#else
+            // OS description is set by default on Desktop
+            UserAgent.SetUserAgentString(new UserAgentStringBuilder(agent));
+#endif
         }
     }
 }

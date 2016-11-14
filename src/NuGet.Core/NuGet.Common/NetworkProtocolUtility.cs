@@ -21,5 +21,24 @@ namespace NuGet.Common
                 SecurityProtocolType.Tls12;
 #endif
         }
+
+        /// <summary>
+        /// Set ServicePointManager.DefaultConnectionLimit
+        /// </summary>
+        public static void SetConnectionLimit()
+        {
+#if !IS_CORECLR
+            // Increase the maximum number of connections per server.
+            if (!RuntimeEnvironmentHelper.IsMono)
+            {
+                ServicePointManager.DefaultConnectionLimit = 64;
+            }
+            else
+            {
+                // Keep mono limited to a single download to avoid issues.
+                ServicePointManager.DefaultConnectionLimit = 1;
+            }
+#endif
+        }
     }
 }
