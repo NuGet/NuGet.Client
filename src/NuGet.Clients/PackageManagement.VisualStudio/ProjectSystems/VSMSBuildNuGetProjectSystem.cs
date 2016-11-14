@@ -410,7 +410,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         // locate assembly references.
                         // Most commonly, it happens if this assembly is in the GAC or in the output path.
                         // The path may be null or for some project system it can be "".
-                        resolvedToPackage = IsSamePath(dteOriginalPath, assemblyFullPath);
+                        resolvedToPackage = !string.IsNullOrWhiteSpace(dteOriginalPath) && IsSamePath(dteOriginalPath, assemblyFullPath);
 
                         if (resolvedToPackage)
                         {
@@ -489,12 +489,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static bool IsSamePath(string path1, string path2)
         {
-            if (string.IsNullOrWhiteSpace(path1)
-                || string.IsNullOrWhiteSpace(path2))
-            {
-                return false;
-            }
-
             // Exact match or match after normalizing both paths
             return StringComparer.OrdinalIgnoreCase.Equals(path1, path2)
                 || StringComparer.OrdinalIgnoreCase.Equals(Path.GetFullPath(path1), Path.GetFullPath(path2));
