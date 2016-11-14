@@ -483,7 +483,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
             NuGetProjectContext.Log(
                 ProjectManagement.MessageLevel.Debug,
-                $"Added reference '{name}' to project:'{projectName}' resolvedToPackage:{resolvedToPackage} dteOriginalPath:{dteOriginalPath} assemblyFullPath:{assemblyFullPath}.");
+                $"Added reference '{name}' to project:'{projectName}'. Was the Reference Resolved To Package (resolvedToPackage):'{resolvedToPackage}', "+
+                "where Reference Path from DTE(dteOriginalPath):'{dteOriginalPath}' and Reference Path from package reference(assemblyFullPath):'{assemblyFullPath}'.");
         }
 
         private static bool IsSamePath(string path1, string path2)
@@ -629,12 +630,10 @@ namespace NuGet.PackageManagement.VisualStudio
             // Always set copy local to true for references that we add
             try
             {
-                // In order to properly write this to MSBuild in ALL cases, we have to trigger the Property Change
-                // notification with a new value of "true". However, "true" is the default value, so in order to
-                // cause a notification to fire, we have to set it to false and then back to true
+                // Setting copyLocal to "true" only if it is "false".
+                // This should trigger an event which will result in successful writing to msbuild.
                 if (!reference.CopyLocal)
                 {
-                    reference.CopyLocal = false;
                     reference.CopyLocal = true;
                 }
             }
@@ -680,9 +679,10 @@ namespace NuGet.PackageManagement.VisualStudio
             // Always set SpecificVersion to true for references that we add
             try
             {
+                // Setting SpecificVersion to "true" only if it is "false".
+                // This should trigger an event which will result in successful writing to msbuild.
                 if (!reference.SpecificVersion)
                 {
-                    reference.SpecificVersion = false;
                     reference.SpecificVersion = true;
                 }
             }
