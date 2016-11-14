@@ -353,6 +353,16 @@ namespace NuGet.Frameworks
             return Comparer.Equals(this, other);
         }
 
+        public static bool operator ==(NuGetFramework left, NuGetFramework right)
+        {
+            return Comparer.Equals(left, right);
+        }
+
+        public static bool operator !=(NuGetFramework left, NuGetFramework right)
+        {
+            return !(left == right);
+        }
+
         public override int GetHashCode()
         {
             if (_hashCode == null)

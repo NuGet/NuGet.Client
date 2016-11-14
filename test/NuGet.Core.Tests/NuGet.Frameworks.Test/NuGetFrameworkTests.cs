@@ -40,24 +40,35 @@ namespace NuGet.Test
             Assert.Equal(expected, result);
         }
 
+        public static TheoryData EqualsFrameworkData
+        {
+            get
+            {
+                return new TheoryData<string, string>
+                {
+                    { "net45", "net45" },
+                    { "portable-net45+win8", "portable-net45+win8+monoandroid+monotouch" },
+                    { "portable-net45+win8", "portable-net45+win8+monoandroid+monotouch+xamarin.ios" },
+                    { "portable-net45+win8", "portable-net45+win8+xamarin.ios" },
+                    { "portable-win8+net45", "portable-net45+win8+monoandroid+monotouch" },
+                    { "portable-monoandroid+monotouch+win8+net45", "portable-net45+win8+monoandroid+monotouch" },
+                    { "portable-monoandroid+win8+net45", "portable-net45+win8+monoandroid+monotouch" },
+                    { "win10.0", "win10.0" },
+                    { "net45-client", "net45-client" },
+                    { "net45-unknown", "net45-unknown" },
+                    { "Any", "any" },
+                    { "Unsupported", "unsupported" },
+                    { "Agnostic", "agnostic" },
+                    { "portable-net45+win8", "portable-net45+win8+monoandroid+monotouch+xamarin.ios+xamarin.watchos" },
+                    { "portable-net45+win8", "portable-net45+win8+xamarin.ios+xamarin.watchos" },
+                    { "portable-net45+win8", "portable-net45+win8+monoandroid+monotouch+xamarin.ios+xamarin.tvos" },
+                    { "portable-net45+win8", "portable-net45+win8+xamarin.ios+xamarin.tvos" },
+                };
+            }
+        }
+
         [Theory]
-        [InlineData("net45", "net45")]
-        [InlineData("portable-net45+win8", "portable-net45+win8+monoandroid+monotouch")]
-        [InlineData("portable-net45+win8", "portable-net45+win8+monoandroid+monotouch+xamarin.ios")]
-        [InlineData("portable-net45+win8", "portable-net45+win8+xamarin.ios")]
-        [InlineData("portable-win8+net45", "portable-net45+win8+monoandroid+monotouch")]
-        [InlineData("portable-monoandroid+monotouch+win8+net45", "portable-net45+win8+monoandroid+monotouch")]
-        [InlineData("portable-monoandroid+win8+net45", "portable-net45+win8+monoandroid+monotouch")]
-        [InlineData("win10.0", "win10.0")]
-        [InlineData("net45-client", "net45-client")]
-        [InlineData("net45-unknown", "net45-unknown")]
-        [InlineData("Any", "any")]
-        [InlineData("Unsupported", "unsupported")]
-        [InlineData("Agnostic", "agnostic")]
-        [InlineData("portable-net45+win8", "portable-net45+win8+monoandroid+monotouch+xamarin.ios+xamarin.watchos")]
-        [InlineData("portable-net45+win8", "portable-net45+win8+xamarin.ios+xamarin.watchos")]
-        [InlineData("portable-net45+win8", "portable-net45+win8+monoandroid+monotouch+xamarin.ios+xamarin.tvos")]
-        [InlineData("portable-net45+win8", "portable-net45+win8+xamarin.ios+xamarin.tvos")]
+        [MemberData(nameof(EqualsFrameworkData))]
         public void NuGetFramework_Equality(string a, string b)
         {
             var fw1 = NuGetFramework.Parse(a);
@@ -68,6 +79,139 @@ namespace NuGet.Test
             Assert.True(fw2.Equals(fw1));
             Assert.Equal(fw1.GetHashCode(), fw2.GetHashCode());
             Assert.Equal(1, hashSet.Count);
+        }
+
+        [Theory]
+        [MemberData(nameof(EqualsFrameworkData))]
+        public void EqualityOperator_ReturnTrueForEqualsFramework(string a, string b)
+        {
+            // Arrange
+            var framework1 = NuGetFramework.Parse(a);
+            var framework2 = NuGetFramework.Parse(b);
+
+            // Act and Assert
+            Assert.True(framework1 == framework2);
+            Assert.True(framework2 == framework1);
+        }
+
+        [Fact]
+        public void EqualityOperator_ReturnTrueIfBothFrameworksAreNull()
+        {
+            // Arrange
+            NuGetFramework framework1 = null;
+            NuGetFramework framework2 = null;
+
+            // Act and Assert
+            Assert.True(framework1 == framework2);
+            Assert.True(framework2 == framework1);
+        }
+
+        [Theory]
+        [MemberData(nameof(EqualsFrameworkData))]
+        public void InequalityOperator_ReturnFalseForEqualsFramework(string a, string b)
+        {
+            // Arrange
+            var framework1 = NuGetFramework.Parse(a);
+            var framework2 = NuGetFramework.Parse(b);
+
+            // Act and Assert
+            Assert.False(framework1 != framework2);
+            Assert.False(framework2 != framework1);
+        }
+
+        [Fact]
+        public void InequalityOperator_ReturnFalseIfBothFrameworksAreNull()
+        {
+            // Arrange
+            NuGetFramework framework1 = null;
+            NuGetFramework framework2 = null;
+
+            // Act and Assert
+            Assert.False(framework1 != framework2);
+            Assert.False(framework2 != framework1);
+        }
+
+        public static TheoryData InequalsFrameworkData
+        {
+            get
+            {
+                return new TheoryData<string, string>
+                {
+                    { "net45", "net46" },
+                    { "portable-net45+win8", "portable-win8+monoandroid+monotouch" },
+                    { "win10.0", "win11.0" },
+                    { "Unsupported", "netstandard1.0" },
+                    { "netcoreapp1.0", "agnostic" },
+                    { "netstandard1.1", "net451" },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(InequalsFrameworkData))]
+        public void EqualityOperator_ReturnsFalseForInequalFrameworks(string a, string b)
+        {
+            // Arrange
+            var framework1 = NuGetFramework.Parse(a);
+            var framework2 = NuGetFramework.Parse(b);
+
+            // Act and Assert
+            Assert.False(framework1 == framework2);
+            Assert.False(framework2 == framework1);
+        }
+
+        public static TheoryData FrameworkEqualityWithNullData
+        {
+            get
+            {
+                return new TheoryData<string>
+                {
+                    "net451",
+                    "netcoreapp1.0",
+                    "portable-net45+win8",
+                    "Unsupported",
+                    "agnostic",
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(FrameworkEqualityWithNullData))]
+        public void EqualityOperator_ReturnsFalseIfOneFrameworkIsNull(string frameworkName)
+        {
+            // Arrange
+            var framework1 = NuGetFramework.Parse(frameworkName);
+            NuGetFramework framework2 = null;
+
+            // Act and Assert
+            Assert.False(framework1 == framework2);
+            Assert.False(framework2 == framework1);
+        }
+
+        [Theory]
+        [MemberData(nameof(InequalsFrameworkData))]
+        public void InequalityOperator_ReturnsTrueForInequalFrameworks(string a, string b)
+        {
+            // Arrange
+            var framework1 = NuGetFramework.Parse(a);
+            var framework2 = NuGetFramework.Parse(b);
+
+            // Act and Assert
+            Assert.True(framework1 != framework2);
+            Assert.True(framework2 != framework1);
+        }
+
+        [Theory]
+        [MemberData(nameof(FrameworkEqualityWithNullData))]
+        public void InequalityOperator_ReturnsTrueIfOneFrameworkIsNull(string frameworkName)
+        {
+            // Arrange
+            var framework1 = NuGetFramework.Parse(frameworkName);
+            NuGetFramework framework2 = null;
+
+            // Act and Assert
+            Assert.True(framework1 != framework2);
+            Assert.True(framework2 != framework1);
         }
 
         [Theory]
