@@ -65,8 +65,8 @@ $FullBuildNumber = "$PackageReleaseVersion-$ReleaseLabel-$BuildNumber"
 Trace-Log "Build $FullBuildNumber started at $startTime"
 
 if ($env:TEAMCITY_VERSION) {
-        Write-Host "##teamcity[buildNumber description='$(Format-TeamCityMessage("$FullBuildNumber"))']"
-    }
+    Write-Host "##teamcity[buildNumber '$(Format-TeamCityMessage("$FullBuildNumber"))']"
+}
 
 $BuildErrors = @()
 
