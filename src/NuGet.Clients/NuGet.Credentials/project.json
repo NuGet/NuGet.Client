@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "NuGet.PackageManagement": "3.5.0-rtm-*",
+    "NuGet.PackageManagement": "3.5.0-octopus-*",
     "NuGet.Core": "2.13.0-rtm-824"
   },
   "frameworks": {
