@@ -1,13 +1,15 @@
+
+![Octopus Logo](https://i.octopus.com/blog/201605-logo-text-blueblacktransparent-400_rgb-TTE8.png)
 ![NuGet logo](https://raw.githubusercontent.com/NuGet/Home/master/resources/nuget.png)
 
 -------------
 
-## Build Status
+# Custom fork of NuGet for Octopus Deploy
 
-[![Build status](https://ci.appveyor.com/api/projects/status/1encuvwjo6k2sq68?svg=true)](https://ci.appveyor.com/project/NuGetTeam/nuget-client)
+NuGet 3 started removing leading zeros and the fourth digit if it is zero. These are affectionately known as "NuGet zero quirks" and can be surprising when working with tooling outside the NuGet ecosystem. We have made a choice to preserve the version as-is when working with Octopus tooling to create packages of any kind. Learn more about [versioning in Octopus Deploy](http://docs.octopusdeploy.com/display/OD/Versioning+in+Octopus+Deploy).
 
-# Open Source Code of Conduct
+To make this work for NuGet packages we have forked NuGet.
 
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
-
-# NuGet VSIX and command line
+The fork of NuGet 3 available here: https://github.com/OctopusDeploy/NuGet.Client
+The build is available here: http://build.octopushq.com/project.html?projectId=OctopusDeploy_NuGet&tab=projectOverview
+The packages are available here: https://octopus.myget.org/feed/octopus-dependencies/package/nuget/NuGet.CommandLine
