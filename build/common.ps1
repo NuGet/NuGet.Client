@@ -563,7 +563,7 @@ Function Invoke-DotnetBuild {
 
             & $DotNetExe $opts
             if (-not $?) {
-                Error-Log "Pack failed @""$_"". Code: $LASTEXITCODE"
+                Error-Log "Build failed @""$_"". Code: $LASTEXITCODE"
             }
         }
     }
@@ -830,7 +830,7 @@ Function Test-CoreProjectsHelper {
 
     # Since NuGet.Build.Tasks.Pack has "type": "build" dependencies, we need to build it directly before running its
     # tests. Otherwise, the build of its unit test project will fail.
-    $xprojs | ? { $_.Contains("NuGet.Build.Tasks.Pack") } | Invoke-DotnetBuild -Configuration $Configuration
+    $xprojs -like '*\NuGet.Build.Tasks.Pack' | Invoke-DotnetBuild -Configuration $Configuration
 
     # Test all core test projects.
     $xtests | Test-XProject -Configuration $Configuration
