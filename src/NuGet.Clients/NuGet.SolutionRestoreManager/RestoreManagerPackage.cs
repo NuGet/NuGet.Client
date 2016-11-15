@@ -35,20 +35,20 @@ namespace NuGet.SolutionRestoreManager
         public const string PackageGuidString = "2b52ac92-4551-426d-bd34-c6d7d9fdd1c5";
 
         [Import]
-        private ISolutionRestoreWorker SolutionRestoreWorker { get; set; }
+        private Lazy<ISolutionRestoreWorker> SolutionRestoreWorker { get; set; }
 
         [Import]
         private Lazy<ISettings> Settings { get; set; }
 
         [Import]
-        private IVsSolutionManager SolutionManager { get; set; }
+        private Lazy<IVsSolutionManager> SolutionManager { get; set; }
 
         // keeps a reference to BuildEvents so that our event handler
         // won't get disconnected.
         private EnvDTE.BuildEvents _buildEvents;
 
         protected override async Task InitializeAsync(
-            CancellationToken cancellationToken, 
+            CancellationToken cancellationToken,
             IProgress<ServiceProgressData> progress)
         {
             var componentModel = await GetServiceAsync(typeof(SComponentModel)) as IComponentModel;
@@ -62,7 +62,9 @@ namespace NuGet.SolutionRestoreManager
 
             UserAgent.SetUserAgentString(
                 new UserAgentStringBuilder().WithVisualStudioSKU(dte.GetFullVsVersionString()));
- 
+
+            await SolutionRestoreCommand.InitializeAsync(this);
+
             await base.InitializeAsync(cancellationToken, progress);
         }
 
@@ -72,13 +74,13 @@ namespace NuGet.SolutionRestoreManager
             if (Action == EnvDTE.vsBuildAction.vsBuildActionClean)
             {
                 // Clear the project.json restore cache on clean to ensure that the next build restores again
-                SolutionRestoreWorker.CleanCache();
+                SolutionRestoreWorker.Value.CleanCache();
 
                 return;
             }
 
             // Check if solution is DPL enabled, then don't restore
-            if (SolutionManager.IsSolutionDPLEnabled)
+            if (SolutionManager.Value.IsSolutionDPLEnabled)
             {
                 return;
             }
@@ -91,7 +93,7 @@ namespace NuGet.SolutionRestoreManager
             var forceRestore = Action == EnvDTE.vsBuildAction.vsBuildActionRebuildAll;
 
             // Execute
-            SolutionRestoreWorker.Restore(SolutionRestoreRequest.OnBuild(forceRestore));
+            SolutionRestoreWorker.Value.Restore(SolutionRestoreRequest.OnBuild(forceRestore));
         }
 
         /// <summary>

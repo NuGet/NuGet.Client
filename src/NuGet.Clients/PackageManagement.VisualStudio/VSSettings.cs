@@ -10,6 +10,7 @@ using NuGet.Common;
 namespace NuGet.PackageManagement.VisualStudio
 {
     [Export(typeof(Configuration.ISettings))]
+    [PartCreationPolicy(CreationPolicy.Shared)]
     public class VSSettings : Configuration.ISettings
     {
         private Configuration.ISettings SolutionSettings { get; set; }
@@ -28,7 +29,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (solutionManager == null)
             {
-                throw new ArgumentNullException("solutionManager");
+                throw new ArgumentNullException(nameof(solutionManager));
             }
 
             SolutionManager = solutionManager;

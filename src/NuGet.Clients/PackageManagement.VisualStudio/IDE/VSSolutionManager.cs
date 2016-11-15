@@ -30,17 +30,17 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private static readonly INuGetProjectContext EmptyNuGetProjectContext = new EmptyNuGetProjectContext();
 
-        private readonly IServiceProvider _serviceProvider;
-        private readonly IProjectSystemCache _projectSystemCache;
-        private readonly NuGetProjectFactory _projectSystemFactory;
-        private readonly Common.ILogger _logger;
-
         private SolutionEvents _solutionEvents;
         private CommandEvents _solutionSaveEvent;
         private CommandEvents _solutionSaveAsEvent;
         private IVsMonitorSelection _vsMonitorSelection;
         private uint _solutionLoadedUICookie;
         private IVsSolution _vsSolution;
+
+        private readonly IServiceProvider _serviceProvider;
+        private readonly IProjectSystemCache _projectSystemCache;
+        private readonly NuGetProjectFactory _projectSystemFactory;
+        private readonly Common.ILogger _logger;
 
         private bool _initialized;
         private bool _cacheInitialized;
@@ -143,7 +143,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 var dte = _serviceProvider.GetDTE();
                 // Keep a reference to SolutionEvents so that it doesn't get GC'ed. Otherwise, we won't receive events.
                 _solutionEvents = dte.Events.SolutionEvents;
-
                 _solutionEvents.BeforeClosing += OnBeforeClosing;
                 _solutionEvents.AfterClosing += OnAfterClosing;
                 _solutionEvents.ProjectAdded += OnEnvDTEProjectAdded;
@@ -599,6 +598,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void SetDefaultProjectName()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             // when a new solution opens, we set its startup project as the default project in NuGet Console
             var dte = _serviceProvider.GetDTE();
             var solutionBuild = (SolutionBuild2)dte.Solution.SolutionBuild;

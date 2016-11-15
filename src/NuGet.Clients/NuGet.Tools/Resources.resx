@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -117,99 +117,82 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="DTE_ProjectUnsupported" xml:space="preserve">
-    <value>The project '{0}' is unsupported</value>
+  <data name="AccountProvider_FailedToLoadAccountManager" xml:space="preserve">
+    <value>Could not get the account manager, unable to check the keychain.</value>
   </data>
-  <data name="FailedToAddReference" xml:space="preserve">
-    <value>Failed to add reference to '{0}'.</value>
+  <data name="AccountProvider_FailedToLoadVSOAccountProvider" xml:space="preserve">
+    <value>Could not get the account provider, unable to check the keychain.</value>
   </data>
-  <data name="FailedToAddGacReference" xml:space="preserve">
-    <value>Failed to add reference. The package '{0}' tried to add a framework reference to '{1}' which was not found in the GAC. This is possibly a bug in the package. Please contact the package owners for assistance.</value>
+  <data name="AccountProvider_NoValidCrededentialsFound" xml:space="preserve">
+    <value>No valid credentials found for VSO account.</value>
   </data>
-  <data name="Debug_AddGacReference" xml:space="preserve">
-    <value>Added reference '{0}' in the Global Assembly Cache to project '{1}'</value>
+  <data name="AccountProvider_TriedToShowUIOnNonInteractive" xml:space="preserve">
+    <value>Unable to authenticate without prompting user.</value>
   </data>
-  <data name="Warning_FileAlreadyExists" xml:space="preserve">
-    <value>'{0}' already exists. Skipping...</value>
+  <data name="BuildIntegratedPackageRestoreFailedForProject" xml:space="preserve">
+    <value>NuGet Package restore failed for project {0} for '{1}'.</value>
   </data>
-  <data name="Debug_AddedFileToProject" xml:space="preserve">
-    <value>Added file '{0}' to project '{1}'.</value>
+  <data name="CanNotCreateWindow" xml:space="preserve">
+    <value>Can not create tool window.</value>
   </data>
-  <data name="PathToExistingFileNotPresent" xml:space="preserve">
-    <value>Path '{0}' to existing file is not found on disk. Cannot add to project '{1}'</value>
+  <data name="DialogTitle" xml:space="preserve">
+    <value>NuGet Package Manager</value>
   </data>
-  <data name="Argument_Must_Be_GreaterThanOrEqualTo" xml:space="preserve">
-    <value>Value must be greater than or equal to {0}.</value>
+  <data name="ErrorDialogBoxTitle" xml:space="preserve">
+    <value>Operation failed</value>
   </data>
-  <data name="Debug_RemovedFile" xml:space="preserve">
-    <value>Removed file '{0}'</value>
+  <data name="ManagePackageForSolutionLabel" xml:space="preserve">
+    <value>Manage NuGet Packages for &amp;Solution...</value>
   </data>
-  <data name="Debug_RemovedFileFromFolder" xml:space="preserve">
-    <value>Removed file '{0}' from folder '{1}'</value>
+  <data name="ManagePackageLabel" xml:space="preserve">
+    <value>Manage &amp;NuGet Packages...</value>
   </data>
-  <data name="Debug_RemoveReference" xml:space="preserve">
-    <value>Removed reference '{0}' from project '{1}'</value>
+  <data name="NoProjectSelected" xml:space="preserve">
+    <value>No project is selected for this operation.</value>
   </data>
-  <data name="Error_FailedToCreateParentFolder" xml:space="preserve">
-    <value>Failed to create parent folder for file '{0}' in project {1}.</value>
+  <data name="NoSupportedProjectsInSolution" xml:space="preserve">
+    <value>No projects supported by NuGet in the solution.</value>
   </data>
-  <data name="FailedToRemoveReference" xml:space="preserve">
-    <value>Case insensitive search for reference '{0}', to be removed, returned more than 1 match. Request could not be performed.</value>
+  <data name="NuGetSearchProvider_CategoryShortcut" xml:space="preserve">
+    <value>nuget</value>
   </data>
-  <data name="Warning_FailedToFindMatchForRemoveReference" xml:space="preserve">
-    <value>Failed to find match for removing reference '{0}'.</value>
+  <data name="NuGetSearchProvider_Description" xml:space="preserve">
+    <value>Search NuGet packages</value>
   </data>
-  <data name="Warning_NoExactMatchForReference" xml:space="preserve">
-    <value>No exact match found for removing reference '{0}'. Trying No No exact match found for removing reference '{0}'. Trying case-insensitive search...-</value>
+  <data name="NuGetSearchProvider_DisplayText" xml:space="preserve">
+    <value>NuGet Packages</value>
   </data>
-  <data name="InstallingPackage" xml:space="preserve">
-    <value>Installing NuGet package {0}.</value>
+  <data name="NuGetStaticResult_DisplayText" xml:space="preserve">
+    <value>Search Online for NuGet Packages matching '{0}'</value>
   </data>
-  <data name="UninstallingPackage" xml:space="preserve">
-    <value>Uninstalling NuGet package {0}.</value>
+  <data name="ProjectHasAnInvalidNuGetConfiguration" xml:space="preserve">
+    <value>{0} nuget configuration is invalid.</value>
   </data>
-  <data name="Warning_FailedToDeleteMarkedPackageDirectory" xml:space="preserve">
-    <value>Failed to remove package directory '{0}' that was marked for deletion on Visual Studio restart.</value>
+  <data name="ProjectUpgradeAndRetargetErrorMessage" xml:space="preserve">
+    <value>Some NuGet packages were installed using a target framework different from the current target framework and may need to be reinstalled. Visit http://docs.nuget.org/docs/workflows/reinstalling-packages for more information.  Packages affected: {0}</value>
   </data>
-  <data name="Warning_FailedToDeleteMarkedPackageDirectories" xml:space="preserve">
-    <value>Failed to remove package directories that were marked for deletion on Visual Studio restart: {0}</value>
-  </data>
-  <data name="Warning_FailedToMarkPackageDirectoryForDeletion" xml:space="preserve">
-    <value>Failed to mark package directory '{0}' for deletion on Visual Studio restart: {1}</value>
-  </data>
-  <data name="Warning_ErrorDuringProjectClosureWalk" xml:space="preserve">
-    <value>Failed to resolve all project references. The package restore result for '{0}' or a dependant project may be incomplete.</value>
+  <data name="ProviderException_MalformedResponse" xml:space="preserve">
+    <value>Credential provider gave an invalid response.</value>
   </data>
   <data name="SolutionIsNotSaved" xml:space="preserve">
     <value>Solution is not saved. Please save your solution before managing NuGet packages.</value>
   </data>
-  <data name="Error_WhileLoadingConfigForBindingRedirects" xml:space="preserve">
-    <value>Failed to load '{0}', while updating binding redirects. {1}</value>
+  <data name="SolutionIsNotSavedPromptReopen" xml:space="preserve">
+    <value>Solution is not saved. Please save your solution and re-open solution before managing NuGet packages.</value>
   </data>
-  <data name="FailedToUpdateBindingRedirects" xml:space="preserve">
-    <value>Failed to update binding redirects for {0} : {1}</value>
+  <data name="CredentialProviderFailed_LegacyCredentialProvider" xml:space="preserve">
+    <value>The legacy NuGet credential provider failed to load.</value>
   </data>
-  <data name="ConfigErrorDialogBoxTitle" xml:space="preserve">
-    <value>NuGet operation failed</value>
+  <data name="CredentialProviderFailed_VisualStudioCredentialProvider" xml:space="preserve">
+    <value>The Visual Studio credential provider failed to load.</value>
   </data>
-  <data name="FailedToAddFacadeReference" xml:space="preserve">
-    <value>Failed to add reference to '{0}'. The package '{1}' tried to add a framework reference to '{0}'. This reference is not required to be explicitly added by a package.</value>
-    <comment>{0} is the framework facade reference name
-{1} is the package name</comment>
+  <data name="CredentialProviderFailed_VisualStudioAccountProvider" xml:space="preserve">
+    <value>The Visual Studio or VSTS account provider failed to load.</value>
   </data>
-  <data name="ProjectNotLoaded_RestoreFailed" xml:space="preserve">
-    <value>The operation failed as details for project {0} could not be loaded.</value>
+  <data name="CredentialProviderFailed_DefaultCredentialsCredentialProvider" xml:space="preserve">
+    <value>The default credentials credential provider failed to load.</value>
   </data>
-  <data name="BaseIntermediateOutputPathNotFound" xml:space="preserve">
-    <value>The BaseIntermediateOutputPath MSBuild property could not be found for project '{0}'.</value>
-    <comment>{0} is the full path to the project.</comment>
-  </data>
-  <data name="ProjectCouldNotBeCastedToBuildPropertyStorage" xml:space="preserve">
-    <value>The project '{0}' could not be casted to a build property storage interace, which is required to get MSBuild properties inside Visual Studio.</value>
-    <comment>{0} is the full path to the project.</comment>
-  </data>
-  <data name="UnableToGetCPSPackageInstallationService" xml:space="preserve">
-    <value>Unable to get the project's package installation service for project '{0}'.</value>
-    <comment>{0} is the full path to the project.</comment>
+  <data name="CredentialProviderFailed_ImportedProvider" xml:space="preserve">
+    <value>Failed to load credential provider from assembly {0}.</value>
   </data>
 </root>

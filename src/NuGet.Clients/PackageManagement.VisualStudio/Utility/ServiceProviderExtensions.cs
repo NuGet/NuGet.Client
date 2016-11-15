@@ -30,15 +30,24 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             return serviceProvider.GetService(typeof(TService)) as TInterface;
         }
+
         public static Task<EnvDTE.DTE> GetDTEAsync(
             this IAsyncServiceProvider site)
         {
             return site.GetServiceAsync<SDTE, EnvDTE.DTE>();
         }
+
         public static Task<IComponentModel> GetComponentModelAsync(
             this IAsyncServiceProvider site)
         {
             return site.GetServiceAsync<SComponentModel, IComponentModel>();
+        }
+
+        public static async Task<TService> GetServiceAsync<TService>(
+            this IAsyncServiceProvider site)
+            where TService : class
+        {
+            return await site.GetServiceAsync(typeof(TService)) as TService;
         }
 
         public static async Task<TInterface> GetServiceAsync<TService, TInterface>(

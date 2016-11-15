@@ -2,11 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
+using System.Globalization;
 using System.Windows.Media;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
-using NuGetConsole.Implementation;
 
 namespace NuGetConsole
 {
@@ -14,47 +13,62 @@ namespace NuGetConsole
     /// This class implements the IConsole interface in order to integrate with the PowerShellHost.
     /// It sends PowerShell host outputs to the VS Output tool window.
     /// </summary>
-    internal class OutputConsole : IConsole, IConsoleDispatcher
+    internal sealed class OutputConsole : IConsole, IConsoleDispatcher
     {
-        private readonly IVsOutputWindow _outputWindow;
-        private IVsOutputWindowPane _outputWindowPane;
+        private const int DefaultConsoleWidth = 120;
 
-        public OutputConsole(IVsOutputWindow outputWindow)
+        private readonly IVsOutputWindow _vsOutputWindow;
+        private readonly IVsUIShell _vsUiShell;
+        private readonly Lazy<IVsOutputWindowPane> _outputWindowPane;
+
+        private IVsOutputWindowPane VsOutputWindowPane => _outputWindowPane.Value;
+
+        public OutputConsole(
+            IVsOutputWindow vsOutputWindow,
+            IVsUIShell vsUiShell)
         {
-            if (outputWindow == null)
+            if (vsOutputWindow == null)
             {
-                throw new ArgumentNullException("outputWindow");
+                throw new ArgumentNullException(nameof(vsOutputWindow));
             }
 
-            _outputWindow = outputWindow;
+            if (vsUiShell == null)
+            {
+                throw new ArgumentNullException(nameof(vsUiShell));
+            }
+
+            _vsOutputWindow = vsOutputWindow;
+            _vsUiShell = vsUiShell;
+
+            _outputWindowPane = new Lazy<IVsOutputWindowPane>(() =>
+            {
+                // create the Package Manager pane within the Output window
+                int hr = _vsOutputWindow.CreatePane(
+                    ref GuidList.guidNuGetOutputWindowPaneGuid,
+                    Resources.OutputConsolePaneName,
+                    fInitVisible: 1,
+                    fClearWithSolution: 0);
+                ErrorHandler.ThrowOnFailure(hr);
+
+                IVsOutputWindowPane pane;
+                hr = _vsOutputWindow.GetPane(
+                    ref GuidList.guidNuGetOutputWindowPaneGuid,
+                    out pane);
+                ErrorHandler.ThrowOnFailure(hr);
+
+                return pane;
+            });
         }
 
-        public event EventHandler StartCompleted;
-
-        event EventHandler IConsoleDispatcher.StartWaitingKey
-        {
-            add { }
-            remove { }
-        }
-
-        public bool IsStartCompleted { get; private set; }
+        #region IConsole
 
         public IHost Host { get; set; }
 
-        public bool ShowDisclaimerHeader
-        {
-            get { return false; }
-        }
+        public bool ShowDisclaimerHeader => false;
 
-        public IConsoleDispatcher Dispatcher
-        {
-            get { return this; }
-        }
+        public IConsoleDispatcher Dispatcher => this;
 
-        public int ConsoleWidth
-        {
-            get { return 120; }
-        }
+        public int ConsoleWidth => DefaultConsoleWidth;
 
         public void Write(string text)
         {
@@ -65,12 +79,7 @@ namespace NuGetConsole
 
             Start();
 
-            _outputWindowPane.OutputStringThreadSafe(text);
-        }
-
-        public void WriteLine(string text)
-        {
-            Write(text + Environment.NewLine);
+            VsOutputWindowPane.OutputStringThreadSafe(text);
         }
 
         public void Write(string text, Color? foreground, Color? background)
@@ -83,6 +92,64 @@ namespace NuGetConsole
         {
             throw new NotSupportedException();
         }
+
+        public void WriteLine(string text)
+        {
+            Write(text + Environment.NewLine);
+        }
+
+        public void WriteLine(string format, params object[] args)
+        {
+            WriteLine(string.Format(CultureInfo.CurrentCulture, format, args));
+        }
+
+        public void WriteProgress(string operation, int percentComplete)
+        {
+        }
+
+        public void Activate()
+        {
+            IVsWindowFrame toolWindow = null;
+            _vsUiShell.FindToolWindow(0,
+                ref GuidList.guidVsWindowKindOutput,
+                out toolWindow);
+            toolWindow?.Show();
+
+            VsOutputWindowPane.Activate();
+        }
+
+        public void Clear()
+        {
+            Start();
+
+            VsOutputWindowPane.Activate();
+            VsOutputWindowPane.Clear();
+        }
+
+        #endregion IConsole
+
+        #region IConsoleDispatcher
+
+        public void Start()
+        {
+            if (!IsStartCompleted)
+            {
+                var ignore = _outputWindowPane.Value;
+                StartCompleted?.Invoke(this, EventArgs.Empty);
+            }
+
+            IsStartCompleted = true;
+        }
+
+        public event EventHandler StartCompleted;
+
+        event EventHandler IConsoleDispatcher.StartWaitingKey
+        {
+            add { }
+            remove { }
+        }
+
+        public bool IsStartCompleted { get; private set; }
 
         public bool IsExecutingCommand
         {
@@ -99,7 +166,7 @@ namespace NuGetConsole
             get { throw new NotSupportedException(); }
         }
 
-        public void WriteProgress(string operation, int percentComplete)
+        public void AcceptKeyInput()
         {
         }
 
@@ -108,44 +175,11 @@ namespace NuGetConsole
             throw new NotSupportedException();
         }
 
-        public void Clear()
-        {
-            Start();
-
-            _outputWindowPane.Activate();
-            _outputWindowPane.Clear();
-        }
-
-        public void Start()
-        {
-            if (_outputWindowPane == null)
-            {
-                // create the Package Manager pane within the Output window
-                int result = _outputWindow.CreatePane(ref NuGetConsole.Implementation.GuidList.guidNuGetOutputWindowPaneGuid, Resources.OutputConsolePaneName, fInitVisible: 1, fClearWithSolution: 0);
-                if (result == VSConstants.S_OK)
-                {
-                    result = _outputWindow.GetPane(ref NuGetConsole.Implementation.GuidList.guidNuGetOutputWindowPaneGuid, out _outputWindowPane);
-
-                    Debug.Assert(result == VSConstants.S_OK);
-                    Debug.Assert(_outputWindowPane != null);
-                }
-            }
-
-            if (StartCompleted != null)
-            {
-                StartCompleted(this, EventArgs.Empty);
-            }
-
-            IsStartCompleted = true;
-        }
-
         public void ClearConsole()
         {
             Clear();
         }
 
-        public void AcceptKeyInput()
-        {
-        }
+        #endregion IConsoleDispatcher
     }
 }

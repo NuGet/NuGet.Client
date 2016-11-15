@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -653,18 +653,18 @@ namespace NuGetConsole.Implementation
             ExecuteEnd.Raise(this, EventArgs.Empty);
         }
 
-        private IConsole _vsOutputConsole;
+        private IOutputConsole _vsOutputConsole;
 
-        private IConsole VSOutputConsole
+        private IOutputConsole VSOutputConsole
         {
             get
             {
                 if (_vsOutputConsole == null)
                 {
-                    IOutputConsoleProvider outputConsoleProvider = ServiceLocator.GetInstance<IOutputConsoleProvider>();
-                    if (null != outputConsoleProvider)
+                    var consoleProvider = ServiceLocator.GetInstance<IOutputConsoleProvider>();
+                    if (null != consoleProvider)
                     {
-                        _vsOutputConsole = outputConsoleProvider.CreateOutputConsole(requirePowerShellHost: false);
+                        _vsOutputConsole = consoleProvider.CreatePackageManagerConsole();
                     }
                 }
                 return _vsOutputConsole;
