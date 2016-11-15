@@ -62,7 +62,7 @@ namespace NuGet.CommandLine
         /// <summary>
         /// Returns the closure of project references for projects specified in <paramref name="projectPaths"/>.
         /// </summary>
-        public static DependencyGraphSpec GetProjectReferences(
+        public static async Task<DependencyGraphSpec> GetProjectReferencesAsync(
             string msbuildDirectory,
             string[] projectPaths,
             int timeOut,
@@ -190,7 +190,7 @@ namespace NuGet.CommandLine
 
                         if (process.ExitCode != 0)
                         {
-                            errorTask.Wait();
+                            await errorTask;
                             throw new CommandLineException(errors.ToString());
                         }
                     }
