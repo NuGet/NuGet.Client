@@ -648,14 +648,6 @@ Function Pack-NuGetBuildTasksPack {
         [switch]$CI
     )
 
-    if (Test-Path $Nupkgs) {
-        Remove-Item $Nupkgs\NuGet.Build.Tasks.Pack*
-    }
-
-    if (Test-Path $ReleaseNupkgs) {
-        Remove-Item $ReleaseNupkgs\NuGet.Build.Tasks.Pack*
-    }
-
     $prereleaseNupkgVersion = "$PackageReleaseVersion-$ReleaseLabel-$BuildNumber"
     if ($ReleaseLabel -Ne 'rtm') {
         $releaseNupkgVersion = "$PackageReleaseVersion-$ReleaseLabel"
@@ -663,7 +655,7 @@ Function Pack-NuGetBuildTasksPack {
         $releaseNupkgVersion = "$PackageReleaseVersion"
     }
 
-    $PackProjectLocation = Join-Path $NuGetClientRoot src\NuGet.Core\NuGet.Build.Tasks.Pack
+    $PackProjectLocation = Join-Path $NuGetClientRoot src\NuGet.Core\NuGet.Build.Tasks.Pack.Library
     $PackBuildTaskNuspecLocation = Join-Path $PackProjectLocation NuGet.Build.Tasks.Pack.nuspec
 
     New-NuGetPackage `
@@ -827,10 +819,6 @@ Function Test-CoreProjectsHelper {
     $xprojs = Find-XProjects $srcLocation
     $xtests = Find-XProjects $XProjectsLocation
     $xprojs + $xtests | Restore-XProjects
-
-    # Since NuGet.Build.Tasks.Pack has "type": "build" dependencies, we need to build it directly before running its
-    # tests. Otherwise, the build of its unit test project will fail.
-    $xprojs -like '*\NuGet.Build.Tasks.Pack' | Invoke-DotnetBuild -Configuration $Configuration
 
     # Test all core test projects.
     $xtests | Test-XProject -Configuration $Configuration

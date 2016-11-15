@@ -5,12 +5,7 @@
     "files": {
       "mappings": {
         "buildCrossTargeting/NuGet.Build.Tasks.Pack.targets": "Pack.targets",
-        "buildCrossTargeting/Desktop/": {
-          "include": [ "bin/release/net45/*.dll", "bin/debug/net45/*.dll" ]
-        },
-        "buildCrossTargeting/CoreCLR/": {
-          "include": [ "bin/release/netstandard1.3/*.dll", "bin/debug/netstandard1.3/*.dll" ]
-        }
+        "build/NuGet.Build.Tasks.Pack.targets": "Pack.targets"
       }
     }
   },
@@ -25,13 +20,13 @@
         "../../../Shared/*.cs",
         "../NuGet.Build.Tasks/Common/*.cs"
       ]
-    }
+    },
+    "outputName": "NuGet.Build.Tasks.Pack"
   },
 
   "dependencies": {
     "NuGet.Commands": {
-      "target": "project",
-      "type": "build"
+      "target": "project"
     }
   },
 
@@ -58,22 +53,10 @@
         ]
       },
       "dependencies": {
-        "NETStandard.Library": {
-          "version": "1.6.0",
-          "type": "build"
-        },
-        "Microsoft.Build.Framework": {
-          "type": "build",
-          "version": "0.1.0-preview-00038-160914"
-        },
-        "Microsoft.Build.Tasks.Core": {
-          "type": "build",
-          "version": "0.1.0-preview-00038-160914"
-        },
-        "Microsoft.Build.Utilities.Core": {
-          "type": "build",
-          "version": "0.1.0-preview-00038-160914"
-        }
+        "NETStandard.Library": "1.6.0",
+        "Microsoft.Build.Framework": "0.1.0-preview-00038-160914",
+        "Microsoft.Build.Tasks.Core": "0.1.0-preview-00038-160914",
+        "Microsoft.Build.Utilities.Core": "0.1.0-preview-00038-160914"
       }
     }
   }
