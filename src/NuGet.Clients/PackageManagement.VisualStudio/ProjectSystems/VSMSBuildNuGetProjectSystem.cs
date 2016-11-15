@@ -376,8 +376,9 @@ namespace NuGet.PackageManagement.VisualStudio
             var projectFullPath = string.Empty;
             var assemblyFullPath = string.Empty;
             var dteProjectFullName = string.Empty;
+            var dteOriginalPath = string.Empty;
 
-            var resolvedToGac = false;
+            var resolvedToPackage = false;
 
             try
             {
@@ -401,7 +402,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                     if (reference != null)
                     {
-                        var path = GetReferencePath(reference);
+                        dteOriginalPath = GetReferencePath(reference);
 
                         // If path != fullPath, we need to set CopyLocal thru msbuild by setting Private
                         // to true.
@@ -409,19 +410,18 @@ namespace NuGet.PackageManagement.VisualStudio
                         // locate assembly references.
                         // Most commonly, it happens if this assembly is in the GAC or in the output path.
                         // The path may be null or for some project system it can be "".
-                        resolvedToGac = (!string.IsNullOrWhiteSpace(path)
-                            && !StringComparer.OrdinalIgnoreCase.Equals(path, assemblyFullPath));
+                        resolvedToPackage = !string.IsNullOrWhiteSpace(dteOriginalPath) && IsSamePath(dteOriginalPath, assemblyFullPath);
 
-                        if (!resolvedToGac)
+                        if (resolvedToPackage)
                         {
-                            // Set reference properties
+                            // Set reference properties (if needed)
                             TrySetCopyLocal(reference);
                             TrySetSpecificVersion(reference);
                         }
                     }
                 });
 
-                if (resolvedToGac)
+                if (!resolvedToPackage)
                 {
                     // This should be done off the UI thread
 
@@ -435,8 +435,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
                         // Try to find the item for the assembly name
                         var item = (from assemblyReferenceNode in buildProject.GetAssemblyReferences()
-                                                                    where AssemblyNamesMatch(assemblyName, assemblyReferenceNode.Item2)
-                                                                    select assemblyReferenceNode.Item1).FirstOrDefault();
+                                    where AssemblyNamesMatch(assemblyName, assemblyReferenceNode.Item2)
+                                    select assemblyReferenceNode.Item1).FirstOrDefault();
 
                         if (item != null)
                         {
@@ -481,7 +481,17 @@ namespace NuGet.PackageManagement.VisualStudio
                     string.Format(CultureInfo.CurrentCulture, Strings.FailedToAddReference, name), e);
             }
 
-            NuGetProjectContext.Log(ProjectManagement.MessageLevel.Debug, Strings.Debug_AddReference, name, projectName);
+            NuGetProjectContext.Log(
+                ProjectManagement.MessageLevel.Debug,
+                $"Added reference '{name}' to project:'{projectName}'. Was the Reference Resolved To Package (resolvedToPackage):'{resolvedToPackage}', "+
+                "where Reference Path from DTE(dteOriginalPath):'{dteOriginalPath}' and Reference Path from package reference(assemblyFullPath):'{assemblyFullPath}'.");
+        }
+
+        private static bool IsSamePath(string path1, string path2)
+        {
+            // Exact match or match after normalizing both paths
+            return StringComparer.OrdinalIgnoreCase.Equals(path1, path2)
+                || StringComparer.OrdinalIgnoreCase.Equals(Path.GetFullPath(path1), Path.GetFullPath(path2));
         }
 
         private static bool AssemblyNamesMatch(AssemblyName name1, AssemblyName name2)
@@ -614,11 +624,12 @@ namespace NuGet.PackageManagement.VisualStudio
             // Always set copy local to true for references that we add
             try
             {
-                // In order to properly write this to MSBuild in ALL cases, we have to trigger the Property Change
-                // notification with a new value of "true". However, "true" is the default value, so in order to
-                // cause a notification to fire, we have to set it to false and then back to true
-                reference.CopyLocal = false;
-                reference.CopyLocal = true;
+                // Setting copyLocal to "true" only if it is "false".
+                // This should trigger an event which will result in successful writing to msbuild.
+                if (!reference.CopyLocal)
+                {
+                    reference.CopyLocal = true;
+                }
             }
             catch (NotSupportedException)
             {
@@ -662,8 +673,12 @@ namespace NuGet.PackageManagement.VisualStudio
             // Always set SpecificVersion to true for references that we add
             try
             {
-                reference.SpecificVersion = false;
-                reference.SpecificVersion = true;
+                // Setting SpecificVersion to "true" only if it is "false".
+                // This should trigger an event which will result in successful writing to msbuild.
+                if (!reference.SpecificVersion)
+                {
+                    reference.SpecificVersion = true;
+                }
             }
             catch (NotSupportedException)
             {
@@ -839,7 +854,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        #endregion
+        #endregion Binding Redirects Stuff
 
         public Task ExecuteScriptAsync(PackageIdentity identity, string packageInstallPath, string scriptRelativePath, bool throwOnFailure)
         {

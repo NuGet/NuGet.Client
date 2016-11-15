@@ -106,15 +106,6 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Added reference &apos;{0}&apos; to project &apos;{1}&apos;..
-        /// </summary>
-        public static string Debug_AddReference {
-            get {
-                return ResourceManager.GetString("Debug_AddReference", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Removed file &apos;{0}&apos;.
         /// </summary>
         public static string Debug_RemovedFile {
