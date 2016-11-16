@@ -84,7 +84,6 @@ namespace NuGet.CommandLine
             var hasProjectJsonFiles = restoreInputs.RestoreV3Context.Inputs.Any();
             if (!hasPackagesConfigFiles && !hasProjectJsonFiles)
             {
-
                 Console.LogMinimal(LocalizedResourceManager.GetString(restoreInputs.RestoringWithSolutionFile
                         ? "SolutionRestoreCommandNoPackagesConfigOrProjectJson"
                         : "ProjectRestoreCommandNoPackagesConfigOrProjectJson"));
@@ -210,6 +209,7 @@ namespace NuGet.CommandLine
         }
 
         private static CachingSourceProvider _sourceProvider;
+
         private CachingSourceProvider GetSourceRepositoryProvider()
         {
             if (_sourceProvider == null)
@@ -442,16 +442,16 @@ namespace NuGet.CommandLine
                     throw new InvalidOperationException(message);
                 }
             }
-
-            // Run inputs through msbuild to determine the 
+            await DetermineInputsFromMSBuildAsync(packageRestoreInputs);
+            // Run inputs through msbuild to determine the
             // correct type and find dependencies as needed.
-            return await DetermineInputsFromMSBuildAsync(packageRestoreInputs);
+            return packageRestoreInputs;
         }
 
         /// <summary>
         /// Read project inputs using MSBuild
         /// </summary>
-        private async Task<PackageRestoreInputs> DetermineInputsFromMSBuildAsync(PackageRestoreInputs packageRestoreInputs)
+        private async Task DetermineInputsFromMSBuildAsync(PackageRestoreInputs packageRestoreInputs)
         {
             // Find P2P graph for v3 inputs.
             // Ignore xproj files as top level inputs
@@ -470,11 +470,11 @@ namespace NuGet.CommandLine
                 }
                 catch (Exception ex)
                 {
-                    // At this point reading the project has failed, to keep backwards 
+                    // At this point reading the project has failed, to keep backwards
                     // compatibility this should warn instead of error if
                     // packages.config files exist, but no project.json files.
                     // This will skip NETCore projects which is a problem, but there is
-                    // not a good way to know if they exist, or if this is an old type of 
+                    // not a good way to know if they exist, or if this is an old type of
                     // project that the targets file cannot handle.
 
                     // Log exception for debug
@@ -487,7 +487,7 @@ namespace NuGet.CommandLine
                         // warn to let the user know that NETCore will be skipped
                         Console.LogWarning(LocalizedResourceManager.GetString("Warning_ReadingProjectsFailed"));
 
-                        // Add packages.config 
+                        // Add packages.config
                         packageRestoreInputs.PackagesConfigFiles
                             .AddRange(projectsWithPotentialP2PReferences
                             .Select(GetPackagesConfigFile)
@@ -507,7 +507,6 @@ namespace NuGet.CommandLine
                     AddInputsFromDependencyGraphSpec(packageRestoreInputs, dgFileOutput);
                 }
             }
-            return packageRestoreInputs;
         }
 
         private void AddInputsFromDependencyGraphSpec(PackageRestoreInputs packageRestoreInputs, DependencyGraphSpec dgFileOutput)
@@ -526,7 +525,7 @@ namespace NuGet.CommandLine
             var v2RestoreProjects =
                 packageRestoreInputs.ProjectFiles
                   .Where(path => !entryPointProjects.Any(project => path.Equals(project.RestoreMetadata.ProjectPath, StringComparison.OrdinalIgnoreCase)));
-        
+
             packageRestoreInputs.PackagesConfigFiles
                 .AddRange(v2RestoreProjects
                 .Select(GetPackagesConfigFile)
@@ -804,7 +803,7 @@ namespace NuGet.CommandLine
             {
                 if (!File.Exists(projectFile))
                 {
-                    var message = string.Format(CultureInfo.CurrentCulture, 
+                    var message = string.Format(CultureInfo.CurrentCulture,
                         LocalizedResourceManager.GetString("RestoreCommandProjectNotFound"),
                         projectFile);
                     Console.LogWarning(message);

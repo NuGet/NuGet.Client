@@ -167,32 +167,30 @@ namespace NuGet.CommandLine
                 using (var process = Process.Start(processStartInfo))
                 {
                     var errors = new StringBuilder();
-                    using (var errorTask = ConsumeStreamReaderAsync(process.StandardError, errors))
+                    var errorTask = ConsumeStreamReaderAsync(process.StandardError, errors);
+                    var finished = process.WaitForExit(timeOut);
+                    if (!finished)
                     {
-                        var finished = process.WaitForExit(timeOut);
-                        if (!finished)
+                        try
                         {
-                            try
-                            {
-                                process.Kill();
-                            }
-                            catch (Exception ex)
-                            {
-                                throw new CommandLineException(
-                                    LocalizedResourceManager.GetString(nameof(NuGetResources.Error_CannotKillMsBuild)) + " : " +
-                                    ex.Message,
-                                    ex);
-                            }
-
+                            process.Kill();
+                        }
+                        catch (Exception ex)
+                        {
                             throw new CommandLineException(
-                                LocalizedResourceManager.GetString(nameof(NuGetResources.Error_MsBuildTimedOut)));
+                                LocalizedResourceManager.GetString(nameof(NuGetResources.Error_CannotKillMsBuild)) + " : " +
+                                ex.Message,
+                                ex);
                         }
 
-                        if (process.ExitCode != 0)
-                        {
-                            await errorTask;
-                            throw new CommandLineException(errors.ToString());
-                        }
+                        throw new CommandLineException(
+                            LocalizedResourceManager.GetString(nameof(NuGetResources.Error_MsBuildTimedOut)));
+                    }
+
+                    if (process.ExitCode != 0)
+                    {
+                        await errorTask;
+                        throw new CommandLineException(errors.ToString());
                     }
                 }
 
@@ -329,27 +327,25 @@ namespace NuGet.CommandLine
                 using (var process = Process.Start(processStartInfo))
                 {
                     var output = new StringBuilder();
-                    using (var outputTask = ConsumeStreamReaderAsync(process.StandardOutput, output))
+                    var outputTask = ConsumeStreamReaderAsync(process.StandardOutput, output);
+                    process.WaitForExit(MsBuildWaitTime);
+                    if (process.ExitCode == 0)
                     {
-                        process.WaitForExit(MsBuildWaitTime);
-                        if (process.ExitCode == 0)
+                        outputTask.Wait();
+
+                        // The output of msbuid /version /nologo with MSBuild 12 & 14 is something like:
+                        // 14.0.23107.0
+                        var lines = output.ToString().Split(
+                            new[] { Environment.NewLine },
+                            StringSplitOptions.RemoveEmptyEntries);
+
+                        var versionString = lines.LastOrDefault(
+                            line => !string.IsNullOrWhiteSpace(line));
+
+                        Version version;
+                        if (Version.TryParse(versionString, out version))
                         {
-                            outputTask.Wait();
-
-                            // The output of msbuid /version /nologo with MSBuild 12 & 14 is something like:
-                            // 14.0.23107.0
-                            var lines = output.ToString().Split(
-                                new[] { Environment.NewLine },
-                                StringSplitOptions.RemoveEmptyEntries);
-
-                            var versionString = lines.LastOrDefault(
-                                line => !string.IsNullOrWhiteSpace(line));
-
-                            Version version;
-                            if (Version.TryParse(versionString, out version))
-                            {
-                                return version;
-                            }
+                            return version;
                         }
                     }
                 }
