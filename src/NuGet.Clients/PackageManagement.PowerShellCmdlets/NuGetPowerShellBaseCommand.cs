@@ -616,13 +616,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             bool includePrerelease,
             Action<string> handleError)
         {
-            var searchFilter = new SearchFilter
-            {
-                IncludePrerelease = includePrerelease,
-                SupportedFrameworks = Enumerable.Empty<string>(),
-                IncludeDelisted = false
-            };
-
+            var searchFilter = new SearchFilter(includePrerelease);
             var packageFeed = new MultiSourcePackageFeed(PrimarySourceRepositories, logger: null); 
             var searchTask = packageFeed.SearchAsync(searchString, searchFilter, Token);
 

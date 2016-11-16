@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -12,7 +15,6 @@ using System.Xml;
 using System.Xml.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -22,17 +24,11 @@ namespace NuGet.Protocol
     /// <summary>
     /// A light weight XML parser for NuGet V2 Feeds
     /// </summary>
-    public sealed class V2FeedParser
+    public sealed class V2FeedParser : IV2FeedParser
     {
-        private const string Xml = "http://www.w3.org/XML/1998/namespace";
         private const string W3Atom = "http://www.w3.org/2005/Atom";
         private const string MetadataNS = "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata";
         private const string DataServicesNS = "http://schemas.microsoft.com/ado/2007/08/dataservices";
-        private const string FindPackagesByIdFormat = "/FindPackagesById()?id='{0}'";
-        private const string SearchEndPointFormat = "/Search()?$filter={0}&searchTerm='{1}'&targetFramework='{2}'&includePrerelease={3}&$skip={4}&$top={5}";
-        private const string GetPackagesFormat = "/Packages(Id='{0}',Version='{1}')";
-        private const string IsLatestVersionFilterFlag = "IsLatestVersion";
-        private const string IsAbsoluteLatestVersionFilterFlag = "IsAbsoluteLatestVersion";
 
         // XNames used in the feed
         private static readonly XName _xnameEntry = XName.Get("entry", W3Atom);
@@ -58,10 +54,10 @@ namespace NuGet.Protocol
         private static readonly XName _xnamePackageHash = XName.Get("PackageHash", DataServicesNS);
         private static readonly XName _xnamePackageHashAlgorithm = XName.Get("PackageHashAlgorithm", DataServicesNS);
         private static readonly XName _xnameMinClientVersion = XName.Get("MinClientVersion", DataServicesNS);
-        private static readonly XName _xnameXmlBase = XName.Get("base", Xml);
 
         private readonly HttpSource _httpSource;
         private readonly string _baseAddress;
+        private readonly V2FeedQueryBuilder _queryBuilder;
 
         /// <summary>
         /// Creates a V2 parser
@@ -98,6 +94,7 @@ namespace NuGet.Protocol
 
             _httpSource = httpSource;
             _baseAddress = baseAddress.Trim('/');
+            _queryBuilder = new V2FeedQueryBuilder();
             Source = source;
         }
 
@@ -111,16 +108,6 @@ namespace NuGet.Protocol
             ILogger log,
             CancellationToken token)
         {
-            if (package == null)
-            {
-                throw new ArgumentException(nameof(PackageIdentity));
-            }
-
-            if (!package.HasVersion)
-            {
-                throw new ArgumentException(nameof(package.Version));
-            }
-
             if (log == null)
             {
                 throw new ArgumentNullException(nameof(log));
@@ -131,11 +118,7 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(token));
             }
 
-            var uri = string.Format(
-                CultureInfo.InvariantCulture,
-                GetPackagesFormat,
-                UriUtility.UrlEncodeOdataParameter(package.Id),
-                UriUtility.UrlEncodeOdataParameter(package.Version.ToNormalizedString()));
+            var uri = _queryBuilder.BuildGetPackageUri(package);
 
             // Try to find the package directly
             // Set max count to -1, get all packages
@@ -148,7 +131,7 @@ namespace NuGet.Protocol
                 token: token);
 
             // If not found use FindPackagesById
-            if (packages.Count < 1)
+            if (packages.Items.Count < 1)
             {
                 var allPackages = await FindPackagesByIdAsync(package.Id, log, token);
 
@@ -157,7 +140,7 @@ namespace NuGet.Protocol
                     .FirstOrDefault();
             }
 
-            return packages.FirstOrDefault();
+            return packages.Items.FirstOrDefault();
         }
 
         /// <summary>
@@ -185,7 +168,8 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(token));
             }
 
-            var uri = string.Format(CultureInfo.InvariantCulture, FindPackagesByIdFormat, UriUtility.UrlEncodeOdataParameter(id));
+            var uri = _queryBuilder.BuildFindPackagesByIdUri(id);
+            
             // Set max count to -1, get all packages
             var packages = await QueryV2Feed(
                 uri,
@@ -195,8 +179,9 @@ namespace NuGet.Protocol
                 log: log,
                 token: token);
 
-            var filtered = packages.Where(p => (includeUnlisted || p.IsListed)
-                && (includePrerelease || !p.Version.IsPrerelease));
+            var filtered = packages
+                .Items
+                .Where(p => (includeUnlisted || p.IsListed) && (includePrerelease || !p.Version.IsPrerelease));
 
             return filtered.OrderByDescending(p => p.Version).Distinct().ToList();
         }
@@ -209,28 +194,75 @@ namespace NuGet.Protocol
             return FindPackagesByIdAsync(id, includeUnlisted: true, includePrerelease: true, log: log, token: token);
         }
 
-        public async Task<IReadOnlyList<V2FeedPackageInfo>> Search(string searchTerm, SearchFilter filters, int skip, int take, ILogger log, CancellationToken cancellationToken)
+        public async Task<V2FeedPage> GetPackagesPageAsync(
+            string searchTerm,
+            SearchFilter filters,
+            int? skip,
+            int? take,
+            ILogger log,
+            CancellationToken token)
         {
-            // get target framework shortname of all the projects in a solution
-            var shortFormTargetFramework = string.Join("|", filters.SupportedFrameworks.Select(
-                targetFramework => NuGetFramework.Parse(targetFramework).GetShortFolderName()));
+            var uri = _queryBuilder.BuildGetPackagesUri(
+                searchTerm,
+                filters,
+                skip,
+                take);
 
-            // The search term comes in already encoded from VS
-            var uri = string.Format(CultureInfo.InvariantCulture, SearchEndPointFormat,
-                                    filters.IncludePrerelease ? IsAbsoluteLatestVersionFilterFlag : IsLatestVersionFilterFlag,
-                                    UriUtility.UrlEncodeOdataParameter(searchTerm),
-                                    UriUtility.UrlEncodeOdataParameter(shortFormTargetFramework),
-                                    filters.IncludePrerelease.ToString().ToLowerInvariant(),
-                                    skip,
-                                    take);
+            var page = await QueryV2Feed(
+                uri,
+                id: null,
+                max: 0, // Only get the first page.
+                ignoreNotFounds: false,
+                log: log,
+                token: token);
 
-            return await QueryV2Feed(
+            return page;
+        }
+
+        public async Task<V2FeedPage> GetSearchPageAsync(
+            string searchTerm,
+            SearchFilter filters,
+            int skip,
+            int take,
+            ILogger log,
+            CancellationToken token)
+        {
+            var uri = _queryBuilder.BuildSearchUri(
+                searchTerm,
+                filters,
+                skip: skip,
+                take: take);
+
+            var page = await QueryV2Feed(
+                uri,
+                id: null,
+                max: 0, // Only get the first page.
+                ignoreNotFounds: false,
+                log: log,
+                token: token);
+
+            return page;
+        }
+        
+        public async Task<IReadOnlyList<V2FeedPackageInfo>> Search(
+            string searchTerm,
+            SearchFilter filters,
+            int skip,
+            int take,
+            ILogger log,
+            CancellationToken token)
+        {
+            var uri = _queryBuilder.BuildSearchUri(searchTerm, filters, skip, take);
+
+            var page = await QueryV2Feed(
                 uri,
                 id: null,
                 max: take,
                 ignoreNotFounds: false,
                 log: log,
-                token: cancellationToken);
+                token: token);
+
+            return page.Items;
         }
 
         public async Task<DownloadResourceResult> DownloadFromUrl(
@@ -382,7 +414,7 @@ namespace NuGet.Protocol
             return value;
         }
 
-        private async Task<List<V2FeedPackageInfo>> QueryV2Feed(
+        private async Task<V2FeedPage> QueryV2Feed(
             string relativeUri,
             string id,
             int max,
@@ -401,6 +433,7 @@ namespace NuGet.Protocol
             Task<XDocument> docRequest = LoadXmlAsync(uri, ignoreNotFounds, log, token);
 
             // TODO: re-implement caching at a higher level for both v2 and v3
+            string nextUri = null;
             while (!token.IsCancellationRequested && docRequest != null)
             {
                 // TODO: Pages for a package Id are cached separately.
@@ -408,7 +441,6 @@ namespace NuGet.Protocol
                 // However, (1) In most cases the pages grow rather than shrink;
                 // (2) cache for pages is valid for only 30 min.
                 // So we decide to leave current logic and observe.
-                string nextUri = null;
                 var doc = await docRequest;
                 if (doc != null)
                 {
@@ -450,7 +482,9 @@ namespace NuGet.Protocol
                 results = results.Take(max).ToList();
             }
 
-            return results;
+            return new V2FeedPage(
+                results,
+                string.IsNullOrEmpty(nextUri) ? null : nextUri);
         }
 
         internal async Task<XDocument> LoadXmlAsync(
@@ -497,19 +531,6 @@ namespace NuGet.Protocol
                 },
                 log,
                 token);
-        }
-
-        public static string GetBaseAddress(Stream stream)
-        {
-            try
-            {
-                XDocument serviceDocumentXml = V2FeedParser.LoadXml(stream);
-                return serviceDocumentXml.Document.Root.Attribute(_xnameXmlBase)?.Value;
-            }
-            catch (XmlException)
-            {
-                return null;
-            }
         }
 
         internal static string GetNextUrl(XDocument doc)

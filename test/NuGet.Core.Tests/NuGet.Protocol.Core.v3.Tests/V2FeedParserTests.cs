@@ -190,9 +190,8 @@ namespace NuGet.Protocol.Tests
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
-            var searchFilter = new SearchFilter()
+            var searchFilter = new SearchFilter(includePrerelease: false)
             {
-                IncludePrerelease = false,
                 SupportedFrameworks = new string[] { "net40-Client" }
             };
 
@@ -223,6 +222,41 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
+        public async Task V2FeedParser_Search_OrderById()
+        {
+            // Arrange
+            var serviceAddress = TestUtility.CreateServiceAddress();
+
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "Search()?$orderby=Id&searchTerm=''&targetFramework=''&includePrerelease=false&$skip=0&$top=5",
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.SearchOrderById.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
+
+            V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
+            var searchFilter = new SearchFilter(includePrerelease: false, filter: null)
+            {
+                OrderBy = SearchOrderBy.Id
+            };
+
+            // Act
+            var packages = await parser.Search(
+                searchTerm: "",
+                filters: searchFilter,
+                skip: 0,
+                take: 5,
+                log: NullLogger.Instance,
+                token: CancellationToken.None);
+
+            // Assert
+            var package = packages.FirstOrDefault();
+            Assert.NotNull(package);
+            Assert.Equal("NuGet.Client", package.Id);
+            Assert.Equal(5, packages.Count);
+        }
+
+        [Fact]
         public async Task V2FeedParser_SearchEncoding()
         {
             // Arrange
@@ -236,9 +270,8 @@ namespace NuGet.Protocol.Tests
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
-            var searchFilter = new SearchFilter()
+            var searchFilter = new SearchFilter(includePrerelease: false)
             {
-                IncludePrerelease = false,
                 SupportedFrameworks = new string[] { "portable-net45+win8" }
             };
 
@@ -265,9 +298,8 @@ namespace NuGet.Protocol.Tests
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
-            var searchFilter = new SearchFilter()
+            var searchFilter = new SearchFilter(includePrerelease: false)
             {
-                IncludePrerelease = false,
                 SupportedFrameworks = new string[] { "net40-Client" }
             };
 
@@ -292,9 +324,8 @@ namespace NuGet.Protocol.Tests
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
-            var searchFilter = new SearchFilter()
+            var searchFilter = new SearchFilter(includePrerelease: false)
             {
-                IncludePrerelease = false,
                 SupportedFrameworks = new string[] { "net40-Client" }
             };
 
@@ -327,9 +358,8 @@ namespace NuGet.Protocol.Tests
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
-            var searchFilter = new SearchFilter()
+            var searchFilter = new SearchFilter(includePrerelease: false)
             {
-                IncludePrerelease = false,
                 SupportedFrameworks = new string[] { "net40-Client" }
             };
 
@@ -650,9 +680,8 @@ namespace NuGet.Protocol.Tests
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
             V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
-            var searchFilter = new SearchFilter()
+            var searchFilter = new SearchFilter(includePrerelease: false)
             {
-                IncludePrerelease = false,
                 SupportedFrameworks = new string[]
                 {
                     ".NetPortable,Version=v4.5,Profile=Profile111",
