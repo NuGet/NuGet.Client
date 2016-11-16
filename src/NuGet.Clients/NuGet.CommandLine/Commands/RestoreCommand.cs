@@ -442,9 +442,10 @@ namespace NuGet.CommandLine
                     throw new InvalidOperationException(message);
                 }
             }
-            await DetermineInputsFromMSBuildAsync(packageRestoreInputs);
             // Run inputs through msbuild to determine the
             // correct type and find dependencies as needed.
+            await DetermineInputsFromMSBuildAsync(packageRestoreInputs);
+
             return packageRestoreInputs;
         }
 
