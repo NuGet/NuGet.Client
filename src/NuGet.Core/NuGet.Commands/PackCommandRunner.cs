@@ -63,7 +63,7 @@ namespace NuGet.Commands
 
         private readonly HashSet<string> _excludes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        public bool GenerateNuGetPackage { get; set; }
+        public bool GenerateNugetPackage { get; set; }
         public IEnumerable<IPackageRule> Rules { get; set; }
 
         public PackCommandRunner(PackArgs packArgs, CreateProjectFactory createProjectFactory, PackageBuilder packageBuilder) : this(packArgs, createProjectFactory)
@@ -76,7 +76,7 @@ namespace NuGet.Commands
             this._createProjectFactory = createProjectFactory;
             this._packArgs = packArgs;
             Rules = DefaultPackageRuleSet.Rules;
-            GenerateNuGetPackage = true;
+            GenerateNugetPackage = true;
         }
 
         public void BuildPackage()
@@ -749,7 +749,7 @@ namespace NuGet.Commands
             InitCommonPackageBuilderProperties(mainPackageBuilder);
 
             // Build the main package
-            if (GenerateNuGetPackage)
+            if (GenerateNugetPackage)
             {
                 PackageArchiveReader package = BuildPackage(mainPackageBuilder);
 
@@ -785,7 +785,7 @@ namespace NuGet.Commands
 
                 InitCommonPackageBuilderProperties(symbolsBuilder);
 
-                if (GenerateNuGetPackage)
+                if (GenerateNugetPackage)
                 {
                     PackageArchiveReader symbolsPackage = BuildPackage(symbolsBuilder, outputPath);
                     return symbolsPackage;

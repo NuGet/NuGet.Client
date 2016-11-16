@@ -141,7 +141,7 @@ namespace NuGet.Build.Tasks.Pack
                 MSBuildProjectFactory.ProjectCreator,
                 packageBuilder);
 
-            runner.GenerateNuGetPackage = request.ContinuePackingAfterGeneratingNuspec;
+            runner.GenerateNugetPackage = request.ContinuePackingAfterGeneratingNuspec;
 
             return runner;
         }
