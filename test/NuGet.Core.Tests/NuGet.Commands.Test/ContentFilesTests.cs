@@ -676,7 +676,9 @@ namespace NuGet.Commands.Test
 
                 var fromDisk = format.Read(request.LockFilePath);
 
-                fromDisk.Targets.Single()
+                fromDisk
+                    .Targets
+                    .Single()
                     .Libraries
                     .Single()
                     .ContentFiles
@@ -685,7 +687,6 @@ namespace NuGet.Commands.Test
 
                 // Assert
                 Assert.False(fromDisk.Equals(result.LockFile));
-                Assert.NotEqual(fromDisk.GetHashCode(), result.LockFile.GetHashCode());
             }
         }
 

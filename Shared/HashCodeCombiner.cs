@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NuGet.Shared
 {
@@ -82,7 +83,7 @@ namespace NuGet.Shared
         {
             if (dictionary != null)
             {
-                foreach (var pair in dictionary)
+                foreach (var pair in dictionary.OrderBy(x => x.Key))
                 {
                     AddObject(pair.Key);
                     AddObject(pair.Value);
