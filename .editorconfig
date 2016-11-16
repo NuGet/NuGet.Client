@@ -14,7 +14,7 @@ trim_trailing_whitespace = true
 indent_size = 4
 
 ; All XML-based file formats
-[*.{csproj,props,targets,nuspec,xml,resx,config}]
+[*.{config,csproj,nuspec,props,resx,targets,xaml,xml}]
 indent_size = 2
 
 [*.{json}]
