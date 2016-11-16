@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Versioning;
@@ -148,7 +147,7 @@ namespace NuGet.ProjectModel.Test
                 }
             };
 
-            var packageSpec = new PackageSpec(new JObject())
+            var packageSpec = new PackageSpec()
             {
                 Dependencies = new List<LibraryDependency>(),
                 Tools = new List<ToolDependency>
@@ -185,7 +184,7 @@ namespace NuGet.ProjectModel.Test
                 }
             };
 
-            var packageSpec = new PackageSpec(new JObject())
+            var packageSpec = new PackageSpec()
             {
                 Dependencies = new List<LibraryDependency>(),
                 Tools = new List<ToolDependency>
@@ -235,7 +234,7 @@ namespace NuGet.ProjectModel.Test
                 }
             };
 
-            var packageSpec = new PackageSpec(new JObject())
+            var packageSpec = new PackageSpec()
             {
                 Dependencies = new List<LibraryDependency>(),
                 Tools = new List<ToolDependency>
@@ -275,7 +274,7 @@ namespace NuGet.ProjectModel.Test
                 }
             };
 
-            var packageSpec = new PackageSpec(new JObject())
+            var packageSpec = new PackageSpec()
             {
                 Dependencies = new List<LibraryDependency>(),
                 Tools = new List<ToolDependency>
@@ -316,7 +315,7 @@ namespace NuGet.ProjectModel.Test
                 }
             };
 
-            var packageSpec = new PackageSpec(new JObject())
+            var packageSpec = new PackageSpec()
             {
                 Dependencies = new List<LibraryDependency>(),
                 Tools = new List<ToolDependency>

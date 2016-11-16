@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
-using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.DependencyResolver;
@@ -23,7 +22,7 @@ using Xunit;
 
 namespace NuGet.Commands.Test
 {
-    public class OriginalCaseGlobalPackagesFolderTests
+    public class OriginalCaseGlobalPackageFolderTests
     {
         [Fact]
         public async Task OriginalCaseGlobalPackagesFolder_WhenPackageMustComeFromProvider_ConvertsPackages()
@@ -214,7 +213,7 @@ namespace NuGet.Commands.Test
         private static RestoreRequest GetRestoreRequest(string packagesDirectory, TestLogger logger, params string[] fallbackDirectories)
         {
             return new TestRestoreRequest(
-                new PackageSpec(new JObject()),
+                new PackageSpec(),
                 Enumerable.Empty<PackageSource>(),
                 packagesDirectory,
                 fallbackDirectories,

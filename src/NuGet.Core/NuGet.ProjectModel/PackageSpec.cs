@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using Newtonsoft.Json.Linq;
 using NuGet.LibraryModel;
 using NuGet.RuntimeModel;
 using NuGet.Shared;
@@ -22,16 +21,12 @@ namespace NuGet.ProjectModel
         public static readonly string PackageSpecFileName = "project.json";
 
         public PackageSpec(IList<TargetFrameworkInformation> frameworks)
-            : this(new JObject())
         {
             TargetFrameworks = frameworks;
-            Properties = new JObject();
         }
 
-        public PackageSpec(JObject rawProperties)
+        public PackageSpec() : this(new List<TargetFrameworkInformation>())
         {
-            TargetFrameworks = new List<TargetFrameworkInformation>();
-            Properties = rawProperties;
         }
 
         public string FilePath { get; set; }
@@ -109,12 +104,6 @@ namespace NuGet.ProjectModel
         /// </summary>
         /// <remarks>Optional. This is normally set for internal use only.</remarks>
         public ProjectRestoreMetadata RestoreMetadata { get; set; }
-
-        /// <summary>
-        /// Gets a list of all properties found in the package spec, including
-        /// those not recognized by the parser.
-        /// </summary>
-        public JObject Properties { get; }
 
         public override int GetHashCode()
         {

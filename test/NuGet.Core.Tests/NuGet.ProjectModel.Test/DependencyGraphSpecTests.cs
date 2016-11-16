@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Test.Utility;
-using Xunit;
 using NuGet.Versioning;
-using System.IO;
+using Xunit;
 
 namespace NuGet.ProjectModel.Test
 {
@@ -345,9 +345,9 @@ namespace NuGet.ProjectModel.Test
             dgSpec.AddRestore("a");
             dgSpec.AddRestore("c");
 
-            dgSpec.AddProject(new PackageSpec(rawProperties: null) { RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = "b" } });
-            dgSpec.AddProject(new PackageSpec(rawProperties: null) { RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = "a" } });
-            dgSpec.AddProject(new PackageSpec(rawProperties: null) { RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = "c" } });
+            dgSpec.AddProject(new PackageSpec() { RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = "b" } });
+            dgSpec.AddProject(new PackageSpec() { RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = "a" } });
+            dgSpec.AddProject(new PackageSpec() { RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = "c" } });
 
             return dgSpec;
         }
