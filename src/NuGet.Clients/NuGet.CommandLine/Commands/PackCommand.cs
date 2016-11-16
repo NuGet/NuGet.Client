@@ -89,7 +89,7 @@ namespace NuGet.CommandLine
             packArgs.Arguments = Arguments;
             packArgs.OutputDirectory = OutputDirectory;
             packArgs.BasePath = BasePath;
-            packArgs.MsBuildDirectory = MsBuildUtility.GetMsbuildDirectoryFromMsbuildPath(MSBuildPath, MSBuildVersion, Console);
+            packArgs.MsBuildDirectory = MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(MSBuildPath, MSBuildVersion, Console);
 
             // Get the input file
             packArgs.Path = PackCommandRunner.GetInputFile(packArgs);

@@ -66,7 +66,7 @@ namespace NuGet.CommandLine
 
             var restoreSummaries = new List<RestoreSummary>();
 
-            _msbuildDirectory = MsBuildUtility.GetMsbuildDirectoryFromMsbuildPath(MSBuildPath, MSBuildVersion, Console);
+            _msbuildDirectory = MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(MSBuildPath, MSBuildVersion, Console);
 
             if (!string.IsNullOrEmpty(PackagesDirectory))
             {
