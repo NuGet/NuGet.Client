@@ -533,6 +533,42 @@ Function Invoke-DotnetPack {
     }
 }
 
+Function Invoke-DotnetBuild {
+    [CmdletBinding()]
+    param(
+        [parameter(ValueFromPipeline=$True, Mandatory=$True, Position=0)]
+        [string[]]$XProjectLocations,
+        [Alias('config')]
+        [string]$Configuration = $DefaultConfiguration
+    )
+    Begin {
+        $BuildNumber = Format-BuildNumber $BuildNumber
+
+        # Setting the Dotnet AssemblyFileVersion
+        $env:DOTNET_ASSEMBLY_FILE_VERSION=$BuildNumber
+    }
+    Process {
+        $XProjectLocations | % {
+            $projectName = Split-Path $_ -Leaf
+
+            $opts = @()
+
+            if ($VerbosePreference) {
+                $opts += '-v'
+            }
+
+            $opts += 'build', $_, '--configuration', $Configuration
+
+            Trace-Log "$DotNetExe $opts"
+
+            & $DotNetExe $opts
+            if (-not $?) {
+                Error-Log "Build failed @""$_"". Code: $LASTEXITCODE"
+            }
+        }
+    }
+}
+
 Function Publish-CoreProject {
     [CmdletBinding()]
     param(
@@ -612,14 +648,6 @@ Function Pack-NuGetBuildTasksPack {
         [switch]$CI
     )
 
-    if (Test-Path $Nupkgs) {
-        Remove-Item $Nupkgs\NuGet.Build.Tasks.Pack*
-    }
-
-    if (Test-Path $ReleaseNupkgs) {
-        Remove-Item $ReleaseNupkgs\NuGet.Build.Tasks.Pack*
-    }
-
     $prereleaseNupkgVersion = "$PackageReleaseVersion-$ReleaseLabel-$BuildNumber"
     if ($ReleaseLabel -Ne 'rtm') {
         $releaseNupkgVersion = "$PackageReleaseVersion-$ReleaseLabel"
@@ -627,7 +655,7 @@ Function Pack-NuGetBuildTasksPack {
         $releaseNupkgVersion = "$PackageReleaseVersion"
     }
 
-    $PackProjectLocation = Join-Path $NuGetClientRoot src\NuGet.Core\NuGet.Build.Tasks.Pack
+    $PackProjectLocation = Join-Path $NuGetClientRoot src\NuGet.Core\NuGet.Build.Tasks.Pack.Library
     $PackBuildTaskNuspecLocation = Join-Path $PackProjectLocation NuGet.Build.Tasks.Pack.nuspec
 
     New-NuGetPackage `
