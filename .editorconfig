@@ -6,16 +6,22 @@
 root = true
 
 [*]
-end_of_line = CRLF
-
-[*.{cs,props,targets,nuspec}]
 indent_style = space
+charset = utf-8
+trim_trailing_whitespace = true
+
+[*.{cs}]
 indent_size = 4
 
-[*.{config}]
-indent_style = space
+; All XML-based file formats
+[*.{csproj,props,targets,nuspec,xml,resx,config}]
 indent_size = 2
 
-[*.{csproj,xml,resx}]
-indent_style = space
+[*.{json}]
 indent_size = 2
+
+[*.{ps1}]
+indent_size = 4
+
+[*.{sh}]
+indent_size = 4
