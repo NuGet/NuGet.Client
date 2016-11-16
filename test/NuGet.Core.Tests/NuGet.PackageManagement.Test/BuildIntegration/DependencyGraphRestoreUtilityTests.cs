@@ -65,7 +65,7 @@ namespace NuGet.PackageManagement.Test
 
                 var pathContext = NuGetPathContext.Create(NullSettings.Instance);
 
-                int oldHash = restoreContext.SolutionSpecHash;
+                var oldHash = restoreContext.SolutionSpecHash;
 
                 var newContext = new DependencyGraphCacheContext(logger);
 

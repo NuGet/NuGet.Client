@@ -13,7 +13,7 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     internal sealed class SolutionRestoreJobContext
     {
-        public int DependencyGraphProjectCacheHash { get; set; } = Int32.MinValue;
+        public string DependencyGraphProjectCacheHash { get; set; }
 
         public INuGetProjectContext NuGetProjectContext { get; } = new EmptyNuGetProjectContext();
     }

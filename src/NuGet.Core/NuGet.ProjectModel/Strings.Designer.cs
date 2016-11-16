@@ -60,6 +60,15 @@ namespace NuGet.ProjectModel {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Argument cannot be null or empty..
+        /// </summary>
+        public static string ArgumentNullOrEmpty {
+            get {
+                return ResourceManager.GetString("ArgumentNullOrEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Invalid dependency target value &apos;{0}&apos;..
         /// </summary>
         public static string InvalidDependencyTarget {

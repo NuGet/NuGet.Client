@@ -1,0 +1,131 @@
+{
+  "title": "title",
+  "version": "1.2.3",
+  "description": "description",
+  "authors": [
+    "b",
+    "a",
+    "c"
+  ],
+  "copyright": "copyright",
+  "language": "language",
+  "contentFiles": [
+    "b",
+    "a",
+    "c"
+  ],
+  "packInclude": {
+    "a": "e",
+    "b": "d",
+    "c": "f"
+  },
+  "packOptions": {
+    "owners": [
+      "b",
+      "a",
+      "c"
+    ],
+    "tags": [
+      "b",
+      "a",
+      "c"
+    ],
+    "projectUrl": "projectUrl",
+    "iconUrl": "iconUrl",
+    "summary": "summary",
+    "releaseNotes": "releaseNotes",
+    "licenseUrl": "licenseUrl",
+    "requireLicenseAcceptance": "True"
+  },
+  "restore": {
+    "projectUniqueName": "projectUniqueName",
+    "projectName": "projectName",
+    "projectPath": "projectPath",
+    "projectJsonPath": "projectJsonPath",
+    "packagesPath": "packagesPath",
+    "outputPath": "outputPath",
+    "outputType": "NETCore",
+    "crossTargeting": "True",
+    "fallbackFolders": [
+      "b",
+      "a",
+      "c"
+    ],
+    "originalTargetFrameworks": [
+      "b",
+      "a",
+      "c"
+    ],
+    "sources": {
+      "source": {}
+    },
+    "frameworks": {
+      "frameworkidentifier123-frameworkprofile": {
+        "projectReferences": {}
+      }
+    }
+  },
+  "scripts": {
+    "a": [
+      "b",
+      "a",
+      "c"
+    ],
+    "b": [
+      "b",
+      "a",
+      "c"
+    ],
+    "c": [
+      "b",
+      "a",
+      "c"
+    ]
+  },
+  "dependencies": {
+    "range": {
+      "include": "Build",
+      "target": "Package",
+      "version": "[1.2.3, )"
+    }
+  },
+  "tools": {
+    "range": {
+      "version": "[1.2.3, )",
+      "imports": [
+        "frameworkidentifier123-frameworkprofile"
+      ]
+    }
+  },
+  "frameworks": {
+    "frameworkidentifier123-frameworkprofile": {
+      "dependencies": {
+        "range": {
+          "include": "Build",
+          "target": "Package",
+          "version": "[1.2.3, )"
+        }
+      },
+      "imports": [
+        "frameworkidentifier123-frameworkprofile"
+      ]
+    }
+  },
+  "runtimes": {
+    "runtimeIdentifier": {
+      "#import": [
+        "b",
+        "a",
+        "c"
+      ],
+      "id": {
+        "id": "[1.2.3, )"
+      }
+    }
+  },
+  "supports": {
+    "name": {
+      "frameworkidentifier123-frameworkprofile": "runtimeIdentifier"
+    }
+  }
+}

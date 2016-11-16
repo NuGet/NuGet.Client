@@ -69,7 +69,7 @@ namespace NuGet.PackageManagement
 
             // Cache spec
             context.SolutionSpec = dgSpec;
-            context.SolutionSpecHash = dgSpec.GetHashCode();
+            context.SolutionSpecHash = dgSpec.GetHash();
 
             // Check if there are actual projects to restore before running.
             if (dgSpec.Restore.Count > 0)
@@ -257,7 +257,7 @@ namespace NuGet.PackageManagement
             bool forceRestore,
             INuGetPathContext pathContext,
             DependencyGraphCacheContext cacheContext,
-            int oldDependencyGraphSpecHash)
+            string oldDependencyGraphSpecHash)
         {
             var projects = solutionManager.GetNuGetProjects().OfType<IDependencyGraphProject>().ToArray();
 
@@ -269,7 +269,7 @@ namespace NuGet.PackageManagement
                 return false;
             }
 
-            var newDependencyGraphSpecHash = solutionDgSpec.GetHashCode();
+            var newDependencyGraphSpecHash = solutionDgSpec.GetHash();
             cacheContext.SolutionSpec = solutionDgSpec;
             cacheContext.SolutionSpecHash = newDependencyGraphSpecHash;
 

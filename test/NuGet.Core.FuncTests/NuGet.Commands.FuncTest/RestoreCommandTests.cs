@@ -91,7 +91,7 @@ namespace NuGet.Commands.FuncTest
                 var referenceSpecPath = Path.Combine(projectDir, "ReferencedProject", "project.json");
                 var referenceSpec = JsonPackageSpecReader.GetPackageSpec(BasicConfigWithNet46.ToString(), "ReferencedProject", referenceSpecPath);
                 referenceSpec.Version = new NuGetVersion("2.0.0-BETA1");
-                JsonPackageSpecWriter.WritePackageSpec(referenceSpec, referenceSpecPath);
+                PackageSpecWriter.WriteToFile(referenceSpec, referenceSpecPath);
 
                 var logger = new TestLogger();
 
@@ -154,7 +154,7 @@ namespace NuGet.Commands.FuncTest
                 Directory.CreateDirectory(Path.Combine(projectDir, "ReferencedProject"));
                 var referenceSpecPath = Path.Combine(projectDir, "ReferencedProject", "project.json");
                 var referenceSpec = JsonPackageSpecReader.GetPackageSpec(BasicConfigWithNet46.ToString(), "ReferencedProject", referenceSpecPath);
-                JsonPackageSpecWriter.WritePackageSpec(referenceSpec, referenceSpecPath);
+                PackageSpecWriter.WriteToFile(referenceSpec, referenceSpecPath);
 
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(projectSpec, sources, packagesDir, logger);

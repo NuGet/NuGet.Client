@@ -120,10 +120,11 @@ namespace NuGet.ProjectModel
         /// </summary>
         public PackageSpec Clone()
         {
-            var copy = new JObject();
-            JsonPackageSpecWriter.WritePackageSpec(this, copy);
+            var writer = new JsonObjectWriter();
+            PackageSpecWriter.Write(this, writer);
+            var json = JObject.Parse(writer.GetJson());
 
-            var spec = JsonPackageSpecReader.GetPackageSpec(copy);
+            var spec = JsonPackageSpecReader.GetPackageSpec(json);
             spec.Name = this.Name;
             spec.FilePath = this.FilePath;
 
