@@ -302,6 +302,9 @@ namespace NuGet.Commands
 
             PopulatePackageFolders(localRepositories.Select(repo => repo.RepositoryRoot).Distinct(), lockFile);
 
+            // Add the original package spec to the lock file.
+            lockFile.PackageSpec = project;
+
             return lockFile;
         }
 

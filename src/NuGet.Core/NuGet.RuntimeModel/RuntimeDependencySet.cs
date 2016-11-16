@@ -47,7 +47,7 @@ namespace NuGet.RuntimeModel
         {
             var combiner = new HashCodeCombiner();
             combiner.AddObject(Id);
-            combiner.AddObject(Dependencies);
+            combiner.AddDictionary(Dependencies);
             return combiner.CombinedHash;
         }
 

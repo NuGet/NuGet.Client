@@ -456,6 +456,8 @@ Function Restore-XProjects {
             $opts = 'restore', $_
             if (-not $VerbosePreference) {
                 $opts += '--verbosity', 'minimal'
+            } else {
+                $opts += '--verbosity', 'information'
             }
 
             Trace-Log "$DotNetExe $opts"

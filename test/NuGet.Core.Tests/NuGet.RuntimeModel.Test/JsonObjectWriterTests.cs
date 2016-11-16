@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace NuGet.RuntimeModel.Test
@@ -49,6 +50,38 @@ namespace NuGet.RuntimeModel.Test
             var actualJson = _writer.GetJson();
 
             Assert.Equal(expectedJson, actualJson);
+        }
+
+        [Fact]
+        public void GetJObject()
+        {
+            _writer.WriteNameValue("a", 1);
+            _writer.WriteNameValue("B", "C");
+            _writer.WriteNameArray("d", new[] { "e", "f" });
+
+            _writer.WriteObjectStart("g");
+            _writer.WriteNameValue("h", "i");
+            _writer.WriteObjectEnd();
+
+            var expectedJson = new JObject();
+
+            expectedJson["a"] = 1;
+            expectedJson["B"] = "C";
+            expectedJson["d"] = new JArray("e", "f");
+            expectedJson["g"] = new JObject();
+            expectedJson["g"]["h"] = "i";
+
+            var actualJson = _writer.GetJObject();
+
+            Assert.Equal(expectedJson, actualJson);
+        }
+
+        [Fact]
+        public void GetJObject_MakesWriterReadOnly()
+        {
+            _writer.GetJObject();
+
+            Assert.Throws<InvalidOperationException>(() => _writer.WriteNameValue("a", 1));
         }
 
         [Fact]

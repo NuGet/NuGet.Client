@@ -315,13 +315,16 @@ namespace NuGet.ProjectModel
                 // Remove all framework assemblies
                 dependencies.RemoveAll(d => d.LibraryRange.TypeConstraint == LibraryDependencyTarget.Reference);
 
-                // Disallow projects (resolved by directory) for non-xproj msbuild projects.
-                foreach (var dependency in dependencies)
+                for (var i = 0; i < dependencies.Count; i++)
                 {
+                    // Clone the library dependency so we can safely modify it. The instance cloned here is from the
+                    // original package spec, which should not be modified.
+                    dependencies[i] = dependencies[i].Clone();
+                    
                     // Remove "project" from the allowed types for this dependency
                     // This will require that projects referenced by an msbuild project
                     // must be external projects.
-                    dependency.LibraryRange.TypeConstraint &= ~LibraryDependencyTarget.Project;
+                    dependencies[i].LibraryRange.TypeConstraint &= ~LibraryDependencyTarget.Project;
                 }
             }
 

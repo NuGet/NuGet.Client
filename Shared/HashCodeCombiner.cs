@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 
 namespace NuGet.Shared
@@ -54,6 +55,38 @@ namespace NuGet.Shared
             if (o != null)
             {
                 AddInt32(o.GetHashCode());
+            }
+        }
+
+        internal void AddStringIgnoreCase(string s)
+        {
+            CheckInitialized();
+            if (s != null)
+            {
+                AddObject(s, StringComparer.OrdinalIgnoreCase);
+            }
+        }
+
+        internal void AddSequence<T>(IEnumerable<T> sequence)
+        {
+            if (sequence != null)
+            {
+                foreach (var item in sequence)
+                {
+                    AddObject(item);
+                }
+            }
+        }
+
+        internal void AddDictionary<TKey, TValue>(IEnumerable<KeyValuePair<TKey, TValue>> dictionary)
+        {
+            if (dictionary != null)
+            {
+                foreach (var pair in dictionary)
+                {
+                    AddObject(pair.Key);
+                    AddObject(pair.Value);
+                }
             }
         }
 
