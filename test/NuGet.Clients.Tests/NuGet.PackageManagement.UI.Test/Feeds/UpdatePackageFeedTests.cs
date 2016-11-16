@@ -61,7 +61,7 @@ namespace NuGet.PackageManagement.UI.Test
 
             // Act
             var packages = await _target.GetPackagesWithUpdatesAsync(
-                "fake", new SearchFilter(), CancellationToken.None);
+                "fake", new SearchFilter(includePrerelease: false), CancellationToken.None);
 
             // Assert
             Assert.Single(packages);
@@ -88,7 +88,7 @@ namespace NuGet.PackageManagement.UI.Test
 
             // Act
             var packages = await _target.GetPackagesWithUpdatesAsync(
-                "fake", new SearchFilter(), CancellationToken.None);
+                "fake", new SearchFilter(includePrerelease: false), CancellationToken.None);
 
             // Assert
             Assert.Single(packages);
@@ -119,7 +119,7 @@ namespace NuGet.PackageManagement.UI.Test
 
             // Act
             var packages = await _target.GetPackagesWithUpdatesAsync(
-                "fake", new SearchFilter(), CancellationToken.None);
+                "fake", new SearchFilter(includePrerelease: false), CancellationToken.None);
 
             // Assert
             // Should retrieve a single update item with the lowest version and full list of available versions
@@ -151,7 +151,7 @@ namespace NuGet.PackageManagement.UI.Test
 
             // Act
             var packages = await _target.GetPackagesWithUpdatesAsync(
-                "fake", new SearchFilter(), CancellationToken.None);
+                "fake", new SearchFilter(includePrerelease: false), CancellationToken.None);
 
             // Assert
             // Should retrieve a single update item with the lowest version and full list of available versions
@@ -183,7 +183,7 @@ namespace NuGet.PackageManagement.UI.Test
 
             // Act
             var packages = await _target.GetPackagesWithUpdatesAsync(
-                "fake", new SearchFilter(), CancellationToken.None);
+                "fake", new SearchFilter(includePrerelease: false), CancellationToken.None);
 
             // Assert
             // Should retrieve a single update item with the lowest version and full list of available versions
@@ -212,7 +212,7 @@ namespace NuGet.PackageManagement.UI.Test
 
             // Act
             var packages = await _target.GetPackagesWithUpdatesAsync(
-                "fake", new SearchFilter(), CancellationToken.None);
+                "fake", new SearchFilter(includePrerelease: false), CancellationToken.None);
 
             // Assert
             Assert.Empty(packages);
