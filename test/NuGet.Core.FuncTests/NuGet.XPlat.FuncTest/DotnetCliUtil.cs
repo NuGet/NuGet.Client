@@ -151,13 +151,13 @@ namespace NuGet.XPlat.FuncTest
 
             if (dir != null)
             {
-                var xplatDll = Path.Combine(dir.FullName, XPlatBuildRelativePath);
+                var xplatDll = Path.Combine(dir.FullName, XPlatPublishRelativePath);
                 if (File.Exists(xplatDll))
                 {
                     return xplatDll;
                 }
 
-                xplatDll = Path.Combine(dir.FullName, XPlatPublishRelativePath);
+                xplatDll = Path.Combine(dir.FullName, XPlatBuildRelativePath);
                 if (File.Exists(xplatDll))
                 {
                     return xplatDll;

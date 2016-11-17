@@ -11,6 +11,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Commands.Test;
 using NuGet.Configuration;
 using NuGet.ProjectModel;
+using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -120,6 +121,7 @@ namespace NuGet.Commands.FuncTest
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
+            using (var cacheContext = new SourceCacheContext())
             {
                 var configJson = JObject.Parse(@"{
                   ""dependencies"": {
@@ -145,7 +147,7 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
+                var request = new TestRestoreRequest(spec, sources, packagesDir, cacheContext, logger)
                 {
                     XmlDocFileSaveMode = Packaging.XmlDocFileSaveMode.None
                 };
@@ -177,6 +179,7 @@ namespace NuGet.Commands.FuncTest
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
+            using (var cacheContext = new SourceCacheContext())
             {
                 var configJson = JObject.Parse(@"{
                 ""runtimes"": {
@@ -196,7 +199,7 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, cacheContext, logger);
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
@@ -266,6 +269,7 @@ namespace NuGet.Commands.FuncTest
 
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
+            using (var cacheContext = new SourceCacheContext())
             {
                 var configJson = JObject.Parse(@"{
                   ""dependencies"": {
@@ -288,7 +292,7 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
+                var request = new TestRestoreRequest(spec, sources, packagesDir, cacheContext, logger);
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
