@@ -5,9 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Text;
 using NuGet.Test.Utility;
 using Xunit;
+using System.Text;
+using NuGet.Common;
 
 namespace NuGet.CommandLine.Test
 {
@@ -63,6 +64,14 @@ namespace NuGet.CommandLine.Test
             var expected = "System.AggregateException: One or more errors occurred. ---> " + 
                            "System.Net.WebException: The remote name could not be resolved: " +
                            $"'{hostName}'";
+
+            if (RuntimeEnvironmentHelper.IsMono)
+            {
+                expected = "System.AggregateException: One or more errors occurred. ---> " +
+                           "System.Net.WebException: Error: NameResolutionFailure";
+            }
+
+
             var args = new[] { "list", "-Source", "https://" + hostName + "/" };
 
             // Act
@@ -88,6 +97,11 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
             var hostName = Guid.NewGuid().ToString();
             var expected = $"The remote name could not be resolved: '{hostName}'";
+
+            if (RuntimeEnvironmentHelper.IsMono)
+            {
+                expected = "NameResolutionFailure";
+            }
             var args = new[] { "list", "-Source", "https://" + hostName + "/" };
 
             // Act
@@ -129,7 +143,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(0, result.Item1);
                 var output = result.Item2;
-                Assert.Equal("testPackage1 1.1.0\r\ntestPackage2 2.0.0\r\n", output);
+                Assert.Equal($"testPackage1 1.1.0{Environment.NewLine}testPackage2 2.0.0{Environment.NewLine}", output);
             }
         }
 
@@ -206,7 +220,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(0, result.Item1);
                 var output = result.Item2;
-                Assert.Equal("testPackage1 1.1.0\r\ntestPackage2 2.0.0\r\n", output);
+                Assert.Equal($"testPackage1 1.1.0{Environment.NewLine}testPackage2 2.0.0{Environment.NewLine}", output);
             }
         }
 
@@ -821,7 +835,7 @@ namespace NuGet.CommandLine.Test
                     Assert.True(result.Item1 != 0, result.Item2 + " " + result.Item3);
 
                     Assert.True(
-                        result.Item3.Contains("Response status code does not indicate success: 404 (Not Found)."),
+                        result.Item3.Contains("404 (Not Found)"),
                         "Expected error message not found in " + result.Item3
                         );
                 }
@@ -881,11 +895,22 @@ namespace NuGet.CommandLine.Test
                 result.Item1 != 0,
                 "The run did not fail as desired. Simply got this output:" + result.Item2);
 
-            Assert.True(
-                result.Item3.Contains(
-                    "The remote name could not be resolved: 'invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org'"),
-                "Expected error message not found in " + result.Item3
-                );
+            if (RuntimeEnvironmentHelper.IsMono)
+            {
+                Assert.True(
+               result.Item3.Contains(
+                   "NameResolutionFailure"),
+               "Expected error message not found in " + result.Item3
+               );
+            }
+            else
+            {
+                Assert.True(
+                    result.Item3.Contains(
+                        "The remote name could not be resolved: 'invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org'"),
+                    "Expected error message not found in " + result.Item3
+                    );
+            }
         }
 
         [Theory]
@@ -937,7 +962,7 @@ namespace NuGet.CommandLine.Test
                 "The run did not fail as desired. Simply got this output:" + result.Item2);
 
             Assert.True(
-                result.Item3.Contains("An error occurred while sending the request."),
+                result.Item3.Contains("Unable to load the service index for source https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org/v3/index.json."),
                 "Expected error message not found in " + result.Item3
                 );
         }
@@ -964,7 +989,7 @@ namespace NuGet.CommandLine.Test
                 "The run did not fail as desired. Simply got this output:" + result.Item2);
 
             Assert.True(
-                result.Item3.Contains("Response status code does not indicate success: 400 (Bad Request)."),
+                result.Item3.Contains("400 (Bad Request)"),
                 "Expected error message not found in " + result.Item3
                 );
         }

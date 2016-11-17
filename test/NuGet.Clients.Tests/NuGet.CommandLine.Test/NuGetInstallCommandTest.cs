@@ -8,7 +8,6 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using NuGet.Test.Utility;
-using Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -46,8 +45,8 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.Equal(0, r.Item1);
-                var packageADir = Path.Combine(workingPath, @"outputDir\packageA");
-                var packageBDir = Path.Combine(workingPath, @"outputDir\packageB");
+                var packageADir = Path.Combine(workingPath, "outputDir", "packageA");
+                var packageBDir = Path.Combine(workingPath, "outputDir", "packageB");
                 Assert.True(Directory.Exists(packageADir));
                 Assert.True(Directory.Exists(packageBDir));
             }
@@ -123,8 +122,8 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.Equal(0, r.Item1);
-                var packageFileA = Path.Combine(workingPath, @"outputDir\packageA.1.1.0\packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(workingPath, @"outputDir\packageB.2.2.0\packageB.2.2.0.nupkg");
+                var packageFileA = Path.Combine(workingPath, "outputDir", "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(workingPath, "outputDir", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
@@ -169,8 +168,8 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.Equal(0, r.Item1);
-                var packageFileA = Path.Combine(workingPath, @"outputDir\packageA.1.1.0\packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(workingPath, @"outputDir\packageB.2.2.0\packageB.2.2.0.nupkg");
+                var packageFileA = Path.Combine(workingPath, "outputDir", "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(workingPath, "outputDir", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
 
@@ -242,8 +241,8 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.True(0 == r.Item1, $"{r.Item2} {r.Item3}");
-                var packageFileA = Path.Combine(workingPath, @"outputDir\packageA.1.1.0\packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(workingPath, @"outputDir\packageB.2.2.0\packageB.2.2.0.nupkg");
+                var packageFileA = Path.Combine(workingPath, "outputDir", "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(workingPath, "outputDir", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
@@ -297,8 +296,8 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.Equal(0, r.Item1);
-                var packageFileA = Path.Combine(workingPath, @"outputDir\packageA.1.1.0\packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(workingPath, @"outputDir\packageB.2.2.0\packageB.2.2.0.nupkg");
+                var packageFileA = Path.Combine(workingPath, "outputDir", "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(workingPath, "outputDir", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
@@ -326,7 +325,7 @@ namespace NuGet.CommandLine.Test
 
                 var nuspecFile = Path.Combine(
                     outputDirectory,
-                    @"testPackage1.1.1.0\testPackage1.1.1.0.nuspec");
+                    "testPackage1.1.1.0", "testPackage1.1.1.0.nuspec");
 
                 Assert.True(File.Exists(nuspecFile));
                 var nupkgFiles = Directory.GetFiles(outputDirectory, "*.nupkg", SearchOption.AllDirectories);
@@ -356,7 +355,7 @@ namespace NuGet.CommandLine.Test
 
                 var nupkgFile = Path.Combine(
                     outputDirectory,
-                    @"testPackage1.1.1.0\testPackage1.1.1.0.nupkg");
+                    "testPackage1.1.1.0", "testPackage1.1.1.0.nuspec");
 
                 Assert.True(File.Exists(nupkgFile));
                 var nuspecFiles = Directory.GetFiles(outputDirectory, "*.nuspec", SearchOption.AllDirectories);
@@ -386,7 +385,7 @@ namespace NuGet.CommandLine.Test
 
                 var nupkgFile = Path.Combine(
                     outputDirectory,
-                    @"testPackage1.1.1.0\testPackage1.1.1.0.nupkg");
+                    "testPackage1.1.1.0", "testPackage1.1.1.0.nuspec");
                 var nuspecFile = Path.ChangeExtension(nupkgFile, "nuspec");
 
                 Assert.True(File.Exists(nupkgFile));
@@ -463,7 +462,7 @@ namespace NuGet.CommandLine.Test
 
                 var nuspecFile = Path.Combine(
                     outputDirectory,
-                    @"testPackage1.1.1.0\testPackage1.1.1.0.nuspec");
+                    "testPackage1.1.1.0", "testPackage1.1.1.0.nuspec");
 
                 Assert.True(File.Exists(nuspecFile));
                 var nupkgFiles = Directory.GetFiles(outputDirectory, "*.nupkg", SearchOption.AllDirectories);
@@ -523,7 +522,7 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     proj1Directory,
-                    "install " + configFileName + " -Source " + repositoryPath + @" -ConfigFile ..\my.config -RequireConsent -Verbosity detailed",
+                    "install " + configFileName + " -Source " + repositoryPath + $@" -ConfigFile ..{Path.AltDirectorySeparatorChar}my.config -RequireConsent -Verbosity detailed",
                     waitForExit: true);
 
                 // Assert
@@ -588,7 +587,7 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     proj1Directory,
-                    "install " + configFileName + " -Source " + repositoryPath + @" -ConfigFile ..\my.config",
+                    "install " + configFileName + " -Source " + repositoryPath + $@" -ConfigFile ..{Path.AltDirectorySeparatorChar}my.config",
                     waitForExit: true);
 
                 // Assert
@@ -1032,12 +1031,12 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(0, r.Item1);
                 var testTxtFile = Path.Combine(
                     outputDirectory,
-                    @"testPackage1.1.1.0\content\test1.txt");
+                    "testPackage1.1.1.0", "content", "test1.txt");
                 Assert.True(File.Exists(testTxtFile));
 
                 var symbolTxtFile = Path.Combine(
                     outputDirectory,
-                    @"testPackage1.1.1.0\symbol.txt");
+                    "testPackage1.1.1.0", "symbol.txt");
                 Assert.False(File.Exists(symbolTxtFile));
             }
         }
