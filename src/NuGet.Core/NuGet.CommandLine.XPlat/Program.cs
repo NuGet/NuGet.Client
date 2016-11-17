@@ -52,7 +52,7 @@ namespace NuGet.CommandLine.XPlat
             }
 
             var app = new CommandLineApplication();
-#if CORE_CLR
+#if IS_CORECLR
             app.Name = "dotnet nuget";
 #else
             app.Name = "nuget";
