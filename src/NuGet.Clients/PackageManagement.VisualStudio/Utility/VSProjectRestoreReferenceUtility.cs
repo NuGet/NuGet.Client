@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio;
@@ -25,6 +26,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public static async Task<IReadOnlyList<ProjectRestoreReference>> GetDirectProjectReferences(
             EnvDTEProject project,
+            IEnumerable<string> resolvedProjects,
             ILogger log)
         {
             return await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
@@ -47,7 +49,12 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         var reference3 = childReference as Reference3;
 
-                        if (reference3 != null && !reference3.Resolved)
+                        // this will set a reference to be missing if
+                        // 1. reference is null OR
+                        // 2. reference is not resolved which means project is not loaded or assembly not found. OR
+                        // 3. in DPL case, even deferred projects doesn't have this referenced project.
+                        if (reference3 == null || !reference3.Resolved ||
+                            !resolvedProjects.Any(projectName => StringComparer.OrdinalIgnoreCase.Equals(projectName, reference3.Name)))
                         {
                             // Skip missing references and show a warning
                             hasMissingReferences = true;

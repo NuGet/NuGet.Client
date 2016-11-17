@@ -3,12 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -297,6 +299,13 @@ namespace NuGet.PackageManagement
                 return true;
             }
 
+            if (cacheContext.DeferredPackageSpecs.Where(spec => spec.RestoreMetadata.ProjectJsonPath != null).
+                Select(p => IsRestoreRequired(p, pathResolvers, packagesChecked, cacheContext))
+                .Any(r => r == true))
+            {
+                return true;
+            }
+
             return false;
         }
 
@@ -314,6 +323,20 @@ namespace NuGet.PackageManagement
             DependencyGraphCacheContext context)
         {
             var dgSpec = new DependencyGraphSpec();
+
+            foreach (var packageSpec in context.DeferredPackageSpecs)
+            {
+                dgSpec.AddProject(packageSpec);
+
+                if (packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||
+                    packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ||
+                    packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool ||
+                    packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.Standalone)
+                {
+                    dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
+                }
+            }
+
             var projects = solutionManager.GetNuGetProjects().OfType<IDependencyGraphProject>();
 
             foreach (var project in projects)
@@ -361,6 +384,77 @@ namespace NuGet.PackageManagement
             };
 
             return restoreContext;
+        }
+
+        private static bool IsRestoreRequired(
+            PackageSpec packageSpec,
+            IEnumerable<VersionFolderPathResolver> pathResolvers,
+            ISet<PackageIdentity> packagesChecked,
+            DependencyGraphCacheContext context)
+        {
+            var lockFilePath = ProjectJsonPathUtilities.GetLockFilePath(packageSpec.RestoreMetadata.ProjectJsonPath);
+
+            if (!File.Exists(lockFilePath))
+            {
+                // If the lock file does not exist a restore is needed
+                return true;
+            }
+
+            var lockFileFormat = new LockFileFormat();
+            LockFile lockFile;
+            try
+            {
+                lockFile = lockFileFormat.Read(lockFilePath, context.Logger);
+            }
+            catch
+            {
+                // If the lock file is invalid, then restore.
+                return true;
+            }
+
+            // Verify all libraries are on disk
+            var packages = lockFile.Libraries.Where(library => library.Type == LibraryType.Package);
+
+            foreach (var library in packages)
+            {
+                var identity = new PackageIdentity(library.Name, library.Version);
+
+                // Each id/version only needs to be checked once
+                if (packagesChecked.Add(identity))
+                {
+                    var found = false;
+
+                    //  Check each package folder. These need to match the order used for restore.
+                    foreach (var resolver in pathResolvers)
+                    {
+                        // Verify the SHA for each package
+                        var hashPath = resolver.GetHashPath(library.Name, library.Version);
+
+                        if (File.Exists(hashPath))
+                        {
+                            found = true;
+                            var sha512 = File.ReadAllText(hashPath);
+
+                            if (library.Sha512 != sha512)
+                            {
+                                // A package has changed
+                                return true;
+                            }
+
+                            // Skip checking the rest of the package folders
+                            break;
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        // A package is missing
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
     }
 }

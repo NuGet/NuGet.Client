@@ -90,12 +90,6 @@ namespace NuGet.SolutionRestoreManager
                 return;
             }
 
-            // Check if solution is DPL enabled, then don't restore
-            if (SolutionManager.IsSolutionDPLEnabled)
-            {
-                return;
-            }
-
             if (!ShouldRestoreOnBuild)
             {
                 return;

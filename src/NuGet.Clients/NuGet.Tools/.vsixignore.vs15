@@ -52,6 +52,10 @@ Microsoft.VisualStudio.Services.Common.dll
 Microsoft.VisualStudio.Services.WebApi.dll
 Microsoft.VisualStudio.Telemetry.dll
 Microsoft.VisualStudio.Utilities.Internal.dll
+Microsoft.VisualStudio.Workspace.dll
+Microsoft.VisualStudio.Workspace.Extensions.dll
+Microsoft.VisualStudio.Workspace.Extensions.VS.dll
+Microsoft.VisualStudio.Workspace.VSIntegration.Contracts.dll
 Microsoft.WindowsAzure.Configuration.dll
 System.dll
 System.IdentityModel.dll

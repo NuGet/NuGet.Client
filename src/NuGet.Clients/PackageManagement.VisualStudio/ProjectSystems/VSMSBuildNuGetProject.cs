@@ -43,7 +43,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return VSProjectRestoreReferenceUtility.GetDirectProjectReferences(_project, context.Logger);
+            var resolvedProjects = context.DeferredPackageSpecs.Select(project => project.Name);
+            return VSProjectRestoreReferenceUtility.GetDirectProjectReferences(_project, resolvedProjects, context.Logger);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using NuGet.ProjectManagement;
@@ -33,5 +34,17 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Return true if all projects in the solution have been loaded in background.
         /// </summary>
         bool IsSolutionFullyLoaded { get; }
+
+        /// <summary>
+        /// Returns true if solution has any project in deferred state.
+        /// </summary>
+        /// <returns>Deferred projects state.</returns>
+        Task<bool> SolutionHasDeferredProjectsAsync();
+
+        /// <summary>
+        /// Retrieves deferred projects file path from current solution.
+        /// </summary>
+        /// <returns>Deferred prokects file path.</returns>
+        Task<IEnumerable<string>> GetDeferredProjectsFilePathAsync();
     }
 }

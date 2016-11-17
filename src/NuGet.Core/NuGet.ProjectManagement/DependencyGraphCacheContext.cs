@@ -20,6 +20,8 @@ namespace NuGet.ProjectManagement
             Logger = NullLogger.Instance;
         }
 
+        public List<PackageSpec> DeferredPackageSpecs { get; set; } = new List<PackageSpec>();
+
         /// <summary>
         /// Unique name to dg
         /// </summary>

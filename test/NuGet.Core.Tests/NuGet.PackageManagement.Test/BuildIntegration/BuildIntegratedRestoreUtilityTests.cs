@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -199,6 +198,153 @@ namespace NuGet.Test
                     "EntityFramework.5.0.0.nupkg")));
 
                 Assert.True(testLogger.Errors == 0, testLogger.ShowErrors());
+            }
+        }
+
+        [Fact]
+        public async Task BuildIntegratedRestoreUtility_RestoreDeferredProjectLoad()
+        {
+            // Arrange
+            var projectName = "testproj";
+
+            var project1Json = @"
+            {
+              ""version"": ""1.0.0"",
+              ""description"": """",
+              ""authors"": [ ""author"" ],
+              ""tags"": [ """" ],
+              ""projectUrl"": """",
+              ""licenseUrl"": """",
+              ""frameworks"": {
+                ""net45"": {
+                  ""dependencies"": {
+                    ""packageA"": ""1.0.0""
+                  }
+                }
+              }
+            }";
+
+            using (var packageSource = TestDirectory.Create())
+            using (var rootFolder = TestDirectory.Create())
+            {
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
+                    new List<PackageSource>()
+                    {
+                        new PackageSource(packageSource.Path)
+                    });
+
+                var packageContext = new SimpleTestPackageContext("packageA");
+                packageContext.AddFile("lib/net45/a.dll");
+                SimpleTestPackageUtility.CreateOPCPackage(packageContext, packageSource);
+
+                var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
+                projectFolder.Create();
+                var projectConfig = Path.Combine(projectFolder.FullName, "project.json");
+                var projectPath = Path.Combine(projectFolder.FullName, $"{projectName}.csproj");
+
+                var packageSpec = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", projectConfig);
+                var metadata = new ProjectRestoreMetadata();
+                packageSpec.RestoreMetadata = metadata;
+
+                metadata.OutputType = RestoreOutputType.UAP;
+                metadata.ProjectPath = projectPath;
+                metadata.ProjectJsonPath = packageSpec.FilePath;
+                metadata.ProjectName = packageSpec.Name;
+                metadata.ProjectUniqueName = projectPath;
+                foreach (var framework in packageSpec.TargetFrameworks.Select(e => e.FrameworkName))
+                {
+                    metadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(framework));
+                }
+
+                var solutionManager = new TestSolutionManager(false);
+
+                var testLogger = new TestLogger();
+
+                var restoreContext = new DependencyGraphCacheContext(testLogger);
+                restoreContext.DeferredPackageSpecs.Add(packageSpec);
+
+                // Act
+                await DependencyGraphRestoreUtility.RestoreAsync(
+                    solutionManager,
+                    restoreContext,
+                    new RestoreCommandProvidersCache(),
+                    (c) => { },
+                    sourceRepositoryProvider.GetRepositories(),
+                    NullSettings.Instance,
+                    testLogger,
+                    CancellationToken.None);
+
+                // Assert
+                Assert.True(File.Exists(Path.Combine(projectFolder.FullName, "project.lock.json")));
+                Assert.True(testLogger.Errors == 0);
+            }
+        }
+
+        [Fact]
+        public async Task BuildIntegratedRestoreUtility_IsRestoreRequired_DeferredProjectLoad()
+        {
+            // Arrange
+            var projectName = "testproj";
+
+            var project1Json = @"
+            {
+              ""version"": ""1.0.0"",
+              ""description"": """",
+              ""authors"": [ ""author"" ],
+              ""tags"": [ """" ],
+              ""projectUrl"": """",
+              ""licenseUrl"": """",
+              ""frameworks"": {
+                ""net45"": {
+                }
+              }
+            }";
+
+            using (var rootFolder = TestDirectory.Create())
+            {
+                var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
+                projectFolder.Create();
+                var projectConfig = Path.Combine(projectFolder.FullName, "project.json");
+                var projectPath = Path.Combine(projectFolder.FullName, $"{projectName}.csproj");
+
+                var packageSpec = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", projectConfig);
+                var metadata = new ProjectRestoreMetadata();
+                packageSpec.RestoreMetadata = metadata;
+
+                metadata.OutputType = RestoreOutputType.UAP;
+                metadata.ProjectPath = projectPath;
+                metadata.ProjectJsonPath = packageSpec.FilePath;
+                metadata.ProjectName = packageSpec.Name;
+                metadata.ProjectUniqueName = projectPath;
+
+                foreach (var framework in packageSpec.TargetFrameworks.Select(e => e.FrameworkName))
+                {
+                    metadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(framework));
+                }
+
+                var solutionManager = new TestSolutionManager(false);
+
+                var testLogger = new TestLogger();
+
+                var restoreContext = new DependencyGraphCacheContext(testLogger);
+                restoreContext.DeferredPackageSpecs.Add(packageSpec);
+
+                var pathContext = NuGetPathContext.Create(NullSettings.Instance);
+
+                var oldHash = restoreContext.SolutionSpecHash;
+
+                // Act
+                var result = await DependencyGraphRestoreUtility.IsRestoreRequiredAsync(
+                    solutionManager,
+                    forceRestore: false,
+                    pathContext: pathContext,
+                    cacheContext: restoreContext,
+                    oldDependencyGraphSpecHash: oldHash);
+
+                // Assert
+                Assert.Equal(true, result);
+                Assert.Equal(0, testLogger.Errors);
+                Assert.Equal(0, testLogger.Warnings);
             }
         }
     }
