@@ -10,7 +10,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using NuGet.Commands;
+using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.ProjectModel;
 
@@ -62,7 +62,7 @@ namespace NuGet.CommandLine
         /// <summary>
         /// Returns the closure of project references for projects specified in <paramref name="projectPaths"/>.
         /// </summary>
-        public static DependencyGraphSpec GetProjectReferences(
+        public static async Task<DependencyGraphSpec> GetProjectReferencesAsync(
             string msbuildDirectory,
             string[] projectPaths,
             int timeOut,
@@ -166,8 +166,9 @@ namespace NuGet.CommandLine
 
                 using (var process = Process.Start(processStartInfo))
                 {
+                    var errors = new StringBuilder();
+                    var errorTask = ConsumeStreamReaderAsync(process.StandardError, errors);
                     var finished = process.WaitForExit(timeOut);
-
                     if (!finished)
                     {
                         try
@@ -188,7 +189,8 @@ namespace NuGet.CommandLine
 
                     if (process.ExitCode != 0)
                     {
-                        throw new CommandLineException(process.StandardError.ReadToEnd());
+                        await errorTask;
+                        throw new CommandLineException(errors.ToString());
                     }
                 }
 
@@ -205,6 +207,17 @@ namespace NuGet.CommandLine
                 }
 
                 return spec;
+            }
+        }
+
+        private static async Task ConsumeStreamReaderAsync(StreamReader reader, StringBuilder lines)
+        {
+            await Task.Yield();
+
+            string line;
+            while ((line = await reader.ReadLineAsync()) != null)
+            {
+                lines.AppendLine(line);
             }
         }
 
@@ -313,15 +326,16 @@ namespace NuGet.CommandLine
             {
                 using (var process = Process.Start(processStartInfo))
                 {
+                    var output = new StringBuilder();
+                    var outputTask = ConsumeStreamReaderAsync(process.StandardOutput, output);
                     process.WaitForExit(MsBuildWaitTime);
-
                     if (process.ExitCode == 0)
                     {
-                        var output = process.StandardOutput.ReadToEnd();
+                        outputTask.Wait();
 
                         // The output of msbuid /version /nologo with MSBuild 12 & 14 is something like:
                         // 14.0.23107.0
-                        var lines = output.Split(
+                        var lines = output.ToString().Split(
                             new[] { Environment.NewLine },
                             StringSplitOptions.RemoveEmptyEntries);
 
@@ -500,7 +514,6 @@ namespace NuGet.CommandLine
                    "Microsoft.Build.Evaluation.ProjectCollection",
                    throwOnError: true);
                 var projectCollection = Activator.CreateInstance(projectCollectionType) as IDisposable;
-
 
                 using (projectCollection)
                 {
@@ -749,7 +762,6 @@ namespace NuGet.CommandLine
             {
                 return Path.Combine(msbuildDirectory, "msbuild.exe");
             }
-
         }
 
         /// <summary>
