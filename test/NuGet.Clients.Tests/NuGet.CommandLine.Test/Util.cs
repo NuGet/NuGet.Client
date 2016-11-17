@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml.Linq;
 using Moq;
@@ -21,6 +22,9 @@ namespace NuGet.CommandLine.Test
     public static class Util
     {
         private static readonly string NupkgFileFormat = "{0}.{1}.nupkg";
+
+        [DllImport("libc")]
+        static extern int uname(IntPtr buf);
 
         public static string CreateTestPackage(
             string packageId,
@@ -1076,6 +1080,52 @@ EndProject");
             }
 
             return msbuildPath;
+        }
+
+        public static string GetHintPath(string path)
+        {
+            return @"<HintPath>.." + Path.DirectorySeparatorChar + path + @"</HintPath>";
+        }
+
+        public static bool IsRunningOnMac()
+        {
+
+            IntPtr buf = IntPtr.Zero;
+
+            try
+            {
+
+                buf = Marshal.AllocHGlobal(8192);
+
+                // This is a hacktastic way of getting sysname from uname ()
+
+                if (uname(buf) == 0)
+                {
+
+                    string os = Marshal.PtrToStringAnsi(buf);
+
+                    if (os == "Darwin")
+
+                        return true;
+
+                }
+
+            }
+            catch
+            {
+
+            }
+            finally
+            {
+
+                if (buf != IntPtr.Zero)
+
+                    Marshal.FreeHGlobal(buf);
+
+            }
+
+            return false;
+
         }
 
         private static bool IsProjectJson(string configFileName)

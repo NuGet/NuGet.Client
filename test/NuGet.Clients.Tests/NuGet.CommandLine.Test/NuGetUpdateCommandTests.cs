@@ -30,12 +30,12 @@ namespace NuGet.CommandLine.Test
             {
                 var projectDirectory = Path.Combine(solutionDirectory, "proj1");
                 var packagesDirectory = Path.Combine(solutionDirectory, "packages");
-                
+
                 var a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
                 var a2 = new PackageIdentity("A", new NuGetVersion("2.0.0"));
                 var b1 = new PackageIdentity("B", new NuGetVersion("1.0.0"));
                 var b2 = new PackageIdentity("B", new NuGetVersion("2.0.0"));
-                
+
                 var a1Package = Util.CreateTestPackage(
                     a1.Id,
                     a1.Version.ToString(),
@@ -67,9 +67,9 @@ namespace NuGet.CommandLine.Test
                     new List<NuGetFramework> { NuGetFramework.Parse("net45") },
                     "test.txt"
                     );
-                
+
                 Directory.CreateDirectory(projectDirectory);
-                
+
                 Util.CreateFile(
                     projectDirectory,
                     "proj1.csproj",
@@ -82,8 +82,9 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory("14.0", null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
                 var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
+
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
                 {
@@ -104,7 +105,7 @@ namespace NuGet.CommandLine.Test
                         testNuGetProjectContext,
                         CancellationToken.None);
                 }
-                
+
                 var args = new[]
                 {
                     "update",
@@ -123,8 +124,9 @@ namespace NuGet.CommandLine.Test
                 Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
 
                 var content = File.ReadAllText(projectFile);
-                Assert.True(content.Contains(@"<HintPath>..\packages\B.2.0.0\lib\net45\B.dll</HintPath>"));
-                Assert.True(content.Contains(@"<HintPath>..\packages\A.2.0.0\lib\net45\A.dll</HintPath>"));
+
+                Assert.True(content.Contains(Util.GetHintPath(Path.Combine("packages", "B.2.0.0", "lib", "net45", "B.dll"))));
+                Assert.True(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.2.0.0", "lib", "net45", "A.dll"))));
                 Assert.True(content.Contains(@"<Content Include=""test.txt"" />"));
             }
         }
@@ -173,7 +175,7 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory("14.0", null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
                 var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
@@ -203,8 +205,8 @@ namespace NuGet.CommandLine.Test
                 Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
 
                 var content = File.ReadAllText(projectFile);
-                Assert.False(content.Contains(@"<HintPath>..\packages\A.1.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.True(content.Contains(@"<HintPath>..\packages\A.2.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.False(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.1.0.0", "lib", "net45", "file.dll"))));
+                Assert.True(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.2.0.0", "lib", "net45", "file.dll"))));
             }
         }
 
@@ -276,7 +278,7 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory("14.0", null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
                 var projectSystem1 = new MSBuildProjectSystem(msbuildDirectory, projectFile1, testNuGetProjectContext);
                 var projectSystem2 = new MSBuildProjectSystem(msbuildDirectory, projectFile2, testNuGetProjectContext);
                 var msBuildProject1 = new MSBuildNuGetProject(projectSystem1, packagesDirectory, projectDirectory1);
@@ -324,16 +326,16 @@ namespace NuGet.CommandLine.Test
                 Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
 
                 var content1 = File.ReadAllText(projectFile1);
-                Assert.False(content1.Contains(@"<HintPath>..\packages\A.1.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.True(content1.Contains(@"<HintPath>..\packages\A.2.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.False(content1.Contains(@"<HintPath>..\packages\B.1.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.False(content1.Contains(@"<HintPath>..\packages\B.2.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.False(content1.Contains(Util.GetHintPath(Path.Combine("packages", "A.1.0.0", "lib", "net45", "file.dll"))));
+                Assert.True(content1.Contains(Util.GetHintPath(Path.Combine("packages", "A.2.0.0", "lib", "net45", "file.dll"))));
+                Assert.False(content1.Contains(Util.GetHintPath(Path.Combine("packages", "B.1.0.0", "lib", "net45", "file.dll"))));
+                Assert.False(content1.Contains(Util.GetHintPath(Path.Combine("packages", "B.2.0.0", "lib", "net45", "file.dll"))));
 
                 var content2 = File.ReadAllText(projectFile2);
-                Assert.True(content2.Contains(@"<HintPath>..\packages\B.1.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.False(content2.Contains(@"<HintPath>..\packages\B.2.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.False(content2.Contains(@"<HintPath>..\packages\A.1.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.False(content2.Contains(@"<HintPath>..\packages\A.2.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.True(content2.Contains(Util.GetHintPath(Path.Combine("packages", "B.1.0.0", "lib", "net45", "file.dll"))));
+                Assert.False(content2.Contains(Util.GetHintPath(Path.Combine("packages", "B.2.0.0", "lib", "net45", "file.dll"))));
+                Assert.False(content2.Contains(Util.GetHintPath(Path.Combine("packages", "A.1.0.0", "lib", "net45", "file.dll"))));
+                Assert.False(content2.Contains(Util.GetHintPath(Path.Combine("packages", "A.2.0.0", "lib", "net45", "file.dll"))));
             }
         }
 
@@ -380,7 +382,7 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory("14.0", null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
                 var projectSystem1 = new MSBuildProjectSystem(msbuildDirectory, projectFile1, testNuGetProjectContext);
                 var msBuildProject1 = new MSBuildNuGetProject(projectSystem1, packagesDirectory, projectDirectory);
 
@@ -424,12 +426,12 @@ namespace NuGet.CommandLine.Test
                 Assert.Contains("No projects found with packages.config.", r.Item2);
 
                 var content1 = File.ReadAllText(projectFile1);
-                Assert.True(content1.Contains(@"<HintPath>..\packages\A.1.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.False(content1.Contains(@"<HintPath>..\packages\A.2.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.True(content1.Contains(Util.GetHintPath(Path.Combine("packages", "A.1.0.0", "lib", "net45", "file.dll"))));
+                Assert.False(content1.Contains(Util.GetHintPath(Path.Combine("packages", "A.2.0.0", "lib", "net45", "file.dll"))));
 
                 var content2 = File.ReadAllText(projectFile2);
-                Assert.True(content2.Contains(@"<HintPath>..\packages\A.1.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.False(content2.Contains(@"<HintPath>..\packages\A.2.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.True(content2.Contains(Util.GetHintPath(Path.Combine("packages", "A.1.0.0", "lib", "net45", "file.dll"))));
+                Assert.False(content2.Contains(Util.GetHintPath(Path.Combine("packages", "A.2.0.0", "lib", "net45", "file.dll"))));
             }
         }
 
@@ -477,7 +479,7 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory("14.0", null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
                 var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
@@ -507,7 +509,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
 
                 var content = File.ReadAllText(projectFile);
-                Assert.False(content.Contains(@"<HintPath>..\packages\A.2.0.0-beta\lib\net45\file.dll</HintPath>"));
+                Assert.False(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.2.0.0-beta", "lib", "net45", "file.dll"))));
             }
         }
 
@@ -555,7 +557,7 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory("14.0", null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
                 var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
@@ -586,8 +588,8 @@ namespace NuGet.CommandLine.Test
                 Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
 
                 var content = File.ReadAllText(projectFile);
-                Assert.False(content.Contains(@"<HintPath>..\packages\A.1.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.True(content.Contains(@"<HintPath>..\packages\A.2.0.0-BETA\lib\net45\file.dll</HintPath>"));
+                Assert.False(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.1.0.0", "lib", "net45", "file.dll"))));
+                Assert.True(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.2.0.0-BETA", "lib", "net45", "file.dll"))));
             }
         }
 
@@ -611,7 +613,7 @@ namespace NuGet.CommandLine.Test
                     packagesSourceDirectory,
                     new List<NuGetFramework>() { NuGetFramework.Parse("net45") },
                     new List<PackageDependencyGroup>() { });
-                
+
                 var a2Package = Util.CreateTestPackage(
                     a2.Id,
                     a2.Version.ToString(),
@@ -642,7 +644,7 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory("14.0", null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
                 var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
@@ -676,9 +678,9 @@ namespace NuGet.CommandLine.Test
                 Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
 
                 var content = File.ReadAllText(projectFile);
-                Assert.False(content.Contains(@"<HintPath>..\packages\A.1.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.True(content.Contains(@"<HintPath>..\packages\A.2.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.False(content.Contains(@"<HintPath>..\packages\A.3.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.False(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.1.0.0", "lib", "net45", "file.dll"))));
+                Assert.True(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.2.0.0", "lib", "net45", "file.dll"))));
+                Assert.False(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.3.0.0", "lib", "net45", "file.dll"))));
             }
         }
 
@@ -733,7 +735,7 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory("14.0", null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
                 var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a2Package))
@@ -767,9 +769,9 @@ namespace NuGet.CommandLine.Test
                 Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
 
                 var content = File.ReadAllText(projectFile);
-                Assert.True(content.Contains(@"<HintPath>..\packages\A.1.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.False(content.Contains(@"<HintPath>..\packages\A.2.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.False(content.Contains(@"<HintPath>..\packages\A.3.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.True(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.1.0.0", "lib", "net45", "file.dll"))));
+                Assert.False(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.2.0.0", "lib", "net45", "file.dll"))));
+                Assert.False(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.3.0.0", "lib", "net45", "file.dll"))));
             }
         }
 
@@ -817,7 +819,7 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory("14.0", null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
                 var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
@@ -847,8 +849,8 @@ namespace NuGet.CommandLine.Test
                 Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
 
                 var content = File.ReadAllText(projectFile);
-                Assert.False(content.Contains(@"<HintPath>..\packages\A.1.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.True(content.Contains(@"<HintPath>..\packages\A.2.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.False(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.1.0.0", "lib", "net45", "file.dll"))));
+                Assert.True(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.2.0.0", "lib", "net45", "file.dll"))));
             }
         }
 
@@ -897,7 +899,7 @@ namespace NuGet.CommandLine.Test
                 var packagesConfigFile = Path.Combine(projectDirectory, "packages.config");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory("14.0", null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
                 var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
@@ -925,10 +927,11 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
+                System.Console.WriteLine(r.Item2);
 
                 var content = File.ReadAllText(projectFile);
-                Assert.False(content.Contains(@"<HintPath>..\packages\A.1.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.True(content.Contains(@"<HintPath>..\packages\A.2.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.False(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.1.0.0", "lib", "net45", "file.dll"))));
+                Assert.True(content.Contains(Util.GetHintPath(Path.Combine("packages", "A.2.0.0", "lib", "net45", "file.dll"))));
             }
         }
 
@@ -976,7 +979,7 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory("14.0", null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
                 var projectSystem = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
@@ -1074,7 +1077,7 @@ namespace NuGet.CommandLine.Test
                     new List<PackageDependencyGroup>() { });
 
                 // Create a nuget.config file with a relative 'repositoryPath' setting
-                Util.CreateNuGetConfig(solutionDirectory, new[] { packagesSourceDirectory.Path }.ToList(), @".\custom-pcks");
+                Util.CreateNuGetConfig(solutionDirectory, new[] { packagesSourceDirectory.Path }.ToList(), "custom-pcks");
 
                 var projectDirectory = Path.Combine(solutionDirectory, "proj1");
                 Directory.CreateDirectory(projectDirectory);
@@ -1091,7 +1094,9 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory("14.0", null);
+
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
+
                 var projectSystem1 = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject1 = new MSBuildNuGetProject(projectSystem1, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
@@ -1130,8 +1135,8 @@ namespace NuGet.CommandLine.Test
 
                 // Check the custom package folder is used in the assembly reference
                 var content1 = File.ReadAllText(projectFile);
-                Assert.False(content1.Contains(@"<HintPath>..\custom-pcks\A.1.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.True(content1.Contains(@"<HintPath>..\custom-pcks\A.2.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.False(content1.Contains(Util.GetHintPath(Path.Combine("custom-pcks", "A.1.0.0", "lib", "net45", "file.dll"))));
+                Assert.True(content1.Contains(Util.GetHintPath(Path.Combine("custom-pcks", "A.2.0.0", "lib", "net45", "file.dll"))));
             }
         }
 
@@ -1180,7 +1185,7 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory("14.0", null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
                 var projectSystem1 = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
                 var msBuildProject1 = new MSBuildNuGetProject(projectSystem1, packagesDirectory, projectDirectory);
                 using (var stream = File.OpenRead(a1Package))
@@ -1220,8 +1225,12 @@ namespace NuGet.CommandLine.Test
                 // Check the custom package folder is used in the assembly reference
                 var content1 = File.ReadAllText(projectFile);
                 var customPackageFolderName = new DirectoryInfo(packagesDirectory.Path).Name;
-                Assert.False(content1.Contains(@"<HintPath>..\..\" + customPackageFolderName + @"\A.1.0.0\lib\net45\file.dll</HintPath>"));
-                Assert.True(content1.Contains(@"<HintPath>..\..\" + customPackageFolderName + @"\A.2.0.0\lib\net45\file.dll</HintPath>"));
+                var a1Path = @".." + Path.DirectorySeparatorChar + customPackageFolderName + Path.DirectorySeparatorChar +
+                    Path.Combine("A.1.0.0", "lib", "net45", "file.dll");
+                var a2Path = @".." + Path.DirectorySeparatorChar + customPackageFolderName + Path.DirectorySeparatorChar +
+                    Path.Combine("A.2.0.0", "lib", "net45", "file.dll");
+                Assert.False(content1.Contains(Util.GetHintPath(a1Path)));
+                Assert.True(content1.Contains(Util.GetHintPath(a2Path)));
             }
         }
 
@@ -1292,7 +1301,7 @@ namespace NuGet.CommandLine.Test
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
 
                 var testNuGetProjectContext = new TestNuGetProjectContext();
-                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory("14.0", null);
+                var msbuildDirectory = MsBuildUtility.GetMsBuildDirectory(null, null);
                 var projectSystem1 = new MSBuildProjectSystem(msbuildDirectory, projectFile1, testNuGetProjectContext);
                 var projectSystem2 = new MSBuildProjectSystem(msbuildDirectory, projectFile2, testNuGetProjectContext);
                 var msBuildProject1 = new MSBuildNuGetProject(projectSystem1, packagesDirectory, projectDirectory1);

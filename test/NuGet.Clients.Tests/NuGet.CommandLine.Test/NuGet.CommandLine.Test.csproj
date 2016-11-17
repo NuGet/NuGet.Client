@@ -84,6 +84,7 @@
     <Compile Include="ExtensionsTests.cs" />
     <Compile Include="RestoreRetryTests.cs" />
     <Compile Include="Util.cs" />
+    <Compile Include="XunitAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.CommandLine\NuGet.CommandLine.csproj">

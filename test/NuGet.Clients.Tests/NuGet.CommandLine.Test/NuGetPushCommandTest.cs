@@ -10,6 +10,7 @@ using System.Text;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
 using Xunit;
+using NuGet.Common;
 
 namespace NuGet.CommandLine.Test
 {
@@ -79,7 +80,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(0, result.Item1);
                 var basename = string.Format("{0}.{1}.", packageId, version);
-                var baseFolder = string.Format("{0}\\{1}\\", packageId, version);
+                var baseFolder = Path.Combine(packageId, version) + Path.DirectorySeparatorChar;
                 Assert.True(File.Exists(Path.Combine(source, baseFolder + packageId + ".nuspec")));
                 Assert.True(File.Exists(Path.Combine(source, baseFolder + basename + "nupkg")));
                 Assert.True(File.Exists(Path.Combine(source, baseFolder + basename + "nupkg.sha512")));
@@ -521,7 +522,7 @@ namespace NuGet.CommandLine.Test
 
                     // Assert
                     var output = result.Item2;
-                    Assert.Equal(0, result.Item1);
+                    Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
                     Assert.Contains("Your package was pushed.", output);
                     AssertFileEqual(packageFileName, outputFileName);
                 }
@@ -711,7 +712,7 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.Equal(0, r1.Item1);
+                    Assert.True(0 == r1.Item1, r1.Item2 + " " + r1.Item3);
 
                     // Because the credential service caches the answer and attempts
                     // to use it for token refresh the first request happens twice
@@ -805,7 +806,7 @@ namespace NuGet.CommandLine.Test
         }
 
         // Test push command to a server using IntegratedWindowsAuthentication.
-        [Fact]
+        [WindowsNTFact]
         public void PushCommand_PushToServerIntegratedWindowsAuthentication()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -850,7 +851,7 @@ namespace NuGet.CommandLine.Test
         }
 
         // Test push command to a server using IntegratedWindowsAuthentication with -DisableBuffering option
-        [Fact]
+        [WindowsNTFact]
         public void PushCommand_PushToServerIntegratedWindowsAuthenticationDisableBuffering()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -964,7 +965,7 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.Equal(0, r1.Item1);
+                    Assert.True(0 == r1.Item1, r1.Item2 + " " + r1.Item3);
 
                     Assert.Equal(1, credentialForPutRequest.Count);
                     Assert.Equal("testuser:testpassword", credentialForPutRequest[0]);
@@ -997,7 +998,6 @@ namespace NuGet.CommandLine.Test
                         var h = r.Headers["Authorization"];
                         var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
                         credentialForPutRequest.Add(credential);
-
                         if (credential.Equals("testuser:testpassword", StringComparison.OrdinalIgnoreCase))
                         {
                             res.StatusCode = (int)HttpStatusCode.OK;
@@ -1034,7 +1034,7 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.Equal(0, r1.Item1);
+                    Assert.True(0 == r1.Item1, r1.Item2 + " " + r1.Item3);
                     Assert.Equal(1, credentialForPutRequest.Count);
                     Assert.Equal("testuser:testpassword", credentialForPutRequest[0]);
                 }
@@ -1167,7 +1167,7 @@ namespace NuGet.CommandLine.Test
 
                     // Assert
                     Assert.Equal(1, r1.Item1);
-                    Assert.Contains("Response status code does not indicate success: 401 (Unauthorized).", r1.Item3);
+                    Assert.Contains("401 (Unauthorized)", r1.Item3);
                     Assert.Contains($"Credential plugin {pluginPath} handles this request, but is unable to provide credentials. Testing abort.", r1.Item2);
 
                     // No requests hit server, since abort during credential acquisition
@@ -1239,7 +1239,7 @@ namespace NuGet.CommandLine.Test
 
                     // Assert
                     Assert.Equal(1, r1.Item1);
-                    Assert.Contains("Response status code does not indicate success: 401 (Unauthorized).", r1.Item3);
+                    Assert.Contains("401 (Unauthorized)", r1.Item3);
                     Assert.Contains($"Credential plugin {pluginPath} timed out", r1.Item2);
                     // ensure the process was killed
                     Assert.Equal(0, System.Diagnostics.Process.GetProcessesByName(Path.GetFileNameWithoutExtension(pluginPath)).Length);
@@ -1448,7 +1448,7 @@ namespace NuGet.CommandLine.Test
                     Assert.True(result.Item1 != 0, result.Item2 + " " + result.Item3);
 
                     Assert.True(
-                        result.Item3.Contains("Response status code does not indicate success: 404 (Not Found)."),
+                        result.Item3.Contains("404 (Not Found)"),
                         "Expected error message not found in " + result.Item3
                         );
                 }
@@ -1763,7 +1763,7 @@ namespace NuGet.CommandLine.Test
                         "push",
                         packageFileName,
                         "-Source",
-                        server.Uri + "/api/v2/Package"
+                        server.Uri + "api/v2/Package"
                     };
 
                     var result = CommandRunner.Run(
@@ -1857,11 +1857,22 @@ namespace NuGet.CommandLine.Test
                     result.Item1 != 0,
                     "The run did not fail as desired. Simply got this output:" + result.Item2);
 
-                Assert.True(
-                    result.Item3.Contains(
-                        "The remote name could not be resolved: 'invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org'"),
-                    "Expected error message not found in " + result.Item3
-                    );
+                if (RuntimeEnvironmentHelper.IsMono)
+                {
+                    Assert.True(
+                   result.Item3.Contains(
+                       "NameResolutionFailure"),
+                   "Expected error message not found in " + result.Item3
+                   );
+                }
+                else
+                {
+                    Assert.True(
+                        result.Item3.Contains(
+                            "The remote name could not be resolved: 'invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org'"),
+                        "Expected error message not found in " + result.Item3
+                        );
+                }
             }
         }
 
@@ -1936,10 +1947,21 @@ namespace NuGet.CommandLine.Test
                     result.Item1 != 0,
                     "The run did not fail as desired. Simply got this output:" + result.Item2);
 
-                Assert.True(
-                    result.Item3.Contains("An error occurred while sending the request."),
-                    "Expected error message not found in " + result.Item3
-                    );
+                if (RuntimeEnvironmentHelper.IsMono)
+                {
+                    Assert.True(
+                   result.Item3.Contains(
+                       "NameResolutionFailure"),
+                   "Expected error message not found in " + result.Item3
+                   );
+                }
+                else
+                {
+                    Assert.True(
+                        result.Item3.Contains("An error occurred while sending the request."),
+                        "Expected error message not found in " + result.Item3
+                        );
+                }
             }
         }
 
@@ -1976,7 +1998,7 @@ namespace NuGet.CommandLine.Test
                     "The run did not fail as desired. Simply got this output:" + result.Item2);
 
                 Assert.True(
-                    result.Item3.Contains("Response status code does not indicate success: 400 (Bad Request)."),
+                    result.Item3.Contains("400 (Bad Request)"),
                     "Expected error message not found in " + result.Item3
                     );
             }
