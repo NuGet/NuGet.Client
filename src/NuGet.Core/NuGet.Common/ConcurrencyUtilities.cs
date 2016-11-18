@@ -187,7 +187,7 @@ namespace NuGet.Common
                     return _basePath;
                 }
 
-                _basePath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), "lock");
+                _basePath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.NuGetHome), "lock");
 
                 Directory.CreateDirectory(_basePath);
 
