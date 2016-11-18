@@ -20,6 +20,7 @@ namespace NuGet.Configuration
         /// </summary>
         private static readonly IWebProxy _originalSystemProxy = WebRequest.GetSystemWebProxy();
 #endif
+        private static IWebProxy _overrideProxy;
         private readonly ConcurrentDictionary<Uri, ICredentials> _cachedCredentials = new ConcurrentDictionary<Uri, ICredentials>();
 
         private readonly ISettings _settings;
@@ -51,6 +52,9 @@ namespace NuGet.Configuration
 
         public IWebProxy GetProxy(Uri sourceUri)
         {
+            // Use the override proxy if someone has set it in code
+            if (_overrideProxy != null) return _overrideProxy;
+
             // Check if the user has configured proxy details in settings or in the environment.
             var configuredProxy = GetUserConfiguredProxy();
             if (configuredProxy != null)
@@ -78,6 +82,11 @@ namespace NuGet.Configuration
             // If a proxy was cached, it means the stored credentials are incorrect. Use the cached one in this case.
             var proxyCredentials = configuredProxy.Credentials ?? CredentialCache.DefaultCredentials;
             return _cachedCredentials.TryAdd(configuredProxy.ProxyAddress, proxyCredentials);
+        }
+
+        public void SetOverrideProxy(IWebProxy proxy)
+        {
+            _overrideProxy = proxy;
         }
 
         public WebProxy GetUserConfiguredProxy()
