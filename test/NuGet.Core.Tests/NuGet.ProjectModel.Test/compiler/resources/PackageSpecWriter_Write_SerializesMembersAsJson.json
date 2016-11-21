@@ -89,14 +89,6 @@
       "version": "[1.2.3, )"
     }
   },
-  "tools": {
-    "range": {
-      "version": "[1.2.3, )",
-      "imports": [
-        "frameworkidentifier123-frameworkprofile"
-      ]
-    }
-  },
   "frameworks": {
     "frameworkidentifier123-frameworkprofile": {
       "dependencies": {
