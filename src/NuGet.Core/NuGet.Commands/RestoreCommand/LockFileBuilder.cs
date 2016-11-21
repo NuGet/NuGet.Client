@@ -298,6 +298,8 @@ namespace NuGet.Commands
                 lockFile.Targets.Add(target);
             }
 
+            PopulateProjectFileToolGroups(project, lockFile);
+
             PopulatePackageFolders(localRepositories.Select(repo => repo.RepositoryRoot).Distinct(), lockFile);
 
             // Add the original package spec to the lock file.
@@ -375,6 +377,19 @@ namespace NuGet.Commands
                         .OrderBy(dependency => dependency, StringComparer.Ordinal));
 
                 lockFile.ProjectFileDependencyGroups.Add(dependencyGroup);
+            }
+        }
+
+        private static void PopulateProjectFileToolGroups(PackageSpec project, LockFile lockFile)
+        {
+            // Add the tool dependencies (this states what the project requires)
+            if (project.Tools.Any())
+            {
+                lockFile.ProjectFileToolGroups.Add(new ProjectFileDependencyGroup(
+                    LockFile.ToolFramework.ToString(),
+                    project.Tools
+                        .Select(x => x.LibraryRange.ToLockFileDependencyGroupString())
+                        .OrderBy(dependency => dependency, StringComparer.Ordinal)));
             }
         }
 

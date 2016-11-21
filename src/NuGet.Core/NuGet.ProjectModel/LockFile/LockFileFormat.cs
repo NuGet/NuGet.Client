@@ -178,6 +178,8 @@ namespace NuGet.ProjectModel
             lockFile.Libraries = ReadObject(cursor[LibrariesProperty] as JObject, ReadLibrary);
             lockFile.Targets = ReadObject(cursor[TargetsProperty] as JObject, ReadTarget);
             lockFile.ProjectFileDependencyGroups = ReadObject(cursor[ProjectFileDependencyGroupsProperty] as JObject, ReadProjectFileDependencyGroup);
+            lockFile.Tools = ReadObject(cursor[ToolsProperty] as JObject, ReadTarget);
+            lockFile.ProjectFileToolGroups = ReadObject(cursor[ProjectFileToolGroupsProperty] as JObject, ReadProjectFileDependencyGroup);
             lockFile.PackageFolders = ReadObject(cursor[PackageFoldersProperty] as JObject, ReadFileItem);
             lockFile.PackageSpec = ReadPackageSpec(cursor[PackageSpecProperty] as JObject);
             return lockFile;
@@ -190,7 +192,21 @@ namespace NuGet.ProjectModel
             json[TargetsProperty] = WriteObject(lockFile.Targets, WriteTarget);
             json[LibrariesProperty] = WriteObject(lockFile.Libraries, WriteLibrary);
             json[ProjectFileDependencyGroupsProperty] = WriteObject(lockFile.ProjectFileDependencyGroups, WriteProjectFileDependencyGroup);
-            
+
+            // Avoid writing out the tools section for v1 lock files
+            if (lockFile.Version >= 2)
+            {
+                if (lockFile.Tools != null)
+                {
+                    json[ToolsProperty] = WriteObject(lockFile.Tools, WriteTarget);
+                }
+
+                if (lockFile.ProjectFileToolGroups != null)
+                {
+                    json[ProjectFileToolGroupsProperty] = WriteObject(lockFile.ProjectFileToolGroups, WriteProjectFileDependencyGroup);
+                }
+            }
+
             if (lockFile.PackageFolders?.Any() == true)
             {
                 json[PackageFoldersProperty] = WriteObject(lockFile.PackageFolders, WriteFileItem);

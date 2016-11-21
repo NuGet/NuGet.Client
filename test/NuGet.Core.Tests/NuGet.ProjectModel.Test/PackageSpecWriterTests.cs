@@ -247,6 +247,15 @@ namespace NuGet.ProjectModel.Test
                 Warn = true
             });
 
+            packageSpec.Tools = new List<ToolDependency>()
+            {
+                new ToolDependency()
+                {
+                    Imports = new List<NuGetFramework> () { nugetFramework  },
+                    LibraryRange = libraryRange
+                }
+            };
+
             return packageSpec;
         }
 

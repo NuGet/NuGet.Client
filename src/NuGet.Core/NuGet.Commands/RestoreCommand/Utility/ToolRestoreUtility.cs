@@ -24,6 +24,7 @@ namespace NuGet.Commands
                 Name = name, // make sure this package never collides with a dependency
                 FilePath = projectFilePath,
                 Dependencies = new List<LibraryDependency>(),
+                Tools = new List<ToolDependency>(),
                 TargetFrameworks =
                 {
                     new TargetFrameworkInformation

@@ -10,10 +10,14 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
+using NuGet.Client;
 using NuGet.Common;
+using NuGet.ContentModel;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
@@ -593,6 +597,10 @@ namespace NuGet.Commands
                 // Null out all target types, these did not exist in v1
                 library.Type = null;
             }
+
+            // Remove tools
+            lockFile.Tools.Clear();
+            lockFile.ProjectFileToolGroups.Clear();
 
             // Remove the package spec
             lockFile.PackageSpec = null;

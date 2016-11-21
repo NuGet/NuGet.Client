@@ -87,6 +87,8 @@ namespace NuGet.ProjectModel
 
         public IList<LibraryDependency> Dependencies { get; set; } = new List<LibraryDependency>();
 
+        public IList<ToolDependency> Tools { get; set; } = new List<ToolDependency>();
+
         public IDictionary<string, IEnumerable<string>> Scripts { get; private set; } = new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
 
         public IDictionary<string, string> PackInclude { get; private set; } = new Dictionary<string, string>();
@@ -126,6 +128,7 @@ namespace NuGet.ProjectModel
             hashCode.AddSequence(Tags);
             hashCode.AddSequence(ContentFiles);
             hashCode.AddSequence(Dependencies);
+            hashCode.AddSequence(Tools);
             hashCode.AddDictionary(Scripts);
             hashCode.AddDictionary(PackInclude);
             hashCode.AddObject(PackOptions);
@@ -174,6 +177,7 @@ namespace NuGet.ProjectModel
                    EqualityUtility.SequenceEqualWithNullCheck(Tags, other.Tags) &&
                    EqualityUtility.SequenceEqualWithNullCheck(ContentFiles, other.ContentFiles) &&
                    EqualityUtility.SequenceEqualWithNullCheck(Dependencies, other.Dependencies) &&
+                   EqualityUtility.SequenceEqualWithNullCheck(Tools, other.Tools) &&
                    EqualityUtility.DictionaryOfSequenceEquals(Scripts, other.Scripts) &&
                    EqualityUtility.DictionaryEquals(PackInclude, other.PackInclude, (s, o) => StringComparer.Ordinal.Equals(s, o)) &&
                    EqualityUtility.EqualsWithNullCheck(PackOptions, other.PackOptions) &&
