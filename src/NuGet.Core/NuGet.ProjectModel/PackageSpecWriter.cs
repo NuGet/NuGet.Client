@@ -59,7 +59,6 @@ namespace NuGet.ProjectModel
                 SetDependencies(writer, packageSpec.Dependencies);
             }
 
-            SetTools(writer, packageSpec.Tools);
             SetFrameworks(writer, packageSpec.TargetFrameworks);
 
             JsonRuntimeFormat.WriteRuntimeGraph(writer, packageSpec.RuntimeGraph);
@@ -357,29 +356,6 @@ namespace NuGet.ProjectModel
 
                     SetDependencies(writer, framework.Dependencies);
                     SetImports(writer, framework.Imports);
-
-                    writer.WriteObjectEnd();
-                }
-
-                writer.WriteObjectEnd();
-            }
-        }
-
-        private static void SetTools(IObjectWriter writer, IList<ToolDependency> tools)
-        {
-            if (tools.Any())
-            {
-                writer.WriteObjectStart("tools");
-
-                foreach (var tool in tools)
-                {
-                    writer.WriteObjectStart(tool.LibraryRange.Name);
-                    writer.WriteNameValue("version", tool.LibraryRange.VersionRange.ToNormalizedString());
-
-                    if (tool.Imports.Any())
-                    {
-                        SetImports(writer, tool.Imports);
-                    }
 
                     writer.WriteObjectEnd();
                 }
