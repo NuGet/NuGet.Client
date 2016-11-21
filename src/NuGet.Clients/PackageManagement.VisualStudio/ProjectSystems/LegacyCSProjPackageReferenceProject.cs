@@ -16,7 +16,6 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
-using NuGet.Protocol.Core.Types;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
 
@@ -245,6 +244,9 @@ namespace NuGet.PackageManagement.VisualStudio
             return await RunOnUIThread(GetPackageSpec);
         }
 
+        /// <summary>
+        /// Emulates a JSON deserialization from project.json to PackageSpec in a post-project.json world
+        /// </summary>
         private PackageSpec GetPackageSpec()
         {
             EnsureUIThread();
@@ -253,7 +255,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Select(ToProjectRestoreReference);
 
             var packageReferences = _project.GetLegacyCSProjPackageReferences(_desiredPackageReferenceMetadata)
-                .Select(ToPackageLibraryDependency);
+                .Select(ToPackageLibraryDependency).ToList();
 
             var packageTargetFallback = _project.PackageTargetFallback?.Split(new[] { ';' })
                 .Select(NuGetFramework.Parse)
@@ -262,8 +264,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var projectTfi = new TargetFrameworkInformation()
             {
                 FrameworkName = _project.TargetNuGetFramework,
-                Dependencies = packageReferences.ToList(),
-                Imports = packageTargetFallback
+                Imports = packageTargetFallback ?? new List<NuGetFramework>()
             };
 
             if ((projectTfi.Imports?.Count ?? 0) > 0)
@@ -278,9 +279,16 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // In legacy CSProj, we only have one target framework per project
             var tfis = new TargetFrameworkInformation[] { projectTfi };
+
             return new PackageSpec(tfis)
             {
                 Name = _projectName ?? _projectUniqueName,
+                Version = new NuGetVersion(1, 0, 0, 0, (string)null, string.Empty),
+                Authors = new string[] { },
+                Owners = new string[] { },
+                Tags = new string[] { },
+                ContentFiles = new string[] { },
+                Dependencies = packageReferences,
                 FilePath = _projectFullPath,
                 RuntimeGraph = runtimeGraph,
                 RestoreMetadata = new ProjectRestoreMetadata
@@ -297,7 +305,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         new ProjectRestoreMetadataFrameworkInfo(tfis[0].FrameworkName)
                         {
-                            ProjectReferences = projectReferences.ToList()
+                            ProjectReferences = projectReferences?.ToList()
                         }
                     }
                 }
@@ -327,7 +335,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 LibraryRange = new LibraryRange(
                     name: item.Name,
-                    versionRange: new VersionRange(new NuGetVersion(item.Version)),
+                    versionRange: new VersionRange(new NuGetVersion(item.Version), originalString: item.Version),
                     typeConstraint: LibraryDependencyTarget.Package)
             };
 

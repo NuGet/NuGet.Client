@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -165,6 +165,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 ThreadHelper.ThrowIfNotOnUIThread();
 
                 // Uncached, in case project file edited
+                // ex-project.json (e.g. UWP)
+                var nuGetTargetFramework = GetMSBuildProperty(AsIVsBuildPropertyStorage, "NuGetTargetFramework");
+                if (!string.IsNullOrEmpty(nuGetTargetFramework))
+                {
+                    return NuGetFramework.ParseFrameworkName(nuGetTargetFramework, DefaultFrameworkNameProvider.Instance);
+                }
+
+                // ex-packages.config
                 return EnvDTEProjectUtility.GetTargetNuGetFramework(_project);
             }
         }
