@@ -168,6 +168,11 @@ namespace NuGet.RuntimeModel
                 return false;
             }
 
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
             return Runtimes.OrderedEquals(other.Runtimes, pair => pair.Key, StringComparer.Ordinal)
                 && Supports.OrderedEquals(other.Supports, pair => pair.Key, StringComparer.Ordinal);
         }
@@ -179,7 +184,12 @@ namespace NuGet.RuntimeModel
 
         public override int GetHashCode()
         {
-            return Runtimes.GetHashCode();
+            var hashCode = new HashCodeCombiner();
+
+            hashCode.AddDictionary(Runtimes);
+            hashCode.AddDictionary(Supports);
+
+            return hashCode.CombinedHash;
         }
     }
 }

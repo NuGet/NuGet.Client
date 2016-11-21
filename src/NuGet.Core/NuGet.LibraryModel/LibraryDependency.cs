@@ -1,15 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using NuGet.Versioning;
 using System;
+using System.Text;
+using NuGet.Shared;
 
 namespace NuGet.LibraryModel
 {
-    public class LibraryDependency
+    public class LibraryDependency : IEquatable<LibraryDependency>
     {
         public LibraryRange LibraryRange { get; set; }
 
@@ -41,6 +39,57 @@ namespace NuGet.LibraryModel
         public bool HasFlag(LibraryDependencyTypeFlag flag)
         {
             return Type.Contains(flag);
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = new HashCodeCombiner();
+
+            hashCode.AddObject(LibraryRange);
+            hashCode.AddObject(Type);
+            hashCode.AddObject(IncludeType);
+            hashCode.AddObject(SuppressParent);
+
+            return hashCode.CombinedHash;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as LibraryDependency);
+        }
+
+        public bool Equals(LibraryDependency other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return EqualityUtility.EqualsWithNullCheck(LibraryRange, other.LibraryRange) &&
+                   EqualityUtility.EqualsWithNullCheck(Type, other.Type) &&
+                   IncludeType == other.IncludeType &&
+                   SuppressParent == other.SuppressParent;
+        }
+
+        public LibraryDependency Clone()
+        {
+            return new LibraryDependency
+            {
+                IncludeType = IncludeType,
+                LibraryRange = new LibraryRange
+                {
+                    Name = LibraryRange.Name,
+                    TypeConstraint = LibraryRange.TypeConstraint,
+                    VersionRange = LibraryRange.VersionRange
+                },
+                SuppressParent = SuppressParent,
+                Type = Type
+            };
         }
     }
 }

@@ -5,10 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using NuGet.Shared;
 
 namespace NuGet.ProjectModel
 {
-    public class IncludeExcludeFiles
+    public class IncludeExcludeFiles : IEquatable<IncludeExcludeFiles>
     {
         public IReadOnlyList<string> Include { get; set; }
         public IReadOnlyList<string> Exclude { get; set; }
@@ -49,6 +50,41 @@ namespace NuGet.ProjectModel
             }
 
             return foundOne;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = new HashCodeCombiner();
+
+            hashCode.AddSequence(Include);
+            hashCode.AddSequence(Exclude);
+            hashCode.AddSequence(IncludeFiles);
+            hashCode.AddSequence(ExcludeFiles);
+
+            return hashCode.CombinedHash;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as IncludeExcludeFiles);
+        }
+
+        public bool Equals(IncludeExcludeFiles other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return Include.SequenceEqualWithNullCheck(Include) &&
+                   Exclude.SequenceEqualWithNullCheck(Exclude) &&
+                   IncludeFiles.SequenceEqualWithNullCheck(IncludeFiles) &&
+                   ExcludeFiles.SequenceEqualWithNullCheck(ExcludeFiles);
         }
     }
 }

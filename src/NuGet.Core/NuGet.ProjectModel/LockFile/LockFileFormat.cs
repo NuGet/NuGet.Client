@@ -12,6 +12,7 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.RuntimeModel;
 using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
@@ -46,6 +47,7 @@ namespace NuGet.ProjectModel
         private const string ToolsProperty = "tools";
         private const string ProjectFileToolGroupsProperty = "projectFileToolGroups";
         private const string PackageFoldersProperty = "packageFolders";
+        private const string PackageSpecProperty = "project";
 
         // Legacy property names
         private const string RuntimeAssembliesProperty = "runtimeAssemblies";
@@ -179,6 +181,7 @@ namespace NuGet.ProjectModel
             lockFile.Tools = ReadObject(cursor[ToolsProperty] as JObject, ReadTarget);
             lockFile.ProjectFileToolGroups = ReadObject(cursor[ProjectFileToolGroupsProperty] as JObject, ReadProjectFileDependencyGroup);
             lockFile.PackageFolders = ReadObject(cursor[PackageFoldersProperty] as JObject, ReadFileItem);
+            lockFile.PackageSpec = ReadPackageSpec(cursor[PackageSpecProperty] as JObject);
             return lockFile;
         }
 
@@ -207,6 +210,17 @@ namespace NuGet.ProjectModel
             if (lockFile.PackageFolders?.Any() == true)
             {
                 json[PackageFoldersProperty] = WriteObject(lockFile.PackageFolders, WriteFileItem);
+            }
+
+            if (lockFile.Version >= 2)
+            {
+                if (lockFile.PackageSpec != null)
+                {
+                    var writer = new JsonObjectWriter();
+                    PackageSpecWriter.Write(lockFile.PackageSpec, writer);
+                    var packageSpec = writer.GetJObject();
+                    json[PackageSpecProperty] = packageSpec;
+                }
             }
 
             return json;
@@ -406,6 +420,20 @@ namespace NuGet.ProjectModel
             return new ProjectFileDependencyGroup(
                 property,
                 ReadArray(json as JArray, ReadString));
+        }
+
+        private static PackageSpec ReadPackageSpec(JObject json)
+        {
+            if (json == null)
+            {
+                return null;
+            }
+
+            return JsonPackageSpecReader.GetPackageSpec(
+                json,
+                name: null,
+                packageSpecPath: null,
+                snapshotValue: null);
         }
 
         private static JProperty WriteProjectFileDependencyGroup(ProjectFileDependencyGroup frameworkInfo)

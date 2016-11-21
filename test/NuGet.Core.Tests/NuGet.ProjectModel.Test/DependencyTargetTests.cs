@@ -155,6 +155,7 @@ namespace NuGet.ProjectModel.Test
             }
 
             // Assert
+            Assert.NotNull(exception);
             Assert.Equal("Invalid dependency target value 'blah'.", exception.Message);
             Assert.EndsWith("project.json", exception.Path);
             Assert.Equal(5, exception.Line);
@@ -191,6 +192,7 @@ namespace NuGet.ProjectModel.Test
             }
 
             // Assert
+            Assert.NotNull(exception);
             Assert.Equal("Invalid dependency target value 'winmd'.", exception.Message);
             Assert.EndsWith("project.json", exception.Path);
             Assert.Equal(5, exception.Line);
@@ -227,13 +229,14 @@ namespace NuGet.ProjectModel.Test
             }
 
             // Assert
+            Assert.NotNull(exception);
             Assert.Equal("Invalid dependency target value 'package,project'.", exception.Message);
             Assert.EndsWith("project.json", exception.Path);
             Assert.Equal(5, exception.Line);
         }
 
         [Fact]
-        public void DependencyTarget_WhitespaceFails()
+        public void DependencyTarget_AcceptsWhitespace()
         {
             // Arrange
             var json = @"{
@@ -250,22 +253,11 @@ namespace NuGet.ProjectModel.Test
 
 
             // Act
-            FileFormatException exception = null;
-
-            try
-            {
-                var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
-                var dependency = spec.Dependencies.Single();
-            }
-            catch (FileFormatException ex)
-            {
-                exception = ex;
-            }
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
 
             // Assert
-            Assert.Equal("Invalid dependency target value ' package '.", exception.Message);
-            Assert.EndsWith("project.json", exception.Path);
-            Assert.Equal(5, exception.Line);
+            var dependency = spec.Dependencies.Single();
+            Assert.Equal(LibraryDependencyTarget.Package, dependency.LibraryRange.TypeConstraint);
         }
     }
 }

@@ -601,6 +601,9 @@ namespace NuGet.Commands
             // Remove tools
             lockFile.Tools.Clear();
             lockFile.ProjectFileToolGroups.Clear();
+
+            // Remove the package spec
+            lockFile.PackageSpec = null;
         }
 
         private static ExternalProjectReference ToExternalProjectReference(PackageSpec project)

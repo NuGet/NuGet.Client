@@ -4,6 +4,7 @@ using NuGet.LibraryModel;
 using NuGet.Versioning;
 using System.Linq;
 using Xunit;
+using System.Collections.Generic;
 
 namespace NuGet.ProjectModel.Test
 {
@@ -416,6 +417,146 @@ namespace NuGet.ProjectModel.Test
                 new ProjectFileDependencyGroup("", new string[] { "System.Runtime [4.0.10-beta-*, )" }));
             lockFile.ProjectFileToolGroups.Add(
                 new ProjectFileDependencyGroup(FrameworkConstants.CommonFrameworks.DotNet.DotNetFrameworkName, new string[0]));
+
+            // Act
+            var lockFileFormat = new LockFileFormat();
+            var output = JObject.Parse(lockFileFormat.Render(lockFile));
+            var expected = JObject.Parse(lockFileContent);
+
+            // Assert
+            Assert.Equal(expected.ToString(), output.ToString());
+        }
+
+        [Fact]
+        public void LockFileFormat_WritesPackageSpec()
+        {
+            // Arrange
+            string lockFileContent = @"{
+  ""version"": 2,
+  ""targets"": {},
+  ""libraries"": {},
+  ""projectFileDependencyGroups"": {},
+  ""tools"": {},
+  ""projectFileToolGroups"": {},
+  ""project"": {
+    ""frameworks"": {
+      ""dotnet"": {}
+    }
+  }
+}";
+            var lockFile = new LockFile();
+            lockFile.Version = 2;
+
+            lockFile.PackageSpec = new PackageSpec(new[]
+            {
+                new TargetFrameworkInformation
+                {
+                    FrameworkName = FrameworkConstants.CommonFrameworks.DotNet
+                }
+            });
+
+            // Act
+            var lockFileFormat = new LockFileFormat();
+            var output = JObject.Parse(lockFileFormat.Render(lockFile));
+            var expected = JObject.Parse(lockFileContent);
+
+            // Assert
+            Assert.Equal(expected.ToString(), output.ToString());
+        }
+
+        [Fact]
+        public void LockFileFormat_ReadsPackageSpec()
+        {
+            // Arrange
+            string lockFileContent = @"{
+  ""version"": 2,
+  ""targets"": {},
+  ""libraries"": {},
+  ""projectFileDependencyGroups"": {},
+  ""tools"": {},
+  ""projectFileToolGroups"": {},
+  ""project"":   {
+    ""version"": ""1.0.0"",
+    ""restore"": {
+      ""projectUniqueName"": ""X:\\ProjectPath\\ProjectPath.csproj"",
+      ""projectName"": ""ProjectPath"",
+      ""projectPath"": ""X:\\ProjectPath\\ProjectPath.csproj"",
+      ""outputPath"": ""X:\\ProjectPath\\obj\\"",
+      ""outputType"": ""NETCore"",
+      ""originalTargetFrameworks"": [
+        ""netcoreapp1.0""
+      ],
+      ""frameworks"": {
+        ""netcoreapp1.0"": {
+          ""projectReferences"": {}
+        }
+      }
+    },
+    ""frameworks"": {
+      ""netcoreapp1.0"": {
+        ""dependencies"": {
+          ""Microsoft.NETCore.App"": {
+            ""target"": ""Package"",
+            ""version"": ""1.0.1""
+          },
+          ""Microsoft.NET.Sdk"": {
+            ""suppressParent"": ""All"",
+            ""target"": ""Package"",
+            ""version"": ""1.0.0-alpha-20161104-2""
+          }
+        }
+      }
+    }
+  }
+}";
+            var lockFile = new LockFile();
+            lockFile.Version = 2;
+
+            lockFile.PackageSpec = new PackageSpec(new[]
+            {
+                new TargetFrameworkInformation
+                {
+                    FrameworkName = FrameworkConstants.CommonFrameworks.NetCoreApp10,
+                    Dependencies = new[]
+                    {
+                        new LibraryDependency
+                        {
+                            LibraryRange = new LibraryRange(
+                                "Microsoft.NETCore.App",
+                                new VersionRange(
+                                    minVersion: new NuGetVersion("1.0.1"),
+                                    originalString: "1.0.1"),
+                                LibraryDependencyTarget.Package)
+                        },
+                        new LibraryDependency
+                        {
+                            LibraryRange = new LibraryRange(
+                                "Microsoft.NET.Sdk",
+                                new VersionRange(
+                                    minVersion: new NuGetVersion("1.0.0-alpha-20161104-2"),
+                                    originalString: "1.0.0-alpha-20161104-2"),
+                                LibraryDependencyTarget.Package),
+                            SuppressParent = LibraryIncludeFlags.All
+                        }
+                    }
+                }
+            })
+            {
+                Version = new NuGetVersion("1.0.0"),
+                RestoreMetadata = new ProjectRestoreMetadata
+                {
+                    ProjectUniqueName = @"X:\ProjectPath\ProjectPath.csproj",
+                    ProjectName = "ProjectPath",
+                    ProjectPath = @"X:\ProjectPath\ProjectPath.csproj",
+                    OutputPath = @"X:\ProjectPath\obj\",
+                    OutputType = RestoreOutputType.NETCore,
+                    OriginalTargetFrameworks = new[] { "netcoreapp1.0" },
+                    TargetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>
+                    {
+                        new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.Parse("netcoreapp1.0"))
+                    }
+                }
+            };
 
             // Act
             var lockFileFormat = new LockFileFormat();

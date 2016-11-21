@@ -18,7 +18,8 @@ namespace Test.Utility
 
         public void Log(MessageLevel level, string message, params object[] args)
         {
-            Console.WriteLine(message, args);
+            // Uncomment when you want to debug tests.
+            // Console.WriteLine(message, args);
         }
 
         public FileConflictAction ResolveFileConflict(string message)

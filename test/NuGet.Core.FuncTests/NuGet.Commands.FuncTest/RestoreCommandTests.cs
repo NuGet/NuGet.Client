@@ -2073,7 +2073,8 @@ namespace NuGet.Commands.FuncTest
                 LibraryRange = new LibraryRange()
                 {
                     Name = id,
-                    VersionRange = VersionRange.Parse(version)
+                    VersionRange = VersionRange.Parse(version),
+                    TypeConstraint = LibraryDependencyTarget.Package
                 }
             };
 

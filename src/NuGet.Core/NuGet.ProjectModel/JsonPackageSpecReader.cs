@@ -73,7 +73,7 @@ namespace NuGet.ProjectModel
 
         public static PackageSpec GetPackageSpec(JObject rawPackageSpec, string name, string packageSpecPath, string snapshotValue)
         {
-            var packageSpec = new PackageSpec(rawPackageSpec);
+            var packageSpec = new PackageSpec();
 
             // Parse properties we know about
             var version = rawPackageSpec["version"];

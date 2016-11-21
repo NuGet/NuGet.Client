@@ -1,12 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace NuGet.LibraryModel
 {
-    public class LibraryDependencyType
+    public class LibraryDependencyType : IEquatable<LibraryDependencyType>
     {
         private readonly HashSet<LibraryDependencyTypeFlag> _keywords;
 
@@ -54,12 +55,25 @@ namespace NuGet.LibraryModel
                 _keywords.Except(remove).Union(add).ToArray());
         }
 
+        public bool Equals(LibraryDependencyType other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return _keywords.All(other.Contains) &&
+                   other._keywords.All(_keywords.Contains);
+        }
+
         public override bool Equals(object obj)
         {
-            LibraryDependencyType other = obj as LibraryDependencyType;
-            return other != null &&
-                _keywords.All(other.Contains) &&
-                other._keywords.All(_keywords.Contains);
+            return Equals(obj as LibraryDependencyType);
         }
 
         public override int GetHashCode()

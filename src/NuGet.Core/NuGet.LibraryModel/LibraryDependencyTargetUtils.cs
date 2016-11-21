@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NuGet.LibraryModel
 {
@@ -22,6 +23,24 @@ namespace NuGet.LibraryModel
                 return LibraryDependencyTarget.All;
             }
 
+            var pieces = flag
+                .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(f => f.Trim().ToLowerInvariant())
+                .Where(f => f.Length > 0)
+                .ToList();
+
+            if (!pieces.Any())
+            {
+                return LibraryDependencyTarget.All;
+            }
+
+            return pieces
+                .Select(f => ParseSingleFlag(f))
+                .Aggregate(LibraryDependencyTarget.None, (a, b) => a | b);
+        }
+
+        private static LibraryDependencyTarget ParseSingleFlag(string flag)
+        {
             switch (flag.ToLowerInvariant())
             {
                 case "package":
@@ -38,11 +57,9 @@ namespace NuGet.LibraryModel
                     return LibraryDependencyTarget.WinMD;
                 case "all":
                     return LibraryDependencyTarget.All;
-
-                    // None is a noop here
+                default:
+                    return LibraryDependencyTarget.None;
             }
-
-            return LibraryDependencyTarget.None;
         }
 
         /// <summary>
