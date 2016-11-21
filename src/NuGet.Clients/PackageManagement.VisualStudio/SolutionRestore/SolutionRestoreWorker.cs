@@ -4,15 +4,14 @@
 using System;
 using System.Collections.Concurrent;
 using System.ComponentModel.Composition;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
+using NuGet.PackageManagement.UI;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -22,24 +21,18 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     [Export(typeof(ISolutionRestoreWorker))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    internal sealed class SolutionRestoreWorker : ISolutionRestoreWorker, IVsSolutionEvents, IVsSolutionLoadEvents, IDisposable
+    internal sealed class SolutionRestoreWorker : SolutionEventsListener, ISolutionRestoreWorker, IDisposable
     {
-        private const int SaneIdleTimeoutMs = 400;
-        private const int SaneRequestQueueLimit = 150;
-        private const int SanePromoteAttemptsLimit = 150;
+        private const int IdleTimeoutMs = 400;
+        private const int RequestQueueLimit = 150;
+        private const int PromoteAttemptsLimit = 150;
 
         private readonly IServiceProvider _serviceProvider;
-        private ErrorListProvider _errorListProvider;
+        private readonly AsyncLazy<ErrorListProvider> _errorListProvider;
         private EnvDTE.SolutionEvents _solutionEvents;
-        private readonly IComponentModel _componentModel;
         private readonly IVsSolutionManager _solutionManager;
+        private readonly Common.ILogger _logger;
 
-        // these properties are specific to VS15 since they are use to attach to solution events
-        // which is further used to start bg job runner to schedule auto restore
-#if VS15
-        private IVsSolution _vsSolution;
-        private uint _cookie;
-#endif
         private CancellationTokenSource _workerCts;
         private Lazy<Task> _backgroundJobRunner;
         private BackgroundRestoreOperation _pendingRestore;
@@ -51,6 +44,8 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly JoinableTaskCollection _joinableCollection;
         private readonly JoinableTaskFactory _joinableFactory;
 
+        private ErrorListProvider ErrorListProvider => ThreadHelper.JoinableTaskFactory.Run(_errorListProvider.GetValueAsync);
+
         public Task<bool> CurrentRestoreOperation => _activeRestoreTask;
 
         public bool IsBusy => !_activeRestoreTask.IsCompleted;
@@ -59,7 +54,9 @@ namespace NuGet.PackageManagement.VisualStudio
         public SolutionRestoreWorker(
             [Import(typeof(SVsServiceProvider))]
             IServiceProvider serviceProvider,
-            IVsSolutionManager solutionManager)
+            IVsSolutionManager solutionManager,
+            [Import(typeof(VisualStudioActivityLogger))]
+            Common.ILogger logger)
         {
             if (serviceProvider == null)
             {
@@ -71,61 +68,65 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(nameof(solutionManager));
             }
 
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
             _serviceProvider = serviceProvider;
             _solutionManager = solutionManager;
+            _logger = logger;
 
             var joinableTaskContextNode = new JoinableTaskContextNode(ThreadHelper.JoinableTaskContext);
             _joinableCollection = joinableTaskContextNode.CreateCollection();
             _joinableFactory = joinableTaskContextNode.CreateFactory(_joinableCollection);
 
-            _componentModel = _serviceProvider.GetService<SComponentModel, IComponentModel>();
+            _errorListProvider = new AsyncLazy<ErrorListProvider>(async () =>
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    return new ErrorListProvider(serviceProvider);
+                },
+                _joinableFactory);
 
-            ThreadHelper.JoinableTaskFactory.Run(async () =>
+            Reset();
+        }
+
+        public async Task InitializeAsync(IAsyncServiceProvider site)
+        {
+            await _joinableFactory.RunAsync(async () =>
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                var dte = _serviceProvider.GetDTE();
+                var dte = await site.GetDTEAsync();
                 _solutionEvents = dte.Events.SolutionEvents;
                 _solutionEvents.AfterClosing += SolutionEvents_AfterClosing;
-
-                _errorListProvider = new ErrorListProvider(_serviceProvider);
 #if VS15
-                _vsSolution = serviceProvider.GetService(typeof(SVsSolution)) as IVsSolution;
-                if (_vsSolution == null)
-                {
-                    throw new ArgumentNullException(nameof(_vsSolution));
-                }
-
-                if (_vsSolution.AdviseSolutionEvents(this, out _cookie) == VSConstants.S_OK)
-                {
-                    Debug.Assert(_cookie != 0);
-                }
-                else
-                {
-                    _cookie = 0;
-                }
+                // these properties are specific to VS15 since they are use to attach to solution events
+                // which is further used to start bg job runner to schedule auto restore
+                await AdviseAsync(site);
 #endif
             });
-
-            Reset();
         }
 
         public void Dispose()
         {
             Reset(isDisposing: true);
 
-            ThreadHelper.JoinableTaskFactory.Run(async () =>
+            _joinableFactory.Run(async () =>
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                _solutionEvents.AfterClosing -= SolutionEvents_AfterClosing;
-                _errorListProvider.Dispose();
-#if VS15
-                if (_cookie != 0 && _vsSolution != null)
+                if (_solutionEvents != null)
                 {
-                    _vsSolution.UnadviseSolutionEvents(_cookie);
+                    _solutionEvents.AfterClosing -= SolutionEvents_AfterClosing;
                 }
+#if VS15
+                Unadvise();
 #endif
+                if (_errorListProvider.IsValueCreated)
+                {
+                    (await _errorListProvider.GetValueAsync()).Dispose();
+                }
             });
         }
 
@@ -136,7 +137,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (_backgroundJobRunner != null && _backgroundJobRunner.IsValueCreated)
             {
                 // Do not block VS for more than 5 sec.
-                ThreadHelper.JoinableTaskFactory.Run(
+                _joinableFactory.Run(
                     () => Task.WhenAny(_backgroundJobRunner.Value, Task.Delay(TimeSpan.FromSeconds(5))));
             }
 
@@ -152,7 +153,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         function: () => StartBackgroundJobRunnerAsync(_workerCts.Token),
                         cancellationToken: _workerCts.Token));
 
-                _pendingRequests = new BlockingCollection<SolutionRestoreRequest>(SaneRequestQueueLimit);
+                _pendingRequests = new BlockingCollection<SolutionRestoreRequest>(RequestQueueLimit);
                 _pendingRestore = new BackgroundRestoreOperation(blockingUi: false);
                 _activeRestoreTask = Task.FromResult(true);
                 _restoreJobContext = new SolutionRestoreJobContext();
@@ -162,7 +163,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private void SolutionEvents_AfterClosing()
         {
             Reset();
-            _errorListProvider.Tasks.Clear();
+            ErrorListProvider.Tasks.Clear();
         }
 
         public async Task<bool> ScheduleRestoreAsync(
@@ -188,7 +189,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public bool Restore(SolutionRestoreRequest request)
         {
-            return ThreadHelper.JoinableTaskFactory.Run(
+            return _joinableFactory.Run(
                 async () =>
                 {
                     using (var restoreOperation = new BackgroundRestoreOperation(blockingUi: true))
@@ -238,7 +239,7 @@ namespace NuGet.PackageManagement.VisualStudio
                             && !token.IsCancellationRequested)
                         {
                             SolutionRestoreRequest discard;
-                            if (!_pendingRequests.TryTake(out discard, SaneIdleTimeoutMs, token))
+                            if (!_pendingRequests.TryTake(out discard, IdleTimeoutMs, token))
                             {
                                 break;
                             }
@@ -262,10 +263,10 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         // Ignores
                     }
-                    catch (Exception ex)
+                    catch (Exception e)
                     {
                         // Writes stack to activity log
-                        ExceptionHelper.WriteToActivityLog(ex);
+                        _logger.LogError(e.ToString());
                         // Do not die just yet
                     }
                 }
@@ -295,7 +296,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             int attempt = 0;
             for (var retry = true;
-                retry && !token.IsCancellationRequested && attempt != SanePromoteAttemptsLimit;
+                retry && !token.IsCancellationRequested && attempt != PromoteAttemptsLimit;
                 attempt++)
             {
                 // Grab local copy of active task
@@ -314,7 +315,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     ref _activeRestoreTask, pendingTask, activeTask) != activeTask;
             }
 
-            if (attempt == SanePromoteAttemptsLimit)
+            if (attempt == PromoteAttemptsLimit)
             {
                 throw new InvalidOperationException("Failed promoting pending task.");
             }
@@ -325,96 +326,19 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             await TaskScheduler.Default;
 
+            var componentModel = _serviceProvider.GetComponentModel();
+
             using (var jobCts = CancellationTokenSource.CreateLinkedTokenSource(token))
             using (var logger = await RestoreOperationLogger.StartAsync(
-                _serviceProvider, _errorListProvider, blockingUi, jobCts))
+                _serviceProvider, ErrorListProvider, blockingUi, jobCts))
             using (var job = await SolutionRestoreJob.CreateAsync(
-                _serviceProvider, _componentModel, logger, jobCts.Token))
+                _serviceProvider, componentModel, logger, jobCts.Token))
             {
                 return await job.ExecuteAsync(jobArgs, _restoreJobContext, jobCts.Token);
             }
         }
 
-#region IVsSolutionEvents (mandatory but unused implementation)
-        public int OnAfterOpenProject(IVsHierarchy pHierarchy, int fAdded)
-        {
-            return VSConstants.S_OK;
-        }
-
-        public int OnQueryCloseProject(IVsHierarchy pHierarchy, int fRemoving, ref int pfCancel)
-        {
-            return VSConstants.S_OK;
-        }
-
-        public int OnBeforeCloseProject(IVsHierarchy pHierarchy, int fRemoved)
-        {
-            return VSConstants.S_OK;
-        }
-
-        public int OnAfterLoadProject(IVsHierarchy pStubHierarchy, IVsHierarchy pRealHierarchy)
-        {
-            return VSConstants.S_OK;
-        }
-
-        public int OnQueryUnloadProject(IVsHierarchy pRealHierarchy, ref int pfCancel)
-        {
-            return VSConstants.S_OK;
-        }
-
-        public int OnBeforeUnloadProject(IVsHierarchy pRealHierarchy, IVsHierarchy pStubHierarchy)
-        {
-            return VSConstants.S_OK;
-        }
-
-        public int OnAfterOpenSolution(object pUnkReserved, int fNewSolution)
-        {
-            return VSConstants.S_OK;
-        }
-
-        public int OnQueryCloseSolution(object pUnkReserved, ref int pfCancel)
-        {
-            return VSConstants.S_OK;
-        }
-
-        public int OnBeforeCloseSolution(object pUnkReserved)
-        {
-            return VSConstants.S_OK;
-        }
-
-        public int OnAfterCloseSolution(object pUnkReserved)
-        {
-            return VSConstants.S_OK;
-        }
-#endregion
-
-#region IVsSolutionLoadEvents (Only useful implementation is OnAfterBackgroundSolutionLoadComplete)
-        public int OnBeforeOpenSolution(string pszSolutionFilename)
-        {
-            return VSConstants.S_OK;
-        }
-
-        public int OnBeforeBackgroundSolutionLoadBegins()
-        {
-            return VSConstants.S_OK;
-        }
-
-        public int OnQueryBackgroundLoadProjectBatch(out bool pfShouldDelayLoadToNextIdle)
-        {
-            pfShouldDelayLoadToNextIdle = false;
-            return VSConstants.S_OK;
-        }
-
-        public int OnBeforeLoadProjectBatch(bool fIsBackgroundIdleBatch)
-        {
-            return VSConstants.S_OK;
-        }
-
-        public int OnAfterLoadProjectBatch(bool fIsBackgroundIdleBatch)
-        {
-            return VSConstants.S_OK;
-        }
-
-        public int OnAfterBackgroundSolutionLoadComplete()
+        public override int OnAfterBackgroundSolutionLoadComplete()
         {
 #if VS15
             var projects = _solutionManager.GetNuGetProjects();
@@ -427,7 +351,6 @@ namespace NuGet.PackageManagement.VisualStudio
 #endif
             return VSConstants.S_OK;
         }
-#endregion
 
         private class BackgroundRestoreOperation
             : IEquatable<BackgroundRestoreOperation>, IDisposable

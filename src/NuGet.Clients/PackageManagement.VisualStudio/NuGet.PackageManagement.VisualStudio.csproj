@@ -140,6 +140,7 @@
     <Compile Include="ProjectSystems\IProjectSystemCache.cs" />
     <Compile Include="ProjectSystems\CpsPackageReferenceProjectProvider.cs" Condition="'$(VisualStudioVersion)' == '15.0'" />
     <Compile Include="ProjectSystems\ProjectSystemProviderContext.cs" />
+    <Compile Include="SolutionEventsListener.cs" />
     <Compile Include="SolutionRestore\ISolutionRestoreJob.cs" />
     <Compile Include="SolutionRestore\RestoreOperationProgressUI.cs" />
     <Compile Include="SolutionRestore\SolutionRestoreRequest.cs" />
@@ -199,6 +200,7 @@
     <Compile Include="Telemetry\NuGetProjectType.cs" />
     <Compile Include="Telemetry\ProjectTelemetryEvent.cs" />
     <Compile Include="Telemetry\NuGetProjectTelemetryService.cs" />
+    <Compile Include="Utility\EnvDTEExtensions.cs" />
     <Compile Include="Utility\EnvDTESolutionUtility.cs" />
     <Compile Include="Utility\FrameworkAssembly.cs" />
     <Compile Include="Utility\FrameworkAssemblyResolver.cs" />
@@ -214,7 +216,6 @@
     <Compile Include="Utility\SettingsHelper.cs" />
     <Compile Include="Utility\VCProjectHelper.cs" />
     <Compile Include="Utility\VSProjectRestoreReferenceUtility.cs" />
-    <Compile Include="Utility\VSVersionHelper.cs" />
     <Compile Include="VSMachineWideSettings.cs" />
     <Compile Include="ProjectSystems\NuGetProjectFactory.cs" />
     <Compile Include="ProjectSystems\VSMSBuildNuGetProjectSystem.cs" />

@@ -1,6 +1,17 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.ComponentModel.Design;
+using System.Diagnostics;
+using System.Globalization;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Threading;
+using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
@@ -18,16 +29,6 @@ using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGetConsole;
 using NuGetConsole.Implementation;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Design;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Threading;
-using System.Threading.Tasks;
 using IMachineWideSettings = NuGet.Configuration.IMachineWideSettings;
 using ISettings = NuGet.Configuration.ISettings;
 using Resx = NuGet.PackageManagement.UI.Resources;
@@ -47,16 +48,11 @@ namespace NuGetVSExtension
         Style = VsDockStyle.Tabbed,
         Window = "{34E76E81-EE4A-11D0-AE2E-00A0C90FFFC3}", // this is the guid of the Output tool window, which is present in both VS and VWD
         Orientation = ToolWindowOrientation.Right)]
-    //[ProvideToolWindow(typeof(DebugConsoleToolWindow),
-    //    Style = VsDockStyle.Tabbed,
-    //    Window = "{34E76E81-EE4A-11D0-AE2E-00A0C90FFFC3}",      // this is the guid of the debug tool window, which is present in both VS and VWD
-    //    Orientation = ToolWindowOrientation.Right)]
     [ProvideOptionPage(typeof(PackageSourceOptionsPage), "NuGet Package Manager", "Package Sources", 113, 114, true)]
     [ProvideOptionPage(typeof(GeneralOptionPage), "NuGet Package Manager", "General", 113, 115, true)]
     [ProvideSearchProvider(typeof(NuGetSearchProvider), "NuGet Search")]
     [ProvideBindingPath] // Definition dll needs to be on VS binding path
     [ProvideAutoLoad(GuidList.guidAutoLoadNuGetString)]
-    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionBuilding_string)]
     [ProvideAutoLoad(VSConstants.UICONTEXT.ProjectRetargeting_string)]
     [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionOrProjectUpgrading_string)]
     [FontAndColorsRegistration(
@@ -68,22 +64,17 @@ namespace NuGetVSExtension
     {
         // It is displayed in the Help - About box of Visual Studio
         public const string ProductVersion = "4.0.0";
-        private static readonly object _credentialsPromptLock = new object();
 
-        private static readonly string[] _visualizerSupportedSKUs = { "Premium", "Ultimate" };
+        private static readonly object _credentialsPromptLock = new object();
 
         private uint _solutionNotBuildingAndNotDebuggingContextCookie;
         private DTE _dte;
         private DTEEvents _dteEvents;
         private IConsoleStatus _consoleStatus;
         private IVsMonitorSelection _vsMonitorSelection;
-        private bool? _isVisualizerSupported;
 
-        private ISettings _settings;
         private ISourceControlManagerProvider _sourceControlManagerProvider;
-        private IVsSourceControlTracker _vsSourceControlTracker;
         private ICommonOperations _commonOperations;
-        private ISolutionManager _solutionManager;
         private ISourceRepositoryProvider _sourceRepositoryProvider;
         private IDeleteOnRestartManager _deleteOnRestart;
 
@@ -111,6 +102,12 @@ namespace NuGetVSExtension
             _nugetSettings = new NuGetSettings();
             _credentialRequested = new HashSet<Uri>();
         }
+
+        /// <summary>
+        /// This initializes the IVSSourceControlTracker, even though SourceControlTracker is unused.
+        /// </summary>
+        [Import]
+        private IVsSourceControlTracker SourceControlTracker { get; set; }
 
         private IVsMonitorSelection VsMonitorSelection
         {
@@ -143,18 +140,8 @@ namespace NuGetVSExtension
             }
         }
 
-        private ISettings Settings
-        {
-            get
-            {
-                if (_settings == null)
-                {
-                    _settings = ServiceLocator.GetInstance<ISettings>();
-                    Debug.Assert(_settings != null);
-                }
-                return _settings;
-            }
-        }
+        [Import]
+        private ISettings Settings { get; set; }
 
         private ISourceControlManagerProvider SourceControlManagerProvider
         {
@@ -180,34 +167,19 @@ namespace NuGetVSExtension
             }
         }
 
-        private ISolutionManager SolutionManager
-        {
-            get
-            {
-                if (_solutionManager == null)
-                {
-                    _solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
-                    _solutionManager.AfterNuGetProjectRenamed += SolutionManager_NuGetProjectRenamed;
-                    Debug.Assert(_solutionManager != null);
-                }
-                return _solutionManager;
-            }
-        }
+        [Import]
+        private IVsSolutionManager SolutionManager { get; set; }
 
         private void SolutionManager_NuGetProjectRenamed(object sender, NuGetProjectEventArgs e)
         {
-            VSSolutionManager manager = SolutionManager as VSSolutionManager;
-            if (manager != null)
+            var project = SolutionManager.GetDTEProject(SolutionManager.GetNuGetProjectSafeName(e.NuGetProject));
+            var windowFrame = FindExistingWindowFrame(project);
+            if (windowFrame != null)
             {
-                Project project = manager.GetDTEProject(manager.GetNuGetProjectSafeName(e.NuGetProject));
-                var windowFrame = FindExistingWindowFrame(project);
-                if (windowFrame != null)
-                {
-                    windowFrame.SetProperty((int)__VSFPROPID.VSFPROPID_OwnerCaption, String.Format(
-                        CultureInfo.CurrentCulture,
-                        Resx.Label_NuGetWindowCaption,
-                        project.Name));
-                }
+                windowFrame.SetProperty((int)__VSFPROPID.VSFPROPID_OwnerCaption, String.Format(
+                    CultureInfo.CurrentCulture,
+                    Resx.Label_NuGetWindowCaption,
+                    project.Name));
             }
         }
 
@@ -263,9 +235,14 @@ namespace NuGetVSExtension
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
             var componentModel = await GetServiceAsync(typeof(SComponentModel)) as IComponentModel;
+            componentModel.DefaultCompositionService.SatisfyImportsOnce(this);
 
-            _settings = componentModel.GetService<ISettings>();
-            Debug.Assert(_settings != null);
+            SolutionManager.AfterNuGetProjectRenamed += SolutionManager_NuGetProjectRenamed;
+            SolutionManager.SolutionOpened += (_, __) =>
+            {
+                _nugetSettings = new NuGetSettings();
+                LoadNuGetSettings();
+            };
 
             Styles.LoadVsStyles();
             Brushes.LoadVsBrushes();
@@ -291,15 +268,6 @@ namespace NuGetVSExtension
 
             SetDefaultCredentialProvider();
 
-            if (SolutionManager != null)
-            {
-                SolutionManager.SolutionOpened += (obj, ev) =>
-                    {
-                        _nugetSettings = new NuGetSettings();
-                        LoadNuGetSettings();
-                    };
-            }
-
             _uiProjectContext = new NuGetUIProjectContext(
                 _outputConsoleLogger,
                 SourceControlManagerProvider,
@@ -322,9 +290,6 @@ namespace NuGetVSExtension
             ProjectUpgradeHandler = new ProjectUpgradeHandler(this, SolutionManager);
 
             LoadNuGetSettings();
-
-            // This initializes the IVSSourceControlTracker, even though _vsSourceControlTracker is unused.
-            _vsSourceControlTracker = await ServiceLocator.GetInstanceSafeAsync<IVsSourceControlTracker>();
 
             // This instantiates a decoupled ICommand instance responsible to locate and display output pane by a UI control
             UI.Commands.ShowErrorsCommand = new ShowErrorsCommand(this);
@@ -537,19 +502,6 @@ namespace NuGetVSExtension
         private void PowerConsoleService_ExecuteEnd(object sender, EventArgs e)
         {
             _powerConsoleCommandExecuting = false;
-        }
-
-        /// <summary>
-        /// Executes the NuGet Visualizer.
-        /// </summary>
-        private void ExecuteVisualizer(object sender, EventArgs e)
-        {
-            /* ***
-            var visualizer = new NuGet.Dialog.Visualizer(
-                ServiceLocator.GetInstance<IVsPackageManagerFactory>(),
-                ServiceLocator.GetInstance<ISolutionManager>());
-            string outputFile = visualizer.CreateGraph();
-            _dte.ItemOperations.OpenFile(outputFile); */
         }
 
         private IVsWindowFrame FindExistingWindowFrame(
@@ -1095,18 +1047,6 @@ namespace NuGetVSExtension
                 Project project = EnvDTEProjectUtility.GetActiveProject(VsMonitorSelection);
                 return project != null && !EnvDTEProjectUtility.IsUnloaded(project)
                        && EnvDTEProjectUtility.IsSupported(project);
-            }
-        }
-
-        private bool IsVisualizerSupported
-        {
-            get
-            {
-                if (_isVisualizerSupported == null)
-                {
-                    _isVisualizerSupported = _visualizerSupportedSKUs.Contains(_dte.Edition, StringComparer.OrdinalIgnoreCase);
-                }
-                return _isVisualizerSupported.Value;
             }
         }
 

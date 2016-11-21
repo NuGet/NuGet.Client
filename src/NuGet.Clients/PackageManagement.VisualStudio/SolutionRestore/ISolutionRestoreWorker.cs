@@ -3,6 +3,8 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -20,6 +22,13 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Returns true when it's executing a restore operation.
         /// </summary>
         bool IsBusy { get; }
+
+        /// <summary>
+        /// Initializes instance after the hosting package is settled.
+        /// </summary>
+        /// <param name="site">VS extension package hosting the instance.</param>
+        /// <returns>Asyncronous operation task</returns>
+        Task InitializeAsync(IAsyncServiceProvider site);
 
         /// <summary>
         /// Schedules backgroud restore operation.

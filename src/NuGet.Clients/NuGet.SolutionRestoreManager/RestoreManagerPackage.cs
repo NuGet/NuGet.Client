@@ -2,15 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel.Composition;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Configuration;
-using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Protocol.Core.Types;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.SolutionRestoreManager
@@ -31,36 +30,40 @@ namespace NuGet.SolutionRestoreManager
         /// </summary>
         public const string PackageGuidString = "2b52ac92-4551-426d-bd34-c6d7d9fdd1c5";
 
-        private Lazy<ISolutionRestoreWorker> _restoreWorker;
-        private Lazy<ISettings> _settings;
-        private Lazy<ISolutionManager> _solutionManager;
+        [Import]
+        private ISolutionRestoreWorker SolutionRestoreWorker { get; set; }
+
+        [Import]
+        private Lazy<ISettings> Settings { get; set; }
+
+        [Import]
+        private IVsSolutionManager SolutionManager { get; set; }
 
         // keeps a reference to BuildEvents so that our event handler
         // won't get disconnected.
         private EnvDTE.BuildEvents _buildEvents;
 
-        private ISolutionRestoreWorker SolutionRestoreWorker => _restoreWorker.Value;
-        private ISettings Settings => _settings.Value;
-        private ISolutionManager SolutionManager => _solutionManager.Value;
-
         protected override async Task InitializeAsync(
             CancellationToken cancellationToken, 
             IProgress<ServiceProgressData> progress)
         {
-            var componentModel = await GetServiceAsync(typeof(SComponentModel)) as IComponentModel;
+            var componentModel = await this.GetComponentModelAsync();
+            componentModel.DefaultCompositionService.SatisfyImportsOnce(this);
 
-            _restoreWorker = new Lazy<ISolutionRestoreWorker>(
-                () => componentModel.GetService<ISolutionRestoreWorker>());
+            await SolutionManager.InitializeAsync(this);
+            await SolutionRestoreWorker.InitializeAsync(this);
 
-            _settings = new Lazy<ISettings>(
-                () => componentModel.GetService<ISettings>());
+            await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            _solutionManager = new Lazy<ISolutionManager>(
-                () => componentModel.GetService<ISolutionManager>());
+                var dte = await this.GetDTEAsync();
+                _buildEvents = dte.Events.BuildEvents;
+                _buildEvents.OnBuildBegin += BuildEvents_OnBuildBegin;
 
-            var dte = (EnvDTE.DTE)await GetServiceAsync(typeof(SDTE));
-            _buildEvents = dte.Events.BuildEvents;
-            _buildEvents.OnBuildBegin += BuildEvents_OnBuildBegin;
+                UserAgent.SetUserAgentString(
+                    new UserAgentStringBuilder().WithVisualStudioSKU(dte.GetFullVsVersionString()));
+            });
 
             await base.InitializeAsync(cancellationToken, progress);
         }
@@ -100,7 +103,7 @@ namespace NuGet.SolutionRestoreManager
         {
             get
             {
-                var packageRestoreConsent = new PackageRestoreConsent(Settings);
+                var packageRestoreConsent = new PackageRestoreConsent(Settings.Value);
                 return packageRestoreConsent.IsAutomatic;
             }
         }
