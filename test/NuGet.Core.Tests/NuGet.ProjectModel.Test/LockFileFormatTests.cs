@@ -326,7 +326,7 @@ namespace NuGet.ProjectModel.Test
   ""targets"": {},
   ""libraries"": {},
   ""projectFileDependencyGroups"": {},
-  ""packageSpec"": {
+  ""project"": {
     ""frameworks"": {
       ""dotnet"": {}
     }
@@ -361,7 +361,7 @@ namespace NuGet.ProjectModel.Test
   ""targets"": {},
   ""libraries"": {},
   ""projectFileDependencyGroups"": {},
-  ""packageSpec"":   {
+  ""project"":   {
     ""version"": ""1.0.0"",
     ""restore"": {
       ""projectUniqueName"": ""X:\\ProjectPath\\ProjectPath.csproj"",

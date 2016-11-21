@@ -47,7 +47,7 @@ namespace NuGet.ProjectModel
         private const string ToolsProperty = "tools";
         private const string ProjectFileToolGroupsProperty = "projectFileToolGroups";
         private const string PackageFoldersProperty = "packageFolders";
-        private const string PackageSpecProperty = "packageSpec";
+        private const string PackageSpecProperty = "project";
 
         // Legacy property names
         private const string RuntimeAssembliesProperty = "runtimeAssemblies";

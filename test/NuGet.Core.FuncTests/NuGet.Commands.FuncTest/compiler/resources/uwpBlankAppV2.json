@@ -15485,7 +15485,7 @@
     ],
     "UAP,Version=v10.0": []
   },
-  "packageSpec": {
+  "project": {
     "dependencies": {
       "Microsoft.NETCore.UniversalWindowsPlatform": "5.0.0"
     },
