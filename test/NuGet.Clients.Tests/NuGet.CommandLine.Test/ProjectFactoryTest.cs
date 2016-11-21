@@ -282,6 +282,69 @@ namespace NuGet.CommandLine
         }
 
         [Fact]
+        public void CommandLineVersionPopulatesVersionPlaceholderForDependenciesInNuspec()
+        {
+            // Arrange
+            var testAssembly = Assembly.GetExecutingAssembly();
+            const string inputSpec = @"<?xml version=""1.0""?>
+	<package>
+	    <metadata>
+	        <id>$id$</id>
+	        <version>$version$</version>
+	        <description>$description$</description>
+	        <authors>Outercurve</authors>
+	        <copyright>$copyright$</copyright>
+	        <licenseUrl>https://github.com/NuGet/NuGet.Client/blob/master/LICENSE.txt</licenseUrl>
+	        <projectUrl>https://github.com/NuGet/NuGet.Client</projectUrl>
+	        <tags>nuget</tags>
+            <dependencies>
+                <dependency id=""NeverGonnaGiveYouUp"" version =""$version$"" />
+            </dependencies>
+        </metadata>
+	</package>";
+            var projectXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+	<Project ToolsVersion=""4.0"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+	    <PropertyGroup>
+	        <ProjectGuid>{F879F274-EFA0-4157-8404-33A19B4E6AEC}</ProjectGuid>
+	        <OutputType>Library</OutputType>
+	        <RootNamespace>NuGet.Test</RootNamespace>
+	        <AssemblyName>" + testAssembly.GetName().Name + @"</AssemblyName>
+	        <TargetFrameworkProfile Condition="" '$(TargetFrameworkVersion)' == 'v4.0' "">Client</TargetFrameworkProfile>    
+	        <OutputPath>.</OutputPath> <!-- Force it to look for the assembly in the base path -->
+	        <TargetPath>" + testAssembly.ManifestModule.FullyQualifiedName + @"</TargetPath>
+	    </PropertyGroup>
+	    
+	    <ItemGroup>
+	        <Compile Include=""..\..\Dummy.cs"">
+	          <Link>Dummy.cs</Link>
+	        </Compile>
+	    </ItemGroup>
+	 
+	    <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
+	</Project>";
+
+            // Version that we expect to be replaced
+            var cmdLineVersion = NuGetVersion.Parse("1.2.3-rc-12345");
+
+            // Set base path to the currently assembly's folder so that it will find the test assembly
+            var basePath = Path.GetDirectoryName(testAssembly.CodeBase);
+
+            var project = new Project(XmlReader.Create(new StringReader(projectXml)));
+            project.FullPath = Path.Combine(project.DirectoryPath, "test.csproj");
+
+            // Act
+            var msbuildPath = Util.GetMsbuildPathOnWindows();
+            var factory = new ProjectFactory(msbuildPath, project) { Build = false };
+            var packageBuilder = factory.CreateBuilder(basePath, cmdLineVersion, "", true);
+            var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
+
+            var xdoc = XDocument.Load(new StringReader(actual));
+            Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);
+            Assert.Equal(cmdLineVersion.ToString(), xdoc.XPathSelectElement("/package/metadata/version").Value);
+            Assert.Equal(cmdLineVersion.ToString(), xdoc.XPathSelectElement("/package/metadata/dependencies/dependency").Attribute("version").Value);
+        }
+
+        [Fact]
         public void ProjectFactoryInitializesPropertiesForPreprocessor()
         {
             // arrange

@@ -229,6 +229,15 @@ namespace NuGet.CommandLine
 
             var projectAuthor = InitializeProperties(builder);
 
+            // Set version based on version argument from console?
+            if (version != null)
+            {
+                // make sure the $version$ placeholder gets populated correctly
+                _properties["version"] = version.ToString();
+
+                builder.Version = version;
+            }
+
             // Only override properties from assembly extracted metadata if they haven't 
             // been specified also at construction time for the factory (that is, 
             // console properties always take precedence.
