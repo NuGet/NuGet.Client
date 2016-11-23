@@ -334,7 +334,7 @@ namespace NuGet.CommandLine
         {
             // When you redirect nuget.exe input, either from the shell with "<" or
             // from code with ProcessStartInfo, throw exception on mono.
-            if (!RuntimeEnvironmentHelper.IsWindows && RuntimeEnvironmentHelper.IsMono && _isatty(0) == 0)
+            if (!RuntimeEnvironmentHelper.IsWindows && RuntimeEnvironmentHelper.IsMono && _isatty(1) != 1)
             {
                 throw new InvalidOperationException();
             }
