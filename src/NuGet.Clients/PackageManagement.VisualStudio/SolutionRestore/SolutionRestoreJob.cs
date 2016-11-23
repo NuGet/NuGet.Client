@@ -94,18 +94,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static async Task<SolutionRestoreJob> CreateAsync(
             IServiceProvider serviceProvider,
-            IComponentModel componentModel,
             RestoreOperationLogger logger,
             CancellationToken token)
         {
             if (serviceProvider == null)
             {
                 throw new ArgumentNullException(nameof(serviceProvider));
-            }
-
-            if (componentModel == null)
-            {
-                throw new ArgumentNullException(nameof(componentModel));
             }
 
             if (logger == null)
@@ -116,7 +110,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                return new SolutionRestoreJob(serviceProvider, componentModel, logger);
+                return new SolutionRestoreJob(serviceProvider, serviceProvider.GetComponentModel(), logger);
             });
         }
 

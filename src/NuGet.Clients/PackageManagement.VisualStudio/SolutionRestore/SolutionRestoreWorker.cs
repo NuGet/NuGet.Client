@@ -326,13 +326,11 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             await TaskScheduler.Default;
 
-            var componentModel = _serviceProvider.GetComponentModel();
-
             using (var jobCts = CancellationTokenSource.CreateLinkedTokenSource(token))
             using (var logger = await RestoreOperationLogger.StartAsync(
                 _serviceProvider, ErrorListProvider, blockingUi, jobCts))
             using (var job = await SolutionRestoreJob.CreateAsync(
-                _serviceProvider, componentModel, logger, jobCts.Token))
+                _serviceProvider, logger, jobCts.Token))
             {
                 return await job.ExecuteAsync(jobArgs, _restoreJobContext, jobCts.Token);
             }
