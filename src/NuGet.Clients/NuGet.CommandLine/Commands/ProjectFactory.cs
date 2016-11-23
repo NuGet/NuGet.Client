@@ -78,6 +78,7 @@ namespace NuGet.CommandLine
             LoadAssemblies(msbuildDirectory);
 
             // create project
+            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(AssemblyResolve);
             var project = Activator.CreateInstance(
                 _projectType,
                 path,
