@@ -31,7 +31,7 @@ namespace NuGet.CommandLine
         public static int Build(string msbuildDirectory,
                                     string args)
         {
-            string msbuildPath = Path.Combine(msbuildDirectory, "msbuild.exe");
+            string msbuildPath = GetMsbuild(msbuildDirectory);
 
             if (!File.Exists(msbuildPath))
             {
@@ -69,7 +69,7 @@ namespace NuGet.CommandLine
             IConsole console,
             bool recursive)
         {
-            string msbuildPath = Path.Combine(msbuildDirectory, "msbuild.exe");
+            string msbuildPath = GetMsbuild(msbuildDirectory);
 
             if (!File.Exists(msbuildPath))
             {
@@ -144,14 +144,43 @@ namespace NuGet.CommandLine
                 }
 
                 // Projects to restore
-                argumentBuilder.Append(" /p:RestoreGraphProjectInput=\"");
-                for (var i = 0; i < projectPaths.Length; i++)
+                bool isMono = RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows;
+
+                // /p: foo = "bar;baz" doesn't work on bash.
+                // /p: foo = /"bar/;baz/" works.
+                // Need to escape quotes and semicolon on bash.
+                if (isMono)
                 {
-                    argumentBuilder.Append(projectPaths[i])
-                        .Append(";");
+                    argumentBuilder.Append(" /p:RestoreGraphProjectInput=\\\"");
+                }
+                else
+                {
+                    argumentBuilder.Append(" /p:RestoreGraphProjectInput=\"");
                 }
 
-                argumentBuilder.Append("\" ");
+                for (var i = 0; i < projectPaths.Length; i++)
+                {
+                    if (isMono)
+                    {
+                        argumentBuilder.Append(projectPaths[i])
+                            .Append("\\;");
+                    }
+                    else
+                    {
+                        argumentBuilder.Append(projectPaths[i])
+                            .Append(";");
+                    }
+                }
+
+                if (isMono)
+                {
+                    argumentBuilder.Append("\\\" ");
+                }
+                else
+                {
+                    argumentBuilder.Append("\" ");
+                }
+
                 AppendQuoted(argumentBuilder, entryPointTargetPath);
 
                 var processStartInfo = new ProcessStartInfo
