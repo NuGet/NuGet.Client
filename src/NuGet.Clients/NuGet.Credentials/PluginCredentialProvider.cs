@@ -199,7 +199,7 @@ namespace NuGet.Credentials
             PluginCredentialResponse credentialResponse;
             try
             {
-                // Mono will add byte order mark to the start of stdOut, remove it here.
+                // Mono will add utf-16 byte order mark to the start of stdOut, remove it here.
                 credentialResponse =
                     JsonConvert.DeserializeObject<PluginCredentialResponse>(stdOut.Trim(new char[] { '\uFEFF' })) 
                     ?? new PluginCredentialResponse();
