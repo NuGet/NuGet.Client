@@ -35,8 +35,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private CancellationTokenSource _workerCts;
         private Lazy<Task> _backgroundJobRunner;
+        private Lazy<BlockingCollection<SolutionRestoreRequest>> _pendingRequests;
         private BackgroundRestoreOperation _pendingRestore;
-        private BlockingCollection<SolutionRestoreRequest> _pendingRequests;
         private Task<bool> _activeRestoreTask;
 
         private SolutionRestoreJobContext _restoreJobContext;
@@ -134,7 +134,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             _workerCts?.Cancel();
 
-            if (_backgroundJobRunner != null && _backgroundJobRunner.IsValueCreated)
+            if (_backgroundJobRunner?.IsValueCreated == true)
             {
                 // Do not block VS for more than 5 sec.
                 _joinableFactory.Run(
@@ -143,6 +143,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
             _pendingRestore?.Dispose();
             _workerCts?.Dispose();
+
+            if (_pendingRequests?.IsValueCreated == true)
+            {
+                _pendingRequests.Value.Dispose();
+            }
 
             if (!isDisposing)
             {
@@ -153,7 +158,9 @@ namespace NuGet.PackageManagement.VisualStudio
                         function: () => StartBackgroundJobRunnerAsync(_workerCts.Token),
                         cancellationToken: _workerCts.Token));
 
-                _pendingRequests = new BlockingCollection<SolutionRestoreRequest>(RequestQueueLimit);
+                _pendingRequests = new Lazy<BlockingCollection<SolutionRestoreRequest>>(
+                    () => new BlockingCollection<SolutionRestoreRequest>(RequestQueueLimit));
+
                 _pendingRestore = new BackgroundRestoreOperation(blockingUi: false);
                 _activeRestoreTask = Task.FromResult(true);
                 _restoreJobContext = new SolutionRestoreJobContext();
@@ -173,13 +180,13 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 // start background runner if not yet started
                 // ignore the value
-                var runner = _backgroundJobRunner.Value;
+                var ignore = _backgroundJobRunner.Value;
             }
 
             var pendingRestore = _pendingRestore;
 
             // on-board request onto pending restore operation
-            _pendingRequests.TryAdd(request);
+            _pendingRequests.Value.TryAdd(request);
 
             using (_joinableCollection.Join())
             {
@@ -224,7 +231,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         // Blocks the execution until first request is scheduled
                         // Monitors the cancelllation token as well.
-                        var request = _pendingRequests.Take(token);
+                        var request = _pendingRequests.Value.Take(token);
 
                         token.ThrowIfCancellationRequested();
 
@@ -235,11 +242,11 @@ namespace NuGet.PackageManagement.VisualStudio
                         token.ThrowIfCancellationRequested();
 
                         // Drains the queue
-                        while (!_pendingRequests.IsCompleted
+                        while (!_pendingRequests.Value.IsCompleted
                             && !token.IsCancellationRequested)
                         {
                             SolutionRestoreRequest discard;
-                            if (!_pendingRequests.TryTake(out discard, IdleTimeoutMs, token))
+                            if (!_pendingRequests.Value.TryTake(out discard, IdleTimeoutMs, token))
                             {
                                 break;
                             }
@@ -338,15 +345,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override int OnAfterBackgroundSolutionLoadComplete()
         {
-#if VS15
-            var projects = _solutionManager.GetNuGetProjects();
-            if (projects.Any(project => (project is CpsPackageReferenceProject)))
+            if (_pendingRequests.IsValueCreated)
             {
                 // ensure background runner has started
                 // ignore the value
-                var runner = _backgroundJobRunner.Value;
+                var ignore = _backgroundJobRunner.Value;
             }
-#endif
+
             return VSConstants.S_OK;
         }
 
