@@ -14,7 +14,6 @@ namespace NuGet.Protocol
         {
             return Repository.CreateSource(Repository.Provider.GetCoreV3(), source, type);
         }
-
         public static SourceRepository GetCoreV3(this Repository.RepositoryFactory factory, string source)
         {
             return Repository.CreateSource(Repository.Provider.GetCoreV3(), source);

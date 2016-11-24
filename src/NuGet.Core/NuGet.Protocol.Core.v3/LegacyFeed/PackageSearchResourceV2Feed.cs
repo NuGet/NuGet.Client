@@ -53,32 +53,34 @@ namespace NuGet.Protocol
             // NuGet.Server does not group packages by id, this resource needs to handle it.
             var results = query.GroupBy(p => p.Id)
                 .Select(group => group.OrderByDescending(p => p.Version).First())
-                .Select(package => CreatePackageSearchResult(package, filters, log, cancellationToken));
+                .Select(package => CreatePackageSearchResult(package, filters,_feedParser, log, cancellationToken));
 
             return results.ToList();
         }
 
-        private IPackageSearchMetadata CreatePackageSearchResult(
+        public static IPackageSearchMetadata CreatePackageSearchResult(
             V2FeedPackageInfo package,
             SearchFilter filter,
+            V2FeedParser feedParser,
             Common.ILogger log,
             CancellationToken cancellationToken)
         {
             var metadata = new PackageSearchMetadataV2Feed(package);
             return metadata
-                .WithVersions(() => GetVersions(package, filter, log, cancellationToken));
+                .WithVersions(() => GetVersions(package, filter,feedParser, log, cancellationToken));
         }
 
-        public async Task<IEnumerable<VersionInfo>> GetVersions(
+        public static async Task<IEnumerable<VersionInfo>> GetVersions(
             V2FeedPackageInfo package,
             SearchFilter filter,
+            V2FeedParser feedParser,
             Common.ILogger log,
             CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             // apply the filters to the version list returned
-            var packages = await _feedParser.FindPackagesByIdAsync(
+            var packages = await feedParser.FindPackagesByIdAsync(
                 package.Id,
                 filter.IncludeDelisted,
                 filter.IncludePrerelease,

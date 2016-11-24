@@ -48,6 +48,6 @@ namespace NuGet.Protocol.Core.Types
         /// Only select the absolute latest version of a package per package ID. It does not make sense to look for a
         /// <see cref="IsAbsoluteLatestVersion"/> when excluding prerelease.
         /// </summary>
-        IsAbsoluteLatestVersion = 1
+        IsAbsoluteLatestVersion = 1,
     }
 }

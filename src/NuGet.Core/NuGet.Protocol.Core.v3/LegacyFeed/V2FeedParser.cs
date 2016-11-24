@@ -122,7 +122,7 @@ namespace NuGet.Protocol
 
             // Try to find the package directly
             // Set max count to -1, get all packages
-            var packages = await QueryV2Feed(
+            var packages = await QueryV2FeedAsync(
                 uri,
                 package.Id,
                 max: -1,
@@ -171,7 +171,7 @@ namespace NuGet.Protocol
             var uri = _queryBuilder.BuildFindPackagesByIdUri(id);
             
             // Set max count to -1, get all packages
-            var packages = await QueryV2Feed(
+            var packages = await QueryV2FeedAsync(
                 uri,
                 id,
                 max: -1,
@@ -208,7 +208,7 @@ namespace NuGet.Protocol
                 skip,
                 take);
 
-            var page = await QueryV2Feed(
+            var page = await QueryV2FeedAsync(
                 uri,
                 id: null,
                 max: 0, // Only get the first page.
@@ -233,7 +233,7 @@ namespace NuGet.Protocol
                 skip: skip,
                 take: take);
 
-            var page = await QueryV2Feed(
+            var page = await QueryV2FeedAsync(
                 uri,
                 id: null,
                 max: 0, // Only get the first page.
@@ -254,7 +254,7 @@ namespace NuGet.Protocol
         {
             var uri = _queryBuilder.BuildSearchUri(searchTerm, filters, skip, take);
 
-            var page = await QueryV2Feed(
+            var page = await QueryV2FeedAsync(
                 uri,
                 id: null,
                 max: take,
@@ -414,7 +414,7 @@ namespace NuGet.Protocol
             return value;
         }
 
-        private async Task<V2FeedPage> QueryV2Feed(
+        public async Task<V2FeedPage> QueryV2FeedAsync(
             string relativeUri,
             string id,
             int max,

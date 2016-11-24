@@ -25,5 +25,13 @@ namespace NuGet.Protocol
             int take,
             ILogger log,
             CancellationToken token);
+
+        Task<V2FeedPage> QueryV2FeedAsync(string relativeUri,
+            string id,
+            int max,
+            bool ignoreNotFounds,
+            ILogger log,
+            CancellationToken token
+        );
     }
 }

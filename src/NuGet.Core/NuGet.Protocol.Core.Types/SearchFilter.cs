@@ -29,7 +29,7 @@ namespace NuGet.Protocol.Core.Types
         /// <param name="filter">The filter to apply to the results.</param>
         public SearchFilter(bool includePrerelease, SearchFilterType? filter)
         {
-            Debug.Assert(
+            Debug.Assert( 
                 (includePrerelease && filter == SearchFilterType.IsAbsoluteLatestVersion) ||
                 (!includePrerelease && filter == SearchFilterType.IsLatestVersion) ||
                 (filter == null),
