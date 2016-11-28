@@ -207,6 +207,7 @@ namespace NuGet.Protocol.Core.Types
                         logger.LogMinimal(message);
                     }
                 }
+                catch (Exception ex) when( ex is InvalidDataException
                                         || ex.GetType().Name.Equals("ArchiveException"))
                 {
                     var message = string.Format(
