@@ -99,5 +99,31 @@ namespace NuGet.Packaging.Test
             // Assert
             Assert.Equal(expected, actual);
         }
+
+        [Theory]
+        public void PackagePathResolver_CanOverrideInstallPath()
+        {
+            // Arrange
+            var target = new SuppliedDirectoryPackagePathResolver(InMemoryRootDirectory);
+            var expected = InMemoryRootDirectory;
+
+            // Act
+            var actual = target.GetInstallPath(PackageIdentity);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        public class SuppliedDirectoryPackagePathResolver : PackagePathResolver
+        {
+            public SuppliedDirectoryPackagePathResolver(string packageDirectory) : base(packageDirectory, false)
+            {
+            }
+
+            public override string GetInstallPath(PackageIdentity packageIdentity)
+            {
+                return Root;
+            }
+        }
     }
 }

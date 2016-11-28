@@ -52,7 +52,12 @@ namespace NuGet.Packaging
             return GetId(packageIdentity) + PackagingCoreConstants.NuspecExtension;
         }
 
-        public string GetInstallPath(PackageIdentity packageIdentity)
+        /// <summary>
+        /// Octopus: We need the ability to extract packages into the root, not the NuGet convention-based path. See the SuppliedDirectoryPackagePathResolver in Octopus Deploy.
+        /// </summary>
+        /// <param name="packageIdentity"></param>
+        /// <returns></returns>
+        public virtual string GetInstallPath(PackageIdentity packageIdentity)
         {
             return Path.Combine(_rootDirectory, GetPackageDirectoryName(packageIdentity));
         }
