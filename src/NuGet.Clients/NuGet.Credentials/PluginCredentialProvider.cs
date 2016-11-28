@@ -257,7 +257,11 @@ namespace NuGet.Credentials
             {
                 if (!string.IsNullOrWhiteSpace(e?.Data))
                 {
-                    _logger.LogInformation($"{process.ProcessName}: {e.Data}");
+                    // This is a workaround for mono issue: https://github.com/NuGet/Home/issues/4004
+                    if (!process.HasExited)
+                    {
+                        _logger.LogInformation($"{process.ProcessName}: {e.Data}");
+                    }
                 }
             };
 
