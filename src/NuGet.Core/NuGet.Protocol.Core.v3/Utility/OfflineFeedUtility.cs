@@ -207,7 +207,7 @@ namespace NuGet.Protocol.Core.Types
                         logger.LogMinimal(message);
                     }
                 }
-                catch (InvalidDataException)
+                                        || ex.GetType().Name.Equals("ArchiveException"))
                 {
                     var message = string.Format(
                         CultureInfo.CurrentCulture,
