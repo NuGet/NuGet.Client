@@ -110,7 +110,7 @@ namespace NuGet.Common
             {
                 string projectType = project.ProjectType.ToString();
                 var isSolutionFolder = projectType.Equals("SolutionFolder", StringComparison.OrdinalIgnoreCase);
-                string relativePath = project.RelativePath;
+                string relativePath = project.RelativePath.Replace('\\', Path.DirectorySeparatorChar);
                 projects.Add(new ProjectInSolution(relativePath, isSolutionFolder));
             }
             this.Projects = projects;
