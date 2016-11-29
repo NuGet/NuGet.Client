@@ -479,7 +479,7 @@ namespace NuGet.CommandLine.Test
         }
 
         // Tests that push command can follow redirection correctly.
-        [Fact]
+        [SkipMono]
         public void PushCommand_PushToServerFollowRedirection()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -646,7 +646,7 @@ namespace NuGet.CommandLine.Test
         }
 
         // Test push command to a server using basic authentication.
-        [Fact]
+        [SkipMono]
         public void PushCommand_PushToServerBasicAuth()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -726,7 +726,7 @@ namespace NuGet.CommandLine.Test
         }
 
         // Test push command to a server using basic authentication, with -DisableBuffering option
-        [Fact]
+        [SkipMono]
         public void PushCommand_PushToServerBasicAuthDisableBuffering()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -1042,7 +1042,7 @@ namespace NuGet.CommandLine.Test
         }
 
         // Test Plugin credential provider can have large std output without hanging.
-        [Fact]
+        [SkipMono]
         public void PushCommand_PushToServer_DoesNotDeadLockWhenSTDOutLarge()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -1876,7 +1876,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Theory]
+        [SkipMonoTheory]
         [InlineData("https://nuget.org/api/blah")]
         public void PushCommand_InvalidInput_V2_NonExistent(string invalidInput)
         {

@@ -8,11 +8,11 @@ using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
 using System.Xml.XPath;
-using Microsoft.Build.Evaluation;
 using Moq;
 using NuGet.CommandLine.Test;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using NuGet.Common;
 using Xunit;
 
 namespace NuGet.CommandLine
@@ -26,8 +26,10 @@ namespace NuGet.CommandLine
         public void ProjectFactoryInitializesPropertiesForPreprocessorFromAssemblyMetadata()
         {
             // Arrange
-            var testAssembly = Assembly.GetExecutingAssembly();
-            const string inputSpec = @"<?xml version=""1.0""?>
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                var testAssembly = Assembly.GetExecutingAssembly();
+                const string inputSpec = @"<?xml version=""1.0""?>
 	<package>
 	    <metadata>
 	        <id>$id$</id>
@@ -40,7 +42,7 @@ namespace NuGet.CommandLine
 	        <tags>nuget</tags>
 	    </metadata>
 	</package>";
-            var projectXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                var projectXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
 	<Project ToolsVersion=""4.0"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
 	    <PropertyGroup>
 	        <ProjectGuid>{F879F274-EFA0-4157-8404-33A19B4E6AEC}</ProjectGuid>
@@ -61,37 +63,43 @@ namespace NuGet.CommandLine
 	    <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
 	</Project>";
 
-            // Set base path to the currently assembly's folder so that it will find the test assembly
-            var basePath = Path.GetDirectoryName(testAssembly.CodeBase);
+                // Set base path to the currently assembly's folder so that it will find the test assembly
+                var basePath = Path.GetDirectoryName(testAssembly.CodeBase);
+                var projectPath = Path.Combine(workingDirectory, "test.csproj");
+                File.WriteAllText(projectPath, projectXml);
 
-            var project = new Project(XmlReader.Create(new StringReader(projectXml)));
-            project.FullPath = Path.Combine(project.DirectoryPath, "test.csproj");
+                // Act
+                var msbuildPath = Util.GetMsbuildPathOnWindows();
+                if (RuntimeEnvironmentHelper.IsMono && Util.IsRunningOnMac())
+                {
+                    msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
+                }
+                var factory = new ProjectFactory(msbuildPath, projectPath, null) { Build = false };
+                var packageBuilder = factory.CreateBuilder(basePath, new NuGetVersion("3.0.0"), "", true);
+                var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
 
-            // Act
-            var msbuildPath = Util.GetMsbuildPathOnWindows();
-            var factory = new ProjectFactory(msbuildPath, project) { Build = false };
-            var packageBuilder = factory.CreateBuilder(basePath, new NuGetVersion("3.0.0"), "", true);
-            var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
-
-            var xdoc = XDocument.Load(new StringReader(actual));
-            Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);
-            Assert.Equal(testAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion, xdoc.XPathSelectElement("/package/metadata/version").Value);
-            Assert.Equal("", xdoc.XPathSelectElement("/package/metadata/description").Value);
-            Assert.Equal(testAssembly.GetCustomAttribute<AssemblyCopyrightAttribute>().Copyright, xdoc.XPathSelectElement("/package/metadata/copyright").Value);
-            Assert.Equal(
-                testAssembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-                    .Where(attr => attr.Key == "owner")
-                    .Select(attr => attr.Value)
-                    .FirstOrDefault(), 
-                xdoc.XPathSelectElement("/package/metadata/authors").Value);
+                var xdoc = XDocument.Load(new StringReader(actual));
+                Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);
+                Assert.Equal(testAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion, xdoc.XPathSelectElement("/package/metadata/version").Value);
+                Assert.Equal("", xdoc.XPathSelectElement("/package/metadata/description").Value);
+                Assert.Equal(testAssembly.GetCustomAttribute<AssemblyCopyrightAttribute>().Copyright, xdoc.XPathSelectElement("/package/metadata/copyright").Value);
+                Assert.Equal(
+                    testAssembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                        .Where(attr => attr.Key == "owner")
+                        .Select(attr => attr.Value)
+                        .FirstOrDefault(),
+                    xdoc.XPathSelectElement("/package/metadata/authors").Value);
+            }
         }
 
         [Fact]
         public void CommandLinePropertiesOverrideAssemblyMetadataForPreprocessor()
         {
             // Arrange
-            var testAssembly = Assembly.GetExecutingAssembly();
-            const string inputSpec = @"<?xml version=""1.0""?>
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                var testAssembly = Assembly.GetExecutingAssembly();
+                const string inputSpec = @"<?xml version=""1.0""?>
 	<package>
 	    <metadata>
 	        <id>$id$</id>
@@ -104,7 +112,7 @@ namespace NuGet.CommandLine
 	        <tags>nuget</tags>
 	    </metadata>
 	</package>";
-            var projectXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                var projectXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
 	<Project ToolsVersion=""4.0"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
 	    <PropertyGroup>
 	        <ProjectGuid>{F879F274-EFA0-4157-8404-33A19B4E6AEC}</ProjectGuid>
@@ -125,40 +133,47 @@ namespace NuGet.CommandLine
 	    <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
 	</Project>";
 
-            // Set base path to the currently assembly's folder so that it will find the test assembly
-            var basePath = Path.GetDirectoryName(testAssembly.CodeBase);
-            var cmdLineProperties = new Dictionary<string, string>
+                // Set base path to the currently assembly's folder so that it will find the test assembly
+                var basePath = Path.GetDirectoryName(testAssembly.CodeBase);
+                var cmdLineProperties = new Dictionary<string, string>
                     {
                         { "owner", "overriden" }
                     };
-            var project = new Project(XmlReader.Create(new StringReader(projectXml)), cmdLineProperties, null);
-            project.FullPath = Path.Combine(project.DirectoryPath, "test.csproj");
+                var projectPath = Path.Combine(workingDirectory, "test.csproj");
+                File.WriteAllText(projectPath, projectXml);
 
-            var msbuildPath = Util.GetMsbuildPathOnWindows();
-            var factory = new ProjectFactory(msbuildPath, project) { Build = false };
-            // Cmdline properties are added to the factory, see PackCommand.cs(351)
-            factory.ProjectProperties["owner"] = "overriden";
+                var msbuildPath = Util.GetMsbuildPathOnWindows();
+                if (RuntimeEnvironmentHelper.IsMono && Util.IsRunningOnMac())
+                {
+                    msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
+                }
+                var factory = new ProjectFactory(msbuildPath, projectPath, cmdLineProperties) { Build = false };
+                // Cmdline properties are added to the factory, see PackCommand.cs(351)
+                factory.ProjectProperties["owner"] = "overriden";
 
-            // Act
-            var packageBuilder = factory.CreateBuilder(basePath, new NuGetVersion("3.0.0"), null, true);
-            var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
+                // Act
+                var packageBuilder = factory.CreateBuilder(basePath, new NuGetVersion("3.0.0"), null, true);
+                var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
 
-            var xdoc = XDocument.Load(new StringReader(actual));
-            Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);
-            Assert.Equal(testAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion, xdoc.XPathSelectElement("/package/metadata/version").Value);
-            Assert.Equal("", xdoc.XPathSelectElement("/package/metadata/description").Value);
-            Assert.Equal(testAssembly.GetCustomAttribute<AssemblyCopyrightAttribute>().Copyright, xdoc.XPathSelectElement("/package/metadata/copyright").Value);
-            Assert.Equal(
-                cmdLineProperties["owner"],
-                xdoc.XPathSelectElement("/package/metadata/authors").Value);
+                var xdoc = XDocument.Load(new StringReader(actual));
+                Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);
+                Assert.Equal(testAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion, xdoc.XPathSelectElement("/package/metadata/version").Value);
+                Assert.Equal("", xdoc.XPathSelectElement("/package/metadata/description").Value);
+                Assert.Equal(testAssembly.GetCustomAttribute<AssemblyCopyrightAttribute>().Copyright, xdoc.XPathSelectElement("/package/metadata/copyright").Value);
+                Assert.Equal(
+                    cmdLineProperties["owner"],
+                    xdoc.XPathSelectElement("/package/metadata/authors").Value);
+            }
         }
 
         [Fact]
         public void CommandLinePropertiesApplyForPreprocessor()
         {
             // Arrange
-            var testAssembly = Assembly.GetExecutingAssembly();
-            const string inputSpec = @"<?xml version=""1.0""?>
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                var testAssembly = Assembly.GetExecutingAssembly();
+                const string inputSpec = @"<?xml version=""1.0""?>
 	<package>
 	    <metadata>
 	        <id>$id$</id>
@@ -171,7 +186,7 @@ namespace NuGet.CommandLine
 	        <tags>nuget</tags>
 	    </metadata>
 	</package>";
-            var projectXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                var projectXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
 	<Project ToolsVersion=""4.0"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
 	    <PropertyGroup>
 	        <ProjectGuid>{F879F274-EFA0-4157-8404-33A19B4E6AEC}</ProjectGuid>
@@ -192,40 +207,47 @@ namespace NuGet.CommandLine
 	    <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
 	</Project>";
 
-            // Set base path to the currently assembly's folder so that it will find the test assembly
-            var basePath = Path.GetDirectoryName(testAssembly.CodeBase);
-            var cmdLineProperties = new Dictionary<string, string>
+                // Set base path to the currently assembly's folder so that it will find the test assembly
+                var basePath = Path.GetDirectoryName(testAssembly.CodeBase);
+                var cmdLineProperties = new Dictionary<string, string>
                     {
                         { "overriden", "Outercurve" }
                     };
-            var project = new Project(XmlReader.Create(new StringReader(projectXml)), cmdLineProperties, null);
-            project.FullPath = Path.Combine(project.DirectoryPath, "test.csproj");
+                var projectPath = Path.Combine(workingDirectory, "test.csproj");
+                File.WriteAllText(projectPath, projectXml);
 
-            var msbuildPath = Util.GetMsbuildPathOnWindows();
-            var factory = new ProjectFactory(msbuildPath, project) { Build = false };
-            // Cmdline properties are added to the factory, see PackCommand.cs
-            factory.ProjectProperties.AddRange(cmdLineProperties);
+                var msbuildPath = Util.GetMsbuildPathOnWindows();
+                if (RuntimeEnvironmentHelper.IsMono && Util.IsRunningOnMac())
+                {
+                    msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
+                }
+                var factory = new ProjectFactory(msbuildPath, projectPath, cmdLineProperties) { Build = false };
+                // Cmdline properties are added to the factory, see PackCommand.cs
+                factory.ProjectProperties.AddRange(cmdLineProperties);
 
-            // Act
-            var packageBuilder = factory.CreateBuilder(basePath, new NuGetVersion("3.0.0"), "", true);
-            var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
+                // Act
+                var packageBuilder = factory.CreateBuilder(basePath, new NuGetVersion("3.0.0"), "", true);
+                var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
 
-            var xdoc = XDocument.Load(new StringReader(actual));
-            Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);
-            Assert.Equal(testAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion, xdoc.XPathSelectElement("/package/metadata/version").Value);
-            Assert.Equal("", xdoc.XPathSelectElement("/package/metadata/description").Value);
-            Assert.Equal(testAssembly.GetCustomAttribute<AssemblyCopyrightAttribute>().Copyright, xdoc.XPathSelectElement("/package/metadata/copyright").Value);
-            Assert.Equal(
-                cmdLineProperties["overriden"],
-                xdoc.XPathSelectElement("/package/metadata/authors").Value);
+                var xdoc = XDocument.Load(new StringReader(actual));
+                Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);
+                Assert.Equal(testAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion, xdoc.XPathSelectElement("/package/metadata/version").Value);
+                Assert.Equal("", xdoc.XPathSelectElement("/package/metadata/description").Value);
+                Assert.Equal(testAssembly.GetCustomAttribute<AssemblyCopyrightAttribute>().Copyright, xdoc.XPathSelectElement("/package/metadata/copyright").Value);
+                Assert.Equal(
+                    cmdLineProperties["overriden"],
+                    xdoc.XPathSelectElement("/package/metadata/authors").Value);
+            }
         }
 
         [Fact]
         public void CommandLineIdPropertyOverridesAssemblyNameForPreprocessor()
         {
             // Arrange
-            var testAssembly = Assembly.GetExecutingAssembly();
-            const string inputSpec = @"<?xml version=""1.0""?>
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                var testAssembly = Assembly.GetExecutingAssembly();
+                const string inputSpec = @"<?xml version=""1.0""?>
 	<package>
 	    <metadata>
 	        <id>$id$</id>
@@ -238,7 +260,7 @@ namespace NuGet.CommandLine
 	        <tags>nuget</tags>
 	    </metadata>
 	</package>";
-            var projectXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                var projectXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
 	<Project ToolsVersion=""4.0"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
 	    <PropertyGroup>
 	        <ProjectGuid>{F879F274-EFA0-4157-8404-33A19B4E6AEC}</ProjectGuid>
@@ -259,26 +281,31 @@ namespace NuGet.CommandLine
 	    <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
 	</Project>";
 
-            // Set base path to the currently assembly's folder so that it will find the test assembly
-            var basePath = Path.GetDirectoryName(testAssembly.CodeBase);
-            var cmdLineProperties = new Dictionary<string, string>
+                // Set base path to the currently assembly's folder so that it will find the test assembly
+                var basePath = Path.GetDirectoryName(testAssembly.CodeBase);
+                var cmdLineProperties = new Dictionary<string, string>
                     {
                         { "id", "Outercurve" }
                     };
-            var project = new Project(XmlReader.Create(new StringReader(projectXml)), cmdLineProperties, null);
-            project.FullPath = Path.Combine(project.DirectoryPath, "test.csproj");
+                var projectPath = Path.Combine(workingDirectory, "test.csproj");
+                File.WriteAllText(projectPath, projectXml);
 
-            var msbuildPath = Util.GetMsbuildPathOnWindows();
-            var factory = new ProjectFactory(msbuildPath, project) { Build = false };
-            // Cmdline properties are added to the factory, see PackCommand.cs
-            factory.ProjectProperties.AddRange(cmdLineProperties);
+                var msbuildPath = Util.GetMsbuildPathOnWindows();
+                if (RuntimeEnvironmentHelper.IsMono && Util.IsRunningOnMac())
+                {
+                    msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
+                }
+                var factory = new ProjectFactory(msbuildPath, projectPath, cmdLineProperties) { Build = false };
+                // Cmdline properties are added to the factory, see PackCommand.cs
+                factory.ProjectProperties.AddRange(cmdLineProperties);
 
-            // Act
-            var packageBuilder = factory.CreateBuilder(basePath, new NuGetVersion("3.0.0"), "", true);
-            var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
+                // Act
+                var packageBuilder = factory.CreateBuilder(basePath, new NuGetVersion("3.0.0"), "", true);
+                var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
 
-            var xdoc = XDocument.Load(new StringReader(actual));
-            Assert.Equal(cmdLineProperties["id"], xdoc.XPathSelectElement("/package/metadata/id").Value);
+                var xdoc = XDocument.Load(new StringReader(actual));
+                Assert.Equal(cmdLineProperties["id"], xdoc.XPathSelectElement("/package/metadata/id").Value);
+            }
         }
 
         [Fact]
@@ -307,7 +334,7 @@ namespace NuGet.CommandLine
                 Copyright = "\x00a9 Outercurve. All rights reserved.",
                 Authors = new[] { "Outercurve Foundation" },
             };
-            var projectMock = new Mock<Project>();
+            var projectMock = new Mock<MockProject>();
             var msbuildDirectory = NuGet.CommandLine.MsBuildUtility.GetMsBuildDirectory("4.0", console: null);
             var factory = new ProjectFactory(msbuildDirectory, projectMock.Object);
 
@@ -357,7 +384,8 @@ namespace NuGet.CommandLine
         /// Command: nuget pack Assembly.csproj
         /// Output: Exception: An item with the key already exists
         /// </example>
-        [Fact]
+        // Failed on Mono due to https://github.com/NuGet/Home/issues/4073, skip mono for now.
+        [SkipMono]
         public void EnsureProjectFactoryDoesNotAddFileThatIsAlreadyInPackage()
         {
             // Setup
@@ -379,14 +407,14 @@ namespace NuGet.CommandLine
                     waitForExit: true);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(workingDirectory, "Assembly.1.0.0.nupkg"));
-                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                var package = new PackageArchiveReader(Path.Combine(workingDirectory, "Assembly.1.0.0.nupkg"));
+                var files = package.GetPackageFiles(PackageSaveMode.Files).ToArray();
 
                 Assert.Equal(0, r.Item1);
                 Array.Sort(files);
                 Assert.Equal(files, new[] {
-                    @"lib\net45\Assembly.dll",
-                    @"lib\net45\Assembly.xml"
+                    @"lib/net45/Assembly.dll",
+                    @"lib/net45/Assembly.xml"
                 });
             }
         }
@@ -396,13 +424,12 @@ namespace NuGet.CommandLine
         {
             // Setup
             var nugetexe = Util.GetNuGetExePath();
-
             using (var workingDirectory = TestDirectory.Create())
             {
                 // Setup the projects
-                DummyProject link = new DummyProject("Link", Path.Combine(workingDirectory, "Link\\Link.csproj"));
-                DummyProject a = new DummyProject("A", Path.Combine(workingDirectory, "A\\A.csproj"));
-                DummyProject b = new DummyProject("B", Path.Combine(workingDirectory, "B\\B.csproj"));
+                DummyProject link = new DummyProject("Link", Path.Combine(workingDirectory, "Link", "Link.csproj"));
+                DummyProject a = new DummyProject("A", Path.Combine(workingDirectory, "A", "A.csproj"));
+                DummyProject b = new DummyProject("B", Path.Combine(workingDirectory, "B", "B.csproj"));
                 link.AddProjectReference(a, false);
                 link.AddProjectReference(b, true);
                 link.WriteToFile();
@@ -413,20 +440,20 @@ namespace NuGet.CommandLine
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingDirectory,
-                    "pack Link\\Link.csproj -build -IncludeReferencedProjects -Version 1.0.0",
+                    $"pack Link{Path.DirectorySeparatorChar}Link.csproj -build -IncludeReferencedProjects -Version 1.0.0",
                     waitForExit: true);
 
                 // Assert
                 Util.VerifyResultSuccess(r);
 
-                var package = new OptimizedZipPackage(Path.Combine(workingDirectory, "Link.1.0.0.nupkg"));
-                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                var package = new PackageArchiveReader(Path.Combine(workingDirectory, "Link.1.0.0.nupkg"));
+                var files = package.GetPackageFiles(PackageSaveMode.Files).ToArray();
 
                 Assert.Equal(0, r.Item1);
                 Array.Sort(files);
                 Assert.Equal(files, new[] {
-                    @"lib\net45\A.dll",
-                    @"lib\net45\Link.dll"
+                    @"lib/net45/A.dll",
+                    @"lib/net45/Link.dll"
                 });
             }
         }
@@ -440,12 +467,12 @@ namespace NuGet.CommandLine
             using (var workingDirectory = TestDirectory.Create())
             {
                 // Setup the projects
-                DummyProject link = new DummyProject("Link", Path.Combine(workingDirectory, "Link\\Link.csproj"));
-                DummyProject a = new DummyProject("A", Path.Combine(workingDirectory, "A\\A.csproj"));
-                DummyProject b = new DummyProject("B", Path.Combine(workingDirectory, "B\\B.csproj"));
-                DummyProject c = new DummyProject("C", Path.Combine(workingDirectory, "C\\C.csproj"));
-                DummyProject d = new DummyProject("D", Path.Combine(workingDirectory, "D\\D.csproj"));
-                DummyProject e = new DummyProject("E", Path.Combine(workingDirectory, "E\\E.csproj"));
+                DummyProject link = new DummyProject("Link", Path.Combine(workingDirectory, "Link", "Link.csproj"));
+                DummyProject a = new DummyProject("A", Path.Combine(workingDirectory, "A", "A.csproj"));
+                DummyProject b = new DummyProject("B", Path.Combine(workingDirectory, "B", "B.csproj"));
+                DummyProject c = new DummyProject("C", Path.Combine(workingDirectory, "C", "C.csproj"));
+                DummyProject d = new DummyProject("D", Path.Combine(workingDirectory, "D", "D.csproj"));
+                DummyProject e = new DummyProject("E", Path.Combine(workingDirectory, "E", "E.csproj"));
                 link.AddProjectReference(a, false);
                 link.AddProjectReference(b, true);
                 a.AddProjectReference(c, false);
@@ -462,20 +489,20 @@ namespace NuGet.CommandLine
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingDirectory,
-                    "pack Link\\Link.csproj -build -IncludeReferencedProjects -Version 1.0.0",
+                    $"pack Link{Path.DirectorySeparatorChar}Link.csproj -build -IncludeReferencedProjects -Version 1.0.0",
                     waitForExit: true);
 
                 // Assert
                 Util.VerifyResultSuccess(r);
-                var package = new OptimizedZipPackage(Path.Combine(workingDirectory, "Link.1.0.0.nupkg"));
-                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                var package = new PackageArchiveReader(Path.Combine(workingDirectory, "Link.1.0.0.nupkg"));
+                var files = package.GetPackageFiles(PackageSaveMode.Files).ToArray();
 
                 Assert.Equal(0, r.Item1);
                 Array.Sort(files);
                 Assert.Equal(files, new[] {
-                    @"lib\net45\A.dll",
-                    @"lib\net45\C.dll",
-                    @"lib\net45\Link.dll"
+                    @"lib/net45/A.dll",
+                    @"lib/net45/C.dll",
+                    @"lib/net45/Link.dll"
                 });
             }
         }
@@ -608,6 +635,7 @@ namespace Assembly
                 FileInfo file = new FileInfo(Location);
                 file.Directory.Create();
                 File.WriteAllText(Location, ToString());
+                File.WriteAllText(Path.Combine(Path.GetDirectoryName(Location), "Source.cs"), GetSourceFileContent());
             }
 
             public override string ToString()
@@ -622,6 +650,26 @@ namespace Assembly
                 projectXElement.Add(itemGroup);
 
                 return projectXElement.ToString();
+            }
+        }
+
+        public class MockProject
+        {
+            public string DirectoryPath
+            {
+                get
+                {
+                    return Directory.GetCurrentDirectory();
+                }
+            }
+            public string GetPropertyValue(string property)
+            {
+                return null;
+            }
+
+            public string GetProperty(string property)
+            {
+                return null;
             }
         }
         #endregion

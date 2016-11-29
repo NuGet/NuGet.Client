@@ -175,7 +175,7 @@ namespace NuGet.CommandLine.Test
 
             if (contentFiles == null || contentFiles.Length == 0)
             {
-                packageBuilder.Files.Add(CreatePackageFile(@"content\test1.txt"));
+                packageBuilder.Files.Add(CreatePackageFile(Path.Combine("content","test1.txt")));
             }
             else
             {
@@ -704,6 +704,9 @@ namespace NuGet.CommandLine.Test
                 project.Add(new XElement(msbuild + "ItemGroup",
                         contentFiles.Select(c => new XElement(msbuild + "Content", new XAttribute("Include", c)))));
             }
+
+            project.Add(new XElement(msbuild + "ItemGroup",
+                new XElement(msbuild + "Compile", new XAttribute("Include", "Source.cs"))));
 
             project.Add(new XElement(msbuild + "Import",
                 new XAttribute("Project", @"$(MSBuildToolsPath)\Microsoft.CSharp.targets")));

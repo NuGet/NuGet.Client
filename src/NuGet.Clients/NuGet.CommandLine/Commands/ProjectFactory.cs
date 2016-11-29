@@ -87,36 +87,6 @@ namespace NuGet.CommandLine
             Initialize(project);
         }
 
-        // This handler is called only when the common language runtime tries to bind to the assembly and fails
-        private Assembly AssemblyResolve(object sender, ResolveEventArgs args)
-        {
-            if (string.IsNullOrEmpty(_msbuildDirectory))
-            {
-                return null;
-            }
-
-            var failingAssemblyFilename = args.Name.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
-
-            // If we're failing to load a resource assembly, we need to find it in the appropriate subdir
-            if (failingAssemblyFilename.EndsWith(".resources", StringComparison.OrdinalIgnoreCase))
-            {
-                var resourceDir = new[] {
-                    Path.Combine(_msbuildDirectory, CultureInfo.CurrentCulture.TwoLetterISOLanguageName),
-                    Path.Combine(_msbuildDirectory, "en") }
-                    .FirstOrDefault(d => Directory.Exists(d));
-
-                if (resourceDir == null)
-                {
-                    return null; // no resource directory or fallback-to-en resource directory - fail
-                }
-
-                return Assembly.LoadFrom(Path.Combine(resourceDir, failingAssemblyFilename + ".dll"));
-            }
-
-            // Non-resource DLL - attempt to load from MSBuild directory
-            return Assembly.LoadFrom(Path.Combine(_msbuildDirectory, failingAssemblyFilename + ".dll"));
-        }
-
         public ProjectFactory(string msbuildDirectory, dynamic project)
         {
             LoadAssemblies(msbuildDirectory);

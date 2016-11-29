@@ -788,12 +788,9 @@ namespace Proj2
             }
         }
 
-        [Fact]
+        [SkipMono]
         public void PackCommand_PclProjectWithProjectJsonAndTargetsNetStandard()
         {
-            // Skip this test on Mono
-            if (RuntimeEnvironmentHelper.IsMono) return;
-
             // This bug tests issue: https://github.com/NuGet/Home/issues/3108
             var nugetexe = Util.GetNuGetExePath();
 
@@ -4471,12 +4468,9 @@ stuff \n <<".Replace("\r\n", "\n");
             }
         }
 
-        [Fact]
+        [SkipMono]
         public void PackCommand_PackJsonCorrectLibPathInNupkg()
         {
-            // Skip this test on Mono
-            if (RuntimeEnvironmentHelper.IsMono) return;
-
             var nugetexe = Util.GetNuGetExePath();
 
             using (var workingDirectory = TestDirectory.Create())
@@ -4603,14 +4597,11 @@ stuff \n <<".Replace("\r\n", "\n");
             }
         }
 
-        [Theory]
+        [SkipMonoTheory]
         [InlineData(".dll")]
         [InlineData(".exe")]
         public void PackCommand_PackJsonCorrectLibPathInNupkgWithOutputName(string extension)
         {
-            // Skip this test on Mono
-            if (RuntimeEnvironmentHelper.IsMono) return;
-
             var nugetexe = Util.GetNuGetExePath();
 
             using (var testFolder = TestDirectory.Create())
@@ -4791,12 +4782,9 @@ stuff \n <<".Replace("\r\n", "\n");
             }
         }
 
-        [Fact]
+        [SkipMono]
         public void PackCommand_BuildProjectJsonWithFullBasePath()
         {
-            // Skip this test on Mono
-            if (RuntimeEnvironmentHelper.IsMono) return;
-
             var nugetexe = Util.GetNuGetExePath();
 
             using (var workingDirectory = TestDirectory.Create())
@@ -4858,12 +4846,9 @@ stuff \n <<".Replace("\r\n", "\n");
             }
         }
 
-        [Fact]
+        [SkipMono]
         public void PackCommand_BuildProjectJsonWithRelativeBasePath()
         {
-            // Skip this test on Mono
-            if (RuntimeEnvironmentHelper.IsMono) return;
-
             var nugetexe = Util.GetNuGetExePath();
 
             using (var workingDirectory = TestDirectory.Create())

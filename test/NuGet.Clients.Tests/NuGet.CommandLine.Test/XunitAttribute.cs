@@ -30,4 +30,28 @@ namespace NuGet.CommandLine.Test
             }
         }
     }
+
+    public class SkipMonoAttribute 
+        : FactAttribute
+    {
+        public SkipMonoAttribute()
+        {
+            if (RuntimeEnvironmentHelper.IsMono)
+            {
+                Skip = "Skip this test on mono for now.";
+            }
+        }
+    }
+
+    public class SkipMonoTheoryAttribute
+       : TheoryAttribute
+    {
+        public SkipMonoTheoryAttribute()
+        {
+            if (RuntimeEnvironmentHelper.IsMono)
+            {
+                Skip = "Skip this test on mono for now.";
+            }
+        }
+    }
 }

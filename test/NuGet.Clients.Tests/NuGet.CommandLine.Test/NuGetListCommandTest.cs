@@ -14,7 +14,7 @@ namespace NuGet.CommandLine.Test
 {
     public class NuGetListCommandTest
     {
-        [Theory]
+        [SkipMonoTheory]
         [InlineData("https://www.ssllabs.com:10200/index.json", false)] // SSLv2.0
         [InlineData("https://www.ssllabs.com:10300/index.json", false)] // SSLv3.0
         [InlineData("https://www.ssllabs.com:10301/index.json", true)]  // TLSv1.0

@@ -1738,7 +1738,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(targetFilePath));
 
                 var targetsFile = File.OpenText(targetFilePath).ReadToEnd();
-                Assert.True(targetsFile.IndexOf(@"build\uap\packageA.targets") > -1);
+                Assert.True(targetsFile.IndexOf(Path.Combine("build", "uap", "packageA.targets")) > -1);
             }
         }
 
@@ -1812,8 +1812,8 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(targetFilePath));
 
                 var targetsFile = File.OpenText(targetFilePath).ReadToEnd();
-                Assert.True(targetsFile.IndexOf(@"build\uap\packageA.targets") > -1);
-                Assert.True(targetsFile.IndexOf(@"build\uap\packageB.targets") > -1);
+                Assert.True(targetsFile.IndexOf(Path.Combine("build", "uap", "packageA.targets")) > -1);
+                Assert.True(targetsFile.IndexOf(Path.Combine("build", "uap", "packageB.targets")) > -1);
             }
         }
 
@@ -1995,8 +1995,8 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(targetFilePath));
 
                 var targetsFile = File.OpenText(targetFilePath).ReadToEnd();
-                Assert.True(targetsFile.IndexOf(@"build\uap\packageA.targets") > -1);
-                Assert.True(targetsFile.IndexOf(@"build\uap\packageB.targets") > -1);
+                Assert.True(targetsFile.IndexOf(Path.Combine("build", "uap", "packageA.targets")) > -1);
+                Assert.True(targetsFile.IndexOf(Path.Combine("build", "uap", "packageB.targets")) > -1);
             }
         }
 
@@ -2070,8 +2070,8 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(targetFilePath));
 
                 var targetsFile = File.OpenText(targetFilePath).ReadToEnd();
-                Assert.True(targetsFile.IndexOf(@"build\uap\packageA.targets") > -1);
-                Assert.True(targetsFile.IndexOf(@"build\uap\packageB.targets") > -1);
+                Assert.True(targetsFile.IndexOf(Path.Combine("build", "uap", "packageA.targets")) > -1);
+                Assert.True(targetsFile.IndexOf(Path.Combine("build", "uap", "packageB.targets")) > -1);
             }
         }
 
@@ -2138,10 +2138,10 @@ namespace NuGet.CommandLine.Test
 
                 var targetsFile = File.OpenText(targetFilePath).ReadToEnd();
                 // Verify the target was added
-                Assert.True(targetsFile.IndexOf(@"build\packageA.targets") > -1);
+                Assert.True(targetsFile.IndexOf(Path.Combine("build", "packageA.targets")) > -1);
 
                 // Verify sub directories were not used
-                Assert.True(targetsFile.IndexOf(@"build\net45\packageA.targets") < 0);
+                Assert.True(targetsFile.IndexOf(Path.Combine("build", "net45", "packageA.targets")) < 0);
             }
         }
 
@@ -2217,8 +2217,8 @@ namespace NuGet.CommandLine.Test
                 using (var stream = File.OpenText(targetFilePath))
                 {
                     var targetsFile = stream.ReadToEnd();
-                    Assert.True(targetsFile.IndexOf(@"build\uap\packageA.targets") > -1);
-                    Assert.True(targetsFile.IndexOf(@"build\uap\packageB.targets") > -1);
+                    Assert.True(targetsFile.IndexOf(Path.Combine("build", "uap", "packageA.targets")) > -1);
+                    Assert.True(targetsFile.IndexOf(Path.Combine("build", "uap", "packageB.targets")) > -1);
                 }
 
                 // Act 2
@@ -2235,8 +2235,8 @@ namespace NuGet.CommandLine.Test
                 using (var stream = File.OpenText(targetFilePath))
                 {
                     var targetsFile = stream.ReadToEnd();
-                    Assert.True(targetsFile.IndexOf(@"build\uap\packageA.targets") > -1);
-                    Assert.True(targetsFile.IndexOf(@"build\uap\packageB.targets") > -1);
+                    Assert.True(targetsFile.IndexOf(Path.Combine("build", "uap", "packageA.targets")) > -1);
+                    Assert.True(targetsFile.IndexOf(Path.Combine("build", "uap", "packageB.targets")) > -1);
                 }
 
                 // Act 3
@@ -2253,8 +2253,8 @@ namespace NuGet.CommandLine.Test
                 using (var stream = File.OpenText(targetFilePath))
                 {
                     var targetsFile = stream.ReadToEnd();
-                    Assert.True(targetsFile.IndexOf(@"build\uap\packageA.targets") > -1);
-                    Assert.True(targetsFile.IndexOf(@"build\uap\packageB.targets") > -1);
+                    Assert.True(targetsFile.IndexOf(Path.Combine("build", "uap", "packageA.targets")) > -1);
+                    Assert.True(targetsFile.IndexOf(Path.Combine("build", "uap", "packageB.targets")) > -1);
                 }
             }
         }
