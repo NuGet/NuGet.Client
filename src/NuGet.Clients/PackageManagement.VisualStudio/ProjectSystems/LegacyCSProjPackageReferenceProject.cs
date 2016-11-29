@@ -264,6 +264,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var projectTfi = new TargetFrameworkInformation()
             {
                 FrameworkName = _project.TargetNuGetFramework,
+                Dependencies = packageReferences,
                 Imports = packageTargetFallback ?? new List<NuGetFramework>()
             };
 
