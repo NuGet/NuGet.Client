@@ -1561,13 +1561,17 @@ public class B
     </dependencies>
   </metadata>
 </package>");
-
+                var version = "14";
+                if (RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows)
+                {
+                    version = "15.0";
+                }
                 // Act
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
                 var r = CommandRunner.Run(
                     nugetexe,
                     proj1Directory,
-                    @"pack proj1.csproj -build -IncludeReferencedProjects  -MSBuildVersion 14",
+                    $@"pack proj1.csproj -build -IncludeReferencedProjects  -MSBuildVersion {version}",
                     waitForExit: true);
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
@@ -1673,13 +1677,17 @@ public class B
     }
   }
 }");
-
+                var version = "14";
+                if (RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows)
+                {
+                    version = "15.0";
+                }
                 // Act
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
                 var r = CommandRunner.Run(
                     nugetexe,
                     proj1Directory,
-                    @"pack proj1.csproj -build -IncludeReferencedProjects  -MSBuildVersion 14",
+                    $@"pack proj1.csproj -build -IncludeReferencedProjects  -MSBuildVersion {version}",
                     waitForExit: true);
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
@@ -3034,12 +3042,16 @@ namespace Proj2
         }
     }
 }");
-
+                var version = "14";
+                if (RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows)
+                {
+                    version = "15.0";
+                }
                 // Act
                 var r = CommandRunner.Run(
                     nugetexe,
                     proj2Directory,
-                    @"pack proj2.csproj -build -IncludeReferencedProjects -p Config=Release -msbuildversion 14",
+                    $@"pack proj2.csproj -build -IncludeReferencedProjects -p Config=Release -msbuildversion {version}",
                     waitForExit: true);
 
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
@@ -3064,7 +3076,7 @@ namespace Proj2
         }
 
         // Tests that pack works with -MSBuildVersion set to 12
-        [Fact]
+        [WindowsNTFact]
         public void PackCommand_WithMsBuild12()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -3282,11 +3294,10 @@ namespace Proj2
         }
     }
 }");
-                var msbuildPath = Util.GetMsbuildPathOnWindows();
-                var os = Environment.GetEnvironmentVariable("OSTYPE");
-                if (RuntimeEnvironmentHelper.IsMono && os != null && os.StartsWith("darwin"))
+                var msbuildPath = @"C:\Program Files (x86)\MSBuild\14.0\Bin";
+                if (RuntimeEnvironmentHelper.IsMono && Util.IsRunningOnMac())
                 {
-                    msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/14.1/bin/";
+                    msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
                 }
 
                 // Act
@@ -3412,11 +3423,10 @@ namespace Proj2
         }
     }
 }");
-                var msbuildPath = Util.GetMsbuildPathOnWindows();
-                var os = Environment.GetEnvironmentVariable("OSTYPE");
-                if (RuntimeEnvironmentHelper.IsMono && os != null && os.StartsWith("darwin"))
+                var msbuildPath = @"C:\Program Files (x86)\MSBuild\14.0\Bin";
+                if (RuntimeEnvironmentHelper.IsMono && Util.IsRunningOnMac())
                 {
-                    msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/14.1/bin/";
+                    msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
                 }
 
                 // Act
@@ -3543,7 +3553,7 @@ namespace Proj2
         }
     }
 }");
-                var msbuildPath = @"\\not exist path";
+                var msbuildPath = @"not exist path";
 
                 // Act
                 var r = CommandRunner.Run(
@@ -3873,7 +3883,8 @@ stuff \n <<".Replace("\r\n", "\n");
             }
         }
 
-        [Fact]
+        // Skip this test on mono: https://github.com/NuGet/Home/issues/3522
+        [WindowsNTFact]
         public void PackCommand_JsonPackOptionsFiles()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -4244,7 +4255,14 @@ stuff \n <<".Replace("\r\n", "\n");
                 Assert.Equal(1, r.Item1);
 
                 // Assert
-                Assert.Contains("Unable to find 'doesNotExist.1.1.0.nupkg'.", r.Item3);
+                if (RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows)
+                {
+                    Assert.Contains("Failed to build 'proj1.csproj'.", r.Item3);
+                }
+                else
+                {
+                    Assert.Contains("Unable to find 'doesNotExist.1.1.0.nupkg'.", r.Item3);
+                }
             }
         }
 
@@ -4688,8 +4706,8 @@ namespace Proj1
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 // Assert
-                Assert.True(Directory.Exists(Path.Combine(proj1ProjectDirectory, "out\\Release")));
-                Assert.True(File.Exists(Path.Combine(proj1ProjectDirectory, "out\\Release\\proj1.dll")));
+                Assert.True(Directory.Exists(Path.Combine(proj1ProjectDirectory, "out", "Release")));
+                Assert.True(File.Exists(Path.Combine(proj1ProjectDirectory, "out", "Release", "proj1.dll")));
                 var package = new OptimizedZipPackage(Path.Combine(proj1ProjectDirectory, "proj1.0.0.0.nupkg"));
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);

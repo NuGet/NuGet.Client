@@ -9,6 +9,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using NuGet.Test.Utility;
+using NuGet.Common;
 using Test.Utility;
 using Xunit;
 
@@ -559,11 +560,16 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 var expectedMessage = string.Format(NuGetResources.Path_Invalid, invalidPath);
+
+                if (RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows)
+                {
+                    expectedMessage = string.Format(NuGetResources.InitCommand_FeedIsNotFound, invalidPath);
+                }
                 Util.VerifyResultFailure(result, expectedMessage);
             }
         }
 
-        [Fact]
+        [WindowsNTFact]
         public void InitCommand_Fail_DestinationIsInvalid()
         {
             // Arrange
