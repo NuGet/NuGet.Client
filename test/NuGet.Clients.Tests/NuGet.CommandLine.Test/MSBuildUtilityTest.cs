@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Collections.Generic;
-using Microsoft.Build.Evaluation;
 using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;
@@ -20,7 +20,7 @@ namespace NuGet.CommandLine.Test
             var directory = MsBuildUtility.GetMsBuildDirectoryInternal(
                 userVersion: null,
                 console: null,
-                installedToolsets: toolsets,
+                installedToolsets: toolsets.OrderByDescending(t => t),
                 getMsBuildPathInPathVar: () => null);
 
             // Assert
@@ -37,7 +37,7 @@ namespace NuGet.CommandLine.Test
             var directory = MsBuildUtility.GetMsBuildDirectoryInternal(
                 userVersion: null,
                 console: null,
-                installedToolsets: toolsets,
+                installedToolsets: toolsets.OrderByDescending(t => t),
                 getMsBuildPathInPathVar: () => expectedPath);
 
             // Assert
@@ -54,7 +54,7 @@ namespace NuGet.CommandLine.Test
             var directory = MsBuildUtility.GetMsBuildDirectoryInternal(
                 userVersion: null,
                 console: null,
-                installedToolsets: toolsets,
+                installedToolsets: toolsets.OrderByDescending(t => t),
                 getMsBuildPathInPathVar: () => @"c:\foo");
 
             // Assert
@@ -75,7 +75,7 @@ namespace NuGet.CommandLine.Test
             var directory = MsBuildUtility.GetMsBuildDirectoryInternal(
                 userVersion: userVersion,
                 console: null,
-                installedToolsets: toolsets,
+                installedToolsets: toolsets.OrderByDescending(t => t),
                 getMsBuildPathInPathVar: () => null);
 
             // Assert
@@ -96,7 +96,7 @@ namespace NuGet.CommandLine.Test
                     var directory = MsBuildUtility.GetMsBuildDirectoryInternal(
                         userVersion: userVersion,
                         console: null,
-                        installedToolsets: toolsets,
+                        installedToolsets: toolsets.OrderByDescending(t => t),
                         getMsBuildPathInPathVar: () => null);
                 });
 
@@ -309,9 +309,9 @@ namespace NuGet.CommandLine.Test
                 {
                     new object[] { LegacyToolsets, Toolset12.Version, Toolset12.Path },
                     new object[] { SxsToolsets_AscDate_MixedVersion, Toolset15_Tue_LongVersion.Version, Toolset15_Tue_LongVersion.Path },
-                    new object[] { SxsToolsets_AscDate_MixedVersion, Toolset15_Mon_ShortVersion.Version, Toolset15_Tue_LongVersion.Path },
+                    new object[] { SxsToolsets_AscDate_MixedVersion, Toolset15_Mon_ShortVersion.Version, Toolset15_Wed_ShortVersion.Path }, // Direct string match 15.1
                     new object[] { SxsToolsets_DescDate_MixedVersion, Toolset15_Tue_LongVersion.Version, Toolset15_Tue_LongVersion.Path },
-                    new object[] { SxsToolsets_DescDate_MixedVersion, Toolset15_Mon_ShortVersion.Version, Toolset15_Tue_LongVersion.Path },
+                    new object[] { SxsToolsets_DescDate_MixedVersion, Toolset15_Mon_ShortVersion.Version, Toolset15_Wed_ShortVersion.Path }, // Direct string match 15.1
                     new object[] { CombinedToolsets_AscDate_ShortVersion, Toolset15_Wed_ShortVersion.Version, Toolset15_Wed_ShortVersion.Path },
                     new object[] { CombinedToolsets_DescDate_ShortVersion, Toolset15_Wed_ShortVersion.Version, Toolset15_Wed_ShortVersion.Path },
                     new object[] { CombinedToolsets_AscDate_LongVersion, Toolset15_Wed_LongVersion.Version, Toolset15_Wed_LongVersion.Path },
