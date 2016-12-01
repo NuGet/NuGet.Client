@@ -45,18 +45,14 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "InstallCommandSolutionDirectory")]
         public string SolutionDirectory { get; set; }
 
-        [ImportingConstructor]
-        public InstallCommand()
-            : this(MachineCache.Default)
-        {
-        }
-
-        protected internal InstallCommand(IPackageRepository cacheRepository) :
-            base(cacheRepository)
+  //      [ImportingConstructor] TODO- Do we need an "Importing Constructor"
+  
+        protected internal InstallCommand() :
+            base()
         {
             // On mono, parallel builds are broken for some reason. See https://gist.github.com/4201936 for the errors
             // That are thrown.
-            DisableParallelProcessing = EnvironmentUtility.IsMonoRuntime;
+            DisableParallelProcessing = RuntimeEnvironmentHelper.IsMono; //EnvironmentUtility.IsMonoRuntime; TODO NK - fix this
         }
 
         public override Task ExecuteCommandAsync()
@@ -75,7 +71,7 @@ namespace NuGet.CommandLine
 
             // If the first argument is a packages.xxx.config file, install everything it lists
             // Otherwise, treat the first argument as a package Id
-            if (PackageReferenceFile.IsValidConfigFileName(configFileName))
+            if (CommandLineUtility.IsValidConfigFileName(configFileName)) //TODO NK - fix
             {
                 Prerelease = true;
 
@@ -86,7 +82,7 @@ namespace NuGet.CommandLine
                     string message = String.Format(
                         CultureInfo.CurrentCulture,
                         LocalizedResourceManager.GetString("RestoreCommandPackageRestoreOptOutMessage"),
-                        NuGet.Resources.NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
+                        NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
                     Console.WriteLine(message);
                 }
 

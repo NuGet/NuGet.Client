@@ -9,7 +9,6 @@ using System.Reflection;
 namespace NuGet.CommandLine
 {
     using NuGet.Packaging;
-    using NuGet.Runtime;
     using NuGet.Versioning;
 
     public static class AssemblyMetadataExtractor

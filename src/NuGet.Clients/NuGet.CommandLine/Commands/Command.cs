@@ -74,7 +74,7 @@ namespace NuGet.CommandLine
 
         protected internal Configuration.IPackageSourceProvider SourceProvider { get; set; }
 
-        protected internal IPackageRepositoryFactory RepositoryFactory { get; set; }
+        //protected internal IPackageRepositoryFactory RepositoryFactory { get; set; } COREREMOVAL
 
         public CommandAttribute CommandAttribute
         {
@@ -121,7 +121,7 @@ namespace NuGet.CommandLine
 
                 SourceProvider = PackageSourceBuilder.CreateSourceProvider(Settings);
                 SetDefaultCredentialProvider();
-                RepositoryFactory = new CommandLineRepositoryFactory(Console);
+                //RepositoryFactory = new CommandLineRepositoryFactory(Console); COREREMOVAL
 
                 UserAgent.SetUserAgentString(new UserAgentStringBuilder(CommandLineConstants.UserAgent));
 
@@ -160,15 +160,15 @@ namespace NuGet.CommandLine
         {
             CredentialService = new CredentialService(GetCredentialProviders(), NonInteractive);
 
-            HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(CredentialService);
+           // HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(CredentialService); COREREMOVAL
 
             HttpHandlerResourceV3.CredentialService = CredentialService;
 
-            HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>
+            /*HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>//
             {
                 // v2 stack credentials update
-                NuGet.CredentialStore.Instance.Add(uri, credentials);
-            };
+                //NuGet.CredentialStore.Instance.Add(uri, credentials); //COREREMOVAL
+            };*/
         }
 
         private IEnumerable<NuGet.Credentials.ICredentialProvider> GetCredentialProviders()
@@ -179,7 +179,7 @@ namespace NuGet.CommandLine
                 .BuildAll(Verbosity.ToString())
                 .ToList();
 
-            providers.Add(new CredentialProviderAdapter(new SettingsCredentialProvider(SourceProvider, Console)));
+           // providers.Add(new CredentialProviderAdapter(new SettingsCredentialProvider(SourceProvider, Console))); COREREMOVAL 
             if (pluginProviders.Any())
             {
                 providers.AddRange(pluginProviders);

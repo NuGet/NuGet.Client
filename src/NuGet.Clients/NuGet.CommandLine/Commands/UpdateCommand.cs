@@ -75,7 +75,7 @@ namespace NuGet.CommandLine
 
             string inputFileName = Path.GetFileName(inputFile);
             // update with packages.config as parameter
-            if (PackageReferenceFile.IsValidConfigFileName(inputFileName))
+            if (CommandLineUtility.IsValidConfigFileName(inputFileName))
             {
                 await UpdatePackagesAsync(inputFile, context);
                 return;
@@ -374,7 +374,9 @@ namespace NuGet.CommandLine
                 // REVIEW: Do we need to check for existence?
                 if (Directory.Exists(packagesDir))
                 {
-                    string relativePath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(CurrentDirectory), packagesDir);
+                    string relativePath =
+                        NuGet.Commands.PathUtility.GetRelativePath(
+                            NuGet.Commands.PathUtility.EnsureTrailingSlash(CurrentDirectory), packagesDir);
                     Console.LogVerbose(
                         string.Format(
                             CultureInfo.CurrentCulture,

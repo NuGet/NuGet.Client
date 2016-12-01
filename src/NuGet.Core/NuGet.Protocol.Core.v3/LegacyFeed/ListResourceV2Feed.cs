@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -22,7 +23,7 @@ namespace NuGet.Protocol
             _feedCapabilities = feedCapabilities;
         }
 
-        public override async Task<IEnumerable<IPackageSearchMetadata>> ListAsync(
+        public override Task<IEnumerable<IPackageSearchMetadata>> ListAsync(
             string searchTime,
             bool prerelease,
             bool allVersions,
@@ -30,9 +31,19 @@ namespace NuGet.Protocol
             ILogger logger,
             CancellationToken token)
         {
-            var skip = 0;
             var take = 20;
-           
+            return ListRangeAsync(searchTime, prerelease, allVersions, includeDelisted, 0, take, logger, token);
+        }
+
+        private  async Task<IEnumerable<IPackageSearchMetadata>> ListRangeAsync(string searchTime,
+            bool prerelease,
+            bool allVersions,
+            bool includeDelisted,
+            int skip,
+            int take,
+            ILogger logger,
+            CancellationToken token)
+        {
             //TODO NK - how to get the allVersions
             var isSearchSupported = await _feedCapabilities.SupportsSearchAsync(logger, token);
             if (isSearchSupported)
@@ -46,8 +57,7 @@ namespace NuGet.Protocol
                     var v2FeedPage = await _feedParser.GetSearchPageAsync(searchTime, filter, skip, take, logger, token);
                     var results = v2FeedPage.Items.GroupBy(p => p.Id)
                             .Select(group => group.OrderByDescending(p => p.Version).First()) //TODO NK - fix this shit
-                            .Select(package => PackageSearchResourceV2Feed.CreatePackageSearchResult(package, filter,(V2FeedParser) _feedParser, logger, token));
-                    // TODO - NK - How to populate an IEnumerable with lazy evaluated values?
+                            .Select(package => PackageSearchResourceV2Feed.CreatePackageSearchResult(package, filter, (V2FeedParser)_feedParser, logger, token));
                     return results;
                 }
                 else
@@ -65,9 +75,9 @@ namespace NuGet.Protocol
             else
             {
 
-                var supportsIsAbsoluteLatestVersion =  await _feedCapabilities.SupportsIsAbsoluteLatestVersionAsync(logger, token);
-//                _feedParser.GetSearchPageAsync()
-    
+                var supportsIsAbsoluteLatestVersion = await _feedCapabilities.SupportsIsAbsoluteLatestVersionAsync(logger, token);
+                //               _feedParser.GetSearchPageAsync()
+
             }
 
             return null;
@@ -126,6 +136,50 @@ namespace NuGet.Protocol
             CancellationToken token)
         {
             return null;
+        }
+    }
+
+    public class FibonacciEnumerator : IEnumerator<IPackageSearchMetadata>
+    {
+        public FibonacciEnumerator()
+        {
+            Reset();
+        }
+
+        IPackageSearchMetadata Last { get; set; }
+        public IPackageSearchMetadata Current { get; private set; }
+        object IEnumerator.Current { get { return Current; } }
+
+        public void Dispose() { /*do nothing*/}
+
+        public void Reset()
+        {
+            Current = null;
+        }
+
+        public bool MoveNext()
+        {
+            return true;
+            //if (Current ==null)
+            //{
+            //    //State after first call to MoveNext() before the first element is read
+            //    //Fibonacci is defined to start with 0.
+            //    Current = 0;
+            //}
+            //else if (Current == 0)
+            //{
+            //    //2nd element in the Fibonacci series is defined to be 1.
+            //    Current = 1;
+            //}
+            //else
+            //{
+            //    //Fibonacci infinite series algorithm.
+            //    BigInteger next = Current + Last;
+            //    Last = Current;
+            //    Current = next;
+            //}
+            ////infinite series. there is always another.
+            //return true;
         }
     }
 }

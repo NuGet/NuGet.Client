@@ -1,140 +1,140 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using NuGet.Common;
+﻿//using system;
+//using system.collections.generic;
+//using system.io;
+//using system.linq;
+//using system.text.regularexpressions;
+//using nuget.common;
 
-namespace NuGet.CommandLine
-{
-    [Command(typeof(NuGetCommand), "spec", "SpecCommandDescription", MaxArgs = 1,
-            UsageSummaryResourceName = "SpecCommandUsageSummary", UsageExampleResourceName = "SpecCommandUsageExamples")]
-    public class SpecCommand : Command
-    {
-        internal static readonly string SampleProjectUrl = "http://PROJECT_URL_HERE_OR_DELETE_THIS_LINE";
-        internal static readonly string SampleLicenseUrl = "http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE";
-        internal static readonly string SampleIconUrl = "http://ICON_URL_HERE_OR_DELETE_THIS_LINE";
-        internal static readonly string SampleTags = "Tag1 Tag2";
-        internal static readonly string SampleReleaseNotes = "Summary of changes made in this release of the package.";
-        internal static readonly string SampleDescription = "Package description";
-        internal static readonly ManifestDependency SampleManifestDependency = new ManifestDependency { Id = "SampleDependency", Version = "1.0" };
+//namespace nuget.commandline
+//{
+//    [command(typeof(nugetcommand), "spec", "speccommanddescription", maxargs = 1,
+//            usagesummaryresourcename = "speccommandusagesummary", usageexampleresourcename = "speccommandusageexamples")]
+//    public class speccommand : command
+//    {
+//        internal static readonly string sampleprojecturl = "http://project_url_here_or_delete_this_line";
+//        internal static readonly string samplelicenseurl = "http://license_url_here_or_delete_this_line";
+//        internal static readonly string sampleiconurl = "http://icon_url_here_or_delete_this_line";
+//        internal static readonly string sampletags = "tag1 tag2";
+//        internal static readonly string samplereleasenotes = "summary of changes made in this release of the package.";
+//        internal static readonly string sampledescription = "package description";
+//        internal static readonly manifestdependency samplemanifestdependency = new manifestdependency { id = "sampledependency", version = "1.0" };
 
-        [Option(typeof(NuGetCommand), "SpecCommandAssemblyPathDescription")]
-        public string AssemblyPath
-        {
-            get;
-            set;
-        }
+//        [option(typeof(nugetcommand), "speccommandassemblypathdescription")]
+//        public string assemblypath
+//        {
+//            get;
+//            set;
+//        }
 
-        [Option(typeof(NuGetCommand), "SpecCommandForceDescription")]
-        public bool Force
-        {
-            get;
-            set;
-        }
+//        [option(typeof(nugetcommand), "speccommandforcedescription")]
+//        public bool force
+//        {
+//            get;
+//            set;
+//        }
 
-        public override void ExecuteCommand()
-        {
-            var manifest = new Manifest();
-            string projectFile = null;
-            string fileName = null;
+//        public override void executecommand()
+//        {
+//            var manifest = new manifest();
+//            string projectfile = null;
+//            string filename = null;
 
-            if (!String.IsNullOrEmpty(AssemblyPath))
-            {
-                // Extract metadata from the assembly
-                string path = Path.Combine(CurrentDirectory, AssemblyPath);
-                AssemblyMetadata metadata = AssemblyMetadataExtractor.GetMetadata(path);
-                manifest.Metadata.Id = metadata.Name;
-                manifest.Metadata.Version = metadata.Version.ToString();
-                manifest.Metadata.Authors = metadata.Company;
-                manifest.Metadata.Description = metadata.Description;
-            }
-            else
-            {
-                if (!ProjectHelper.TryGetProjectFile(CurrentDirectory, out projectFile))
-                {
-                    manifest.Metadata.Id = Arguments.Any() ? Arguments[0] : "Package";
-                    manifest.Metadata.Version = "1.0.0";
-                }
-                else
-                {
-                    fileName = Path.GetFileNameWithoutExtension(projectFile);
-                    manifest.Metadata.Id = "$id$";
-                    manifest.Metadata.Title = "$title$";
-                    manifest.Metadata.Version = "$version$";
-                    manifest.Metadata.Description = "$description$";
-                    manifest.Metadata.Authors = "$author$";
-                }
-            }
+//            if (!string.isnullorempty(assemblypath))
+//            {
+//                // extract metadata from the assembly
+//                string path = path.combine(currentdirectory, assemblypath);
+//                assemblymetadata metadata = assemblymetadataextractor.getmetadata(path);
+//                manifest.metadata.id = metadata.name;
+//                manifest.metadata.version = metadata.version.tostring();
+//                manifest.metadata.authors = metadata.company;
+//                manifest.metadata.description = metadata.description;
+//            }
+//            else
+//            {
+//                if (!projecthelper.trygetprojectfile(currentdirectory, out projectfile))
+//                {
+//                    manifest.metadata.id = arguments.any() ? arguments[0] : "package";
+//                    manifest.metadata.version = "1.0.0";
+//                }
+//                else
+//                {
+//                    filename = path.getfilenamewithoutextension(projectfile);
+//                    manifest.metadata.id = "$id$";
+//                    manifest.metadata.title = "$title$";
+//                    manifest.metadata.version = "$version$";
+//                    manifest.metadata.description = "$description$";
+//                    manifest.metadata.authors = "$author$";
+//                }
+//            }
 
-            // Get the file name from the id or the project file
-            fileName = fileName ?? manifest.Metadata.Id;
+//            // get the file name from the id or the project file
+//            filename = filename ?? manifest.metadata.id;
 
-            // If we're using a project file then we want the a minimal nuspec
-            if (String.IsNullOrEmpty(projectFile))
-            {
-                manifest.Metadata.Description = manifest.Metadata.Description ?? SampleDescription;
-                if (String.IsNullOrEmpty(manifest.Metadata.Authors))
-                {
-                    manifest.Metadata.Authors = Environment.UserName;
-                }
-                manifest.Metadata.DependencySets = new List<ManifestDependencySet>();
-                manifest.Metadata.DependencySets.Add(new ManifestDependencySet
-                {
-                    Dependencies = new List<ManifestDependency> { SampleManifestDependency }
-                });
-            }
+//            // if we're using a project file then we want the a minimal nuspec
+//            if (string.isnullorempty(projectfile))
+//            {
+//                manifest.metadata.description = manifest.metadata.description ?? sampledescription;
+//                if (string.isnullorempty(manifest.metadata.authors))
+//                {
+//                    manifest.metadata.authors = environment.username;
+//                }
+//                manifest.metadata.dependencysets = new list<manifestdependencyset>();
+//                manifest.metadata.dependencysets.add(new manifestdependencyset
+//                {
+//                    dependencies = new list<manifestdependency> { samplemanifestdependency }
+//                });
+//            }
 
-            manifest.Metadata.ProjectUrl = SampleProjectUrl;
-            manifest.Metadata.LicenseUrl = SampleLicenseUrl;
-            manifest.Metadata.IconUrl = SampleIconUrl;
-            manifest.Metadata.Tags = SampleTags;
-            manifest.Metadata.Copyright = "Copyright " + DateTime.Now.Year;
-            manifest.Metadata.ReleaseNotes = SampleReleaseNotes;
-            string nuspecFile = fileName + Constants.ManifestExtension;
+//            manifest.metadata.projecturl = sampleprojecturl;
+//            manifest.metadata.licenseurl = samplelicenseurl;
+//            manifest.metadata.iconurl = sampleiconurl;
+//            manifest.metadata.tags = sampletags;
+//            manifest.metadata.copyright = "copyright " + datetime.now.year;
+//            manifest.metadata.releasenotes = samplereleasenotes;
+//            string nuspecfile = filename + constants.manifestextension;
 
-            // Skip the creation if the file exists and force wasn't specified
-            if (File.Exists(nuspecFile) && !Force)
-            {
-                Console.WriteLine(LocalizedResourceManager.GetString("SpecCommandFileExists"), nuspecFile);
-            }
-            else
-            {
-                try
-                {
-                    using (var stream = new MemoryStream())
-                    {
-                        manifest.Save(stream, validate: false);
-                        stream.Seek(0, SeekOrigin.Begin);
-                        string content = stream.ReadToEnd();
-                        File.WriteAllText(nuspecFile, RemoveSchemaNamespace(content));
-                    }
+//            // skip the creation if the file exists and force wasn't specified
+//            if (file.exists(nuspecfile) && !force)
+//            {
+//                console.writeline(localizedresourcemanager.getstring("speccommandfileexists"), nuspecfile);
+//            }
+//            else
+//            {
+//                try
+//                {
+//                    using (var stream = new memorystream())
+//                    {
+//                        manifest.save(stream, validate: false);
+//                        stream.seek(0, seekorigin.begin);
+//                        string content = stream.readtoend();
+//                        file.writealltext(nuspecfile, removeschemanamespace(content));
+//                    }
 
-                    Console.WriteLine(LocalizedResourceManager.GetString("SpecCommandCreatedNuSpec"), nuspecFile);
-                }
-                catch
-                {
-                    // Cleanup the file if it fails to save for some reason
-                    File.Delete(nuspecFile);
-                    throw;
-                }
-            }
-        }
+//                    console.writeline(localizedresourcemanager.getstring("speccommandcreatednuspec"), nuspecfile);
+//                }
+//                catch
+//                {
+//                    // cleanup the file if it fails to save for some reason
+//                    file.delete(nuspecfile);
+//                    throw;
+//                }
+//            }
+//        }
 
-        public override bool IncludedInHelp(string optionName)
-        {
-            if (string.Equals(optionName, "ConfigFile", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
+//        public override bool includedinhelp(string optionname)
+//        {
+//            if (string.equals(optionname, "configfile", stringcomparison.ordinalignorecase))
+//            {
+//                return false;
+//            }
 
-            return base.IncludedInHelp(optionName);
-        }
+//            return base.includedinhelp(optionname);
+//        }
 
-        private static string RemoveSchemaNamespace(string content)
-        {
-            // This seems to be the only way to clear out xml namespaces.
-            return Regex.Replace(content, @"(xmlns:?[^=]*=[""][^""]*[""])", String.Empty, RegexOptions.IgnoreCase | RegexOptions.Multiline);
-        }
-    }
-}
+//        private static string removeschemanamespace(string content)
+//        {
+//            // this seems to be the only way to clear out xml namespaces.
+//            return regex.replace(content, @"(xmlns:?[^=]*=[""][^""]*[""])", string.empty, regexoptions.ignorecase | regexoptions.multiline);
+//        }
+//    }
+//}

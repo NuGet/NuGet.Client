@@ -9,12 +9,12 @@ using NuGet.Protocol.Core.Types;
 namespace NuGet.Commands
 {
     [Command(
-        typeof(NuGetCommand),
-        "list",
-        "ListCommandDescription",
-        UsageSummaryResourceName = "ListCommandUsageSummary",
-        UsageDescriptionResourceName = "ListCommandUsageDescription",
-        UsageExampleResourceName = "ListCommandUsageExamples")]
+         typeof(NuGetCommand),
+         "list",
+         "ListCommandDescription",
+         UsageSummaryResourceName = "ListCommandUsageSummary",
+         UsageDescriptionResourceName = "ListCommandUsageDescription",
+         UsageExampleResourceName = "ListCommandUsageExamples")]
     public class ListCommand : Command
     {
         private readonly List<string> _sources = new List<string>();
@@ -37,57 +37,60 @@ namespace NuGet.Commands
         [Option(typeof(NuGetCommand), "ListCommandIncludeDelisted")]
         public bool IncludeDelisted { get; set; }
 
-        [SuppressMessage(
-            "Microsoft.Design",
-            "CA1024:UsePropertiesWhereAppropriate",
-            Justification = "This call is expensive")]
-        public IEnumerable<IPackage> GetPackages(IEnumerable<string> listEndpoints)
-        {
-            IPackageRepository packageRepository = GetRepository(listEndpoints);
-            string searchTerm = Arguments != null ? Arguments.FirstOrDefault() : null;
+        public IListCommandRunner ListCommandRunner { get; set; }
 
-            IQueryable<IPackage> packages = packageRepository.Search(
-                searchTerm,
-                targetFrameworks: Enumerable.Empty<string>(),
-                allowPrereleaseVersions: Prerelease);
 
-            if (AllVersions)
-            {
-                return packages.OrderBy(p => p.Id);
-            }
-            else
-            {
-                if (Prerelease && packageRepository.SupportsPrereleasePackages)
-                {
-                    packages = packages.Where(p => p.IsAbsoluteLatestVersion);
-                }
-                else
-                {
-                    packages = packages.Where(p => p.IsLatestVersion);
-                }
-            }
+        //[SuppressMessage(
+        //     "Microsoft.Design",
+        //     "CA1024:UsePropertiesWhereAppropriate",
+        //     Justification = "This call is expensive")]
+        //private IEnumerable<IPackage> GetPackages(IEnumerable<string> listEndpoints)
+        //{
+        //    IPackageRepository packageRepository = GetRepository(listEndpoints);
+        //    string searchTerm = Arguments != null ? Arguments.FirstOrDefault() : null;
 
-            var result = packages.OrderBy(p => p.Id)
-                .AsEnumerable();
+        //    IQueryable<IPackage> packages = packageRepository.Search(
+        //        searchTerm,
+        //        targetFrameworks: Enumerable.Empty<string>(),
+        //        allowPrereleaseVersions: Prerelease);
 
-            // we still need to do client side filtering of delisted & prerelease packages.
-            if (IncludeDelisted == false)
-            {
-                result = result.Where(PackageExtensions.IsListed);
-            }
-            return result.Where(p => Prerelease || p.IsReleaseVersion())
-                       .AsCollapsed();
-        }
+        //    if (AllVersions)
+        //    {
+        //        return packages.OrderBy(p => p.Id);
+        //    }
+        //    else
+        //    {
+        //        if (Prerelease && packageRepository.SupportsPrereleasePackages)
+        //        {
+        //            packages = packages.Where(p => p.IsAbsoluteLatestVersion);
+        //        }
+        //        else
+        //        {
+        //            packages = packages.Where(p => p.IsLatestVersion);
+        //        }
+        //    }
 
-        private IPackageRepository GetRepository(IEnumerable<string> listEndpoints)
-        {
-            var repositories = listEndpoints
-                                .Select(RepositoryFactory.CreateRepository)
-                                .ToList();
+        //    var result = packages.OrderBy(p => p.Id)
+        //        .AsEnumerable();
 
-            var repository = new AggregateRepository(repositories);
-            return repository;
-        }
+        //    // we still need to do client side filtering of delisted & prerelease packages.
+        //    if (IncludeDelisted == false)
+        //    {
+        //        result = result.Where(PackageExtensions.IsListed);
+        //    }
+        //    return result.Where(p => Prerelease || p.IsReleaseVersion())
+        //        .AsCollapsed();
+        //}
+
+        //private IPackageRepository GetRepository(IEnumerable<string> listEndpoints)
+        //{
+        //    var repositories = listEndpoints
+        //        .Select(RepositoryFactory.CreateRepository)
+        //        .ToList();
+
+        //    var repository = new AggregateRepository(repositories);
+        //    return repository;
+        //}
 
         private async Task<IList<KeyValuePair<Configuration.PackageSource, string>>> GetListEndpointsAsync()
         {
@@ -110,7 +113,7 @@ namespace NuGet.Commands
             var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(SourceProvider);
 
             var listCommandResourceTasks = packageSources
-                .Select(source => 
+                .Select(source =>
                 {
                     var sourceRepository = sourceRepositoryProvider.CreateRepository(source);
                     return sourceRepository.GetResourceAsync<ListCommandResource>();
@@ -137,7 +140,76 @@ namespace NuGet.Commands
             return partitioned[key: true].ToList();
         }
 
-        public override async Task ExecuteCommandAsync()
+        //private async Task ExecuteCommandAsyncOld()
+        //{
+        //    if (Verbose)
+        //    {
+        //        Console.WriteWarning(LocalizedResourceManager.GetString("Option_VerboseDeprecated"));
+        //        Verbosity = Verbosity.Detailed;
+        //    }
+
+        //    var listEndpoints = await GetListEndpointsAsync(); // local method 
+
+        //    // override v2 credentials adapter with new one having endpoints mapping
+        //    var adapter = new Credentials.CredentialServiceAdapter(CredentialService);
+        //    adapter.SetEndpoints(listEndpoints);
+        //    HttpClient.DefaultCredentialProvider = adapter;
+
+        //    var packages = GetPackages(listEndpoints.Select(kv => kv.Value));
+
+        //    bool hasPackages = false;
+
+        //    if (packages != null)
+        //    {
+        //        if (Verbosity == Verbosity.Detailed)
+        //        {
+        //            /***********************************************
+        //             * Package-Name
+        //             *  1.0.0.2010
+        //             *  This is the package Description
+        //             * 
+        //             * Package-Name-Two
+        //             *  2.0.0.2010
+        //             *  This is the second package Description
+        //             ***********************************************/
+        //            foreach (var p in packages)
+        //            {
+        //                Console.PrintJustified(0, p.Id);
+        //                Console.PrintJustified(1, p.Version.ToString());
+        //                Console.PrintJustified(1, p.Description);
+        //                if (!string.IsNullOrEmpty(p.LicenseUrl?.OriginalString))
+        //                {
+        //                    Console.PrintJustified(1,
+        //                        string.Format(
+        //                            CultureInfo.InvariantCulture,
+        //                            LocalizedResourceManager.GetString("ListCommand_LicenseUrl"),
+        //                            p.LicenseUrl.OriginalString));
+        //                }
+        //                Console.WriteLine();
+        //                hasPackages = true;
+        //            }
+        //        }
+        //        else
+        //        {
+        //            /***********************************************
+        //             * Package-Name 1.0.0.2010
+        //             * Package-Name-Two 2.0.0.2010
+        //             ***********************************************/
+        //            foreach (var p in packages)
+        //            {
+        //                Console.PrintJustified(0, p.GetFullName());
+        //                hasPackages = true;
+        //            }
+        //        }
+        //    }
+
+        //    if (!hasPackages)
+        //    {
+        //        Console.WriteLine(LocalizedResourceManager.GetString("ListCommandNoPackages"));
+        //    }
+        //}
+
+        public override Task ExecuteCommandAsync()
         {
             if (Verbose)
             {
@@ -145,17 +217,20 @@ namespace NuGet.Commands
                 Verbosity = Verbosity.Detailed;
             }
 
-            var listEndpoints = await GetListEndpointsAsync();
+            if ((!Arguments.Any() || string.IsNullOrWhiteSpace(Arguments[0])))
+            {
+                HelpCommand.ViewHelpForCommand(CommandAttribute.CommandName);
+                return Task.FromResult(0);
+            }
 
-            // override v2 credentials adapter with new one having endpoints mapping
-            var adapter = new Credentials.CredentialServiceAdapter(CredentialService);
-            adapter.SetEndpoints(listEndpoints);
-            HttpClient.DefaultCredentialProvider = adapter;
-
-            var packages = GetPackages(listEndpoints.Select(kv => kv.Value));
-
+            if (ListCommandRunner == null)
+            {
+                ListCommandRunner = new ListCommandRunner();
+            }
+            var localsArgs = new ListArgs(Arguments, Settings, Console.LogInformation, Console.LogError, AllVersions,
+                IncludeDelisted, Prerelease, Verbose);
+            IEnumerable<IPackageSearchMetadata> packages = ListCommandRunner.ExecuteCommand(localsArgs);
             bool hasPackages = false;
-
             if (packages != null)
             {
                 if (Verbosity == Verbosity.Detailed)
@@ -171,8 +246,8 @@ namespace NuGet.Commands
                      ***********************************************/
                     foreach (var p in packages)
                     {
-                        Console.PrintJustified(0, p.Id);
-                        Console.PrintJustified(1, p.Version.ToString());
+                        Console.PrintJustified(0, p.Identity.Id);
+                        Console.PrintJustified(1, p.Identity.Version.ToString());
                         Console.PrintJustified(1, p.Description);
                         if (!string.IsNullOrEmpty(p.LicenseUrl?.OriginalString))
                         {
@@ -194,16 +269,22 @@ namespace NuGet.Commands
                      ***********************************************/
                     foreach (var p in packages)
                     {
-                        Console.PrintJustified(0, p.GetFullName());
+                        Console.PrintJustified(0, GetFullName(p));
                         hasPackages = true;
                     }
                 }
             }
-
             if (!hasPackages)
             {
                 Console.WriteLine(LocalizedResourceManager.GetString("ListCommandNoPackages"));
             }
+            return Task.FromResult(0);
+
+        }
+        //TODO NK - Move this to an extension method?
+        public static string GetFullName(IPackageSearchMetadata iPackageSearchMetadata)
+        {
+            return iPackageSearchMetadata.Identity.Id + " " + iPackageSearchMetadata.Identity.Version.ToString();
         }
     }
 }

@@ -6,9 +6,9 @@ using System.Globalization;
 using NuGet.Common;
 using NuGet.Configuration;
 
-namespace NuGet.PackageManagement.VisualStudio
+namespace NuGet.PackageManagement
 {
-    public class PackageRestoreConsent
+    public class PackageRestoreConsent // TODO NK - move to Nuget.Core sln to packageManagement
     {
         private const string EnvironmentVariableName = "EnableNuGetPackageRestore";
         private const string PackageRestoreSection = "packageRestore";

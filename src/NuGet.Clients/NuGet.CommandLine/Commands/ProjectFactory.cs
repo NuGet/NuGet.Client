@@ -16,15 +16,18 @@ using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using PathUtility = NuGet.Commands.PathUtility;
+using XElementExtensions = NuGet.Packaging.XElementExtensions;
 
 namespace NuGet.CommandLine
 {
 
     [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
-    public class ProjectFactory : MSBuildUser, IProjectFactory, IPropertyProvider
+    public class ProjectFactory : MSBuildUser, IProjectFactory //COREREMOVAL
     {
         // Its type is Microsoft.Build.Evaluation.Project
         private dynamic _project;
@@ -364,10 +367,10 @@ namespace NuGet.CommandLine
             return value;
         }
 
-        dynamic IPropertyProvider.GetPropertyValue(string propertyName)
-        {
-            return GetPropertyValue(propertyName);
-        }
+        //dynamic IPropertyProvider.GetPropertyValue(string propertyName)
+        //{
+        //    return GetPropertyValue(propertyName);
+        //}
 
         private void BuildProject()
         {
@@ -443,7 +446,7 @@ namespace NuGet.CommandLine
                 string outputPath = _project.GetPropertyValue("OutputPath");
                 string configuration = _project.GetPropertyValue("Configuration");
                 string projectName = Path.GetFileName(Path.GetDirectoryName(_project.FullPath));
-                targetPath = PathUtility.EnsureTrailingSlash(Path.Combine(outputPath, projectName, "bin", configuration));
+                targetPath = PathUtility.EnsureTrailingSlash(Path.Combine(outputPath, projectName, "bin", configuration));  // TODO NK - Is this ok?
             }
 
             return targetPath;
@@ -1312,7 +1315,7 @@ namespace NuGet.CommandLine
             using (var dependencyFileStream = File.OpenRead(targetFile))
             using (var fileContentStream = File.OpenRead(fullPath))
             {
-                isEqual = dependencyFileStream.ContentEquals(fileContentStream);
+                isEqual = StreamUtility.ContentEquals(dependencyFileStream, fileContentStream);
             }
             return isEqual;
         }
@@ -1351,7 +1354,47 @@ namespace NuGet.CommandLine
             {
                 Path = file.Path + ".transform";
                 _streamFactory = new Lazy<Func<Stream>>(() => ReverseTransform(file, transforms), isThreadSafe: false);
-                TargetFramework = VersionUtility.ParseFrameworkNameFromFilePath(Path, out _effectivePath);
+                TargetFramework = ParseFrameworkNameFromFilePath(Path, out _effectivePath); //TODO NK
+            }
+        //TODO NK Dependency on Constants? Do these constants make sense to be copied, this basically depends all the way to the version utility
+        public static FrameworkName ParseFrameworkNameFromFilePath(string filePath, out string effectivePath)
+            {
+                var knownFolders = new string[]
+                {
+                //Constants.ContentDirectory,
+                //Constants.LibDirectory,
+                //Constants.ToolsDirectory,
+                //Constants.BuildDirectory
+                };
+
+                for (int i = 0; i < knownFolders.Length; i++)
+                {
+                    string folderPrefix = knownFolders[i] + System.IO.Path.DirectorySeparatorChar;
+                    if (filePath.Length > folderPrefix.Length &&
+                        filePath.StartsWith(folderPrefix, StringComparison.OrdinalIgnoreCase))
+                    {
+                        string frameworkPart = filePath.Substring(folderPrefix.Length);
+
+                        try
+                        {
+                            return VersionUtility.ParseFrameworkFolderName(
+                                frameworkPart,
+                                strictParsing: knownFolders[i] == Constants.LibDirectory,
+                                effectivePath: out effectivePath);
+                        }
+                        catch (ArgumentException)
+                        {
+                            // if the parsing fails, we treat it as if this file
+                            // doesn't have target framework.
+                            effectivePath = frameworkPart;
+                            return null;
+                        }
+                    }
+
+                }
+
+                effectivePath = filePath;
+                return null;
             }
 
             public string Path
@@ -1382,7 +1425,7 @@ namespace NuGet.CommandLine
                 // Remove all the transforms
                 foreach (var transformFile in transforms)
                 {
-                    element.Except(GetElement(transformFile));
+                    XElementExtensions.Except(element, GetElement(transformFile));
                 }
 
                 // Create the stream with the transformed content

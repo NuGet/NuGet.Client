@@ -6,7 +6,7 @@ namespace NuGet.CommandLine
     /// <summary>
     /// Adapter class to convert NuGet.Configuration.ISettings into legacy ISettings.
     /// </summary>
-    internal class SettingsToLegacySettings : ISettings
+    internal class SettingsToLegacySettings : ISettings // TODO NK - This is not too useful anymore
     {
         private NuGet.Configuration.ISettings _settings;
 

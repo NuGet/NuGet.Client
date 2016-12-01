@@ -8755,6 +8755,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &amp;Allow NuGet to download missing packages.
+        /// </summary>
+        public static string PackageRestoreConsentCheckBoxText {
+            get {
+                return ResourceManager.GetString("PackageRestoreConsentCheckBoxText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Packing files from &apos;{0}&apos;..
         /// </summary>
         public static string PackagingFilesFromOutputPath {
