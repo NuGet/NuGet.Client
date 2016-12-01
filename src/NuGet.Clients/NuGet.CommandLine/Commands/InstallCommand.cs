@@ -42,6 +42,9 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "InstallCommandRequireConsent")]
         public bool RequireConsent { get; set; }
 
+        [Option(typeof(NuGetCommand), "InstallCommandDependencyVersion")]
+        public string DependencyVersion { get; set; }
+
         [Option(typeof(NuGetCommand), "InstallCommandSolutionDirectory")]
         public string SolutionDirectory { get; set; }
 
@@ -234,8 +237,23 @@ namespace NuGet.CommandLine
 
             var allowPrerelease = Prerelease || (version != null && version.IsPrerelease);
 
+            DependencyBehavior depBehavior;
+            if(String.IsNullOrWhiteSpace(DependencyVersion))
+            {
+                // default behavior
+                depBehavior = DependencyBehavior.Lowest;
+            }
+            else if (!Enum.TryParse<DependencyBehavior>(DependencyVersion, out depBehavior))
+            {
+                var message = string.Format(
+                        CultureInfo.CurrentCulture,
+                        LocalizedResourceManager.GetString("UnknownDependencyVersion"),
+                        packageId);
+                throw new CommandLineException(message);
+            }
+
             var resolutionContext = new ResolutionContext(
-                DependencyBehavior.Lowest,
+                depBehavior,
                 includePrelease: allowPrerelease,
                 includeUnlisted: true,
                 versionConstraints: VersionConstraints.None);

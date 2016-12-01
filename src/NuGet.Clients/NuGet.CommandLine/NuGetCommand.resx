@@ -5336,4 +5336,10 @@ nuget locals global-packages -list</value>
   <data name="RestoreCommandRecursive" xml:space="preserve">
     <value>Restore all referenced projects for UWP and NETCore projects. This does not include packages.config projects.</value>
   </data>
+  <data name="InstallCommandDependencyVersion" xml:space="preserve">
+    <value>Overrides the default dependency resolution behavior</value>
+  </data>
+  <data name="UnknownDependencyVersion" xml:space="preserve">
+    <value>Unknown Dependency Resolution Behavior for -dependencyVersion</value>
+  </data>
 </root>
