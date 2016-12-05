@@ -207,6 +207,7 @@ namespace NuGet.Protocol.Core.Types
                         logger.LogMinimal(message);
                     }
                 }
+                // Mono will throw ArchiveException when package is invalid.
                 catch (Exception ex) when( ex is InvalidDataException
                                         || ex.GetType().Name.Equals("ArchiveException"))
                 {
