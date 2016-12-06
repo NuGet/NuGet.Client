@@ -80,7 +80,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(0, result.Item1);
                 var basename = string.Format("{0}.{1}.", packageId, version);
-                var baseFolder = Path.Combine(packageId, version);
+                var baseFolder = Path.Combine(packageId, version) + Path.DirectorySeparatorChar;
                 Assert.True(File.Exists(Path.Combine(source, baseFolder + packageId + ".nuspec")));
                 Assert.True(File.Exists(Path.Combine(source, baseFolder + basename + "nupkg")));
                 Assert.True(File.Exists(Path.Combine(source, baseFolder + basename + "nupkg.sha512")));
