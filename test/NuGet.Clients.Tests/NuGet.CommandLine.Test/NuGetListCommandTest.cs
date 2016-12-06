@@ -962,7 +962,7 @@ namespace NuGet.CommandLine.Test
                 "The run did not fail as desired. Simply got this output:" + result.Item2);
 
             Assert.True(
-                result.Item3.Contains("Unable to load the service index for source https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org/v3/index.json."),
+                result.Item3.Contains($"Unable to load the service index for source {invalidInput}."),
                 "Expected error message not found in " + result.Item3
                 );
         }

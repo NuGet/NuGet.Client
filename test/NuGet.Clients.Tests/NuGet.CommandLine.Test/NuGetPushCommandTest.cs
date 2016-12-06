@@ -80,7 +80,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(0, result.Item1);
                 var basename = string.Format("{0}.{1}.", packageId, version);
-                var baseFolder = string.Format("{0}" + Path.DirectorySeparatorChar + "{1}" + Path.DirectorySeparatorChar, packageId, version);
+                var baseFolder = Path.Combine(packageId, version);
                 Assert.True(File.Exists(Path.Combine(source, baseFolder + packageId + ".nuspec")));
                 Assert.True(File.Exists(Path.Combine(source, baseFolder + basename + "nupkg")));
                 Assert.True(File.Exists(Path.Combine(source, baseFolder + basename + "nupkg.sha512")));
@@ -604,7 +604,7 @@ namespace NuGet.CommandLine.Test
         // Regression test for the bug that "nuget.exe push" will retry forever instead of asking for
         // user's password when NuGet.Server uses Windows Authentication.
         [Fact(Skip = "TODO: reconstruct faked response headers which won't crash HttpClient. " +
-            "Using real server, same sceanrio works fine")]
+            "Using real server, same scenario works fine")]
         public void PushCommand_PushToServerWontRetryForever()
         {
             var nugetexe = Util.GetNuGetExePath();

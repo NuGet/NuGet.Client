@@ -522,7 +522,7 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     proj1Directory,
-                    "install " + configFileName + " -Source " + repositoryPath + $@" -ConfigFile ..{Path.AltDirectorySeparatorChar}my.config -RequireConsent -Verbosity detailed",
+                    "install " + configFileName + " -Source " + repositoryPath + $@" -ConfigFile ..{Path.DirectorySeparatorChar}my.config -RequireConsent -Verbosity detailed",
                     waitForExit: true);
 
                 // Assert
@@ -587,7 +587,7 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     proj1Directory,
-                    "install " + configFileName + " -Source " + repositoryPath + $@" -ConfigFile ..{Path.AltDirectorySeparatorChar}my.config",
+                    "install " + configFileName + " -Source " + repositoryPath + $@" -ConfigFile ..{Path.DirectorySeparatorChar}my.config",
                     waitForExit: true);
 
                 // Assert

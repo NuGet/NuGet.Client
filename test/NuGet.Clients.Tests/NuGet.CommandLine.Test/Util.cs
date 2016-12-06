@@ -1,11 +1,4 @@
-﻿using Moq;
-using Newtonsoft.Json.Linq;
-using NuGet.Frameworks;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using NuGet.Test.Utility;
-using NuGet.Versioning;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Globalization;
@@ -15,6 +8,13 @@ using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml.Linq;
+using Moq;
+using Newtonsoft.Json.Linq;
+using NuGet.Frameworks;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
