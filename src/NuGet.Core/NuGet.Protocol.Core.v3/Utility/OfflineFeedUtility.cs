@@ -209,7 +209,8 @@ namespace NuGet.Protocol.Core.Types
                 }
                 // Mono will throw ArchiveException when package is invalid.
                 catch (Exception ex) when( ex is InvalidDataException
-                                        || ex.GetType().Name.Equals("ArchiveException"))
+                                        || (RuntimeEnvironmentHelper.IsMono
+                                        && ex.GetType().FullName.Equals("SharpCompress.Common.ArchiveException")))
                 {
                     var message = string.Format(
                         CultureInfo.CurrentCulture,
