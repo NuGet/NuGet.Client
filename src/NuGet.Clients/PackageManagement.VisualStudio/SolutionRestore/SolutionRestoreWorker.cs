@@ -38,6 +38,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private Lazy<BlockingCollection<SolutionRestoreRequest>> _pendingRequests;
         private BackgroundRestoreOperation _pendingRestore;
         private Task<bool> _activeRestoreTask;
+        private int _initialized;
 
         private SolutionRestoreJobContext _restoreJobContext;
 
@@ -91,21 +92,24 @@ namespace NuGet.PackageManagement.VisualStudio
             Reset();
         }
 
-        public async Task InitializeAsync(IAsyncServiceProvider site)
+        private async Task InitializeAsync()
         {
-            await _joinableFactory.RunAsync(async () =>
+            if (Interlocked.CompareExchange(ref _initialized, 1, 0) == 0)
             {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await _joinableFactory.RunAsync(async () =>
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                var dte = await site.GetDTEAsync();
-                _solutionEvents = dte.Events.SolutionEvents;
-                _solutionEvents.AfterClosing += SolutionEvents_AfterClosing;
+                    var dte = _serviceProvider.GetDTE();
+                    _solutionEvents = dte.Events.SolutionEvents;
+                    _solutionEvents.AfterClosing += SolutionEvents_AfterClosing;
 #if VS15
-                // these properties are specific to VS15 since they are use to attach to solution events
-                // which is further used to start bg job runner to schedule auto restore
-                await AdviseAsync(site);
+                    // these properties are specific to VS15 since they are use to attach to solution events
+                    // which is further used to start bg job runner to schedule auto restore
+                    Advise(_serviceProvider);
 #endif
-            });
+                });
+            }
         }
 
         public void Dispose()
@@ -176,6 +180,9 @@ namespace NuGet.PackageManagement.VisualStudio
         public async Task<bool> ScheduleRestoreAsync(
             SolutionRestoreRequest request, CancellationToken token)
         {
+            // Initialize if not already done.
+            await InitializeAsync();
+
             if (_solutionManager.IsSolutionFullyLoaded)
             {
                 // start background runner if not yet started
@@ -199,6 +206,8 @@ namespace NuGet.PackageManagement.VisualStudio
             return _joinableFactory.Run(
                 async () =>
                 {
+                    // Initialize if not already done.
+                    await InitializeAsync();
                     using (var restoreOperation = new BackgroundRestoreOperation(blockingUi: true))
                     {
                         await PromoteTaskToActiveAsync(restoreOperation, _workerCts.Token);

@@ -18,16 +18,16 @@ namespace NuGet.PackageManagement.VisualStudio
         private IVsSolution _vsSolution;
         private uint _cookie;
 
-        protected async Task AdviseAsync(IAsyncServiceProvider site)
+        protected void Advise(IServiceProvider serviceProvider)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (site == null)
+            if (serviceProvider == null)
             {
-                throw new ArgumentNullException(nameof(site));
+                throw new ArgumentNullException(nameof(serviceProvider));
             }
 
-            _vsSolution = await site.GetServiceAsync<SVsSolution, IVsSolution>();
+            _vsSolution = serviceProvider.GetService<SVsSolution, IVsSolution>();
             if (_vsSolution != null)
             {
                 var hr = _vsSolution.AdviseSolutionEvents(this, out _cookie);

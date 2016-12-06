@@ -56,7 +56,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                EnsureCacheInitialized();
+                EnsureInitialize();
 
                 if (string.IsNullOrEmpty(DefaultNuGetProjectName))
                 {
@@ -124,14 +124,14 @@ namespace NuGet.PackageManagement.VisualStudio
             _logger = logger;
         }
 
-        public async Task InitializeAsync(IAsyncServiceProvider site)
+        private async Task InitializeAsync()
         {
             await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                _vsSolution = await site.GetServiceAsync<SVsSolution, IVsSolution>();
-                _vsMonitorSelection = await site.GetServiceAsync<SVsShellMonitorSelection, IVsMonitorSelection>();
+                _vsSolution = _serviceProvider.GetService<SVsSolution, IVsSolution>();
+                _vsMonitorSelection = _serviceProvider.GetService<SVsShellMonitorSelection, IVsMonitorSelection>();
 
                 var solutionLoadedGuid = VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_guid;
                 _vsMonitorSelection.GetCmdUIContextCookie(ref solutionLoadedGuid, out _solutionLoadedUICookie);
@@ -140,7 +140,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 var hr = _vsMonitorSelection.AdviseSelectionEvents(this, out cookie);
                 ErrorHandler.ThrowOnFailure(hr);
 
-                var dte = await site.GetDTEAsync();
+                var dte = _serviceProvider.GetDTE();
                 // Keep a reference to SolutionEvents so that it doesn't get GC'ed. Otherwise, we won't receive events.
                 _solutionEvents = dte.Events.SolutionEvents;
 
@@ -173,7 +173,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     nameof(nuGetProjectSafeName));
             }
 
-            EnsureCacheInitialized();
+            EnsureInitialize();
 
             NuGetProject nuGetProject = null;
             // Project system cache could be null when solution is not open.
@@ -194,7 +194,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException("nuGetProject");
             }
 
-            EnsureCacheInitialized();
+            EnsureInitialize();
 
             // Try searching for simple names first
             string name = nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
@@ -213,7 +213,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentException(ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, "nuGetProjectSafeName");
             }
 
-            EnsureCacheInitialized();
+            EnsureInitialize();
 
             EnvDTE.Project dteProject;
             _projectSystemCache.TryGetDTEProject(nuGetProjectSafeName, out dteProject);
@@ -222,7 +222,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public IEnumerable<NuGetProject> GetNuGetProjects()
         {
-            EnsureCacheInitialized();
+            EnsureInitialize();
 
             var projects = _projectSystemCache.GetNuGetProjects();
 
@@ -243,7 +243,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Debug.Assert(ThreadHelper.CheckAccess());
 
-            EnsureCacheInitialized();
+            EnsureInitialize();
 
             var dteProjects = _projectSystemCache.GetEnvDTEProjects();
 
@@ -284,13 +284,14 @@ namespace NuGet.PackageManagement.VisualStudio
                         return false;
                     }
 
+                    EnsureInitialize();
+
                     if (!DoesSolutionRequireAnInitialSaveAs())
                     {
                         // Solution is open and 'Save As' is not required. Return true.
                         return true;
                     }
-
-                    EnsureCacheInitialized();
+                    
                     var projects = _projectSystemCache.GetNuGetProjects();
                     if (!projects.Any() || projects.Any(project => !(project is INuGetIntegratedProject)))
                     {
@@ -322,6 +323,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
+                    EnsureInitialize();
                     var vsSolution7 = _vsSolution as IVsSolution7;
 
                     if (vsSolution7 != null && vsSolution7.IsSolutionLoadDeferred())
@@ -343,6 +345,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
+                    EnsureInitialize();
                     object value;
                     _vsSolution.GetProperty((int)(__VSPROPID4.VSPROPID_IsSolutionFullyLoaded), out value);
                     return (bool)value;
@@ -356,6 +359,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
+                EnsureInitialize();
                 var vsSolution4 = _vsSolution as IVsSolution4;
 
                 if (vsSolution4 != null)
@@ -724,7 +728,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        private void EnsureCacheInitialized()
+        private void EnsureInitialize()
         {
             try
             {
@@ -736,6 +740,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     ThreadHelper.JoinableTaskFactory.Run(async delegate
                     {
                         await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                        await InitializeAsync();
 
                         var dte = _serviceProvider.GetDTE();
                         if (dte.Solution.IsOpen)
@@ -811,7 +817,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // large number of references.
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            EnsureCacheInitialized();
+            EnsureInitialize();
 
             var dependentEnvDTEProjectsDictionary = new Dictionary<string, List<Project>>();
             var envDTEProjects = GetEnvDTEProjects();
