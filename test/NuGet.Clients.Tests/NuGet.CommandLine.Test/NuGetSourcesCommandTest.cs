@@ -32,7 +32,7 @@ namespace NuGet.CommandLine.Test
                     "-Source",
                     "http://test_source"
                 };
-                string root = RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows ? Environment.GetEnvironmentVariable("HOME") : @"c:\";
+                string root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
                 // Act
                 // Set the working directory to C:\, otherwise,
@@ -51,7 +51,6 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void SourcesCommandTest_AddWithUserNamePassword()
         {
-            if (RuntimeEnvironmentHelper.IsMono) return;
             using (var preserver = new DefaultConfigurationFilePreserver())
             {
                 // Arrange
@@ -68,12 +67,13 @@ namespace NuGet.CommandLine.Test
                     "-Password",
                     "test_password"
                 };
+                string root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
                 // Act
                 // Set the working directory to C:\, otherwise,
                 // the test will change the nuget.config at the code repo's root directory
                 // And, will fail since global nuget.config is updated
-                var result = CommandRunner.Run(nugetexe, @"c:\", string.Join(" ", args), true);
+                var result = CommandRunner.Run(nugetexe, root, string.Join(" ", args), true);
 
                 // Assert
                 Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
@@ -115,7 +115,7 @@ namespace NuGet.CommandLine.Test
                     "test_password",
                     "-StorePasswordInClearText"
                 };
-                string root = RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows ? Environment.GetEnvironmentVariable("HOME") : @"c:\";
+                string root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
                 // Act
                 // Set the working directory to C:\, otherwise,
@@ -370,7 +370,7 @@ namespace NuGet.CommandLine.Test
                     "-Verbosity",
                     "Quiet"
                 };
-                string root = RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows ? Environment.GetEnvironmentVariable("HOME") : @"c:\";
+                string root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
                 // Act
                 // Set the working directory to C:\, otherwise,
