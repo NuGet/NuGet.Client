@@ -375,7 +375,7 @@ namespace NuGet.CommandLine
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingDirectory,
-                    "pack Assembly.csproj -build",
+                    "--debug pack Assembly.csproj -build",
                     waitForExit: true);
 
                 // Assert
