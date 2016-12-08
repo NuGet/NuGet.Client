@@ -139,7 +139,7 @@
     <value>The value "{0}" for {1} is a sample value and should be removed.</value>
   </data>
   <data name="DefaultSpecValueSolution" xml:space="preserve">
-    <value>Replace with an appropriate value or remove and it and rebuild your package.</value>
+    <value>Replace it with an appropriate value or remove it and rebuild your package.</value>
   </data>
   <data name="DefaultSpecValueTitle" xml:space="preserve">
     <value>Remove sample nuspec values.</value>
