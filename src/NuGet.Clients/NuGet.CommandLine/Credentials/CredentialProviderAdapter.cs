@@ -14,17 +14,18 @@ namespace NuGet.Credentials
     /// </summary>
     public class CredentialProviderAdapter : ICredentialProvider
     {
-        private readonly NuGet.ICredentialProvider _provider;
+        //private readonly NuGet.ICredentialProvider _provider;
+        private readonly ICredentialService _credentialService;
 
-        public CredentialProviderAdapter(NuGet.ICredentialProvider provider)
+        public CredentialProviderAdapter(CredentialService credentialService) // TODO NK - Does this really make sense?
         {
-            if (provider == null)
+            if (credentialService == null)
             {
-                throw new ArgumentNullException(nameof(provider));
+                throw new ArgumentNullException(nameof(credentialService));
             }
 
-            _provider = provider;
-            Id = $"{typeof (CredentialProviderAdapter).Name}_{provider.GetType().Name}_{Guid.NewGuid()}";
+            _credentialService = credentialService;
+            Id = $"{typeof (CredentialProviderAdapter).Name}_{_credentialService.GetType().Name}_{Guid.NewGuid()}";
         }
 
         /// <summary>
@@ -32,7 +33,7 @@ namespace NuGet.Credentials
         /// </summary>
         public string Id { get; }
 
-        public Task<CredentialResponse> GetAsync(
+        public async Task<CredentialResponse> GetAsync( // TODO NK - REVIEW!
             Uri uri,
             IWebProxy proxy,
             CredentialRequestType type,
@@ -48,17 +49,22 @@ namespace NuGet.Credentials
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var cred = _provider.GetCredentials(
-                uri,
-                proxy,
-                type == CredentialRequestType.Proxy ? CredentialType.ProxyCredentials : CredentialType.RequestCredentials,
-                isRetry);
+            var credsTask = _credentialService.GetCredentialsAsync(uri, proxy, type,"TODO NK", cancellationToken);
+            var creds = await credsTask;
+            //var cred = _provider.GetCredentials(
+            //    uri,
+            //    proxy,
+            //    type == CredentialRequestType.Proxy ? CredentialType.ProxyCredentials : CredentialType.RequestCredentials,
+            //    isRetry);
 
-            var response = cred != null
-                ? new CredentialResponse(cred)
-                : new CredentialResponse(CredentialStatus.ProviderNotApplicable);
+            //var response = cred != null
+            //    ? new CredentialResponse(cred)
+            //    : new CredentialResponse(CredentialStatus.ProviderNotApplicable);
+            var response = creds != null
+               ? new CredentialResponse(creds)
+               : new CredentialResponse(CredentialStatus.ProviderNotApplicable);
 
-            return Task.FromResult(response);
+            return response;
         }
     }
 }

@@ -13,6 +13,13 @@ namespace NuGet.CommandLine
 
     public static class AssemblyMetadataExtractor
     {
+
+        public static T CreateInstance<T>(this AppDomain domain) // TODO NK - does this need a better place?
+        {
+            return (T)domain.CreateInstanceAndUnwrap(typeof(T).Assembly.FullName,
+                                                     typeof(T).FullName);
+        }
+
         public static AssemblyMetadata GetMetadata(string assemblyPath)
         {
             var setup = new AppDomainSetup

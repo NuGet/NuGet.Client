@@ -209,7 +209,7 @@ namespace NuGet.Commands
         //    }
         //}
 
-        public override Task ExecuteCommandAsync()
+        public async override Task ExecuteCommandAsync()
         {
             if (Verbose)
             {
@@ -220,14 +220,16 @@ namespace NuGet.Commands
             if ((!Arguments.Any() || string.IsNullOrWhiteSpace(Arguments[0])))
             {
                 HelpCommand.ViewHelpForCommand(CommandAttribute.CommandName);
-                return Task.FromResult(0);
+                return;
             }
 
             if (ListCommandRunner == null)
             {
                 ListCommandRunner = new ListCommandRunner();
             }
-            var localsArgs = new ListArgs(Arguments, Settings, Console.LogInformation, Console.LogError, AllVersions,
+            var listEndpoints = await GetListEndpointsAsync();
+
+            var localsArgs = new ListArgs(Arguments, listEndpoints, Settings, Console.LogInformation, Console.LogError, AllVersions,
                 IncludeDelisted, Prerelease, Verbose);
             IEnumerable<IPackageSearchMetadata> packages = ListCommandRunner.ExecuteCommand(localsArgs);
             bool hasPackages = false;
@@ -269,7 +271,7 @@ namespace NuGet.Commands
                      ***********************************************/
                     foreach (var p in packages)
                     {
-                        Console.PrintJustified(0, GetFullName(p));
+                        Console.PrintJustified(0, PackageSearchMetadataExtensions.GetFullName(p));
                         hasPackages = true;
                     }
                 }
@@ -278,13 +280,6 @@ namespace NuGet.Commands
             {
                 Console.WriteLine(LocalizedResourceManager.GetString("ListCommandNoPackages"));
             }
-            return Task.FromResult(0);
-
-        }
-        //TODO NK - Move this to an extension method?
-        public static string GetFullName(IPackageSearchMetadata iPackageSearchMetadata)
-        {
-            return iPackageSearchMetadata.Identity.Id + " " + iPackageSearchMetadata.Identity.Version.ToString();
-        }
+        }        
     }
 }

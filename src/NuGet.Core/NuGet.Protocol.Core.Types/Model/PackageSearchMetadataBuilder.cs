@@ -123,5 +123,10 @@ namespace NuGet.Protocol.Core.Types
                 .WithVersions(AsyncLazy.New(valueFactory))
                 .Build();
         }
+
+        public static string GetFullName(this IPackageSearchMetadata iPackageSearchMetadata)
+        {
+            return iPackageSearchMetadata.Identity.Id + " " + iPackageSearchMetadata.Identity.Version.ToString();
+        }
     }
 }

@@ -8,6 +8,8 @@ using System.Reflection;
 using NuGet.Configuration;
 using NuGet.Packaging;
 
+// TODO NK - IPackageRepositoryFactory might be able to get replaced by? Do we need to? Should we add a GetUpdates method in the ListResourceV2Feed (in that case, ListResourceV2Feed might need rebranding)
+// TODO NK - How to replace the Semantic version
 namespace NuGet.CommandLine
 {
     /// <summary>
@@ -73,7 +75,7 @@ namespace NuGet.CommandLine
                 targetFrameworks: null,
                 versionConstraints: null).FirstOrDefault();
  
-            Console.WriteLine(LocalizedResourceManager.GetString("UpdateCommandCurrentlyRunningNuGetExe"), version);
+            Console.WriteLine(LocalizedResourceManager.GetString("UpdateCommandCurrentlyRunningNuGetExe"), version); // SemanticVersion is the problem
 
             // Check to see if an update is needed
             if (package == null || version >= package.Version)

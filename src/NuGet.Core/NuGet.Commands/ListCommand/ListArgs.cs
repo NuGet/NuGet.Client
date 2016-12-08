@@ -27,11 +27,17 @@ namespace NuGet.Commands
 
         public Log LogInformation { get; }
 
-        public ListArgs(IList<string> arguments, ISettings settings, Log logInformation, Log logError, bool allVersions, bool includeDelisted, bool prerelease, bool verbose)
+        public IList<KeyValuePair<Configuration.PackageSource, string>> ListEndpoints { get; }
+
+        public ListArgs(IList<string> arguments, IList<KeyValuePair<Configuration.PackageSource,string>> listEndpoints, ISettings settings, Log logInformation, Log logError, bool allVersions, bool includeDelisted, bool prerelease, bool verbose)
         {
             if (arguments == null)
             {
                 throw new ArgumentNullException(nameof(arguments));
+            }
+            else if (listEndpoints == null)
+            {
+                throw new ArgumentNullException(nameof(listEndpoints));
             }
             else if (settings == null)
             {
@@ -47,6 +53,7 @@ namespace NuGet.Commands
             }
 
             Arguments = arguments;
+            ListEndpoints = listEndpoints;
             Settings = settings;
             AllVersions = allVersions;
             IncludeDelisted = includeDelisted;

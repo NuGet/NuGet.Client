@@ -36,6 +36,7 @@ namespace NuGet.Protocol
             yield return new Lazy<INuGetResourceProvider>(() => new ServiceIndexResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new ODataServiceDocumentResourceV2Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new LegacyFeedCapabilityResourceV2FeedProvider()); // new one
+           
             yield return new Lazy<INuGetResourceProvider>(() => new HttpHandlerResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new HttpSourceResourceProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new HttpFileSystemBasedFindPackageByIdResourceProvider());

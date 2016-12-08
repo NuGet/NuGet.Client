@@ -52,7 +52,7 @@ namespace NuGet.CommandLine
         {
             // On mono, parallel builds are broken for some reason. See https://gist.github.com/4201936 for the errors
             // That are thrown.
-            DisableParallelProcessing = RuntimeEnvironmentHelper.IsMono; //EnvironmentUtility.IsMonoRuntime; TODO NK - fix this
+            DisableParallelProcessing = RuntimeEnvironmentHelper.IsMono;
         }
 
         public override Task ExecuteCommandAsync()
@@ -71,13 +71,13 @@ namespace NuGet.CommandLine
 
             // If the first argument is a packages.xxx.config file, install everything it lists
             // Otherwise, treat the first argument as a package Id
-            if (CommandLineUtility.IsValidConfigFileName(configFileName)) //TODO NK - fix
+            if (CommandLineUtility.IsValidConfigFileName(configFileName))
             {
                 Prerelease = true;
 
                 // display opt-out message if needed
                 if (Console != null && RequireConsent &&
-                    new PackageRestoreConsent(new SettingsToLegacySettings(Settings)).IsGranted)
+                    new PackageRestoreConsent(Settings).IsGranted)
                 {
                     string message = String.Format(
                         CultureInfo.CurrentCulture,

@@ -381,7 +381,7 @@ namespace NuGet.CommandLine
         {
             if (RequireConsent)
             {
-                var packageRestoreConsent = new PackageRestoreConsent(new SettingsToLegacySettings(Settings));
+                var packageRestoreConsent = new PackageRestoreConsent(Settings);
 
                 if (packageRestoreConsent.IsGranted)
                 {

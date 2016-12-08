@@ -9,6 +9,7 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using NuGet.Common;
+using NuGet.PackageManagement;
 
 namespace NuGet.CommandLine
 {
@@ -55,9 +56,6 @@ namespace NuGet.CommandLine
                 CultureUtility.DisableLocalization();
             }
 
-            // This is to avoid applying weak event pattern usage, which breaks under Mono or restricted environments, e.g. Windows Azure Web Sites.
-            EnvironmentUtility.SetRunningFromCommandLine();
-
             // set output encoding to UTF8 if -utf8 is specified
             var oldOutputEncoding = System.Console.OutputEncoding;
             if (args.Any(arg => string.Equals(arg, Utf8Option, StringComparison.OrdinalIgnoreCase)))
@@ -67,7 +65,7 @@ namespace NuGet.CommandLine
             }
 
             // Increase the maximum number of connections per server.
-            if (!EnvironmentUtility.IsMonoRuntime)
+            if (!RuntimeEnvironmentHelper.IsMono)
             {
                 ServicePointManager.DefaultConnectionLimit = 64;
             }

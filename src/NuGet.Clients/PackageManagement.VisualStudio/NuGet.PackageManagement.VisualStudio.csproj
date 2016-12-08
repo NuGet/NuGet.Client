@@ -169,7 +169,6 @@
     <Compile Include="SourceControl\TFSSourceControlManagerProviderPicker.cs" />
     <Compile Include="SourceControl\VSSourceControlManagerProvider.cs" />
     <Compile Include="OptionsPageActivator.cs" />
-    <Compile Include="PackageRestoreConsent.cs" />
     <Compile Include="ProjectSystems\CpsProjectSystem.cs" />
     <Compile Include="ProjectSystems\FSharpProjectSystem.cs" />
     <Compile Include="ProjectSystems\JsProjectSystem.cs" />

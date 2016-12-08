@@ -8,7 +8,7 @@ using NuGet.Configuration;
 
 namespace NuGet.PackageManagement
 {
-    public class PackageRestoreConsent // TODO NK - move to Nuget.Core sln to packageManagement
+    public class PackageRestoreConsent
     {
         private const string EnvironmentVariableName = "EnableNuGetPackageRestore";
         private const string PackageRestoreSection = "packageRestore";
