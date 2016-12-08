@@ -165,6 +165,61 @@ namespace NuGet.Build.Tasks.Pack.Test
             }
         }
 
+        [Fact]
+        public void PackTaskLogic_SupportsContentTargetFolders()
+        {
+            // Arrange
+            using (var testDir = TestDirectory.Create())
+            {
+                var tc = new TestContext(testDir);
+                var msbuildItem =  tc.AddContentToProject("", "abc.txt", "hello world");
+                tc.Request.ContentTargetFolders = new string[] {"folderA", "folderB"};
+                tc.Request.PackageFiles = new MSBuildItem[] { msbuildItem };
+                // Act
+                tc.BuildPackage();
+
+                // Assert
+                Assert.True(File.Exists(tc.NuspecPath), "The intermediate .nuspec file is not in the expected place.");
+                Assert.True(File.Exists(tc.NupkgPath), "The output .nupkg file is not in the expected place.");
+                using (var nupkgReader = new PackageArchiveReader(tc.NupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    // Validate the .nuspec.
+                    Assert.Equal(tc.Request.PackageId, nuspecReader.GetId());
+                    Assert.Equal(tc.Request.PackageVersion, nuspecReader.GetVersion().ToFullString());
+                    Assert.Equal(string.Join(",", tc.Request.Authors), nuspecReader.GetAuthors());
+                    Assert.Equal(string.Join(",", tc.Request.Authors), nuspecReader.GetOwners());
+                    Assert.Equal(tc.Request.Description, nuspecReader.GetDescription());
+                    Assert.False(nuspecReader.GetRequireLicenseAcceptance());
+
+                    var dependencyGroups = nuspecReader.GetDependencyGroups().ToList();
+                    Assert.Equal(1, dependencyGroups.Count);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net45, dependencyGroups[0].TargetFramework);
+                    var packages = dependencyGroups[0].Packages.ToList();
+                    Assert.Equal(1, packages.Count);
+                    Assert.Equal("Newtonsoft.Json", packages[0].Id);
+                    Assert.Equal(new VersionRange(new NuGetVersion("8.0.1")), packages[0].VersionRange);
+                    Assert.Equal(new List<string> { "Analyzers", "Build" }, packages[0].Exclude);
+                    Assert.Empty(packages[0].Include);
+
+                    // Validate the assets.
+                    var libItems = nupkgReader.GetLibItems().ToList();
+                    Assert.Equal(1, libItems.Count);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net45, libItems[0].TargetFramework);
+                    Assert.Equal(new[] { "lib/net45/a.dll" }, libItems[0].Items);
+                    
+                    // Validate the content items
+                    foreach (var contentTargetFolder in tc.Request.ContentTargetFolders)
+                    {
+                        var contentItems = nupkgReader.GetFiles(contentTargetFolder).ToList();
+                        Assert.Equal(1, contentItems.Count);
+                        Assert.Equal(new[] { contentTargetFolder + "/abc.txt" }, contentItems);
+                    }
+                }
+            }
+        }
+
         [Theory]
         [InlineData(null,              null,     null,            true,  "",                                            "Analyzers,Build")]
         [InlineData(null,              "Native", null,            true,  "",                                            "Analyzers,Build,Native")]
@@ -297,6 +352,32 @@ namespace NuGet.Build.Tasks.Pack.Test
                         TestDir,
                         $"{Request.PackageId}.{Request.PackageVersion}.nupkg");
                 }
+            }
+
+            internal MSBuildItem AddContentToProject(string relativePathToDirectory, string fileName, string content)
+            {
+                var fullpath = Path.Combine(TestDir, Path.Combine(relativePathToDirectory, fileName));
+                var pathToDirectory = Path.Combine(TestDir, relativePathToDirectory);
+                if (!Directory.Exists(pathToDirectory))
+                {
+                    Directory.CreateDirectory(pathToDirectory);
+                }
+
+                if (!File.Exists(fullpath))
+                {
+                    // Create a file to write to.
+                    using (StreamWriter sw = File.CreateText(fullpath))
+                    {
+                        sw.WriteLine(content);
+                    }
+                }
+
+                return new MSBuildItem("NuGet.Versioning", new Dictionary<string, string>
+                {
+                    {"Identity", Path.Combine(relativePathToDirectory, fileName)},
+                    {"FullPath", fullpath}
+                });
+
             }
 
             public void BuildPackage()

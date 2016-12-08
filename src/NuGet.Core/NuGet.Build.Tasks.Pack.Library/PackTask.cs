@@ -47,6 +47,7 @@ namespace NuGet.Build.Tasks.Pack
         public string NuspecOutputPath { get; set; }
         public bool IncludeBuildOutput { get; set; }
         public string BuildOutputFolder { get; set; }
+        public string[] ContentTargetFolders { get; set; }
 
         public ILogger Logger => new MSBuildLogger(Log);
 
@@ -100,6 +101,7 @@ namespace NuGet.Build.Tasks.Pack
                 Authors = MSBuildUtility.TrimAndExcludeNullOrEmpty(Authors),
                 BuildOutputFolder = MSBuildUtility.TrimAndGetNullForEmpty(BuildOutputFolder),
                 ContinuePackingAfterGeneratingNuspec = ContinuePackingAfterGeneratingNuspec,
+                ContentTargetFolders = MSBuildUtility.TrimAndExcludeNullOrEmpty(ContentTargetFolders),
                 Copyright = MSBuildUtility.TrimAndGetNullForEmpty(Copyright),
                 Description = MSBuildUtility.TrimAndGetNullForEmpty(Description),
                 IconUrl = MSBuildUtility.TrimAndGetNullForEmpty(IconUrl),
