@@ -168,6 +168,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to MSBuild was unable to open Project &apos;{0}&apos;.
+        /// </summary>
+        public static string Error_MSBuildUnableToOpenProject {
+            get {
+                return ResourceManager.GetString("Error_MSBuildUnableToOpenProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Specifies one or more wildcard patterns to exclude when creating a package..
         /// </summary>
         public static string Exclude_Description {

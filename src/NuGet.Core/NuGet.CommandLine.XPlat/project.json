@@ -29,7 +29,10 @@
     "NuGet.Commands": {
       "target": "project"
     },
-    "System.Runtime.Serialization.Primitives": "4.1.1"
+    "System.Runtime.Serialization.Primitives": "4.1.1",
+    "Microsoft.Build": "15.1.262-preview5",
+	"Microsoft.NETCore.Platforms" : "1.0.1",
+	"System.Runtime" : "4.1.0"
   },
   "commands": {
     "NuGet.CommandLine.XPlat": "NuGet.CommandLine.XPlat"
@@ -52,7 +55,7 @@
       "dependencies": {
         "Microsoft.NETCore.App": {
           "type": "platform",
-          "version": "1.0.0"
+          "version": "1.0"
         }
       },
       "buildOptions": {
