@@ -33,6 +33,25 @@ namespace NuGet.Common.Test
             }
         }
 
+        [Fact]
+        public void DirectoryUtility_CreateSharedDirectory_Idempotent()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                var parentDir = Path.Combine(testDirectory, "parent");
+                var childDir = Path.Combine(parentDir, "child");
+                DirectoryUtility.CreateSharedDirectory(childDir);
+
+                // Act
+                DirectoryUtility.CreateSharedDirectory(childDir);
+
+                // Assert
+                Assert.True(Directory.Exists(parentDir));
+                Assert.True(Directory.Exists(childDir));
+            }
+        }
+
         private string StatPermissions(string path)
         {
             string permissions;
