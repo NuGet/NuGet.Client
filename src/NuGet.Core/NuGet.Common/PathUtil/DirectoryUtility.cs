@@ -22,6 +22,11 @@ namespace NuGet.Common
             else
             {
                 path = Path.GetFullPath(path);
+                if (Directory.Exists(path))
+                {
+                    return;
+                }
+                // ensure directories exists starting from the root
                 var root = Path.GetPathRoot(path);
                 var sepPos = root.Length - 1;
                 do
