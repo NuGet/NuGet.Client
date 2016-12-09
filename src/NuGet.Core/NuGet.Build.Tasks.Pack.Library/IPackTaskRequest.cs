@@ -19,6 +19,7 @@ namespace NuGet.Build.Tasks.Pack
         TItem[] AssemblyReferences { get; }
         string[] Authors { get; }
         string BuildOutputFolder { get; }
+        string[] ContentTargetFolders { get; }
         bool ContinuePackingAfterGeneratingNuspec { get; }
         string Copyright { get; }
         string Description { get; }

@@ -28,6 +28,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <IncludeBuildOutput Condition="'$(IncludeBuildOutput)'==''">true</IncludeBuildOutput>
     <BuildOutputTargetFolder Condition="'$(BuildOutputTargetFolder)' == '' AND '$(IsTool)' == 'true'">tools</BuildOutputTargetFolder>
     <BuildOutputTargetFolder Condition="'$(BuildOutputTargetFolder)' == ''">lib</BuildOutputTargetFolder>
+    <ContentTargetFolders Condition="'$(ContentTargetFolders)' == ''">content;contentFiles</ContentTargetFolders>
   </PropertyGroup>
   <PropertyGroup Condition="'$(NoBuild)' == 'true' ">
     <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
@@ -106,7 +107,8 @@ Copyright (c) .NET Foundation. All rights reserved.
               ContinuePackingAfterGeneratingNuspec="$(ContinuePackingAfterGeneratingNuspec)"
               NuspecOutputPath="$(BaseIntermediateOutputPath)"
               IncludeBuildOutput="$(IncludeBuildOutput)"
-              BuildOutputFolder="$(BuildOutputTargetFolder)"/>
+              BuildOutputFolder="$(BuildOutputTargetFolder)"
+              ContentTargetFolders="$(ContentTargetFolders)"/>
   </Target>
   <!--
     ============================================================

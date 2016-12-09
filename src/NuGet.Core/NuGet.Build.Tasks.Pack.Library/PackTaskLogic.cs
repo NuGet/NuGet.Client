@@ -265,7 +265,7 @@ namespace NuGet.Build.Tasks.Pack
                         continue;
                     }
 
-                    GetTargetPath(packageFile, sourcePath, currentProjectDirectory, out targetPaths);
+                    GetTargetPath(packageFile, sourcePath, currentProjectDirectory, request.ContentTargetFolders, out targetPaths);
 
                     if (fileModel.ContainsKey(sourcePath))
                     {
@@ -286,9 +286,18 @@ namespace NuGet.Build.Tasks.Pack
 
 
         // The targetpaths returned from this function contain the directory in the nuget package where the file would go to. The filename is added later on to the target path.
-        private void GetTargetPath(IMSBuildItem packageFile, string sourcePath, string currentProjectDirectory, out string[] targetPaths)
+        private void GetTargetPath(IMSBuildItem packageFile, string sourcePath, string currentProjectDirectory, string[] contentTargetFolders, out string[] targetPaths)
         {
-            targetPaths = new string[] { PackagingConstants.Folders.Content + Path.DirectorySeparatorChar, PackagingConstants.Folders.ContentFiles + Path.DirectorySeparatorChar };
+            targetPaths = contentTargetFolders
+                .Where(f => !f.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                .Select(f => string.Concat(f, Path.DirectorySeparatorChar))
+                .ToArray();
+
+            targetPaths = targetPaths
+                .Concat(contentTargetFolders
+                .Where(f => f.EndsWith(Path.DirectorySeparatorChar.ToString())))
+                .ToArray();
+
             // if user specified a PackagePath, then use that. Look for any ** which are indicated by the RecrusiveDir metadata in msbuild.
             if (packageFile.Properties.Contains("PackagePath"))
             {
