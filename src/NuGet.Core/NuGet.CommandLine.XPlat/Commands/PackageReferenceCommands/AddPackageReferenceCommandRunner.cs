@@ -177,7 +177,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 UseShellExecute = false,
                 FileName = dotnetLocation,
-                // WorkingDirectory = Path.GetDirectoryName(packageReferenceArgs.ProjectPath),
+                WorkingDirectory = Path.GetDirectoryName(packageReferenceArgs.ProjectPath),
                 Arguments = $"msbuild {argumentBuilder.ToString()}",
                 RedirectStandardError = true,
                 RedirectStandardOutput = true

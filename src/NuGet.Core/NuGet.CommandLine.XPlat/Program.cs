@@ -76,6 +76,7 @@ namespace NuGet.CommandLine.XPlat
             PackCommand.Register(app, () => log);
             PushCommand.Register(app, () => log);
             LocalsCommand.Register(app, () => log);
+            AddPackageReferenceCommand.Register(app, () => log);
 
             app.OnExecute(() =>
             {
