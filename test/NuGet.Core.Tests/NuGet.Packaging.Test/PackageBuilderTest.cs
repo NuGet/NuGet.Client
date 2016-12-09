@@ -2545,7 +2545,7 @@ Enabling license acceptance requires a license url.");
         private static IPackageFile CreatePackageFile(string name)
         {
             var file = new Mock<IPackageFile>();
-            file.SetupGet(f => f.Path).Returns(name);
+            file.SetupGet(f => f.Path).Returns(name.Replace("\\","/"));
             file.Setup(f => f.GetStream()).Returns(new MemoryStream());
 
             string effectivePath;
