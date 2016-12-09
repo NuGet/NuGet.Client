@@ -587,7 +587,7 @@ namespace NuGet.Commands
                     path = envPath;
                 }
 
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                DirectoryUtility.CreateSharedDirectory(Path.GetDirectoryName(path));
 
                 log.LogMinimal(
                     string.Format(
