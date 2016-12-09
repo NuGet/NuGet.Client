@@ -34,7 +34,17 @@ namespace NuGet.CommandLine.XPlat
 
             return level;
         }
+        public static void ConfigureProtocol()
+        {
+            // Set connection limit
+            NetworkProtocolUtility.SetConnectionLimit();
 
+            // Set user agent string used for network calls
+            SetUserAgent();
+
+            // This method has no effect on .NET Core.
+            NetworkProtocolUtility.ConfigureSupportedSslProtocols();
+        }
         public static void SetUserAgent()
         {
 #if IS_CORECLR

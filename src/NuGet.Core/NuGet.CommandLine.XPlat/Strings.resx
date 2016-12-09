@@ -338,7 +338,22 @@ usage: NuGet locals &lt;all | http-cache | global-packages | temp&gt; [--clear |
 For more information, visit http://docs.nuget.org/docs/reference/command-line-reference</value>
   </data>
   <data name="Error_MSBuildUnableToOpenProject" xml:space="preserve">
-    <value>MSBuild was unable to open Project '{0}'</value>
+    <value>MSBuild was unable to open Project '{0}'.</value>
     <comment>{0} - Project/csproj path</comment>
+  </data>
+  <data name="Error_DotnetNotFound" xml:space="preserve">
+    <value>Failed to locate dotnet in dotnet add pkg command.</value>
+  </data>
+  <data name="Error_FailedToCreateRandomFile" xml:space="preserve">
+    <value>Failed to create random file for dotnet add pkg command.</value>
+  </data>
+  <data name="Error_GenerateDGSpecTaskFailed" xml:space="preserve">
+    <value>Generate Dependency Spec task failed.</value>
+  </data>
+  <data name="Error_CannotKillDotnetMsBuild" xml:space="preserve">
+    <value>Dotnet msbuild timeout out while trying to get project references and dotnet could not kill the process.</value>
+  </data>
+  <data name="Error_DotnetMsBuildTimedOut" xml:space="preserve">
+    <value>Dotnet msbuild timeout out while trying to get project references.</value>
   </data>
 </root>

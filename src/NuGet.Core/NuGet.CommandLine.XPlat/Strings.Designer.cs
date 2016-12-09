@@ -159,6 +159,51 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Dotnet msbuild timeout out while trying to get project references and dotnet could not kill the process..
+        /// </summary>
+        public static string Error_CannotKillDotnetMsBuild {
+            get {
+                return ResourceManager.GetString("Error_CannotKillDotnetMsBuild", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Dotnet msbuild timeout out while trying to get project references..
+        /// </summary>
+        public static string Error_DotnetMsBuildTimedOut {
+            get {
+                return ResourceManager.GetString("Error_DotnetMsBuildTimedOut", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Failed to locate dotnet in dotnet add pkg command..
+        /// </summary>
+        public static string Error_DotnetNotFound {
+            get {
+                return ResourceManager.GetString("Error_DotnetNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Failed to create random file for dotnet add pkg command..
+        /// </summary>
+        public static string Error_FailedToCreateRandomFile {
+            get {
+                return ResourceManager.GetString("Error_FailedToCreateRandomFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Generate Dependency Spec task failed..
+        /// </summary>
+        public static string Error_GenerateDGSpecTaskFailed {
+            get {
+                return ResourceManager.GetString("Error_GenerateDGSpecTaskFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Source parameter was not specified..
         /// </summary>
         public static string Error_MissingSourceParameter {
@@ -168,7 +213,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to MSBuild was unable to open Project &apos;{0}&apos;.
+        ///    Looks up a localized string similar to MSBuild was unable to open Project &apos;{0}&apos;..
         /// </summary>
         public static string Error_MSBuildUnableToOpenProject {
             get {
