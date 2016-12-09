@@ -29,13 +29,16 @@ namespace NuGet.CommandLine.XPlat
             using (var dgFilePath = new TempFile(".dg"))
             {
                 // 1. Get project dg file
+                packageReferenceArgs.Logger.LogInformation("Generating project Dependency Graph");
                 var dgSpec = GetProjectDependencyGraphAsync(packageReferenceArgs, dgFilePath, timeOut: 5000, recursive: true).Result;
+                packageReferenceArgs.Logger.LogInformation("Project Dependency Graph Generated");
                 var projectName = dgSpec.Restore.FirstOrDefault();
                 var originalPackageSpec = dgSpec.GetProjectSpec(projectName);
 
                 // 2. Run Restore Preview
+                packageReferenceArgs.Logger.LogInformation("Running Restore preview");
                 var restorePreviewResult = PreviewAddPackageReference(packageReferenceArgs, dgSpec, originalPackageSpec).Result;
-
+                packageReferenceArgs.Logger.LogInformation("Restore Review completed");
                 // 3. Process Restore Result
 
                 var projectFrameworks = originalPackageSpec
@@ -56,11 +59,14 @@ namespace NuGet.CommandLine.XPlat
                 {
                     // Package is compatible with none of the project TFMs
                     // Do not add a package reference, throw appropriate error
+                    packageReferenceArgs.Logger.LogInformation("Package is incompatible with all project TFMs");
                 }
                 else if (unsuccessfulFrameworks.Count == 0)
                 {
                     // Package is compatible with all the project TFMs
                     // Add an unconditional package reference to the project
+                    packageReferenceArgs.Logger.LogInformation("Package is compatible with all project TFMs");
+                    packageReferenceArgs.Logger.LogInformation("Adding unconditional package reference");
                     var project = MSBuildUtility.GetProject(packageReferenceArgs.ProjectPath);
                     MSBuildUtility.AddPackageReferenceAllTFMs(project, packageReferenceArgs.PackageIdentity);
                 }
@@ -72,6 +78,7 @@ namespace NuGet.CommandLine.XPlat
                         .Except(unsuccessfulFrameworks)
                         .Select(fx => fx.Framework)
                         .ToList();
+                    packageReferenceArgs.Logger.LogInformation("Package is compatible with a subset of project TFMs");
                     var project = MSBuildUtility.GetProject(packageReferenceArgs.ProjectPath);
                 }
 
