@@ -3,14 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using NuGet.Common;
 using NuGet.Configuration;
 
 namespace NuGet.Commands
 {
     public class ListArgs
     {
-        public delegate void Log(string message);
-
         public bool AllVersions { get; }
 
         public bool IncludeDelisted { get; }
@@ -21,15 +20,15 @@ namespace NuGet.Commands
 
         public IList<string> Arguments { get; }
 
+        //TODO NK - 
         public ISettings Settings { get; }
 
-        public Log LogError { get; }
-
-        public Log LogInformation { get; }
+        public ILogger Logger { get; } // Is this ok? Since this is the console?
 
         public IList<KeyValuePair<Configuration.PackageSource, string>> ListEndpoints { get; }
-
-        public ListArgs(IList<string> arguments, IList<KeyValuePair<Configuration.PackageSource,string>> listEndpoints, ISettings settings, Log logInformation, Log logError, bool allVersions, bool includeDelisted, bool prerelease, bool verbose)
+        
+        public ListArgs(IList<string> arguments, IList<KeyValuePair<Configuration.PackageSource, string>> listEndpoints,
+            ISettings settings, ILogger logger, bool allVersions, bool includeDelisted, bool prerelease, bool verbose)
         {
             if (arguments == null)
             {
@@ -43,15 +42,10 @@ namespace NuGet.Commands
             {
                 throw new ArgumentNullException(nameof(settings));
             }
-            else if (logInformation == null)
+            else if (logger == null)
             {
-                throw new ArgumentNullException(nameof(logInformation));
+                throw new ArgumentNullException(nameof(logger));
             }
-            else if (logError == null)
-            {
-                throw new ArgumentNullException(nameof(logError));
-            }
-
             Arguments = arguments;
             ListEndpoints = listEndpoints;
             Settings = settings;
@@ -59,8 +53,7 @@ namespace NuGet.Commands
             IncludeDelisted = includeDelisted;
             Prerelease = prerelease;
             Verbose = verbose;
-            LogError = logError;
-            LogInformation = logInformation;
+            Logger = logger;
         }
     }
 }

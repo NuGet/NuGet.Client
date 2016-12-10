@@ -58,6 +58,7 @@ namespace NuGet.Protocol
             return results.ToList();
         }
 
+        //TODO NK - Move this to a better place
         public static IPackageSearchMetadata CreatePackageSearchResult(
             V2FeedPackageInfo package,
             SearchFilter filter,

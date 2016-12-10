@@ -228,8 +228,8 @@ namespace NuGet.Commands
                 ListCommandRunner = new ListCommandRunner();
             }
             var listEndpoints = await GetListEndpointsAsync();
-
-            var localsArgs = new ListArgs(Arguments, listEndpoints, Settings, Console.LogInformation, Console.LogError, AllVersions,
+            //TODO NK - logger? How to handle this? 
+            var localsArgs = new ListArgs(Arguments, listEndpoints, Settings, Console, AllVersions,
                 IncludeDelisted, Prerelease, Verbose);
             IEnumerable<IPackageSearchMetadata> packages = ListCommandRunner.ExecuteCommand(localsArgs);
             bool hasPackages = false;

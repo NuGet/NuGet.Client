@@ -35,8 +35,6 @@ namespace NuGet.Protocol
             yield return new Lazy<INuGetResourceProvider>(() => new ReportAbuseResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new ServiceIndexResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new ODataServiceDocumentResourceV2Provider());
-            yield return new Lazy<INuGetResourceProvider>(() => new LegacyFeedCapabilityResourceV2FeedProvider()); // new one
-           
             yield return new Lazy<INuGetResourceProvider>(() => new HttpHandlerResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new HttpSourceResourceProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new HttpFileSystemBasedFindPackageByIdResourceProvider());
@@ -50,8 +48,9 @@ namespace NuGet.Protocol
             yield return new Lazy<INuGetResourceProvider>(() => new DependencyInfoResourceV2FeedProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new DownloadResourceV2FeedProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new MetadataResourceV2FeedProvider());
+            yield return new Lazy<INuGetResourceProvider>(() => new ListResourceV2FeedResourceProvider()); // lsit resource for the legacy stream
             yield return new Lazy<INuGetResourceProvider>(() => new PackageSearchResourceV2FeedProvider()); // NugetCore provider for the search resource
-            yield return new Lazy<INuGetResourceProvider>(() => new PackageSearchResourceV3Provider());
+            yield return new Lazy<INuGetResourceProvider>(() => new PackageSearchResourceV3Provider()); // NugetCoreProvider for the search resource version 3
             yield return new Lazy<INuGetResourceProvider>(() => new PackageMetadataResourceV2FeedProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new PackageMetadataResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new AutoCompleteResourceV2FeedProvider());

@@ -58,7 +58,7 @@ namespace NuGet.CommandLine
             // update with self as parameter
             if (Self)
             {
-                var selfUpdater = new SelfUpdater(RepositoryFactory) { Console = Console };
+                var selfUpdater = new SelfUpdater(repositoryFactory: Repository.RepositoryFactory) { Console = Console };
                 selfUpdater.UpdateSelf(Prerelease);
                 return;
             }

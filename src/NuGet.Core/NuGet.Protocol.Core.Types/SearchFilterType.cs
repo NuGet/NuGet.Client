@@ -29,8 +29,8 @@ namespace NuGet.Protocol.Core.Types
     /// Suppose there are only prerelease versions. Notice there are no package that has IsLatestVersion as true.
     /// 
     ///   Version     | Prerelease | IsLatestVersion | IsAbsoluteLatestVersion
-    ///   ------------|------------|-----------------|------------------------
-    ///   8.0.1-beta1 | true       | false           | false
+    ///   8
+    ///   ------------|------------|-----------------|------------------------.0.1-beta1 | true       | false           | false
     ///   9.0.2-beta1 | true       | false           | true
     /// 
     /// </remarks>
