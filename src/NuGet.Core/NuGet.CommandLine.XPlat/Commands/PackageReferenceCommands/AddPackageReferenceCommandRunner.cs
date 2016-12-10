@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -50,28 +51,21 @@ namespace NuGet.CommandLine.XPlat
                 packageReferenceArgs.Logger.LogInformation("Restore Review completed");
 
                 // 3. Process Restore Result
-                var projectFrameworks = originalPackageSpec
-                    .TargetFrameworks
-                    .Select(t => t.FrameworkName)
-                    .Distinct()
-                    .ToList();
-
-                var unsuccessfulFrameworks = restorePreviewResult
+                var compatibleFrameworks = new HashSet<NuGetFramework>(
+                    restorePreviewResult
                     .Result
                     .CompatibilityCheckResults
-                    .Where(t => !t.Success)
-                    .Select(t => t.Graph.Framework)
-                    .Distinct()
-                    .ToList();
+                    .Where(t => t.Success)
+                    .Select(t => t.Graph.Framework));
 
                 // 4. Write to Project
-                if (unsuccessfulFrameworks.Count == projectFrameworks.Count)
+                if (compatibleFrameworks.Count == 0)
                 {
                     // Package is compatible with none of the project TFMs
                     // Do not add a package reference, throw appropriate error
                     packageReferenceArgs.Logger.LogInformation("Package is incompatible with all project TFMs");
                 }
-                else if (unsuccessfulFrameworks.Count == 0)
+                else if (compatibleFrameworks.Count == restorePreviewResult.Result.CompatibilityCheckResults.Count())
                 {
                     // Package is compatible with all the project TFMs
                     // Add an unconditional package reference to the project
@@ -84,13 +78,12 @@ namespace NuGet.CommandLine.XPlat
                 {
                     // Package is compatible with some of the project TFMs
                     // Add conditional package references to the project for the compatible TFMs
-                    var successfulFrameworks = projectFrameworks
-                        .Except(unsuccessfulFrameworks)
-                        .ToList();
+                    var compatibleOriginalFrameworks = originalPackageSpec.RestoreMetadata
+                        .OriginalTargetFrameworks
+                        .Where(s => compatibleFrameworks.Contains(NuGetFramework.Parse(s)));
                     packageReferenceArgs.Logger.LogInformation("Package is compatible with a subset of project TFMs");
 
-                    var targetFrameworks = MSBuildUtility.TransformCompatibleFrameworks(successfulFrameworks, projectFrameworks);
-                    MSBuildUtility.AddPackageReferencePerTFM(packageReferenceArgs.ProjectPath, packageReferenceArgs.PackageIdentity, targetFrameworks);
+                    MSBuildUtility.AddPackageReferencePerTFM(packageReferenceArgs.ProjectPath, packageReferenceArgs.PackageIdentity, compatibleOriginalFrameworks);
                 }
             }
         }

@@ -45,24 +45,8 @@ namespace NuGet.CommandLine.XPlat
             {
                 var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { { "TargetFramework", framework } };
                 var project = GetProject(projectPath, globalProperties);
-                AddPackageReference(project, packageIdentity);
+                AddPackageReference(project, packageIdentity, framework);
             }
-        }
-
-        public static IEnumerable<string> TransformCompatibleFrameworks(IEnumerable<Frameworks.NuGetFramework> compatibleFrameworks, IEnumerable<Frameworks.NuGetFramework> projectFrameworks)
-        {
-            var targetFrameworks = new List<string>();
-            foreach (var compatibleFramework in compatibleFrameworks)
-            {
-                foreach (var projectFramework in projectFrameworks)
-                {
-                    if (compatibleFramework == projectFramework)
-                    {
-                        targetFrameworks.Add(projectFramework.Framework);
-                    }
-                }
-            }
-            return targetFrameworks;
         }
 
         private static void AddPackageReference(Project project, PackageIdentity packageIdentity, string framework = null)
