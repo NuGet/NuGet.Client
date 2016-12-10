@@ -23,51 +23,83 @@ namespace NuGet.CommandLine.XPlat
             return new Project(projectRootElement);
         }
 
-        public static void AddPackageReferenceAllTFMs(Project project, PackageIdentity packageIdentity)
+        public static Project GetProject(string projectCSProjPath, IDictionary<string, string> globalProperties)
         {
-            var itemGroups = GetItemGroups(project, condition: string.Empty);
+            var projectRootElement = TryOpenProjectRootElement(projectCSProjPath);
+            if (projectCSProjPath == null)
+            {
+                throw new Exception(string.Format(CultureInfo.CurrentCulture, Strings.Error_MSBuildUnableToOpenProject));
+            }
+            return new Project(projectRootElement, globalProperties, toolsVersion: null);
+        }
+
+        public static void AddPackageReference(string projectPath, PackageIdentity packageIdentity)
+        {
+            var project = GetProject(projectPath);
+            AddPackageReference(project, packageIdentity);
+        }
+
+        public static void AddPackageReferencePerTFM(string projectPath, PackageIdentity packageIdentity, IEnumerable<string> targetFrameworks)
+        {
+            foreach (var framework in targetFrameworks)
+            {
+                var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { { "TargetFramework", framework } };
+                var project = GetProject(projectPath, globalProperties);
+                AddPackageReference(project, packageIdentity);
+            }
+        }
+
+        public static IEnumerable<string> TransformCompatibleFrameworks(IEnumerable<Frameworks.NuGetFramework> compatibleFrameworks, IEnumerable<Frameworks.NuGetFramework> projectFrameworks)
+        {
+            var targetFrameworks = new List<string>();
+            foreach (var compatibleFramework in compatibleFrameworks)
+            {
+                foreach (var projectFramework in projectFrameworks)
+                {
+                    if (compatibleFramework == projectFramework)
+                    {
+                        targetFrameworks.Add(projectFramework.Framework);
+                    }
+                }
+            }
+            return targetFrameworks;
+        }
+
+        private static void AddPackageReference(Project project, PackageIdentity packageIdentity, string framework = null)
+        {
+            var itemGroups = GetItemGroups(project);
 
             // Add packageReference only if it does not exist for any target framework
             if (!PackageReferenceExists(itemGroups, packageIdentity))
             {
-                var itemGroup = GetItemGroup(project, itemGroups, PACKAGE_REFERENCE_TYPE_TAG);
+                ProjectItemGroupElement itemGroup;
+                if (framework == null)
+                {
+                    itemGroup = GetItemGroup(project, itemGroups, PACKAGE_REFERENCE_TYPE_TAG);
+                }
+                else
+                {
+                    itemGroup = GetItemGroup(project, itemGroups, PACKAGE_REFERENCE_TYPE_TAG, framework);
+                }
                 AddPackageReferenceIntoItemGroup(itemGroup, packageIdentity);
             }
         }
 
-        private static IEnumerable<ProjectItemGroupElement> GetItemGroups(Project project, string condition = null)
+        private static IEnumerable<ProjectItemGroupElement> GetItemGroups(Project project)
         {
-            IEnumerable<ProjectItemGroupElement> itemGroupsPerCondition;
-
-            if (condition == null)
-            {
-                itemGroupsPerCondition = project
-                    .Items
-                    .Select(item => item.Xml.Parent as ProjectItemGroupElement)
-                    .Distinct();
-            }
-            else
-            {
-                itemGroupsPerCondition = project
-                    .Items
-                    .Select(item => item.Xml.Parent as ProjectItemGroupElement)
-                    .Where(itemGroupElement => itemGroupElement.Condition.Equals(condition, StringComparison.OrdinalIgnoreCase))
-                    .Distinct();
-            }
-
-            // By now itemGroupsPerCondition will contain all the item groups that match the condition.
-            // itemGroupsPerCondition could be null here.
-
-            return itemGroupsPerCondition;
+            return project
+                .Items
+                .Select(item => item.Xml.Parent as ProjectItemGroupElement)
+                .Distinct();
         }
 
-        private static ProjectItemGroupElement GetItemGroup(Project project, IEnumerable<ProjectItemGroupElement> itemGroups, string itemType, string condition = null)
+        private static ProjectItemGroupElement GetItemGroup(Project project, IEnumerable<ProjectItemGroupElement> itemGroups, string itemType, string framework = null)
         {
             var itemGroup = itemGroups?
                 .Where(itemGroupElement => itemGroupElement.Items.Any(item => item.ItemType == itemType))?
                 .FirstOrDefault();
 
-            // itemGroup will contain an item group that has a package reference tag and meets the condition.
+            // itemGroup will contain be an item group that has a package reference tag and meets the condition.
             // itemGroup could be null here.
 
             if (itemGroup == null)
@@ -76,13 +108,13 @@ namespace NuGet.CommandLine.XPlat
                 // or they do not have a package reference tag
 
                 itemGroup = project.Xml.AddItemGroup();
-                itemGroup.Condition = condition;
+                itemGroup.Condition = GetTargetFrameworkCondition(framework);
             }
 
             return itemGroup;
         }
 
-        public static void AddPackageReferenceIntoItemGroup(ProjectItemGroupElement itemGroup, PackageIdentity packageIdentity)
+        private static void AddPackageReferenceIntoItemGroup(ProjectItemGroupElement itemGroup, PackageIdentity packageIdentity)
         {
             var packageMetadata = new Dictionary<string, string> { { VERSION_TAG, packageIdentity.Version.ToString() } };
 
@@ -118,6 +150,11 @@ namespace NuGet.CommandLine.XPlat
             {
                 return null;
             }
+        }
+
+        private static string GetTargetFrameworkCondition(string targetFramework)
+        {
+            return string.Format("'$(TargetFramework)' == '{0}'", targetFramework);
         }
     }
 }

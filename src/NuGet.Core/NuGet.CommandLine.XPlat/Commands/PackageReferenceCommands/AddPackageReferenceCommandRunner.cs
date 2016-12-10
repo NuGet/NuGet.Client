@@ -23,24 +23,33 @@ namespace NuGet.CommandLine.XPlat
     public class AddPackageReferenceCommandRunner
     {
         private static string NUGET_RESTORE_MSBUILD_VERBOSITY = "NUGET_RESTORE_MSBUILD_VERBOSITY";
+        private static int MSBUILD_WAIT_TIME = 2 * 60 * 1000; // 2 minutes in milliseconds
 
         public void ExecuteCommand(PackageReferenceArgs packageReferenceArgs)
         {
+            packageReferenceArgs.Logger.LogInformation(string.Format("Adding PackageReference for package : '{0}', into project : '{1}'", packageReferenceArgs.PackageIdentity.ToString(), packageReferenceArgs.ProjectPath));
             using (var dgFilePath = new TempFile(".dg"))
             {
                 // 1. Get project dg file
                 packageReferenceArgs.Logger.LogInformation("Generating project Dependency Graph");
-                var dgSpec = GetProjectDependencyGraphAsync(packageReferenceArgs, dgFilePath, timeOut: 5000, recursive: true).Result;
+                var dgSpec = GetProjectDependencyGraphAsync(packageReferenceArgs, dgFilePath, timeOut: MSBUILD_WAIT_TIME).Result;
                 packageReferenceArgs.Logger.LogInformation("Project Dependency Graph Generated");
                 var projectName = dgSpec.Restore.FirstOrDefault();
                 var originalPackageSpec = dgSpec.GetProjectSpec(projectName);
 
+                // Create a copy to avoid modifying the original spec which may be shared.
+                var updatedPackageSpec = originalPackageSpec.Clone();
+                PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, packageReferenceArgs.PackageIdentity);
+
+                var updatedDgSpec = dgSpec.WithReplacedSpec(updatedPackageSpec).WithoutRestores();
+                updatedDgSpec.AddRestore(updatedPackageSpec.RestoreMetadata.ProjectUniqueName);
+
                 // 2. Run Restore Preview
                 packageReferenceArgs.Logger.LogInformation("Running Restore preview");
-                var restorePreviewResult = PreviewAddPackageReference(packageReferenceArgs, dgSpec, originalPackageSpec).Result;
+                var restorePreviewResult = PreviewAddPackageReference(packageReferenceArgs, updatedDgSpec, updatedPackageSpec).Result;
                 packageReferenceArgs.Logger.LogInformation("Restore Review completed");
-                // 3. Process Restore Result
 
+                // 3. Process Restore Result
                 var projectFrameworks = originalPackageSpec
                     .TargetFrameworks
                     .Select(t => t.FrameworkName)
@@ -55,6 +64,7 @@ namespace NuGet.CommandLine.XPlat
                     .Distinct()
                     .ToList();
 
+                // 4. Write to Project
                 if (unsuccessfulFrameworks.Count == projectFrameworks.Count)
                 {
                     // Package is compatible with none of the project TFMs
@@ -67,8 +77,8 @@ namespace NuGet.CommandLine.XPlat
                     // Add an unconditional package reference to the project
                     packageReferenceArgs.Logger.LogInformation("Package is compatible with all project TFMs");
                     packageReferenceArgs.Logger.LogInformation("Adding unconditional package reference");
-                    var project = MSBuildUtility.GetProject(packageReferenceArgs.ProjectPath);
-                    MSBuildUtility.AddPackageReferenceAllTFMs(project, packageReferenceArgs.PackageIdentity);
+
+                    MSBuildUtility.AddPackageReference(packageReferenceArgs.ProjectPath, packageReferenceArgs.PackageIdentity);
                 }
                 else
                 {
@@ -76,13 +86,12 @@ namespace NuGet.CommandLine.XPlat
                     // Add conditional package references to the project for the compatible TFMs
                     var successfulFrameworks = projectFrameworks
                         .Except(unsuccessfulFrameworks)
-                        .Select(fx => fx.Framework)
                         .ToList();
                     packageReferenceArgs.Logger.LogInformation("Package is compatible with a subset of project TFMs");
-                    var project = MSBuildUtility.GetProject(packageReferenceArgs.ProjectPath);
-                }
 
-                // 4. Write to Project
+                    var targetFrameworks = MSBuildUtility.TransformCompatibleFrameworks(successfulFrameworks, projectFrameworks);
+                    MSBuildUtility.AddPackageReferencePerTFM(packageReferenceArgs.ProjectPath, packageReferenceArgs.PackageIdentity, targetFrameworks);
+                }
             }
         }
 
@@ -144,8 +153,7 @@ namespace NuGet.CommandLine.XPlat
         private static async Task<DependencyGraphSpec> GetProjectDependencyGraphAsync(
             PackageReferenceArgs packageReferenceArgs,
             string dgFilePath,
-            int timeOut,
-            bool recursive)
+            int timeOut)
         {
             var dotnetLocation = packageReferenceArgs.DotnetPath;
 
@@ -168,15 +176,9 @@ namespace NuGet.CommandLine.XPlat
                 argumentBuilder.Append($" /v:{msbuildVerbosity} ");
             }
 
-            // pass dg file output path
+            // Pass dg file output path
             argumentBuilder.Append(" /p:RestoreGraphOutputPath=");
             AppendQuoted(argumentBuilder, dgFilePath);
-
-            // Add all depenencies as top level restore projects if recursive is set
-            if (recursive)
-            {
-                argumentBuilder.Append($" /p:RestoreRecursive=true ");
-            }
 
             packageReferenceArgs.Logger.LogInformation($"{dotnetLocation} msbuild {argumentBuilder.ToString()}");
 
