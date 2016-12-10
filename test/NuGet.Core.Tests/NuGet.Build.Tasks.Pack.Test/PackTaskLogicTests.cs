@@ -221,6 +221,50 @@ namespace NuGet.Build.Tasks.Pack.Test
         }
 
         [Theory]
+        [InlineData(null, "abc.txt", "folderA/abc.txt;folderB/abc.txt")]
+        [InlineData("", "abc.txt", "abc.txt")]
+        [InlineData("folderA", "abc.txt", "folderA/abc.txt")]
+        [InlineData("folderA\\xyz.txt", "abc.txt", "folderA/xyz.txt")]
+        [InlineData("folderA/xyz.txt", "abc.txt", "folderA/xyz.txt")]
+        [InlineData("folderA;folderB", "abc.txt", "folderA/abc.txt;folderB/abc.txt")]
+        [InlineData("folderA;folderB\\subFolderA", "abc.txt", "folderA/abc.txt;folderB/subFolderA/abc.txt")]
+        [InlineData("folderA;folderB\\subFolderA;\\", "abc.txt", "folderA/abc.txt;folderB/subFolderA/abc.txt;abc.txt")]
+        public void PackTaskLogic_SupportsPackagePath_OnContent(string packagePath, string fileName, string expectedPackagePaths)
+        {
+            // Arrange
+            using (var testDir = TestDirectory.Create())
+            {
+                var tc = new TestContext(testDir);
+
+                var metadata = packagePath != null ? new Dictionary<string, string>()
+                {
+                    {"PackagePath", packagePath},
+                }
+                :
+                null;
+
+                var msbuildItem = tc.AddContentToProject("", fileName, "hello world", metadata);
+                tc.Request.PackageFiles = new MSBuildItem[] { msbuildItem };
+                tc.Request.ContentTargetFolders = new string[] { "folderA", "folderB" };
+                // Act
+                tc.BuildPackage();
+
+                // Assert
+                Assert.True(File.Exists(tc.NuspecPath), "The intermediate .nuspec file is not in the expected place.");
+                Assert.True(File.Exists(tc.NupkgPath), "The output .nupkg file is not in the expected place.");
+                using (var nupkgReader = new PackageArchiveReader(tc.NupkgPath))
+                {
+                    // Validate the content items
+                    var contentItems = nupkgReader.GetFiles().ToList();
+                    foreach (var expectedPackagePath in expectedPackagePaths.Split(';'))
+                    {
+                        Assert.True(contentItems.Contains(expectedPackagePath));
+                    }
+                }
+            }
+        }
+
+        [Theory]
         [InlineData(null,              null,     null,            true,  "",                                            "Analyzers,Build")]
         [InlineData(null,              "Native", null,            true,  "",                                            "Analyzers,Build,Native")]
         [InlineData("Compile",         null,     null,            true,  "",                                            "Analyzers,Build,Native,Runtime")]
@@ -354,10 +398,12 @@ namespace NuGet.Build.Tasks.Pack.Test
                 }
             }
 
-            internal MSBuildItem AddContentToProject(string relativePathToDirectory, string fileName, string content)
+            internal MSBuildItem AddContentToProject(string relativePathToDirectory, string fileName, string content, IDictionary<string,string> itemMetadata = null)
             {
-                var fullpath = Path.Combine(TestDir, Path.Combine(relativePathToDirectory, fileName));
+                var relativePathToFile = Path.Combine(relativePathToDirectory, fileName);
+                var fullpath = Path.Combine(TestDir, relativePathToFile);
                 var pathToDirectory = Path.Combine(TestDir, relativePathToDirectory);
+                
                 if (!Directory.Exists(pathToDirectory))
                 {
                     Directory.CreateDirectory(pathToDirectory);
@@ -372,11 +418,11 @@ namespace NuGet.Build.Tasks.Pack.Test
                     }
                 }
 
-                return new MSBuildItem("NuGet.Versioning", new Dictionary<string, string>
-                {
-                    {"Identity", Path.Combine(relativePathToDirectory, fileName)},
-                    {"FullPath", fullpath}
-                });
+                var metadata = itemMetadata ?? new Dictionary<string, string>();
+                metadata["Identity"] = relativePathToFile;
+                metadata["FullPath"] = fullpath;
+
+                return new MSBuildItem(relativePathToFile, metadata);
 
             }
 
