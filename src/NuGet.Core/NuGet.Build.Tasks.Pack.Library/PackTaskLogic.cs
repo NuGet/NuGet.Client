@@ -284,8 +284,8 @@ namespace NuGet.Build.Tasks.Pack
             return fileModel;
         }
 
-
         // The targetpaths returned from this function contain the directory in the nuget package where the file would go to. The filename is added later on to the target path.
+        // whether or not the filename is added later on is dependent upon the fact that does the targetpath resolved here ends with a directory separator char or not.
         private void GetTargetPath(IMSBuildItem packageFile, string sourcePath, string currentProjectDirectory, string[] contentTargetFolders, out string[] targetPaths)
         {
             targetPaths = contentTargetFolders
@@ -301,11 +301,17 @@ namespace NuGet.Build.Tasks.Pack
             // if user specified a PackagePath, then use that. Look for any ** which are indicated by the RecrusiveDir metadata in msbuild.
             if (packageFile.Properties.Contains("PackagePath"))
             {
-                targetPaths = packageFile
-                    .GetProperty("PackagePath")
+                // The rule here is that if the PackagePath is an empty string, then we add the file to the root of the package.
+                // Instead if it is a ';' delimited string, then the user needs to specify a '\' to indicate that the file should go to the root of the package.
+
+                var packagePathString = packageFile.GetProperty("PackagePath");
+                targetPaths = packagePathString == null
+                    ? new string[] { String.Empty }
+                    : packagePathString 
                     .Split(';')
                     .Select(p => p.Trim())
-                    .Where(p => p.Length != 0)
+                    .Distinct()
+                    .Where(t => t.Length != 0)
                     .ToArray();
 
                 var recursiveDir = packageFile.GetProperty("RecursiveDir");
