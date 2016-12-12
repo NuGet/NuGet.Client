@@ -72,7 +72,8 @@ namespace NuGet.CommandLine.XPlat
                     packageReferenceArgs.Logger.LogInformation("Package is compatible with all project TFMs");
                     packageReferenceArgs.Logger.LogInformation("Adding unconditional package reference");
 
-                    MSBuildUtility.AddPackageReference(packageReferenceArgs.ProjectPath, packageReferenceArgs.PackageIdentity);
+                    var msBuild = new MSBuildAPIUtility();
+                    msBuild.AddPackageReference(packageReferenceArgs.ProjectPath, packageReferenceArgs.PackageIdentity);
                 }
                 else
                 {
@@ -83,7 +84,8 @@ namespace NuGet.CommandLine.XPlat
                         .Where(s => compatibleFrameworks.Contains(NuGetFramework.Parse(s)));
                     packageReferenceArgs.Logger.LogInformation("Package is compatible with a subset of project TFMs");
 
-                    MSBuildUtility.AddPackageReferencePerTFM(packageReferenceArgs.ProjectPath, packageReferenceArgs.PackageIdentity, compatibleOriginalFrameworks);
+                    var msBuild = new MSBuildAPIUtility();
+                    msBuild.AddPackageReferencePerTFM(packageReferenceArgs.ProjectPath, packageReferenceArgs.PackageIdentity, compatibleOriginalFrameworks);
                 }
             }
         }
