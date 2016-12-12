@@ -13,6 +13,11 @@ namespace NuGet.CommandLine.XPlat
         private static string PACKAGE_REFERENCE_TYPE_TAG = "PackageReference";
         private static string VERSION_TAG = "Version";
 
+        /// <summary>
+        /// Opens an MSBuild.Evaluation.Project type from a csproj file.
+        /// </summary>
+        /// <param name="projectCSProjPath">CSProj file which needs to be evaluated</param>
+        /// <returns>MSBuild.Evaluation.Project</returns>
         public static Project GetProject(string projectCSProjPath)
         {
             var projectRootElement = TryOpenProjectRootElement(projectCSProjPath);
@@ -23,6 +28,12 @@ namespace NuGet.CommandLine.XPlat
             return new Project(projectRootElement);
         }
 
+        /// <summary>
+        /// Opens an MSBuild.Evaluation.Project type from a csproj file with the given global properties.
+        /// </summary>
+        /// <param name="projectCSProjPath">CSProj file which needs to be evaluated</param>
+        /// <param name="globalProperties">Global properties that should be used to evaluate the project while opening.</param>
+        /// <returns>MSBuild.Evaluation.Project</returns>
         public static Project GetProject(string projectCSProjPath, IDictionary<string, string> globalProperties)
         {
             var projectRootElement = TryOpenProjectRootElement(projectCSProjPath);
@@ -33,35 +44,53 @@ namespace NuGet.CommandLine.XPlat
             return new Project(projectRootElement, globalProperties, toolsVersion: null);
         }
 
+        /// <summary>
+        /// Add an unconditional package reference to the project.
+        /// </summary>
+        /// <param name="projectPath">Path to the csproj file of the project.</param>
+        /// <param name="packageIdentity">Package Identity of the package to be added.</param>
         public static void AddPackageReference(string projectPath, PackageIdentity packageIdentity)
         {
             var project = GetProject(projectPath);
-            AddPackageReference(project, packageIdentity);
+            var existingPackageReferences = GetPackageReferencesForAllTargetFrameworks(project, packageIdentity);
+            AddPackageReference(project, packageIdentity, existingPackageReferences);
         }
 
+        /// <summary>
+        /// Add conditional package reference to the project per target framework.
+        /// </summary>
+        /// <param name="projectPath">Path to the csproj file of the project.</param>
+        /// <param name="packageIdentity">Package Identity of the package to be added.</param>
+        /// <param name="targetFrameworks">Target Frameworks for which the package reference should be added.</param>
         public static void AddPackageReferencePerTFM(string projectPath, PackageIdentity packageIdentity, IEnumerable<string> targetFrameworks)
         {
             foreach (var framework in targetFrameworks)
             {
                 var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { { "TargetFramework", framework } };
                 var project = GetProject(projectPath, globalProperties);
-                AddPackageReference(project, packageIdentity, framework);
+                var existingPackageReferences = GetPackageReferences(project, packageIdentity);
+                AddPackageReference(project, packageIdentity, existingPackageReferences, framework);
             }
         }
 
-        private static void AddPackageReference(Project project, PackageIdentity packageIdentity, string framework = null)
+        private static void AddPackageReference(Project project, PackageIdentity packageIdentity, IEnumerable<ProjectItem> existingPackageReferences, string framework = null)
         {
             var itemGroups = GetItemGroups(project);
 
-            // Add packageReference only if it does not exist for any target framework
-            if (!PackageReferenceExists(itemGroups, packageIdentity))
+            if (existingPackageReferences.Count() == 0)
             {
-                ProjectItemGroupElement itemGroup = GetItemGroup(project, itemGroups, PACKAGE_REFERENCE_TYPE_TAG);
+                // Add packageReference only if it does not exist.
+                var itemGroup = GetItemGroup(project, itemGroups, PACKAGE_REFERENCE_TYPE_TAG);
                 if (framework != null)
                 {
                     itemGroup.Condition = GetTargetFrameworkCondition(framework);
                 }
                 AddPackageReferenceIntoItemGroup(itemGroup, packageIdentity);
+            }
+            else
+            {
+                // If the package already has a reference then try to update the reference.
+                UpdatePackageReferenceItems(existingPackageReferences, packageIdentity);
             }
         }
 
@@ -93,6 +122,14 @@ namespace NuGet.CommandLine.XPlat
             return itemGroup;
         }
 
+        private static void UpdatePackageReferenceItems(IEnumerable<ProjectItem> packageReferencesItems, PackageIdentity packageIdentity)
+        {
+            foreach (var packageReferenceItem in packageReferencesItems)
+            {
+                var existingVersion = packageReferenceItem.GetMetadata("Version");
+            }
+        }
+
         private static void AddPackageReferenceIntoItemGroup(ProjectItemGroupElement itemGroup, PackageIdentity packageIdentity)
         {
             var packageMetadata = new Dictionary<string, string> { { VERSION_TAG, packageIdentity.Version.ToString() } };
@@ -104,31 +141,60 @@ namespace NuGet.CommandLine.XPlat
             itemGroup.ContainingProject.Save();
         }
 
-        private static bool PackageReferenceExists(IEnumerable<ProjectItemGroupElement> itemGroups, PackageIdentity packageIdentity)
+        /// <summary>
+        /// Returns all package references after evaluating the condition on the item groups.
+        /// This method is used when we need package references for a specific target framework.
+        /// </summary>
+        /// <param name="project">Project for which the package references have to be obtained.
+        /// The project should have the global property set to have a specific framework</param>
+        /// <param name="packageIdentity">Identity of the package.</param>
+        /// <returns>List of Items containing the package reference for the package.</returns>
+        private static IEnumerable<ProjectItem> GetPackageReferences(Project project, PackageIdentity packageIdentity)
         {
-            if (itemGroups == null)
-            {
-                return false;
-            }
-            else
-            {
-                return itemGroups.Any(itemGroup => itemGroup.Items.Any(item => item.ItemType.Equals(PACKAGE_REFERENCE_TYPE_TAG)
-                                                                             && item.Include.Equals(packageIdentity.Id)));
-            }
+            return project.AllEvaluatedItems
+                .Where(item => item.ItemType.Equals(PACKAGE_REFERENCE_TYPE_TAG, StringComparison.OrdinalIgnoreCase) &&
+                               item.EvaluatedInclude.Equals(packageIdentity.Id, StringComparison.OrdinalIgnoreCase))
+                .ToList();
         }
 
-        // There is ProjectRootElement.TryOpen but it does not work as expected
-        // I.e. it returns null for some valid projects
+        /// <summary>
+        /// Returns all package references after evaluating the condition on the item groups.
+        /// This method is used when we need package references for a specific target framework.
+        /// </summary>
+        /// <param name="project">Project for which the package references have to be obtained.
+        /// The project should have the global property set to have a specific framework</param>
+        /// <param name="packageIdentity">Identity of the package.</param>
+        /// <returns>List of Items containing the package reference for the package.</returns>
+        private static IEnumerable<ProjectItem> GetPackageReferencesForAllTargetFrameworks(Project project, PackageIdentity packageIdentity)
+        {
+            var targetFrameworks = GetProjectTargetFrameworks(project);
+            var mergedPackageReferences = new List<ProjectItem>();
+            foreach (var targetFramework in targetFrameworks)
+            {
+                mergedPackageReferences.AddRange(project.AllEvaluatedItems
+                .Where(item => item.ItemType.Equals(PACKAGE_REFERENCE_TYPE_TAG, StringComparison.OrdinalIgnoreCase) &&
+                               item.EvaluatedInclude.Equals(packageIdentity.Id, StringComparison.OrdinalIgnoreCase)));
+            }
+            return mergedPackageReferences;
+        }
+
         private static ProjectRootElement TryOpenProjectRootElement(string filename)
         {
             try
             {
+                // There is ProjectRootElement.TryOpen but it does not work as expected
+                // I.e. it returns null for some valid projects
                 return ProjectRootElement.Open(filename);
             }
             catch (Microsoft.Build.Exceptions.InvalidProjectFileException)
             {
                 return null;
             }
+        }
+
+        private static IEnumerable<string> GetProjectTargetFrameworks(Project project)
+        {
+            project.AllEvaluatedPr.Where(p => p.Name.Equals("TargetFramework", StringComparison.OrdinalIgnoreCase));
         }
 
         private static string GetTargetFrameworkCondition(string targetFramework)
