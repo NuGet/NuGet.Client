@@ -56,14 +56,10 @@ namespace NuGet.CommandLine.XPlat
             // Add packageReference only if it does not exist for any target framework
             if (!PackageReferenceExists(itemGroups, packageIdentity))
             {
-                ProjectItemGroupElement itemGroup;
-                if (framework == null)
+                ProjectItemGroupElement itemGroup = GetItemGroup(project, itemGroups, PACKAGE_REFERENCE_TYPE_TAG);
+                if (framework != null)
                 {
-                    itemGroup = GetItemGroup(project, itemGroups, PACKAGE_REFERENCE_TYPE_TAG);
-                }
-                else
-                {
-                    itemGroup = GetItemGroup(project, itemGroups, PACKAGE_REFERENCE_TYPE_TAG, framework);
+                    itemGroup.Condition = GetTargetFrameworkCondition(framework);
                 }
                 AddPackageReferenceIntoItemGroup(itemGroup, packageIdentity);
             }
@@ -77,7 +73,7 @@ namespace NuGet.CommandLine.XPlat
                 .Distinct();
         }
 
-        private static ProjectItemGroupElement GetItemGroup(Project project, IEnumerable<ProjectItemGroupElement> itemGroups, string itemType, string framework = null)
+        private static ProjectItemGroupElement GetItemGroup(Project project, IEnumerable<ProjectItemGroupElement> itemGroups, string itemType)
         {
             var itemGroup = itemGroups?
                 .Where(itemGroupElement => itemGroupElement.Items.Any(item => item.ItemType == itemType))?
@@ -92,7 +88,6 @@ namespace NuGet.CommandLine.XPlat
                 // or they do not have a package reference tag
 
                 itemGroup = project.Xml.AddItemGroup();
-                itemGroup.Condition = GetTargetFrameworkCondition(framework);
             }
 
             return itemGroup;
