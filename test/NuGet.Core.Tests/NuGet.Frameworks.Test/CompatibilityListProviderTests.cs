@@ -197,7 +197,7 @@ namespace NuGet.Frameworks.Test
 
             // Assert
             // positive
-            Assert.Contains(".NETCoreApp,Version=v1.2", actual);
+            Assert.Contains(".NETCoreApp,Version=v2.0", actual);
             Assert.Contains(".NETFramework,Version=v4.6.1", actual);
             Assert.Contains(".NETStandard,Version=v2.0", actual);
             Assert.Contains("DNX,Version=v4.6.1", actual);
