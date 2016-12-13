@@ -281,8 +281,11 @@ namespace NuGet.CommandLine
             Assert.Equal(cmdLineProperties["id"], xdoc.XPathSelectElement("/package/metadata/id").Value);
         }
 
-        [Fact]
-        public void CommandLineVersionPopulatesVersionPlaceholderForDependenciesInNuspec()
+        [Theory]
+        [InlineData("1.2.9")]
+        [InlineData("1.2.3-rc-12345")]
+        [InlineData("1.2.3-alpha.1.8")]
+        public void CommandLineVersionPopulatesVersionPlaceholderForDependenciesInNuspec(string version)
         {
             // Arrange
             var testAssembly = Assembly.GetExecutingAssembly();
@@ -324,13 +327,13 @@ namespace NuGet.CommandLine
 	</Project>";
 
             // Version that we expect to be replaced
-            var cmdLineVersion = NuGetVersion.Parse("1.2.3-rc-12345");
+            var cmdLineVersion = NuGetVersion.Parse(version);
 
             // Set base path to the currently assembly's folder so that it will find the test assembly
             var basePath = Path.GetDirectoryName(testAssembly.CodeBase);
 
             var project = new Project(XmlReader.Create(new StringReader(projectXml)));
-            project.FullPath = Path.Combine(project.DirectoryPath, "test.csproj");
+            project.FullPath = Path.Combine(project.DirectoryPath, $"test-{version}.csproj");
 
             // Act
             var msbuildPath = Util.GetMsbuildPathOnWindows();
