@@ -220,6 +220,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             }
         }
 
+        [Platform(Platform.Windows)]
         [Theory]
         [InlineData(null, "abc.txt", "folderA/abc.txt;folderB/abc.txt")]
         [InlineData("", "abc.txt", "abc.txt")]
@@ -229,7 +230,7 @@ namespace NuGet.Build.Tasks.Pack.Test
         [InlineData("folderA;folderB", "abc.txt", "folderA/abc.txt;folderB/abc.txt")]
         [InlineData("folderA;folderB\\subFolderA", "abc.txt", "folderA/abc.txt;folderB/subFolderA/abc.txt")]
         [InlineData("folderA;folderB\\subFolderA;\\", "abc.txt", "folderA/abc.txt;folderB/subFolderA/abc.txt;abc.txt")]
-        public void PackTaskLogic_SupportsPackagePath_OnContent(string packagePath, string fileName, string expectedPackagePaths)
+        public void PackTaskLogic_SupportsPackagePath_OnContentWindows(string packagePath, string fileName, string expectedPackagePaths)
         {
             // Arrange
             using (var testDir = TestDirectory.Create())
@@ -242,6 +243,94 @@ namespace NuGet.Build.Tasks.Pack.Test
                 }
                 :
                 null;
+
+                var msbuildItem = tc.AddContentToProject("", fileName, "hello world", metadata);
+                tc.Request.PackageFiles = new MSBuildItem[] { msbuildItem };
+                tc.Request.ContentTargetFolders = new string[] { "folderA", "folderB" };
+                // Act
+                tc.BuildPackage();
+
+                // Assert
+                Assert.True(File.Exists(tc.NuspecPath), "The intermediate .nuspec file is not in the expected place.");
+                Assert.True(File.Exists(tc.NupkgPath), "The output .nupkg file is not in the expected place.");
+                using (var nupkgReader = new PackageArchiveReader(tc.NupkgPath))
+                {
+                    // Validate the content items
+                    var contentItems = nupkgReader.GetFiles().ToList();
+                    foreach (var expectedPackagePath in expectedPackagePaths.Split(';'))
+                    {
+                        Assert.True(contentItems.Contains(expectedPackagePath));
+                    }
+                }
+            }
+        }
+
+        [Platform(Platform.Darwin)]
+        [Theory]
+        [InlineData(null, "abc.txt", "folderA/abc.txt;folderB/abc.txt")]
+        [InlineData("", "abc.txt", "abc.txt")]
+        [InlineData("folderA", "abc.txt", "folderA/abc.txt")]
+        [InlineData("folderA/xyz.txt", "abc.txt", "folderA/xyz.txt")]
+        [InlineData("folderA;folderB", "abc.txt", "folderA/abc.txt;folderB/abc.txt")]
+        [InlineData("folderA;folderB/subFolderA", "abc.txt", "folderA/abc.txt;folderB/subFolderA/abc.txt")]
+        [InlineData("folderA;folderB/subFolderA;/", "abc.txt", "folderA/abc.txt;folderB/subFolderA/abc.txt;abc.txt")]
+        public void PackTaskLogic_SupportsPackagePath_OnContentMac(string packagePath, string fileName, string expectedPackagePaths)
+        {
+            // Arrange
+            using (var testDir = TestDirectory.Create())
+            {
+                var tc = new TestContext(testDir);
+
+                var metadata = packagePath != null ? new Dictionary<string, string>()
+                {
+                    {"PackagePath", packagePath},
+                }
+                    :
+                    null;
+
+                var msbuildItem = tc.AddContentToProject("", fileName, "hello world", metadata);
+                tc.Request.PackageFiles = new MSBuildItem[] { msbuildItem };
+                tc.Request.ContentTargetFolders = new string[] { "folderA", "folderB" };
+                // Act
+                tc.BuildPackage();
+
+                // Assert
+                Assert.True(File.Exists(tc.NuspecPath), "The intermediate .nuspec file is not in the expected place.");
+                Assert.True(File.Exists(tc.NupkgPath), "The output .nupkg file is not in the expected place.");
+                using (var nupkgReader = new PackageArchiveReader(tc.NupkgPath))
+                {
+                    // Validate the content items
+                    var contentItems = nupkgReader.GetFiles().ToList();
+                    foreach (var expectedPackagePath in expectedPackagePaths.Split(';'))
+                    {
+                        Assert.True(contentItems.Contains(expectedPackagePath));
+                    }
+                }
+            }
+        }
+
+        [Platform(Platform.Linux)]
+        [Theory]
+        [InlineData(null, "abc.txt", "folderA/abc.txt;folderB/abc.txt")]
+        [InlineData("", "abc.txt", "abc.txt")]
+        [InlineData("folderA", "abc.txt", "folderA/abc.txt")]
+        [InlineData("folderA/xyz.txt", "abc.txt", "folderA/xyz.txt")]
+        [InlineData("folderA;folderB", "abc.txt", "folderA/abc.txt;folderB/abc.txt")]
+        [InlineData("folderA;folderB/subFolderA", "abc.txt", "folderA/abc.txt;folderB/subFolderA/abc.txt")]
+        [InlineData("folderA;folderB/subFolderA;/", "abc.txt", "folderA/abc.txt;folderB/subFolderA/abc.txt;abc.txt")]
+        public void PackTaskLogic_SupportsPackagePath_OnContentLinux(string packagePath, string fileName, string expectedPackagePaths)
+        {
+            // Arrange
+            using (var testDir = TestDirectory.Create())
+            {
+                var tc = new TestContext(testDir);
+
+                var metadata = packagePath != null ? new Dictionary<string, string>()
+                {
+                    {"PackagePath", packagePath},
+                }
+                    :
+                    null;
 
                 var msbuildItem = tc.AddContentToProject("", fileName, "hello world", metadata);
                 tc.Request.PackageFiles = new MSBuildItem[] { msbuildItem };
