@@ -24,6 +24,8 @@ namespace NuGet.CommandLine
         private const string NuGetTargets =
             "NuGet.CommandLine.NuGet.targets";
 
+        private readonly static string[] MSBuildVersions = new string[] { "14", "12", "4" };
+
         public static bool IsMsBuildBasedProject(string projectFullPath)
         {
             return projectFullPath.EndsWith("proj", StringComparison.OrdinalIgnoreCase);
@@ -441,16 +443,20 @@ namespace NuGet.CommandLine
         /// <returns>ProjectCollection instance to use for toolset enumeration</returns>
         private static IDisposable LoadProjectCollection()
         {
-            try
+            foreach (var version in MSBuildVersions)
             {
-                var msBuildTypesAssembly = Assembly.Load("Microsoft.Build, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
-                Type projectCollectionType = msBuildTypesAssembly.GetType("Microsoft.Build.Evaluation.ProjectCollection", throwOnError: true);
-                return Activator.CreateInstance(projectCollectionType) as IDisposable;
+                try
+                {
+                    var msBuildTypesAssembly = Assembly.Load($"Microsoft.Build, Version={version}.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
+                    Type projectCollectionType = msBuildTypesAssembly.GetType("Microsoft.Build.Evaluation.ProjectCollection", throwOnError: true);
+                    return Activator.CreateInstance(projectCollectionType) as IDisposable;
+                }
+                catch (Exception)
+                {
+                }
             }
-            catch (Exception)
-            {
-                return null;
-            }
+
+            return null;
         }
 
         /// <summary>
