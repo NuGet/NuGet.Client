@@ -92,6 +92,7 @@ namespace NuGet.Frameworks
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetCore, "netcore"),
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.WinRT, "winrt"), // legacy
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.UAP, "uap"),
+                            new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.Tizen, "tizen"),
                         };
                 }
 
@@ -196,6 +197,11 @@ namespace NuGet.Frameworks
                                 new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WindowsPhoneApp, FrameworkConstants.EmptyVersion),
                                 FrameworkConstants.CommonFrameworks.WPA81),
 
+                            // tizen <-> tizen3
+                            new KeyValuePair<NuGetFramework, NuGetFramework>(
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Tizen, FrameworkConstants.EmptyVersion),
+                                FrameworkConstants.CommonFrameworks.Tizen3),
+
                             // dnx <-> dnx45
                             new KeyValuePair<NuGetFramework, NuGetFramework>(
                                 FrameworkConstants.CommonFrameworks.Dnx,
@@ -278,7 +284,7 @@ namespace NuGet.Frameworks
                             // NetPlatform is a subset of DNXCore
                             new KeyValuePair<string, string>(
                                 FrameworkConstants.FrameworkIdentifiers.NetPlatform,
-                                FrameworkConstants.FrameworkIdentifiers.DnxCore), 
+                                FrameworkConstants.FrameworkIdentifiers.DnxCore),
 
                             // NetStandard is a subset of NetStandardApp
                             new KeyValuePair<string, string>(
@@ -333,6 +339,16 @@ namespace NuGet.Frameworks
                                 new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WinRT, FrameworkConstants.EmptyVersion),
                                 new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WinRT, new Version(4, 5, 0, 0)))),
 
+                        // Tizen3 projects support NETStandard1.6
+                        CreateStandardMapping(
+                            FrameworkConstants.CommonFrameworks.Tizen3,
+                            FrameworkConstants.CommonFrameworks.NetStandard16),
+
+                        // Tizen4 projects support NETStandard1.7
+                        CreateStandardMapping(
+                            FrameworkConstants.CommonFrameworks.Tizen4,
+                            FrameworkConstants.CommonFrameworks.NetStandard17),
+
                         // NetCoreApp1.0 projects support NetStandard1.6
                         CreateStandardMapping(
                             FrameworkConstants.CommonFrameworks.NetCoreApp10,
@@ -352,7 +368,6 @@ namespace NuGet.Frameworks
                         CreateStandardMapping(
                             FrameworkConstants.CommonFrameworks.Net463,
                             FrameworkConstants.CommonFrameworks.NetStandard20)
-
                     }
                         .Concat(new[]
                         {
