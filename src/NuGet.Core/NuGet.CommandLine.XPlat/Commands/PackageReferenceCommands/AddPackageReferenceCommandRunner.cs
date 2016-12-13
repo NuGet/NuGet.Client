@@ -28,10 +28,16 @@ namespace NuGet.CommandLine.XPlat
 
         public int ExecuteCommand(PackageReferenceArgs packageReferenceArgs, MSBuildAPIUtility msBuild)
         {
-            packageReferenceArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Info_AddPkgAddingReference, packageReferenceArgs.PackageIdentity.Id, packageReferenceArgs.ProjectPath));
+            packageReferenceArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                Strings.Info_AddPkgAddingReference,
+                packageReferenceArgs.PackageIdentity.Id,
+                packageReferenceArgs.ProjectPath));
+
             if (packageReferenceArgs.NoRestore)
             {
-                packageReferenceArgs.Logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warn_AddPkgWithoutRestore));
+                packageReferenceArgs.Logger.LogWarning(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Warn_AddPkgWithoutRestore));
+
                 msBuild.AddPackageReference(packageReferenceArgs.ProjectPath, packageReferenceArgs.PackageIdentity);
                 return 0;
             }
