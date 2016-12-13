@@ -28,10 +28,10 @@ namespace NuGet.CommandLine.XPlat
 
         public int ExecuteCommand(PackageReferenceArgs packageReferenceArgs, MSBuildAPIUtility msBuild)
         {
-            packageReferenceArgs.Logger.LogInformation(string.Format("Adding PackageReference for package : '{0}', into project : '{1}'", packageReferenceArgs.PackageIdentity.ToString(), packageReferenceArgs.ProjectPath));
+            packageReferenceArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Info_AddPkgAddingReference, packageReferenceArgs.PackageIdentity.Id, packageReferenceArgs.ProjectPath));
             if (packageReferenceArgs.NoRestore)
             {
-                packageReferenceArgs.Logger.LogWarning("--no-restore|-n flag was used. No compatibility check will be done and the package reference will be added unconditionally.");
+                packageReferenceArgs.Logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warn_AddPkgWithoutRestore));
                 msBuild.AddPackageReference(packageReferenceArgs.ProjectPath, packageReferenceArgs.PackageIdentity);
                 return 0;
             }
@@ -81,14 +81,20 @@ namespace NuGet.CommandLine.XPlat
                 {
                     // Package is compatible with none of the project TFMs
                     // Do not add a package reference, throw appropriate error
-                    packageReferenceArgs.Logger.LogInformation("Package is incompatible with all project TFMs");
+                    packageReferenceArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                        Strings.Error_AddPkgIncompatibleWithAllFrameworks,
+                        packageReferenceArgs.PackageIdentity.Id,
+                        packageReferenceArgs.ProjectPath));
+                    return 1;
                 }
                 else if (compatibleFrameworks.Count == restorePreviewResult.Result.CompatibilityCheckResults.Count())
                 {
                     // Package is compatible with all the project TFMs
                     // Add an unconditional package reference to the project
-                    packageReferenceArgs.Logger.LogInformation("Package is compatible with all project TFMs");
-                    packageReferenceArgs.Logger.LogInformation("Adding unconditional package reference");
+                    packageReferenceArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                        Strings.Info_AddPkgCompatibleWithAllFrameworks,
+                        packageReferenceArgs.PackageIdentity.Id,
+                        packageReferenceArgs.ProjectPath));
 
                     msBuild.AddPackageReference(packageReferenceArgs.ProjectPath, packageReferenceArgs.PackageIdentity);
                 }
@@ -99,7 +105,10 @@ namespace NuGet.CommandLine.XPlat
                     var compatibleOriginalFrameworks = originalPackageSpec.RestoreMetadata
                         .OriginalTargetFrameworks
                         .Where(s => compatibleFrameworks.Contains(NuGetFramework.Parse(s)));
-                    packageReferenceArgs.Logger.LogInformation("Package is compatible with a subset of project TFMs");
+                    packageReferenceArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                        Strings.Info_AddPkgCompatibleWithSubsetFrameworks,
+                        packageReferenceArgs.PackageIdentity.Id,
+                        packageReferenceArgs.ProjectPath));
 
                     msBuild.AddPackageReferencePerTFM(packageReferenceArgs.ProjectPath, packageReferenceArgs.PackageIdentity, compatibleOriginalFrameworks);
                 }

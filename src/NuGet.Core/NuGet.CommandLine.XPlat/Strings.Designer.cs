@@ -159,6 +159,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Package : &apos;{0}&apos; is incompatible with all the frameworks in project : &apos;{1}&apos;.
+        /// </summary>
+        public static string Error_AddPkgIncompatibleWithAllFrameworks {
+            get {
+                return ResourceManager.GetString("Error_AddPkgIncompatibleWithAllFrameworks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Dotnet msbuild timeout out while trying to get project references and dotnet could not kill the process..
         /// </summary>
         public static string Error_CannotKillDotnetMsBuild {
@@ -254,6 +263,33 @@ namespace NuGet.CommandLine.XPlat {
         public static string IncludeReferencedProjects_Description {
             get {
                 return ResourceManager.GetString("IncludeReferencedProjects_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Adding PackageReference for package : &apos;{0}&apos;, into project : &apos;{1}&apos;.
+        /// </summary>
+        public static string Info_AddPkgAddingReference {
+            get {
+                return ResourceManager.GetString("Info_AddPkgAddingReference", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Package : &apos;{0}&apos; is compatible with all the specified frameworks in project : &apos;{1}&apos;.
+        /// </summary>
+        public static string Info_AddPkgCompatibleWithAllFrameworks {
+            get {
+                return ResourceManager.GetString("Info_AddPkgCompatibleWithAllFrameworks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Package : &apos;{0}&apos; is compatible with a subset of the specified frameworks in project : &apos;{1}&apos;.
+        /// </summary>
+        public static string Info_AddPkgCompatibleWithSubsetFrameworks {
+            get {
+                return ResourceManager.GetString("Info_AddPkgCompatibleWithSubsetFrameworks", resourceCulture);
             }
         }
         
@@ -748,6 +784,15 @@ namespace NuGet.CommandLine.XPlat {
         public static string Version_Description {
             get {
                 return ResourceManager.GetString("Version_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to --no-restore|-n flag was used. No compatibility check will be done and the package reference will be added unconditionally..
+        /// </summary>
+        public static string Warn_AddPkgWithoutRestore {
+            get {
+                return ResourceManager.GetString("Warn_AddPkgWithoutRestore", resourceCulture);
             }
         }
     }

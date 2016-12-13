@@ -356,4 +356,27 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="Error_DotnetMsBuildTimedOut" xml:space="preserve">
     <value>Dotnet msbuild timeout out while trying to get project references.</value>
   </data>
+  <data name="Error_AddPkgIncompatibleWithAllFrameworks" xml:space="preserve">
+    <value>Package : '{0}' is incompatible with all the frameworks in project : '{1}'</value>
+    <comment>{0} - Package Id
+{1} - Project Path</comment>
+  </data>
+  <data name="Info_AddPkgAddingReference" xml:space="preserve">
+    <value>Adding PackageReference for package : '{0}', into project : '{1}'</value>
+    <comment>{0} - Package Id
+{1} - Project Path</comment>
+  </data>
+  <data name="Info_AddPkgCompatibleWithAllFrameworks" xml:space="preserve">
+    <value>Package : '{0}' is compatible with all the specified frameworks in project : '{1}'</value>
+    <comment>{0} - Package Id
+{1} - Project Path</comment>
+  </data>
+  <data name="Info_AddPkgCompatibleWithSubsetFrameworks" xml:space="preserve">
+    <value>Package : '{0}' is compatible with a subset of the specified frameworks in project : '{1}'</value>
+    <comment>{0} - Package Id
+{1} - Project Path</comment>
+  </data>
+  <data name="Warn_AddPkgWithoutRestore" xml:space="preserve">
+    <value>--no-restore|-n flag was used. No compatibility check will be done and the package reference will be added unconditionally.</value>
+  </data>
 </root>
