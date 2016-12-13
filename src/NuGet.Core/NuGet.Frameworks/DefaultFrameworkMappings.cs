@@ -343,9 +343,9 @@ namespace NuGet.Frameworks
                             FrameworkConstants.CommonFrameworks.NetCoreApp11,
                             FrameworkConstants.CommonFrameworks.NetStandard17),
 
-                        // NetCoreApp1.2 projects support NetStandard2.0
+                        // NetCoreApp2.0 projects support NetStandard2.0
                         CreateStandardMapping(
-                            FrameworkConstants.CommonFrameworks.NetCoreApp12,
+                            FrameworkConstants.CommonFrameworks.NetCoreApp20,
                             FrameworkConstants.CommonFrameworks.NetStandard20),
 
                         // net463 projects support NetStandard2.0

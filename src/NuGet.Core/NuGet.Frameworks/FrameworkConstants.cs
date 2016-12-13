@@ -165,8 +165,8 @@ namespace NuGet.Frameworks
                 = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, new Version(1, 0, 0, 0));
             public static readonly NuGetFramework NetCoreApp11
                 = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, new Version(1, 1, 0, 0));
-            public static readonly NuGetFramework NetCoreApp12
-                = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, new Version(1, 2, 0, 0));
+            public static readonly NuGetFramework NetCoreApp20
+                = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, new Version(2, 0, 0, 0));
         }
     }
 }
