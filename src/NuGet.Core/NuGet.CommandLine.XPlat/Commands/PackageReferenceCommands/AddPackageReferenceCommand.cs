@@ -36,6 +36,16 @@ namespace NuGet.CommandLine.XPlat
                     "Version of the package",
                     CommandOptionType.SingleValue);
 
+                var dotnetPath = addPkgRef.Option(
+                    "--dotnet|-d",
+                    "No Restore flag",
+                    CommandOptionType.SingleValue);
+
+                var projectPath = addPkgRef.Option(
+                    "--project|-p",
+                    "No Restore flag",
+                    CommandOptionType.SingleValue);
+
                 var frameworks = addPkgRef.Option(
                     "--frameworks|-f",
                     "Frameworks",
@@ -50,21 +60,19 @@ namespace NuGet.CommandLine.XPlat
                 {
                     var logger = getLogger();
                     var settings = Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null);
-                    var dotnetPath = @"F:\paths\dotnet\dotnet.exe";
-                    var projectPath = @"F:\validation\test\test.csproj";
                     ValidateArgument(id, "ID not given");
                     ValidateArgument(version, "Version not given");
-                    // ValidateArgument(dotnetPath, "ID not given");
-                    // ValidateArgument(projectPath, "Version not given");
+                    ValidateArgument(dotnetPath, "Dotnet Path not given");
+                    ValidateArgument(projectPath, "Project Path not given");
                     var packageIdentity = new PackageIdentity(id.Values[0], new NuGetVersion(version.Values[0]));
                     PackageReferenceArgs packageRefArgs;
                     if (frameworks.HasValue())
                     {
-                        packageRefArgs = new PackageReferenceArgs(dotnetPath, projectPath, packageIdentity, settings, logger, noRestore.HasValue(), frameworks.Value());
+                        packageRefArgs = new PackageReferenceArgs(dotnetPath.Value(), projectPath.Value(), packageIdentity, settings, logger, noRestore.HasValue(), frameworks.Value());
                     }
                     else
                     {
-                        packageRefArgs = new PackageReferenceArgs(dotnetPath, projectPath, packageIdentity, settings, logger, noRestore.HasValue());
+                        packageRefArgs = new PackageReferenceArgs(dotnetPath.Value(), projectPath.Value(), packageIdentity, settings, logger, noRestore.HasValue());
                     }
                     var msBuild = new MSBuildAPIUtility();
                     var addPackageRefCommandRunner = new AddPackageReferenceCommandRunner();

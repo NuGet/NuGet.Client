@@ -1,9 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Xml;
 using System.Xml.Linq;
+using NuGet.Frameworks;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -16,40 +20,45 @@ namespace NuGet.XPlat.FuncTest
 
         [Theory]
         [InlineData("addpkg --package Newtonsoft.json --version 9.0.1")]
-        public static void Locals_List_Succeeds(string args)
+        public static void AddPkg_Unconditional(string args)
         {
+            // Arrange
             Assert.NotNull(DotnetCli);
             Assert.NotNull(XplatDll);
+            Console.WriteLine("Waiting for debugger to attach.");
+            Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
 
-            using (var mockBaseDirectory = TestDirectory.Create())
+            while (!Debugger.IsAttached)
             {
-                // Arrange
-                var testCSProjPath = CreateTestProject(mockBaseDirectory);
+                System.Threading.Thread.Sleep(100);
+            }
+            Debugger.Break();
+            var argBuilder = new StringBuilder(args);
+
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("NETCoreApp1.0"));
+
+                projectA.Save();
+
+                var dotnet = @"F:\paths\dotnet\dotnet.exe";
+
+                argBuilder.Append($" --dotnet {dotnet} --project {projectA.ProjectPath}");
 
                 // Act
                 var result = CommandRunner.Run(
                       DotnetCli,
-                      Directory.GetCurrentDirectory(),
-                      $"{XplatDll} {args}",
+                      pathContext.WorkingDirectory,
+                      $"{XplatDll} {argBuilder.ToString()}",
                       waitForExit: true);
 
                 // Assert
-                var projectXml = LoadCSProj(testCSProjPath);
+                var projectXml = LoadCSProj(projectA.ProjectPath);
+                var x = projectXml.Root;
             }
-        }
-
-        private static string CreateTestProject(TestDirectory mockDirectory)
-        {
-            // Create new dotnet project
-            var createProject = CommandRunner.Run(
-                  DotnetCli,
-                  mockDirectory,
-                  $"{XplatDll} new",
-                  waitForExit: true);
-
-            Assert.True(File.Exists(Path.Combine(mockDirectory, mockDirectory.Info.Name, @".csproj")));
-
-            return Path.Combine(mockDirectory, mockDirectory.Info.Name, @".csproj");
         }
 
         private static XDocument LoadCSProj(string path)
