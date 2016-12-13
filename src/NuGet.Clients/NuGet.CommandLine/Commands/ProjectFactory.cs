@@ -234,7 +234,7 @@ namespace NuGet.CommandLine
             if (version != null)
             {
                 // make sure the $version$ placeholder gets populated correctly
-                _properties["version"] = version.ToString();
+                _properties["version"] = version.ToFullString();
 
                 builder.Version = version;
             }
