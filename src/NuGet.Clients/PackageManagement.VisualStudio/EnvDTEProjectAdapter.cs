@@ -293,15 +293,18 @@ namespace NuGet.PackageManagement.VisualStudio
 
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            foreach (Reference reference in AsVSProject.References)
+            foreach (Reference6 reference in AsVSProject4.References)
             {
                 if (reference.SourceProject != null)
                 {
-                    // When metadata API is available, each project's metadata can be inserted into this instance
+                    Array metadataElements;
+                    Array metadataValues;
+                    reference.GetMetadata(desiredMetadata, out metadataElements, out metadataValues);
+
                     yield return new LegacyCSProjProjectReference(
-                        uniqueName: reference.SourceProject.FullName, 
-                        metadataElements: null, 
-                        metadataValues: null);
+                        uniqueName: reference.SourceProject.FullName,
+                        metadataElements: metadataElements,
+                        metadataValues: metadataValues);
                 }
             }
         }
