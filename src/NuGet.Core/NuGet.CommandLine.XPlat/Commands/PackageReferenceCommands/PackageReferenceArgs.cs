@@ -16,8 +16,11 @@ namespace NuGet.CommandLine.XPlat
         public PackageIdentity PackageIdentity { get; }
         public ISettings Settings { get; }
         public ILogger Logger { get; }
+        public string[] Frameworks { get; }
+        public bool HasFrameworks { get; }
+        public bool NoRestore { get; }
 
-        public PackageReferenceArgs(string dotnetPath, string projectPath, PackageIdentity packageIdentity, ISettings settings, ILogger logger)
+        public PackageReferenceArgs(string dotnetPath, string projectPath, PackageIdentity packageIdentity, ISettings settings, ILogger logger, bool noRestore, string frameworks)
         {
             if (dotnetPath == null)
             {
@@ -45,6 +48,18 @@ namespace NuGet.CommandLine.XPlat
             Settings = settings;
             Logger = logger;
             DotnetPath = dotnetPath;
+            NoRestore = noRestore;
+
+            if (frameworks != null)
+            {
+                HasFrameworks = true;
+                Frameworks = StringUtility.Split(frameworks);
+            }
+        }
+
+        public PackageReferenceArgs(string dotnetPath, string projectPath, PackageIdentity packageIdentity, ISettings settings, ILogger logger, bool noRestore) :
+            this(dotnetPath, projectPath, packageIdentity, settings, logger, noRestore, frameworks: null)
+        {
         }
     }
 }

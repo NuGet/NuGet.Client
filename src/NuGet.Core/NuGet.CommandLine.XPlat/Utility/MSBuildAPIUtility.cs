@@ -9,12 +9,12 @@ using NuGet.Packaging.Core;
 
 namespace NuGet.CommandLine.XPlat
 {
-    internal class MSBuildAPIUtility
+    public class MSBuildAPIUtility
     {
         private static string PACKAGE_REFERENCE_TYPE_TAG = "PackageReference";
         private static string VERSION_TAG = "Version";
-        private static string TARGET_FRAMEWORK_TAG = "TargetFramework";
-        private static string TARGET_FRAMEWORKS_TAG = "TargetFrameworks";
+        private static string FRAMEWORK_TAG = "TargetFramework";
+        private static string FRAMEWORKS_TAG = "TargetFrameworks";
 
         /// <summary>
         /// Opens an MSBuild.Evaluation.Project type from a csproj file.
@@ -55,7 +55,7 @@ namespace NuGet.CommandLine.XPlat
         public void AddPackageReference(string projectPath, PackageIdentity packageIdentity)
         {
             var project = GetProject(projectPath);
-            var existingPackageReferences = GetPackageReferencesForAllTargetFrameworks(project, packageIdentity);
+            var existingPackageReferences = GetPackageReferencesForAllFrameworks(project, packageIdentity);
             AddPackageReference(project, packageIdentity, existingPackageReferences);
         }
 
@@ -64,10 +64,10 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="projectPath">Path to the csproj file of the project.</param>
         /// <param name="packageIdentity">Package Identity of the package to be added.</param>
-        /// <param name="targetFrameworks">Target Frameworks for which the package reference should be added.</param>
-        public void AddPackageReferencePerTFM(string projectPath, PackageIdentity packageIdentity, IEnumerable<string> targetFrameworks)
+        /// <param name="frameworks">Target Frameworks for which the package reference should be added.</param>
+        public void AddPackageReferencePerTFM(string projectPath, PackageIdentity packageIdentity, IEnumerable<string> frameworks)
         {
-            foreach (var framework in targetFrameworks)
+            foreach (var framework in frameworks)
             {
                 var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { { "TargetFramework", framework } };
                 var project = GetProject(projectPath, globalProperties);
@@ -179,39 +179,39 @@ namespace NuGet.CommandLine.XPlat
         /// The project should have the global property set to have a specific framework</param>
         /// <param name="packageIdentity">Identity of the package.</param>
         /// <returns>List of Items containing the package reference for the package.</returns>
-        private IEnumerable<ProjectItem> GetPackageReferencesForAllTargetFrameworks(Project project, PackageIdentity packageIdentity)
+        private IEnumerable<ProjectItem> GetPackageReferencesForAllFrameworks(Project project, PackageIdentity packageIdentity)
         {
-            var targetFrameworks = GetProjectTargetFrameworks(project);
+            var frameworks = GetProjectFrameworks(project);
             var mergedPackageReferences = new List<ProjectItem>();
-            foreach (var framework in targetFrameworks)
+            foreach (var framework in frameworks)
             {
                 var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { { "TargetFramework", framework } };
-                var projectPerTargetFramework = GetProject(project.FullPath, globalProperties);
+                var projectPerFramework = GetProject(project.FullPath, globalProperties);
 
-                mergedPackageReferences.AddRange(projectPerTargetFramework.AllEvaluatedItems
+                mergedPackageReferences.AddRange(projectPerFramework.AllEvaluatedItems
                 .Where(item => item.ItemType.Equals(PACKAGE_REFERENCE_TYPE_TAG, StringComparison.OrdinalIgnoreCase) &&
                                item.EvaluatedInclude.Equals(packageIdentity.Id, StringComparison.OrdinalIgnoreCase)));
             }
             return mergedPackageReferences;
         }
 
-        private IEnumerable<string> GetProjectTargetFrameworks(Project project)
+        private IEnumerable<string> GetProjectFrameworks(Project project)
         {
-            var targetFrameworks = project
+            var frameworks = project
                 .AllEvaluatedProperties
-                .Where(p => p.Name.Equals(TARGET_FRAMEWORK_TAG, StringComparison.OrdinalIgnoreCase))
+                .Where(p => p.Name.Equals(FRAMEWORK_TAG, StringComparison.OrdinalIgnoreCase))
                 .Select(p => p.EvaluatedValue);
 
-            if (targetFrameworks.Count() == 0)
+            if (frameworks.Count() == 0)
             {
-                var targetFrameworksString = project
+                var frameworksString = project
                     .AllEvaluatedProperties
-                    .Where(p => p.Name.Equals(TARGET_FRAMEWORKS_TAG, StringComparison.OrdinalIgnoreCase))
+                    .Where(p => p.Name.Equals(FRAMEWORKS_TAG, StringComparison.OrdinalIgnoreCase))
                     .Select(p => p.EvaluatedValue)
                     .FirstOrDefault();
-                targetFrameworks = StringUtility.Split(targetFrameworksString);
+                frameworks = StringUtility.Split(frameworksString);
             }
-            return targetFrameworks;
+            return frameworks;
         }
 
         private ProjectRootElement TryOpenProjectRootElement(string filename)

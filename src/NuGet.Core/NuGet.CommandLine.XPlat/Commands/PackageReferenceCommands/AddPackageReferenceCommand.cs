@@ -36,6 +36,16 @@ namespace NuGet.CommandLine.XPlat
                     "Version of the package",
                     CommandOptionType.SingleValue);
 
+                var frameworks = addPkgRef.Option(
+                    "--frameworks|-f",
+                    "Frameworks",
+                    CommandOptionType.SingleValue);
+
+                var noRestore = addPkgRef.Option(
+                    "--no-restore|-n",
+                    "No Restore flag",
+                    CommandOptionType.NoValue);
+
                 addPkgRef.OnExecute(() =>
                 {
                     var logger = getLogger();
@@ -44,12 +54,21 @@ namespace NuGet.CommandLine.XPlat
                     var projectPath = @"F:\validation\test\test.csproj";
                     ValidateArgument(id, "ID not given");
                     ValidateArgument(version, "Version not given");
-                    logger.LogInformation("Starting copmmand");
+                    // ValidateArgument(dotnetPath, "ID not given");
+                    // ValidateArgument(projectPath, "Version not given");
                     var packageIdentity = new PackageIdentity(id.Values[0], new NuGetVersion(version.Values[0]));
-                    var packageRefArgs = new PackageReferenceArgs(dotnetPath, projectPath, packageIdentity, settings, logger);
+                    PackageReferenceArgs packageRefArgs;
+                    if (frameworks.HasValue())
+                    {
+                        packageRefArgs = new PackageReferenceArgs(dotnetPath, projectPath, packageIdentity, settings, logger, noRestore.HasValue(), frameworks.Value());
+                    }
+                    else
+                    {
+                        packageRefArgs = new PackageReferenceArgs(dotnetPath, projectPath, packageIdentity, settings, logger, noRestore.HasValue());
+                    }
+                    var msBuild = new MSBuildAPIUtility();
                     var addPackageRefCommandRunner = new AddPackageReferenceCommandRunner();
-                    addPackageRefCommandRunner.ExecuteCommand(packageRefArgs);
-                    return 0;
+                    return addPackageRefCommandRunner.ExecuteCommand(packageRefArgs, msBuild);
                 });
             });
         }

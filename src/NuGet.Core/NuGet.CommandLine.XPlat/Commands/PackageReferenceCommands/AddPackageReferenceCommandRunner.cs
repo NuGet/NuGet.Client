@@ -26,9 +26,16 @@ namespace NuGet.CommandLine.XPlat
         private static string NUGET_RESTORE_MSBUILD_VERBOSITY = "NUGET_RESTORE_MSBUILD_VERBOSITY";
         private static int MSBUILD_WAIT_TIME = 2 * 60 * 1000; // 2 minutes in milliseconds
 
-        public void ExecuteCommand(PackageReferenceArgs packageReferenceArgs)
+        public int ExecuteCommand(PackageReferenceArgs packageReferenceArgs, MSBuildAPIUtility msBuild)
         {
             packageReferenceArgs.Logger.LogInformation(string.Format("Adding PackageReference for package : '{0}', into project : '{1}'", packageReferenceArgs.PackageIdentity.ToString(), packageReferenceArgs.ProjectPath));
+            if (packageReferenceArgs.NoRestore)
+            {
+                packageReferenceArgs.Logger.LogWarning("--no-restore|-n flag was used. No compatibility check will be done and the package reference will be added unconditionally.");
+                msBuild.AddPackageReference(packageReferenceArgs.ProjectPath, packageReferenceArgs.PackageIdentity);
+                return 0;
+            }
+
             using (var dgFilePath = new TempFile(".dg"))
             {
                 // 1. Get project dg file
@@ -58,6 +65,17 @@ namespace NuGet.CommandLine.XPlat
                     .Where(t => t.Success)
                     .Select(t => t.Graph.Framework));
 
+                if (packageReferenceArgs.HasFrameworks)
+                {
+                    // If the user has specified frameworks then we intersect that with the compatible frameworks.
+                    var userSpecifiedFrameworks = new HashSet<NuGetFramework>(
+                        packageReferenceArgs
+                        .Frameworks
+                        .Select(f => NuGetFramework.Parse(f)));
+
+                    compatibleFrameworks.IntersectWith(userSpecifiedFrameworks);
+                }
+
                 // 4. Write to Project
                 if (compatibleFrameworks.Count == 0)
                 {
@@ -72,7 +90,6 @@ namespace NuGet.CommandLine.XPlat
                     packageReferenceArgs.Logger.LogInformation("Package is compatible with all project TFMs");
                     packageReferenceArgs.Logger.LogInformation("Adding unconditional package reference");
 
-                    var msBuild = new MSBuildAPIUtility();
                     msBuild.AddPackageReference(packageReferenceArgs.ProjectPath, packageReferenceArgs.PackageIdentity);
                 }
                 else
@@ -84,10 +101,10 @@ namespace NuGet.CommandLine.XPlat
                         .Where(s => compatibleFrameworks.Contains(NuGetFramework.Parse(s)));
                     packageReferenceArgs.Logger.LogInformation("Package is compatible with a subset of project TFMs");
 
-                    var msBuild = new MSBuildAPIUtility();
                     msBuild.AddPackageReferencePerTFM(packageReferenceArgs.ProjectPath, packageReferenceArgs.PackageIdentity, compatibleOriginalFrameworks);
                 }
             }
+            return 0;
         }
 
         private async Task<RestoreResultPair> PreviewAddPackageReference(PackageReferenceArgs packageReferenceArgs, DependencyGraphSpec dgSpec, PackageSpec originalPackageSpec)
