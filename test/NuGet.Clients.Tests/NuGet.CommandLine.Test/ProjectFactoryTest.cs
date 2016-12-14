@@ -359,7 +359,7 @@ namespace NuGet.CommandLine
             // Set base path to the currently assembly's folder so that it will find the test assembly
             var basePath = Path.GetDirectoryName(testAssembly.CodeBase);
 
-            var project = new Project(XmlReader.Create(new StringReader(projectXml)));
+            var project = new Microsoft.Build.Evaluation.Project(XmlReader.Create(new StringReader(projectXml)));
             project.FullPath = Path.Combine(project.DirectoryPath, $"test-{version}.csproj");
 
             // Act
