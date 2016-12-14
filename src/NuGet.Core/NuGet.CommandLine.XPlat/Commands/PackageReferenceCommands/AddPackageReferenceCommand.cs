@@ -62,7 +62,7 @@ namespace NuGet.CommandLine.XPlat
                     ValidateArgument(version, "Version not given");
                     ValidateArgument(dotnetPath, "Dotnet Path not given");
                     ValidateArgument(projectPath, "Project Path not given");
-                    var packageIdentity = new PackageIdentity(id.Values[0], new NuGetVersion(version.Values[0]));
+                    var packageIdentity = new PackageIdentity(id.Values[0], NuGetVersion.Parse(version.Values[0]));
                     PackageReferenceArgs packageRefArgs;
                     if (frameworks.HasValue())
                     {

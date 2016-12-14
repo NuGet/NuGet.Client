@@ -12,7 +12,10 @@ using System.Xml.Linq;
 using Microsoft.Extensions.CommandLineUtils;
 using Moq;
 using NuGet.CommandLine.XPlat;
+using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -25,67 +28,72 @@ namespace NuGet.XPlat.FuncTest
         private static readonly string DotnetCli = DotnetCliUtil.GetDotnetCli(getLatestCli: true);
         private static readonly string XplatDll = DotnetCliUtil.GetXplatDll();
 
-        [Fact]
-        public static void AddPkg_ArgParsing()
+        [Theory]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "--dotnet", "dotnet_foo", "--project", "project_foo", "", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "--dotnet", "dotnet_foo", "--project", "project_foo", "--frameworks", "net46;netcoreapp1.0", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "--dotnet", "dotnet_foo", "--project", "project_foo", "--frameworks", "net46 ; netcoreapp1.0 ; ", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "--dotnet", "dotnet_foo", "--project", "project_foo", "", "", "--no-restore")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "--dotnet", "dotnet_foo", "--project", "project_foo", "--frameworks", "net46;netcoreapp1.0", "--no-restore")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "--dotnet", "dotnet_foo", "--project", "project_foo", "-f", "net46;netcoreapp1.0", "-n")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "--dotnet", "dotnet_foo", "--project", "project_foo", "-f", "net46;netcoreapp1.0", "-n")]
+        public void AddPkg_ArgParsing(string packageOption, string package, string versionOption, string version, string dotnetOption,
+            string dotnet, string projectOption, string project, string frameworkOption, string frameworkString, string noRestoreSwitch)
         {
             // Arrange
             Assert.NotNull(DotnetCli);
             Assert.NotNull(XplatDll);
 
-            var package = "package_foo";
-            var version = "1.0.0-foo";
-            var dotnet = "dotnet_foo";
-            var project = "project_foo";
-
-            var args = new List<string>() {
+            var argList = new List<string>() {
                 "addpkg",
-                "--package",
+                packageOption,
                 package,
-                "--version",
+                versionOption,
                 version,
-                "--dotnet",
+                dotnetOption,
                 dotnet,
-                "--project",
+                projectOption,
                 project};
-
-            var log = new TestCommandOutputLogger();
+            if (!string.IsNullOrEmpty(frameworkOption))
+            {
+                argList.Add(frameworkOption);
+                argList.Add(frameworkString);
+            }
+            if (!string.IsNullOrEmpty(noRestoreSwitch))
+            {
+                argList.Add(noRestoreSwitch);
+            }
+            var logger = new TestCommandOutputLogger();
             var testApp = new CommandLineApplication();
-            testApp.Name = "dotnet nuget_test";
-
             var mockCommandRunner = new Mock<IAddPackageReferenceCommandRunner>();
             mockCommandRunner
                 .Setup(m => m.ExecuteCommand(It.IsAny<PackageReferenceArgs>(), It.IsAny<MSBuildAPIUtility>()))
                 .Returns(0);
 
+            testApp.Name = "dotnet nuget_test";
             AddPackageReferenceCommand.Register(testApp,
-                () => log,
+                () => logger,
                 () => mockCommandRunner.Object);
 
-            testApp.OnExecute(() =>
-            {
-                testApp.ShowHelp();
-
-                return 0;
-            });
-
             // Act
-            var exitCode = testApp.Execute(args.ToArray());
+            var exitCode = testApp.Execute(argList.ToArray());
 
             // Assert
             mockCommandRunner.Verify(m => m.ExecuteCommand(It.Is<PackageReferenceArgs>(p => p.PackageIdentity.Id == package &&
             p.PackageIdentity.Version.ToNormalizedString() == version &&
             p.ProjectPath == project &&
             p.DotnetPath == dotnet &&
-            !p.HasFrameworks &&
-            !p.NoRestore),
+            p.HasFrameworks == !string.IsNullOrEmpty(frameworkOption) &&
+            p.NoRestore == !string.IsNullOrEmpty(noRestoreSwitch) &&
+            (!p.HasFrameworks || p.Frameworks.SequenceEqual(StringUtility.Split(frameworkString)))),
             It.IsAny<MSBuildAPIUtility>()));
 
             Assert.Equal(exitCode, 0);
         }
 
         [Theory]
-        [InlineData("addpkg --package Newtonsoft.json --version 9.0.1")]
-        public static void AddPkg_UnconditionalAdd(string args)
+        [InlineData("PkgX", "1.0.0")]
+        public async void AddPkg_UnconditionalAdd(string package, string version)
         {
             // Arrange
             Assert.NotNull(DotnetCli);
@@ -94,35 +102,55 @@ namespace NuGet.XPlat.FuncTest
             Console.WriteLine("Waiting for debugger to attach.");
             Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
 
-            //while (!Debugger.IsAttached)
-            //{
-            //    System.Threading.Thread.Sleep(100);
-            //}
-            //Debugger.Break();
-
-            var argBuilder = new StringBuilder(args);
+            while (!Debugger.IsAttached)
+            {
+                System.Threading.Thread.Sleep(100);
+            }
+            Debugger.Break();
 
             using (var pathContext = new SimpleTestPathContext())
             {
                 var projectA = SimpleTestProjectContext.CreateNETCore(
                     "a",
                     pathContext.SolutionRoot,
-                    NuGetFramework.Parse("NETCoreApp1.0"));
+                    NuGetFramework.Parse("netcoreapp1.0"));
 
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = package,
+                    Version = version
+                };
                 projectA.Save();
 
-                var dotnet = @"F:\paths\dotnet\dotnet.exe";
+                var dotnet = DotnetCli;
+                var project = projectA.ProjectPath;
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
 
-                argBuilder.Append($" --dotnet {dotnet} --project {projectA.ProjectPath}");
+                var argList = new List<string>() {
+                    "addpkg",
+                    "--package",
+                    package,
+                    "--version",
+                    version,
+                    "--dotnet",
+                    dotnet,
+                    "--project",
+                    project };
 
+                var logger = new TestCommandOutputLogger();
+                var packageIdentity = new PackageIdentity(package, new NuGetVersion(version));
+                var settings = Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null);
+                var packageArgs = new PackageReferenceArgs(dotnet, project, packageIdentity, settings, logger, noRestore: false);
+                var commandRunner = new AddPackageReferenceCommandRunner();
+                var msBuild = new MSBuildAPIUtility();
                 // Act
-                var result = CommandRunner.Run(
-                      DotnetCli,
-                      pathContext.WorkingDirectory,
-                      $"{XplatDll} {argBuilder.ToString()}",
-                      waitForExit: true);
+                var result = commandRunner.ExecuteCommand(packageArgs, msBuild);
 
                 // Assert
+                Assert.Equal(result, 0);
                 var projectXml = LoadCSProj(projectA.ProjectPath);
                 var x = projectXml.Root;
             }

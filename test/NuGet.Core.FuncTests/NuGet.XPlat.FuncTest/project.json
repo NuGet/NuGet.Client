@@ -2,6 +2,7 @@
   "version": "4.0.0-*",
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-rc2-173384-19",
+    "Microsoft.Build.Runtime": "15.1.319-preview5",
     "Microsoft.Extensions.CommandLineUtils": "1.0.0",
     "moq.netcore": "4.4.0-beta8",
     "NuGet.CommandLine.XPlat": {
