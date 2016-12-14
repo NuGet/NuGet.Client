@@ -75,7 +75,7 @@ namespace NuGet.CommandLine
                     msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
                 }
                 var factory = new ProjectFactory(msbuildPath, projectPath, null) { Build = false };
-                var packageBuilder = factory.CreateBuilder(basePath, new NuGetVersion("3.0.0"), "", true);
+                var packageBuilder = factory.CreateBuilder(basePath, null, "", true);
                 var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
 
                 var xdoc = XDocument.Load(new StringReader(actual));
@@ -152,7 +152,7 @@ namespace NuGet.CommandLine
                 factory.ProjectProperties["owner"] = "overriden";
 
                 // Act
-                var packageBuilder = factory.CreateBuilder(basePath, new NuGetVersion("3.0.0"), null, true);
+                var packageBuilder = factory.CreateBuilder(basePath, null, null, true);
                 var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
 
                 var xdoc = XDocument.Load(new StringReader(actual));
@@ -226,7 +226,7 @@ namespace NuGet.CommandLine
                 factory.ProjectProperties.AddRange(cmdLineProperties);
 
                 // Act
-                var packageBuilder = factory.CreateBuilder(basePath, new NuGetVersion("3.0.0"), "", true);
+                var packageBuilder = factory.CreateBuilder(basePath, null, "", true);
                 var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
 
                 var xdoc = XDocument.Load(new StringReader(actual));
@@ -308,6 +308,8 @@ namespace NuGet.CommandLine
             }
         }
 
+        // We run this test only on windows because this relies on Microsoft.Build.dll from the GAC and mac blows up
+        [Platform(Platform.Windows)]
         [Theory]
         [InlineData("1.2.9")]
         [InlineData("1.2.3-rc-12345")]

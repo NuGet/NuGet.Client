@@ -94,7 +94,18 @@ rm -r -f "$TestDir/System.*" "$TestDir/WindowsBase.dll" "$TestDir/Microsoft.CSha
 
 #Run xunit test
 
-mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll"
+case "$(uname -s)" in
+		Linux)
+			echo "mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Darwin"
+			mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Darwin
+			;;
+		Darwin)
+			echo "mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Linux"
+			mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Linux
+			;;
+		*) ;;
+esac
+
 
 popd
 
