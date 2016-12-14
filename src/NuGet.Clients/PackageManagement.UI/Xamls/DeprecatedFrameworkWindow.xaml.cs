@@ -64,7 +64,7 @@ namespace NuGet.PackageManagement.UI
 
         private void SaveDoNotShowPreviewWindowSetting(bool doNotshow)
         {
-            _uiContext.ApplyShowDeprecatedFrameworkSetting(!doNotshow);
+            _uiContext.UserSettingsManager.ApplyShowDeprecatedFrameworkSetting(!doNotshow);
 
             DotnetDeprecatedPrompt.SaveDoNotShowPromptState(doNotshow);
         }

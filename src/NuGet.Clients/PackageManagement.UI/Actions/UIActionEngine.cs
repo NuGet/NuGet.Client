@@ -19,18 +19,38 @@ namespace NuGet.PackageManagement.UI
     /// <summary>
     /// Performs package manager actions and controls the UI to display output while the actions are taking place.
     /// </summary>
-    public class UIActionEngine
+    public sealed class UIActionEngine
     {
         private readonly ISourceRepositoryProvider _sourceProvider;
         private readonly NuGetPackageManager _packageManager;
+        private readonly INuGetLockService _lockService;
 
         /// <summary>
         /// Create a UIActionEngine to perform installs/uninstalls
         /// </summary>
-        public UIActionEngine(ISourceRepositoryProvider sourceProvider, NuGetPackageManager packageManager)
+        public UIActionEngine(
+            ISourceRepositoryProvider sourceProvider, 
+            NuGetPackageManager packageManager,
+            INuGetLockService lockService)
         {
+            if (sourceProvider == null)
+            {
+                throw new ArgumentNullException(nameof(sourceProvider));
+            }
+
+            if (packageManager == null)
+            {
+                throw new ArgumentNullException(nameof(packageManager));
+            }
+
+            if (lockService == null)
+            {
+                throw new ArgumentNullException(nameof(lockService));
+            }
+
             _sourceProvider = sourceProvider;
             _packageManager = packageManager;
+            _lockService = lockService;
         }
 
         /// <summary>
@@ -190,6 +210,8 @@ namespace NuGet.PackageManagement.UI
             var telemetryService = new TelemetryServiceHelper();
             uiService.ProgressWindow.TelemetryService = telemetryService;
 
+            var lck = await _lockService.AcquireLockAsync(token);
+
             try
             {
                 uiService.ShowProgressDialog(windowOwner);
@@ -287,6 +309,8 @@ namespace NuGet.PackageManagement.UI
             }
             finally
             {
+                lck.Dispose();
+
                 uiService.CloseProgressDialog();
 
                 TelemetryUtility.StopTimer();
@@ -369,7 +393,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Execute the installs/uninstalls
         /// </summary>
-        protected async Task ExecuteActionsAsync(IEnumerable<ResolvedAction> actions,
+        private async Task ExecuteActionsAsync(IEnumerable<ResolvedAction> actions,
             NuGetUIProjectContext projectContext, UserAction userAction, CancellationToken token)
         {
             var processedDirectInstalls = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
@@ -406,7 +430,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Return the resolve package actions
         /// </summary>
-        protected async Task<IReadOnlyList<ResolvedAction>> GetActionsAsync(
+        private async Task<IReadOnlyList<ResolvedAction>> GetActionsAsync(
             INuGetUI uiService,
             IEnumerable<NuGetProject> targets,
             UserAction userAction,
@@ -457,7 +481,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Convert NuGetProjectActions into PreviewResult types
         /// </summary>
-        protected static IReadOnlyList<PreviewResult> GetPreviewResults(IEnumerable<ResolvedAction> projectActions)
+        private static IReadOnlyList<PreviewResult> GetPreviewResults(IEnumerable<ResolvedAction> projectActions)
         {
             var results = new List<PreviewResult>();
 

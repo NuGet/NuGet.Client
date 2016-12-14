@@ -67,7 +67,7 @@ namespace NuGetVSExtension
         public int OnClose(ref uint pgrfSaveOptions)
         {
             _content.SaveSettings();
-            _content.Model.Context.PersistSettings();
+            _content.Model.Context.UserSettingsManager.PersistSettings();
 
             pgrfSaveOptions = (uint)__FRAMECLOSE.FRAMECLOSE_NoSave;
             return VSConstants.S_OK;

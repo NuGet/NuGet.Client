@@ -10,7 +10,6 @@ using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Text;
 using System.Threading;
-using NuGet.Common;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
@@ -23,11 +22,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     public class PackageActionBaseCommand : NuGetPowerShellBaseCommand
     {
-        private IDeleteOnRestartManager _deleteOnRestartManager;
+        private readonly IDeleteOnRestartManager _deleteOnRestartManager;
+        protected readonly INuGetLockService _lockService;
 
         public PackageActionBaseCommand()
         {
             _deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
+            _lockService = ServiceLocator.GetInstance<INuGetLockService>();
         }
 
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0)]

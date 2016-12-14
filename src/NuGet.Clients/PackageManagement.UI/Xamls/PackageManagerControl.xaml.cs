@@ -358,12 +358,12 @@ namespace NuGet.PackageManagement.UI
                 OptionsExpanded = _packageDetail._optionsControl.IsExpanded
             };
             _packageDetail._solutionView.SaveSettings(settings);
-            Model.Context.AddSettings(GetSettingsKey(), settings);
+            Model.Context.UserSettingsManager.AddSettings(GetSettingsKey(), settings);
         }
 
         private UserSettings LoadSettings()
         {
-            var settings = Model.Context.GetSettings(GetSettingsKey());
+            var settings = Model.Context.UserSettingsManager.GetSettings(GetSettingsKey());
 
             if (PreviewWindow.IsDoNotShowPreviewWindowEnabled())
             {
