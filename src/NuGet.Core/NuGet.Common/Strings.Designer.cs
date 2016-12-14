@@ -78,6 +78,15 @@ namespace NuGet.Common {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Failed to create random file for dotnet add pkg command..
+        /// </summary>
+        public static string Error_FailedToCreateRandomFile {
+            get {
+                return ResourceManager.GetString("Error_FailedToCreateRandomFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to At least one package folder path must be provided..
         /// </summary>
         public static string NoPackageFoldersFound {

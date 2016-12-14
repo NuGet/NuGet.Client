@@ -4,9 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.Extensions.CommandLineUtils;
@@ -54,6 +52,7 @@ namespace NuGet.XPlat.FuncTest
                 dotnet,
                 projectOption,
                 project};
+
             if (!string.IsNullOrEmpty(frameworkOption))
             {
                 argList.Add(frameworkOption);
@@ -63,6 +62,7 @@ namespace NuGet.XPlat.FuncTest
             {
                 argList.Add(noRestoreSwitch);
             }
+
             var logger = new TestCommandOutputLogger();
             var testApp = new CommandLineApplication();
             var mockCommandRunner = new Mock<IAddPackageReferenceCommandRunner>();
@@ -124,6 +124,7 @@ namespace NuGet.XPlat.FuncTest
 
                 var dotnet = DotnetCli;
                 var project = projectA.ProjectPath;
+
                 await SimpleTestPackageUtility.CreateFolderFeedV3(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
