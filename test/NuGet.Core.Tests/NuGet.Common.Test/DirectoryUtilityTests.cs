@@ -62,9 +62,16 @@ namespace NuGet.Common.Test
                 RedirectStandardOutput = true,
                 RedirectStandardInput = true,
                 UseShellExecute = false,
-                Arguments = "-c %a " + path,
                 FileName = "stat"
             };
+            if (RuntimeEnvironmentHelper.IsLinux)
+            {
+                startInfo.Arguments = "-c %a " + path;
+            }
+            else
+            {
+                startInfo.Arguments = "-f %A " + path;
+            }
 
             using (Process process = new Process())
             {
