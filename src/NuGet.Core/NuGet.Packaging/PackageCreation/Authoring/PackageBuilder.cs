@@ -577,7 +577,7 @@ namespace NuGet.Packaging
                 {
                     try
                     {
-                        CreatePart(package, file.Path, stream);
+                        CreatePart(package, file, stream);
                         var fileExtension = Path.GetExtension(file.Path);
 
                         // We have files without extension (e.g. the executables for Nix)
@@ -717,16 +717,19 @@ namespace NuGet.Packaging
             }
         }
 
-        private static void CreatePart(ZipArchive package, string path, Stream sourceStream)
+        private static void CreatePart(ZipArchive package, IPackageFile file, Stream sourceStream)
         {
-            if (PackageHelper.IsNuspec(path))
+            if (PackageHelper.IsNuspec(file.Path))
             {
                 return;
             }
 
-            string entryName = CreatePartEntryName(path);
+            string entryName = CreatePartEntryName(file.Path);
 
             var entry = package.CreateEntry(entryName, CompressionLevel.Optimal);
+            var physicalFile = file as PhysicalPackageFile;
+            var lastWriteTime = physicalFile?.GetLastWriteTime();
+            if (lastWriteTime.HasValue) entry.LastWriteTime = lastWriteTime.Value;
             using (var stream = entry.Open())
             {
                 sourceStream.CopyTo(stream);

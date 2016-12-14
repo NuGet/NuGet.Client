@@ -74,6 +74,15 @@ namespace NuGet.Packaging
             get { return _targetFramework; }
         }
 
+        public DateTime? GetLastWriteTime()
+        {
+            if (SourcePath != null)
+            {
+                return File.GetLastWriteTime(SourcePath);
+            }
+            return null;
+        }
+
         public Stream GetStream()
         {
             if (_streamFactory != null)
