@@ -224,8 +224,8 @@ Function Install-DotnetCLI-Test {
     $env:DOTNET_HOME=$CLIRootTest
     $env:DOTNET_INSTALL_DIR=$NuGetClientRoot
 
-    if ($Force -or -not (Test-Path $DotNetExe)) {
-        Trace-Log 'Downloading .NET CLI'
+    if ($Force -or -not (Test-Path $DotNetExeTest)) {
+        Trace-Log 'Downloading .NET CLI Test'
 
         New-Item -ItemType Directory -Force -Path $CLIRootTest | Out-Null
 
@@ -237,7 +237,7 @@ Function Install-DotnetCLI-Test {
     }
 
     if (-not (Test-Path $DotNetExeTest)) {
-        Error-Log "Unable to find dotnet.exe. The CLI install may have failed." -Fatal
+        Error-Log "Unable to find dotnet.exe. The CLI Test install may have failed." -Fatal
     }
 
     # Display build info

@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "System.Runtime.InteropServices.RuntimeInformation": "4.0.0",
-    "Microsoft.Extensions.CommandLineUtils.Sources": {
+    "Microsoft.Extensions.CommandLineUtils": {
       "version": "1.0.0-*",
       "type": "build"
     },

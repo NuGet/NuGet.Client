@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using NuGet.Commands;
@@ -21,7 +20,7 @@ using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine.XPlat
 {
-    public class AddPackageReferenceCommandRunner
+    public class AddPackageReferenceCommandRunner : IAddPackageReferenceCommandRunner
     {
         private static string NUGET_RESTORE_MSBUILD_VERBOSITY = "NUGET_RESTORE_MSBUILD_VERBOSITY";
         private static int MSBUILD_WAIT_TIME = 2 * 60 * 1000; // 2 minutes in milliseconds

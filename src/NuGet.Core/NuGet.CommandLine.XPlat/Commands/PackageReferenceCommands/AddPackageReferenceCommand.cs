@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Globalization;
-using System.IO;
-using Microsoft.Dnx.Runtime.Common.CommandLine;
-using NuGet.Commands;
+using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging.Core;
@@ -10,11 +8,11 @@ using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat
 {
-    internal static class AddPackageReferenceCommand
+    public static class AddPackageReferenceCommand
     {
         private const string MSBuildExeName = "MSBuild.dll";
 
-        public static void Register(CommandLineApplication app, Func<ILogger> getLogger)
+        public static void Register(CommandLineApplication app, Func<ILogger> getLogger, Func<IAddPackageReferenceCommandRunner> getCommandRunner)
         {
             app.Command("addpkg", addPkgRef =>
             {
@@ -75,7 +73,7 @@ namespace NuGet.CommandLine.XPlat
                         packageRefArgs = new PackageReferenceArgs(dotnetPath.Value(), projectPath.Value(), packageIdentity, settings, logger, noRestore.HasValue());
                     }
                     var msBuild = new MSBuildAPIUtility();
-                    var addPackageRefCommandRunner = new AddPackageReferenceCommandRunner();
+                    var addPackageRefCommandRunner = getCommandRunner();
                     return addPackageRefCommandRunner.ExecuteCommand(packageRefArgs, msBuild);
                 });
             });

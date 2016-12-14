@@ -1,10 +1,12 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using Microsoft.Extensions.CommandLineUtils;
+
 #if IS_CORECLR
 using System.Runtime.InteropServices;
 #endif
-using Microsoft.Dnx.Runtime.Common.CommandLine;
+
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
@@ -34,6 +36,7 @@ namespace NuGet.CommandLine.XPlat
 
             return level;
         }
+
         public static void ConfigureProtocol()
         {
             // Set connection limit
@@ -45,6 +48,7 @@ namespace NuGet.CommandLine.XPlat
             // This method has no effect on .NET Core.
             NetworkProtocolUtility.ConfigureSupportedSslProtocols();
         }
+
         public static void SetUserAgent()
         {
 #if IS_CORECLR

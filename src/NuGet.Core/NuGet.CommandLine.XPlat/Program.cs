@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Dnx.Runtime.Common.CommandLine;
+using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
 
 namespace NuGet.CommandLine.XPlat
@@ -76,7 +76,7 @@ namespace NuGet.CommandLine.XPlat
             PackCommand.Register(app, () => log);
             PushCommand.Register(app, () => log);
             LocalsCommand.Register(app, () => log);
-            AddPackageReferenceCommand.Register(app, () => log);
+            AddPackageReferenceCommand.Register(app, () => log, () => new AddPackageReferenceCommandRunner());
 
             app.OnExecute(() =>
             {
