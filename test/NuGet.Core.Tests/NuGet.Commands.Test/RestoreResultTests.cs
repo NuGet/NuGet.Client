@@ -30,13 +30,13 @@ namespace NuGet.Commands.Test
                     lockFile: new LockFile(),
                     previousLockFile: null, // different lock file
                     lockFilePath: path,
-                    msbuild: new MSBuildRestoreResult("project", td, true),
+                    msbuildFiles: Enumerable.Empty<MSBuildOutputFile>(),
                     outputType: RestoreOutputType.Unknown,
                     elapsedTime: TimeSpan.MinValue);
-                
+
                 // Act
                 await result.CommitAsync(logger, CancellationToken.None);
-                
+
                 // Assert
                 Assert.Contains(
                     $"Writing lock file to disk. Path: {path}",
@@ -45,7 +45,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal(1, logger.Messages.Count);
             }
         }
-        
+
         [Fact]
         public async Task RestoreResult_WritesSkipCommitToMinimal()
         {
@@ -61,13 +61,13 @@ namespace NuGet.Commands.Test
                     lockFile: new LockFile(),
                     previousLockFile: new LockFile(), // same lock file
                     lockFilePath: path,
-                    msbuild: new MSBuildRestoreResult("project", td, true),
+                    msbuildFiles: Enumerable.Empty<MSBuildOutputFile>(),
                     outputType: RestoreOutputType.Unknown,
                     elapsedTime: TimeSpan.MinValue);
-                
+
                 // Act
                 await result.CommitAsync(logger, CancellationToken.None);
-                
+
                 // Assert
                 Assert.Contains(
                     $"Lock file has not changed. Skipping lock file write. Path: {path}",

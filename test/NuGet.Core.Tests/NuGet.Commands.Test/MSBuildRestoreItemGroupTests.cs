@@ -1,25 +1,17 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
-using NuGet.Common;
-using NuGet.Configuration;
-using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Commands.Test
 {
-    public class MSBuildRestoreImportGroupTests
+    public class MSBuildRestoreItemGroupTests
     {
         [Fact]
-        public void MSBuildRestoreImportGroupTest_VerifyEmptyCondition()
+        public void MSBuildRestoreItemGroupTest_VerifyEmptyCondition()
         {
             // Arrange
-            var group = new MSBuildRestoreImportGroup();
+            var group = new MSBuildRestoreItemGroup();
 
             // Act
             var condition = group.Condition;
@@ -29,10 +21,10 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public void MSBuildRestoreImportGroupTest_SingleCondition()
+        public void MSBuildRestoreItemGroupTest_SingleCondition()
         {
             // Arrange
-            var group = new MSBuildRestoreImportGroup();
+            var group = new MSBuildRestoreItemGroup();
             group.Conditions.Add("'$(a)' == 'a'  ");
 
             // Act
@@ -43,10 +35,10 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public void MSBuildRestoreImportGroupTest_MultipleConditions()
+        public void MSBuildRestoreItemGroupTest_MultipleConditions()
         {
             // Arrange
-            var group = new MSBuildRestoreImportGroup();
+            var group = new MSBuildRestoreItemGroup();
             group.Conditions.Add("'$(b)' != 'b'  ");
             group.Conditions.Add("    '$(a)' == 'a'  ");
 

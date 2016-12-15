@@ -104,13 +104,19 @@ namespace NuGet.Commands
             }
 
             // Generate Targets/Props files
-            var msbuild = BuildAssetsUtils.RestoreMSBuildFiles(
-                _request.Project,
-                graphs,
-                localRepositories,
-                contextForProject,
-                _request,
-                _includeFlagGraphs);
+            var msbuildOutputFiles = Enumerable.Empty<MSBuildOutputFile>();
+
+            if (contextForProject.IsMsBuildBased)
+            {
+                msbuildOutputFiles = BuildAssetsUtils.GetMSBuildOutputFiles(
+                    _request.Project,
+                    lockFile,
+                    graphs,
+                    localRepositories,
+                    _request,
+                    _success,
+                    _logger);
+            }
 
             // If the request is for a lower lock file version, downgrade it appropriately
             DowngradeLockFileIfNeeded(lockFile);
@@ -135,10 +141,10 @@ namespace NuGet.Commands
                 _success,
                 graphs,
                 checkResults,
+                msbuildOutputFiles,
                 lockFile,
                 _request.ExistingLockFile,
                 projectLockFilePath,
-                msbuild,
                 _request.RestoreOutputType,
                 restoreTime.Elapsed);
         }
