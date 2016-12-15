@@ -4,8 +4,6 @@
     "dotnet-test-xunit": "1.0.0-rc2-173384-19",
     "Microsoft.Build.Runtime": "15.1.0-preview-000370-00",
     "Microsoft.Extensions.CommandLineUtils": "1.0.0",
-    "Moq": "4.6.38-alpha",
-    "moq.netcore": "4.4.0-beta8",
     "NuGet.CommandLine.XPlat": {
       "target": "project"
     },
@@ -22,6 +20,7 @@
         "portable-net45+win8"
       ],
       "dependencies": {
+        "moq.netcore": "4.4.0-beta8",
         "Microsoft.NETCore.App": {
           "type": "platform",
           "version": "1.0.0"
@@ -41,13 +40,13 @@
         "System.Runtime": "",
         "System.Threading.Tasks": ""
       },
+      "dependencies": {
+        "Moq": "4.2.1510.2205"
+      },
       "buildOptions": {
         "define": [
           "IS_DESKTOP"
         ]
-      },
-      "dependencies": {
-        "Moq": "4.2.1510.2205"
       }
     }
   },
