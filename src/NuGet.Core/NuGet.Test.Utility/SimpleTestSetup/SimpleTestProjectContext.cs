@@ -96,6 +96,8 @@ namespace NuGet.Test.Utility
         /// </summary>
         public string PrivateAssets { get; set; } = string.Empty;
 
+        public bool ToolingVersion15 { get; set; } = false;
+
         /// <summary>
         /// project.lock.json or project.assets.json
         /// </summary>
@@ -107,8 +109,10 @@ namespace NuGet.Test.Utility
                 {
                     case RestoreOutputType.NETCore:
                         return Path.Combine(OutputPath, "project.assets.json");
+
                     case RestoreOutputType.UAP:
                         return Path.Combine(Path.GetDirectoryName(ProjectPath), "project.lock.json");
+
                     default:
                         return null;
                 }
@@ -123,8 +127,10 @@ namespace NuGet.Test.Utility
                 {
                     case RestoreOutputType.NETCore:
                         return Path.Combine(OutputPath, $"{Path.GetFileName(ProjectPath)}.nuget.g.targets");
+
                     case RestoreOutputType.UAP:
                         return Path.Combine(Path.GetDirectoryName(ProjectPath), $"{Path.GetFileNameWithoutExtension(ProjectPath)}.nuget.targets");
+
                     default:
                         return ProjectPath;
                 }
@@ -139,14 +145,15 @@ namespace NuGet.Test.Utility
                 {
                     case RestoreOutputType.NETCore:
                         return Path.Combine(OutputPath, $"{Path.GetFileName(ProjectPath)}.nuget.g.props");
+
                     case RestoreOutputType.UAP:
                         return Path.Combine(Path.GetDirectoryName(ProjectPath), $"{Path.GetFileNameWithoutExtension(ProjectPath)}.nuget.props");
+
                     default:
                         return ProjectPath;
                 }
             }
         }
-
 
         public LockFile AssetsFile
         {
@@ -236,6 +243,18 @@ namespace NuGet.Test.Utility
             return context;
         }
 
+        public static SimpleTestProjectContext CreateNETCore(
+            string projectName,
+            string solutionRoot,
+            bool isToolingVersion15,
+            params NuGetFramework[] frameworks)
+        {
+            var context = new SimpleTestProjectContext(projectName, RestoreOutputType.NETCore, solutionRoot);
+            context.Frameworks.AddRange(frameworks.Select(e => new SimpleTestProjectFrameworkContext(e)));
+            context.ToolingVersion15 = isToolingVersion15;
+            return context;
+        }
+
         public static SimpleTestProjectContext CreateNonNuGet(
             string projectName,
             string solutionRoot,
@@ -260,7 +279,11 @@ namespace NuGet.Test.Utility
 
         public XDocument GetXML()
         {
-            var s = ResourceTestUtility.GetResource("NuGet.Test.Utility.compiler.resources.project1.csproj", typeof(SimpleTestProjectContext));
+            var sampleCSProjPath = (Type == RestoreOutputType.NETCore && ToolingVersion15) ?
+                "NuGet.Test.Utility.compiler.resources.project2.csproj" :
+                "NuGet.Test.Utility.compiler.resources.project1.csproj";
+
+            var s = ResourceTestUtility.GetResource(sampleCSProjPath, typeof(SimpleTestProjectContext));
             var xml = XDocument.Parse(s);
 
             AddProperties(xml, new Dictionary<string, string>()

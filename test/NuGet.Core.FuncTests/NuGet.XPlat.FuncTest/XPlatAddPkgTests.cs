@@ -11,7 +11,6 @@ using Microsoft.Extensions.CommandLineUtils;
 using Moq;
 using NuGet.CommandLine.XPlat;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -26,7 +25,13 @@ namespace NuGet.XPlat.FuncTest
         private static readonly string DotnetCli = DotnetCliUtil.GetDotnetCli(getLatestCli: true);
         private static readonly string XplatDll = DotnetCliUtil.GetXplatDll();
 
+#if IS_CORECLR
+
         [Theory]
+#else
+
+        [Theory(Skip = "Tests Only need to run on dotnet core")]
+#endif
         [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "--dotnet", "dotnet_foo", "--project", "project_foo", "", "", "", "", "", "", "")]
         [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "", "", "", "", "", "", "")]
         [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "--frameworks", "net46;netcoreapp1.0", "", "", "", "", "")]
@@ -106,34 +111,50 @@ namespace NuGet.XPlat.FuncTest
             Assert.Equal(exitCode, 0);
         }
 
+#if IS_CORECLR
+
         [Theory]
-        [InlineData("PkgX", "1.0.0")]
-        public async void AddPkg_UnconditionalAdd(string package, string version)
+#else
+
+        [Theory(Skip = "Tests Only need to run on dotnet core")]
+#endif
+        [InlineData("PkgX", "1.0.0", "1.0.0")]
+        [InlineData("PkgX", "1.0.0", "*")]
+        [InlineData("PkgX", "1.0.0", "1.*")]
+        [InlineData("PkgX", "1.0.0", "1.0.*")]
+        public async void AddPkg_UnconditionalAdd(string package, string packageVersion, string userInputVersion)
         {
             // Arrange
             Assert.NotNull(DotnetCli);
             Assert.NotNull(XplatDll);
 
-            Console.WriteLine("Waiting for debugger to attach.");
-            Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
+            var projectName = "test_project_a";
+            var frameworks = "";
+            var sources = "";
+            var packageDirectory = "";
+            var noRestore = false;
 
-            while (!Debugger.IsAttached)
-            {
-                System.Threading.Thread.Sleep(100);
-            }
-            Debugger.Break();
+            //Console.WriteLine("Waiting for debugger to attach.");
+            //Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
+
+            //while (!Debugger.IsAttached)
+            //{
+            //    System.Threading.Thread.Sleep(100);
+            //}
+            //Debugger.Break();
 
             using (var pathContext = new SimpleTestPathContext())
             {
                 var projectA = SimpleTestProjectContext.CreateNETCore(
-                    "a",
+                    projectName,
                     pathContext.SolutionRoot,
+                    true,
                     NuGetFramework.Parse("netcoreapp1.0"));
 
                 var packageX = new SimpleTestPackageContext()
                 {
                     Id = package,
-                    Version = version
+                    Version = packageVersion
                 };
                 projectA.Save();
 
@@ -150,26 +171,56 @@ namespace NuGet.XPlat.FuncTest
                     "--package",
                     package,
                     "--version",
-                    version,
+                    userInputVersion,
                     "--dotnet",
                     dotnet,
                     "--project",
                     project };
 
                 var logger = new TestCommandOutputLogger();
-                var packageDependency = new PackageDependency(package, VersionRange.Parse(version));
-                var settings = Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null);
-                var packageArgs = new PackageReferenceArgs(dotnet, project, packageDependency, settings, logger);
+                var packageDependency = new PackageDependency(package, VersionRange.Parse(userInputVersion));
+                var packageArgs = new PackageReferenceArgs(dotnet, project, packageDependency, logger)
+                {
+                    Frameworks = StringUtility.Split(frameworks),
+                    Sources = StringUtility.Split(sources),
+                    PackageDirectory = packageDirectory,
+                    NoRestore = noRestore
+                };
                 var commandRunner = new AddPackageReferenceCommandRunner();
                 var msBuild = new MSBuildAPIUtility();
+
                 // Act
                 var result = commandRunner.ExecuteCommand(packageArgs, msBuild);
 
                 // Assert
                 Assert.Equal(result, 0);
-                var projectXml = LoadCSProj(projectA.ProjectPath);
-                var x = projectXml.Root;
+                var projectXmlRoot = LoadCSProj(projectA.ProjectPath)
+                    .Root;
+                Assert.True(ValidateReference(projectXmlRoot, package, userInputVersion));
             }
+        }
+
+        private bool ValidateReference(XElement root, string packageId, string version)
+        {
+            var packageReferences = root
+                    .Descendants("PackageReference")
+                    .Where(d => d.FirstAttribute.Value.Equals(packageId, StringComparison.OrdinalIgnoreCase));
+
+            if (packageReferences.Count() != 1)
+            {
+                return false;
+            }
+
+            var versions = packageReferences
+                .First()
+                .Descendants("Version");
+
+            if (versions.Count() != 1 ||
+                !versions.First().Value.Equals(version, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+            return true;
         }
 
         private static XDocument LoadCSProj(string path)
@@ -191,7 +242,7 @@ namespace NuGet.XPlat.FuncTest
             var safeSettings = new XmlReaderSettings
             {
 #if !IS_CORECLR
-                    XmlResolver = null,
+                XmlResolver = null,
 #endif
                 DtdProcessing = DtdProcessing.Prohibit,
                 IgnoreWhitespace = ignoreWhiteSpace

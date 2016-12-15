@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -69,14 +70,14 @@ namespace NuGet.CommandLine.XPlat
 
                 addPkgRef.OnExecute(() =>
                 {
-                    var logger = getLogger();
-                    var settings = Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null);
                     ValidateArgument(id, "ID not given");
                     ValidateArgument(version, "Version not given");
                     ValidateArgument(dotnetPath, "Dotnet Path not given");
                     ValidateArgument(projectPath, "Project Path not given");
+
+                    var logger = getLogger();
                     var packageDependency = new PackageDependency(id.Values[0], VersionRange.Parse(version.Value()));
-                    var packageRefArgs = new PackageReferenceArgs(dotnetPath.Value(), projectPath.Value(), packageDependency, settings, logger)
+                    var packageRefArgs = new PackageReferenceArgs(dotnetPath.Value(), projectPath.Value(), packageDependency, logger)
                     {
                         Frameworks = StringUtility.Split(frameworks.Value()),
                         Sources = StringUtility.Split(sources.Value()),

@@ -14,24 +14,21 @@ namespace NuGet.CommandLine.XPlat
         public string DotnetPath { get; }
         public string ProjectPath { get; }
         public PackageDependency PackageDependency { get; }
-        public ISettings Settings { get; }
         public ILogger Logger { get; }
         public string[] Frameworks { get; set; }
         public string[] Sources { get; set; }
         public string PackageDirectory { get; set; }
         public bool NoRestore { get; set; }
 
-        public PackageReferenceArgs(string dotnetPath, string projectPath, PackageDependency packageDependency, ISettings settings, ILogger logger)
+        public PackageReferenceArgs(string dotnetPath, string projectPath, PackageDependency packageDependency, ILogger logger)
         {
             ValidateArgument(dotnetPath);
             ValidateArgument(projectPath);
             ValidateArgument(packageDependency);
-            ValidateArgument(settings);
             ValidateArgument(logger);
 
             ProjectPath = projectPath;
             PackageDependency = packageDependency;
-            Settings = settings;
             Logger = logger;
             DotnetPath = dotnetPath;
         }
