@@ -293,6 +293,9 @@
   <data name="OutputNuGetVersion" xml:space="preserve">
     <value>{0} Version: {1}</value>
   </data>
+  <data name="Properties_Description" xml:space="preserve">
+    <value>Specifies a semicolon ";" delimited list of properties used when creating a package.</value>
+  </data>
   <data name="Serviceable_Description" xml:space="preserve">
     <value>Sets the nuspec serviceable element to true.</value>
   </data>

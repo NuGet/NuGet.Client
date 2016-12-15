@@ -471,7 +471,16 @@ namespace NuGet.CommandLine.XPlat {
                 return ResourceManager.GetString("PackCommand_Description", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///    Looks up a localized string similar to Specifies a semicolon ";" delimited list of properties used when creating a package.
+        /// </summary>
+        public static string Properties_Description {
+            get {
+                return ResourceManager.GetString("Properties_Description", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///    Looks up a localized string similar to Pushes a package to the server and publishes it..
         /// </summary>
