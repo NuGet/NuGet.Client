@@ -110,7 +110,7 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("PkgX", "1.0.0", "*")]
         [InlineData("PkgX", "1.0.0", "1.*")]
         [InlineData("PkgX", "1.0.0", "1.0.*")]
-        public async void AddPkg_UnconditionalAdd(string package, string packageVersion, string userInputVersion)
+        public async void AddPkg_UnconditionalAddWithoutFramework(string package, string packageVersion, string userInputVersion)
         {
             // Arrange
             Assert.NotNull(DotnetCli);
@@ -211,12 +211,12 @@ namespace NuGet.XPlat.FuncTest
             return true;
         }
 
-        private static XDocument LoadCSProj(string path)
+        private XDocument LoadCSProj(string path)
         {
             return LoadSafe(path);
         }
 
-        private static XDocument LoadSafe(string filePath)
+        private XDocument LoadSafe(string filePath)
         {
             var settings = CreateSafeSettings();
             using (var reader = XmlReader.Create(filePath, settings))
@@ -225,7 +225,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        private static XmlReaderSettings CreateSafeSettings(bool ignoreWhiteSpace = false)
+        private XmlReaderSettings CreateSafeSettings(bool ignoreWhiteSpace = false)
         {
             var safeSettings = new XmlReaderSettings
             {

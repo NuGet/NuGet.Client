@@ -26,7 +26,7 @@ cli/dotnet-install.sh -i cli -c preview -v 1.0.0-preview2-003121
 
 # Run install.sh
 chmod +x cli_test/dotnet-install.sh
-cli_test/dotnet-install.sh -i cli -c preview -v 1.0.0-preview5-004232
+cli_test/dotnet-install.sh -i cli_test -c preview -v 1.0.0-preview5-004232
 
 # Display current version
 DOTNET="$(pwd)/cli/dotnet"
