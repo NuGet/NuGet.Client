@@ -25,13 +25,7 @@ namespace NuGet.XPlat.FuncTest
         private static readonly string DotnetCli = DotnetCliUtil.GetDotnetCli(getLatestCli: true);
         private static readonly string XplatDll = DotnetCliUtil.GetXplatDll();
 
-#if IS_CORECLR
-
         [Theory]
-#else
-
-        [Theory(Skip = "Tests Only need to run on dotnet core")]
-#endif
         [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "--dotnet", "dotnet_foo", "--project", "project_foo", "", "", "", "", "", "", "")]
         [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "", "", "", "", "", "", "")]
         [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "--frameworks", "net46;netcoreapp1.0", "", "", "", "", "")]
@@ -111,13 +105,7 @@ namespace NuGet.XPlat.FuncTest
             Assert.Equal(exitCode, 0);
         }
 
-#if IS_CORECLR
-
         [Theory]
-#else
-
-        [Theory(Skip = "Tests Only need to run on dotnet core")]
-#endif
         [InlineData("PkgX", "1.0.0", "1.0.0")]
         [InlineData("PkgX", "1.0.0", "*")]
         [InlineData("PkgX", "1.0.0", "1.*")]
@@ -145,7 +133,7 @@ namespace NuGet.XPlat.FuncTest
 
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = SimpleTestProjectContext.CreateNETCore(
+                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
                     projectName,
                     pathContext.SolutionRoot,
                     true,

@@ -243,7 +243,7 @@ namespace NuGet.Test.Utility
             return context;
         }
 
-        public static SimpleTestProjectContext CreateNETCore(
+        public static SimpleTestProjectContext CreateNETCoreWithSDK(
             string projectName,
             string solutionRoot,
             bool isToolingVersion15,
