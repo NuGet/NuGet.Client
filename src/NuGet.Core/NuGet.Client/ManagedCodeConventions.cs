@@ -24,14 +24,19 @@ namespace NuGet.Client
             PropertyNames.AnyValue,
             parser: (o, t) => o); // Identity parser, all strings are valid for any
         private static readonly ContentPropertyDefinition AssemblyProperty = new ContentPropertyDefinition(PropertyNames.ManagedAssembly,
-            parser: (o, t) => o.Equals(PackagingCoreConstants.EmptyFolder, StringComparison.Ordinal) ? o : null, // Accept "_._" as a pseudo-assembly
+            parser: AllowEmptyFolderParser,
             fileExtensions: new[] { ".dll", ".winmd", ".exe" });
-        private static readonly ContentPropertyDefinition MSBuildProperty = new ContentPropertyDefinition(PropertyNames.MSBuild, fileExtensions: new[] { ".targets", ".props" });
-        private static readonly ContentPropertyDefinition SatelliteAssemblyProperty = new ContentPropertyDefinition(PropertyNames.SatelliteAssembly, fileExtensions: new[] { ".resources.dll" });
+        private static readonly ContentPropertyDefinition MSBuildProperty = new ContentPropertyDefinition(PropertyNames.MSBuild,
+            parser: AllowEmptyFolderParser,
+            fileExtensions: new[] { ".targets", ".props" });
+        private static readonly ContentPropertyDefinition SatelliteAssemblyProperty = new ContentPropertyDefinition(PropertyNames.SatelliteAssembly,
+            parser: AllowEmptyFolderParser,
+            fileExtensions: new[] { ".resources.dll" });
 
         private static readonly ContentPropertyDefinition CodeLanguageProperty = new ContentPropertyDefinition(
             PropertyNames.CodeLanguage,
             parser: CodeLanguage_Parser);
+
 
         private static readonly Dictionary<string, object> DefaultTfmAny = new Dictionary<string, object>
         {
@@ -197,6 +202,12 @@ namespace NuGet.Client
             return new NuGetFramework(name, FrameworkConstants.EmptyVersion);
         }
 
+        private static object AllowEmptyFolderParser(string s, PatternTable table)
+        {
+            // Accept "_._" as a pseudo-assembly
+            return PackagingCoreConstants.EmptyFolder.Equals(s, StringComparison.Ordinal) ? s : null;
+        }
+
         private static bool TargetFrameworkName_CompatibilityTest(object criteria, object available)
         {
             var criteriaFrameworkName = criteria as NuGetFramework;
@@ -355,7 +366,7 @@ namespace NuGet.Client
             /// <summary>
             /// Pattern used to identify MSBuild global targets and props files
             /// </summary>
-            public PatternSet MSBuildCrossTargetingFiles { get; }
+            public PatternSet MSBuildMultiTargetingFiles { get; }
 
             /// <summary>
             /// Pattern used to identify content files
@@ -449,14 +460,20 @@ namespace NuGet.Client
                         new PatternDefinition("build/{msbuild}", table: null, defaults: DefaultTfmAny)
                     });
 
-                MSBuildCrossTargetingFiles = new PatternSet(
+                MSBuildMultiTargetingFiles = new PatternSet(
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
                     {
+                        new PatternDefinition("buildMultiTargeting/{msbuild?}", table: null, defaults: DefaultTfmAny),
+
+                        // deprecated
                         new PatternDefinition("buildCrossTargeting/{msbuild?}", table: null, defaults: DefaultTfmAny)
                     },
                     pathPatterns: new PatternDefinition[]
                     {
+                        new PatternDefinition("buildMultiTargeting/{msbuild}", table: null, defaults: DefaultTfmAny),
+
+                        // deprecated
                         new PatternDefinition("buildCrossTargeting/{msbuild}", table: null, defaults: DefaultTfmAny)
                     });
 

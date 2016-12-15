@@ -37,6 +37,8 @@ namespace NuGet.ProjectModel
         private const string RuntimeProperty = "runtime";
         private const string CompileProperty = "compile";
         private const string NativeProperty = "native";
+        private const string BuildProperty = "build";
+        private const string BuildMultiTargetingProperty = "buildMultiTargeting";
         private const string ContentFilesProperty = "contentFiles";
         private const string RuntimeTargetsProperty = "runtimeTargets";
         private const string ResourceProperty = "resource";
@@ -310,6 +312,8 @@ namespace NuGet.ProjectModel
             library.CompileTimeAssemblies = ReadObject(json[CompileProperty] as JObject, ReadFileItem);
             library.ResourceAssemblies = ReadObject(json[ResourceProperty] as JObject, ReadFileItem);
             library.NativeLibraries = ReadObject(json[NativeProperty] as JObject, ReadFileItem);
+            library.Build = ReadObject(json[BuildProperty] as JObject, ReadFileItem);
+            library.BuildMultiTargeting = ReadObject(json[BuildMultiTargetingProperty] as JObject, ReadFileItem);
             library.ContentFiles = ReadObject(json[ContentFilesProperty] as JObject, ReadContentFile);
             library.RuntimeTargets = ReadObject(json[RuntimeTargetsProperty] as JObject, ReadRuntimeTarget);
 
@@ -377,6 +381,20 @@ namespace NuGet.ProjectModel
                 var ordered = library.ContentFiles.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
 
                 json[ContentFilesProperty] = WriteObject(ordered, WriteFileItem);
+            }
+
+            if (library.Build.Count > 0)
+            {
+                var ordered = library.Build.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
+
+                json[BuildProperty] = WriteObject(ordered, WriteFileItem);
+            }
+
+            if (library.BuildMultiTargeting.Count > 0)
+            {
+                var ordered = library.BuildMultiTargeting.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
+
+                json[BuildMultiTargetingProperty] = WriteObject(ordered, WriteFileItem);
             }
 
             if (library.RuntimeTargets.Count > 0)

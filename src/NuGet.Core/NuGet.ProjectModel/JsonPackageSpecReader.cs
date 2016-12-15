@@ -83,13 +83,7 @@ namespace NuGet.ProjectModel
             packageSpec.Name = name;
             packageSpec.FilePath = name == null ? null : Path.GetFullPath(packageSpecPath);
 
-            if (version == null)
-            {
-                packageSpec.Version = new NuGetVersion("1.0.0");
-                packageSpec.IsDefaultVersion = true;
-                packageSpec.HasVersionSnapshot = false;
-            }
-            else
+            if (version != null)
             {
                 try
                 {

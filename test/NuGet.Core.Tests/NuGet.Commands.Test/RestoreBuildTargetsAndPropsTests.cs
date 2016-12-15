@@ -316,8 +316,7 @@ namespace NuGet.Commands.Test
                 Assert.True(success, "Failed: " + messages);
 
                 // Verify the file was not rewritten
-                Assert.Contains("No changes found. Skipping write of imports file to disk", messages);
-                Assert.DoesNotContain("Writing imports file to disk", messages);
+                Assert.DoesNotContain("Generating MSBuild file", messages);
             }
         }
 

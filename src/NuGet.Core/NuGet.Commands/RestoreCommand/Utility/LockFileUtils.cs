@@ -172,6 +172,22 @@ namespace NuGet.Commands
 
             lockFileLib.NativeLibraries.AddRange(nativeGroup);
 
+            // Build
+            var buildGroup = GetLockFileItems(
+                orderedCriteria,
+                contentItems,
+                targetGraph.Conventions.Patterns.MSBuildFiles);
+
+            lockFileLib.Build.AddRange(GetBuildItemsForPackageId(buildGroup, library.Name));
+
+            // Build multi targeting
+            var buildMultiTargetingGroup = GetLockFileItems(
+                orderedCriteria,
+                contentItems,
+                targetGraph.Conventions.Patterns.MSBuildMultiTargetingFiles);
+
+            lockFileLib.BuildMultiTargeting.AddRange(GetBuildItemsForPackageId(buildMultiTargetingGroup, library.Name));
+
             // content v2 items
             var contentFileGroups = contentItems.FindItemGroups(targetGraph.Conventions.Patterns.ContentFiles);
 
@@ -275,6 +291,12 @@ namespace NuGet.Commands
                 lockFileLib.ContentFiles.Add(ContentFileUtils.CreateEmptyItem());
             }
 
+            if ((dependencyType & LibraryIncludeFlags.Build) == LibraryIncludeFlags.None)
+            {
+                ClearIfExists(lockFileLib.Build);
+                ClearIfExists(lockFileLib.BuildMultiTargeting);
+            }
+
             return lockFileLib;
         }
 
@@ -313,6 +335,57 @@ namespace NuGet.Commands
             }
 
             yield break;
+        }
+
+        /// <summary>
+        /// Get packageId.targets and packageId.props
+        /// </summary>
+        private static IEnumerable<LockFileItem> GetBuildItemsForPackageId(
+            IEnumerable<LockFileItem> items,
+            string packageId)
+        {
+            if (items.Any())
+            {
+                var skipEmptyCheck = false;
+
+                var ordered = items.OrderBy(c => c.Path, StringComparer.OrdinalIgnoreCase)
+                                   .ToArray();
+
+                var props = ordered.FirstOrDefault(c =>
+                    $"{packageId}.props".Equals(
+                        Path.GetFileName(c.Path),
+                        StringComparison.OrdinalIgnoreCase));
+
+                if (props != null)
+                {
+                    skipEmptyCheck = true;
+                    yield return props;
+                }
+
+                var targets = ordered.FirstOrDefault(c => 
+                    $"{packageId}.targets".Equals(
+                        Path.GetFileName(c.Path),
+                        StringComparison.OrdinalIgnoreCase));
+
+                if (targets != null)
+                {
+                    skipEmptyCheck = true;
+                    yield return targets;
+                }
+
+                if (!skipEmptyCheck)
+                {
+                    // Find _._ if it exists, this file is needed
+                    // but does not match the package id above.
+                    var empty = ordered.FirstOrDefault(c =>
+                        c.Path.EndsWith(PackagingCoreConstants.ForwardSlashEmptyFolder, StringComparison.Ordinal));
+
+                    if (empty != null)
+                    {
+                        yield return empty;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -532,6 +605,25 @@ namespace NuGet.Commands
             }
 
             return results;
+        }
+
+        /// <summary>
+        /// Replace / with the local directory separator if needed.
+        /// For OSX and Linux the same string is returned.
+        /// </summary>
+        public static string ToDirectorySeparator(string path)
+        {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            if (Path.DirectorySeparatorChar == '/')
+            {
+                return path;
+            }
+
+            return path.Replace('/', Path.DirectorySeparatorChar);
         }
     }
 }
