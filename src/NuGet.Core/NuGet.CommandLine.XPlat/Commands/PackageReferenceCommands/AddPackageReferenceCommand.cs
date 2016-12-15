@@ -57,6 +57,16 @@ namespace NuGet.CommandLine.XPlat
                     "No Restore flag",
                     CommandOptionType.NoValue);
 
+                var sources = addPkgRef.Option(
+                    "--sources|-s",
+                    "Specifies a NuGet package source to use during the restore.",
+                    CommandOptionType.SingleValue);
+
+                var packageDirectory = addPkgRef.Option(
+                    "--package-directory",
+                    "Directory to install packages in.",
+                    CommandOptionType.SingleValue);
+
                 addPkgRef.OnExecute(() =>
                 {
                     var logger = getLogger();
@@ -65,16 +75,14 @@ namespace NuGet.CommandLine.XPlat
                     ValidateArgument(version, "Version not given");
                     ValidateArgument(dotnetPath, "Dotnet Path not given");
                     ValidateArgument(projectPath, "Project Path not given");
-                    var packageIdentity = new PackageIdentity(id.Values[0], NuGetVersion.Parse(version.Values[0]));
-                    PackageReferenceArgs packageRefArgs;
-                    if (frameworks.HasValue())
+                    var packageDependency = new PackageDependency(id.Values[0], VersionRange.Parse(version.Value()));
+                    var packageRefArgs = new PackageReferenceArgs(dotnetPath.Value(), projectPath.Value(), packageDependency, settings, logger)
                     {
-                        packageRefArgs = new PackageReferenceArgs(dotnetPath.Value(), projectPath.Value(), packageIdentity, settings, logger, noRestore.HasValue(), frameworks.Value());
-                    }
-                    else
-                    {
-                        packageRefArgs = new PackageReferenceArgs(dotnetPath.Value(), projectPath.Value(), packageIdentity, settings, logger, noRestore.HasValue());
-                    }
+                        Frameworks = StringUtility.Split(frameworks.Value()),
+                        Sources = StringUtility.Split(sources.Value()),
+                        PackageDirectory = packageDirectory.Value(),
+                        NoRestore = noRestore.HasValue()
+                    };
                     var msBuild = new MSBuildAPIUtility();
                     var addPackageRefCommandRunner = getCommandRunner();
                     return addPackageRefCommandRunner.ExecuteCommand(packageRefArgs, msBuild);

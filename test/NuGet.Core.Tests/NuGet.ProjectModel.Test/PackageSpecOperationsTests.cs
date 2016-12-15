@@ -100,7 +100,7 @@ namespace NuGet.ProjectModel.Test
             var identity = new PackageIdentity("NuGet.Versioning", new NuGetVersion("1.0.0"));
 
             // Act
-            PackageSpecOperations.AddDependency(
+            PackageSpecOperations.AddOrUpdateDependency(
                 spec,
                 identity,
                 new[] { frameworkB.FrameworkName });

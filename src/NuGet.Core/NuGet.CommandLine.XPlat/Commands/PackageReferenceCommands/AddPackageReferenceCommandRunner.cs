@@ -29,7 +29,7 @@ namespace NuGet.CommandLine.XPlat
         {
             packageReferenceArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                 Strings.Info_AddPkgAddingReference,
-                packageReferenceArgs.PackageIdentity.Id,
+                packageReferenceArgs.PackageDependency.Id,
                 packageReferenceArgs.ProjectPath));
 
             if (packageReferenceArgs.NoRestore)
@@ -37,7 +37,7 @@ namespace NuGet.CommandLine.XPlat
                 packageReferenceArgs.Logger.LogWarning(string.Format(CultureInfo.CurrentCulture,
                     Strings.Warn_AddPkgWithoutRestore));
 
-                msBuild.AddPackageReference(packageReferenceArgs.ProjectPath, packageReferenceArgs.PackageIdentity);
+                msBuild.AddPackageReference(packageReferenceArgs.ProjectPath, packageReferenceArgs.PackageDependency);
                 return 0;
             }
 
@@ -52,7 +52,7 @@ namespace NuGet.CommandLine.XPlat
 
                 // Create a copy to avoid modifying the original spec which may be shared.
                 var updatedPackageSpec = originalPackageSpec.Clone();
-                PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, packageReferenceArgs.PackageIdentity);
+                PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, packageReferenceArgs.PackageDependency);
 
                 var updatedDgSpec = dgSpec.WithReplacedSpec(updatedPackageSpec).WithoutRestores();
                 updatedDgSpec.AddRestore(updatedPackageSpec.RestoreMetadata.ProjectUniqueName);
@@ -70,7 +70,7 @@ namespace NuGet.CommandLine.XPlat
                     .Where(t => t.Success)
                     .Select(t => t.Graph.Framework));
 
-                if (packageReferenceArgs.HasFrameworks)
+                if (packageReferenceArgs.Frameworks != null && packageReferenceArgs.Frameworks.Count() > 0)
                 {
                     // If the user has specified frameworks then we intersect that with the compatible frameworks.
                     var userSpecifiedFrameworks = new HashSet<NuGetFramework>(
@@ -88,7 +88,7 @@ namespace NuGet.CommandLine.XPlat
                     // Do not add a package reference, throw appropriate error
                     packageReferenceArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                         Strings.Error_AddPkgIncompatibleWithAllFrameworks,
-                        packageReferenceArgs.PackageIdentity.Id,
+                        packageReferenceArgs.PackageDependency.Id,
                         packageReferenceArgs.ProjectPath));
                     return 1;
                 }
@@ -98,10 +98,10 @@ namespace NuGet.CommandLine.XPlat
                     // Add an unconditional package reference to the project
                     packageReferenceArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                         Strings.Info_AddPkgCompatibleWithAllFrameworks,
-                        packageReferenceArgs.PackageIdentity.Id,
+                        packageReferenceArgs.PackageDependency.Id,
                         packageReferenceArgs.ProjectPath));
 
-                    msBuild.AddPackageReference(packageReferenceArgs.ProjectPath, packageReferenceArgs.PackageIdentity);
+                    msBuild.AddPackageReference(packageReferenceArgs.ProjectPath, packageReferenceArgs.PackageDependency);
                 }
                 else
                 {
@@ -112,10 +112,10 @@ namespace NuGet.CommandLine.XPlat
                         .Where(s => compatibleFrameworks.Contains(NuGetFramework.Parse(s)));
                     packageReferenceArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                         Strings.Info_AddPkgCompatibleWithSubsetFrameworks,
-                        packageReferenceArgs.PackageIdentity.Id,
+                        packageReferenceArgs.PackageDependency.Id,
                         packageReferenceArgs.ProjectPath));
 
-                    msBuild.AddPackageReferencePerTFM(packageReferenceArgs.ProjectPath, packageReferenceArgs.PackageIdentity, compatibleOriginalFrameworks);
+                    msBuild.AddPackageReferencePerTFM(packageReferenceArgs.ProjectPath, packageReferenceArgs.PackageDependency, compatibleOriginalFrameworks);
                 }
             }
             return 0;
@@ -123,11 +123,6 @@ namespace NuGet.CommandLine.XPlat
 
         private async Task<RestoreResultPair> PreviewAddPackageReference(PackageReferenceArgs packageReferenceArgs, DependencyGraphSpec dgSpec, PackageSpec originalPackageSpec)
         {
-            if (packageReferenceArgs == null)
-            {
-                throw new ArgumentNullException(nameof(packageReferenceArgs));
-            }
-
             // Set user agent and connection settings.
             XPlatUtility.ConfigureProtocol();
 
@@ -140,13 +135,11 @@ namespace NuGet.CommandLine.XPlat
 
                 // Pre-loaded request provider containing the graph file
                 var providers = new List<IPreLoadedRestoreRequestProvider>();
-                var defaultSettings = Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null);
-                var sourceProvider = new CachingSourceProvider(new PackageSourceProvider(defaultSettings));
 
                 // Create a copy to avoid modifying the original spec which may be shared.
                 var updatedPackageSpec = originalPackageSpec.Clone();
 
-                PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, packageReferenceArgs.PackageIdentity);
+                PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, packageReferenceArgs.PackageDependency);
 
                 providers.Add(new DependencyGraphSpecRequestProvider(providerCache, dgSpec));
 
@@ -154,17 +147,12 @@ namespace NuGet.CommandLine.XPlat
                 {
                     CacheContext = cacheContext,
                     LockFileVersion = LockFileFormat.Version,
-                    DisableParallel = true,
                     Log = packageReferenceArgs.Logger,
                     MachineWideSettings = new XPlatMachineWideSetting(),
+                    GlobalPackagesFolder = packageReferenceArgs.PackageDirectory,
                     PreLoadedRequestProviders = providers,
-                    CachingSourceProvider = sourceProvider
+                    Sources = packageReferenceArgs.Sources.ToList()
                 };
-
-                if (restoreContext.DisableParallel)
-                {
-                    HttpSourceResourceProvider.Throttle = SemaphoreSlimThrottle.CreateBinarySemaphore();
-                }
 
                 // Generate Restore Requests. There will always be 1 request here since we are restoring for 1 project.
                 var restoreRequests = await RestoreRunner.GetRequests(restoreContext);

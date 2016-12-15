@@ -36,7 +36,8 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "--dotnet", "dotnet_foo", "--project", "project_foo", "-f", "net46;netcoreapp1.0", "-n")]
         [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "--dotnet", "dotnet_foo", "--project", "project_foo", "-f", "net46;netcoreapp1.0", "-n")]
         public void AddPkg_ArgParsing(string packageOption, string package, string versionOption, string version, string dotnetOption,
-            string dotnet, string projectOption, string project, string frameworkOption, string frameworkString, string noRestoreSwitch)
+            string dotnet, string projectOption, string project, string frameworkOption, string frameworkString, string sourceOption,
+            string sourceString, string packageDirectoryOption, string packageDirectory, string noRestoreSwitch)
         {
             // Arrange
             Assert.NotNull(DotnetCli);
@@ -57,6 +58,15 @@ namespace NuGet.XPlat.FuncTest
             {
                 argList.Add(frameworkOption);
                 argList.Add(frameworkString);
+            }
+            if (!string.IsNullOrEmpty(sourceOption))
+            {
+                argList.Add(sourceOption);
+                argList.Add(sourceString);
+            }
+            if (!string.IsNullOrEmpty(packageDirectoryOption))
+            {
+                argList.Add(packageDirectoryOption);
             }
             if (!string.IsNullOrEmpty(noRestoreSwitch))
             {
@@ -79,13 +89,14 @@ namespace NuGet.XPlat.FuncTest
             var exitCode = testApp.Execute(argList.ToArray());
 
             // Assert
-            mockCommandRunner.Verify(m => m.ExecuteCommand(It.Is<PackageReferenceArgs>(p => p.PackageIdentity.Id == package &&
-            p.PackageIdentity.Version.ToNormalizedString() == version &&
+            mockCommandRunner.Verify(m => m.ExecuteCommand(It.Is<PackageReferenceArgs>(p => p.PackageDependency.Id == package &&
+            p.PackageDependency.VersionRange.OriginalString == version &&
             p.ProjectPath == project &&
             p.DotnetPath == dotnet &&
-            p.HasFrameworks == !string.IsNullOrEmpty(frameworkOption) &&
             p.NoRestore == !string.IsNullOrEmpty(noRestoreSwitch) &&
-            (!p.HasFrameworks || p.Frameworks.SequenceEqual(StringUtility.Split(frameworkString)))),
+            (string.IsNullOrEmpty(frameworkOption) || !string.IsNullOrEmpty(frameworkOption) && p.Frameworks.SequenceEqual(StringUtility.Split(frameworkString))) &&
+            (string.IsNullOrEmpty(sourceOption) || !string.IsNullOrEmpty(sourceOption) && p.Sources.SequenceEqual(StringUtility.Split(sourceString))) &&
+            (string.IsNullOrEmpty(packageDirectoryOption) || !string.IsNullOrEmpty(packageDirectoryOption) && p.PackageDirectory == packageDirectory)),
             It.IsAny<MSBuildAPIUtility>()));
 
             Assert.Equal(exitCode, 0);
@@ -142,9 +153,9 @@ namespace NuGet.XPlat.FuncTest
                     project };
 
                 var logger = new TestCommandOutputLogger();
-                var packageIdentity = new PackageIdentity(package, new NuGetVersion(version));
+                var packageDependency = new PackageDependency(package, VersionRange.Parse(version));
                 var settings = Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null);
-                var packageArgs = new PackageReferenceArgs(dotnet, project, packageIdentity, settings, logger, noRestore: false);
+                var packageArgs = new PackageReferenceArgs(dotnet, project, packageDependency, settings, logger);
                 var commandRunner = new AddPackageReferenceCommandRunner();
                 var msBuild = new MSBuildAPIUtility();
                 // Act

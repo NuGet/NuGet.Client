@@ -54,49 +54,51 @@ namespace NuGet.CommandLine.XPlat
         /// Add an unconditional package reference to the project.
         /// </summary>
         /// <param name="projectPath">Path to the csproj file of the project.</param>
-        /// <param name="packageIdentity">Package Identity of the package to be added.</param>
-        public void AddPackageReference(string projectPath, PackageIdentity packageIdentity)
+        /// <param name="packageDependency">Package Dependency of the package to be added.</param>
+        public void AddPackageReference(string projectPath, PackageDependency packageDependency)
         {
             var project = GetProject(projectPath);
-            var existingPackageReferences = GetPackageReferencesForAllFrameworks(project, packageIdentity);
-            AddPackageReference(project, packageIdentity, existingPackageReferences);
+
+            // Here we get package references for any framework.
+            // If the project has a conditional reference, then an unconditional reference is not added.
+
+            var existingPackageReferences = GetPackageReferencesForAllFrameworks(project, packageDependency);
+            AddPackageReference(project, packageDependency, existingPackageReferences);
         }
 
         /// <summary>
         /// Add conditional package reference to the project per target framework.
         /// </summary>
         /// <param name="projectPath">Path to the csproj file of the project.</param>
-        /// <param name="packageIdentity">Package Identity of the package to be added.</param>
+        /// <param name="packageDependency">Package Dependency of the package to be added.</param>
         /// <param name="frameworks">Target Frameworks for which the package reference should be added.</param>
-        public void AddPackageReferencePerTFM(string projectPath, PackageIdentity packageIdentity, IEnumerable<string> frameworks)
+        public void AddPackageReferencePerTFM(string projectPath, PackageDependency packageDependency, IEnumerable<string> frameworks)
         {
             foreach (var framework in frameworks)
             {
                 var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { { "TargetFramework", framework } };
                 var project = GetProject(projectPath, globalProperties);
-                var existingPackageReferences = GetPackageReferences(project, packageIdentity);
-                AddPackageReference(project, packageIdentity, existingPackageReferences, framework);
+                var existingPackageReferences = GetPackageReferences(project, packageDependency);
+                AddPackageReference(project, packageDependency, existingPackageReferences, framework);
             }
         }
 
-        private void AddPackageReference(Project project, PackageIdentity packageIdentity, IEnumerable<ProjectItem> existingPackageReferences, string framework = null)
+        private void AddPackageReference(Project project, PackageDependency packageDependency, IEnumerable<ProjectItem> existingPackageReferences, string framework = null)
         {
             var itemGroups = GetItemGroups(project);
 
             if (existingPackageReferences.Count() == 0)
             {
                 // Add packageReference only if it does not exist.
-                var itemGroup = GetItemGroup(project, itemGroups, PACKAGE_REFERENCE_TYPE_TAG);
-                if (framework != null)
-                {
-                    itemGroup.Condition = GetTargetFrameworkCondition(framework);
-                }
-                AddPackageReferenceIntoItemGroup(itemGroup, packageIdentity);
+
+                var itemGroup = GetItemGroup(project, itemGroups, PACKAGE_REFERENCE_TYPE_TAG) ?? CreateItemGroup(project, framework);
+                AddPackageReferenceIntoItemGroup(itemGroup, packageDependency);
             }
             else
             {
                 // If the package already has a reference then try to update the reference.
-                UpdatePackageReferenceItems(existingPackageReferences, packageIdentity);
+
+                UpdatePackageReferenceItems(existingPackageReferences, packageDependency);
             }
             project.Save();
         }
@@ -109,27 +111,34 @@ namespace NuGet.CommandLine.XPlat
                 .Distinct();
         }
 
+        /// <summary>
+        /// Get an itemGroup that will contains a package reference tag and meets the condition.
+        /// </summary>
+        /// <param name="project">Project from which item group has to be obtained</param>
+        /// <param name="itemGroups">List of all item groups in the project</param>
+        /// <param name="itemType">An item type tag that must be in the item group. It if PackageReference in this case.</param>
+        /// <returns>An ItemGroup, which could be null.</returns>
         private ProjectItemGroupElement GetItemGroup(Project project, IEnumerable<ProjectItemGroupElement> itemGroups, string itemType)
         {
             var itemGroup = itemGroups?
                 .Where(itemGroupElement => itemGroupElement.Items.Any(item => item.ItemType == itemType))?
                 .FirstOrDefault();
 
-            // itemGroup will contain be an item group that has a package reference tag and meets the condition.
-            // itemGroup could be null here.
-
-            if (itemGroup == null)
-            {
-                // This means that either no item groups exist that match the condition
-                // or they do not have a package reference tag
-
-                itemGroup = project.Xml.AddItemGroup();
-            }
-
             return itemGroup;
         }
 
-        private void UpdatePackageReferenceItems(IEnumerable<ProjectItem> packageReferencesItems, PackageIdentity packageIdentity)
+        private ProjectItemGroupElement CreateItemGroup(Project project, string framework = null)
+        {
+            // Create a new item group and add a condition if given
+            var itemGroup = project.Xml.AddItemGroup();
+            if (framework != null)
+            {
+                itemGroup.Condition = GetTargetFrameworkCondition(framework);
+            }
+            return itemGroup;
+        }
+
+        private void UpdatePackageReferenceItems(IEnumerable<ProjectItem> packageReferencesItems, PackageDependency packageDependency)
         {
             foreach (var packageReferenceItem in packageReferencesItems)
             {
@@ -139,23 +148,24 @@ namespace NuGet.CommandLine.XPlat
                     .FirstOrDefault();
                 if (versionMetadata == null)
                 {
-                    packageReferenceItem.SetMetadataValue(VERSION_TAG, packageIdentity.Version.ToNormalizedString());
+                    packageReferenceItem.SetMetadataValue(VERSION_TAG, packageDependency.VersionRange.OriginalString);
                 }
                 else
                 {
-                    versionMetadata.UnevaluatedValue = packageIdentity.Version.ToNormalizedString();
+                    versionMetadata.UnevaluatedValue = packageDependency.VersionRange.OriginalString;
                 }
             }
         }
 
-        private void AddPackageReferenceIntoItemGroup(ProjectItemGroupElement itemGroup, PackageIdentity packageIdentity)
+        private void AddPackageReferenceIntoItemGroup(ProjectItemGroupElement itemGroup, PackageDependency packageDependency)
         {
-            var packageMetadata = new Dictionary<string, string> { { VERSION_TAG, packageIdentity.Version.ToString() } };
+            var packageMetadata = new Dictionary<string, string> { { VERSION_TAG, packageDependency.VersionRange.OriginalString } };
 
             // Currently metadata is added as a metadata. As opposed to an attribute
             // Due to https://github.com/Microsoft/msbuild/issues/1393
 
-            itemGroup.AddItem(PACKAGE_REFERENCE_TYPE_TAG, packageIdentity.Id, packageMetadata);
+            itemGroup.AddItem(PACKAGE_REFERENCE_TYPE_TAG, packageDependency.Id, packageMetadata);
+            itemGroup.ContainingProject.Save();
         }
 
         /// <summary>
@@ -164,25 +174,25 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="project">Project for which the package references have to be obtained.
         /// The project should have the global property set to have a specific framework</param>
-        /// <param name="packageIdentity">Identity of the package.</param>
+        /// <param name="packageDependency">Dependency of the package.</param>
         /// <returns>List of Items containing the package reference for the package.</returns>
-        private IEnumerable<ProjectItem> GetPackageReferences(Project project, PackageIdentity packageIdentity)
+        private IEnumerable<ProjectItem> GetPackageReferences(Project project, PackageDependency packageDependency)
         {
             return project.AllEvaluatedItems
                 .Where(item => item.ItemType.Equals(PACKAGE_REFERENCE_TYPE_TAG, StringComparison.OrdinalIgnoreCase) &&
-                               item.EvaluatedInclude.Equals(packageIdentity.Id, StringComparison.OrdinalIgnoreCase))
+                               item.EvaluatedInclude.Equals(packageDependency.Id, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
 
         /// <summary>
         /// Returns all package references after evaluating the condition on the item groups.
-        /// This method is used when we need package references for a specific target framework.
+        /// This method is used when we need package references for all target frameworks.
         /// </summary>
         /// <param name="project">Project for which the package references have to be obtained.
         /// The project should have the global property set to have a specific framework</param>
-        /// <param name="packageIdentity">Identity of the package.</param>
+        /// <param name="packageDependency">Dependency of the package.</param>
         /// <returns>List of Items containing the package reference for the package.</returns>
-        private IEnumerable<ProjectItem> GetPackageReferencesForAllFrameworks(Project project, PackageIdentity packageIdentity)
+        private IEnumerable<ProjectItem> GetPackageReferencesForAllFrameworks(Project project, PackageDependency packageDependency)
         {
             var frameworks = GetProjectFrameworks(project);
             var mergedPackageReferences = new List<ProjectItem>();
@@ -193,7 +203,7 @@ namespace NuGet.CommandLine.XPlat
 
                 mergedPackageReferences.AddRange(projectPerFramework.AllEvaluatedItems
                 .Where(item => item.ItemType.Equals(PACKAGE_REFERENCE_TYPE_TAG, StringComparison.OrdinalIgnoreCase) &&
-                               item.EvaluatedInclude.Equals(packageIdentity.Id, StringComparison.OrdinalIgnoreCase)));
+                               item.EvaluatedInclude.Equals(packageDependency.Id, StringComparison.OrdinalIgnoreCase)));
             }
             return mergedPackageReferences;
         }

@@ -13,53 +13,35 @@ namespace NuGet.CommandLine.XPlat
     {
         public string DotnetPath { get; }
         public string ProjectPath { get; }
-        public PackageIdentity PackageIdentity { get; }
+        public PackageDependency PackageDependency { get; }
         public ISettings Settings { get; }
         public ILogger Logger { get; }
-        public string[] Frameworks { get; }
-        public bool HasFrameworks { get; }
-        public bool NoRestore { get; }
+        public string[] Frameworks { get; set; }
+        public string[] Sources { get; set; }
+        public string PackageDirectory { get; set; }
+        public bool NoRestore { get; set; }
 
-        public PackageReferenceArgs(string dotnetPath, string projectPath, PackageIdentity packageIdentity, ISettings settings, ILogger logger, bool noRestore, string frameworks)
+        public PackageReferenceArgs(string dotnetPath, string projectPath, PackageDependency packageDependency, ISettings settings, ILogger logger)
         {
-            if (dotnetPath == null)
-            {
-                throw new ArgumentNullException(nameof(dotnetPath));
-            }
-            else if (projectPath == null)
-            {
-                throw new ArgumentNullException(nameof(projectPath));
-            }
-            else if (packageIdentity == null)
-            {
-                throw new ArgumentNullException(nameof(packageIdentity));
-            }
-            else if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
-            else if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
+            ValidateArgument(dotnetPath);
+            ValidateArgument(projectPath);
+            ValidateArgument(packageDependency);
+            ValidateArgument(settings);
+            ValidateArgument(logger);
 
             ProjectPath = projectPath;
-            PackageIdentity = packageIdentity;
+            PackageDependency = packageDependency;
             Settings = settings;
             Logger = logger;
             DotnetPath = dotnetPath;
-            NoRestore = noRestore;
-
-            if (frameworks != null)
-            {
-                HasFrameworks = true;
-                Frameworks = StringUtility.Split(frameworks);
-            }
         }
 
-        public PackageReferenceArgs(string dotnetPath, string projectPath, PackageIdentity packageIdentity, ISettings settings, ILogger logger, bool noRestore) :
-            this(dotnetPath, projectPath, packageIdentity, settings, logger, noRestore, frameworks: null)
+        private void ValidateArgument(object arg)
         {
+            if (arg == null)
+            {
+                throw new ArgumentNullException(nameof(arg));
+            }
         }
     }
 }
