@@ -30,7 +30,7 @@
       "target": "project"
     },
     "System.Runtime.Serialization.Primitives": "4.1.1",
-    "Microsoft.Build.Runtime": "15.1.319-preview5"
+    "Microsoft.Build.Runtime": "15.1.0-preview-000370-00"
   },
   "commands": {
     "NuGet.CommandLine.XPlat": "NuGet.CommandLine.XPlat"

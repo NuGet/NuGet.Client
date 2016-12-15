@@ -110,7 +110,7 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("PkgX", "1.0.0", "*")]
         [InlineData("PkgX", "1.0.0", "1.*")]
         [InlineData("PkgX", "1.0.0", "1.0.*")]
-        public async void AddPkg_UnconditionalAddWithoutFramework(string package, string packageVersion, string userInputVersion)
+        public async void AddPkg_UnconditionalAdd(string package, string packageVersion, string userInputVersion)
         {
             // Arrange
             Assert.NotNull(DotnetCli);
@@ -144,6 +144,94 @@ namespace NuGet.XPlat.FuncTest
                     Id = package,
                     Version = packageVersion
                 };
+                projectA.Save();
+
+                var dotnet = DotnetCli;
+                var project = projectA.ProjectPath;
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                var argList = new List<string>() {
+                    "addpkg",
+                    "--package",
+                    package,
+                    "--version",
+                    userInputVersion,
+                    "--dotnet",
+                    dotnet,
+                    "--project",
+                    project };
+
+                var logger = new TestCommandOutputLogger();
+                var packageDependency = new PackageDependency(package, VersionRange.Parse(userInputVersion));
+                var packageArgs = new PackageReferenceArgs(dotnet, project, packageDependency, logger)
+                {
+                    Frameworks = StringUtility.Split(frameworks),
+                    Sources = StringUtility.Split(sources),
+                    PackageDirectory = packageDirectory,
+                    NoRestore = noRestore
+                };
+                var commandRunner = new AddPackageReferenceCommandRunner();
+                var msBuild = new MSBuildAPIUtility();
+
+                // Act
+                var result = commandRunner.ExecuteCommand(packageArgs, msBuild);
+
+                // Assert
+                Assert.Equal(result, 0);
+                var projectXmlRoot = LoadCSProj(projectA.ProjectPath)
+                    .Root;
+                Assert.True(ValidateReference(projectXmlRoot, package, userInputVersion));
+            }
+        }
+
+        [Theory]
+        [InlineData("PkgX", "1.0.0", "1.0.0")]
+        [InlineData("PkgX", "1.0.0", "*")]
+        [InlineData("PkgX", "1.0.0", "1.*")]
+        [InlineData("PkgX", "1.0.0", "1.0.*")]
+        public async void AddPkg_ConditionalAddWithoutFramework(string package, string packageVersion, string userInputVersion)
+        {
+            // Arrange
+            Assert.NotNull(DotnetCli);
+            Assert.NotNull(XplatDll);
+
+            var projectName = "test_project_a";
+            var frameworks = "";
+            var sources = "";
+            var packageDirectory = "";
+            var noRestore = false;
+
+            Console.WriteLine("Waiting for debugger to attach.");
+            Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
+
+            while (!Debugger.IsAttached)
+            {
+                System.Threading.Thread.Sleep(100);
+            }
+            Debugger.Break();
+
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                    projectName,
+                    pathContext.SolutionRoot,
+                    true,
+                    NuGetFramework.Parse("netcoreapp1.0"),
+                    NuGetFramework.Parse("net46"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = package,
+                    Version = packageVersion
+                };
+
+                // Make package compatible only with net46
+                packageX.AddFile("lib/net46/a.dll");
+
                 projectA.Save();
 
                 var dotnet = DotnetCli;
