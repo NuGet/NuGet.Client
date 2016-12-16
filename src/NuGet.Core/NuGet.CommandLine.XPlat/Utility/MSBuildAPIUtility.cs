@@ -24,7 +24,7 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="projectCSProjPath">CSProj file which needs to be evaluated</param>
         /// <returns>MSBuild.Evaluation.Project</returns>
-        public Project GetProject(string projectCSProjPath)
+        private Project GetProject(string projectCSProjPath)
         {
             var projectRootElement = TryOpenProjectRootElement(projectCSProjPath);
             if (projectCSProjPath == null)
@@ -40,7 +40,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="projectCSProjPath">CSProj file which needs to be evaluated</param>
         /// <param name="globalProperties">Global properties that should be used to evaluate the project while opening.</param>
         /// <returns>MSBuild.Evaluation.Project</returns>
-        public Project GetProject(string projectCSProjPath, IDictionary<string, string> globalProperties)
+        private Project GetProject(string projectCSProjPath, IDictionary<string, string> globalProperties)
         {
             var projectRootElement = TryOpenProjectRootElement(projectCSProjPath);
             if (projectCSProjPath == null)
@@ -64,6 +64,7 @@ namespace NuGet.CommandLine.XPlat
 
             var existingPackageReferences = GetPackageReferencesForAllFrameworks(project, packageDependency);
             AddPackageReference(project, packageDependency, existingPackageReferences);
+            ProjectCollection.GlobalProjectCollection.UnloadProject(project);
         }
 
         /// <summary>
@@ -80,6 +81,7 @@ namespace NuGet.CommandLine.XPlat
                 var project = GetProject(projectPath, globalProperties);
                 var existingPackageReferences = GetPackageReferences(project, packageDependency);
                 AddPackageReference(project, packageDependency, existingPackageReferences, framework);
+                ProjectCollection.GlobalProjectCollection.UnloadProject(project);
             }
         }
 
@@ -204,6 +206,7 @@ namespace NuGet.CommandLine.XPlat
                 mergedPackageReferences.AddRange(projectPerFramework.AllEvaluatedItems
                 .Where(item => item.ItemType.Equals(PACKAGE_REFERENCE_TYPE_TAG, StringComparison.OrdinalIgnoreCase) &&
                                item.EvaluatedInclude.Equals(packageDependency.Id, StringComparison.OrdinalIgnoreCase)));
+                ProjectCollection.GlobalProjectCollection.UnloadProject(projectPerFramework);
             }
             return mergedPackageReferences;
         }
