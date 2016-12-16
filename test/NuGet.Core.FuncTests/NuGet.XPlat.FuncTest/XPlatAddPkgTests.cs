@@ -22,437 +22,342 @@ namespace NuGet.XPlat.FuncTest
     {
         private static readonly string DotnetCli = DotnetCliUtil.GetDotnetCli(getLatestCli: true);
         private static readonly string XplatDll = DotnetCliUtil.GetXplatDll();
+        private static readonly string projectName = "test_project_addpkg";
+
+        // Add Related Tests
+        private SimpleTestProjectContext CreateProject(string projectName, SimpleTestPathContext pathContext, string projectFrameworks)
+        {
+            var projectFrameworkList = new List<NuGetFramework>();
+            StringUtility.Split(projectFrameworks)
+                .ToList()
+                .ForEach(f => projectFrameworkList.Add(NuGetFramework.Parse(f)));
+
+            var project = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                    projectName: projectName,
+                    solutionRoot: pathContext.SolutionRoot,
+                    isToolingVersion15: true,
+                    frameworks: projectFrameworkList.ToArray());
+
+            project.Save();
+            return project;
+        }
+
+        private SimpleTestPackageContext CreatePackage(string packageId = "packageX", string packageVersion = "1.0.0", string[] frameworks = null)
+        {
+            var package = new SimpleTestPackageContext()
+            {
+                Id = packageId,
+                Version = packageVersion
+            };
+
+            // Make the package Compatible with specific frameworks
+            frameworks?
+                .ToList()
+                .ForEach(f => package.AddFile($"lib/{f}/a.dll"));
+
+            // To ensure that the nuspec does not have System.Runtime.dll
+            package.Nuspec = GetNetCoreNuspec(packageId, packageVersion);
+
+            return package;
+        }
+
+        private PackageReferenceArgs GetPackageReferenceArgs(string packageId, string packageVersion, string projectPath,
+            string frameworks = "", string packageDirectory = "", string sources = "", bool noRestore = false)
+        {
+            var logger = new TestCommandOutputLogger();
+            var packageDependency = new PackageDependency(packageId, VersionRange.Parse(packageVersion));
+
+            return new PackageReferenceArgs(DotnetCli, projectPath, packageDependency, logger)
+            {
+                Frameworks = StringUtility.Split(frameworks),
+                Sources = StringUtility.Split(sources),
+                PackageDirectory = packageDirectory,
+                NoRestore = noRestore
+            };
+        }
+
+        private string GetCommonFramework(string frameworkStringA, string frameworkStringB, string frameworkStringC)
+        {
+            var frameworksA = StringUtility.Split(frameworkStringA);
+            var frameworksB = StringUtility.Split(frameworkStringB);
+            var frameworksC = StringUtility.Split(frameworkStringC);
+            return frameworksA.ToList()
+                .Intersect(frameworksB.ToList())
+                .Intersect(frameworksC.ToList())
+                .First();
+        }
+
+        private string GetCommonFramework(string frameworkStringA, string frameworkStringB)
+        {
+            var frameworksA = StringUtility.Split(frameworkStringA);
+            var frameworksB = StringUtility.Split(frameworkStringB);
+            return frameworksA.ToList()
+                .Intersect(frameworksB.ToList())
+                .First();
+        }
 
         [Theory]
-        [InlineData("PkgX", "1.0.0", "1.0.0")]
-        [InlineData("PkgX", "1.0.0", "*")]
-        [InlineData("PkgX", "1.0.0", "1.*")]
-        [InlineData("PkgX", "1.0.0", "1.0.*")]
-        public async void AddPkg_UnconditionalAdd_Success(string package, string packageVersion, string userInputVersion)
+        [InlineData("1.0.0")]
+        [InlineData("*")]
+        [InlineData("1.*")]
+        [InlineData("1.0.*")]
+        public async void AddPkg_UnconditionalAdd_Success(string userInputVersion)
         {
             // Arrange
-            Assert.NotNull(DotnetCli);
-            Assert.NotNull(XplatDll);
-
-            var projectName = "test_project_a";
-            var frameworks = "";
-            var sources = "";
-            var packageDirectory = "";
-            var noRestore = false;
+            AssertDotnetAndXPlatPaths();
 
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
-                    projectName,
-                    pathContext.SolutionRoot,
-                    true,
-                    NuGetFramework.Parse("netcoreapp1.0"));
+                var projectA = CreateProject(projectName, pathContext, "net46");
+                var packageX = CreatePackage();
 
-                var packageX = new SimpleTestPackageContext()
-                {
-                    Id = package,
-                    Version = packageVersion
-                };
-                projectA.Save();
-
-                var dotnet = DotnetCli;
-                var project = projectA.ProjectPath;
-
+                // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV3(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
 
-                var argList = new List<string>() {
-                    "addpkg",
-                    "--package",
-                    package,
-                    "--version",
-                    userInputVersion,
-                    "--dotnet",
-                    dotnet,
-                    "--project",
-                    project };
-
-                var logger = new TestCommandOutputLogger();
-                var packageDependency = new PackageDependency(package, VersionRange.Parse(userInputVersion));
-                var packageArgs = new PackageReferenceArgs(dotnet, project, packageDependency, logger)
-                {
-                    Frameworks = StringUtility.Split(frameworks),
-                    Sources = StringUtility.Split(sources),
-                    PackageDirectory = packageDirectory,
-                    NoRestore = noRestore
-                };
+                var packageArgs = GetPackageReferenceArgs(packageX.Id, userInputVersion, projectA.ProjectPath);
                 var commandRunner = new AddPackageReferenceCommandRunner();
-                var msBuild = new MSBuildAPIUtility();
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, msBuild);
+                var result = commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility());
                 var projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
 
                 // Assert
                 Assert.Equal(0, result);
-                Assert.True(ValidateReference(projectXmlRoot, package, userInputVersion));
+                Assert.True(ValidateReference(projectXmlRoot, packageX.Id, userInputVersion));
             }
         }
 
         [Theory]
-        [InlineData("PkgX", "1.0.0", "1.0.0", "net46")]
-        [InlineData("PkgX", "1.0.0", "*", "net46")]
-        [InlineData("PkgX", "1.0.0", "1.*", "net46")]
-        [InlineData("PkgX", "1.0.0", "1.0.*", "net46")]
-        [InlineData("PkgX", "1.0.0", "1.0.0", "netcoreapp1.0")]
-        [InlineData("PkgX", "1.0.0", "*", "netcoreapp1.0")]
-        [InlineData("PkgX", "1.0.0", "1.*", "netcoreapp1.0")]
-        [InlineData("PkgX", "1.0.0", "1.0.*", "netcoreapp1.0")]
-        public async void AddPkg_ConditionalAddWithoutFramework_Success(string package, string packageVersion, string userInputVersion, string packageFramework)
+        [InlineData("net46", "net46; netcoreapp1.0", "1.0.0")]
+        [InlineData("net46", "net46; netcoreapp1.0", "*")]
+        public async void AddPkg_ConditionalAddWithoutUserInputFramework_Success(string packageFrameworks,
+            string projectFrameworks, string userInputVersion)
         {
             // Arrange
-            Assert.NotNull(DotnetCli);
-            Assert.NotNull(XplatDll);
-
-            var projectName = "test_project_a";
-            var frameworks = "";
-            var sources = "";
-            var packageDirectory = "";
-            var noRestore = false;
-
+            AssertDotnetAndXPlatPaths();
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
-                    projectName,
-                    pathContext.SolutionRoot,
-                    true,
-                    NuGetFramework.Parse("netcoreapp1.0"),
-                    NuGetFramework.Parse("net46"));
+                var projectA = CreateProject(projectName, pathContext, projectFrameworks);
+                var packageX = CreatePackage(frameworks: StringUtility.Split(packageFrameworks));
 
-                var packageX = new SimpleTestPackageContext()
-                {
-                    Id = package,
-                    Version = packageVersion
-                };
-
-                // Make package compatible only with net46
-                packageX.AddFile($"lib/{packageFramework}/a.dll");
-
-                packageX.Nuspec = GetNetCoreNuspec(package, packageVersion);
-
-                projectA.Save();
-
-                var dotnet = DotnetCli;
-                var project = projectA.ProjectPath;
-
+                // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV3(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
 
-                var argList = new List<string>() {
-                    "addpkg",
-                    "--package",
-                    package,
-                    "--version",
-                    userInputVersion,
-                    "--dotnet",
-                    dotnet,
-                    "--project",
-                    project };
-
-                var logger = new TestCommandOutputLogger();
-                var packageDependency = new PackageDependency(package, VersionRange.Parse(userInputVersion));
-                var packageArgs = new PackageReferenceArgs(dotnet, project, packageDependency, logger)
-                {
-                    Frameworks = StringUtility.Split(frameworks),
-                    Sources = StringUtility.Split(sources),
-                    PackageDirectory = packageDirectory,
-                    NoRestore = noRestore
-                };
+                var packageArgs = GetPackageReferenceArgs(packageX.Id, userInputVersion, projectA.ProjectPath);
                 var commandRunner = new AddPackageReferenceCommandRunner();
-                var msBuild = new MSBuildAPIUtility();
+                var commonFramework = GetCommonFramework(packageFrameworks, projectFrameworks);
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, msBuild);
+                var result = commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility());
                 var projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
-                var itemGroup = GetItemGroupForFramework(projectXmlRoot, packageFramework);
-                // Assert
-
-                Assert.Equal(0, result);
-                Assert.NotNull(itemGroup);
-                Assert.True(ValidateReference(itemGroup, package, userInputVersion));
-            }
-        }
-
-        [Theory]
-        [InlineData("PkgX", "1.0.0", "1.0.0", "net46", "net46")]
-        [InlineData("PkgX", "1.0.0", "1.0.0", "netcoreapp1.0", "netcoreapp1.0")]
-        public async void AddPkg_ConditionalAddWithFramework_Success(string package, string packageVersion, string userInputVersion, string packageFramework, string userFramework)
-        {
-            // Arrange
-            Assert.NotNull(DotnetCli);
-            Assert.NotNull(XplatDll);
-
-            var projectName = "test_project_a";
-            var frameworks = "";
-            var sources = "";
-            var packageDirectory = "";
-            var noRestore = false;
-
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
-                    projectName,
-                    pathContext.SolutionRoot,
-                    true,
-                    NuGetFramework.Parse("netcoreapp1.0"),
-                    NuGetFramework.Parse("net46"));
-
-                var packageX = new SimpleTestPackageContext()
-                {
-                    Id = package,
-                    Version = packageVersion
-                };
-
-                // Make package compatible only with net46
-                packageX.AddFile($"lib/{packageFramework}/a.dll");
-
-                packageX.Nuspec = GetNetCoreNuspec(package, packageVersion);
-
-                projectA.Save();
-
-                var dotnet = DotnetCli;
-                var project = projectA.ProjectPath;
-
-                await SimpleTestPackageUtility.CreateFolderFeedV3(
-                    pathContext.PackageSource,
-                    PackageSaveMode.Defaultv3,
-                    packageX);
-
-                var argList = new List<string>() {
-                    "addpkg",
-                    "--package",
-                    package,
-                    "--version",
-                    userInputVersion,
-                    "--dotnet",
-                    dotnet,
-                    "--project",
-                    project ,
-                    "--frameworks",
-                    userFramework};
-
-                var logger = new TestCommandOutputLogger();
-                var packageDependency = new PackageDependency(package, VersionRange.Parse(userInputVersion));
-                var packageArgs = new PackageReferenceArgs(dotnet, project, packageDependency, logger)
-                {
-                    Frameworks = StringUtility.Split(frameworks),
-                    Sources = StringUtility.Split(sources),
-                    PackageDirectory = packageDirectory,
-                    NoRestore = noRestore
-                };
-                var commandRunner = new AddPackageReferenceCommandRunner();
-                var msBuild = new MSBuildAPIUtility();
-
-                // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, msBuild);
-                var projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
-                var itemGroup = GetItemGroupForFramework(projectXmlRoot, userFramework);
+                var itemGroup = GetItemGroupForFramework(projectXmlRoot, commonFramework);
 
                 // Assert
                 Assert.Equal(0, result);
                 Assert.NotNull(itemGroup);
-                Assert.True(ValidateReference(itemGroup, package, userInputVersion));
+                Assert.True(ValidateReference(itemGroup, packageX.Id, userInputVersion));
             }
         }
 
         [Theory]
-        [InlineData("PkgX", "1.0.0", "net46", "netcoreapp1.0")]
-        [InlineData("PkgX", "1.0.0", "netcoreapp1.0", "net46")]
-        public async void AddPkg_ConditionalAddWithFramework_Failure(string package, string packageVersion, string packageFramework, string userFramework)
+        [InlineData("net46", "net46; netcoreapp1.0", "net46")]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "net46")]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "netcoreapp1.0")]
+        [InlineData("net46", "net46; netcoreapp1.0", "net46; netcoreapp1.0")]
+        [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "net46; netcoreapp1.0")]
+        public async void AddPkg_ConditionalAddWithUserInputFramework_Success(string packageFrameworks, string projectFrameworks, string userInputFrameworks)
         {
             // Arrange
-            Assert.NotNull(DotnetCli);
-            Assert.NotNull(XplatDll);
-
-            var projectName = "test_project_a";
-            var frameworks = userFramework;
-            var sources = "";
-            var packageDirectory = "";
-            var noRestore = false;
-
+            AssertDotnetAndXPlatPaths();
+            //WaitForDebugger();
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
-                    projectName,
-                    pathContext.SolutionRoot,
-                    true,
-                    NuGetFramework.Parse("netcoreapp1.0"),
-                    NuGetFramework.Parse("net46"));
+                var projectA = CreateProject(projectName, pathContext, "net46; netcoreapp1.0");
+                var packageX = CreatePackage(frameworks: StringUtility.Split(packageFrameworks));
 
-                var packageX = new SimpleTestPackageContext()
-                {
-                    Id = package,
-                    Version = packageVersion
-                };
-
-                // Make package compatible only with net46
-                packageX.AddFile($"lib/{packageFramework}/a.dll");
-
-                packageX.Nuspec = GetNetCoreNuspec(package, packageVersion);
-
-                projectA.Save();
-
-                var dotnet = DotnetCli;
-                var project = projectA.ProjectPath;
-
+                // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV3(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
 
-                var argList = new List<string>() {
-                    "addpkg",
-                    "--package",
-                    package,
-                    "--version",
-                    packageVersion,
-                    "--dotnet",
-                    dotnet,
-                    "--project",
-                    project ,
-                    "--frameworks",
-                    userFramework};
-
-                var logger = new TestCommandOutputLogger();
-                var packageDependency = new PackageDependency(package, VersionRange.Parse(packageVersion));
-                var packageArgs = new PackageReferenceArgs(dotnet, project, packageDependency, logger)
-                {
-                    Frameworks = StringUtility.Split(frameworks),
-                    Sources = StringUtility.Split(sources),
-                    PackageDirectory = packageDirectory,
-                    NoRestore = noRestore
-                };
+                var packageArgs = GetPackageReferenceArgs(packageX.Id, packageX.Version, projectA.ProjectPath,
+                    frameworks: userInputFrameworks);
                 var commandRunner = new AddPackageReferenceCommandRunner();
-                var msBuild = new MSBuildAPIUtility();
+                var commonFramework = GetCommonFramework(packageFrameworks, projectFrameworks, userInputFrameworks);
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, msBuild);
+                var result = commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility());
+                var projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
+                var itemGroup = GetItemGroupForFramework(projectXmlRoot, commonFramework);
+
+                // Assert
+                Assert.Equal(0, result);
+                Assert.NotNull(itemGroup);
+                Assert.True(ValidateReference(itemGroup, packageX.Id, packageX.Version));
+            }
+        }
+
+        [Theory]
+        [InlineData("net46", "netcoreapp1.0")]
+        [InlineData("netcoreapp1.0", "net46")]
+        [InlineData("net46", "unknown_framework")]
+        [InlineData("netcoreapp1.0", "unknown_framework")]
+        [InlineData("net46; netcoreapp1.0", "unknown_framework")]
+        public async void AddPkg_Failure(string packageFrameworks, string userInputFrameworks)
+        {
+            // Arrange
+            AssertDotnetAndXPlatPaths();
+
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectA = CreateProject(projectName, pathContext, "net46; netcoreapp1.0");
+                var packageX = CreatePackage(frameworks: StringUtility.Split(packageFrameworks));
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                var packageArgs = GetPackageReferenceArgs(packageX.Id, packageX.Version, projectA.ProjectPath,
+                    frameworks: userInputFrameworks);
+                var commandRunner = new AddPackageReferenceCommandRunner();
+
+                // Act
+                var result = commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility());
                 var projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
 
                 // Assert
                 Assert.Equal(1, result);
-                Assert.True(ValidateNoReference(projectXmlRoot, package));
+                Assert.True(ValidateNoReference(projectXmlRoot, packageX.Id));
             }
         }
 
         [Theory]
-        [InlineData("PkgX", "1.0.0", "0.0.5", "1.0.0")]
-        [InlineData("PkgX", "1.0.0", "0.0.5", "0.9")]
-        [InlineData("PkgX", "1.0.0", "*", "1.0.0")]
-        [InlineData("PkgX", "1.0.0", "0.0.5", "*")]
-        [InlineData("PkgX", "1.0.0", "0.0.5", "1.*")]
-        [InlineData("PkgX", "1.0.0", "0.0.5", "1.0.*")]
-        public async void AddPkg_UnconditionalAddAsUpdate_Succcess(string package, string packageVersion, string userInputVersionOld, string userInputVersionNew)
+        [InlineData("0.0.5", "1.0.0")]
+        [InlineData("0.0.5", "0.9")]
+        [InlineData("0.0.5", "*")]
+        [InlineData("*", "1.0.0")]
+        [InlineData("*", "0.9")]
+        [InlineData("*", "1.*")]
+        public async void AddPkg_UnconditionalAddAsUpdate_Succcess(string userInputVersionOld, string userInputVersionNew)
         {
             // Arrange
-            Assert.NotNull(DotnetCli);
-            Assert.NotNull(XplatDll);
-
-            var projectName = "test_project_a";
-            var frameworks = "";
-            var sources = "";
-            var packageDirectory = "";
-            var noRestore = false;
-
-            //WaitForDebugger();
+            AssertDotnetAndXPlatPaths();
 
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
-                    projectName,
-                    pathContext.SolutionRoot,
-                    true,
-                    NuGetFramework.Parse("netcoreapp1.0"),
-                    NuGetFramework.Parse("net46"));
+                var projectA = CreateProject(projectName, pathContext, "net46; netcoreapp1.0");
+                var packageX = CreatePackage();
 
-                var packageX = new SimpleTestPackageContext()
-                {
-                    Id = package,
-                    Version = packageVersion
-                };
-
-                packageX.Nuspec = GetNetCoreNuspec(package, packageVersion);
-
-                projectA.Save();
-
-                var dotnet = DotnetCli;
-                var project = projectA.ProjectPath;
-
+                // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV3(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
                     packageX);
 
-                var argList = new List<string>() {
-                    "addpkg",
-                    "--package",
-                    package,
-                    "--version",
-                    userInputVersionOld,
-                    "--dotnet",
-                    dotnet,
-                    "--project",
-                    project
-                    };
+                var packageArgs = GetPackageReferenceArgs(packageX.Id, userInputVersionOld, projectA.ProjectPath);
+                var commandRunner = new AddPackageReferenceCommandRunner();
 
-                var logger = new TestCommandOutputLogger();
-                var packageDependency = new PackageDependency(package, VersionRange.Parse(userInputVersionOld));
-                var packageArgs = new PackageReferenceArgs(dotnet, project, packageDependency, logger)
-                {
-                    Frameworks = StringUtility.Split(frameworks),
-                    Sources = StringUtility.Split(sources),
-                    PackageDirectory = packageDirectory,
-                    NoRestore = noRestore
-                };
+                // Create a package ref with the old version
+                var result = commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility());
+                var projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
+
+                packageArgs = GetPackageReferenceArgs(packageX.Id, userInputVersionNew, projectA.ProjectPath);
+                commandRunner = new AddPackageReferenceCommandRunner();
+
+                // Act
+                // Create a package ref with the new version
+                result = commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility());
+                projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
+
+                // Assert
+                // Verify that the only package reference is with the new version
+                Assert.Equal(0, result);
+                Assert.True(ValidateReference(projectXmlRoot, packageX.Id, userInputVersionNew));
+            }
+        }
+
+        [Theory]
+        [InlineData("net46", "net46; netcoreapp1.0", "net46", "0.0.5", "1.0.0")]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "net46", "0.0.5", "1.0.0")]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "netcoreapp1.0", "0.0.5", "1.0.0")]
+        [InlineData("net46", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "0.0.5", "1.0.0")]
+        [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "0.0.5", "1.0.0")]
+        [InlineData("net46", "net46; netcoreapp1.0", "net46", "0.0.5", "0.9")]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "net46", "0.0.5", "0.9")]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "netcoreapp1.0", "0.0.5", "0.9")]
+        [InlineData("net46", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "0.0.5", "0.9")]
+        [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "0.0.5", "0.9")]
+        [InlineData("net46", "net46; netcoreapp1.0", "net46", "0.0.5", "*")]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "net46", "0.0.5", "*")]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "netcoreapp1.0", "0.0.5", "*")]
+        [InlineData("net46", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "0.0.5", "*")]
+        [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "0.0.5", "*")]
+        [InlineData("net46", "net46; netcoreapp1.0", "net46", "*", "1.0.0")]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "net46", "*", "1.0.0")]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "netcoreapp1.0", "*", "1.0.0")]
+        [InlineData("net46", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "*", "1.0.0")]
+        [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "*", "1.0.0")]
+        [InlineData("net46", "net46; netcoreapp1.0", "net46", "*", "0.9")]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "net46", "*", "0.9")]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "netcoreapp1.0", "*", "0.9")]
+        [InlineData("net46", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "*", "0.9")]
+        [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "*", "0.9")]
+        [InlineData("net46", "net46; netcoreapp1.0", "net46", "*", "1.*")]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "net46", "*", "1.*")]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "netcoreapp1.0", "*", "1.*")]
+        [InlineData("net46", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "*", "1.*")]
+        [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "net46; netcoreapp1.0", "*", "1.*")]
+        public async void AddPkg_ConditionalAddAsUpdate_Succcess(string packageFrameworks, string projectFrameworks,
+            string userInputFrameworks, string userInputVersionOld, string userInputVersionNew)
+        {
+            // Arrange
+            AssertDotnetAndXPlatPaths();
+
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectA = CreateProject(projectName, pathContext, projectFrameworks);
+                var packageX = CreatePackage();
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                var packageArgs = GetPackageReferenceArgs(packageX.Id, userInputVersionOld, projectA.ProjectPath);
                 var commandRunner = new AddPackageReferenceCommandRunner();
                 var msBuild = new MSBuildAPIUtility();
 
-                // Create a package ref with version 0.0.5
-                var result = commandRunner.ExecuteCommand(packageArgs, msBuild);
+                // Create a package ref with old version
+                var result = commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility());
                 var projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
 
-                argList = new List<string>() {
-                    "addpkg",
-                    "--package",
-                    package,
-                    "--version",
-                    userInputVersionNew,
-                    "--dotnet",
-                    dotnet,
-                    "--project",
-                    project
-                    };
-
-                logger = new TestCommandOutputLogger();
-                packageDependency = new PackageDependency(package, VersionRange.Parse(userInputVersionNew));
-                packageArgs = new PackageReferenceArgs(dotnet, project, packageDependency, logger)
-                {
-                    Frameworks = StringUtility.Split(frameworks),
-                    Sources = StringUtility.Split(sources),
-                    PackageDirectory = packageDirectory,
-                    NoRestore = noRestore
-                };
+                packageArgs = GetPackageReferenceArgs(packageX.Id, userInputVersionNew, projectA.ProjectPath);
+                commandRunner = new AddPackageReferenceCommandRunner();
+                var commonFramework = GetCommonFramework(packageFrameworks, projectFrameworks, userInputFrameworks);
 
                 // Act
-                // Create a package ref with version 1.0.0
+                // Create a package ref with new version
                 result = commandRunner.ExecuteCommand(packageArgs, msBuild);
                 projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
 
                 // Assert
-                // Verify that the only package reference is with 1.0.0
+                // Verify that the only package reference is with the new version
                 Assert.Equal(0, result);
-                Assert.True(ValidateReference(projectXmlRoot, package, userInputVersionNew));
+                Assert.True(ValidateReference(projectXmlRoot, packageX.Id, userInputVersionNew));
             }
         }
+
+        // Update Related Tests
 
         private XElement GetItemGroupForFramework(XElement root, string framework)
         {
@@ -556,6 +461,12 @@ namespace NuGet.XPlat.FuncTest
                 System.Threading.Thread.Sleep(100);
             }
             Debugger.Break();
+        }
+
+        private void AssertDotnetAndXPlatPaths()
+        {
+            Assert.NotNull(DotnetCli);
+            Assert.NotNull(XplatDll);
         }
     }
 }
