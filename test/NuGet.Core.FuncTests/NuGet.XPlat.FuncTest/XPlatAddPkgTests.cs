@@ -241,6 +241,97 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Theory]
+        public async void AddPkg_UnconditionalAddTwoPackages_Success()
+        {
+            // Arrange
+            AssertDotnetAndXPlatPaths();
+
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectA = CreateProject(projectName, pathContext, "net46");
+                var packageX = CreatePackage("PkgX");
+                var packageY = CreatePackage("PkgY");
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageY);
+
+                var packageArgs = GetPackageReferenceArgs(packageX.Id, packageX.Version, projectA.ProjectPath);
+                var commandRunner = new AddPackageReferenceCommandRunner();
+
+                // Act
+                var result = commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility());
+                var projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
+
+                packageArgs = GetPackageReferenceArgs(packageY.Id, packageY.Version, projectA.ProjectPath);
+
+                // Act
+                result = commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility());
+                projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
+
+                // Assert
+                Assert.Equal(0, result);
+                Assert.True(ValidateTwoReferences(projectXmlRoot, packageX, packageY));
+            }
+        }
+
+        [Theory]
+        [InlineData("net46", "net46; netcoreapp1.0", "net46")]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "net46")]
+        [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "netcoreapp1.0")]
+        [InlineData("net46", "net46; netcoreapp1.0", "net46; netcoreapp1.0")]
+        [InlineData("netcoreapp1.0", "net46; netcoreapp1.0", "net46; netcoreapp1.0")]
+        public async void AddPkg_ConditionalAddTwoPackages_Success(string packageFrameworks, string projectFrameworks, string userInputFrameworks)
+        {
+            // Arrange
+            AssertDotnetAndXPlatPaths();
+            //WaitForDebugger();
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectA = CreateProject(projectName, pathContext, projectFrameworks);
+                var packageX = CreatePackage("PkgX", frameworks: StringUtility.Split(packageFrameworks));
+                var packageY = CreatePackage("PkgY", frameworks: StringUtility.Split(packageFrameworks));
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageY);
+
+                var packageArgs = GetPackageReferenceArgs(packageX.Id, packageX.Version, projectA.ProjectPath, frameworks: userInputFrameworks);
+                var commandRunner = new AddPackageReferenceCommandRunner();
+                var commonFramework = GetCommonFramework(packageFrameworks, projectFrameworks, userInputFrameworks);
+
+                // Act
+                var result = commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility());
+                var projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
+
+                packageArgs = GetPackageReferenceArgs(packageY.Id, packageY.Version, projectA.ProjectPath);
+
+                // Act
+                result = commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility());
+                projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
+                var itemGroup = GetItemGroupForFramework(projectXmlRoot, commonFramework);
+
+                // Assert
+                Assert.Equal(0, result);
+                Assert.True(ValidateTwoReferences(projectXmlRoot, packageX, packageY));
+            }
+        }
+
+        // Update Related Tests
+
+        [Theory]
         [InlineData("0.0.5", "1.0.0")]
         [InlineData("0.0.5", "0.9")]
         [InlineData("0.0.5", "*")]
@@ -357,8 +448,6 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        // Update Related Tests
-
         private XElement GetItemGroupForFramework(XElement root, string framework)
         {
             var itemGroups = root.Descendants("ItemGroup");
@@ -391,6 +480,12 @@ namespace NuGet.XPlat.FuncTest
                 return false;
             }
             return true;
+        }
+
+        private bool ValidateTwoReferences(XElement root, SimpleTestPackageContext packageX, SimpleTestPackageContext packageY)
+        {
+            return ValidateReference(root, packageX.Id, packageX.Version) &&
+                ValidateReference(root, packageY.Id, packageY.Version);
         }
 
         private bool ValidateNoReference(XElement root, string packageId)
