@@ -3,12 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
-using Microsoft.Extensions.CommandLineUtils;
-using Moq;
 using NuGet.CommandLine.XPlat;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -24,86 +21,6 @@ namespace NuGet.XPlat.FuncTest
     {
         private static readonly string DotnetCli = DotnetCliUtil.GetDotnetCli(getLatestCli: true);
         private static readonly string XplatDll = DotnetCliUtil.GetXplatDll();
-
-        [Theory]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "--dotnet", "dotnet_foo", "--project", "project_foo", "", "", "", "", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "", "", "", "", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "--frameworks", "net46;netcoreapp1.0", "", "", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "-f", "net46 ; netcoreapp1.0 ; ", "", "", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "-f", "net46", "", "", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "", "", "--sources", "a;b", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "", "", "-s", "a ; b ;", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "", "", "-s", "a", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "", "", "", "", "--package-directory", @"foo\dir", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "", "", "", "", "", "", "--no-restore")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "", "", "", "", "", "", "-n")]
-        public void AddPkg_ArgParsing(string packageOption, string package, string versionOption, string version, string dotnetOption,
-            string dotnet, string projectOption, string project, string frameworkOption, string frameworkString, string sourceOption,
-            string sourceString, string packageDirectoryOption, string packageDirectory, string noRestoreSwitch)
-        {
-            // Arrange
-            Assert.NotNull(DotnetCli);
-            Assert.NotNull(XplatDll);
-
-            var argList = new List<string>() {
-                "addpkg",
-                packageOption,
-                package,
-                versionOption,
-                version,
-                dotnetOption,
-                dotnet,
-                projectOption,
-                project};
-
-            if (!string.IsNullOrEmpty(frameworkOption))
-            {
-                argList.Add(frameworkOption);
-                argList.Add(frameworkString);
-            }
-            if (!string.IsNullOrEmpty(sourceOption))
-            {
-                argList.Add(sourceOption);
-                argList.Add(sourceString);
-            }
-            if (!string.IsNullOrEmpty(packageDirectoryOption))
-            {
-                argList.Add(packageDirectoryOption);
-                argList.Add(packageDirectory);
-            }
-            if (!string.IsNullOrEmpty(noRestoreSwitch))
-            {
-                argList.Add(noRestoreSwitch);
-            }
-
-            var logger = new TestCommandOutputLogger();
-            var testApp = new CommandLineApplication();
-            var mockCommandRunner = new Mock<IAddPackageReferenceCommandRunner>();
-            mockCommandRunner
-                .Setup(m => m.ExecuteCommand(It.IsAny<PackageReferenceArgs>(), It.IsAny<MSBuildAPIUtility>()))
-                .Returns(0);
-
-            testApp.Name = "dotnet nuget_test";
-            AddPackageReferenceCommand.Register(testApp,
-                () => logger,
-                () => mockCommandRunner.Object);
-
-            // Act
-            var exitCode = testApp.Execute(argList.ToArray());
-
-            // Assert
-            mockCommandRunner.Verify(m => m.ExecuteCommand(It.Is<PackageReferenceArgs>(p => p.PackageDependency.Id == package &&
-            p.PackageDependency.VersionRange.OriginalString == version &&
-            p.ProjectPath == project &&
-            p.DotnetPath == dotnet &&
-            p.NoRestore == !string.IsNullOrEmpty(noRestoreSwitch) &&
-            (string.IsNullOrEmpty(frameworkOption) || !string.IsNullOrEmpty(frameworkOption) && p.Frameworks.SequenceEqual(StringUtility.Split(frameworkString))) &&
-            (string.IsNullOrEmpty(sourceOption) || !string.IsNullOrEmpty(sourceOption) && p.Sources.SequenceEqual(StringUtility.Split(sourceString))) &&
-            (string.IsNullOrEmpty(packageDirectoryOption) || !string.IsNullOrEmpty(packageDirectoryOption) && p.PackageDirectory == packageDirectory)),
-            It.IsAny<MSBuildAPIUtility>()));
-
-            Assert.Equal(exitCode, 0);
-        }
 
         [Theory]
         [InlineData("PkgX", "1.0.0", "1.0.0")]
