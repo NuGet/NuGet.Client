@@ -122,15 +122,6 @@ namespace NuGet.XPlat.FuncTest
             var packageDirectory = "";
             var noRestore = false;
 
-            //Console.WriteLine("Waiting for debugger to attach.");
-            //Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
-
-            //while (!Debugger.IsAttached)
-            //{
-            //    System.Threading.Thread.Sleep(100);
-            //}
-            //Debugger.Break();
-
             using (var pathContext = new SimpleTestPathContext())
             {
                 var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
@@ -189,11 +180,15 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Theory]
-        [InlineData("PkgX", "1.0.0", "1.0.0")]
-        [InlineData("PkgX", "1.0.0", "*")]
-        [InlineData("PkgX", "1.0.0", "1.*")]
-        [InlineData("PkgX", "1.0.0", "1.0.*")]
-        public async void AddPkg_ConditionalAddWithoutFramework(string package, string packageVersion, string userInputVersion)
+        [InlineData("PkgX", "1.0.0", "1.0.0", "net46")]
+        [InlineData("PkgX", "1.0.0", "*", "net46")]
+        [InlineData("PkgX", "1.0.0", "1.*", "net46")]
+        [InlineData("PkgX", "1.0.0", "1.0.*", "net46")]
+        [InlineData("PkgX", "1.0.0", "1.0.0", "netcoreapp1.0")]
+        [InlineData("PkgX", "1.0.0", "*", "netcoreapp1.0")]
+        [InlineData("PkgX", "1.0.0", "1.*", "netcoreapp1.0")]
+        [InlineData("PkgX", "1.0.0", "1.0.*", "netcoreapp1.0")]
+        public async void AddPkg_ConditionalAddWithoutFramework(string package, string packageVersion, string userInputVersion, string packageFramework)
         {
             // Arrange
             Assert.NotNull(DotnetCli);
@@ -205,14 +200,14 @@ namespace NuGet.XPlat.FuncTest
             var packageDirectory = "";
             var noRestore = false;
 
-            Console.WriteLine("Waiting for debugger to attach.");
-            Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
+            //Console.WriteLine("Waiting for debugger to attach.");
+            //Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
 
-            while (!Debugger.IsAttached)
-            {
-                System.Threading.Thread.Sleep(100);
-            }
-            Debugger.Break();
+            //while (!Debugger.IsAttached)
+            //{
+            //    System.Threading.Thread.Sleep(100);
+            //}
+            //Debugger.Break();
 
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -230,7 +225,9 @@ namespace NuGet.XPlat.FuncTest
                 };
 
                 // Make package compatible only with net46
-                packageX.AddFile("lib/net46/a.dll");
+                packageX.AddFile($"lib/{packageFramework}/a.dll");
+
+                packageX.Nuspec = GetNetCoreNuspec(package, packageVersion);
 
                 projectA.Save();
 
@@ -267,13 +264,25 @@ namespace NuGet.XPlat.FuncTest
 
                 // Act
                 var result = commandRunner.ExecuteCommand(packageArgs, msBuild);
-
+                var projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
+                var itemGroup = GetItemGroupForFramework(projectXmlRoot, packageFramework);
                 // Assert
+
                 Assert.Equal(result, 0);
-                var projectXmlRoot = LoadCSProj(projectA.ProjectPath)
-                    .Root;
-                Assert.True(ValidateReference(projectXmlRoot, package, userInputVersion));
+                Assert.NotNull(itemGroup);
+                Assert.True(ValidateReference(itemGroup, package, userInputVersion));
             }
+        }
+
+        private XElement GetItemGroupForFramework(XElement root, string framework)
+        {
+            var itemGroups = root.Descendants("ItemGroup");
+
+            return itemGroups
+                    .Where(d => d.FirstAttribute != null &&
+                                d.FirstAttribute.Name.LocalName.Equals("Condition", StringComparison.OrdinalIgnoreCase) &&
+                                d.FirstAttribute.Value.Equals(GetTargetFrameworkCondition(framework), StringComparison.OrdinalIgnoreCase))
+                     .First();
         }
 
         private bool ValidateReference(XElement root, string packageId, string version)
@@ -297,6 +306,18 @@ namespace NuGet.XPlat.FuncTest
                 return false;
             }
             return true;
+        }
+
+        private XDocument GetNetCoreNuspec(string package, string packageVersion)
+        {
+            return XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package>
+                        <metadata>
+                            <id>{package}</id>
+                            <version>{packageVersion}</version>
+                            <title />
+                        </metadata>
+                        </package>");
         }
 
         private XDocument LoadCSProj(string path)
@@ -325,6 +346,11 @@ namespace NuGet.XPlat.FuncTest
             };
 
             return safeSettings;
+        }
+
+        private string GetTargetFrameworkCondition(string targetFramework)
+        {
+            return string.Format("'$(TargetFramework)' == '{0}'", targetFramework);
         }
     }
 }
