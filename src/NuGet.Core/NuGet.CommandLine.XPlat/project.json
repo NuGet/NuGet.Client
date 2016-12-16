@@ -22,10 +22,7 @@
   },
   "dependencies": {
     "System.Runtime.InteropServices.RuntimeInformation": "4.0.0",
-    "Microsoft.Extensions.CommandLineUtils": {
-      "version": "1.0.0-*",
-      "type": "build"
-    },
+    "Microsoft.Extensions.CommandLineUtils": "1.0.0-*",
     "NuGet.Commands": {
       "target": "project"
     },

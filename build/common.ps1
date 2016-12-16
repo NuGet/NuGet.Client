@@ -221,8 +221,6 @@ Function Install-DotnetCLI-Test {
     param(
         [switch]$Force
     )
-    $env:DOTNET_HOME=$CLIRootTest
-    $env:DOTNET_INSTALL_DIR=$NuGetClientRoot
 
     if ($Force -or -not (Test-Path $DotNetExeTest)) {
         Trace-Log 'Downloading .NET CLI Test'
