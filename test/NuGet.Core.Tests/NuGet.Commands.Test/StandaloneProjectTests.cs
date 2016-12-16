@@ -40,7 +40,7 @@ namespace NuGet.Commands.Test
 
                 var spec = JsonPackageSpecReader.GetPackageSpec(projectJson, "x", Path.Combine(pathContext.SolutionRoot, "project.json"));
                 spec.RestoreMetadata = new ProjectRestoreMetadata();
-                spec.RestoreMetadata.OutputType = RestoreOutputType.Standalone;
+                spec.RestoreMetadata.ProjectStyle = ProjectStyle.Standalone;
                 spec.RestoreMetadata.OutputPath = Path.Combine(pathContext.SolutionRoot, "x");
                 spec.RestoreMetadata.ProjectUniqueName = "x";
                 spec.RestoreMetadata.ProjectName = "x";

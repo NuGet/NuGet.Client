@@ -19,7 +19,7 @@ namespace NuGet.Test.Utility
 {
     public class SimpleTestProjectContext
     {
-        public SimpleTestProjectContext(string projectName, RestoreOutputType type, string solutionRoot)
+        public SimpleTestProjectContext(string projectName, ProjectStyle type, string solutionRoot)
         {
             if (string.IsNullOrWhiteSpace(projectName))
             {
@@ -69,7 +69,7 @@ namespace NuGet.Test.Utility
         /// <summary>
         /// Project type
         /// </summary>
-        public RestoreOutputType Type { get; set; }
+        public ProjectStyle Type { get; set; }
 
         /// <summary>
         /// Tool references
@@ -105,9 +105,9 @@ namespace NuGet.Test.Utility
             {
                 switch (Type)
                 {
-                    case RestoreOutputType.NETCore:
+                    case ProjectStyle.PackageReference:
                         return Path.Combine(OutputPath, "project.assets.json");
-                    case RestoreOutputType.UAP:
+                    case ProjectStyle.ProjectJson:
                         return Path.Combine(Path.GetDirectoryName(ProjectPath), "project.lock.json");
                     default:
                         return null;
@@ -121,9 +121,9 @@ namespace NuGet.Test.Utility
             {
                 switch (Type)
                 {
-                    case RestoreOutputType.NETCore:
+                    case ProjectStyle.PackageReference:
                         return Path.Combine(OutputPath, $"{Path.GetFileName(ProjectPath)}.nuget.g.targets");
-                    case RestoreOutputType.UAP:
+                    case ProjectStyle.ProjectJson:
                         return Path.Combine(Path.GetDirectoryName(ProjectPath), $"{Path.GetFileNameWithoutExtension(ProjectPath)}.nuget.targets");
                     default:
                         return ProjectPath;
@@ -137,9 +137,9 @@ namespace NuGet.Test.Utility
             {
                 switch (Type)
                 {
-                    case RestoreOutputType.NETCore:
+                    case ProjectStyle.PackageReference:
                         return Path.Combine(OutputPath, $"{Path.GetFileName(ProjectPath)}.nuget.g.props");
-                    case RestoreOutputType.UAP:
+                    case ProjectStyle.ProjectJson:
                         return Path.Combine(Path.GetDirectoryName(ProjectPath), $"{Path.GetFileNameWithoutExtension(ProjectPath)}.nuget.props");
                     default:
                         return ProjectPath;
@@ -231,7 +231,7 @@ namespace NuGet.Test.Utility
             string solutionRoot,
             params NuGetFramework[] frameworks)
         {
-            var context = new SimpleTestProjectContext(projectName, RestoreOutputType.NETCore, solutionRoot);
+            var context = new SimpleTestProjectContext(projectName, ProjectStyle.PackageReference, solutionRoot);
             context.Frameworks.AddRange(frameworks.Select(e => new SimpleTestProjectFrameworkContext(e)));
             return context;
         }
@@ -241,7 +241,7 @@ namespace NuGet.Test.Utility
             string solutionRoot,
             NuGetFramework framework)
         {
-            var context = new SimpleTestProjectContext(projectName, RestoreOutputType.Unknown, solutionRoot);
+            var context = new SimpleTestProjectContext(projectName, ProjectStyle.Unknown, solutionRoot);
             context.Frameworks.Add(new SimpleTestProjectFrameworkContext(framework));
             return context;
         }
@@ -252,7 +252,7 @@ namespace NuGet.Test.Utility
             NuGetFramework framework,
             JObject projectJson)
         {
-            var context = new SimpleTestProjectContext(projectName, RestoreOutputType.UAP, solutionRoot);
+            var context = new SimpleTestProjectContext(projectName, ProjectStyle.ProjectJson, solutionRoot);
             context.Frameworks.Add(new SimpleTestProjectFrameworkContext(framework));
             context.ProjectJson = projectJson;
             return context;
@@ -272,7 +272,7 @@ namespace NuGet.Test.Utility
 
             AddProperties(xml, Properties);
 
-            if (Type == RestoreOutputType.NETCore)
+            if (Type == ProjectStyle.PackageReference)
             {
                 AddProperties(xml, new Dictionary<string, string>()
                 {

@@ -40,7 +40,7 @@ namespace NuGet.Commands
                 },
                 RestoreMetadata = new ProjectRestoreMetadata()
                 {
-                    OutputType = RestoreOutputType.DotnetCliTool,
+                    ProjectStyle = ProjectStyle.DotnetCliTool,
                     ProjectName = name,
                     ProjectUniqueName = name,
                     ProjectPath = projectFilePath
@@ -60,7 +60,7 @@ namespace NuGet.Commands
 
             foreach (var requestSummary in requestSummaries)
             {
-                if (requestSummary.Request.Project.RestoreMetadata?.OutputType == RestoreOutputType.DotnetCliTool)
+                if (requestSummary.Request.Project.RestoreMetadata?.ProjectStyle == ProjectStyle.DotnetCliTool)
                 {
                     tools.Add(requestSummary);
                 }

@@ -58,7 +58,7 @@ namespace NuGet.ProjectModel.Test
                         ProjectName = "ProjectPath",
                         ProjectPath = @"X:\ProjectPath\ProjectPath.csproj",
                         OutputPath = @"X:\ProjectPath\obj\",
-                        OutputType = RestoreOutputType.NETCore,
+                        ProjectStyle = ProjectStyle.PackageReference,
                         OriginalTargetFrameworks = new[] { "netcoreapp1.0" },
                         TargetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>
                     {

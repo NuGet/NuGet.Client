@@ -118,9 +118,9 @@ namespace NuGet.ProjectModel
             SetValue(writer, "packagesPath", msbuildMetadata.PackagesPath);
             SetValue(writer, "outputPath", msbuildMetadata.OutputPath);
 
-            if (msbuildMetadata.OutputType != RestoreOutputType.Unknown)
+            if (msbuildMetadata.ProjectStyle != ProjectStyle.Unknown)
             {
-                SetValue(writer, "outputType", msbuildMetadata.OutputType.ToString());
+                SetValue(writer, "outputType", msbuildMetadata.ProjectStyle.ToString());
             }
 
             if (msbuildMetadata.CrossTargeting)

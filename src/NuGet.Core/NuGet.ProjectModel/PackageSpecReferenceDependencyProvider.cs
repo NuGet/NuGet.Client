@@ -101,7 +101,7 @@ namespace NuGet.ProjectModel
             var dependencies = new List<LibraryDependency>();
 
             // Read references from external project
-            if (packageSpec?.RestoreMetadata?.OutputType == RestoreOutputType.NETCore)
+            if (packageSpec?.RestoreMetadata?.ProjectStyle == ProjectStyle.PackageReference)
             {
                 // NETCore
                 dependencies.AddRange(GetDependenciesFromSpecRestoreMetadata(packageSpec, targetFramework));
@@ -143,7 +143,7 @@ namespace NuGet.ProjectModel
             {
                 library[KnownLibraryProperties.PackageSpec] = packageSpec;
 
-                var outputType = packageSpec.RestoreMetadata?.OutputType;
+                var outputType = packageSpec.RestoreMetadata?.ProjectStyle;
 
                 if (outputType.HasValue)
                 {

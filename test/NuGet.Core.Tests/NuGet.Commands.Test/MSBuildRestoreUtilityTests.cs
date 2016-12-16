@@ -240,7 +240,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal(project1Path, project1Spec.FilePath);
                 Assert.Equal("a", project1Spec.Name);
                 Assert.Equal("2.0.0-rc.2+a.b.c", project1Spec.Version.ToFullString());
-                Assert.Equal(RestoreOutputType.NETCore, project1Spec.RestoreMetadata.OutputType);
+                Assert.Equal(ProjectStyle.PackageReference, project1Spec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("482C20DE-DFF9-4BD0-B90A-BD3201AA351A", project1Spec.RestoreMetadata.ProjectUniqueName);
                 Assert.Equal(project1Path, project1Spec.RestoreMetadata.ProjectPath);
                 Assert.Equal(0, project1Spec.RestoreMetadata.TargetFrameworks.SelectMany(e => e.ProjectReferences).Count());
@@ -375,7 +375,7 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.Equal(project1Path, project1Spec.FilePath);
                 Assert.Equal("a", project1Spec.Name);
-                Assert.Equal(RestoreOutputType.NETCore, project1Spec.RestoreMetadata.OutputType);
+                Assert.Equal(ProjectStyle.PackageReference, project1Spec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("netstandard1.6", string.Join("|", project1Spec.TargetFrameworks.Select(e => e.FrameworkName.GetShortFolderName())));
                 Assert.Equal("netstandard16", string.Join("|", project1Spec.RestoreMetadata.OriginalTargetFrameworks));
                 Assert.False(project1Spec.RestoreMetadata.CrossTargeting);
@@ -419,7 +419,7 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.Equal(project1Path, project1Spec.FilePath);
                 Assert.Equal("a", project1Spec.Name);
-                Assert.Equal(RestoreOutputType.NETCore, project1Spec.RestoreMetadata.OutputType);
+                Assert.Equal(ProjectStyle.PackageReference, project1Spec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("netstandard1.6", string.Join("|", project1Spec.TargetFrameworks.Select(e => e.FrameworkName.GetShortFolderName())));
                 Assert.Equal("netstandard16", string.Join("|", project1Spec.RestoreMetadata.OriginalTargetFrameworks));
                 Assert.False(project1Spec.RestoreMetadata.LegacyPackagesDirectory);
@@ -1030,7 +1030,7 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.Equal(projectJsonPath, spec.FilePath);
                 Assert.Equal("a", spec.Name);
-                Assert.Equal(RestoreOutputType.UAP, spec.RestoreMetadata.OutputType);
+                Assert.Equal(ProjectStyle.ProjectJson, spec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("482C20DE-DFF9-4BD0-B90A-BD3201AA351A", spec.RestoreMetadata.ProjectUniqueName);
                 Assert.Equal(projectPath, spec.RestoreMetadata.ProjectPath);
                 Assert.Equal(0, spec.RestoreMetadata.TargetFrameworks.SelectMany(e => e.ProjectReferences).Count());
@@ -1111,7 +1111,7 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.Equal(projectPath, spec.FilePath);
                 Assert.Equal("a", spec.Name);
-                Assert.Equal(RestoreOutputType.Unknown, spec.RestoreMetadata.OutputType);
+                Assert.Equal(ProjectStyle.Unknown, spec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("482C20DE-DFF9-4BD0-B90A-BD3201AA351A", spec.RestoreMetadata.ProjectUniqueName);
                 Assert.Equal(projectPath, spec.RestoreMetadata.ProjectPath);
                 Assert.Equal(NuGetFramework.Parse("net462"), spec.TargetFrameworks.Single().FrameworkName);

@@ -148,7 +148,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Defines the paths and behavior for outputs
         /// </summary>
-        public RestoreOutputType RestoreOutputType { get; set; } = RestoreOutputType.Unknown;
+        public ProjectStyle RestoreOutputType { get; set; } = ProjectStyle.Unknown;
 
         /// <summary>
         /// Restore output path

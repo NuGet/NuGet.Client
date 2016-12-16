@@ -123,7 +123,7 @@ namespace NuGet.Commands.Test
                         xml,
                         new[] { globalPackagesFolder },
                         globalPackagesFolder,
-                        RestoreOutputType.NETCore,
+                        ProjectStyle.PackageReference,
                         success: true);
 
                     // Assert
@@ -261,11 +261,11 @@ namespace NuGet.Commands.Test
                 // Act
                 var targetsXML = BuildAssetsUtils.GenerateMSBuildFile(
                     targetGroups,
-                    RestoreOutputType.NETCore);
+                    ProjectStyle.PackageReference);
 
                 var propsXML = BuildAssetsUtils.GenerateMSBuildFile(
                     propGroups,
-                    RestoreOutputType.NETCore);
+                    ProjectStyle.PackageReference);
 
                 // Assert
                 var targetItemGroups = targetsXML.Root.Elements().Where(e => e.Name.LocalName == "ImportGroup").ToList();
@@ -341,7 +341,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var targetsXML = BuildAssetsUtils.GenerateMSBuildFile(
                     targets,
-                    RestoreOutputType.NETCore);
+                    ProjectStyle.PackageReference);
 
                 // Assert
                 var targetItemGroups = targetsXML.Root.Elements().Where(e => e.Name.LocalName == "ImportGroup").ToList();
@@ -372,7 +372,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var xml = BuildAssetsUtils.GenerateMSBuildFile(
                     targets,
-                    RestoreOutputType.NETCore);
+                    ProjectStyle.PackageReference);
 
                 // Assert
                 Assert.NotNull(xml);
@@ -392,7 +392,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var xml = BuildAssetsUtils.GenerateMSBuildFile(
                     targets,
-                    RestoreOutputType.UAP);
+                    ProjectStyle.ProjectJson);
 
                 // Assert
                 Assert.Null(xml);
@@ -438,7 +438,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var xml = BuildAssetsUtils.GenerateMSBuildFile(
                     targets,
-                    RestoreOutputType.NETCore);
+                    ProjectStyle.PackageReference);
 
                 // Assert
                 var targetItemGroups = xml.Root.Elements().Where(e => e.Name.LocalName == "ImportGroup").ToList();
@@ -485,7 +485,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var xml = BuildAssetsUtils.GenerateMSBuildFile(
                     targets,
-                    RestoreOutputType.UAP);
+                    ProjectStyle.ProjectJson);
 
                 // Assert
                 var targetItemGroups = xml.Root.Elements().Where(e => e.Name.LocalName == "ImportGroup").ToList();
@@ -563,7 +563,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var xml = BuildAssetsUtils.GenerateMSBuildFile(
                     targets,
-                    RestoreOutputType.UAP);
+                    ProjectStyle.ProjectJson);
 
                 // Assert
                 var targetItemGroups = xml.Root.Elements().Where(e => e.Name.LocalName == "ImportGroup").ToList();

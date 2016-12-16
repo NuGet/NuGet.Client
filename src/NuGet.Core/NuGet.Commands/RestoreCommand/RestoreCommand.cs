@@ -129,7 +129,7 @@ namespace NuGet.Commands
 
             // Tool restores are unique since the output path is not known until after restore
             if (_request.LockFilePath == null
-                && _request.RestoreOutputType == RestoreOutputType.DotnetCliTool)
+                && _request.RestoreOutputType == ProjectStyle.DotnetCliTool)
             {
                 _request.LockFilePath = projectLockFilePath;
             }
@@ -155,12 +155,12 @@ namespace NuGet.Commands
 
             if (string.IsNullOrEmpty(projectLockFilePath))
             {
-                if (_request.RestoreOutputType == RestoreOutputType.NETCore
-                    || _request.RestoreOutputType == RestoreOutputType.Standalone)
+                if (_request.RestoreOutputType == ProjectStyle.PackageReference
+                    || _request.RestoreOutputType == ProjectStyle.Standalone)
                 {
                     projectLockFilePath = Path.Combine(_request.RestoreOutputPath, LockFileFormat.AssetsFileName);
                 }
-                else if (_request.RestoreOutputType == RestoreOutputType.DotnetCliTool)
+                else if (_request.RestoreOutputType == ProjectStyle.DotnetCliTool)
                 {
                     var toolName = ToolRestoreUtility.GetToolIdOrNullFromSpec(_request.Project);
                     var lockFileLibrary = ToolRestoreUtility.GetToolTargetLibrary(lockFile, toolName);
@@ -360,7 +360,7 @@ namespace NuGet.Commands
             var updatedExternalProjects = GetProjectReferences(context);
 
             // Determine if the targets and props files should be written out.
-            context.IsMsBuildBased = _request.RestoreOutputType != RestoreOutputType.DotnetCliTool;
+            context.IsMsBuildBased = _request.RestoreOutputType != ProjectStyle.DotnetCliTool;
 
             // Load repositories
             // the external project provider is specific to the current restore project

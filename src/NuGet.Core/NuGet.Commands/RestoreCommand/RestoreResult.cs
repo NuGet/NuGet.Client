@@ -37,7 +37,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Restore type.
         /// </summary>
-        public RestoreOutputType OutputType { get; }
+        public ProjectStyle OutputType { get; }
 
         /// <summary>
         /// Gets the lock file that was generated during the restore or, in the case of a locked lock file,
@@ -63,7 +63,7 @@ namespace NuGet.Commands
             LockFile lockFile,
             LockFile previousLockFile,
             string lockFilePath,
-            RestoreOutputType outputType,
+            ProjectStyle outputType,
             TimeSpan elapsedTime)
         {
             Success = success;
@@ -124,7 +124,7 @@ namespace NuGet.Commands
             // Write the lock file
             var lockFileFormat = new LockFileFormat();
 
-            var isTool = OutputType == RestoreOutputType.DotnetCliTool;
+            var isTool = OutputType == ProjectStyle.DotnetCliTool;
 
             // Commit the assets file to disk.
             await CommitAsync(

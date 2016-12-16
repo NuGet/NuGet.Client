@@ -197,11 +197,11 @@ namespace NuGet.ProjectModel
 
             var outputTypeString = rawMSBuildMetadata.GetValue<string>("outputType");
 
-            RestoreOutputType outputType;
+            ProjectStyle outputType;
             if (!string.IsNullOrEmpty(outputTypeString)
-                && Enum.TryParse<RestoreOutputType>(outputTypeString, ignoreCase: true, result: out outputType))
+                && Enum.TryParse<ProjectStyle>(outputTypeString, ignoreCase: true, result: out outputType))
             {
-                msbuildMetadata.OutputType = outputType;
+                msbuildMetadata.ProjectStyle = outputType;
             }
 
             msbuildMetadata.PackagesPath = rawMSBuildMetadata.GetValue<string>("packagesPath");

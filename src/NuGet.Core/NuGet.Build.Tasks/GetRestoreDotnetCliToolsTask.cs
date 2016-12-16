@@ -74,7 +74,7 @@ namespace NuGet.Build.Tasks
                 BuildTasksUtility.AddPropertyIfExists(properties, "FallbackFolders", RestoreFallbackFolders);
                 BuildTasksUtility.AddPropertyIfExists(properties, "PackagesPath", RestorePackagesPath);
                 properties.Add("TargetFrameworks", ToolFramework);
-                properties.Add("OutputType", RestoreOutputType.DotnetCliTool.ToString());
+                properties.Add("OutputType", ProjectStyle.DotnetCliTool.ToString());
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "Version");
 
                 entries.Add(new TaskItem(Guid.NewGuid().ToString(), properties));

@@ -63,7 +63,7 @@ namespace NuGet.Commands.Test
             project.RestoreMetadata.ProjectUniqueName = "a";
             project.RestoreMetadata.ProjectName = "a";
             project.RestoreMetadata.ProjectPath = Path.Combine(Directory.GetCurrentDirectory(), "a.csproj");
-            project.RestoreMetadata.OutputType = RestoreOutputType.UAP;
+            project.RestoreMetadata.ProjectStyle = ProjectStyle.ProjectJson;
             project.RestoreMetadata.ProjectJsonPath = Path.Combine(Directory.GetCurrentDirectory(), "project.json");
 
             spec.AddProject(project);
@@ -86,7 +86,7 @@ namespace NuGet.Commands.Test
             project.RestoreMetadata.ProjectUniqueName = "a";
             project.RestoreMetadata.ProjectName = "a";
             project.RestoreMetadata.ProjectPath = Path.Combine(Directory.GetCurrentDirectory(), "a.csproj");
-            project.RestoreMetadata.OutputType = RestoreOutputType.UAP;
+            project.RestoreMetadata.ProjectStyle = ProjectStyle.ProjectJson;
             project.RestoreMetadata.ProjectJsonPath = Path.Combine(Directory.GetCurrentDirectory(), "project.json");
 
             spec.AddProject(project);
@@ -121,7 +121,7 @@ namespace NuGet.Commands.Test
             project.RestoreMetadata.ProjectUniqueName = "a";
             project.RestoreMetadata.ProjectName = "a";
             project.RestoreMetadata.ProjectPath = Path.Combine(Directory.GetCurrentDirectory(), "a.csproj");
-            project.RestoreMetadata.OutputType = RestoreOutputType.UAP;
+            project.RestoreMetadata.ProjectStyle = ProjectStyle.ProjectJson;
             project.RestoreMetadata.ProjectJsonPath = Path.Combine(Directory.GetCurrentDirectory(), "project.json");
 
             spec.AddProject(project);
@@ -258,7 +258,7 @@ namespace NuGet.Commands.Test
             project.RestoreMetadata.ProjectName = "a";
             project.RestoreMetadata.ProjectPath = Path.Combine(Directory.GetCurrentDirectory(), "a.csproj");
             project.RestoreMetadata.ProjectJsonPath = Path.Combine(Directory.GetCurrentDirectory(), "project.json");
-            project.RestoreMetadata.OutputType = RestoreOutputType.UAP;
+            project.RestoreMetadata.ProjectStyle = ProjectStyle.ProjectJson;
 
             spec.AddProject(project);
 
@@ -289,7 +289,7 @@ namespace NuGet.Commands.Test
             project.RestoreMetadata.ProjectPath = Path.Combine(Directory.GetCurrentDirectory(), "a.csproj");
             project.RestoreMetadata.ProjectJsonPath = Path.Combine(Directory.GetCurrentDirectory(), "project.json");
             project.RestoreMetadata.OutputPath = Directory.GetCurrentDirectory();
-            project.RestoreMetadata.OutputType = RestoreOutputType.UAP;
+            project.RestoreMetadata.ProjectStyle = ProjectStyle.ProjectJson;
             project.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
 
             spec.AddProject(project);
@@ -321,7 +321,7 @@ namespace NuGet.Commands.Test
             project.RestoreMetadata.ProjectPath = Path.Combine(Directory.GetCurrentDirectory(), "a.csproj");
             project.RestoreMetadata.ProjectJsonPath = Path.Combine(Directory.GetCurrentDirectory(), "project.json");
             project.RestoreMetadata.OutputPath = Directory.GetCurrentDirectory();
-            project.RestoreMetadata.OutputType = RestoreOutputType.UAP;
+            project.RestoreMetadata.ProjectStyle = ProjectStyle.ProjectJson;
             project.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
 
             spec.AddProject(project);
@@ -352,7 +352,7 @@ namespace NuGet.Commands.Test
             project.RestoreMetadata.ProjectName = "a";
             project.RestoreMetadata.ProjectPath = Path.Combine(Directory.GetCurrentDirectory(), "a.csproj");
             project.RestoreMetadata.ProjectJsonPath = Path.Combine(Directory.GetCurrentDirectory(), "project.json");
-            project.RestoreMetadata.OutputType = RestoreOutputType.Unknown;
+            project.RestoreMetadata.ProjectStyle = ProjectStyle.Unknown;
 
             spec.AddProject(project);
 
@@ -381,7 +381,7 @@ namespace NuGet.Commands.Test
             project.RestoreMetadata.ProjectUniqueName = "a";
             project.RestoreMetadata.ProjectName = "a";
             project.RestoreMetadata.ProjectPath = Path.Combine(Directory.GetCurrentDirectory(), "a.csproj");
-            project.RestoreMetadata.OutputType = RestoreOutputType.Unknown;
+            project.RestoreMetadata.ProjectStyle = ProjectStyle.Unknown;
 
             targetFramework1.Dependencies.Add(new LibraryDependency()
             {
@@ -444,7 +444,7 @@ namespace NuGet.Commands.Test
             project.RestoreMetadata.ProjectUniqueName = "a";
             project.RestoreMetadata.ProjectPath = Path.Combine(Directory.GetCurrentDirectory(), "a.csproj");
             project.RestoreMetadata.OutputPath = Directory.GetCurrentDirectory();
-            project.RestoreMetadata.OutputType = RestoreOutputType.NETCore;
+            project.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
             project.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
 
             return project;

@@ -100,7 +100,7 @@ namespace NuGet.Commands.Test
             updated.RestoreMetadata.CrossTargeting = updated.TargetFrameworks.Count > 0;
             updated.RestoreMetadata.OriginalTargetFrameworks = updated.TargetFrameworks.Select(e => e.FrameworkName.GetShortFolderName()).ToList();
             updated.RestoreMetadata.OutputPath = projectDir;
-            updated.RestoreMetadata.OutputType = RestoreOutputType.NETCore;
+            updated.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
             updated.RestoreMetadata.ProjectName = spec.Name;
             updated.RestoreMetadata.ProjectUniqueName = spec.Name;
             updated.RestoreMetadata.ProjectPath = projectPath;

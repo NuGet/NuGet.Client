@@ -64,10 +64,10 @@ namespace NuGet.Commands
             // Add projects
             foreach (var spec in itemsById.Values.Select(GetPackageSpec))
             {
-                if (spec.RestoreMetadata.OutputType == RestoreOutputType.NETCore
-                    || spec.RestoreMetadata.OutputType == RestoreOutputType.UAP
-                    || spec.RestoreMetadata.OutputType == RestoreOutputType.DotnetCliTool
-                    || spec.RestoreMetadata.OutputType == RestoreOutputType.Standalone)
+                if (spec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference
+                    || spec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson
+                    || spec.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool
+                    || spec.RestoreMetadata.ProjectStyle == ProjectStyle.Standalone)
                 {
                     validForRestore.Add(spec.RestoreMetadata.ProjectUniqueName);
                 }
@@ -125,7 +125,7 @@ namespace NuGet.Commands
             if (specItem != null)
             {
                 var typeString = specItem.GetProperty("OutputType");
-                var restoreType = RestoreOutputType.Unknown;
+                var restoreType = ProjectStyle.Unknown;
 
                 if (!string.IsNullOrEmpty(typeString))
                 {
@@ -133,7 +133,7 @@ namespace NuGet.Commands
                 }
 
                 // Get base spec
-                if (restoreType == RestoreOutputType.UAP)
+                if (restoreType == ProjectStyle.ProjectJson)
                 {
                     result = GetUAPSpec(specItem);
                 }
@@ -144,7 +144,7 @@ namespace NuGet.Commands
                 }
 
                 // Applies to all types
-                result.RestoreMetadata.OutputType = restoreType;
+                result.RestoreMetadata.ProjectStyle = restoreType;
                 result.RestoreMetadata.ProjectPath = specItem.GetProperty("ProjectPath");
                 result.RestoreMetadata.ProjectUniqueName = specItem.GetProperty("ProjectUniqueName");
 
@@ -159,9 +159,9 @@ namespace NuGet.Commands
                 AddProjectReferences(result, items);
 
                 // Read package references for netcore, tools, and standalone
-                if (restoreType == RestoreOutputType.NETCore
-                    || restoreType == RestoreOutputType.Standalone
-                    || restoreType == RestoreOutputType.DotnetCliTool)
+                if (restoreType == ProjectStyle.PackageReference
+                    || restoreType == ProjectStyle.Standalone
+                    || restoreType == ProjectStyle.DotnetCliTool)
                 {
                     AddFrameworkAssemblies(result, items);
                     AddPackageReferences(result, items);
@@ -186,8 +186,8 @@ namespace NuGet.Commands
                     }
                 }
 
-                if (restoreType == RestoreOutputType.NETCore
-                    || restoreType == RestoreOutputType.Standalone)
+                if (restoreType == ProjectStyle.PackageReference
+                    || restoreType == ProjectStyle.Standalone)
                 {
                     // Set project version
                     result.Version = GetVersion(specItem);

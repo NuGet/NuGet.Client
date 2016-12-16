@@ -72,7 +72,7 @@ namespace NuGet.Commands
         public static List<MSBuildOutputFile> GenerateMultiTargetFailureFiles(
             string targetsPath,
             string propsPath,
-            RestoreOutputType restoreType)
+            ProjectStyle restoreType)
         {
             XDocument targetsXML = null;
             XDocument propsXML = null;
@@ -80,7 +80,7 @@ namespace NuGet.Commands
             // Create an error file for MSBuild to stop the build.
             targetsXML = GenerateMultiTargetFrameworkWarning();
 
-            if (restoreType == RestoreOutputType.NETCore)
+            if (restoreType == ProjectStyle.PackageReference)
             {
                 propsXML = GenerateEmptyImportsFile();
             }
@@ -131,7 +131,7 @@ namespace NuGet.Commands
         public static void AddNuGetPropertiesToFirstImport(IEnumerable<MSBuildOutputFile> files,
             IEnumerable<string> packageFolders,
             string repositoryRoot,
-            RestoreOutputType outputType,
+            ProjectStyle outputType,
             bool success)
         {
             // For project.json not all files are written out. Find the first one
@@ -149,15 +149,15 @@ namespace NuGet.Commands
         /// <summary>
         /// Apply standard properties in a property group.
         /// </summary>
-        public static void AddNuGetProperties(XDocument doc, IEnumerable<string> packageFolders, string repositoryRoot, RestoreOutputType outputType, bool success)
+        public static void AddNuGetProperties(XDocument doc, IEnumerable<string> packageFolders, string repositoryRoot, ProjectStyle outputType, bool success)
         {
             var projectStyle = "Unknown";
 
-            if (outputType == RestoreOutputType.NETCore)
+            if (outputType == ProjectStyle.PackageReference)
             {
                 projectStyle = "PackageReference";
             }
-            else if (outputType == RestoreOutputType.UAP)
+            else if (outputType == ProjectStyle.ProjectJson)
             {
                 projectStyle = "ProjectJson";
             }
@@ -254,12 +254,12 @@ namespace NuGet.Commands
         /// <summary>
         /// Returns null if the result should not exist on disk.
         /// </summary>
-        public static XDocument GenerateMSBuildFile(List<MSBuildRestoreItemGroup> groups, RestoreOutputType outputType)
+        public static XDocument GenerateMSBuildFile(List<MSBuildRestoreItemGroup> groups, ProjectStyle outputType)
         {
             XDocument doc = null;
 
             // Always write out netcore props/targets. For project.json only write the file if it has items.
-            if (outputType == RestoreOutputType.NETCore || groups.SelectMany(e => e.Items).Any())
+            if (outputType == ProjectStyle.PackageReference || groups.SelectMany(e => e.Items).Any())
             {
                 doc = GenerateEmptyImportsFile();
 
@@ -375,7 +375,7 @@ namespace NuGet.Commands
             var targetsPath = string.Empty;
             var propsPath = string.Empty;
 
-            if (request.RestoreOutputType == RestoreOutputType.NETCore)
+            if (request.RestoreOutputType == ProjectStyle.PackageReference)
             {
                 // PackageReference style projects
                 var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
@@ -520,7 +520,7 @@ namespace NuGet.Commands
 
                 // ContentFiles are read by the build task, not by NuGet
                 // for UAP with project.json.
-                if (request.RestoreOutputType != RestoreOutputType.UAP)
+                if (request.RestoreOutputType != ProjectStyle.ProjectJson)
                 {
                     // Create a group for every package, with the nearest from each of allLanguages
                     props.AddRange(sortedPackages.Select(pkg =>

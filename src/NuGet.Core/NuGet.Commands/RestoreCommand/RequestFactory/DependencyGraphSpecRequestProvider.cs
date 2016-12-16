@@ -81,7 +81,7 @@ namespace NuGet.Commands
 
                 var request = Create(rootProject, externalClosure, restoreContext, settingsOverride: _providerSettingsOverride);
 
-                if (request.Request.RestoreOutputType == RestoreOutputType.DotnetCliTool)
+                if (request.Request.RestoreOutputType == ProjectStyle.DotnetCliTool)
                 {
                     // Store tool requests to be filtered later
                     toolRequests.Add(request);
@@ -112,17 +112,17 @@ namespace NuGet.Commands
             var projectReferences = rootProject.RestoreMetadata?.TargetFrameworks.SelectMany(e => e.ProjectReferences)
                 ?? new List<ProjectRestoreReference>();
 
-            var type = rootProject.RestoreMetadata?.OutputType ?? RestoreOutputType.Unknown;
+            var type = rootProject.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
 
             // Leave the spec null for non-nuget projects.
             // In the future additional P2P TFM checking could be handled by
             // creating a spec for non-NuGet projects and including the TFM.
             PackageSpec projectSpec = null;
 
-            if (type == RestoreOutputType.NETCore
-                || type == RestoreOutputType.UAP
-                || type == RestoreOutputType.DotnetCliTool
-                || type == RestoreOutputType.Standalone)
+            if (type == ProjectStyle.PackageReference
+                || type == ProjectStyle.ProjectJson
+                || type == ProjectStyle.DotnetCliTool
+                || type == ProjectStyle.Standalone)
             {
                 projectSpec = rootProject;
             }
@@ -174,7 +174,7 @@ namespace NuGet.Commands
                 restoreContext.Log);
 
             // Set properties from the restore metadata
-            request.RestoreOutputType = project.PackageSpec?.RestoreMetadata?.OutputType ?? RestoreOutputType.Unknown;
+            request.RestoreOutputType = project.PackageSpec?.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
             request.RestoreOutputPath = project.PackageSpec?.RestoreMetadata?.OutputPath ?? rootPath;
             var restoreLegacyPackagesDirectory = project.PackageSpec?.RestoreMetadata?.LegacyPackagesDirectory
                 ?? DefaultRestoreLegacyPackagesDirectory;
