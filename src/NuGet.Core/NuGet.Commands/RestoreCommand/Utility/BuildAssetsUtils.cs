@@ -72,9 +72,7 @@ namespace NuGet.Commands
         public static List<MSBuildOutputFile> GenerateMultiTargetFailureFiles(
             string targetsPath,
             string propsPath,
-            RestoreOutputType restoreType,
-            ILogger log,
-            CancellationToken token)
+            RestoreOutputType restoreType)
         {
             XDocument targetsXML = null;
             XDocument propsXML = null;
@@ -96,7 +94,7 @@ namespace NuGet.Commands
             return files;
         }
 
-        public static string ReplacePathsWithMacros(string path)
+        private static string ReplacePathsWithMacros(string path)
         {
             foreach (var macroName in MacroCandidates)
             {
@@ -369,8 +367,7 @@ namespace NuGet.Commands
             IReadOnlyList<NuGetv3LocalRepository> repositories,
             RestoreRequest request,
             bool restoreSuccess,
-            ILogger log,
-            CancellationToken token)
+            ILogger log)
         {
             // Generate file names
             var targetsPath = string.Empty;
@@ -404,15 +401,13 @@ namespace NuGet.Commands
                 return GenerateMultiTargetFailureFiles(
                     targetsPath,
                     propsPath,
-                    request.RestoreOutputType,
-                    log,
-                    token);
+                    request.RestoreOutputType);
             }
 
             // Add additional conditionals for multi targeting
             var multiTargetingFromMetadata = (request.Project.RestoreMetadata?.CrossTargeting == true);
 
-            var isCrossTargeting = multiTargetingFromMetadata
+            var isMultiTargeting = multiTargetingFromMetadata
                 || request.Project.TargetFrameworks.Count > 1;
 
             // ItemGroups for each file.
@@ -474,7 +469,7 @@ namespace NuGet.Commands
                         .Select(path => GetImportPath(path, repositoryRoot))
                         .Select(GenerateImport));
 
-                targets.AddRange(GetGroupsWithConditions(buildTargetsGroup, isCrossTargeting, frameworkConditions));
+                targets.AddRange(GetGroupsWithConditions(buildTargetsGroup, isMultiTargeting, frameworkConditions));
 
                 // props/ {packageId}.props
                 var buildPropsGroup = new MSBuildRestoreItemGroup();
@@ -488,9 +483,9 @@ namespace NuGet.Commands
                         .Select(path => GetImportPath(path, repositoryRoot))
                         .Select(GenerateImport));
 
-                props.AddRange(GetGroupsWithConditions(buildPropsGroup, isCrossTargeting, frameworkConditions));
+                props.AddRange(GetGroupsWithConditions(buildPropsGroup, isMultiTargeting, frameworkConditions));
 
-                if (isCrossTargeting)
+                if (isMultiTargeting)
                 {
                     // buildMultiTargeting/ {packageId}.targets
                     var buildCrossTargetsGroup = new MSBuildRestoreItemGroup();
@@ -504,7 +499,7 @@ namespace NuGet.Commands
                             .Select(path => GetImportPath(path, repositoryRoot))
                             .Select(GenerateImport));
 
-                    targets.AddRange(GetGroupsWithConditions(buildCrossTargetsGroup, isCrossTargeting, CrossTargetingCondition));
+                    targets.AddRange(GetGroupsWithConditions(buildCrossTargetsGroup, isMultiTargeting, CrossTargetingCondition));
 
                     // buildMultiTargeting/ {packageId}.props
                     var buildCrossPropsGroup = new MSBuildRestoreItemGroup();
@@ -518,7 +513,7 @@ namespace NuGet.Commands
                             .Select(path => GetImportPath(path, repositoryRoot))
                             .Select(GenerateImport));
 
-                    props.AddRange(GetGroupsWithConditions(buildCrossPropsGroup, isCrossTargeting, CrossTargetingCondition));
+                    props.AddRange(GetGroupsWithConditions(buildCrossPropsGroup, isMultiTargeting, CrossTargetingCondition));
                 }
 
                 // ContentFiles are read by the build task, not by NuGet
@@ -536,7 +531,7 @@ namespace NuGet.Commands
                                         item2: e,
                                         item3: pkg.Value.GetAbsolutePath(GetImportPath(e.Path, repositoryRoot)))))
                          .SelectMany(e => GetLanguageGroups(e))
-                         .SelectMany(group => GetGroupsWithConditions(group, isCrossTargeting, frameworkConditions)));
+                         .SelectMany(group => GetGroupsWithConditions(group, isMultiTargeting, frameworkConditions)));
                 }
             }
 

@@ -115,8 +115,7 @@ namespace NuGet.Commands
                     localRepositories,
                     _request,
                     _success,
-                    _logger,
-                    token);
+                    _logger);
             }
 
             // If the request is for a lower lock file version, downgrade it appropriately
