@@ -268,7 +268,7 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to resolve all project references. The package restore result for &apos;{0}&apos; or a dependant project may be incomplete..
+        ///   Looks up a localized string similar to Failed to resolve all project references. The package restore result for &apos;{0}&apos; or a dependent project may be incomplete..
         /// </summary>
         public static string Warning_ErrorDuringProjectClosureWalk {
             get {
