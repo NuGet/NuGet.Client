@@ -12,7 +12,7 @@ namespace NuGet.Protocol
     {
 
         public ListResourceV2FeedResourceProvider() : base(
-            typeof(ListResourceV2Feed),
+            typeof(ListResource),
             nameof(ListResourceV2FeedResourceProvider),
             NuGetResourceProviderPositions.Last)
         {
@@ -21,9 +21,9 @@ namespace NuGet.Protocol
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source,
             CancellationToken token)
         {
-            ListResourceV2Feed resource = null;
+            ListResource resource = null;
 
-            if (await source.GetFeedType(token) == FeedType.HttpV2)
+            if (await source.GetFeedType(token) == FeedType.HttpV2)// TODO NK - Does the feed type matter at all?
             {
                 var serviceDocument = await source.GetResourceAsync<ODataServiceDocumentResourceV2>(token);
 

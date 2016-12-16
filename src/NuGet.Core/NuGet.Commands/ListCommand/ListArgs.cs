@@ -3,34 +3,44 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using NuGet.Common;
 using NuGet.Configuration;
 
-namespace NuGet.Commands
+namespace NuGet.Commands.ListCommand
 {
     public class ListArgs
     {
+        public delegate void Log(int startIndex, string message);
+
         public bool AllVersions { get; }
 
         public bool IncludeDelisted { get; }
 
         public bool Prerelease { get; }
 
-        public bool Verbose { get; }
-
         public IList<string> Arguments { get; }
 
-        //TODO NK - 
         public ISettings Settings { get; }
 
-        public ILogger Logger { get; } // Is this ok? Since this is the console?
+        public ILogger Logger { get; } // TODO NK Is this ok? Since this is the console?
+
+        public Log PrintJustified { get; }
+
+        public bool IsDetailed { get; }
+
+        public string ListCommandNoPackages { get; }
+
+        public string ListCommandLicenseUrl { get; }
+
+        public CancellationToken CancellationToken { get;  }
 
         public IList<KeyValuePair<Configuration.PackageSource, string>> ListEndpoints { get; }
         
         public ListArgs(IList<string> arguments, IList<KeyValuePair<Configuration.PackageSource, string>> listEndpoints,
-            ISettings settings, ILogger logger, bool allVersions, bool includeDelisted, bool prerelease, bool verbose)
+            ISettings settings, ILogger logger,Log printJustified, bool isDetailedl, string listCommandNoPackages, string listCommandLicenseUrl, bool allVersions, bool includeDelisted, bool prerelease, CancellationToken token)
         {
-            if (arguments == null)
+            if (arguments == null) //TODO NK - Check for nulls in every possible situation
             {
                 throw new ArgumentNullException(nameof(arguments));
             }
@@ -46,14 +56,30 @@ namespace NuGet.Commands
             {
                 throw new ArgumentNullException(nameof(logger));
             }
+            else if (printJustified == null)
+            {
+                throw new ArgumentNullException(nameof(printJustified));
+            }
+            else if (listCommandNoPackages == null)
+            {
+                throw new ArgumentNullException(nameof(listCommandNoPackages));
+            }
+            else if (listCommandLicenseUrl == null)
+            {
+                throw new ArgumentNullException(nameof(listCommandLicenseUrl));
+            }
             Arguments = arguments;
             ListEndpoints = listEndpoints;
             Settings = settings;
             AllVersions = allVersions;
             IncludeDelisted = includeDelisted;
             Prerelease = prerelease;
-            Verbose = verbose;
             Logger = logger;
+            PrintJustified = printJustified;
+            IsDetailed = isDetailedl;
+            ListCommandNoPackages = listCommandNoPackages;
+            ListCommandLicenseUrl = listCommandLicenseUrl;
+            CancellationToken = token;
         }
     }
 }

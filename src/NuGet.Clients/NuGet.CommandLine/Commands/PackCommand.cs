@@ -1,3 +1,5 @@
+extern alias CoreV2;
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,7 +16,7 @@ namespace NuGet.CommandLine
             UsageDescriptionResourceName = "PackageCommandUsageDescription", UsageExampleResourceName = "PackCommandUsageExamples")]
     public class PackCommand : Command
     {
-        internal static readonly string SymbolsExtension = ".symbols" + Constants.PackageExtension;
+        internal static readonly string SymbolsExtension = ".symbols" + CoreV2.NuGet.Constants.PackageExtension;
 
         private readonly HashSet<string> _excludes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, string> _properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);

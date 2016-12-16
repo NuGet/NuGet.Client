@@ -120,6 +120,10 @@
     </Reference>
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="NuGet.Core">
+      <HintPath>..\..\..\packages\NuGet.Core.2.14.0-rtm-832\lib\net40-Client\NuGet.Core.dll</HintPath>
+      <Aliases>CoreV2</Aliases>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.Composition.Registration" />

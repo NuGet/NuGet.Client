@@ -8,7 +8,7 @@ using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol
 {
-    public static class FactoryExtensionsV2
+    public static class FactoryExtensionsV3
     {
         public static SourceRepository GetCoreV3(this Repository.RepositoryFactory factory, string source, FeedType type)
         {

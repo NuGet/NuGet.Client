@@ -1,4 +1,6 @@
-﻿using System;
+﻿extern alias CoreV2; 
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics.CodeAnalysis;
@@ -27,7 +29,7 @@ namespace NuGet.CommandLine
 {
 
     [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
-    public class ProjectFactory : MSBuildUser, IProjectFactory //COREREMOVAL
+    public class ProjectFactory : MSBuildUser, IProjectFactory, CoreV2.NuGet.IPropertyProvider 
     {
         // Its type is Microsoft.Build.Evaluation.Project
         private dynamic _project;
@@ -367,10 +369,10 @@ namespace NuGet.CommandLine
             return value;
         }
 
-        //dynamic IPropertyProvider.GetPropertyValue(string propertyName)
-        //{
-        //    return GetPropertyValue(propertyName);
-        //}
+        dynamic CoreV2.NuGet.IPropertyProvider.GetPropertyValue(string propertyName) // used in tests
+        {
+            return GetPropertyValue(propertyName);
+        }
 
         private void BuildProject()
         {
@@ -1356,15 +1358,15 @@ namespace NuGet.CommandLine
                 _streamFactory = new Lazy<Func<Stream>>(() => ReverseTransform(file, transforms), isThreadSafe: false);
                 TargetFramework = ParseFrameworkNameFromFilePath(Path, out _effectivePath); //TODO NK
             }
-        //TODO NK Dependency on Constants? Do these constants make sense to be copied, this basically depends all the way to the version utility
-        public static FrameworkName ParseFrameworkNameFromFilePath(string filePath, out string effectivePath)
+
+            public static FrameworkName ParseFrameworkNameFromFilePath(string filePath, out string effectivePath)
             {
                 var knownFolders = new string[]
                 {
-                //Constants.ContentDirectory,
-                //Constants.LibDirectory,
-                //Constants.ToolsDirectory,
-                //Constants.BuildDirectory
+                CoreV2.NuGet.Constants.ContentDirectory,
+                CoreV2.NuGet.Constants.LibDirectory,
+                CoreV2.NuGet.Constants.ToolsDirectory,
+                CoreV2.NuGet.Constants.BuildDirectory
                 };
 
                 for (int i = 0; i < knownFolders.Length; i++)
@@ -1377,9 +1379,9 @@ namespace NuGet.CommandLine
 
                         try
                         {
-                            return VersionUtility.ParseFrameworkFolderName(
+                            return CoreV2.NuGet.VersionUtility.ParseFrameworkFolderName(
                                 frameworkPart,
-                                strictParsing: knownFolders[i] == Constants.LibDirectory,
+                                strictParsing: knownFolders[i] == CoreV2.NuGet.Constants.LibDirectory,
                                 effectivePath: out effectivePath);
                         }
                         catch (ArgumentException)

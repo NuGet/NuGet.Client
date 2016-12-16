@@ -1,5 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+extern alias CoreV2;
 
 using System;
 using System.Collections.Generic;
@@ -74,7 +75,7 @@ namespace NuGet.CommandLine
 
         protected internal Configuration.IPackageSourceProvider SourceProvider { get; set; }
 
-        //protected internal IPackageRepositoryFactory RepositoryFactory { get; set; } COREREMOVAL
+        protected internal CoreV2.NuGet.IPackageRepositoryFactory RepositoryFactory { get; set; }
 
         public CommandAttribute CommandAttribute
         {
@@ -121,7 +122,7 @@ namespace NuGet.CommandLine
 
                 SourceProvider = PackageSourceBuilder.CreateSourceProvider(Settings);
                 SetDefaultCredentialProvider();
-                //RepositoryFactory = new CommandLineRepositoryFactory(Console); COREREMOVAL
+                RepositoryFactory = new CommandLineRepositoryFactory(Console);
 
                 UserAgent.SetUserAgentString(new UserAgentStringBuilder(CommandLineConstants.UserAgent));
 

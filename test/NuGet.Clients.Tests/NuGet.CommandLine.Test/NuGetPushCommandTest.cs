@@ -884,7 +884,7 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    if (EnvironmentUtility.IsNet45Installed) // TODO NK - how to fix this?
+                    if (EnvironmentUtility.IsNet45Installed)
                     {
                         Assert.Equal(0, r1.Item1);
 

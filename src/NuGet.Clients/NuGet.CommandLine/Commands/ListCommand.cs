@@ -2,11 +2,14 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using NuGet.CommandLine;
+using NuGet.Commands;
+using NuGet.Commands.ListCommand;
 using NuGet.Protocol.Core.Types;
 
-namespace NuGet.Commands
+namespace NuGet.CommandLine
 {
     [Command(
          typeof(NuGetCommand),
@@ -228,58 +231,22 @@ namespace NuGet.Commands
                 ListCommandRunner = new ListCommandRunner();
             }
             var listEndpoints = await GetListEndpointsAsync();
+
             //TODO NK - logger? How to handle this? 
-            var localsArgs = new ListArgs(Arguments, listEndpoints, Settings, Console, AllVersions,
-                IncludeDelisted, Prerelease, Verbose);
-            IEnumerable<IPackageSearchMetadata> packages = ListCommandRunner.ExecuteCommand(localsArgs);
-            bool hasPackages = false;
-            if (packages != null)
-            {
-                if (Verbosity == Verbosity.Detailed)
-                {
-                    /***********************************************
-                     * Package-Name
-                     *  1.0.0.2010
-                     *  This is the package Description
-                     * 
-                     * Package-Name-Two
-                     *  2.0.0.2010
-                     *  This is the second package Description
-                     ***********************************************/
-                    foreach (var p in packages)
-                    {
-                        Console.PrintJustified(0, p.Identity.Id);
-                        Console.PrintJustified(1, p.Identity.Version.ToString());
-                        Console.PrintJustified(1, p.Description);
-                        if (!string.IsNullOrEmpty(p.LicenseUrl?.OriginalString))
-                        {
-                            Console.PrintJustified(1,
-                                string.Format(
-                                    CultureInfo.InvariantCulture,
-                                    LocalizedResourceManager.GetString("ListCommand_LicenseUrl"),
-                                    p.LicenseUrl.OriginalString));
-                        }
-                        Console.WriteLine();
-                        hasPackages = true;
-                    }
-                }
-                else
-                {
-                    /***********************************************
-                     * Package-Name 1.0.0.2010
-                     * Package-Name-Two 2.0.0.2010
-                     ***********************************************/
-                    foreach (var p in packages)
-                    {
-                        Console.PrintJustified(0, PackageSearchMetadataExtensions.GetFullName(p));
-                        hasPackages = true;
-                    }
-                }
-            }
-            if (!hasPackages)
-            {
-                Console.WriteLine(LocalizedResourceManager.GetString("ListCommandNoPackages"));
-            }
-        }        
+            var list = new ListArgs(Arguments,
+                listEndpoints,
+                Settings,
+                Console,
+                Console.PrintJustified,
+                Verbose,
+                LocalizedResourceManager.GetString("ListCommandNoPackages"), 
+                LocalizedResourceManager.GetString("ListCommand_LicenseUrl"),
+                AllVersions, 
+                IncludeDelisted,
+                Prerelease,
+                CancellationToken.None);
+
+            await ListCommandRunner.ExecuteCommand(list);
+        }
     }
 }

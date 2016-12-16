@@ -1,4 +1,6 @@
-﻿using System;
+﻿extern alias CoreV2;
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -58,7 +60,7 @@ namespace NuGet.CommandLine
             // update with self as parameter
             if (Self)
             {
-                var selfUpdater = new SelfUpdater(repositoryFactory: Repository.RepositoryFactory) { Console = Console };
+                var selfUpdater = new SelfUpdater(repositoryFactory: RepositoryFactory) { Console = Console };
                 selfUpdater.UpdateSelf(Prerelease);
                 return;
             }

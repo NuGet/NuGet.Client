@@ -1,3 +1,5 @@
+extern alias CoreV2;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -44,7 +46,7 @@ namespace NuGet.CommandLine
                 System.Diagnostics.Debugger.Launch();
             }
 #endif
-
+           
             return MainCore(Directory.GetCurrentDirectory(), args);
         }
 
@@ -78,7 +80,7 @@ namespace NuGet.CommandLine
             NetworkProtocolUtility.ConfigureSupportedSslProtocols();
 
             var console = new Console();
-            var fileSystem = new PhysicalFileSystem(workingDirectory);
+            var fileSystem = new CoreV2.NuGet.PhysicalFileSystem(workingDirectory);
 
             Func<Exception, string> getErrorMessage = ExceptionUtilities.DisplayMessage;
 
@@ -133,7 +135,7 @@ namespace NuGet.CommandLine
                 Exception unwrappedEx = ExceptionUtility.Unwrap(exception);
                 if (unwrappedEx is ExitCodeException)
                 {
-                    // Return the exit code without writing out the exception type
+                    // Return /the exit code without writing out the exception type
                     var exitCodeEx = unwrappedEx as ExitCodeException;
                     return exitCodeEx.ExitCode;
                 }
@@ -148,7 +150,7 @@ namespace NuGet.CommandLine
             }
             finally
             {
-                OptimizedZipPackage.PurgeCache();
+                CoreV2.NuGet.OptimizedZipPackage.PurgeCache();
                 SetConsoleOutputEncoding(oldOutputEncoding);
             }
 
@@ -166,7 +168,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        private void Initialize(IFileSystem fileSystem, IConsole console)
+        private void Initialize(CoreV2.NuGet.IFileSystem fileSystem, IConsole console)
         {
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
 
@@ -182,7 +184,7 @@ namespace NuGet.CommandLine
                     using (var container = new CompositionContainer(catalog))
                     {
                         container.ComposeExportedValue(console);
-                        container.ComposeExportedValue<IPackageRepositoryFactory>(new CommandLineRepositoryFactory(console));
+                        container.ComposeExportedValue<CoreV2.NuGet.IPackageRepositoryFactory>(new CommandLineRepositoryFactory(console));
                         container.ComposeExportedValue(fileSystem);
                         container.ComposeParts(this);
                     }
@@ -208,7 +210,7 @@ namespace NuGet.CommandLine
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want to block the exe from usage if anything failed")]
-        internal static void RemoveOldFile(IFileSystem fileSystem)
+        internal static void RemoveOldFile(CoreV2.NuGet.IFileSystem fileSystem)
         {
             string oldFile = typeof(Program).Assembly.Location + ".old";
             try

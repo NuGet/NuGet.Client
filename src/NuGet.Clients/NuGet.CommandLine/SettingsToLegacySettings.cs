@@ -6,7 +6,7 @@
 //    /// <summary>
 //    /// Adapter class to convert NuGet.Configuration.ISettings into legacy ISettings.
 //    /// </summary>
-//    internal class SettingsToLegacySettings : ISettings // TODO NK - What the hell is this?
+//    internal class SettingsToLegacySettings : ISettings //TODO NK - validate this is ok
 //    {
 //        private NuGet.Configuration.ISettings _settings;
 
