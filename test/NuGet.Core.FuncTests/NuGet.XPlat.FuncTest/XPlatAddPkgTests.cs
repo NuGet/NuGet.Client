@@ -25,76 +25,6 @@ namespace NuGet.XPlat.FuncTest
         private static readonly string projectName = "test_project_addpkg";
 
         // Add Related Tests
-        private SimpleTestProjectContext CreateProject(string projectName, SimpleTestPathContext pathContext, string projectFrameworks)
-        {
-            var projectFrameworkList = new List<NuGetFramework>();
-            StringUtility.Split(projectFrameworks)
-                .ToList()
-                .ForEach(f => projectFrameworkList.Add(NuGetFramework.Parse(f)));
-
-            var project = SimpleTestProjectContext.CreateNETCoreWithSDK(
-                    projectName: projectName,
-                    solutionRoot: pathContext.SolutionRoot,
-                    isToolingVersion15: true,
-                    frameworks: projectFrameworkList.ToArray());
-
-            project.Save();
-            return project;
-        }
-
-        private SimpleTestPackageContext CreatePackage(string packageId = "packageX", string packageVersion = "1.0.0", string[] frameworks = null)
-        {
-            var package = new SimpleTestPackageContext()
-            {
-                Id = packageId,
-                Version = packageVersion
-            };
-
-            // Make the package Compatible with specific frameworks
-            frameworks?
-                .ToList()
-                .ForEach(f => package.AddFile($"lib/{f}/a.dll"));
-
-            // To ensure that the nuspec does not have System.Runtime.dll
-            package.Nuspec = GetNetCoreNuspec(packageId, packageVersion);
-
-            return package;
-        }
-
-        private PackageReferenceArgs GetPackageReferenceArgs(string packageId, string packageVersion, string projectPath,
-            string frameworks = "", string packageDirectory = "", string sources = "", bool noRestore = false)
-        {
-            var logger = new TestCommandOutputLogger();
-            var packageDependency = new PackageDependency(packageId, VersionRange.Parse(packageVersion));
-
-            return new PackageReferenceArgs(DotnetCli, projectPath, packageDependency, logger)
-            {
-                Frameworks = StringUtility.Split(frameworks),
-                Sources = StringUtility.Split(sources),
-                PackageDirectory = packageDirectory,
-                NoRestore = noRestore
-            };
-        }
-
-        private string GetCommonFramework(string frameworkStringA, string frameworkStringB, string frameworkStringC)
-        {
-            var frameworksA = StringUtility.Split(frameworkStringA);
-            var frameworksB = StringUtility.Split(frameworkStringB);
-            var frameworksC = StringUtility.Split(frameworkStringC);
-            return frameworksA.ToList()
-                .Intersect(frameworksB.ToList())
-                .Intersect(frameworksC.ToList())
-                .First();
-        }
-
-        private string GetCommonFramework(string frameworkStringA, string frameworkStringB)
-        {
-            var frameworksA = StringUtility.Split(frameworkStringA);
-            var frameworksB = StringUtility.Split(frameworkStringB);
-            return frameworksA.ToList()
-                .Intersect(frameworksB.ToList())
-                .First();
-        }
 
         [Theory]
         [InlineData("1.0.0")]
@@ -448,16 +378,93 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        private XElement GetItemGroupForFramework(XElement root, string framework)
-        {
-            var itemGroups = root.Descendants("ItemGroup");
+        // Helper Methods
 
-            return itemGroups
-                    .Where(d => d.FirstAttribute != null &&
-                                d.FirstAttribute.Name.LocalName.Equals("Condition", StringComparison.OrdinalIgnoreCase) &&
-                                d.FirstAttribute.Value.Equals(GetTargetFrameworkCondition(framework), StringComparison.OrdinalIgnoreCase))
-                     .First();
+        // Arrange Helper Methods
+        private SimpleTestProjectContext CreateProject(string projectName, SimpleTestPathContext pathContext, string projectFrameworks)
+        {
+            var projectFrameworkList = new List<NuGetFramework>();
+            StringUtility.Split(projectFrameworks)
+                .ToList()
+                .ForEach(f => projectFrameworkList.Add(NuGetFramework.Parse(f)));
+
+            var project = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                    projectName: projectName,
+                    solutionRoot: pathContext.SolutionRoot,
+                    isToolingVersion15: true,
+                    frameworks: projectFrameworkList.ToArray());
+
+            project.Save();
+            return project;
         }
+
+        private SimpleTestPackageContext CreatePackage(string packageId = "packageX", string packageVersion = "1.0.0", string[] frameworks = null)
+        {
+            var package = new SimpleTestPackageContext()
+            {
+                Id = packageId,
+                Version = packageVersion
+            };
+
+            // Make the package Compatible with specific frameworks
+            frameworks?
+                .ToList()
+                .ForEach(f => package.AddFile($"lib/{f}/a.dll"));
+
+            // To ensure that the nuspec does not have System.Runtime.dll
+            package.Nuspec = GetNetCoreNuspec(packageId, packageVersion);
+
+            return package;
+        }
+
+        private PackageReferenceArgs GetPackageReferenceArgs(string packageId, string packageVersion, string projectPath,
+            string frameworks = "", string packageDirectory = "", string sources = "", bool noRestore = false)
+        {
+            var logger = new TestCommandOutputLogger();
+            var packageDependency = new PackageDependency(packageId, VersionRange.Parse(packageVersion));
+
+            return new PackageReferenceArgs(DotnetCli, projectPath, packageDependency, logger)
+            {
+                Frameworks = StringUtility.Split(frameworks),
+                Sources = StringUtility.Split(sources),
+                PackageDirectory = packageDirectory,
+                NoRestore = noRestore
+            };
+        }
+
+        private string GetCommonFramework(string frameworkStringA, string frameworkStringB, string frameworkStringC)
+        {
+            var frameworksA = StringUtility.Split(frameworkStringA);
+            var frameworksB = StringUtility.Split(frameworkStringB);
+            var frameworksC = StringUtility.Split(frameworkStringC);
+            return frameworksA.ToList()
+                .Intersect(frameworksB.ToList())
+                .Intersect(frameworksC.ToList())
+                .First();
+        }
+
+        private string GetCommonFramework(string frameworkStringA, string frameworkStringB)
+        {
+            var frameworksA = StringUtility.Split(frameworkStringA);
+            var frameworksB = StringUtility.Split(frameworkStringB);
+            return frameworksA.ToList()
+                .Intersect(frameworksB.ToList())
+                .First();
+        }
+
+        private XDocument GetNetCoreNuspec(string package, string packageVersion)
+        {
+            return XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package>
+                        <metadata>
+                            <id>{package}</id>
+                            <version>{packageVersion}</version>
+                            <title />
+                        </metadata>
+                        </package>");
+        }
+
+        // Assert Helper Methods
 
         private bool ValidateReference(XElement root, string packageId, string version)
         {
@@ -501,16 +508,15 @@ namespace NuGet.XPlat.FuncTest
             return true;
         }
 
-        private XDocument GetNetCoreNuspec(string package, string packageVersion)
+        private XElement GetItemGroupForFramework(XElement root, string framework)
         {
-            return XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <package>
-                        <metadata>
-                            <id>{package}</id>
-                            <version>{packageVersion}</version>
-                            <title />
-                        </metadata>
-                        </package>");
+            var itemGroups = root.Descendants("ItemGroup");
+
+            return itemGroups
+                    .Where(d => d.FirstAttribute != null &&
+                                d.FirstAttribute.Name.LocalName.Equals("Condition", StringComparison.OrdinalIgnoreCase) &&
+                                d.FirstAttribute.Value.Equals(GetTargetFrameworkCondition(framework), StringComparison.OrdinalIgnoreCase))
+                     .First();
         }
 
         private XDocument LoadCSProj(string path)
