@@ -134,6 +134,8 @@ namespace NuGet.Commands
             RestoreOutputType outputType,
             bool success)
         {
+            // For project.json not all files are written out. Find the first one
+            // or if no files exist skip this.
             var firstImport = files.Where(file => file.Content != null)
                 .OrderByDescending(file => file.Path.EndsWith(PropsExtension) ? 1 : 0)
                 .FirstOrDefault();
@@ -163,12 +165,12 @@ namespace NuGet.Commands
             doc.Root.AddFirst(
                 new XElement(Namespace + "PropertyGroup",
                             new XAttribute("Condition", $" {ExcludeAllCondition} "),
-                            GetProperty("RestoreSuccess", success.ToString()),
-                            GetProperty("RestoreTool", "NuGet"),
-                            GetProperty("NuGetPackageRoot", ReplacePathsWithMacros(repositoryRoot)),
-                            GetProperty("NuGetPackageFolders", string.Join(";", packageFolders)),
-                            GetProperty("NuGetProjectStyle", projectStyle),
-                            GetProperty("NuGetToolVersion", MinClientVersionUtility.GetNuGetClientVersion().ToFullString())));
+                            GenerateProperty("RestoreSuccess", success.ToString()),
+                            GenerateProperty("RestoreTool", "NuGet"),
+                            GenerateProperty("NuGetPackageRoot", ReplacePathsWithMacros(repositoryRoot)),
+                            GenerateProperty("NuGetPackageFolders", string.Join(";", packageFolders)),
+                            GenerateProperty("NuGetProjectStyle", projectStyle),
+                            GenerateProperty("NuGetToolVersion", MinClientVersionUtility.GetNuGetClientVersion().ToFullString())));
         }
 
         /// <summary>
@@ -185,7 +187,7 @@ namespace NuGet.Commands
             return doc;
         }
 
-        public static XElement GetProperty(string propertyName, string content)
+        public static XElement GenerateProperty(string propertyName, string content)
         {
             return new XElement(Namespace + propertyName,
                             new XAttribute("Condition", $" '$({propertyName})' == '' "),
@@ -297,17 +299,17 @@ namespace NuGet.Commands
             path);
         }
 
-        public static string GetImportPath(string importPath, string repositoryRoot)
+        public static string GetPathWithMacros(string absolutePath, string repositoryRoot)
         {
-            var path = importPath;
+            var path = absolutePath;
 
-            if (importPath.StartsWith(repositoryRoot, StringComparison.Ordinal))
+            if (absolutePath.StartsWith(repositoryRoot, StringComparison.Ordinal))
             {
-                path = $"$(NuGetPackageRoot){importPath.Substring(repositoryRoot.Length)}";
+                path = $"$(NuGetPackageRoot){absolutePath.Substring(repositoryRoot.Length)}";
             }
             else
             {
-                path = ReplacePathsWithMacros(importPath);
+                path = ReplacePathsWithMacros(absolutePath);
             }
 
             return path;
@@ -466,7 +468,7 @@ namespace NuGet.Commands
                     pkg.Key.Build.WithExtension(TargetsExtension)
                         .Where(e => pkg.Value.Exists())
                         .Select(e => pkg.Value.GetAbsolutePath(e)))
-                        .Select(path => GetImportPath(path, repositoryRoot))
+                        .Select(path => GetPathWithMacros(path, repositoryRoot))
                         .Select(GenerateImport));
 
                 targets.AddRange(GetGroupsWithConditions(buildTargetsGroup, isMultiTargeting, frameworkConditions));
@@ -480,7 +482,7 @@ namespace NuGet.Commands
                     pkg.Key.Build.WithExtension(PropsExtension)
                         .Where(e => pkg.Value.Exists())
                         .Select(e => pkg.Value.GetAbsolutePath(e)))
-                        .Select(path => GetImportPath(path, repositoryRoot))
+                        .Select(path => GetPathWithMacros(path, repositoryRoot))
                         .Select(GenerateImport));
 
                 props.AddRange(GetGroupsWithConditions(buildPropsGroup, isMultiTargeting, frameworkConditions));
@@ -496,7 +498,7 @@ namespace NuGet.Commands
                         pkg.Key.BuildMultiTargeting.WithExtension(TargetsExtension)
                             .Where(e => pkg.Value.Exists())
                             .Select(e => pkg.Value.GetAbsolutePath(e)))
-                            .Select(path => GetImportPath(path, repositoryRoot))
+                            .Select(path => GetPathWithMacros(path, repositoryRoot))
                             .Select(GenerateImport));
 
                     targets.AddRange(GetGroupsWithConditions(buildCrossTargetsGroup, isMultiTargeting, CrossTargetingCondition));
@@ -510,7 +512,7 @@ namespace NuGet.Commands
                         pkg.Key.BuildMultiTargeting.WithExtension(PropsExtension)
                             .Where(e => pkg.Value.Exists())
                             .Select(e => pkg.Value.GetAbsolutePath(e)))
-                            .Select(path => GetImportPath(path, repositoryRoot))
+                            .Select(path => GetPathWithMacros(path, repositoryRoot))
                             .Select(GenerateImport));
 
                     props.AddRange(GetGroupsWithConditions(buildCrossPropsGroup, isMultiTargeting, CrossTargetingCondition));
@@ -529,7 +531,7 @@ namespace NuGet.Commands
                                     new Tuple<LockFileTargetLibrary, LockFileContentFile, string>(
                                         item1: pkg.Key,
                                         item2: e,
-                                        item3: pkg.Value.GetAbsolutePath(GetImportPath(e.Path, repositoryRoot)))))
+                                        item3: GetPathWithMacros(pkg.Value.GetAbsolutePath(e), repositoryRoot))))
                          .SelectMany(e => GetLanguageGroups(e))
                          .SelectMany(group => GetGroupsWithConditions(group, isMultiTargeting, frameworkConditions)));
                 }
