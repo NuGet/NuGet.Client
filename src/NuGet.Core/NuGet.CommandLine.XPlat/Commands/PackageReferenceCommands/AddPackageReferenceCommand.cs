@@ -18,62 +18,62 @@ namespace NuGet.CommandLine.XPlat
 
         public static void Register(CommandLineApplication app, Func<ILogger> getLogger, Func<IAddPackageReferenceCommandRunner> getCommandRunner)
         {
-            app.Command("addpkg", addPkgRef =>
+            app.Command("add", addpkg =>
             {
-                addPkgRef.Description = "dotnet add pkg <package id> <package version>";
-                addPkgRef.HelpOption(XPlatUtility.HelpOption);
+                addpkg.Description = Strings.AddPkg_Description;
+                addpkg.HelpOption(XPlatUtility.HelpOption);
 
-                addPkgRef.Option(
+                addpkg.Option(
                     CommandConstants.ForceEnglishOutputOption,
                     Strings.ForceEnglishOutput_Description,
                     CommandOptionType.NoValue);
 
-                var id = addPkgRef.Option(
+                var id = addpkg.Option(
                     "--package",
-                    "ID of the package",
+                    Strings.AddPkg_PackageIdDescription,
                     CommandOptionType.SingleValue);
 
-                var version = addPkgRef.Option(
+                var version = addpkg.Option(
                     "--version",
-                    "Version of the package",
+                    Strings.AddPkg_PackageVersionDescription,
                     CommandOptionType.SingleValue);
 
-                var dotnetPath = addPkgRef.Option(
-                    "--dotnet|-d",
-                    "No Restore flag",
+                var dotnetPath = addpkg.Option(
+                    "-d|--dotnet",
+                    Strings.AddPkg_DotnetDescription,
                     CommandOptionType.SingleValue);
 
-                var projectPath = addPkgRef.Option(
-                    "--project|-p",
-                    "No Restore flag",
+                var projectPath = addpkg.Option(
+                    "-p|--project",
+                    Strings.AddPkg_ProjectPathDescription,
                     CommandOptionType.SingleValue);
 
-                var frameworks = addPkgRef.Option(
-                    "--frameworks|-f",
-                    "Frameworks",
+                var frameworks = addpkg.Option(
+                    "-f|--frameworks",
+                    Strings.AddPkg_FrameworksDescription,
                     CommandOptionType.SingleValue);
 
-                var noRestore = addPkgRef.Option(
-                    "--no-restore|-n",
-                    "No Restore flag",
+                var noRestore = addpkg.Option(
+                    "-n|--no-restore",
+                    Strings.AddPkg_NoRestoreDescription,
                     CommandOptionType.NoValue);
 
-                var sources = addPkgRef.Option(
-                    "--sources|-s",
-                    "Specifies a NuGet package source to use during the restore.",
+                var sources = addpkg.Option(
+                    "-s|--sources",
+                    Strings.AddPkg_SourcesDescription,
                     CommandOptionType.SingleValue);
 
-                var packageDirectory = addPkgRef.Option(
+                var packageDirectory = addpkg.Option(
                     "--package-directory",
-                    "Directory to install packages in.",
+                    Strings.AddPkg_PackageDirectoryDescription,
                     CommandOptionType.SingleValue);
 
-                addPkgRef.OnExecute(() =>
+                addpkg.OnExecute(() =>
                 {
-                    ValidateArgument(id, "ID not given");
-                    ValidateArgument(version, "Version not given");
-                    ValidateArgument(dotnetPath, "Dotnet Path not given");
-                    ValidateArgument(projectPath, "Project Path not given");
+                    ValidateArgument(id);
+                    ValidateArgument(version);
+                    ValidateArgument(dotnetPath);
+                    ValidateArgument(projectPath);
 
                     var logger = getLogger();
                     var packageDependency = new PackageDependency(id.Values[0], VersionRange.Parse(version.Value()));
@@ -91,11 +91,11 @@ namespace NuGet.CommandLine.XPlat
             });
         }
 
-        private static void ValidateArgument(CommandOption arg, string exceptionMessage)
+        private static void ValidateArgument(CommandOption arg)
         {
             if ((arg.Values.Count < 1) || string.IsNullOrWhiteSpace(arg.Values[0]))
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, exceptionMessage));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.AddPkg_MissingArgument, nameof(arg)));
             }
         }
     }

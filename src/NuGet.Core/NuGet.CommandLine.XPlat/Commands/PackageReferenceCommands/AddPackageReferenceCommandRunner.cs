@@ -22,8 +22,8 @@ namespace NuGet.CommandLine.XPlat
 {
     public class AddPackageReferenceCommandRunner : IAddPackageReferenceCommandRunner
     {
-        private static string NUGET_RESTORE_MSBUILD_VERBOSITY = "NUGET_RESTORE_MSBUILD_VERBOSITY";
-        private static int MSBUILD_WAIT_TIME = 2 * 60 * 1000; // 2 minutes in milliseconds
+        private const string NUGET_RESTORE_MSBUILD_VERBOSITY = "NUGET_RESTORE_MSBUILD_VERBOSITY";
+        private const int MSBUILD_WAIT_TIME = 2 * 60 * 1000; // 2 minutes in milliseconds
 
         public int ExecuteCommand(PackageReferenceArgs packageReferenceArgs, MSBuildAPIUtility msBuild)
         {
@@ -44,9 +44,9 @@ namespace NuGet.CommandLine.XPlat
             using (var dgFilePath = new TempFile(".dg"))
             {
                 // 1. Get project dg file
-                packageReferenceArgs.Logger.LogInformation("Generating project Dependency Graph");
+                packageReferenceArgs.Logger.LogDebug("Generating project Dependency Graph");
                 var dgSpec = GetProjectDependencyGraphAsync(packageReferenceArgs, dgFilePath, timeOut: MSBUILD_WAIT_TIME).Result;
-                packageReferenceArgs.Logger.LogInformation("Project Dependency Graph Generated");
+                packageReferenceArgs.Logger.LogDebug("Project Dependency Graph Generated");
                 var projectName = dgSpec.Restore.FirstOrDefault();
                 var originalPackageSpec = dgSpec.GetProjectSpec(projectName);
 
@@ -58,9 +58,9 @@ namespace NuGet.CommandLine.XPlat
                 updatedDgSpec.AddRestore(updatedPackageSpec.RestoreMetadata.ProjectUniqueName);
 
                 // 2. Run Restore Preview
-                packageReferenceArgs.Logger.LogInformation("Running Restore preview");
+                packageReferenceArgs.Logger.LogDebug("Running Restore preview");
                 var restorePreviewResult = PreviewAddPackageReference(packageReferenceArgs, updatedDgSpec, updatedPackageSpec).Result;
-                packageReferenceArgs.Logger.LogInformation("Restore Review completed");
+                packageReferenceArgs.Logger.LogDebug("Restore Review completed");
 
                 // 3. Process Restore Result
                 var compatibleFrameworks = new HashSet<NuGetFramework>(

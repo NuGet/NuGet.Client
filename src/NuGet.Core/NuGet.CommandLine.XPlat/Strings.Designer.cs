@@ -60,6 +60,105 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Adds a package reference to a project..
+        /// </summary>
+        public static string AddPkg_Description {
+            get {
+                return ResourceManager.GetString("AddPkg_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Path to dotnet to be used to execute msbuild /t:restore..
+        /// </summary>
+        public static string AddPkg_DotnetDescription {
+            get {
+                return ResourceManager.GetString("AddPkg_DotnetDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Frameworks for which the package reference should be added..
+        /// </summary>
+        public static string AddPkg_FrameworksDescription {
+            get {
+                return ResourceManager.GetString("AddPkg_FrameworksDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to usage: dotnet add package --package &lt;Package Id&gt; --version &lt;Package Version&gt; [Options].
+        /// </summary>
+        public static string AddPkg_Help {
+            get {
+                return ResourceManager.GetString("AddPkg_Help", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Unable to add package Reference, argument &apos;{0}&apos; not provided..
+        /// </summary>
+        public static string AddPkg_MissingArgument {
+            get {
+                return ResourceManager.GetString("AddPkg_MissingArgument", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Do not perform restore preview and compatibility check. The added package reference will be unconditional..
+        /// </summary>
+        public static string AddPkg_NoRestoreDescription {
+            get {
+                return ResourceManager.GetString("AddPkg_NoRestoreDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Directory to restore packages in..
+        /// </summary>
+        public static string AddPkg_PackageDirectoryDescription {
+            get {
+                return ResourceManager.GetString("AddPkg_PackageDirectoryDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Id of the package to be added..
+        /// </summary>
+        public static string AddPkg_PackageIdDescription {
+            get {
+                return ResourceManager.GetString("AddPkg_PackageIdDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Version of the package to be added..
+        /// </summary>
+        public static string AddPkg_PackageVersionDescription {
+            get {
+                return ResourceManager.GetString("AddPkg_PackageVersionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Path to the project..
+        /// </summary>
+        public static string AddPkg_ProjectPathDescription {
+            get {
+                return ResourceManager.GetString("AddPkg_ProjectPathDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Specifies NuGet package sources to use during the restore..
+        /// </summary>
+        public static string AddPkg_SourcesDescription {
+            get {
+                return ResourceManager.GetString("AddPkg_SourcesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to The API key for the server..
         /// </summary>
         public static string ApiKey_Description {
@@ -788,7 +887,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to --no-restore|-n flag was used. No compatibility check will be done and the package reference will be added unconditionally..
+        ///    Looks up a localized string similar to --no-restore|-n flag was used. No compatibility check will be done and the added package reference will be unconditional..
         /// </summary>
         public static string Warn_AddPkgWithoutRestore {
             get {

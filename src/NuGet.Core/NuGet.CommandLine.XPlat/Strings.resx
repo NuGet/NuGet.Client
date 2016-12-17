@@ -377,6 +377,40 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
 {1} - Project Path</comment>
   </data>
   <data name="Warn_AddPkgWithoutRestore" xml:space="preserve">
-    <value>--no-restore|-n flag was used. No compatibility check will be done and the package reference will be added unconditionally.</value>
+    <value>--no-restore|-n flag was used. No compatibility check will be done and the added package reference will be unconditional.</value>
+  </data>
+  <data name="AddPkg_Description" xml:space="preserve">
+    <value>Adds a package reference to a project.</value>
+  </data>
+  <data name="AddPkg_DotnetDescription" xml:space="preserve">
+    <value>Path to dotnet to be used to execute msbuild /t:restore.</value>
+  </data>
+  <data name="AddPkg_FrameworksDescription" xml:space="preserve">
+    <value>Frameworks for which the package reference should be added.</value>
+  </data>
+  <data name="AddPkg_Help" xml:space="preserve">
+    <value>usage: dotnet add package --package &lt;Package Id&gt; --version &lt;Package Version&gt; [Options]</value>
+  </data>
+  <data name="AddPkg_MissingArgument" xml:space="preserve">
+    <value>Unable to add package Reference, argument '{0}' not provided.</value>
+    <comment>{0} - Argument which was not provided</comment>
+  </data>
+  <data name="AddPkg_NoRestoreDescription" xml:space="preserve">
+    <value>Do not perform restore preview and compatibility check. The added package reference will be unconditional.</value>
+  </data>
+  <data name="AddPkg_PackageDirectoryDescription" xml:space="preserve">
+    <value>Directory to restore packages in.</value>
+  </data>
+  <data name="AddPkg_PackageIdDescription" xml:space="preserve">
+    <value>Id of the package to be added.</value>
+  </data>
+  <data name="AddPkg_PackageVersionDescription" xml:space="preserve">
+    <value>Version of the package to be added.</value>
+  </data>
+  <data name="AddPkg_ProjectPathDescription" xml:space="preserve">
+    <value>Path to the project.</value>
+  </data>
+  <data name="AddPkg_SourcesDescription" xml:space="preserve">
+    <value>Specifies NuGet package sources to use during the restore.</value>
   </data>
 </root>
