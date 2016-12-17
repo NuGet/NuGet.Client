@@ -46,6 +46,31 @@ namespace NuGet.Common
             }
         }
 
+        public TempFile()
+        {
+            var tempDirectory = Path.Combine(Path.GetTempPath(), "NuGet-Scratch");
+
+            Directory.CreateDirectory(tempDirectory);
+
+            _filePath = Path.Combine(tempDirectory, Path.GetRandomFileName());
+
+            if (!File.Exists(_filePath))
+            {
+                try
+                {
+                    File.Create(_filePath).Dispose();
+                    // file is created successfully.
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_FailedToCreateRandomFile) + " : " +
+                            ex.Message,
+                            ex);
+                }
+            }
+        }
+
         public static implicit operator string(TempFile f)
         {
             return f._filePath;

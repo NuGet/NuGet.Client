@@ -14,10 +14,10 @@ namespace NuGet.CommandLine.XPlat
 {
     public class MSBuildAPIUtility
     {
-        private static string PACKAGE_REFERENCE_TYPE_TAG = "PackageReference";
-        private static string VERSION_TAG = "Version";
-        private static string FRAMEWORK_TAG = "TargetFramework";
-        private static string FRAMEWORKS_TAG = "TargetFrameworks";
+        private const string PACKAGE_REFERENCE_TYPE_TAG = "PackageReference";
+        private const string VERSION_TAG = "Version";
+        private const string FRAMEWORK_TAG = "TargetFramework";
+        private const string FRAMEWORKS_TAG = "TargetFrameworks";
 
         /// <summary>
         /// Opens an MSBuild.Evaluation.Project type from a csproj file.
