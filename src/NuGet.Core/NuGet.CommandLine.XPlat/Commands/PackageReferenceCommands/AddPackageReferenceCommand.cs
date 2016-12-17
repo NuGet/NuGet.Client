@@ -16,7 +16,8 @@ namespace NuGet.CommandLine.XPlat
     {
         private const string MSBuildExeName = "MSBuild.dll";
 
-        public static void Register(CommandLineApplication app, Func<ILogger> getLogger, Func<IAddPackageReferenceCommandRunner> getCommandRunner)
+        public static void Register(CommandLineApplication app, Func<ILogger> getLogger,
+            Func<IAddPackageReferenceCommandRunner> getCommandRunner)
         {
             app.Command("add", addpkg =>
             {
@@ -71,18 +72,20 @@ namespace NuGet.CommandLine.XPlat
                 addpkg.OnExecute(() =>
                 {
                     ValidateArgument(id);
-                    ValidateArgument(version);
                     ValidateArgument(dotnetPath);
                     ValidateArgument(projectPath);
 
                     var logger = getLogger();
-                    var packageDependency = new PackageDependency(id.Values[0], VersionRange.Parse(version.Value()));
+                    var noVersion = !version.HasValue();
+                    var packageVersion = version.HasValue() ? version.Value() : "*";
+                    var packageDependency = new PackageDependency(id.Values[0], VersionRange.Parse(packageVersion));
                     var packageRefArgs = new PackageReferenceArgs(dotnetPath.Value(), projectPath.Value(), packageDependency, logger)
                     {
                         Frameworks = StringUtility.Split(frameworks.Value()),
                         Sources = StringUtility.Split(sources.Value()),
                         PackageDirectory = packageDirectory.Value(),
-                        NoRestore = noRestore.HasValue()
+                        NoRestore = noRestore.HasValue(),
+                        NoVersion = noVersion
                     };
                     var msBuild = new MSBuildAPIUtility();
                     var addPackageRefCommandRunner = getCommandRunner();

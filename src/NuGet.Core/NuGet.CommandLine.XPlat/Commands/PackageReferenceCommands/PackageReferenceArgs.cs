@@ -13,12 +13,13 @@ namespace NuGet.CommandLine.XPlat
     {
         public string DotnetPath { get; }
         public string ProjectPath { get; }
-        public PackageDependency PackageDependency { get; }
         public ILogger Logger { get; }
+        public PackageDependency PackageDependency { get; set; }
         public string[] Frameworks { get; set; }
         public string[] Sources { get; set; }
         public string PackageDirectory { get; set; }
         public bool NoRestore { get; set; }
+        public bool NoVersion { get; set; }
 
         public PackageReferenceArgs(string dotnetPath, string projectPath, PackageDependency packageDependency, ILogger logger)
         {

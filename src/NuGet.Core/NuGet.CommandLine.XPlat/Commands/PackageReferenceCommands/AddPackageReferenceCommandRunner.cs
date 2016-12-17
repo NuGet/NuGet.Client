@@ -14,9 +14,11 @@ using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -45,7 +47,10 @@ namespace NuGet.CommandLine.XPlat
             {
                 // 1. Get project dg file
                 packageReferenceArgs.Logger.LogDebug("Generating project Dependency Graph");
-                var dgSpec = GetProjectDependencyGraphAsync(packageReferenceArgs, dgFilePath, timeOut: MSBUILD_WAIT_TIME).Result;
+                var dgSpec = GetProjectDependencyGraphAsync(packageReferenceArgs,
+                    dgFilePath,
+                    timeOut: MSBUILD_WAIT_TIME)
+                    .Result;
                 packageReferenceArgs.Logger.LogDebug("Project Dependency Graph Generated");
                 var projectName = dgSpec.Restore.FirstOrDefault();
                 var originalPackageSpec = dgSpec.GetProjectSpec(projectName);
@@ -59,7 +64,10 @@ namespace NuGet.CommandLine.XPlat
 
                 // 2. Run Restore Preview
                 packageReferenceArgs.Logger.LogDebug("Running Restore preview");
-                var restorePreviewResult = PreviewAddPackageReference(packageReferenceArgs, updatedDgSpec, updatedPackageSpec).Result;
+                var restorePreviewResult = PreviewAddPackageReference(packageReferenceArgs,
+                    updatedDgSpec,
+                    updatedPackageSpec)
+                    .Result;
                 packageReferenceArgs.Logger.LogDebug("Restore Review completed");
 
                 // 3. Process Restore Result
@@ -86,10 +94,11 @@ namespace NuGet.CommandLine.XPlat
                 {
                     // Package is compatible with none of the project TFMs
                     // Do not add a package reference, throw appropriate error
-                    packageReferenceArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                    packageReferenceArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture,
                         Strings.Error_AddPkgIncompatibleWithAllFrameworks,
                         packageReferenceArgs.PackageDependency.Id,
                         packageReferenceArgs.ProjectPath));
+
                     return 1;
                 }
                 else if (compatibleFrameworks.Count == restorePreviewResult.Result.CompatibilityCheckResults.Count())
@@ -101,27 +110,39 @@ namespace NuGet.CommandLine.XPlat
                         packageReferenceArgs.PackageDependency.Id,
                         packageReferenceArgs.ProjectPath));
 
-                    msBuild.AddPackageReference(packageReferenceArgs.ProjectPath, packageReferenceArgs.PackageDependency);
+                    // If the user did not specify a version then update the version to resolved version
+                    UpdatePackageVersionIfNeeded(restorePreviewResult, packageReferenceArgs);
+
+                    msBuild.AddPackageReference(packageReferenceArgs.ProjectPath,
+                        packageReferenceArgs.PackageDependency);
                 }
                 else
                 {
                     // Package is compatible with some of the project TFMs
                     // Add conditional package references to the project for the compatible TFMs
-                    var compatibleOriginalFrameworks = originalPackageSpec.RestoreMetadata
-                        .OriginalTargetFrameworks
-                        .Where(s => compatibleFrameworks.Contains(NuGetFramework.Parse(s)));
                     packageReferenceArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                         Strings.Info_AddPkgCompatibleWithSubsetFrameworks,
                         packageReferenceArgs.PackageDependency.Id,
                         packageReferenceArgs.ProjectPath));
 
-                    msBuild.AddPackageReferencePerTFM(packageReferenceArgs.ProjectPath, packageReferenceArgs.PackageDependency, compatibleOriginalFrameworks);
+                    var compatibleOriginalFrameworks = originalPackageSpec.RestoreMetadata
+                        .OriginalTargetFrameworks
+                        .Where(s => compatibleFrameworks.Contains(NuGetFramework.Parse(s)));
+
+                    // If the user did not specify a version then update the version to resolved version
+                    UpdatePackageVersionIfNeeded(restorePreviewResult, packageReferenceArgs);
+
+                    msBuild.AddPackageReferencePerTFM(packageReferenceArgs.ProjectPath,
+                        packageReferenceArgs.PackageDependency,
+                        compatibleOriginalFrameworks);
                 }
             }
             return 0;
         }
 
-        private async Task<RestoreResultPair> PreviewAddPackageReference(PackageReferenceArgs packageReferenceArgs, DependencyGraphSpec dgSpec, PackageSpec originalPackageSpec)
+        private async Task<RestoreResultPair> PreviewAddPackageReference(PackageReferenceArgs packageReferenceArgs,
+            DependencyGraphSpec dgSpec,
+            PackageSpec originalPackageSpec)
         {
             // Set user agent and connection settings.
             XPlatUtility.ConfigureProtocol();
@@ -253,6 +274,32 @@ namespace NuGet.CommandLine.XPlat
             }
 
             return spec;
+        }
+
+        private void UpdatePackageVersionIfNeeded(RestoreResultPair restorePreviewResult,
+            PackageReferenceArgs packageReferenceArgs)
+        {
+            // If the user did not specify a version then write the exact resolved version
+            if (packageReferenceArgs.NoVersion)
+            {
+                // Get the flattened restore graph
+                var flattenedRestoreGraph = restorePreviewResult
+                    .Result
+                    .RestoreGraphs
+                    .First()
+                    .Flattened;
+
+                // Get the package entry and version from the graph
+                var packageEntry = flattenedRestoreGraph
+                    .Single(p => p.Key.Name.Equals(packageReferenceArgs.PackageDependency.Id, StringComparison.OrdinalIgnoreCase));
+                var resolvedVersion = packageEntry
+                    .Key
+                    .Version;
+
+                //Update the packagedependency with the new version
+                packageReferenceArgs.PackageDependency = new PackageDependency(packageReferenceArgs.PackageDependency.Id,
+                    VersionRange.Parse(resolvedVersion.ToString()));
+            }
         }
 
         private static void LogQueue(ConcurrentQueue<string> outputs, ILogger logger)
