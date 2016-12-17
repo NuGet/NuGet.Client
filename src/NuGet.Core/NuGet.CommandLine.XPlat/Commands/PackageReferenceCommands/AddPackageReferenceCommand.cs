@@ -71,9 +71,9 @@ namespace NuGet.CommandLine.XPlat
 
                 addpkg.OnExecute(() =>
                 {
-                    ValidateArgument(id);
-                    ValidateArgument(dotnetPath);
-                    ValidateArgument(projectPath);
+                    ValidateArgument(id, id.Template);
+                    ValidateArgument(dotnetPath, dotnetPath.Template);
+                    ValidateArgument(projectPath, projectPath.Template);
 
                     var logger = getLogger();
                     var noVersion = !version.HasValue();
@@ -94,11 +94,11 @@ namespace NuGet.CommandLine.XPlat
             });
         }
 
-        private static void ValidateArgument(CommandOption arg)
+        private static void ValidateArgument(CommandOption arg, string argName)
         {
             if ((arg.Values.Count < 1) || string.IsNullOrWhiteSpace(arg.Values[0]))
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.AddPkg_MissingArgument, nameof(arg)));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.AddPkg_MissingArgument, argName));
             }
         }
     }

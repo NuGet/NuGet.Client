@@ -87,16 +87,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to usage: dotnet add package --package &lt;Package Id&gt; --version &lt;Package Version&gt; [Options].
-        /// </summary>
-        public static string AddPkg_Help {
-            get {
-                return ResourceManager.GetString("AddPkg_Help", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to Unable to add package Reference, argument &apos;{0}&apos; not provided..
+        ///    Looks up a localized string similar to Unable to add package Reference, argument &apos;{0}&apos; not provided. Please use -h|--help for help..
         /// </summary>
         public static string AddPkg_MissingArgument {
             get {
@@ -155,6 +146,15 @@ namespace NuGet.CommandLine.XPlat {
         public static string AddPkg_SourcesDescription {
             get {
                 return ResourceManager.GetString("AddPkg_SourcesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to usage: dotnet add --package &lt;Package Id&gt; [Options].
+        /// </summary>
+        public static string AddPkg_Usage {
+            get {
+                return ResourceManager.GetString("AddPkg_Usage", resourceCulture);
             }
         }
         

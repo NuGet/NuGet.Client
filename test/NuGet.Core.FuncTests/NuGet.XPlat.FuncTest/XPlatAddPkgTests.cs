@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using Microsoft.Extensions.CommandLineUtils;
@@ -43,8 +44,7 @@ namespace NuGet.XPlat.FuncTest
         string sourceString, string packageDirectoryOption, string packageDirectory, string noRestoreSwitch)
         {
             // Arrange
-            Assert.NotNull(DotnetCli);
-            Assert.NotNull(XplatDll);
+            AssertDotnetAndXPlatPaths();
 
             var argList = new List<string>() {
                 "add",
@@ -465,6 +465,43 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
+        [Fact]
+        public async void AddPkg_UnconditionalAddWithPackageDirectory_Success()
+        {
+            // Arrange
+            AssertDotnetAndXPlatPaths();
+
+            using (var tempGlobalPackagesDirectory = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectA = CreateProject(projectName, pathContext, "net46");
+                var packageX = CreatePackage();
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                var packageArgs = GetPackageReferenceArgs(packageX.Id, packageX.Version, projectA.ProjectPath,
+                    packageDirectory: tempGlobalPackagesDirectory.Path);
+                var commandRunner = new AddPackageReferenceCommandRunner();
+
+                // Act
+                var result = commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility());
+                var projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
+                var itemGroup = GetItemGroupForAllFrameworks(projectXmlRoot);
+
+                // Assert
+                Assert.Equal(0, result);
+                Assert.NotNull(itemGroup);
+                Assert.True(ValidateReference(itemGroup, packageX.Id, packageX.Version));
+
+                // Since user provided packge directory, assert if package is present
+                Assert.True(ValidatePackageDownload(tempGlobalPackagesDirectory.Path, packageX));
+            }
+        }
+
         // Update Related Tests
 
         [Theory]
@@ -709,11 +746,15 @@ namespace NuGet.XPlat.FuncTest
                     .Descendants("PackageReference")
                     .Where(d => d.FirstAttribute.Value.Equals(packageId, StringComparison.OrdinalIgnoreCase));
 
-            if (packageReferences.Count() > 0)
-            {
-                return false;
-            }
-            return true;
+            return !(packageReferences.Count() > 0);
+        }
+
+        private bool ValidatePackageDownload(string packageDirectoryPath, SimpleTestPackageContext package)
+        {
+            return Directory.Exists(packageDirectoryPath) &&
+                Directory.Exists(Path.Combine(packageDirectoryPath, package.Id)) &&
+                Directory.Exists(Path.Combine(packageDirectoryPath, package.Id, package.Version)) &&
+                Directory.EnumerateFiles(Path.Combine(packageDirectoryPath, package.Id, package.Version)).Count() > 0;
         }
 
         private XElement GetItemGroupForFramework(XElement root, string framework)
