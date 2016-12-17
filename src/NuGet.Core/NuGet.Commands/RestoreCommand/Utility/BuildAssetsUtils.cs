@@ -471,7 +471,7 @@ namespace NuGet.Commands
                         .Select(path => GetPathWithMacros(path, repositoryRoot))
                         .Select(GenerateImport));
 
-                targets.AddRange(GetGroupsWithConditions(buildTargetsGroup, isMultiTargeting, frameworkConditions));
+                targets.AddRange(GenerateGroupsWithConditions(buildTargetsGroup, isMultiTargeting, frameworkConditions));
 
                 // props/ {packageId}.props
                 var buildPropsGroup = new MSBuildRestoreItemGroup();
@@ -485,7 +485,7 @@ namespace NuGet.Commands
                         .Select(path => GetPathWithMacros(path, repositoryRoot))
                         .Select(GenerateImport));
 
-                props.AddRange(GetGroupsWithConditions(buildPropsGroup, isMultiTargeting, frameworkConditions));
+                props.AddRange(GenerateGroupsWithConditions(buildPropsGroup, isMultiTargeting, frameworkConditions));
 
                 if (isMultiTargeting)
                 {
@@ -501,7 +501,7 @@ namespace NuGet.Commands
                             .Select(path => GetPathWithMacros(path, repositoryRoot))
                             .Select(GenerateImport));
 
-                    targets.AddRange(GetGroupsWithConditions(buildCrossTargetsGroup, isMultiTargeting, CrossTargetingCondition));
+                    targets.AddRange(GenerateGroupsWithConditions(buildCrossTargetsGroup, isMultiTargeting, CrossTargetingCondition));
 
                     // buildMultiTargeting/ {packageId}.props
                     var buildCrossPropsGroup = new MSBuildRestoreItemGroup();
@@ -515,7 +515,7 @@ namespace NuGet.Commands
                             .Select(path => GetPathWithMacros(path, repositoryRoot))
                             .Select(GenerateImport));
 
-                    props.AddRange(GetGroupsWithConditions(buildCrossPropsGroup, isMultiTargeting, CrossTargetingCondition));
+                    props.AddRange(GenerateGroupsWithConditions(buildCrossPropsGroup, isMultiTargeting, CrossTargetingCondition));
                 }
 
                 // ContentFiles are read by the build task, not by NuGet
@@ -528,12 +528,12 @@ namespace NuGet.Commands
                                 .Where(e => pkg.Value.Exists())
                                 .OrderBy(e => e.Path, StringComparer.Ordinal)
                                 .Select(e =>
-                                    new Tuple<LockFileTargetLibrary, LockFileContentFile, string>(
+                                    Tuple.Create(
                                         item1: pkg.Key,
                                         item2: e,
                                         item3: GetPathWithMacros(pkg.Value.GetAbsolutePath(e), repositoryRoot))))
                          .SelectMany(e => GetLanguageGroups(e))
-                         .SelectMany(group => GetGroupsWithConditions(group, isMultiTargeting, frameworkConditions)));
+                         .SelectMany(group => GenerateGroupsWithConditions(group, isMultiTargeting, frameworkConditions)));
                 }
             }
 
@@ -631,7 +631,7 @@ namespace NuGet.Commands
             return groups;
         }
 
-        private static IEnumerable<MSBuildRestoreItemGroup> GetGroupsWithConditions(
+        private static IEnumerable<MSBuildRestoreItemGroup> GenerateGroupsWithConditions(
             MSBuildRestoreItemGroup original,
             bool isCrossTargeting,
             params string[] conditions)
