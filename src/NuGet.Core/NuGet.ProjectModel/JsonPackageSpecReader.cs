@@ -195,13 +195,13 @@ namespace NuGet.ProjectModel
             msbuildMetadata.ProjectUniqueName = rawMSBuildMetadata.GetValue<string>("projectUniqueName");
             msbuildMetadata.OutputPath = rawMSBuildMetadata.GetValue<string>("outputPath");
 
-            var outputTypeString = rawMSBuildMetadata.GetValue<string>("outputType");
+            var projectStyleString = rawMSBuildMetadata.GetValue<string>("projectStyle");
 
-            ProjectStyle outputType;
-            if (!string.IsNullOrEmpty(outputTypeString)
-                && Enum.TryParse<ProjectStyle>(outputTypeString, ignoreCase: true, result: out outputType))
+            ProjectStyle projectStyle;
+            if (!string.IsNullOrEmpty(projectStyleString)
+                && Enum.TryParse<ProjectStyle>(projectStyleString, ignoreCase: true, result: out projectStyle))
             {
-                msbuildMetadata.ProjectStyle = outputType;
+                msbuildMetadata.ProjectStyle = projectStyle;
             }
 
             msbuildMetadata.PackagesPath = rawMSBuildMetadata.GetValue<string>("packagesPath");

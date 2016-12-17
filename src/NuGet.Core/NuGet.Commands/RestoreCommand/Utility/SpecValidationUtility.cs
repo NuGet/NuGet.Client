@@ -81,16 +81,16 @@ namespace NuGet.Commands
                 throw RestoreSpecException.Create(message, files);
             }
 
-            var outputType = spec.RestoreMetadata?.ProjectStyle;
+            var projectStyle = spec.RestoreMetadata?.ProjectStyle;
 
             // Verify required fields for all specs
             ValidateProjectMetadata(spec, files);
 
-            if (outputType == ProjectStyle.Standalone)
+            if (projectStyle == ProjectStyle.Standalone)
             {
                 ValidateStandaloneSpec(spec, files);
             }
-            else if (outputType == ProjectStyle.DotnetCliTool)
+            else if (projectStyle == ProjectStyle.DotnetCliTool)
             {
                 // Verify tool properties
                 ValidateToolSpec(spec, files);
@@ -104,7 +104,7 @@ namespace NuGet.Commands
                 ValidateProjectMSBuildMetadata(spec, files);
 
                 // Verify based on the type.
-                switch (outputType)
+                switch (projectStyle)
                 {
                     case ProjectStyle.PackageReference:
                         ValidateProjectSpecNetCore(spec, files);

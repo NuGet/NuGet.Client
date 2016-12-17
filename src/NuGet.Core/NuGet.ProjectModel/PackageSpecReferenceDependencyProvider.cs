@@ -143,15 +143,15 @@ namespace NuGet.ProjectModel
             {
                 library[KnownLibraryProperties.PackageSpec] = packageSpec;
 
-                var outputType = packageSpec.RestoreMetadata?.ProjectStyle;
+                var projectStyle = packageSpec.RestoreMetadata?.ProjectStyle;
 
-                if (outputType.HasValue)
+                if (projectStyle.HasValue)
                 {
-                    library[KnownLibraryProperties.ProjectOutputType] = outputType.Value.ToString();
+                    library[KnownLibraryProperties.ProjectStyle] = projectStyle.Value.ToString();
                 }
                 else
                 {
-                    library[KnownLibraryProperties.ProjectOutputType] = "unknown";
+                    library[KnownLibraryProperties.ProjectStyle] = ProjectStyle.Unknown.ToString();
                 }
             }
 

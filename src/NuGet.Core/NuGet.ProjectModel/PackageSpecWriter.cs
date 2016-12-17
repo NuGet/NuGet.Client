@@ -120,7 +120,7 @@ namespace NuGet.ProjectModel
 
             if (msbuildMetadata.ProjectStyle != ProjectStyle.Unknown)
             {
-                SetValue(writer, "outputType", msbuildMetadata.ProjectStyle.ToString());
+                SetValue(writer, "projectStyle", msbuildMetadata.ProjectStyle.ToString());
             }
 
             if (msbuildMetadata.CrossTargeting)

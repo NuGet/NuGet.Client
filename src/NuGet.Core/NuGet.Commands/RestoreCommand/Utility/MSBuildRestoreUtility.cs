@@ -124,7 +124,7 @@ namespace NuGet.Commands
 
             if (specItem != null)
             {
-                var typeString = specItem.GetProperty("OutputType");
+                var typeString = specItem.GetProperty("ProjectStyle");
                 var restoreType = ProjectStyle.Unknown;
 
                 if (!string.IsNullOrEmpty(typeString))

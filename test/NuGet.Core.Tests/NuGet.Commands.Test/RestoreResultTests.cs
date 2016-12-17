@@ -31,7 +31,7 @@ namespace NuGet.Commands.Test
                     previousLockFile: null, // different lock file
                     lockFilePath: path,
                     msbuildFiles: Enumerable.Empty<MSBuildOutputFile>(),
-                    outputType: ProjectStyle.Unknown,
+                    projectStyle: ProjectStyle.Unknown,
                     elapsedTime: TimeSpan.MinValue);
 
                 // Act
@@ -62,7 +62,7 @@ namespace NuGet.Commands.Test
                     previousLockFile: new LockFile(), // same lock file
                     lockFilePath: path,
                     msbuildFiles: Enumerable.Empty<MSBuildOutputFile>(),
-                    outputType: ProjectStyle.Unknown,
+                    projectStyle: ProjectStyle.Unknown,
                     elapsedTime: TimeSpan.MinValue);
 
                 // Act
