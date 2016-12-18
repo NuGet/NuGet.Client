@@ -22,7 +22,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
     <PackageVersion Condition=" '$(PackageVersion)' == '' ">$(Version)</PackageVersion>
     <IncludeContentInPack Condition="'$(IncludeContentInPack)'==''">true</IncludeContentInPack>
-    <GenerateNuspecDependsOn>_LoadPackInputItems; _WalkEachTargetPerFramework; _GetPackageFiles</GenerateNuspecDependsOn>
+    <GenerateNuspecDependsOn>_LoadPackInputItems; _WalkEachTargetPerFramework; _GetPackageFiles; $(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
     <Description Condition="'$(Description)'==''">Package Description</Description>
     <IsPackable Condition="'$(IsPackable)'==''">true</IsPackable>
     <IncludeBuildOutput Condition="'$(IncludeBuildOutput)'==''">true</IncludeBuildOutput>
@@ -37,10 +37,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <GenerateNuspecDependsOn>Build;$(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(NuspecFile)' == ''">
-    <PackDependsOn>GenerateNuspec</PackDependsOn>
+    <PackDependsOn>GenerateNuspec; $(PackDependsOn)</PackDependsOn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(NuspecFile)' != ''">
-    <PackDependsOn>PackUsingNuspec</PackDependsOn>
+    <PackDependsOn>PackUsingNuspec; $(PackDependsOn)</PackDependsOn>
   </PropertyGroup>
   <ItemGroup>
     <_TargetFrameworks Condition="'$(TargetFramework)' == ''" Include="$(TargetFrameworks.Split(';'))"/>
