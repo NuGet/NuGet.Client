@@ -752,9 +752,9 @@ namespace NuGet.XPlat.FuncTest
         private bool ValidatePackageDownload(string packageDirectoryPath, SimpleTestPackageContext package)
         {
             return Directory.Exists(packageDirectoryPath) &&
-                Directory.Exists(Path.Combine(packageDirectoryPath, package.Id)) &&
-                Directory.Exists(Path.Combine(packageDirectoryPath, package.Id, package.Version)) &&
-                Directory.EnumerateFiles(Path.Combine(packageDirectoryPath, package.Id, package.Version)).Count() > 0;
+                Directory.Exists(Path.Combine(packageDirectoryPath, package.Id.ToLower())) &&
+                Directory.Exists(Path.Combine(packageDirectoryPath, package.Id.ToLower(), package.Version.ToLower())) &&
+                Directory.EnumerateFiles(Path.Combine(packageDirectoryPath, package.Id.ToLower(), package.Version.ToLower())).Count() > 0;
         }
 
         private XElement GetItemGroupForFramework(XElement root, string framework)
