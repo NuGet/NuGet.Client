@@ -52,6 +52,7 @@ namespace NuGet.Protocol
                 if (allVersions)
                 {
                     var filter = new SearchFilter(includePrerelease: true);
+                    filter.OrderBy = SearchOrderBy.Id;
                     // whether prerelease is included should not matter as allVersions precedes it
                     filter.IncludeDelisted = includeDelisted;
 
@@ -66,6 +67,7 @@ namespace NuGet.Protocol
                 {
                     var filter = new SearchFilter(includePrerelease: true,
                         filter: SearchFilterType.IsAbsoluteLatestVersion);
+                    filter.OrderBy = SearchOrderBy.Id;
                     filter.IncludeDelisted = includeDelisted;
 
                     return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTime, filter, skip, take,
@@ -76,6 +78,7 @@ namespace NuGet.Protocol
                 {
                     var filter = new SearchFilter(includePrerelease: false,
                         filter: SearchFilterType.IsLatestVersion);
+                    filter.OrderBy = SearchOrderBy.Id;
                     return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTime, filter, skip, take,
                         logger, token);
 
@@ -89,7 +92,7 @@ namespace NuGet.Protocol
                     var filter = new SearchFilter(includePrerelease: true);
                     // whether prerelease is included should not matter as allVersions precedes it
                     filter.IncludeDelisted = includeDelisted;
-
+                    filter.OrderBy = SearchOrderBy.Id;
 
                     return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTime, filter, skip, take, logger, token);
 
@@ -103,12 +106,16 @@ namespace NuGet.Protocol
                     var filter = new SearchFilter(includePrerelease: true,
                         filter: SearchFilterType.IsAbsoluteLatestVersion);
                     filter.IncludeDelisted = includeDelisted;
+                    filter.OrderBy = SearchOrderBy.Id;
+
                     return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTime, filter, skip, take, logger, token);
                 }
                 else
                 {
                     var filter = new SearchFilter(includePrerelease: false,
                         filter: SearchFilterType.IsLatestVersion);
+                    filter.OrderBy = SearchOrderBy.Id;
+
                     return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTime, filter, skip, take, logger, token);
                 }
 
@@ -145,22 +152,22 @@ namespace NuGet.Protocol
 
     internal class EnumeratorAsync : IEnumeratorAsync<IPackageSearchMetadata>
     {
-        private SearchFilter filter;
-        private ILogger logger;
-        private string searchTime;
-        private int skip;
-        private int take;
-        private CancellationToken token;
-        private IV2FeedParser _feedParser;
+        private readonly SearchFilter filter;
+        private readonly ILogger logger;
+        private readonly string _searchTime;
+        private readonly int skip;
+        private readonly int take;
+        private readonly CancellationToken token;
+        private readonly IV2FeedParser _feedParser;
 
-        private IEnumerator<IPackageSearchMetadata> currentEnumerator;
-        private V2FeedPage currentPage;
+        private IEnumerator<IPackageSearchMetadata> _currentEnumerator;
+        private V2FeedPage _currentPage;
 
-        public EnumeratorAsync(IV2FeedParser _feedParser, string searchTime, SearchFilter filter, int skip, int take,
+        public EnumeratorAsync(IV2FeedParser feedParser, string searchTime, SearchFilter filter, int skip, int take,
             ILogger logger, CancellationToken token)
         {
-            this._feedParser = _feedParser;
-            this.searchTime = searchTime;
+            this._feedParser = feedParser;
+            this._searchTime = searchTime;
             this.filter = filter;
             this.skip = skip;
             this.take = take;
@@ -172,52 +179,48 @@ namespace NuGet.Protocol
         {
             get
             {
-                if (currentEnumerator == null)
-                {
-                    throw new InvalidOperationException();
-                }
-                else
-                {
-                    return currentEnumerator.Current; //This too might throw IOE
-                }
+                if (_currentEnumerator != null)
+                    return _currentEnumerator.Current;
+                else return null;
             }
         }
 
         public async Task<bool> MoveNextAsync()
         {
-            if (currentPage == null)
+            if (_currentPage == null)
             {
 
-                currentPage = await _feedParser.GetSearchPageAsync(searchTime, filter, skip, take, logger, token);
-                var results = currentPage.Items.GroupBy(p => p.Id)
+                _currentPage = await _feedParser.GetSearchPageAsync(_searchTime, filter, skip, take, logger, token);
+                var results = _currentPage.Items.GroupBy(p => p.Id)
                     .Select(group => group.OrderByDescending(p => p.Version).First())
                     .Select(
                         package =>
                             PackageSearchResourceV2Feed.CreatePackageSearchResult(package, filter,
                                 (V2FeedParser)_feedParser, logger, token));
                 var enumerator = results.GetEnumerator();
-                currentEnumerator = enumerator;
+                _currentEnumerator = enumerator;
+                _currentEnumerator.MoveNext();
                 return true;
             }
             else
             {
-                if (!currentEnumerator.MoveNext())
+                if (!_currentEnumerator.MoveNext())
                 {
-                    string nextUri = currentPage.NextUri;
+                    string nextUri = _currentPage.NextUri;
 
                     if (nextUri == null)
                     {
                         return false;
                     }
-                    currentPage = await _feedParser.QueryV2FeedAsync(nextUri, null, take, false, logger, token);
-                    var results = currentPage.Items.GroupBy(p => p.Id)
+                    _currentPage = await _feedParser.QueryV2FeedAsync(nextUri, null, take, false, logger, token);
+                    var results = _currentPage.Items.GroupBy(p => p.Id)
                         .Select(group => group.OrderByDescending(p => p.Version).First())
                         .Select(
                             package =>
                                 PackageSearchResourceV2Feed.CreatePackageSearchResult(package, filter,
                                     (V2FeedParser)_feedParser, logger, token));
                     var enumerator = results.GetEnumerator();
-                    currentEnumerator = enumerator;
+                    _currentEnumerator = enumerator;
                     return true;
                 }
                 else

@@ -211,7 +211,7 @@ namespace NuGet.Protocol
             var page = await QueryV2FeedAsync(
                 uri,
                 id: null,
-                max: 0, // Only get the first page.
+                max: -1, // Only get the first page.
                 ignoreNotFounds: false,
                 log: log,
                 token: token);
@@ -236,7 +236,7 @@ namespace NuGet.Protocol
             var page = await QueryV2FeedAsync(
                 uri,
                 id: null,
-                max: 0, // Only get the first page.
+                max: -1, // Only get the first page.
                 ignoreNotFounds: false,
                 log: log,
                 token: token);
