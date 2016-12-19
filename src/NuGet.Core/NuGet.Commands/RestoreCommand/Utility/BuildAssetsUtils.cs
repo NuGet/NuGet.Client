@@ -158,7 +158,7 @@ namespace NuGet.Commands
                             GenerateProperty("RestoreTool", "NuGet"),
                             GenerateProperty("NuGetPackageRoot", ReplacePathsWithMacros(repositoryRoot)),
                             GenerateProperty("NuGetPackageFolders", string.Join(";", packageFolders)),
-                            GetProperty("NuGetProjectStyle", projectStyle.ToString()),
+                            GenerateProperty("NuGetProjectStyle", projectStyle.ToString()),
                             GenerateProperty("NuGetToolVersion", MinClientVersionUtility.GetNuGetClientVersion().ToFullString())));
         }
 
