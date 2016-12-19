@@ -265,7 +265,7 @@ namespace NuGet.Commands
                 log.LogMinimal(string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.Log_RestoreComplete,
-                    result.ElapsedTime.TotalMilliseconds,
+                    DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime),
                     summaryRequest.InputPath));
             }
             else
@@ -273,7 +273,7 @@ namespace NuGet.Commands
                 log.LogMinimal(string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.Log_RestoreFailed,
-                    result.ElapsedTime.TotalMilliseconds,
+                    DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime),
                     summaryRequest.InputPath));
             }
 

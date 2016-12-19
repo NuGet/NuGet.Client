@@ -52,7 +52,7 @@ namespace NuGet.CommandLine.XPlat
             }
 
             var app = new CommandLineApplication();
-            app.Name = "nuget";
+            app.Name = "dotnet nuget";
             app.FullName = Strings.App_FullName;
             app.HelpOption(XPlatUtility.HelpOption);
             app.VersionOption("--version", typeof(Program).GetTypeInfo().Assembly.GetName().Version.ToString());

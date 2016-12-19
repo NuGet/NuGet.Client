@@ -155,7 +155,7 @@ namespace NuGet.Build.Tasks
                 {
                     CacheContext = cacheContext,
                     LockFileVersion = LockFileFormat.Version,
-                    ConfigFile = MSBuildUtility.TrimAndGetNullForEmpty(RestoreConfigFile),
+                    ConfigFile = StringUtility.TrimAndGetNullForEmpty(RestoreConfigFile),
                     DisableParallel = RestoreDisableParallel,
                     GlobalPackagesFolder = RestorePackagesPath,
                     Log = log,
@@ -166,7 +166,7 @@ namespace NuGet.Build.Tasks
 
                 if (!string.IsNullOrEmpty(RestoreSources))
                 {
-                    var sources = MSBuildRestoreUtility.Split(RestoreSources);
+                    var sources = StringUtility.Split(RestoreSources);
                     restoreContext.Sources.AddRange(sources);
                 }
 
@@ -183,6 +183,7 @@ namespace NuGet.Build.Tasks
                 return restoreSummaries.All(x => x.Success);
             }
         }
+
         private static void ConfigureProtocol()
         {
             // Set connection limit
@@ -194,7 +195,6 @@ namespace NuGet.Build.Tasks
             // This method has no effect on .NET Core.
             NetworkProtocolUtility.ConfigureSupportedSslProtocols();
         }
-
 
         private static void SetUserAgent()
         {

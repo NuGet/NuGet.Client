@@ -1,13 +1,15 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Shared;
 
 namespace NuGet.ProjectModel
 {
-    public class TargetFrameworkInformation
+    public class TargetFrameworkInformation : IEquatable<TargetFrameworkInformation>
     {
         public NuGetFramework FrameworkName { get; set; }
 
@@ -27,6 +29,39 @@ namespace NuGet.ProjectModel
         public override string ToString()
         {
             return FrameworkName.GetShortFolderName();
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = new HashCodeCombiner();
+
+            hashCode.AddObject(FrameworkName);
+            hashCode.AddSequence(Dependencies);
+            hashCode.AddSequence(Imports);
+
+            return hashCode.CombinedHash;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as TargetFrameworkInformation);
+        }
+
+        public bool Equals(TargetFrameworkInformation other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return EqualityUtility.EqualsWithNullCheck(FrameworkName, other.FrameworkName) &&
+                   Dependencies.SequenceEqualWithNullCheck(other.Dependencies) &&
+                   Imports.SequenceEqualWithNullCheck(other.Imports);
         }
     }
 }

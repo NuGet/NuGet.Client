@@ -7,16 +7,19 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
 using NuGet.Versioning;
 
 namespace NuGet.Build.Tasks.Pack
 {
     public class PackTaskLogic : IPackTaskLogic
     {
+        private const string IdentityProperty = "Identity";
         public PackArgs GetPackArgs(IPackTaskRequest<IMSBuildItem> request)
         {
             var packArgs = new PackArgs
@@ -64,7 +67,7 @@ namespace NuGet.Build.Tasks.Pack
 
             PackCommandRunner.SetupCurrentDirectory(packArgs);
 
-            var contentFiles = ProcessContentToIncludeInPackage(request, packArgs.CurrentDirectory);
+            var contentFiles = ProcessContentToIncludeInPackage(request, packArgs);
             packArgs.PackTargetArgs.ContentFiles = contentFiles;
 
             return packArgs;
@@ -247,36 +250,35 @@ namespace NuGet.Build.Tasks.Pack
             }
         }
 
-        private Dictionary<string, HashSet<string>> ProcessContentToIncludeInPackage(
+        private Dictionary<string, HashSet<ContentMetadata>> ProcessContentToIncludeInPackage(
             IPackTaskRequest<IMSBuildItem> request,
-            string currentProjectDirectory)
+            PackArgs packArgs)
         {
             // This maps from source path on disk to target path inside the nupkg.
-            var fileModel = new Dictionary<string, HashSet<string>>();
+            var fileModel = new Dictionary<string, HashSet<ContentMetadata>>();
             if (request.PackageFiles != null)
             {
                 var excludeFiles = CalculateFilesToExcludeInPack(request);
                 foreach (var packageFile in request.PackageFiles)
                 {
-                    string[] targetPaths;
                     var sourcePath = GetSourcePath(packageFile);
                     if (excludeFiles.Contains(sourcePath))
                     {
                         continue;
                     }
 
-                    GetTargetPath(packageFile, sourcePath, currentProjectDirectory, out targetPaths);
+                    var totalContentMetadata = GetContentMetadata(packageFile, sourcePath, packArgs, request.ContentTargetFolders);
 
                     if (fileModel.ContainsKey(sourcePath))
                     {
-                        var setOfTargetPaths = fileModel[sourcePath];
-                        setOfTargetPaths.AddRange(targetPaths);
+                        var existingContentMetadata = fileModel[sourcePath];
+                        existingContentMetadata.AddRange(totalContentMetadata);
                     }
                     else
                     {
-                        var setOfTargetPaths = new HashSet<string>();
-                        setOfTargetPaths.AddRange(targetPaths);
-                        fileModel.Add(sourcePath, setOfTargetPaths);
+                        var existingContentMetadata = new HashSet<ContentMetadata>();
+                        existingContentMetadata.AddRange(totalContentMetadata);
+                        fileModel.Add(sourcePath, existingContentMetadata);
                     }
                 }
             }
@@ -284,60 +286,92 @@ namespace NuGet.Build.Tasks.Pack
             return fileModel;
         }
 
-
         // The targetpaths returned from this function contain the directory in the nuget package where the file would go to. The filename is added later on to the target path.
-        private void GetTargetPath(IMSBuildItem packageFile, string sourcePath, string currentProjectDirectory, out string[] targetPaths)
+        // whether or not the filename is added later on is dependent upon the fact that does the targetpath resolved here ends with a directory separator char or not.
+        private IEnumerable<ContentMetadata> GetContentMetadata(IMSBuildItem packageFile, string sourcePath,
+            PackArgs packArgs, string[] contentTargetFolders)
         {
-            targetPaths = new string[] { PackagingConstants.Folders.Content + Path.DirectorySeparatorChar, PackagingConstants.Folders.ContentFiles + Path.DirectorySeparatorChar };
+            var targetPaths = contentTargetFolders
+                .Where(f => !f.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                .Select(f => string.Concat(f, Path.DirectorySeparatorChar))
+                .ToList();
+            
+            targetPaths.AddRange(
+                contentTargetFolders
+                .Where(f => f.EndsWith(Path.DirectorySeparatorChar.ToString())));
+
             // if user specified a PackagePath, then use that. Look for any ** which are indicated by the RecrusiveDir metadata in msbuild.
             if (packageFile.Properties.Contains("PackagePath"))
             {
-                targetPaths = packageFile
-                    .GetProperty("PackagePath")
-                    .Split(';')
-                    .Select(p => p.Trim())
-                    .Where(p => p.Length != 0)
-                    .ToArray();
+                // The rule here is that if the PackagePath is an empty string, then we add the file to the root of the package.
+                // Instead if it is a ';' delimited string, then the user needs to specify a '\' to indicate that the file should go to the root of the package.
+
+                var packagePathString = packageFile.GetProperty("PackagePath");
+                targetPaths = packagePathString == null
+                    ? new string[] { String.Empty }.ToList()
+                    : StringUtility.Split(packagePathString)
+                    .Distinct()
+                    .ToList();
 
                 var recursiveDir = packageFile.GetProperty("RecursiveDir");
                 if (!string.IsNullOrEmpty(recursiveDir))
                 {
-                    var newTargetPaths = new string[targetPaths.Length];
-                    var i = 0;
+                    var newTargetPaths = new List<string>();
                     foreach (var targetPath in targetPaths)
                     {
                         if (targetPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
                         {
-                            newTargetPaths[i] = Path.Combine(targetPath, recursiveDir);
+                            newTargetPaths.Add(Path.Combine(targetPath, recursiveDir));
                         }
                         else
                         {
-                            newTargetPaths[i] = targetPath;
+                            newTargetPaths.Add(targetPath);
                         }
+                    }
+                    targetPaths = newTargetPaths;
+                }
 
-                        i++;
+                // this else if condition means the file is within the project directory and the target path should preserve this relative directory structure.
+                else if (sourcePath.StartsWith(packArgs.CurrentDirectory, StringComparison.CurrentCultureIgnoreCase) &&
+                         !Path.GetFileName(sourcePath)
+                             .Equals(packageFile.GetProperty(IdentityProperty), StringComparison.CurrentCultureIgnoreCase))
+                {
+                    var newTargetPaths = new List<string>();
+                    var identity = packageFile.GetProperty(IdentityProperty);
+                    if (identity.EndsWith(Path.GetFileName(sourcePath), StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        identity = Path.GetDirectoryName(identity);
+                    }
+                    foreach (var targetPath in targetPaths)
+                    {
+                        newTargetPaths.Add(Path.Combine(targetPath, identity) + Path.DirectorySeparatorChar);
                     }
                     targetPaths = newTargetPaths;
                 }
             }
-            // this else if condition means the file is within the project directory and the target path should preserve this relative directory structure.
-            else if (sourcePath.StartsWith(currentProjectDirectory, StringComparison.CurrentCultureIgnoreCase) &&
-                !Path.GetFileName(sourcePath).Equals(packageFile.GetProperty("Identity"), StringComparison.CurrentCultureIgnoreCase))
+
+            var buildAction = BuildAction.Parse(packageFile.GetProperty("BuildAction"));
+
+            // TODO: Do the work to get the right language of the project, tracked via https://github.com/NuGet/Home/issues/4100
+            var language = buildAction.Equals(BuildAction.Compile) ? "cs" : "any";
+
+            var setOfTargetPaths = new HashSet<string>(targetPaths, StringComparer.Ordinal);
+            if (setOfTargetPaths.Remove("contentFiles" + Path.DirectorySeparatorChar) 
+                || setOfTargetPaths.Remove("contentFiles"))
             {
-                var newTargetPaths = new string[targetPaths.Length];
-                var i = 0;
-                var identity = packageFile.GetProperty("Identity");
-                if (identity.EndsWith(Path.GetFileName(sourcePath), StringComparison.CurrentCultureIgnoreCase))
+                foreach (var framework in packArgs.PackTargetArgs.TargetFrameworks)
                 {
-                    identity = Path.GetDirectoryName(identity);
+                    setOfTargetPaths.Add(Path.Combine("contentFiles",
+                        Path.Combine(language, framework.GetShortFolderName())) + Path.DirectorySeparatorChar);
                 }
-                foreach (var targetPath in targetPaths)
-                {
-                    newTargetPaths[i] = Path.Combine(targetPath, identity) + Path.DirectorySeparatorChar;
-                    i++;
-                }
-                targetPaths = newTargetPaths;
             }
+
+            return setOfTargetPaths.Select(target => new ContentMetadata()
+            {
+                BuildAction = buildAction.IsKnown ? buildAction.Value : null,
+                Source = sourcePath,
+                Target = target
+            });
         }
 
         private string GetSourcePath(IMSBuildItem packageFile)
@@ -346,7 +380,7 @@ namespace NuGet.Build.Tasks.Pack
             if (packageFile.Properties.Contains("MSBuildSourceProjectFile"))
             {
                 string sourceProjectFile = packageFile.GetProperty("MSBuildSourceProjectFile");
-                string identity = packageFile.GetProperty("Identity");
+                string identity = packageFile.GetProperty(IdentityProperty);
                 sourcePath = Path.Combine(sourceProjectFile.Replace(Path.GetFileName(sourceProjectFile), string.Empty), identity);
             }
             return Path.GetFullPath(sourcePath);

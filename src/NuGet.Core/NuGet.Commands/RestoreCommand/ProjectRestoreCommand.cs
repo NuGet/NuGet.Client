@@ -64,11 +64,6 @@ namespace NuGet.Commands
 
             graphs.AddRange(frameworkGraphs);
 
-            if (!ResolutionSucceeded(frameworkGraphs))
-            {
-                return Tuple.Create(false, graphs, allRuntimes);
-            }
-
             await InstallPackagesAsync(graphs,
                 allInstalledPackages,
                 token);
@@ -117,11 +112,6 @@ namespace NuGet.Commands
 
                 graphs.AddRange(runtimeGraphs);
 
-                if (!ResolutionSucceeded(runtimeGraphs))
-                {
-                    return Tuple.Create(false, graphs, allRuntimes);
-                }
-
                 // Install runtime-specific packages
                 await InstallPackagesAsync(runtimeGraphs,
                     allInstalledPackages,
@@ -131,7 +121,9 @@ namespace NuGet.Commands
                 userPackageFolder.ClearCacheForIds(allInstalledPackages.Select(package => package.Name));
             }
 
-            return Tuple.Create(true, graphs, allRuntimes);
+            var success = ResolutionSucceeded(graphs);
+
+            return Tuple.Create(success, graphs, allRuntimes);
         }
 
         private Task<RestoreTargetGraph> WalkDependenciesAsync(LibraryRange projectRange,

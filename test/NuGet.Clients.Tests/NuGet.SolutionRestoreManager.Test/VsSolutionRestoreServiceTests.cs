@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -13,6 +14,7 @@ using NuGet.LibraryModel;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.SolutionRestoreManager.Test
@@ -144,14 +146,19 @@ namespace NuGet.SolutionRestoreManager.Test
         public async Task NominateProjectAsync_WithTools_Succeeds()
         {
             const string toolProjectJson = @"{
-    ""tools"": {
-        ""Foo.Test.Tools"": ""1.0.0""
-    },
     ""frameworks"": {
         ""netcoreapp1.0"": { }
     }
 }";
-            var cps = NewCpsProject(projectJson: toolProjectJson);
+            var cps = NewCpsProject(
+                projectJson: toolProjectJson,
+                tools: new[]
+                {
+                    new LibraryRange(
+                        "Foo.Test.Tools",
+                        VersionRange.Parse("2.0.0"),
+                        LibraryDependencyTarget.Package)
+                });
             var projectFullPath = cps.Item1;
 
             var cache = Mock.Of<IProjectSystemCache>();
@@ -195,10 +202,17 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.Equal(projectFullPath, actualMetadata.ProjectPath);
             Assert.Equal(RestoreOutputType.DotnetCliTool, actualMetadata.OutputType);
             Assert.Null(actualMetadata.OutputPath);
+            var toolLibrary = actualToolSpec
+                .TargetFrameworks
+                .Single()
+                .Dependencies
+                .Single();
+            Assert.Equal("Foo.Test.Tools", toolLibrary.Name);
+            Assert.Equal("2.0.0", toolLibrary.LibraryRange.VersionRange.OriginalString);
         }
 
         private Tuple<string, string, IVsProjectRestoreInfo> NewCpsProject(
-            string projectName = null, string projectJson = null)
+            string projectName = null, string projectJson = null, IEnumerable<LibraryRange> tools = null)
         {
             const string DefaultProjectJson = @"{
     ""frameworks"": {
@@ -218,7 +232,10 @@ namespace NuGet.SolutionRestoreManager.Test
             Directory.CreateDirectory(baseIntermediatePath);
 
             var spec = JsonPackageSpecReader.GetPackageSpec(projectJson ?? DefaultProjectJson, projectName, projectFullPath);
-            var pri = ProjectRestoreInfoBuilder.Build(spec, baseIntermediatePath);
+            var pri = ProjectRestoreInfoBuilder.Build(
+                spec,
+                baseIntermediatePath,
+                tools);
             return Tuple.Create(projectFullPath, baseIntermediatePath, pri);
         }
 

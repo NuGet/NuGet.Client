@@ -73,7 +73,7 @@ namespace NuGet.ProjectModel
 
         public static PackageSpec GetPackageSpec(JObject rawPackageSpec, string name, string packageSpecPath, string snapshotValue)
         {
-            var packageSpec = new PackageSpec(rawPackageSpec);
+            var packageSpec = new PackageSpec();
 
             // Parse properties we know about
             var version = rawPackageSpec["version"];
@@ -83,13 +83,7 @@ namespace NuGet.ProjectModel
             packageSpec.Name = name;
             packageSpec.FilePath = name == null ? null : Path.GetFullPath(packageSpecPath);
 
-            if (version == null)
-            {
-                packageSpec.Version = new NuGetVersion("1.0.0");
-                packageSpec.IsDefaultVersion = true;
-                packageSpec.HasVersionSnapshot = false;
-            }
-            else
+            if (version != null)
             {
                 try
                 {
@@ -164,8 +158,6 @@ namespace NuGet.ProjectModel
                 rawPackageSpec,
                 "dependencies",
                 isGacOrFrameworkReference: false);
-
-            packageSpec.Tools = ReadTools(packageSpec, rawPackageSpec).ToList();
 
             packageSpec.PackOptions = GetPackOptions(packageSpec, rawPackageSpec);
 
@@ -569,79 +561,6 @@ namespace NuGet.ProjectModel
                         IncludeType = includeFlags,
                         SuppressParent = suppressParentFlagsValue
                     });
-                }
-            }
-        }
-
-        private static IEnumerable<ToolDependency> ReadTools(PackageSpec packageSpec, JObject rawPackageSpec)
-        {
-            var tools = rawPackageSpec["tools"] as JObject;
-            if (tools != null)
-            {
-                foreach (var tool in tools)
-                {
-                    if (string.IsNullOrEmpty(tool.Key))
-                    {
-                        throw FileFormatException.Create(
-                            Strings.MissingToolName,
-                            tool.Value,
-                            packageSpec.FilePath);
-                    }
-
-                    var value = tool.Value;
-                    JToken versionToken = null;
-                    string versionValue = null;
-                    var imports = new List<NuGetFramework>();
-                    if (value.Type == JTokenType.String)
-                    {
-                        versionToken = value;
-                        versionValue = value.Value<string>();
-                    }
-                    else
-                    {
-                        if (value.Type == JTokenType.Object)
-                        {
-                            versionToken = value["version"];
-                            if (versionToken != null && versionToken.Type == JTokenType.String)
-                            {
-                                versionValue = versionToken.Value<string>();
-                            }
-
-                            imports.AddRange(GetImports((JObject)value, packageSpec));
-                        }
-                    }
-
-                    if (versionValue == null)
-                    {
-                        throw FileFormatException.Create(
-                            Strings.MissingVersionOnTool,
-                            tool.Value,
-                            packageSpec.FilePath);
-                    }
-
-                    VersionRange versionRange;
-                    try
-                    {
-                        versionRange = VersionRange.Parse(versionValue);
-                    }
-                    catch (Exception ex)
-                    {
-                        throw FileFormatException.Create(
-                            ex,
-                            versionToken,
-                            packageSpec.FilePath);
-                    }
-
-                    yield return new ToolDependency
-                    {
-                        LibraryRange = new LibraryRange
-                        {
-                            Name = tool.Key,
-                            TypeConstraint = LibraryDependencyTarget.Package,
-                            VersionRange = versionRange
-                        },
-                        Imports = imports
-                    };
                 }
             }
         }

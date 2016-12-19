@@ -11,8 +11,9 @@ done
 RESULTCODE=0
 
 # move up to the repo root
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-pushd $DIR/../../
+SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DIR=$SCRIPTDIR/../../
+pushd DIR
 
 # Download the CLI install script to cli
 echo "Installing dotnet CLI"
@@ -72,6 +73,39 @@ do
 		echo "Skipping the tests in $testProject on CoreCLR"
 	fi
 done
+
+#run mono test
+TestDir="$DIR/artifacts/NuGet.CommandLine.Test/14.0/Release"
+XunitConsole="$DIR/packages/xunit.runner.console.2.1.0/tools/xunit.console.exe"
+NuGetExe="$DIR/.nuget/nuget.exe"
+
+#Get NuGet.exe
+wget -O $NuGetExe https://dist.nuget.org/win-x86-commandline/latest-prerelease/nuget.exe 
+
+#restore solution packages
+mono $NuGetExe restore  "$DIR/.nuget/packages.config" -SolutionDirectory "$DIR"
+if [ $? -ne 0 ]; then
+	echo "Restore failed!!"
+	exit 1
+fi
+
+#Clean System dll
+rm -r -f "$TestDir/System.*" "$TestDir/WindowsBase.dll" "$TestDir/Microsoft.CSharp.dll" "$TestDir/Microsoft.Build.Engine.dll"
+
+#Run xunit test
+
+case "$(uname -s)" in
+		Linux)
+			echo "mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Darwin"
+			mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Darwin
+			;;
+		Darwin)
+			echo "mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Linux"
+			mono $XunitConsole "$TestDir/NuGet.CommandLine.Test.dll" -notrait Platform=Windows -notrait Platform=Linux
+			;;
+		*) ;;
+esac
+
 
 popd
 

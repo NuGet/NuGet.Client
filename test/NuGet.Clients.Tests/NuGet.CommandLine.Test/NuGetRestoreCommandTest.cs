@@ -482,10 +482,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 
 
             var msbuildPath = Util.GetMsbuildPathOnWindows();
-            var os = Environment.GetEnvironmentVariable("OSTYPE");
-            if (RuntimeEnvironmentHelper.IsMono && os != null && os.StartsWith("darwin"))
+            if (RuntimeEnvironmentHelper.IsMono && Util.IsRunningOnMac())
             {
-                msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/14.1/bin/";
+                msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
             }
 
             using (var workingPath = TestDirectory.Create())
@@ -514,7 +513,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
-            var msbuildPath = @"\\not exist path";
+            var msbuildPath = @"not exist path";
 
             using (var workingPath = TestDirectory.Create())
             {
@@ -541,10 +540,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 
 
             var msbuildPath = Util.GetMsbuildPathOnWindows();
-            var os = Environment.GetEnvironmentVariable("OSTYPE");
-            if (RuntimeEnvironmentHelper.IsMono && os != null && os.StartsWith("darwin"))
+            if (RuntimeEnvironmentHelper.IsMono && Util.IsRunningOnMac())
             {
-                msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/14.1/bin/";
+                msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
             }
 
             using (var workingPath = TestDirectory.Create())

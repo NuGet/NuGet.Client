@@ -89,7 +89,7 @@ namespace NuGet.Common
             var projects = new List<ProjectInSolution>();
             foreach (var proj in (object[])projectsProperty.GetValue(solutionParser, index: null))
             {
-                string projectType = projectTypeProperty.GetValue(proj, index: null).ToString();
+                var projectType = projectTypeProperty.GetValue(proj, index: null).ToString();
                 var isSolutionFolder = projectType.Equals("SolutionFolder", StringComparison.OrdinalIgnoreCase);
                 var relativePath = (string)relativePathProperty.GetValue(proj, index: null);
                 projects.Add(new ProjectInSolution(relativePath, isSolutionFolder));
@@ -108,9 +108,9 @@ namespace NuGet.Common
             var projects = new List<ProjectInSolution>();
             foreach (dynamic project in solutionFile.ProjectsInOrder)
             {
-                string projectType = project.ProjectType.ToString();
+                var projectType = project.ProjectType.ToString();
                 var isSolutionFolder = projectType.Equals("SolutionFolder", StringComparison.OrdinalIgnoreCase);
-                string relativePath = project.RelativePath;
+                var relativePath = project.RelativePath.Replace('\\', Path.DirectorySeparatorChar);
                 projects.Add(new ProjectInSolution(relativePath, isSolutionFolder));
             }
             this.Projects = projects;

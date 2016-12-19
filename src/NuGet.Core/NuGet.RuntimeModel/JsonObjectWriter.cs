@@ -18,7 +18,7 @@ namespace NuGet.RuntimeModel
         private readonly Stack<JContainer> _containers;
         private JContainer _currentContainer;
         private bool _isReadOnly;
-        private readonly JContainer _root;
+        private readonly JObject _root;
 
         public JsonObjectWriter()
         {
@@ -96,13 +96,26 @@ namespace NuGet.RuntimeModel
         /// <summary>
         /// Gets the JSON for the object.
         ///
-        /// Once GetJson is called, no further writing is allowed.
+        /// Once <see cref="GetJson"/> is called, no further writing is allowed.
         /// </summary>
         public string GetJson()
         {
             _isReadOnly = true;
 
             return _root.ToString();
+        }
+
+        /// <summary>
+        /// Gets the JObject (in-memory JSON model) for the object.
+        /// 
+        /// Once <see cref="GetJObject"/> is called, no further writing is allowed.
+        /// </summary>
+        /// <returns></returns>
+        public JObject GetJObject()
+        {
+            _isReadOnly = true;
+
+            return _root;
         }
 
         /// <summary>

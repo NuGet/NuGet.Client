@@ -1,12 +1,14 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using NuGet.Configuration;
+using NuGet.Shared;
 
 namespace NuGet.ProjectModel
 {
-    public class ProjectRestoreMetadata
+    public class ProjectRestoreMetadata : IEquatable<ProjectRestoreMetadata>
     {
         /// <summary>
         /// Restore behavior type.
@@ -75,5 +77,58 @@ namespace NuGet.ProjectModel
         /// instead of lowercase.
         /// </summary>
         public bool LegacyPackagesDirectory { get; set; }
+
+        public override int GetHashCode()
+        {
+            var hashCode = new HashCodeCombiner();
+
+            hashCode.AddObject(OutputType);
+            hashCode.AddObject(ProjectPath);
+            hashCode.AddObject(ProjectJsonPath);
+            hashCode.AddObject(OutputPath);
+            hashCode.AddObject(ProjectName);
+            hashCode.AddObject(ProjectUniqueName);
+            hashCode.AddSequence(Sources);
+            hashCode.AddObject(PackagesPath);
+            hashCode.AddSequence(FallbackFolders);
+            hashCode.AddSequence(TargetFrameworks);
+            hashCode.AddSequence(OriginalTargetFrameworks);
+            hashCode.AddObject(CrossTargeting);
+            hashCode.AddObject(LegacyPackagesDirectory);
+
+            return hashCode.CombinedHash;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as ProjectRestoreMetadata);
+        }
+
+        public bool Equals(ProjectRestoreMetadata other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return OutputType == other.OutputType &&
+                   ProjectPath == other.ProjectPath &&
+                   ProjectJsonPath == other.ProjectJsonPath &&
+                   OutputPath == other.OutputPath &&
+                   ProjectName == other.ProjectName &&
+                   ProjectUniqueName == other.ProjectUniqueName &&
+                   EqualityUtility.SequenceEqualWithNullCheck(Sources, other.Sources) &&
+                   PackagesPath == other.PackagesPath &&
+                   EqualityUtility.SequenceEqualWithNullCheck(FallbackFolders, other.FallbackFolders) &&
+                   EqualityUtility.SequenceEqualWithNullCheck(TargetFrameworks, other.TargetFrameworks) &&
+                   EqualityUtility.SequenceEqualWithNullCheck(OriginalTargetFrameworks, other.OriginalTargetFrameworks) &&
+                   CrossTargeting == other.CrossTargeting &&
+                   LegacyPackagesDirectory == other.LegacyPackagesDirectory;
+        }
     }
 }

@@ -159,7 +159,7 @@ namespace NuGet.ProjectModel.Test
             var libraryDependency = new LibraryDependency() { IncludeType = LibraryIncludeFlags.Build, LibraryRange = libraryRange };
             var nugetFramework = new NuGetFramework("frameworkIdentifier", new Version("1.2.3"), "frameworkProfile");
 
-            var packageSpec = new PackageSpec(rawProperties: null)
+            var packageSpec = new PackageSpec()
             {
                 Authors = unsortedArray,
                 BuildOptions = new BuildOptions() { OutputName = "outputName" },
@@ -246,15 +246,6 @@ namespace NuGet.ProjectModel.Test
                 Imports = new List<NuGetFramework>() { nugetFramework },
                 Warn = true
             });
-
-            packageSpec.Tools = new List<ToolDependency>()
-            {
-                new ToolDependency()
-                {
-                    Imports = new List<NuGetFramework> () { nugetFramework  },
-                    LibraryRange = libraryRange
-                }
-            };
 
             return packageSpec;
         }

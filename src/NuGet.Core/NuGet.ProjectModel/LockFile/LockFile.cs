@@ -23,9 +23,8 @@ namespace NuGet.ProjectModel
         public IList<ProjectFileDependencyGroup> ProjectFileDependencyGroups { get; set; } = new List<ProjectFileDependencyGroup>();
         public IList<LockFileLibrary> Libraries { get; set; } = new List<LockFileLibrary>();
         public IList<LockFileTarget> Targets { get; set; } = new List<LockFileTarget>();
-        public IList<LockFileTarget> Tools { get; set; } = new List<LockFileTarget>();
-        public IList<ProjectFileDependencyGroup> ProjectFileToolGroups { get; set; } = new List<ProjectFileDependencyGroup>();
         public IList<LockFileItem> PackageFolders { get; set; } = new List<LockFileItem>();
+        public PackageSpec PackageSpec { get; set; }
 
         public bool IsValidForPackageSpec(PackageSpec spec)
         {
@@ -40,11 +39,6 @@ namespace NuGet.ProjectModel
             }
 
             if (!ValidateDependencies(spec))
-            {
-                return false;
-            }
-
-            if (!ValidateTools(spec))
             {
                 return false;
             }
@@ -100,44 +94,6 @@ namespace NuGet.ProjectModel
             return true;
         }
 
-        private bool ValidateTools(PackageSpec spec)
-        {
-            // Skip this check if there are no tools at all.
-            if (ProjectFileToolGroups.Count == 0 && spec.Tools.Count == 0)
-            {
-                return true;
-            }
-
-            // The lock file should only contain tools for a single framework
-            if (ProjectFileToolGroups.Count != 1)
-            {
-                return false;
-            }
-
-            var group = ProjectFileToolGroups.First();
-            if (!StringComparer.OrdinalIgnoreCase.Equals(
-                group.FrameworkName,
-                ToolFramework.ToString()))
-            {
-                return false;
-            }
-
-            var lockDependencies = group
-                .Dependencies
-                .OrderBy(x => x, StringComparer.Ordinal);
-
-            var specDependencies = spec.Tools
-                .Select(x => x.LibraryRange.ToLockFileDependencyGroupString())
-                .OrderBy(x => x, StringComparer.Ordinal);
-
-            if (!specDependencies.SequenceEqual(lockDependencies))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
         public LockFileTarget GetTarget(NuGetFramework framework, string runtimeIdentifier)
         {
             return Targets.FirstOrDefault(t =>
@@ -160,7 +116,7 @@ namespace NuGet.ProjectModel
                 return false;
             }
 
-            if (Object.ReferenceEquals(this, other))
+            if (ReferenceEquals(this, other))
             {
                 return true;
             }
@@ -169,9 +125,8 @@ namespace NuGet.ProjectModel
                 && ProjectFileDependencyGroups.OrderedEquals(other.ProjectFileDependencyGroups, group => group.FrameworkName, StringComparer.OrdinalIgnoreCase)
                 && Libraries.OrderedEquals(other.Libraries, library => library.Name, StringComparer.OrdinalIgnoreCase)
                 && Targets.OrderedEquals(other.Targets, target => target.Name, StringComparer.Ordinal)
-                && ProjectFileToolGroups.OrderedEquals(other.ProjectFileToolGroups, group => group.FrameworkName, StringComparer.OrdinalIgnoreCase)
-                && Tools.OrderedEquals(other.Tools, target => target.Name, StringComparer.Ordinal)
-                && PackageFolders.SequenceEqual<LockFileItem>(other.PackageFolders);
+                && PackageFolders.SequenceEqual(other.PackageFolders)
+                && EqualityUtility.EqualsWithNullCheck(PackageSpec, other.PackageSpec);
         }
 
         public override bool Equals(object obj)
@@ -193,13 +148,13 @@ namespace NuGet.ProjectModel
             }
 
             HashLockFileTargets(combiner, Targets);
-            HashProjectFileDependencyGroups(combiner, ProjectFileToolGroups);
-            HashLockFileTargets(combiner, Tools);
 
             foreach (var item in PackageFolders)
             {
                 combiner.AddObject(item);
             }
+
+            combiner.AddObject(PackageSpec);
 
             return combiner.CombinedHash;
         }

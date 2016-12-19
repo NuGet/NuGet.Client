@@ -167,12 +167,12 @@ namespace NuGet.Commands
                     AddPackageReferences(result, items);
                     result.RestoreMetadata.OutputPath = specItem.GetProperty("OutputPath");
 
-                    foreach (var source in Split(specItem.GetProperty("Sources")))
+                    foreach (var source in StringUtility.Split(specItem.GetProperty("Sources")))
                     {
                         result.RestoreMetadata.Sources.Add(new PackageSource(source));
                     }
 
-                    foreach (var folder in Split(specItem.GetProperty("FallbackFolders")))
+                    foreach (var folder in StringUtility.Split(specItem.GetProperty("FallbackFolders")))
                     {
                         result.RestoreMetadata.FallbackFolders.Add(folder);
                     }
@@ -227,7 +227,7 @@ namespace NuGet.Commands
 
                 if (targetFrameworkInfo != null)
                 {
-                    var fallbackList = Split(item.GetProperty("PackageTargetFallback"))
+                    var fallbackList = StringUtility.Split(item.GetProperty("PackageTargetFallback"))
                         .Select(NuGetFramework.Parse)
                         .ToList();
 
@@ -236,7 +236,7 @@ namespace NuGet.Commands
                     // Update the PackageSpec framework to include fallback frameworks
                     if (targetFrameworkInfo.Imports.Count > 0)
                     {
-                        targetFrameworkInfo.FrameworkName = 
+                        targetFrameworkInfo.FrameworkName =
                             new FallbackFramework(targetFrameworkInfo.FrameworkName, fallbackList);
                     }
                 }
@@ -245,12 +245,12 @@ namespace NuGet.Commands
 
         private static RuntimeGraph GetRuntimeGraph(IMSBuildItem specItem)
         {
-            var runtimes = Split(specItem.GetProperty("RuntimeIdentifiers"))
+            var runtimes = StringUtility.Split(specItem.GetProperty("RuntimeIdentifiers"))
                 .Distinct(StringComparer.Ordinal)
                 .Select(rid => new RuntimeDescription(rid))
                 .ToList();
 
-            var supports = Split(specItem.GetProperty("RuntimeSupports"))
+            var supports = StringUtility.Split(specItem.GetProperty("RuntimeSupports"))
                 .Distinct(StringComparer.Ordinal)
                 .Select(s => new CompatibilityProfile(s))
                 .ToList();
@@ -386,7 +386,7 @@ namespace NuGet.Commands
 
         private static LibraryIncludeFlags GetIncludeFlags(string value, LibraryIncludeFlags defaultValue)
         {
-            var parts = Split(value);
+            var parts = StringUtility.Split(value);
 
             if (parts.Length > 0)
             {
@@ -396,25 +396,6 @@ namespace NuGet.Commands
             {
                 return defaultValue;
             }
-        }
-
-        /// <summary>
-        /// Split on ; and trim. Null or empty inputs will return an 
-        /// empty array.
-        /// </summary>
-        public static string[] Split(string s)
-        {
-            if (!string.IsNullOrEmpty(s))
-            {
-                // Split on ; and trim all entries
-                // After trimming remove any entries that are now empty due to trim.
-                return s.Split(';')
-                    .Select(entry => entry.Trim())
-                    .Where(entry => entry.Length != 0)
-                    .ToArray();
-            }
-
-            return new string[0];
         }
 
         private static void AddFrameworkAssemblies(PackageSpec spec, IEnumerable<IMSBuildItem> items)
@@ -516,7 +497,7 @@ namespace NuGet.Commands
             var frameworksString = item.GetProperty("TargetFrameworks");
             if (!string.IsNullOrEmpty(frameworksString))
             {
-                frameworks.UnionWith(Split(frameworksString));
+                frameworks.UnionWith(StringUtility.Split(frameworksString));
             }
 
             return frameworks;

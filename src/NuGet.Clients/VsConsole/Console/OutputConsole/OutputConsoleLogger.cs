@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel.Composition;
 using System.Globalization;
-using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement.UI;
@@ -12,45 +12,71 @@ using NuGet.ProjectManagement;
 
 namespace NuGetConsole
 {
-    public class OutputConsoleLogger : INuGetUILogger
+    [Export(typeof(INuGetUILogger))]
+    [PartCreationPolicy(CreationPolicy.Shared)]
+    public class OutputConsoleLogger : INuGetUILogger, IDisposable
     {
+        private const string LogEntrySource = "NuGet Package Manager";
+        private const string DTEProjectPage = "ProjectsAndSolution";
+        private const string DTEEnvironmentCategory = "Environment";
+        private const string MSBuildVerbosityKey = "MSBuildOutputVerbosity";
+        private const int DefaultVerbosityLevel = 2;
+
         // keeps a reference to BuildEvents so that our event handler
         // won't get disconnected because of GC.
-        private BuildEvents _buildEvents;
-
-        private SolutionEvents _solutionEvents;
-
-        private const string LogEntrySource = "NuGet Package Manager";
+        private EnvDTE.BuildEvents _buildEvents;
+        private EnvDTE.SolutionEvents _solutionEvents;
 
         private int _verbosityLevel;
 
-        private readonly DTE _dte;
+        private EnvDTE.DTE _dte;
 
-        private const string DTEProjectPage = "ProjectsAndSolution";
-
-        private const string DTEEnvironmentCategory = "Environment";
-
-        private const string MSBuildVerbosityKey = "MSBuildOutputVerbosity";
-
-        private const int DefaultVerbosityLevel = 2;
-
-        public IConsole OutputConsole { get; private set; }
+        public IOutputConsole OutputConsole { get; private set; }
 
         public ErrorListProvider ErrorListProvider { get; private set; }
 
-        public OutputConsoleLogger(IServiceProvider serviceProvider)
+        [ImportingConstructor]
+        public OutputConsoleLogger(
+            [Import(typeof(SVsServiceProvider))]
+            IServiceProvider serviceProvider,
+            IOutputConsoleProvider consoleProvider)
         {
-            ErrorListProvider = new ErrorListProvider(serviceProvider);
-            var outputConsoleProvider = ServiceLocator.GetInstance<IOutputConsoleProvider>();
+            if (serviceProvider == null)
+            {
+                throw new ArgumentNullException(nameof(serviceProvider));
+            }
 
-            _dte = ServiceLocator.GetInstance<DTE>();
+            if (consoleProvider == null)
+            {
+                throw new ArgumentNullException(nameof(consoleProvider));
+            }
 
-            _buildEvents = _dte.Events.BuildEvents;
-            _buildEvents.OnBuildBegin += (obj, ev) => { ErrorListProvider.Tasks.Clear(); };
-            _solutionEvents = _dte.Events.SolutionEvents;
-            _solutionEvents.AfterClosing += () => { ErrorListProvider.Tasks.Clear(); };
+            ThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            OutputConsole = outputConsoleProvider.CreateOutputConsole(requirePowerShellHost: false);
+                ErrorListProvider = new ErrorListProvider(serviceProvider);
+
+                _dte = serviceProvider.GetDTE();
+
+                _buildEvents = _dte.Events.BuildEvents;
+                _buildEvents.OnBuildBegin += (_, __) => { ErrorListProvider.Tasks.Clear(); };
+
+                _solutionEvents = _dte.Events.SolutionEvents;
+                _solutionEvents.AfterClosing += () => { ErrorListProvider.Tasks.Clear(); };
+
+                OutputConsole = consoleProvider.CreatePackageManagerConsole();
+            });
+        }
+
+        public void Dispose()
+        {
+            ThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                ErrorListProvider.Dispose();
+            });
         }
 
         public void End()
@@ -91,7 +117,7 @@ namespace NuGetConsole
             if (uiShell != null)
             {
                 IVsWindowFrame toolWindow = null;
-                uiShell.FindToolWindow(0, ref Implementation.GuidList.guidVsWindowKindOutput, out toolWindow);
+                uiShell.FindToolWindow(0, ref GuidList.guidVsWindowKindOutput, out toolWindow);
                 toolWindow?.Show();
             }
         }
@@ -123,14 +149,15 @@ namespace NuGetConsole
 
         public void ReportError(string message)
         {
-            ErrorTask retargetErrorTask = new ErrorTask();
-            retargetErrorTask.Text = message;
-            retargetErrorTask.ErrorCategory = TaskErrorCategory.Error;
-            retargetErrorTask.Category = TaskCategory.User;
-            retargetErrorTask.Priority = TaskPriority.High;
-            retargetErrorTask.HierarchyItem = null;
-
-            RunTaskOnUI(() => ErrorListProvider.Tasks.Add(retargetErrorTask));
+            var errorTask = new ErrorTask
+            {
+                Text = message,
+                ErrorCategory = TaskErrorCategory.Error,
+                Category = TaskCategory.User,
+                Priority = TaskPriority.High,
+                HierarchyItem = null
+            };
+            RunTaskOnUI(() => ErrorListProvider.Tasks.Add(errorTask));
         }
 
         private static void RunTaskOnUI(Action action)

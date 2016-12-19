@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
@@ -40,7 +41,7 @@ namespace NuGet.Commands.Test
                     { "OutputType", "uap" },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
-                });                
+                });
 
                 var project1Json = @"
                 {
@@ -332,7 +333,7 @@ namespace NuGet.Commands.Test
                 var wrappedItems = items.Select(CreateItems).ToList();
 
                 // Act && Assert
-                Assert.Throws(typeof(ArgumentException), 
+                Assert.Throws(typeof(ArgumentException),
                     () => MSBuildRestoreUtility.GetDependencySpec(wrappedItems));
             }
         }
@@ -486,7 +487,7 @@ namespace NuGet.Commands.Test
                 // net46 does not have imports
                 var fallbackFrameworkNet45 = project1Spec.TargetFrameworks
                     .Single(e => e.FrameworkName.GetShortFolderName() == "net46")
-                    .FrameworkName 
+                    .FrameworkName
                     as FallbackFramework;
 
                 Assert.Null(fallbackFrameworkNet45);
@@ -1133,7 +1134,7 @@ namespace NuGet.Commands.Test
         public void MSBuildRestoreUtility_Split(string input, string expected)
         {
             // Arrange && Act
-            var parts = MSBuildRestoreUtility.Split(input);
+            var parts = StringUtility.Split(input);
             var output = string.Join("|", parts);
 
             // Assert
@@ -1157,7 +1158,7 @@ namespace NuGet.Commands.Test
 
             // Act
             var trimmed = item.GetProperty("key");
-            var raw = item.GetProperty("key", trim: false);            
+            var raw = item.GetProperty("key", trim: false);
 
             // Assert
             Assert.Equal(expected, trimmed);

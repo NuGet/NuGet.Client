@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
@@ -20,12 +19,11 @@ namespace NuGet.Commands
         {
             var name = $"{id}-{Guid.NewGuid().ToString()}";
 
-            return new PackageSpec(new JObject())
+            return new PackageSpec()
             {
                 Name = name, // make sure this package never collides with a dependency
                 FilePath = projectFilePath,
                 Dependencies = new List<LibraryDependency>(),
-                Tools = new List<ToolDependency>(),
                 TargetFrameworks =
                 {
                     new TargetFrameworkInformation

@@ -5,9 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json.Linq;
-using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
-using NuGet.Test.Utility;
 
 namespace NuGet.PackageManagement.Test
 {
@@ -70,7 +68,7 @@ namespace NuGet.PackageManagement.Test
             string path,
             IEnumerable<string> references)
         {
-            var spec = new PackageSpec(new JObject());
+            var spec = new PackageSpec();
             spec.FilePath = name;
 
             return new ExternalProjectReference(

@@ -437,6 +437,7 @@ namespace NuGet.Common
 
         private dynamic GetProject(string projectFile)
         {
+            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(AssemblyResolve);
             dynamic globalProjectCollection = _projectCollectionType
                 .GetProperty("GlobalProjectCollection")
                 .GetMethod

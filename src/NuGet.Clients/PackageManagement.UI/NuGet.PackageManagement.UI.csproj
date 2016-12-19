@@ -71,6 +71,8 @@
     <Compile Include="Telemetry\ActionsTelemetryBase.cs" />
     <Compile Include="Telemetry\ActionsTelemetryEvent.cs" />
     <Compile Include="Telemetry\ActionsTelemetryService.cs" />
+    <Compile Include="Telemetry\NuGetOperationStatus.cs" />
+    <Compile Include="Telemetry\RestoreOperationSource.cs" />
     <Compile Include="Telemetry\RestoreTelemetryEvent.cs" />
     <Compile Include="Telemetry\RestoreTelemetryService.cs" />
     <Compile Include="Utility\TelemetryUtility.cs" />

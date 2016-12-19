@@ -279,6 +279,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 AssemblyReferences = new ITaskItem[0],
                 Authors = new string[0],
                 BuildOutputFolder = "BuildOutputFolder",
+                ContentTargetFolders = new string[] { "ContentTargetFolders" } ,
                 ContinuePackingAfterGeneratingNuspec = true,
                 Copyright = "Copyright",
                 Description = "Description",

@@ -12,6 +12,7 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.RuntimeModel;
 using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
@@ -36,6 +37,8 @@ namespace NuGet.ProjectModel
         private const string RuntimeProperty = "runtime";
         private const string CompileProperty = "compile";
         private const string NativeProperty = "native";
+        private const string BuildProperty = "build";
+        private const string BuildMultiTargetingProperty = "buildMultiTargeting";
         private const string ContentFilesProperty = "contentFiles";
         private const string RuntimeTargetsProperty = "runtimeTargets";
         private const string ResourceProperty = "resource";
@@ -46,6 +49,7 @@ namespace NuGet.ProjectModel
         private const string ToolsProperty = "tools";
         private const string ProjectFileToolGroupsProperty = "projectFileToolGroups";
         private const string PackageFoldersProperty = "packageFolders";
+        private const string PackageSpecProperty = "project";
 
         // Legacy property names
         private const string RuntimeAssembliesProperty = "runtimeAssemblies";
@@ -176,9 +180,8 @@ namespace NuGet.ProjectModel
             lockFile.Libraries = ReadObject(cursor[LibrariesProperty] as JObject, ReadLibrary);
             lockFile.Targets = ReadObject(cursor[TargetsProperty] as JObject, ReadTarget);
             lockFile.ProjectFileDependencyGroups = ReadObject(cursor[ProjectFileDependencyGroupsProperty] as JObject, ReadProjectFileDependencyGroup);
-            lockFile.Tools = ReadObject(cursor[ToolsProperty] as JObject, ReadTarget);
-            lockFile.ProjectFileToolGroups = ReadObject(cursor[ProjectFileToolGroupsProperty] as JObject, ReadProjectFileDependencyGroup);
             lockFile.PackageFolders = ReadObject(cursor[PackageFoldersProperty] as JObject, ReadFileItem);
+            lockFile.PackageSpec = ReadPackageSpec(cursor[PackageSpecProperty] as JObject);
             return lockFile;
         }
 
@@ -189,24 +192,21 @@ namespace NuGet.ProjectModel
             json[TargetsProperty] = WriteObject(lockFile.Targets, WriteTarget);
             json[LibrariesProperty] = WriteObject(lockFile.Libraries, WriteLibrary);
             json[ProjectFileDependencyGroupsProperty] = WriteObject(lockFile.ProjectFileDependencyGroups, WriteProjectFileDependencyGroup);
-
-            // Avoid writing out the tools section for v1 lock files
-            if (lockFile.Version >= 2)
-            {
-                if (lockFile.Tools != null)
-                {
-                    json[ToolsProperty] = WriteObject(lockFile.Tools, WriteTarget);
-                }
-
-                if (lockFile.ProjectFileToolGroups != null)
-                {
-                    json[ProjectFileToolGroupsProperty] = WriteObject(lockFile.ProjectFileToolGroups, WriteProjectFileDependencyGroup);
-                }
-            }
-
+            
             if (lockFile.PackageFolders?.Any() == true)
             {
                 json[PackageFoldersProperty] = WriteObject(lockFile.PackageFolders, WriteFileItem);
+            }
+
+            if (lockFile.Version >= 2)
+            {
+                if (lockFile.PackageSpec != null)
+                {
+                    var writer = new JsonObjectWriter();
+                    PackageSpecWriter.Write(lockFile.PackageSpec, writer);
+                    var packageSpec = writer.GetJObject();
+                    json[PackageSpecProperty] = packageSpec;
+                }
             }
 
             return json;
@@ -312,6 +312,8 @@ namespace NuGet.ProjectModel
             library.CompileTimeAssemblies = ReadObject(json[CompileProperty] as JObject, ReadFileItem);
             library.ResourceAssemblies = ReadObject(json[ResourceProperty] as JObject, ReadFileItem);
             library.NativeLibraries = ReadObject(json[NativeProperty] as JObject, ReadFileItem);
+            library.Build = ReadObject(json[BuildProperty] as JObject, ReadFileItem);
+            library.BuildMultiTargeting = ReadObject(json[BuildMultiTargetingProperty] as JObject, ReadFileItem);
             library.ContentFiles = ReadObject(json[ContentFilesProperty] as JObject, ReadContentFile);
             library.RuntimeTargets = ReadObject(json[RuntimeTargetsProperty] as JObject, ReadRuntimeTarget);
 
@@ -381,6 +383,20 @@ namespace NuGet.ProjectModel
                 json[ContentFilesProperty] = WriteObject(ordered, WriteFileItem);
             }
 
+            if (library.Build.Count > 0)
+            {
+                var ordered = library.Build.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
+
+                json[BuildProperty] = WriteObject(ordered, WriteFileItem);
+            }
+
+            if (library.BuildMultiTargeting.Count > 0)
+            {
+                var ordered = library.BuildMultiTargeting.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
+
+                json[BuildMultiTargetingProperty] = WriteObject(ordered, WriteFileItem);
+            }
+
             if (library.RuntimeTargets.Count > 0)
             {
                 var ordered = library.RuntimeTargets.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
@@ -406,6 +422,20 @@ namespace NuGet.ProjectModel
             return new ProjectFileDependencyGroup(
                 property,
                 ReadArray(json as JArray, ReadString));
+        }
+
+        private static PackageSpec ReadPackageSpec(JObject json)
+        {
+            if (json == null)
+            {
+                return null;
+            }
+
+            return JsonPackageSpecReader.GetPackageSpec(
+                json,
+                name: null,
+                packageSpecPath: null,
+                snapshotValue: null);
         }
 
         private static JProperty WriteProjectFileDependencyGroup(ProjectFileDependencyGroup frameworkInfo)

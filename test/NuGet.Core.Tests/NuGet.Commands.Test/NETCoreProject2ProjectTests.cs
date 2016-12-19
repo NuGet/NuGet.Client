@@ -31,7 +31,7 @@ namespace NuGet.Commands.Test
                 var sources = new List<PackageSource>();
                 sources.Add(new PackageSource(pathContext.PackageSource));
 
-                var spec = GetProject(projectName: "projectA", framework: "netstandard1.6");
+                var spec = NETCoreRestoreTestUtility.GetProject(projectName: "projectA", framework: "netstandard1.6");
                 var specs = new[] { spec };
 
                 spec.TargetFrameworks.Single().Dependencies.Add(new LibraryDependency()
@@ -40,7 +40,7 @@ namespace NuGet.Commands.Test
                 });
 
                 // Create fake projects, the real data is in the specs
-                var projects = CreateProjectsFromSpecs(pathContext, spec);
+                var projects = NETCoreRestoreTestUtility.CreateProjectsFromSpecs(pathContext, spec);
 
                 var packageX = new SimpleTestPackageContext()
                 {
@@ -87,7 +87,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(projectYJson, projectJsonContent.ToString());
 
                 // Act
-                var summaries = await RunRestore(pathContext, logger, sources, dgFile, cacheContext);
+                var summaries = await NETCoreRestoreTestUtility.RunRestore(pathContext, logger, sources, dgFile, cacheContext);
                 var success = summaries.All(s => s.Success);
 
                 // Assert
@@ -109,13 +109,13 @@ namespace NuGet.Commands.Test
                 var sources = new List<PackageSource>();
                 sources.Add(new PackageSource(pathContext.PackageSource));
 
-                var spec1 = GetProject(projectName: "projectA", framework: "netstandard1.6");
-                var spec2 = GetProject(projectName: "projectB", framework: "netstandard1.3");
+                var spec1 = NETCoreRestoreTestUtility.GetProject(projectName: "projectA", framework: "netstandard1.6");
+                var spec2 = NETCoreRestoreTestUtility.GetProject(projectName: "projectB", framework: "netstandard1.3");
 
                 var specs = new[] { spec1, spec2 };
 
                 // Create fake projects, the real data is in the specs
-                var projects = CreateProjectsFromSpecs(pathContext, specs);
+                var projects = NETCoreRestoreTestUtility.CreateProjectsFromSpecs(pathContext, specs);
 
                 // Link projects
                 spec1.RestoreMetadata.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
@@ -137,7 +137,7 @@ namespace NuGet.Commands.Test
                 dgFile.Save(Path.Combine(pathContext.WorkingDirectory, "out.dg"));
 
                 // Act
-                var summaries = await RunRestore(pathContext, logger, sources, dgFile, cacheContext);
+                var summaries = await NETCoreRestoreTestUtility.RunRestore(pathContext, logger, sources, dgFile, cacheContext);
                 var success = summaries.All(s => s.Success);
 
                 // Assert
@@ -177,13 +177,13 @@ namespace NuGet.Commands.Test
                 var sources = new List<PackageSource>();
                 sources.Add(new PackageSource(pathContext.PackageSource));
 
-                var spec1 = GetProject(projectName: "projectA", framework: "netstandard1.6");
-                var spec2 = GetProject(projectName: "projectB", framework: "netstandard1.3");
+                var spec1 = NETCoreRestoreTestUtility.GetProject(projectName: "projectA", framework: "netstandard1.6");
+                var spec2 = NETCoreRestoreTestUtility.GetProject(projectName: "projectB", framework: "netstandard1.3");
 
                 var specs = new[] { spec1, spec2 };
 
                 // Create fake projects, the real data is in the specs
-                var projects = CreateProjectsFromSpecs(pathContext, specs);
+                var projects = NETCoreRestoreTestUtility.CreateProjectsFromSpecs(pathContext, specs);
 
                 // Remove valid link
                 spec1.RestoreMetadata.TargetFrameworks.Clear();
@@ -209,7 +209,7 @@ namespace NuGet.Commands.Test
                 dgFile.Save(Path.Combine(pathContext.WorkingDirectory, "out.dg"));
 
                 // Act
-                var summaries = await RunRestore(pathContext, logger, sources, dgFile, cacheContext);
+                var summaries = await NETCoreRestoreTestUtility.RunRestore(pathContext, logger, sources, dgFile, cacheContext);
                 var success = summaries.All(s => s.Success);
 
                 // Assert
@@ -229,13 +229,13 @@ namespace NuGet.Commands.Test
                 var sources = new List<PackageSource>();
                 sources.Add(new PackageSource(pathContext.PackageSource));
 
-                var spec1 = GetProject(projectName: "projectA", framework: "netstandard1.6");
-                var spec2 = GetProject(projectName: "projectB", framework: "netstandard1.3");
+                var spec1 = NETCoreRestoreTestUtility.GetProject(projectName: "projectA", framework: "netstandard1.6");
+                var spec2 = NETCoreRestoreTestUtility.GetProject(projectName: "projectB", framework: "netstandard1.3");
 
                 var specs = new[] { spec1, spec2 };
 
                 // Create fake projects, the real data is in the specs
-                var projects = CreateProjectsFromSpecs(pathContext, specs);
+                var projects = NETCoreRestoreTestUtility.CreateProjectsFromSpecs(pathContext, specs);
 
                 // Link projects
                 spec1.RestoreMetadata.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
@@ -254,7 +254,7 @@ namespace NuGet.Commands.Test
                 dgFile.Save(Path.Combine(pathContext.WorkingDirectory, "out.dg"));
 
                 // Act
-                var summaries = await RunRestore(pathContext, logger, sources, dgFile, cacheContext);
+                var summaries = await NETCoreRestoreTestUtility.RunRestore(pathContext, logger, sources, dgFile, cacheContext);
                 var success = summaries.All(s => s.Success);
 
                 // Assert
@@ -275,14 +275,14 @@ namespace NuGet.Commands.Test
                 var sources = new List<PackageSource>();
                 sources.Add(new PackageSource(pathContext.PackageSource));
 
-                var spec1 = GetProject(projectName: "projectA", framework: "netstandard1.6");
-                var spec2 = GetProject(projectName: "projectB", framework: "netstandard1.3");
-                var spec3 = GetProject(projectName: "projectC", framework: "netstandard1.0");
+                var spec1 = NETCoreRestoreTestUtility.GetProject(projectName: "projectA", framework: "netstandard1.6");
+                var spec2 = NETCoreRestoreTestUtility.GetProject(projectName: "projectB", framework: "netstandard1.3");
+                var spec3 = NETCoreRestoreTestUtility.GetProject(projectName: "projectC", framework: "netstandard1.0");
 
                 var specs = new[] { spec1, spec2, spec3 };
 
                 // Create fake projects, the real data is in the specs
-                var projects = CreateProjectsFromSpecs(pathContext, specs);
+                var projects = NETCoreRestoreTestUtility.CreateProjectsFromSpecs(pathContext, specs);
 
                 // Link projects
                 spec1.RestoreMetadata.TargetFrameworks.Single().ProjectReferences.Add(new ProjectRestoreReference()
@@ -310,7 +310,7 @@ namespace NuGet.Commands.Test
                 dgFile.Save(Path.Combine(pathContext.WorkingDirectory, "out.dg"));
 
                 // Act
-                var summaries = await RunRestore(pathContext, logger, sources, dgFile, cacheContext);
+                var summaries = await NETCoreRestoreTestUtility.RunRestore(pathContext, logger, sources, dgFile, cacheContext);
                 var success = summaries.All(s => s.Success);
 
                 // Assert
@@ -324,73 +324,8 @@ namespace NuGet.Commands.Test
                 Assert.Equal(2, projects[0].AssetsFile.Libraries.Count);
 
                 // Verify the project name is used not the path or unique name
-                Assert.Equal("projectB", dependencies[0]);
+                Assert.Equal("projectB >= 1.0.0", dependencies[0]);
             }
-        }
-
-        private static List<SimpleTestProjectContext> CreateProjectsFromSpecs(SimpleTestPathContext pathContext, params PackageSpec[] specs)
-        {
-            var projects = new List<SimpleTestProjectContext>();
-
-            foreach (var spec in specs)
-            {
-                var project = new SimpleTestProjectContext(spec.Name, RestoreOutputType.NETCore, pathContext.SolutionRoot); 
-
-                // Set proj properties
-                spec.FilePath = project.ProjectPath;
-                spec.RestoreMetadata.OutputPath = project.OutputPath;
-                spec.RestoreMetadata.ProjectPath = project.ProjectPath;
-
-                projects.Add(project);
-            }
-
-            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot, projects.ToArray());
-            solution.Create(pathContext.SolutionRoot);
-
-            return projects;
-        }
-
-        private static async Task<IReadOnlyList<RestoreSummary>> RunRestore(
-            SimpleTestPathContext pathContext,
-            TestLogger logger,
-            List<PackageSource> sources,
-            DependencyGraphSpec dgFile,
-            SourceCacheContext cacheContext)
-        {
-            var restoreContext = new RestoreArgs()
-            {
-                CacheContext = cacheContext,
-                DisableParallel = true,
-                GlobalPackagesFolder = pathContext.UserPackagesFolder,
-                Sources = new List<string>() { pathContext.PackageSource },
-                Log = logger,
-                CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),
-                PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider>()
-                {
-                    new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dgFile)
-                }
-            };
-
-            return await RestoreRunner.Run(restoreContext);
-        }
-
-        private static PackageSpec GetProject(string projectName, string framework)
-        {
-            var targetFrameworkInfo = new TargetFrameworkInformation();
-            targetFrameworkInfo.FrameworkName = NuGetFramework.Parse(framework);
-            var frameworks = new[] { targetFrameworkInfo };
-
-            // Create two net45 projects
-            var spec = new PackageSpec(frameworks);
-            spec.RestoreMetadata = new ProjectRestoreMetadata();
-            spec.RestoreMetadata.ProjectUniqueName = $"{projectName}-UNIQUENAME";
-            spec.RestoreMetadata.ProjectName = projectName;
-            spec.RestoreMetadata.OutputType = RestoreOutputType.NETCore;
-            spec.RestoreMetadata.OriginalTargetFrameworks.Add(framework);
-            spec.Name = projectName;
-            spec.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(targetFrameworkInfo.FrameworkName));
-
-            return spec;
         }
     }
 }

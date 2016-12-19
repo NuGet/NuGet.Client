@@ -62,7 +62,7 @@
       <DependentUpon>MockServerResource.resx</DependentUpon>
     </Compile>
     <Compile Include="MSBuildProjectSystemTests.cs" />
-    <Compile Include="MSBuildUtilityTest.cs" />
+    <Compile Include="MsBuildUtilityTest.cs" />
     <Compile Include="NativeMethods.cs" />
     <Compile Include="NetworkCallCountTest.cs" />
     <Compile Include="NuGetAddCommandTests.cs" />
@@ -88,6 +88,7 @@
     <Compile Include="ExtensionsTests.cs" />
     <Compile Include="RestoreRetryTests.cs" />
     <Compile Include="Util.cs" />
+    <Compile Include="XunitAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.CommandLine\NuGet.CommandLine.csproj">

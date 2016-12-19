@@ -16,7 +16,7 @@ namespace NuGet.CommandLine.Test
                 Description = "Descriptions",
             };
             builder.Authors.Add("test");
-            builder.Files.Add(CreatePackageFile(@"content\test1.txt"));
+            builder.Files.Add(CreatePackageFile(Path.Combine("content", "test1.txt")));
             if (additionalAction != null)
             {
                 additionalAction(builder);
@@ -40,7 +40,7 @@ namespace NuGet.CommandLine.Test
                 Description = "Descriptions",
             };
             builder.Authors.Add("test");
-            builder.Files.Add(CreatePackageFile(@"content\symbol_test1.txt"));
+            builder.Files.Add(CreatePackageFile(Path.Combine("content", "symbol_test1.txt")));
             builder.Files.Add(CreatePackageFile(@"symbol.txt"));
 
             var packageFileName = Path.Combine(outputDirectory, id + "." + version + ".symbol.nupkg");

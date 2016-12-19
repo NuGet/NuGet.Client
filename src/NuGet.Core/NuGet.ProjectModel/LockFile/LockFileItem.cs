@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using NuGet.Shared;
 
 namespace NuGet.ProjectModel
@@ -51,12 +50,7 @@ namespace NuGet.ProjectModel
             var combiner = new HashCodeCombiner();
 
             combiner.AddStringIgnoreCase(Path);
-
-            foreach (var pair in Properties.OrderBy(pair => pair.Key, StringComparer.Ordinal))
-            {
-                combiner.AddObject(pair.Key);
-                combiner.AddObject(pair.Value);
-            }
+            combiner.AddDictionary(Properties);
 
             return combiner.CombinedHash;
         }

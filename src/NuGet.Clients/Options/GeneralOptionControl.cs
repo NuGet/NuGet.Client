@@ -20,7 +20,7 @@ namespace NuGet.Options
         private readonly Configuration.ISettings _settings;
         private bool _initialized;
         private readonly IServiceProvider _serviceprovider;
-        private readonly OutputConsoleLogger _outputConsoleLogger;
+        private readonly INuGetUILogger _outputConsoleLogger;
         private readonly LocalsCommandRunner _localsCommandRunner;
 
         public GeneralOptionControl(IServiceProvider serviceProvider)
@@ -33,7 +33,7 @@ namespace NuGet.Options
             InitializeComponent();
             _settings = ServiceLocator.GetInstance<Configuration.ISettings>();
             _serviceprovider = serviceProvider;
-            _outputConsoleLogger = new OutputConsoleLogger(_serviceprovider);
+            _outputConsoleLogger = ServiceLocator.GetInstance<INuGetUILogger>();
             _localsCommandRunner = new LocalsCommandRunner();
             Debug.Assert(_settings != null);
         }

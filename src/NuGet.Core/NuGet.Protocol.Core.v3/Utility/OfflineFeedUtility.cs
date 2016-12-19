@@ -207,7 +207,12 @@ namespace NuGet.Protocol.Core.Types
                         logger.LogMinimal(message);
                     }
                 }
-                catch (InvalidDataException)
+                // Mono will throw ArchiveException when package is invalid.
+                // Reading Nuspec in invalid package on Mono will get PackagingException 
+                catch (Exception ex) when( ex is InvalidDataException
+                                        || (RuntimeEnvironmentHelper.IsMono
+                                        && (ex.GetType().FullName.Equals("SharpCompress.Common.ArchiveException") 
+                                        || ex is PackagingException)))
                 {
                     var message = string.Format(
                         CultureInfo.CurrentCulture,

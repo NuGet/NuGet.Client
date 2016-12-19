@@ -104,9 +104,11 @@ namespace NuGet.RuntimeModel
         public override int GetHashCode()
         {
             var combiner = new HashCodeCombiner();
+
             combiner.AddObject(RuntimeIdentifier);
-            combiner.AddObject(InheritedRuntimes);
-            combiner.AddObject(RuntimeDependencySets);
+            combiner.AddSequence(InheritedRuntimes);
+            combiner.AddDictionary(RuntimeDependencySets);
+
             return combiner.CombinedHash;
         }
 

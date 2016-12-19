@@ -167,7 +167,7 @@ namespace NuGetConsole
         
         private async Task ExecuteScriptCoreAsync(ScriptExecutionRequest request)
         {
-            IConsole console = OutputConsoleProvider.CreateOutputConsole(requirePowerShellHost: true);
+            var console = OutputConsoleProvider.CreatePowerShellConsole();
             var host = await Host.GetValueAsync();
 
             // Host.Execute calls powershell's pipeline.Invoke and blocks the calling thread
@@ -183,8 +183,8 @@ namespace NuGetConsole
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             // create the console and instantiate the PS host on demand
-            IConsole console = OutputConsoleProvider.CreateOutputConsole(requirePowerShellHost: true);
-            IHost host = console.Host;
+            var console = OutputConsoleProvider.CreatePowerShellConsole();
+            var host = console.Host;
 
             // start the console 
             console.Dispatcher.Start();

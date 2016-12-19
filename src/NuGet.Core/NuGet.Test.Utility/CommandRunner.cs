@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace NuGet.Test.Utility
@@ -35,7 +36,7 @@ namespace NuGet.Test.Utility
 #else
             psi.Environment["NuGetTestModeEnabled"] = "True";
 #endif
-            
+
             if (environmentVariables != null)
             {
                 foreach (var pair in environmentVariables)
@@ -50,8 +51,8 @@ namespace NuGet.Test.Utility
 
             int exitCode = 1;
 
-            var output = new LockedStringBuilder();
-            var errors = new LockedStringBuilder();
+            var output = new StringBuilder();
+            var errors = new StringBuilder();
 
             Process p = null;
 
@@ -99,10 +100,10 @@ namespace NuGet.Test.Utility
                 }
             }
 
-            return new CommandRunnerResult(p, exitCode, output, errors);
+            return new CommandRunnerResult(p, exitCode, output.ToString(), errors.ToString());
         }
 
-        private static async Task ConsumeStreamReaderAsync(StreamReader reader, LockedStringBuilder lines)
+        private static async Task ConsumeStreamReaderAsync(StreamReader reader, StringBuilder lines)
         {
             await Task.Yield();
 

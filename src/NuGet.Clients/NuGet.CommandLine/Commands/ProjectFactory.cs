@@ -82,7 +82,8 @@ namespace NuGet.CommandLine
         {
             LoadAssemblies(msbuildDirectory);
 
-            // create project
+            // Create project, allowing for assembly load failures
+            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(AssemblyResolve);
             var project = Activator.CreateInstance(
                 _projectType,
                 path,
@@ -233,6 +234,15 @@ namespace NuGet.CommandLine
             }
 
             var projectAuthor = InitializeProperties(builder);
+
+            // Set version based on version argument from console?
+            if (version != null)
+            {
+                // make sure the $version$ placeholder gets populated correctly
+                _properties["version"] = version.ToFullString();
+
+                builder.Version = version;
+            }
 
             // Only override properties from assembly extracted metadata if they haven't 
             // been specified also at construction time for the factory (that is, 
@@ -413,7 +423,7 @@ namespace NuGet.CommandLine
 
             int result = MsBuildUtility.Build(_msbuildDirectory, $"\"{_project.FullPath}\" {properties} /toolsversion:{_project.ToolsVersion}");
 
-            if ((int)Microsoft.Build.Execution.BuildResultCode.Failure == result)
+            if (0 != result) // 0 is msbuild.exe success code
             {
                 // If the build fails, report the error
                 throw new CommandLineException(LocalizedResourceManager.GetString("FailedToBuildProject"), Path.GetFileName(_project.FullPath));

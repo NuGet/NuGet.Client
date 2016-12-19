@@ -47,18 +47,6 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        public static async Task<TService> GetInstanceSafeAsync<TService>() where TService : class
-        {
-            try
-            {
-                return await GetInstanceAsync<TService>();
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
-
         public static TService GetInstance<TService>() where TService : class
         {
             return NuGetUIThreadHelper.JoinableTaskFactory.Run(GetInstanceAsync<TService>);

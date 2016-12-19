@@ -10,14 +10,10 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
-using NuGet.Client;
 using NuGet.Common;
-using NuGet.ContentModel;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
@@ -108,13 +104,19 @@ namespace NuGet.Commands
             }
 
             // Generate Targets/Props files
-            var msbuild = BuildAssetsUtils.RestoreMSBuildFiles(
-                _request.Project,
-                graphs,
-                localRepositories,
-                contextForProject,
-                _request,
-                _includeFlagGraphs);
+            var msbuildOutputFiles = Enumerable.Empty<MSBuildOutputFile>();
+
+            if (contextForProject.IsMsBuildBased)
+            {
+                msbuildOutputFiles = BuildAssetsUtils.GetMSBuildOutputFiles(
+                    _request.Project,
+                    lockFile,
+                    graphs,
+                    localRepositories,
+                    _request,
+                    _success,
+                    _logger);
+            }
 
             // If the request is for a lower lock file version, downgrade it appropriately
             DowngradeLockFileIfNeeded(lockFile);
@@ -139,10 +141,10 @@ namespace NuGet.Commands
                 _success,
                 graphs,
                 checkResults,
+                msbuildOutputFiles,
                 lockFile,
                 _request.ExistingLockFile,
                 projectLockFilePath,
-                msbuild,
                 _request.RestoreOutputType,
                 restoreTime.Elapsed);
         }
@@ -598,9 +600,8 @@ namespace NuGet.Commands
                 library.Type = null;
             }
 
-            // Remove tools
-            lockFile.Tools.Clear();
-            lockFile.ProjectFileToolGroups.Clear();
+            // Remove the package spec
+            lockFile.PackageSpec = null;
         }
 
         private static ExternalProjectReference ToExternalProjectReference(PackageSpec project)

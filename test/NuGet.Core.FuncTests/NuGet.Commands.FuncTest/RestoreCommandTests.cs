@@ -1598,7 +1598,7 @@ namespace NuGet.Commands.FuncTest
                 // Assert
                 Assert.False(result.Success);
 
-                Assert.Equal(1, logger.Errors);
+                Assert.Equal(3, logger.Errors);
                 Assert.Empty(result.CompatibilityCheckResults);
                 Assert.DoesNotContain("compatible with", logger.Messages);
                 Assert.Equal(1, unresolved.Count);
@@ -2073,7 +2073,8 @@ namespace NuGet.Commands.FuncTest
                 LibraryRange = new LibraryRange()
                 {
                     Name = id,
-                    VersionRange = VersionRange.Parse(version)
+                    VersionRange = VersionRange.Parse(version),
+                    TypeConstraint = LibraryDependencyTarget.Package
                 }
             };
 

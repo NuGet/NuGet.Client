@@ -67,7 +67,7 @@ namespace NuGet.CommandLine
 
             var restoreSummaries = new List<RestoreSummary>();
 
-            _msbuildDirectory = MsBuildUtility.GetMsbuildDirectoryFromMsbuildPath(MSBuildPath, MSBuildVersion, Console);
+            _msbuildDirectory = MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(MSBuildPath, MSBuildVersion, Console);
 
             if (!string.IsNullOrEmpty(PackagesDirectory))
             {
@@ -79,13 +79,12 @@ namespace NuGet.CommandLine
                 SolutionDirectory = Path.GetFullPath(SolutionDirectory);
             }
 
-            var restoreInputs = DetermineRestoreInputs();
+            var restoreInputs = await DetermineRestoreInputsAsync();
 
             var hasPackagesConfigFiles = restoreInputs.PackagesConfigFiles.Count > 0;
             var hasProjectJsonFiles = restoreInputs.RestoreV3Context.Inputs.Any();
             if (!hasPackagesConfigFiles && !hasProjectJsonFiles)
             {
-
                 Console.LogMinimal(LocalizedResourceManager.GetString(restoreInputs.RestoringWithSolutionFile
                         ? "SolutionRestoreCommandNoPackagesConfigOrProjectJson"
                         : "ProjectRestoreCommandNoPackagesConfigOrProjectJson"));
@@ -211,6 +210,7 @@ namespace NuGet.CommandLine
         }
 
         private static CachingSourceProvider _sourceProvider;
+
         private CachingSourceProvider GetSourceRepositoryProvider()
         {
             if (_sourceProvider == null)
@@ -407,7 +407,7 @@ namespace NuGet.CommandLine
         /// <summary>
         /// Discover all restore inputs, this checks for both v2 and v3
         /// </summary>
-        private PackageRestoreInputs DetermineRestoreInputs()
+        private async Task<PackageRestoreInputs> DetermineRestoreInputsAsync()
         {
             var packageRestoreInputs = new PackageRestoreInputs();
 
@@ -443,10 +443,9 @@ namespace NuGet.CommandLine
                     throw new InvalidOperationException(message);
                 }
             }
-
-            // Run inputs through msbuild to determine the 
+            // Run inputs through msbuild to determine the
             // correct type and find dependencies as needed.
-            DetermineInputsFromMSBuild(packageRestoreInputs);
+            await DetermineInputsFromMSBuildAsync(packageRestoreInputs);
 
             return packageRestoreInputs;
         }
@@ -454,7 +453,7 @@ namespace NuGet.CommandLine
         /// <summary>
         /// Read project inputs using MSBuild
         /// </summary>
-        private void DetermineInputsFromMSBuild(PackageRestoreInputs packageRestoreInputs)
+        private async Task DetermineInputsFromMSBuildAsync(PackageRestoreInputs packageRestoreInputs)
         {
             // Find P2P graph for v3 inputs.
             // Ignore xproj files as top level inputs
@@ -469,15 +468,15 @@ namespace NuGet.CommandLine
 
                 try
                 {
-                    dgFileOutput = GetDependencyGraphSpec(projectsWithPotentialP2PReferences);
+                    dgFileOutput = await GetDependencyGraphSpecAsync(projectsWithPotentialP2PReferences);
                 }
                 catch (Exception ex)
                 {
-                    // At this point reading the project has failed, to keep backwards 
+                    // At this point reading the project has failed, to keep backwards
                     // compatibility this should warn instead of error if
                     // packages.config files exist, but no project.json files.
                     // This will skip NETCore projects which is a problem, but there is
-                    // not a good way to know if they exist, or if this is an old type of 
+                    // not a good way to know if they exist, or if this is an old type of
                     // project that the targets file cannot handle.
 
                     // Log exception for debug
@@ -490,7 +489,7 @@ namespace NuGet.CommandLine
                         // warn to let the user know that NETCore will be skipped
                         Console.LogWarning(LocalizedResourceManager.GetString("Warning_ReadingProjectsFailed"));
 
-                        // Add packages.config 
+                        // Add packages.config
                         packageRestoreInputs.PackagesConfigFiles
                             .AddRange(projectsWithPotentialP2PReferences
                             .Select(GetPackagesConfigFile)
@@ -528,7 +527,7 @@ namespace NuGet.CommandLine
             var v2RestoreProjects =
                 packageRestoreInputs.ProjectFiles
                   .Where(path => !entryPointProjects.Any(project => path.Equals(project.RestoreMetadata.ProjectPath, StringComparison.OrdinalIgnoreCase)));
-        
+
             packageRestoreInputs.PackagesConfigFiles
                 .AddRange(v2RestoreProjects
                 .Select(GetPackagesConfigFile)
@@ -577,7 +576,7 @@ namespace NuGet.CommandLine
         /// <summary>
         ///  Create a dg v2 file using msbuild.
         /// </summary>
-        private DependencyGraphSpec GetDependencyGraphSpec(string[] projectsWithPotentialP2PReferences)
+        private async Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(string[] projectsWithPotentialP2PReferences)
         {
             int scaleTimeout;
 
@@ -594,7 +593,7 @@ namespace NuGet.CommandLine
             Console.LogVerbose($"MSBuild P2P timeout [ms]: {scaleTimeout}");
 
             // Call MSBuild to resolve P2P references.
-            return MsBuildUtility.GetProjectReferences(
+            return await MsBuildUtility.GetProjectReferencesAsync(
                 _msbuildDirectory.Value,
                 projectsWithPotentialP2PReferences,
                 scaleTimeout,
@@ -806,7 +805,7 @@ namespace NuGet.CommandLine
             {
                 if (!File.Exists(projectFile))
                 {
-                    var message = string.Format(CultureInfo.CurrentCulture, 
+                    var message = string.Format(CultureInfo.CurrentCulture,
                         LocalizedResourceManager.GetString("RestoreCommandProjectNotFound"),
                         projectFile);
                     Console.LogWarning(message);

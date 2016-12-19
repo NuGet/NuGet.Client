@@ -290,6 +290,8 @@ namespace NuGet.Commands
                 compatibilityData.TargetLibrary.FrameworkAssemblies.Count > 0 ||                        // Framework Assemblies, or
                 compatibilityData.TargetLibrary.ContentFiles.Count > 0 ||                               // Shared content
                 compatibilityData.TargetLibrary.ResourceAssemblies.Count > 0 ||                         // Resources (satellite package)
+                compatibilityData.TargetLibrary.Build.Count > 0 ||                                      // Build
+                compatibilityData.TargetLibrary.BuildMultiTargeting.Count > 0 ||                        // Cross targeting build
                 !compatibilityData.Files.Any(p =>
                     p.StartsWith("ref/", StringComparison.OrdinalIgnoreCase)
                     || p.StartsWith("lib/", StringComparison.OrdinalIgnoreCase));                       // No assemblies at all (for any TxM)
