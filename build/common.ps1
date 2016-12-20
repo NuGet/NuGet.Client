@@ -229,7 +229,7 @@ Function Install-DotnetCLI-Test {
 
         $installDotnet = Join-Path $CLIRootTest "dotnet-install.ps1"
 
-        wget 'https://github.com/dotnet/cli/blob/58b0566d9ac399f5fa973315c6827a040b7aae1f/scripts/obtain/dotnet-install.ps1' -OutFile $installDotnet
+        wget 'https://raw.githubusercontent.com/dotnet/cli/58b0566d9ac399f5fa973315c6827a040b7aae1f/scripts/obtain/dotnet-install.ps1' -OutFile $installDotnet
 
         & $installDotnet -Channel preview -i $CLIRootTest -Version 1.0.0-preview5-004232
     }

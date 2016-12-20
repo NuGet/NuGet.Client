@@ -246,7 +246,6 @@ namespace NuGet.XPlat.FuncTest
 
                 // Act
                 var result = commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility())
-
                     .Result;
                 var projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
                 var itemGroup = GetItemGroupForFramework(projectXmlRoot, commonFramework);
