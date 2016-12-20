@@ -10,7 +10,7 @@ namespace NuGet.Protocol.Core.Types
     public abstract class ListResource : INuGetResource
     {
         public abstract Task<IEnumerableAsync<IPackageSearchMetadata>> ListAsync(
-            string searchTime,
+            string searchTerm,
             bool prerelease,
             bool allVersions,
             bool includeDelisted,

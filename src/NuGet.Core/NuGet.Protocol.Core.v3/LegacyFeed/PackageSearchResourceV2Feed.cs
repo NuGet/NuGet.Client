@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
-using NuGet.Versioning;
+using NuGet.Protocol.LegacyFeed;
 
 namespace NuGet.Protocol
 {
@@ -53,57 +53,9 @@ namespace NuGet.Protocol
             // NuGet.Server does not group packages by id, this resource needs to handle it.
             var results = query.GroupBy(p => p.Id)
                 .Select(group => group.OrderByDescending(p => p.Version).First())
-                .Select(package => CreatePackageSearchResult(package, filters,_feedParser, log, cancellationToken));
+                .Select(package => V2FeedUtilities.CreatePackageSearchResult(package, filters,_feedParser, log, cancellationToken));
 
             return results.ToList();
-        }
-
-        //TODO NK - Move this to a better place
-        public static IPackageSearchMetadata CreatePackageSearchResult(
-            V2FeedPackageInfo package,
-            SearchFilter filter,
-            V2FeedParser feedParser,
-            Common.ILogger log,
-            CancellationToken cancellationToken)
-        {
-            var metadata = new PackageSearchMetadataV2Feed(package);
-            return metadata
-                .WithVersions(() => GetVersions(package, filter,feedParser, log, cancellationToken));
-        }
-
-        public static async Task<IEnumerable<VersionInfo>> GetVersions(
-            V2FeedPackageInfo package,
-            SearchFilter filter,
-            V2FeedParser feedParser,
-            Common.ILogger log,
-            CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            // apply the filters to the version list returned
-            var packages = await feedParser.FindPackagesByIdAsync(
-                package.Id,
-                filter.IncludeDelisted,
-                filter.IncludePrerelease,
-                log,
-                cancellationToken);
-
-            var uniqueVersions = new HashSet<NuGetVersion>();
-            var results = new List<VersionInfo>();
-
-            foreach (var versionPackage in packages.OrderByDescending(p => p.Version))
-            {
-                if (uniqueVersions.Add(versionPackage.Version))
-                {
-                    var versionInfo = new VersionInfo(versionPackage.Version, versionPackage.DownloadCount)
-                    {
-                        PackageSearchMetadata = new PackageSearchMetadataV2Feed(versionPackage)
-                    };
-
-                    results.Add(versionInfo);
-                }
-            }
-            return results;
         }
     }
 }

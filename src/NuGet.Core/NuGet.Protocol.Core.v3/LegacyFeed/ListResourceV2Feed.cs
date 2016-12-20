@@ -1,8 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -25,17 +23,17 @@ namespace NuGet.Protocol.LegacyFeed
         }
 
         public override Task<IEnumerableAsync<IPackageSearchMetadata>> ListAsync(
-            string searchTime,
+            string searchTerm,
             bool prerelease,
             bool allVersions,
             bool includeDelisted,
             ILogger logger,
             CancellationToken token)
         {
-            return ListRangeAsync(searchTime, prerelease, allVersions, includeDelisted, 0, Take, logger, token);
+            return ListRangeAsync(searchTerm, prerelease, allVersions, includeDelisted, 0, Take, logger, token);
         }
 
-        private async Task<IEnumerableAsync<IPackageSearchMetadata>> ListRangeAsync(string searchTime,
+        private async Task<IEnumerableAsync<IPackageSearchMetadata>> ListRangeAsync(string searchTerm,
             bool prerelease,
             bool allVersions,
             bool includeDelisted,
@@ -56,7 +54,7 @@ namespace NuGet.Protocol.LegacyFeed
                     // whether prerelease is included should not matter as allVersions precedes it
                     filter.IncludeDelisted = includeDelisted;
 
-                    return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTime, filter, skip, take,
+                    return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTerm, filter, skip, take,
                         logger, token);
                 }
 
@@ -70,7 +68,7 @@ namespace NuGet.Protocol.LegacyFeed
                     filter.OrderBy = SearchOrderBy.Id;
                     filter.IncludeDelisted = includeDelisted;
 
-                    return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTime, filter, skip, take,
+                    return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTerm, filter, skip, take,
                         logger, token);
 
                 }
@@ -79,7 +77,7 @@ namespace NuGet.Protocol.LegacyFeed
                     var filter = new SearchFilter(includePrerelease: false,
                         filter: SearchFilterType.IsLatestVersion);
                     filter.OrderBy = SearchOrderBy.Id;
-                    return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTime, filter, skip, take,
+                    return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTerm, filter, skip, take,
                         logger, token);
 
 
@@ -94,7 +92,7 @@ namespace NuGet.Protocol.LegacyFeed
                     filter.IncludeDelisted = includeDelisted;
                     filter.OrderBy = SearchOrderBy.Id;
 
-                    return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTime, filter, skip, take, logger, token);
+                    return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTerm, filter, skip, take, logger, token);
                 }
 
                 var supportsIsAbsoluteLatestVersion =
@@ -107,7 +105,7 @@ namespace NuGet.Protocol.LegacyFeed
                     filter.IncludeDelisted = includeDelisted;
                     filter.OrderBy = SearchOrderBy.Id;
 
-                    return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTime, filter, skip, take, logger, token);
+                    return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTerm, filter, skip, take, logger, token);
                 }
                 else
                 {
@@ -115,7 +113,7 @@ namespace NuGet.Protocol.LegacyFeed
                         filter: SearchFilterType.IsLatestVersion);
                     filter.OrderBy = SearchOrderBy.Id;
 
-                    return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTime, filter, skip, take, logger, token);
+                    return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTerm, filter, skip, take, logger, token);
                 }
 
             }
@@ -126,16 +124,16 @@ namespace NuGet.Protocol.LegacyFeed
     {
         private readonly SearchFilter _filter;
         private readonly ILogger _logger;
-        private  readonly string _searchTime;
+        private  readonly string _searchTerm;
         private readonly int _skip;
         private readonly int _take;
         private readonly CancellationToken _token;
         private readonly IV2FeedParser _feedParser;
 
-        public EnumerableAsync(IV2FeedParser feedParser, string searchTime, SearchFilter filter, int skip, int take, ILogger logger, CancellationToken token)
+        public EnumerableAsync(IV2FeedParser feedParser, string searchTerm, SearchFilter filter, int skip, int take, ILogger logger, CancellationToken token)
         {
             _feedParser = feedParser;
-            _searchTime = searchTime;
+            _searchTerm = searchTerm;
             _filter = filter;
             _skip = skip;
             _take = take;
@@ -145,7 +143,7 @@ namespace NuGet.Protocol.LegacyFeed
 
         public IEnumeratorAsync<T> GetEnumeratorAsync()
         {
-            return (IEnumeratorAsync<T>)new EnumeratorAsync(_feedParser, _searchTime, _filter, _skip, _take, _logger, _token);
+            return (IEnumeratorAsync<T>)new EnumeratorAsync(_feedParser, _searchTerm, _filter, _skip, _take, _logger, _token);
         }
     }
 
@@ -153,7 +151,7 @@ namespace NuGet.Protocol.LegacyFeed
     {
         private readonly SearchFilter _filter;
         private readonly ILogger _logger;
-        private readonly string _searchTime;
+        private readonly string _searchTerm;
         private int _skip;
         private readonly int _take;
         private readonly CancellationToken _token;
@@ -162,11 +160,11 @@ namespace NuGet.Protocol.LegacyFeed
         private IEnumerator<IPackageSearchMetadata> _currentEnumerator;
         private V2FeedPage _currentPage;
 
-        public EnumeratorAsync(IV2FeedParser feedParser, string searchTime, SearchFilter filter, int skip, int take,
+        public EnumeratorAsync(IV2FeedParser feedParser, string searchTerm, SearchFilter filter, int skip, int take,
             ILogger logger, CancellationToken token)
         {
             _feedParser = feedParser;
-            _searchTime = searchTime;
+            _searchTerm = searchTerm;
             _filter = filter;
             _skip = skip;
             _take = take;
@@ -189,12 +187,12 @@ namespace NuGet.Protocol.LegacyFeed
             if (_currentPage == null)
             {
 
-                _currentPage = await _feedParser.GetSearchPageAsync(_searchTime, _filter, _skip, _take, _logger, _token);
+                _currentPage = await _feedParser.GetSearchPageAsync(_searchTerm, _filter, _skip, _take, _logger, _token);
                 var results = _currentPage.Items.GroupBy(p => p.Id)
                     .Select(group => group.OrderByDescending(p => p.Version).First())
                     .Select(
                         package =>
-                            PackageSearchResourceV2Feed.CreatePackageSearchResult(package, _filter,
+                            V2FeedUtilities.CreatePackageSearchResult(package, _filter,
                                 (V2FeedParser)_feedParser, _logger, _token));
                 var enumerator = results.GetEnumerator();
                 _currentEnumerator = enumerator;
@@ -210,12 +208,12 @@ namespace NuGet.Protocol.LegacyFeed
                         return false;
                     }
                     _skip += _take;
-                    _currentPage =  await _feedParser.GetSearchPageAsync(_searchTime, _filter, _skip, _take, _logger, _token);
+                    _currentPage =  await _feedParser.GetSearchPageAsync(_searchTerm, _filter, _skip, _take, _logger, _token);
                     var results = _currentPage.Items.GroupBy(p => p.Id)
                         .Select(group => group.OrderByDescending(p => p.Version).First())
                         .Select(
                             package =>
-                                PackageSearchResourceV2Feed.CreatePackageSearchResult(package, _filter,
+                                V2FeedUtilities.CreatePackageSearchResult(package, _filter,
                                     (V2FeedParser)_feedParser, _logger, _token));
                     var enumerator = results.GetEnumerator();
                     _currentEnumerator = enumerator;
