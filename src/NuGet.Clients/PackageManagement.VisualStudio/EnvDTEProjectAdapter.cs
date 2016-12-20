@@ -9,6 +9,7 @@ using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Frameworks;
+using NuGet.ProjectModel;
 using NuGet.RuntimeModel;
 using VSLangProj;
 using VSLangProj150;
@@ -133,24 +134,35 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (!_isLegacyCSProjPackageReferenceProject.HasValue)
                 {
-                    // A legacy CSProj can't be CPS, must cast to VSProject4 and *must* have at least one package
-                    // reference already in the CSProj. In the future this logic may change. For now a user must
-                    // hand code their first package reference. Laid out in longhand for readability.
-                    if (AsIVsHierarchy?.IsCapabilityMatch("CPS") ?? true)
+                    // check for RestoreProjectStyle property
+                    var restoreProjectStyle = EnvDTEProjectUtility.GetPropertyValue<string>(_project, "RestoreProjectStyle");
+
+                    if (string.IsNullOrEmpty(restoreProjectStyle))
                     {
-                        _isLegacyCSProjPackageReferenceProject = false;
+                        // A legacy CSProj can't be CPS, must cast to VSProject4 and *must* have at least one package
+                        // reference already in the CSProj. In the future this logic may change. For now a user must
+                        // hand code their first package reference. Laid out in longhand for readability.
+                        if (AsIVsHierarchy?.IsCapabilityMatch("CPS") ?? true)
+                        {
+                            _isLegacyCSProjPackageReferenceProject = false;
+                        }
+                        else if (AsVSProject4 == null ||
+                            (AsVSProject4.PackageReferences?.InstalledPackages?.Length ?? 0) == 0)
+                        {
+                            _isLegacyCSProjPackageReferenceProject = false;
+                        }
+                        else
+                        {
+                            _isLegacyCSProjPackageReferenceProject = true;
+                        }
                     }
-                    else if (AsVSProject4 == null)
+                    else if(restoreProjectStyle.Equals(ProjectStyle.PackageReference.ToString(), StringComparison.OrdinalIgnoreCase))
                     {
-                        _isLegacyCSProjPackageReferenceProject = false;
-                    }
-                    else if ((AsVSProject4.PackageReferences?.InstalledPackages?.Length ?? 0) == 0)
-                    {
-                        _isLegacyCSProjPackageReferenceProject = false;
+                        _isLegacyCSProjPackageReferenceProject = true;
                     }
                     else
                     {
-                        _isLegacyCSProjPackageReferenceProject = true;
+                        _isLegacyCSProjPackageReferenceProject = false;
                     }
                 }
 
