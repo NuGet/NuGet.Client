@@ -368,7 +368,7 @@ namespace NuGet.ProjectModel.Test
       ""projectName"": ""ProjectPath"",
       ""projectPath"": ""X:\\ProjectPath\\ProjectPath.csproj"",
       ""outputPath"": ""X:\\ProjectPath\\obj\\"",
-      ""outputType"": ""NETCore"",
+      ""projectStyle"": ""PackageReference"",
       ""originalTargetFrameworks"": [
         ""netcoreapp1.0""
       ],

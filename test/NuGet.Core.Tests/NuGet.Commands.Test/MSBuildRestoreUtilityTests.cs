@@ -38,7 +38,7 @@ namespace NuGet.Commands.Test
                     { "Type", "ProjectSpec" },
                     { "ProjectJsonPath", project1JsonPath },
                     { "ProjectName", "a" },
-                    { "OutputType", "uap" },
+                    { "ProjectStyle", "ProjectJson" },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
                 });
@@ -86,7 +86,7 @@ namespace NuGet.Commands.Test
                 {
                     { "Type", "ProjectSpec" },
                     { "ProjectName", "a" },
-                    { "OutputType", "DotnetCliTool" },
+                    { "ProjectStyle", "DotnetCliTool" },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
                     { "TargetFrameworks", "netcoreapp1.0" },
@@ -132,7 +132,7 @@ namespace NuGet.Commands.Test
                 {
                     { "Type", "ProjectSpec" },
                     { "ProjectName", "a" },
-                    { "OutputType", "netcore" },
+                    { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
@@ -218,7 +218,7 @@ namespace NuGet.Commands.Test
                     { "Type", "ProjectSpec" },
                     { "Version", "2.0.0-rc.2+a.b.c" },
                     { "ProjectName", "a" },
-                    { "OutputType", "netcore" },
+                    { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
@@ -276,7 +276,7 @@ namespace NuGet.Commands.Test
                 {
                     { "Type", "ProjectSpec" },
                     { "ProjectName", "a" },
-                    { "OutputType", "netcore" },
+                    { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
@@ -318,7 +318,7 @@ namespace NuGet.Commands.Test
                     { "Type", "ProjectSpec" },
                     { "Version", "notaversionstring" },
                     { "ProjectName", "a" },
-                    { "OutputType", "netcore" },
+                    { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
@@ -356,7 +356,7 @@ namespace NuGet.Commands.Test
                 {
                     { "Type", "ProjectSpec" },
                     { "ProjectName", "a" },
-                    { "OutputType", "netcore" },
+                    { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
@@ -400,7 +400,7 @@ namespace NuGet.Commands.Test
                 {
                     { "Type", "ProjectSpec" },
                     { "ProjectName", "a" },
-                    { "OutputType", "netcore" },
+                    { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
@@ -444,7 +444,7 @@ namespace NuGet.Commands.Test
                 {
                     { "Type", "ProjectSpec" },
                     { "ProjectName", "a" },
-                    { "OutputType", "netcore" },
+                    { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
@@ -515,7 +515,7 @@ namespace NuGet.Commands.Test
                 {
                     { "Type", "ProjectSpec" },
                     { "ProjectName", "a" },
-                    { "OutputType", "netcore" },
+                    { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
@@ -571,7 +571,7 @@ namespace NuGet.Commands.Test
                 {
                     { "Type", "ProjectSpec" },
                     { "ProjectName", "  a\n  " },
-                    { "OutputType", "netcore" },
+                    { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
@@ -647,7 +647,7 @@ namespace NuGet.Commands.Test
                 {
                     { "Type", "ProjectSpec" },
                     { "ProjectName", "a" },
-                    { "OutputType", "netcore" },
+                    { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
@@ -691,7 +691,7 @@ namespace NuGet.Commands.Test
                 {
                     { "Type", "ProjectSpec" },
                     { "ProjectName", "a" },
-                    { "OutputType", "netcore" },
+                    { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
@@ -738,7 +738,7 @@ namespace NuGet.Commands.Test
                 {
                     { "Type", "ProjectSpec" },
                     { "ProjectName", "a" },
-                    { "OutputType", "netcore" },
+                    { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
@@ -750,7 +750,7 @@ namespace NuGet.Commands.Test
                 {
                     { "Type", "ProjectSpec" },
                     { "ProjectName", "b" },
-                    { "OutputType", "netcore" },
+                    { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath2 },
                     { "ProjectUniqueName", "AA2C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project2Path },
@@ -905,7 +905,7 @@ namespace NuGet.Commands.Test
                     { "Type", "ProjectSpec" },
                     { "ProjectJsonPath", project1JsonPath },
                     { "ProjectName", "a" },
-                    { "OutputType", "uap" },
+                    { "ProjectStyle", "ProjectJson" },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
                 });
@@ -915,7 +915,7 @@ namespace NuGet.Commands.Test
                     { "Type", "ProjectSpec" },
                     { "ProjectJsonPath", project2JsonPath },
                     { "ProjectName", "b" },
-                    { "OutputType", "uap" },
+                    { "ProjectStyle", "ProjectJson" },
                     { "ProjectUniqueName", "AA2C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project2Path },
                 });
@@ -1003,7 +1003,7 @@ namespace NuGet.Commands.Test
                     { "Type", "ProjectSpec" },
                     { "ProjectJsonPath", projectJsonPath },
                     { "ProjectName", "a" },
-                    { "OutputType", "uap" },
+                    { "ProjectStyle", "ProjectJson" },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", projectPath },
                 });
@@ -1054,7 +1054,7 @@ namespace NuGet.Commands.Test
                     { "Type", "ProjectSpec" },
                     { "ProjectJsonPath", projectJsonPath },
                     { "ProjectName", "a" },
-                    { "OutputType", "uap" },
+                    { "ProjectStyle", "ProjectJson" },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", projectPath },
                     { "CrossTargeting", "true" },

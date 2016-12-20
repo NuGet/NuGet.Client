@@ -22,7 +22,7 @@
         "projectName": "x",
         "projectPath": "c:\\x\\x.csproj",
         "projectJsonPath": "c:\\x\\project.json",
-        "outputType": "netcore",
+        "projectStyle": "PackageReference",
         "outputPath": "c:\\x\\obj\\bin",
         "packagesPath": "c:\\packages",
         "sources": {

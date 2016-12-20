@@ -295,7 +295,7 @@ namespace NuGet.Commands.Test
             spec.AddProject(project);
 
             // Act && Assert
-            AssertError(spec, "Invalid input combination. Property 'OutputPath' is not allowed for project type 'UAP'.");
+            AssertError(spec, "Invalid input combination. Property 'OutputPath' is not allowed for project type 'ProjectJson'.");
         }
 
         [Fact]
@@ -327,7 +327,7 @@ namespace NuGet.Commands.Test
             spec.AddProject(project);
 
             // Act && Assert
-            AssertError(spec, "Property 'OutputPath' is not allowed for project type 'UAP'", "project.json");
+            AssertError(spec, "Property 'OutputPath' is not allowed for project type 'ProjectJson'", "project.json");
         }
 
         [Fact]
@@ -402,7 +402,7 @@ namespace NuGet.Commands.Test
             spec.Projects.First().RestoreMetadata.OutputPath = null;
 
             // Act && Assert
-            AssertError(spec, "Missing required property 'OutputPath' for project type 'NETCore'.", "a.csproj");
+            AssertError(spec, "Missing required property 'OutputPath' for project type 'PackageReference'.", "a.csproj");
         }
 
         [Fact]
@@ -413,7 +413,7 @@ namespace NuGet.Commands.Test
             spec.Projects.First().RestoreMetadata.OriginalTargetFrameworks.Clear();
 
             // Act && Assert
-            AssertError(spec, "Missing required property 'OriginalTargetFrameworks' for project type 'NETCore'.", "a.csproj");
+            AssertError(spec, "Missing required property 'OriginalTargetFrameworks' for project type 'PackageReference'.", "a.csproj");
         }
 
         [Fact]
@@ -424,7 +424,7 @@ namespace NuGet.Commands.Test
             spec.Projects.First().RestoreMetadata.ProjectJsonPath = "project.json";
 
             // Act && Assert
-            AssertError(spec, "Property 'ProjectJsonPath' is not allowed for project type 'NETCore'.", "a.csproj");
+            AssertError(spec, "Property 'ProjectJsonPath' is not allowed for project type 'PackageReference'.", "a.csproj");
         }
 
         private static PackageSpec GetProjectA()
