@@ -38,7 +38,7 @@ namespace NuGet.Commands.Test
                     { "Type", "ProjectSpec" },
                     { "ProjectJsonPath", project1JsonPath },
                     { "ProjectName", "a" },
-                    { "OutputType", "uap" },
+                    { "ProjectStyle", "ProjectJson" },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
                 });
@@ -86,7 +86,7 @@ namespace NuGet.Commands.Test
                 {
                     { "Type", "ProjectSpec" },
                     { "ProjectName", "a" },
-                    { "OutputType", "DotnetCliTool" },
+                    { "ProjectStyle", "DotnetCliTool" },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
                     { "TargetFrameworks", "netcoreapp1.0" },
@@ -132,7 +132,7 @@ namespace NuGet.Commands.Test
                 {
                     { "Type", "ProjectSpec" },
                     { "ProjectName", "a" },
-                    { "OutputType", "netcore" },
+                    { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
@@ -218,7 +218,7 @@ namespace NuGet.Commands.Test
                     { "Type", "ProjectSpec" },
                     { "Version", "2.0.0-rc.2+a.b.c" },
                     { "ProjectName", "a" },
-                    { "OutputType", "netcore" },
+                    { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
@@ -240,7 +240,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal(project1Path, project1Spec.FilePath);
                 Assert.Equal("a", project1Spec.Name);
                 Assert.Equal("2.0.0-rc.2+a.b.c", project1Spec.Version.ToFullString());
-                Assert.Equal(RestoreOutputType.NETCore, project1Spec.RestoreMetadata.OutputType);
+                Assert.Equal(ProjectStyle.PackageReference, project1Spec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("482C20DE-DFF9-4BD0-B90A-BD3201AA351A", project1Spec.RestoreMetadata.ProjectUniqueName);
                 Assert.Equal(project1Path, project1Spec.RestoreMetadata.ProjectPath);
                 Assert.Equal(0, project1Spec.RestoreMetadata.TargetFrameworks.SelectMany(e => e.ProjectReferences).Count());
@@ -276,7 +276,7 @@ namespace NuGet.Commands.Test
                 {
                     { "Type", "ProjectSpec" },
                     { "ProjectName", "a" },
-                    { "OutputType", "netcore" },
+                    { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
@@ -318,7 +318,7 @@ namespace NuGet.Commands.Test
                     { "Type", "ProjectSpec" },
                     { "Version", "notaversionstring" },
                     { "ProjectName", "a" },
-                    { "OutputType", "netcore" },
+                    { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
@@ -356,7 +356,7 @@ namespace NuGet.Commands.Test
                 {
                     { "Type", "ProjectSpec" },
                     { "ProjectName", "a" },
-                    { "OutputType", "netcore" },
+                    { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
@@ -375,7 +375,7 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.Equal(project1Path, project1Spec.FilePath);
                 Assert.Equal("a", project1Spec.Name);
-                Assert.Equal(RestoreOutputType.NETCore, project1Spec.RestoreMetadata.OutputType);
+                Assert.Equal(ProjectStyle.PackageReference, project1Spec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("netstandard1.6", string.Join("|", project1Spec.TargetFrameworks.Select(e => e.FrameworkName.GetShortFolderName())));
                 Assert.Equal("netstandard16", string.Join("|", project1Spec.RestoreMetadata.OriginalTargetFrameworks));
                 Assert.False(project1Spec.RestoreMetadata.CrossTargeting);
@@ -400,7 +400,7 @@ namespace NuGet.Commands.Test
                 {
                     { "Type", "ProjectSpec" },
                     { "ProjectName", "a" },
-                    { "OutputType", "netcore" },
+                    { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
@@ -419,7 +419,7 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.Equal(project1Path, project1Spec.FilePath);
                 Assert.Equal("a", project1Spec.Name);
-                Assert.Equal(RestoreOutputType.NETCore, project1Spec.RestoreMetadata.OutputType);
+                Assert.Equal(ProjectStyle.PackageReference, project1Spec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("netstandard1.6", string.Join("|", project1Spec.TargetFrameworks.Select(e => e.FrameworkName.GetShortFolderName())));
                 Assert.Equal("netstandard16", string.Join("|", project1Spec.RestoreMetadata.OriginalTargetFrameworks));
                 Assert.False(project1Spec.RestoreMetadata.LegacyPackagesDirectory);
@@ -444,7 +444,7 @@ namespace NuGet.Commands.Test
                 {
                     { "Type", "ProjectSpec" },
                     { "ProjectName", "a" },
-                    { "OutputType", "netcore" },
+                    { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
@@ -515,7 +515,7 @@ namespace NuGet.Commands.Test
                 {
                     { "Type", "ProjectSpec" },
                     { "ProjectName", "a" },
-                    { "OutputType", "netcore" },
+                    { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
@@ -571,7 +571,7 @@ namespace NuGet.Commands.Test
                 {
                     { "Type", "ProjectSpec" },
                     { "ProjectName", "  a\n  " },
-                    { "OutputType", "netcore" },
+                    { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
@@ -647,7 +647,7 @@ namespace NuGet.Commands.Test
                 {
                     { "Type", "ProjectSpec" },
                     { "ProjectName", "a" },
-                    { "OutputType", "netcore" },
+                    { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
@@ -691,7 +691,7 @@ namespace NuGet.Commands.Test
                 {
                     { "Type", "ProjectSpec" },
                     { "ProjectName", "a" },
-                    { "OutputType", "netcore" },
+                    { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
@@ -738,7 +738,7 @@ namespace NuGet.Commands.Test
                 {
                     { "Type", "ProjectSpec" },
                     { "ProjectName", "a" },
-                    { "OutputType", "netcore" },
+                    { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
@@ -750,7 +750,7 @@ namespace NuGet.Commands.Test
                 {
                     { "Type", "ProjectSpec" },
                     { "ProjectName", "b" },
-                    { "OutputType", "netcore" },
+                    { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath2 },
                     { "ProjectUniqueName", "AA2C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project2Path },
@@ -905,7 +905,7 @@ namespace NuGet.Commands.Test
                     { "Type", "ProjectSpec" },
                     { "ProjectJsonPath", project1JsonPath },
                     { "ProjectName", "a" },
-                    { "OutputType", "uap" },
+                    { "ProjectStyle", "ProjectJson" },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project1Path },
                 });
@@ -915,7 +915,7 @@ namespace NuGet.Commands.Test
                     { "Type", "ProjectSpec" },
                     { "ProjectJsonPath", project2JsonPath },
                     { "ProjectName", "b" },
-                    { "OutputType", "uap" },
+                    { "ProjectStyle", "ProjectJson" },
                     { "ProjectUniqueName", "AA2C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", project2Path },
                 });
@@ -1003,7 +1003,7 @@ namespace NuGet.Commands.Test
                     { "Type", "ProjectSpec" },
                     { "ProjectJsonPath", projectJsonPath },
                     { "ProjectName", "a" },
-                    { "OutputType", "uap" },
+                    { "ProjectStyle", "ProjectJson" },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", projectPath },
                 });
@@ -1030,7 +1030,7 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.Equal(projectJsonPath, spec.FilePath);
                 Assert.Equal("a", spec.Name);
-                Assert.Equal(RestoreOutputType.UAP, spec.RestoreMetadata.OutputType);
+                Assert.Equal(ProjectStyle.ProjectJson, spec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("482C20DE-DFF9-4BD0-B90A-BD3201AA351A", spec.RestoreMetadata.ProjectUniqueName);
                 Assert.Equal(projectPath, spec.RestoreMetadata.ProjectPath);
                 Assert.Equal(0, spec.RestoreMetadata.TargetFrameworks.SelectMany(e => e.ProjectReferences).Count());
@@ -1054,7 +1054,7 @@ namespace NuGet.Commands.Test
                     { "Type", "ProjectSpec" },
                     { "ProjectJsonPath", projectJsonPath },
                     { "ProjectName", "a" },
-                    { "OutputType", "uap" },
+                    { "ProjectStyle", "ProjectJson" },
                     { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", projectPath },
                     { "CrossTargeting", "true" },
@@ -1111,7 +1111,7 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.Equal(projectPath, spec.FilePath);
                 Assert.Equal("a", spec.Name);
-                Assert.Equal(RestoreOutputType.Unknown, spec.RestoreMetadata.OutputType);
+                Assert.Equal(ProjectStyle.Unknown, spec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("482C20DE-DFF9-4BD0-B90A-BD3201AA351A", spec.RestoreMetadata.ProjectUniqueName);
                 Assert.Equal(projectPath, spec.RestoreMetadata.ProjectPath);
                 Assert.Equal(NuGetFramework.Parse("net462"), spec.TargetFrameworks.Single().FrameworkName);

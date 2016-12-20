@@ -532,11 +532,11 @@ namespace NuGet.CommandLine
                 .Select(GetPackagesConfigFile)
                 .Where(path => path != null));
 
-            // NETCore or UAP
             // Filter down to just the requested projects in the file
+            // that support transitive references.
             var v3RestoreProjects = dgFileOutput.Projects
-                .Where(project => (project.RestoreMetadata.OutputType == RestoreOutputType.NETCore
-                    || project.RestoreMetadata.OutputType == RestoreOutputType.UAP)
+                .Where(project => (project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference
+                    || project.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson)
                     && entryPointProjects.Contains(project));
 
             packageRestoreInputs.RestoreV3Context.Inputs.AddRange(v3RestoreProjects

@@ -226,8 +226,8 @@ namespace NuGet.PackageManagement
         {
             // Restore
             var specs = await project.GetPackageSpecsAsync(context);
-            var spec = specs.Single(e => e.RestoreMetadata.OutputType == RestoreOutputType.NETCore
-                || e.RestoreMetadata.OutputType == RestoreOutputType.UAP);
+            var spec = specs.Single(e => e.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference
+                || e.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson);
 
             var result = await PreviewRestoreAsync(
                 solutionManager,
@@ -304,8 +304,8 @@ namespace NuGet.PackageManagement
         {
             var specs = await project.GetPackageSpecsAsync(context);
 
-            return specs.Where(e => e.RestoreMetadata.OutputType != RestoreOutputType.Standalone
-                && e.RestoreMetadata.OutputType != RestoreOutputType.DotnetCliTool)
+            return specs.Where(e => e.RestoreMetadata.ProjectStyle != ProjectStyle.Standalone
+                && e.RestoreMetadata.ProjectStyle != ProjectStyle.DotnetCliTool)
                 .FirstOrDefault();
         }
 
@@ -324,10 +324,10 @@ namespace NuGet.PackageManagement
                 {
                     dgSpec.AddProject(packageSpec);
 
-                    if (packageSpec.RestoreMetadata.OutputType == RestoreOutputType.NETCore ||
-                        packageSpec.RestoreMetadata.OutputType == RestoreOutputType.UAP ||
-                        packageSpec.RestoreMetadata.OutputType == RestoreOutputType.DotnetCliTool ||
-                        packageSpec.RestoreMetadata.OutputType == RestoreOutputType.Standalone)
+                    if (packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||
+                        packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ||
+                        packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool ||
+                        packageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.Standalone)
                     {
                         dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
                     }

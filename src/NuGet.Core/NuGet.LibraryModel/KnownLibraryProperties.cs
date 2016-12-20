@@ -15,6 +15,6 @@ namespace NuGet.LibraryModel
         public static readonly string RuntimeAsset = "NuGet.ProjectModel.RuntimeAsset";
         public static readonly string FrameworkAssemblies = "NuGet.ProjectModel.FrameworkAssemblies";
         public static readonly string ProjectFrameworks = "NuGet.ProjectModel.ProjectFrameworks";
-        public static readonly string ProjectOutputType = "NuGet.ProjectModel.RestoreMetadata.OutputType";
+        public static readonly string ProjectStyle = "NuGet.ProjectModel.RestoreMetadata.ProjectStyle";
     }
 }

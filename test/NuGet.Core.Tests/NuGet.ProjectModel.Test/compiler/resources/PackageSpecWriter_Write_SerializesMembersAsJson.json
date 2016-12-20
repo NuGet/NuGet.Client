@@ -44,7 +44,7 @@
     "projectJsonPath": "projectJsonPath",
     "packagesPath": "packagesPath",
     "outputPath": "outputPath",
-    "outputType": "NETCore",
+    "projectStyle": "PackageReference",
     "crossTargeting": "True",
     "fallbackFolders": [
       "b",

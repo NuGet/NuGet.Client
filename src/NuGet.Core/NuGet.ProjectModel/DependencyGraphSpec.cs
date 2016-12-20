@@ -384,7 +384,7 @@ namespace NuGet.ProjectModel
 
             foreach (var project in Projects)
             {
-                if (project.RestoreMetadata.OutputType != RestoreOutputType.DotnetCliTool)
+                if (project.RestoreMetadata.ProjectStyle != ProjectStyle.DotnetCliTool)
                 {
                     // Add all non-tool projects
                     newSpec.AddProject(project);

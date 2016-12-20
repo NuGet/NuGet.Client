@@ -294,7 +294,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 RuntimeGraph = runtimeGraph,
                 RestoreMetadata = new ProjectRestoreMetadata
                 {
-                    OutputType = RestoreOutputType.NETCore,
+                    ProjectStyle = ProjectStyle.PackageReference,
                     OutputPath = GetBaseIntermediatePath(),
                     ProjectPath = _projectFullPath,
                     ProjectName = _projectName ?? _projectUniqueName,

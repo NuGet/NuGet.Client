@@ -230,7 +230,7 @@ namespace NuGet.Commands.Test
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
                 spec1.RestoreMetadata = new ProjectRestoreMetadata();
                 spec1.RestoreMetadata.OutputPath = Path.Combine(project1.FullName, "obj");
-                spec1.RestoreMetadata.OutputType = RestoreOutputType.NETCore;
+                spec1.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
                 spec1.RestoreMetadata.ProjectName = "project1";
                 spec1.RestoreMetadata.ProjectPath = Path.Combine(project1.FullName, "project1.csproj");
                 spec1.RestoreMetadata.ProjectUniqueName = spec1.RestoreMetadata.ProjectPath;
@@ -376,14 +376,14 @@ namespace NuGet.Commands.Test
             spec1.RestoreMetadata = new ProjectRestoreMetadata();
             spec1.RestoreMetadata.ProjectUniqueName = "project1";
             spec1.RestoreMetadata.ProjectName = "project1";
-            spec1.RestoreMetadata.OutputType = RestoreOutputType.NETCore;
+            spec1.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
             spec1.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
 
             var spec2 = new PackageSpec(frameworks2);
             spec2.RestoreMetadata = new ProjectRestoreMetadata();
             spec2.RestoreMetadata.ProjectUniqueName = "project2";
             spec2.RestoreMetadata.ProjectName = "project2";
-            spec2.RestoreMetadata.OutputType = RestoreOutputType.NETCore;
+            spec2.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
             spec2.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
 
             var specs = new[] { spec1, spec2 };
@@ -513,14 +513,14 @@ namespace NuGet.Commands.Test
             spec1.RestoreMetadata = new ProjectRestoreMetadata();
             spec1.RestoreMetadata.ProjectUniqueName = "project1";
             spec1.RestoreMetadata.ProjectName = "project1";
-            spec1.RestoreMetadata.OutputType = RestoreOutputType.NETCore;
+            spec1.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
             spec1.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
 
             var spec2 = new PackageSpec(frameworks2);
             spec2.RestoreMetadata = new ProjectRestoreMetadata();
             spec2.RestoreMetadata.ProjectUniqueName = "project2";
             spec2.RestoreMetadata.ProjectName = "project2";
-            spec2.RestoreMetadata.OutputType = RestoreOutputType.NETCore;
+            spec2.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
             spec2.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
 
             var specs = new[] { spec1, spec2 };

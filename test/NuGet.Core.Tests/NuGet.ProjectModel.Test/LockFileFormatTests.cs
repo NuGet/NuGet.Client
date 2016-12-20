@@ -368,7 +368,7 @@ namespace NuGet.ProjectModel.Test
       ""projectName"": ""ProjectPath"",
       ""projectPath"": ""X:\\ProjectPath\\ProjectPath.csproj"",
       ""outputPath"": ""X:\\ProjectPath\\obj\\"",
-      ""outputType"": ""NETCore"",
+      ""projectStyle"": ""PackageReference"",
       ""originalTargetFrameworks"": [
         ""netcoreapp1.0""
       ],
@@ -435,7 +435,7 @@ namespace NuGet.ProjectModel.Test
                     ProjectName = "ProjectPath",
                     ProjectPath = @"X:\ProjectPath\ProjectPath.csproj",
                     OutputPath = @"X:\ProjectPath\obj\",
-                    OutputType = RestoreOutputType.NETCore,
+                    ProjectStyle = ProjectStyle.PackageReference,
                     OriginalTargetFrameworks = new[] { "netcoreapp1.0" },
                     TargetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>
                     {

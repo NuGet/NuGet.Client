@@ -13,7 +13,7 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// Restore behavior type.
         /// </summary>
-        public RestoreOutputType OutputType { get; set; } = RestoreOutputType.Unknown;
+        public ProjectStyle ProjectStyle { get; set; } = ProjectStyle.Unknown;
 
         /// <summary>
         /// MSBuild project file path.
@@ -82,7 +82,7 @@ namespace NuGet.ProjectModel
         {
             var hashCode = new HashCodeCombiner();
 
-            hashCode.AddObject(OutputType);
+            hashCode.AddObject(ProjectStyle);
             hashCode.AddObject(ProjectPath);
             hashCode.AddObject(ProjectJsonPath);
             hashCode.AddObject(OutputPath);
@@ -116,7 +116,7 @@ namespace NuGet.ProjectModel
                 return true;
             }
 
-            return OutputType == other.OutputType &&
+            return ProjectStyle == other.ProjectStyle &&
                    ProjectPath == other.ProjectPath &&
                    ProjectJsonPath == other.ProjectJsonPath &&
                    OutputPath == other.OutputPath &&
