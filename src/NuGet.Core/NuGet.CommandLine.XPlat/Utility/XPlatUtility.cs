@@ -1,10 +1,14 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.IO;
-using System.Net;
+using Microsoft.Extensions.CommandLineUtils;
+
 #if IS_CORECLR
 using System.Runtime.InteropServices;
 #endif
-using Microsoft.Dnx.Runtime.Common.CommandLine;
+
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
@@ -33,6 +37,18 @@ namespace NuGet.CommandLine.XPlat
             }
 
             return level;
+        }
+
+        public static void ConfigureProtocol()
+        {
+            // Set connection limit
+            NetworkProtocolUtility.SetConnectionLimit();
+
+            // Set user agent string used for network calls
+            SetUserAgent();
+
+            // This method has no effect on .NET Core.
+            NetworkProtocolUtility.ConfigureSupportedSslProtocols();
         }
 
         public static void SetUserAgent()

@@ -22,14 +22,12 @@
   },
   "dependencies": {
     "System.Runtime.InteropServices.RuntimeInformation": "4.0.0",
-    "Microsoft.Extensions.CommandLineUtils.Sources": {
-      "version": "1.0.0-*",
-      "type": "build"
-    },
+    "Microsoft.Extensions.CommandLineUtils": "1.0.0-*",
     "NuGet.Commands": {
       "target": "project"
     },
-    "System.Runtime.Serialization.Primitives": "4.1.1"
+    "System.Runtime.Serialization.Primitives": "4.1.1",
+    "Microsoft.Build.Runtime": "15.1.0-preview-000370-00"
   },
   "commands": {
     "NuGet.CommandLine.XPlat": "NuGet.CommandLine.XPlat"
@@ -52,7 +50,7 @@
       "dependencies": {
         "Microsoft.NETCore.App": {
           "type": "platform",
-          "version": "1.0.0"
+          "version": "1.0"
         }
       },
       "buildOptions": {

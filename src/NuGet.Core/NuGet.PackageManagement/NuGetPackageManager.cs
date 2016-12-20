@@ -2406,7 +2406,7 @@ namespace NuGet.PackageManagement
             {
                 updatedPackageSpec = originalPackageSpec.Clone();
 
-                PackageSpecOperations.AddDependency(
+                PackageSpecOperations.AddOrUpdateDependency(
                     updatedPackageSpec,
                     firstAction.PackageIdentity,
                     successfulFrameworks);
