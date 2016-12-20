@@ -9,6 +9,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -17,6 +18,126 @@ namespace NuGet.CommandLine.Test
 {
     public class RestoreNetCoreTest
     {
+        [Fact]
+        public async Task RestoreNetCore_SetProjectStyleWithProperty_PackageReference()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                // Add a project.json file which will be ignored
+                var projectJson = JObject.Parse(@"{
+                                                    'dependencies': {
+                                                    },
+                                                    'frameworks': {
+                                                        'net45': {
+                                                            'x': '1.0.0'
+                                                    }
+                                                  }
+                                               }");
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                projectA.Properties.Add("RestoreProjectStyle", "PackageReference");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                File.WriteAllText(Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "project.json"), projectJson.ToString());
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var r = RestoreSolution(pathContext);
+
+                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
+                var dgSpec = DependencyGraphSpec.Load(dgPath);
+
+                var propsXML = XDocument.Load(projectA.PropsOutput);
+                var styleNode = propsXML.Root.Elements().First().Elements(XName.Get("NuGetProjectStyle", "http://schemas.microsoft.com/developer/msbuild/2003")).FirstOrDefault();
+
+                // Assert
+                Assert.Equal(ProjectStyle.PackageReference, dgSpec.Projects.Single().RestoreMetadata.ProjectStyle);
+                Assert.Equal("PackageReference", styleNode.Value);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_SetProjectStyleWithProperty_ProjectJson()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                // Create a .NETCore project, but add a project.json file to it.
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var projectJson = JObject.Parse(@"{
+                                                    'dependencies': {
+                                                        'x': '1.0.0'
+                                                    },
+                                                    'frameworks': {
+                                                        'net45': { }                                                            
+                                                    }
+                                                  }");
+
+                // Force this project to ProjectJson
+                projectA.Properties.Add("RestoreProjectStyle", "ProjectJson");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                File.WriteAllText(Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "project.json"), projectJson.ToString());
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                packageX.AddFile("build/net45/x.targets");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                XDocument projectXML = XDocument.Load(projectA.ProjectPath);
+                projectXML.Root.AddFirst(new XElement(XName.Get("Target", "http://schemas.microsoft.com/developer/msbuild/2003"), new XAttribute(XName.Get("Name"), "_SplitProjectReferencesByFileExistence")));
+                projectXML.Save(projectA.ProjectPath);
+
+                // Act
+                var r = RestoreSolution(pathContext);
+
+                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
+                var dgSpec = DependencyGraphSpec.Load(dgPath);
+
+                // Assert
+                Assert.Equal(ProjectStyle.ProjectJson, dgSpec.Projects.Single().RestoreMetadata.ProjectStyle);
+                Assert.True(File.Exists(Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "project.lock.json")));
+            }
+        }
+
         [Fact]
         public void RestoreNetCore_ProjectToProject_Recursive()
         {

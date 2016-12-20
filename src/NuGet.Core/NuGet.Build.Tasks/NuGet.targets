@@ -192,13 +192,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GenerateRestoreSpecs"
-      DependsOnTargets="_GetProjectRestoreType"
+      DependsOnTargets="_GetRestoreProjectStyle"
       Returns="@(_RestoreGraphEntry)">
     <Message Text="Restore entry point $(MSBuildProjectFullPath)" Importance="low" />
 
     <!-- Mark entry point -->
     <ItemGroup Condition=" '$(RestoreProjects)' == '' OR '$(RestoreProjects)' == 'true' ">
-      <_RestoreGraphEntry Include="$([System.Guid]::NewGuid())" Condition=" '$(_ProjectRestoreType)' != 'Unknown' ">
+      <_RestoreGraphEntry Include="$([System.Guid]::NewGuid())" Condition=" '$(RestoreProjectStyle)' != 'Unknown' ">
         <Type>RestoreSpec</Type>
         <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>
       </_RestoreGraphEntry>
@@ -240,26 +240,33 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_GetProjectJsonPath"
     Returns="$(_CurrentProjectJsonPath)">
     <!-- Get project.json path -->
-    <GetRestoreProjectJsonPathTask ProjectPath="$(MSBuildProjectFullPath)">
+    <!-- Skip this if the project style is already set. -->
+    <GetRestoreProjectJsonPathTask 
+      ProjectPath="$(MSBuildProjectFullPath)"
+      Condition=" '$(RestoreProjectStyle)' == 'ProjectJson' OR '$(RestoreProjectStyle)' == '' ">
       <Output TaskParameter="ProjectJsonPath" PropertyName="_CurrentProjectJsonPath" />
     </GetRestoreProjectJsonPathTask>
   </Target>
 
   <!--
     ============================================================
-    _GetProjectRestoreType
+    _GetRestoreProjectStyle
     Determine the project restore type.
     ============================================================
   -->
-  <Target Name="_GetProjectRestoreType"
+  <Target Name="_GetRestoreProjectStyle"
     DependsOnTargets="_GetProjectJsonPath"
-    Returns="$(_ProjectRestoreType)">
-    <!-- Check for project.json and NETCore properties -->
+    Returns="$(RestoreProjectStyle)">
+    <!-- This may be overridden by setting RestoreProjectStyle in the project. -->
     <PropertyGroup>
-      <_ProjectRestoreType>Unknown</_ProjectRestoreType>
-      <_ProjectRestoreType Condition=" '$(_CurrentProjectJsonPath)' != '' ">UAP</_ProjectRestoreType>
-      <_ProjectRestoreType Condition=" '$(TargetFrameworks)' != '' ">NETCore</_ProjectRestoreType>
-      <_ProjectRestoreType Condition=" '$(TargetFramework)' != '' AND @(PackageReference) != '' ">NETCore</_ProjectRestoreType>
+      <!-- .NETCore cross platform projects contain the TargetFrameworks property and must be treated as PackageReference. -->
+      <RestoreProjectStyle Condition=" '$(RestoreProjectStyle)' == '' AND '$(TargetFrameworks)' != '' ">PackageReference</RestoreProjectStyle>
+      <!-- If any PackageReferences exist treat it as PackageReference. This has priority over project.json. -->
+      <RestoreProjectStyle Condition=" '$(RestoreProjectStyle)' == '' AND @(PackageReference) != '' ">PackageReference</RestoreProjectStyle>
+      <!-- If this is not a PackageReference project check if project.json or projectName.project.json exists. -->
+      <RestoreProjectStyle Condition=" '$(RestoreProjectStyle)' == '' AND '$(_CurrentProjectJsonPath)' != '' ">ProjectJson</RestoreProjectStyle>
+      <!-- This project is either a packages.config project or one that does not use NuGet at all. -->
+      <RestoreProjectStyle Condition=" '$(RestoreProjectStyle)' == '' ">Unknown</RestoreProjectStyle>
     </PropertyGroup>
   </Target>
 
@@ -270,17 +277,17 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GetRestoreTargetFrameworksOutput"
-    DependsOnTargets="_GetProjectRestoreType"
+    DependsOnTargets="_GetRestoreProjectStyle"
     Returns="@(_RestoreTargetFrameworksOutputFiltered)">
 
     <!-- Loop on target frameworks, if no frameworks exist the targets below will
          run once using an empty framework string -->
-    <ItemGroup Condition=" '$(_ProjectRestoreType)' == 'NETCore' AND '$(TargetFrameworks)' != '' ">
+    <ItemGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' AND '$(TargetFrameworks)' != '' ">
       <_RestoreTargetFrameworksOutput Include="$(TargetFrameworks.Split(';'))" />
     </ItemGroup>
 
     <!-- Use $(TargetFramework) if $(TargetFrameworks) is empty  -->
-    <ItemGroup Condition=" '$(_ProjectRestoreType)' == 'NETCore' AND '$(TargetFrameworks)' == '' AND '$(TargetFramework)' != '' ">
+    <ItemGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' AND '$(TargetFrameworks)' == '' AND '$(TargetFramework)' != '' ">
       <_RestoreTargetFrameworksOutput Include="$(TargetFramework)" />
     </ItemGroup>
 
@@ -300,15 +307,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GenerateRestoreProjectSpec"
-    DependsOnTargets="_GetProjectRestoreType;_GetRestoreTargetFrameworksOutput"
+    DependsOnTargets="_GetRestoreProjectStyle;_GetRestoreTargetFrameworksOutput"
     Returns="@(_RestoreGraphEntry)">
 
     <!-- Determine the restore output path -->
-    <PropertyGroup Condition=" '$(_ProjectRestoreType)' == 'NETCore' ">
+    <PropertyGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' ">
       <RestoreOutputPath Condition=" '$(RestoreOutputPath)' == '' " >$(BaseIntermediateOutputPath)</RestoreOutputPath>
     </PropertyGroup>
 
-    <ConvertToAbsolutePath Paths="$(RestoreOutputPath)" Condition=" '$(_ProjectRestoreType)' == 'NETCore' ">
+    <ConvertToAbsolutePath Paths="$(RestoreOutputPath)" Condition=" '$(RestoreProjectStyle)' == 'PackageReference' ">
       <Output TaskParameter="AbsolutePaths" PropertyName="RestoreOutputAbsolutePath" />
     </ConvertToAbsolutePath>
 
@@ -322,8 +329,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
     <PropertyGroup>
       <_RestoreProjectName>$(MSBuildProjectName)</_RestoreProjectName>
-      <_RestoreProjectName Condition=" '$(_ProjectRestoreType)' == 'NETCore' AND '$(AssemblyName)' != '' ">$(AssemblyName)</_RestoreProjectName>
-      <_RestoreProjectName Condition=" '$(_ProjectRestoreType)' == 'NETCore' AND '$(PackageId)' != '' ">$(PackageId)</_RestoreProjectName>
+      <_RestoreProjectName Condition=" '$(RestoreProjectStyle)' == 'PackageReference' AND '$(AssemblyName)' != '' ">$(AssemblyName)</_RestoreProjectName>
+      <_RestoreProjectName Condition=" '$(RestoreProjectStyle)' == 'PackageReference' AND '$(PackageId)' != '' ">$(PackageId)</_RestoreProjectName>
     </PropertyGroup>
 
     <!-- 
@@ -332,19 +339,19 @@ Copyright (c) .NET Foundation. All rights reserved.
       Use Version if it exists
       Override with PackageVersion if it exists (same as pack)
     -->
-    <PropertyGroup Condition=" '$(_ProjectRestoreType)' == 'NETCore' ">
+    <PropertyGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' ">
       <_RestoreProjectVersion>1.0.0</_RestoreProjectVersion>
       <_RestoreProjectVersion Condition=" '$(Version)' != '' ">$(Version)</_RestoreProjectVersion>
       <_RestoreProjectVersion Condition=" '$(PackageVersion)' != '' ">$(PackageVersion)</_RestoreProjectVersion>
     </PropertyGroup>
 
     <!-- Determine if this will use cross targeting -->
-    <PropertyGroup Condition=" '$(_ProjectRestoreType)' == 'NETCore' AND '$(TargetFrameworks)' != '' ">
+    <PropertyGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' AND '$(TargetFrameworks)' != '' ">
       <_RestoreCrossTargeting>true</_RestoreCrossTargeting>
     </PropertyGroup>
 
     <!-- Write properties for the top level entry point -->
-    <ItemGroup Condition=" '$(_ProjectRestoreType)' == 'NETCore' ">
+    <ItemGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' ">
       <_RestoreGraphEntry Include="$([System.Guid]::NewGuid())">
         <Type>ProjectSpec</Type>
         <Version>$(_RestoreProjectVersion)</Version>
@@ -354,8 +361,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <Sources>$(RestoreSources)</Sources>
         <FallbackFolders>$(RestoreFallbackFolders)</FallbackFolders>
         <PackagesPath>$(RestorePackagesPath)</PackagesPath>
-        <FallbackFolders>$(RestoreFallbackFolders)</FallbackFolders>
-        <OutputType>$(_ProjectRestoreType)</OutputType>
+        <ProjectStyle>$(RestoreProjectStyle)</ProjectStyle>
         <OutputPath>$(RestoreOutputAbsolutePath)</OutputPath>
         <TargetFrameworks>@(_RestoreTargetFrameworksOutputFiltered)</TargetFrameworks>
         <RuntimeIdentifiers>$(RuntimeIdentifiers);$(RuntimeIdentifier)</RuntimeIdentifiers>
@@ -366,7 +372,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <!-- Use project.json -->
-    <ItemGroup Condition=" '$(_ProjectRestoreType)' == 'UAP' ">
+    <ItemGroup Condition=" '$(RestoreProjectStyle)' == 'ProjectJson' ">
       <_RestoreGraphEntry Include="$([System.Guid]::NewGuid())">
         <Type>ProjectSpec</Type>
         <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>
@@ -377,18 +383,18 @@ Copyright (c) .NET Foundation. All rights reserved.
         <PackagesPath>$(RestorePackagesPath)</PackagesPath>
         <FallbackFolders>$(RestoreFallbackFolders)</FallbackFolders>
         <ProjectJsonPath>$(_CurrentProjectJsonPath)</ProjectJsonPath>
-        <OutputType>$(_ProjectRestoreType)</OutputType>
+        <ProjectStyle>$(RestoreProjectStyle)</ProjectStyle>
       </_RestoreGraphEntry>
     </ItemGroup>
 
     <!-- Non-NuGet type -->
-    <ItemGroup Condition=" '$(_ProjectRestoreType)' == 'Unknown' ">
+    <ItemGroup Condition=" '$(RestoreProjectStyle)' == 'Unknown' ">
       <_RestoreGraphEntry Include="$([System.Guid]::NewGuid())">
         <Type>ProjectSpec</Type>
         <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>
         <ProjectPath>$(MSBuildProjectFullPath)</ProjectPath>
         <ProjectName>$(_RestoreProjectName)</ProjectName>
-        <OutputType>$(_ProjectRestoreType)</OutputType>
+        <ProjectStyle>$(RestoreProjectStyle)</ProjectStyle>
         <TargetFrameworks>$(TargetFrameworkMoniker)</TargetFrameworks>
       </_RestoreGraphEntry>
     </ItemGroup>
@@ -401,7 +407,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GenerateRestoreDependencies"
-    DependsOnTargets="_GetProjectRestoreType;_GetRestoreTargetFrameworksOutput"
+    DependsOnTargets="_GetRestoreProjectStyle;_GetRestoreTargetFrameworksOutput"
     Returns="@(_RestoreGraphEntry)">
 
     <!-- Get project and package references  -->
@@ -429,7 +435,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GetAllRestoreProjectReferences"
-    DependsOnTargets="_GetProjectRestoreType;_GetRestoreTargetFrameworksOutput"
+    DependsOnTargets="_GetRestoreProjectStyle;_GetRestoreTargetFrameworksOutput"
     Returns="@(RestoreGraphProjectFullPathForOutput)">
 
     <!-- Get complete set of project references  -->
@@ -458,7 +464,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GetChildRestoreProjects"
-    DependsOnTargets="_GetProjectRestoreType;_GetAllRestoreProjectReferences"
+    DependsOnTargets="_GetRestoreProjectStyle;_GetAllRestoreProjectReferences"
     Returns="@(_RestoreGraphEntry)">
 
     <!-- Recurse into referenced projects -->
@@ -487,7 +493,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <Target Name="_GenerateRestoreGraphWalk"
       DependsOnTargets="
-      _GetProjectRestoreType;
+      _GetRestoreProjectStyle;
       _GetRestoreTargetFrameworksOutput;
       _GenerateRestoreProjectSpec;
       _GenerateRestoreDependencies;
@@ -504,7 +510,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GenerateRestoreGraphWalkPerFramework"
-    DependsOnTargets="_GenerateRestoreProjectReferencePaths;_GetProjectRestoreType"
+    DependsOnTargets="_GenerateRestoreProjectReferencePaths;_GetRestoreProjectStyle"
     Returns="@(_RestoreGraphEntry)">
 
     <!-- Write out project references -->
@@ -520,7 +526,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Write out package references for NETCore -->
     <GetRestorePackageReferencesTask
-      Condition=" '$(_ProjectRestoreType)' == 'NETCore' "
+      Condition=" '$(RestoreProjectStyle)' == 'PackageReference' "
       ProjectUniqueName="$(MSBuildProjectFullPath)"
       PackageReferences="@(PackageReference)"
       TargetFrameworks="$(TargetFramework)">
@@ -531,7 +537,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </GetRestorePackageReferencesTask>
 
     <!-- Write out target framework information -->
-    <ItemGroup Condition="  '$(_ProjectRestoreType)' == 'NETCore' AND '$(PackageTargetFallback)' != '' ">
+    <ItemGroup Condition="  '$(RestoreProjectStyle)' == 'PackageReference' AND '$(PackageTargetFallback)' != '' ">
       <_RestoreGraphEntry Include="$([System.Guid]::NewGuid())">
         <Type>TargetFrameworkInformation</Type>
         <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>

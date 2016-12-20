@@ -18,7 +18,7 @@ namespace NuGet.PackageManagement.UI
                 PackageItemStyle = (Style)infiniteScrollList.FindResource("packageItemStyle");
                 LoadingStatusIndicatorStyle = (Style)infiniteScrollList.FindResource("loadingStatusIndicatorStyle");
 
-                if (!StandaloneSwitch.IsRunningStandalone && PackageItemStyle.Setters.Count == 0)
+                if (PackageItemStyle.Setters.Count == 0)
                 {
                     var setter = new Setter(InfiniteScrollList.TemplateProperty, infiniteScrollList.FindResource("ListBoxItemTemplate"));
                     PackageItemStyle.Setters.Add(setter);

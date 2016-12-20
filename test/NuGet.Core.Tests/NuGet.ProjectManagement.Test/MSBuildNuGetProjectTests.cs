@@ -54,7 +54,7 @@ namespace ProjectManagement.Test
                 Assert.Equal(msBuildNuGetProjectSystem.ProjectName, actual.Name);
                 Assert.Equal(msBuildNuGetProjectSystem.ProjectFileFullPath, actual.FilePath);
                 Assert.NotNull(actual.RestoreMetadata);
-                Assert.Equal(RestoreOutputType.Unknown, actual.RestoreMetadata.OutputType);
+                Assert.Equal(ProjectStyle.Unknown, actual.RestoreMetadata.ProjectStyle);
                 Assert.Equal(msBuildNuGetProjectSystem.ProjectFileFullPath, actual.RestoreMetadata.ProjectPath);
                 Assert.Equal(msBuildNuGetProjectSystem.ProjectName, actual.RestoreMetadata.ProjectName);
                 Assert.Equal(msBuildNuGetProjectSystem.ProjectFileFullPath, actual.RestoreMetadata.ProjectUniqueName);

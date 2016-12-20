@@ -128,7 +128,7 @@ namespace NuGet.SolutionRestoreManager.Test
             var actualMetadata = actualProjectSpec.RestoreMetadata;
             Assert.Equal(projectFullPath, actualMetadata.ProjectPath);
             Assert.Equal(projectName, actualMetadata.ProjectName);
-            Assert.Equal(RestoreOutputType.NETCore, actualMetadata.OutputType);
+            Assert.Equal(ProjectStyle.PackageReference, actualMetadata.ProjectStyle);
             Assert.Equal(cps.Item2, actualMetadata.OutputPath);
 
             Assert.Single(actualProjectSpec.TargetFrameworks);
@@ -200,7 +200,7 @@ namespace NuGet.SolutionRestoreManager.Test
             var actualMetadata = actualToolSpec.RestoreMetadata;
             Assert.NotNull(actualMetadata);
             Assert.Equal(projectFullPath, actualMetadata.ProjectPath);
-            Assert.Equal(RestoreOutputType.DotnetCliTool, actualMetadata.OutputType);
+            Assert.Equal(ProjectStyle.DotnetCliTool, actualMetadata.ProjectStyle);
             Assert.Null(actualMetadata.OutputPath);
             var toolLibrary = actualToolSpec
                 .TargetFrameworks

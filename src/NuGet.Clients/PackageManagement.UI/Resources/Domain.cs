@@ -22,8 +22,6 @@ namespace NuGet.PackageManagement.UI
                 .DefaultValue;
         }
 
-        public static bool IsInStandaloneMode => StandaloneSwitch.IsRunningStandalone;
-
         public static Visibility HiddenWhenNotInDesignMode => IsInDesignMode ? Visibility.Visible : Visibility.Hidden;
 
         public static Visibility CollapsedWhenNotInDesignMode => IsInDesignMode ? Visibility.Visible : Visibility.Collapsed;

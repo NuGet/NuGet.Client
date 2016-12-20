@@ -452,7 +452,7 @@ namespace NuGet.PackageManagement.Test
                     null,
                     null,
                     null,
-                    RestoreOutputType.Unknown,
+                    ProjectStyle.Unknown,
                     TimeSpan.MinValue);
             }
         }

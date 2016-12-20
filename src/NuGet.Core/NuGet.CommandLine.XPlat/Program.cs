@@ -73,7 +73,6 @@ namespace NuGet.CommandLine.XPlat
 
             // Register commands
             DeleteCommand.Register(app, () => log);
-            PackCommand.Register(app, () => log);
             PushCommand.Register(app, () => log);
             LocalsCommand.Register(app, () => log);
 
