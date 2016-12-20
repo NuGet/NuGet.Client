@@ -165,7 +165,6 @@
     <Compile Include="Models\PackageDependencySetMetadata.cs" />
     <Compile Include="Resources\Brushes.cs" />
     <Compile Include="Resources\Commands.cs" />
-    <Compile Include="StandaloneSwitch.cs" />
     <Compile Include="UserAction.cs" />
     <Compile Include="UserInterfaceService\INuGetUIContext.cs" />
     <Compile Include="UserInterfaceService\INuGetUIFactory.cs" />

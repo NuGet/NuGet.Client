@@ -114,13 +114,6 @@ namespace NuGet.PackageManagement.UI
                     var w = new PreviewWindow(_context);
                     w.DataContext = new PreviewWindowModel(actions);
 
-                    if (StandaloneSwitch.IsRunningStandalone
-                        && _detailControl != null)
-                    {
-                        var win = Window.GetWindow(_detailControl);
-                        w.Owner = win;
-                    }
-
                     result = w.ShowModal() == true;
                 });
             }
