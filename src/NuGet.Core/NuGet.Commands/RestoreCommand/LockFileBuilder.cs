@@ -41,7 +41,7 @@ namespace NuGet.Commands
 
             var previousLibraries = previousLockFile?.Libraries.ToDictionary(l => Tuple.Create(l.Name, l.Version));
 
-            if (project.RestoreMetadata?.OutputType == RestoreOutputType.NETCore)
+            if (project.RestoreMetadata?.ProjectStyle == ProjectStyle.PackageReference)
             {
                 AddProjectFileDependenciesForNETCore(project, lockFile, targetGraphs);
             }

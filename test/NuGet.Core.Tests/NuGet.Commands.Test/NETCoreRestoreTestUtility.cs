@@ -17,7 +17,7 @@ namespace NuGet.Commands.Test
 
             foreach (var spec in specs)
             {
-                var project = new SimpleTestProjectContext(spec.Name, RestoreOutputType.NETCore, pathContext.SolutionRoot);
+                var project = new SimpleTestProjectContext(spec.Name, ProjectStyle.PackageReference, pathContext.SolutionRoot);
 
                 // Set proj properties
                 spec.FilePath = project.ProjectPath;
@@ -68,7 +68,7 @@ namespace NuGet.Commands.Test
             spec.RestoreMetadata = new ProjectRestoreMetadata();
             spec.RestoreMetadata.ProjectUniqueName = $"{projectName}-UNIQUENAME";
             spec.RestoreMetadata.ProjectName = projectName;
-            spec.RestoreMetadata.OutputType = RestoreOutputType.NETCore;
+            spec.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
             spec.RestoreMetadata.OriginalTargetFrameworks.Add(framework);
             spec.Name = projectName;
             spec.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(targetFrameworkInfo.FrameworkName));

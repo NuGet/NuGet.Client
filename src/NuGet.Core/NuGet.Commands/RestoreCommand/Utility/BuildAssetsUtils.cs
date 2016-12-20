@@ -72,7 +72,7 @@ namespace NuGet.Commands
         public static List<MSBuildOutputFile> GenerateMultiTargetFailureFiles(
             string targetsPath,
             string propsPath,
-            RestoreOutputType restoreType)
+            ProjectStyle restoreType)
         {
             XDocument targetsXML = null;
             XDocument propsXML = null;
@@ -80,7 +80,7 @@ namespace NuGet.Commands
             // Create an error file for MSBuild to stop the build.
             targetsXML = GenerateMultiTargetFrameworkWarning();
 
-            if (restoreType == RestoreOutputType.NETCore)
+            if (restoreType == ProjectStyle.PackageReference)
             {
                 propsXML = GenerateEmptyImportsFile();
             }
@@ -131,7 +131,7 @@ namespace NuGet.Commands
         public static void AddNuGetPropertiesToFirstImport(IEnumerable<MSBuildOutputFile> files,
             IEnumerable<string> packageFolders,
             string repositoryRoot,
-            RestoreOutputType outputType,
+            ProjectStyle projectStyle,
             bool success)
         {
             // For project.json not all files are written out. Find the first one
@@ -142,26 +142,15 @@ namespace NuGet.Commands
 
             if (firstImport != null)
             {
-                AddNuGetProperties(firstImport.Content, packageFolders, repositoryRoot, outputType, success);
+                AddNuGetProperties(firstImport.Content, packageFolders, repositoryRoot, projectStyle, success);
             }
         }
 
         /// <summary>
         /// Apply standard properties in a property group.
         /// </summary>
-        public static void AddNuGetProperties(XDocument doc, IEnumerable<string> packageFolders, string repositoryRoot, RestoreOutputType outputType, bool success)
+        public static void AddNuGetProperties(XDocument doc, IEnumerable<string> packageFolders, string repositoryRoot, ProjectStyle projectStyle, bool success)
         {
-            var projectStyle = "Unknown";
-
-            if (outputType == RestoreOutputType.NETCore)
-            {
-                projectStyle = "PackageReference";
-            }
-            else if (outputType == RestoreOutputType.UAP)
-            {
-                projectStyle = "ProjectJson";
-            }
-
             doc.Root.AddFirst(
                 new XElement(Namespace + "PropertyGroup",
                             new XAttribute("Condition", $" {ExcludeAllCondition} "),
@@ -169,7 +158,7 @@ namespace NuGet.Commands
                             GenerateProperty("RestoreTool", "NuGet"),
                             GenerateProperty("NuGetPackageRoot", ReplacePathsWithMacros(repositoryRoot)),
                             GenerateProperty("NuGetPackageFolders", string.Join(";", packageFolders)),
-                            GenerateProperty("NuGetProjectStyle", projectStyle),
+                            GenerateProperty("NuGetProjectStyle", projectStyle.ToString()),
                             GenerateProperty("NuGetToolVersion", MinClientVersionUtility.GetNuGetClientVersion().ToFullString())));
         }
 
@@ -254,12 +243,12 @@ namespace NuGet.Commands
         /// <summary>
         /// Returns null if the result should not exist on disk.
         /// </summary>
-        public static XDocument GenerateMSBuildFile(List<MSBuildRestoreItemGroup> groups, RestoreOutputType outputType)
+        public static XDocument GenerateMSBuildFile(List<MSBuildRestoreItemGroup> groups, ProjectStyle outputType)
         {
             XDocument doc = null;
 
             // Always write out netcore props/targets. For project.json only write the file if it has items.
-            if (outputType == RestoreOutputType.NETCore || groups.SelectMany(e => e.Items).Any())
+            if (outputType == ProjectStyle.PackageReference || groups.SelectMany(e => e.Items).Any())
             {
                 doc = GenerateEmptyImportsFile();
 
@@ -375,7 +364,7 @@ namespace NuGet.Commands
             var targetsPath = string.Empty;
             var propsPath = string.Empty;
 
-            if (request.RestoreOutputType == RestoreOutputType.NETCore)
+            if (request.ProjectStyle == ProjectStyle.PackageReference)
             {
                 // PackageReference style projects
                 var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
@@ -403,7 +392,7 @@ namespace NuGet.Commands
                 return GenerateMultiTargetFailureFiles(
                     targetsPath,
                     propsPath,
-                    request.RestoreOutputType);
+                    request.ProjectStyle);
             }
 
             // Add additional conditionals for multi targeting
@@ -520,7 +509,7 @@ namespace NuGet.Commands
 
                 // ContentFiles are read by the build task, not by NuGet
                 // for UAP with project.json.
-                if (request.RestoreOutputType != RestoreOutputType.UAP)
+                if (request.ProjectStyle != ProjectStyle.ProjectJson)
                 {
                     // Create a group for every package, with the nearest from each of allLanguages
                     props.AddRange(sortedPackages.Select(pkg =>
@@ -544,8 +533,8 @@ namespace NuGet.Commands
             }
 
             // Create XML, these may be null if the file should be deleted/not written out.
-            var propsXML = GenerateMSBuildFile(props, request.RestoreOutputType);
-            var targetsXML = GenerateMSBuildFile(targets, request.RestoreOutputType);
+            var propsXML = GenerateMSBuildFile(props, request.ProjectStyle);
+            var targetsXML = GenerateMSBuildFile(targets, request.ProjectStyle);
 
             // Return all files to write out or delete.
             var files = new List<MSBuildOutputFile>
@@ -556,7 +545,7 @@ namespace NuGet.Commands
 
             var packageFolders = repositories.Select(e => e.RepositoryRoot);
 
-            AddNuGetPropertiesToFirstImport(files, packageFolders, repositoryRoot, request.RestoreOutputType, restoreSuccess);
+            AddNuGetPropertiesToFirstImport(files, packageFolders, repositoryRoot, request.ProjectStyle, restoreSuccess);
 
             return files;
         }

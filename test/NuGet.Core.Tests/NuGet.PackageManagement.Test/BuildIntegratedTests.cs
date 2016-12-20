@@ -147,7 +147,7 @@ namespace NuGet.Test
                             {
                                 ProjectName = "myproj",
                                 ProjectUniqueName = myProjPath,
-                                OutputType = RestoreOutputType.Unknown,
+                                ProjectStyle = ProjectStyle.Unknown,
                                 ProjectPath = myProjPath
                             },
                             Name = myProjPath,
@@ -289,7 +289,7 @@ namespace NuGet.Test
                             {
                                 ProjectName = "myproj",
                                 ProjectUniqueName = myProjPath,
-                                OutputType = RestoreOutputType.Unknown,
+                                ProjectStyle = ProjectStyle.Unknown,
                                 ProjectPath = myProjPath
                             },
                             Name = myProjPath,

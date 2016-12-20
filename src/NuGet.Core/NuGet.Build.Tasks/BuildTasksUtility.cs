@@ -18,7 +18,7 @@ namespace NuGet.Build.Tasks
         {
             // Add everything from projects except for packages.config and unknown project types
             foreach (var project in spec.Projects
-                .Where(project => RestorableTypes.Contains(project.RestoreMetadata.OutputType)))
+                .Where(project => RestorableTypes.Contains(project.RestoreMetadata.ProjectStyle)))
             {
                 spec.AddRestore(project.RestoreMetadata.ProjectUniqueName);
             }
@@ -51,12 +51,12 @@ namespace NuGet.Build.Tasks
             }
         }
 
-        private static HashSet<RestoreOutputType> RestorableTypes = new HashSet<RestoreOutputType>()
+        private static HashSet<ProjectStyle> RestorableTypes = new HashSet<ProjectStyle>()
         {
-            RestoreOutputType.DotnetCliTool,
-            RestoreOutputType.NETCore,
-            RestoreOutputType.Standalone,
-            RestoreOutputType.UAP
+            ProjectStyle.DotnetCliTool,
+            ProjectStyle.PackageReference,
+            ProjectStyle.Standalone,
+            ProjectStyle.ProjectJson
         };
     }
 }
