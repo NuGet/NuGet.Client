@@ -23,7 +23,7 @@ namespace NuGet.Commands.ListCommand
 
         public ISettings Settings { get; }
 
-        public ILogger Logger { get; } // TODO NK Is this ok? Since this is the console?
+        public ILogger Logger { get; }
 
         public Log PrintJustified { get; }
 
@@ -33,38 +33,38 @@ namespace NuGet.Commands.ListCommand
 
         public string ListCommandLicenseUrl { get; }
 
-        public CancellationToken CancellationToken { get;  }
+        public CancellationToken CancellationToken { get; }
 
         public IList<KeyValuePair<Configuration.PackageSource, string>> ListEndpoints { get; }
-        
+
         public ListArgs(IList<string> arguments, IList<KeyValuePair<Configuration.PackageSource, string>> listEndpoints,
-            ISettings settings, ILogger logger,Log printJustified, bool isDetailedl, string listCommandNoPackages, string listCommandLicenseUrl, bool allVersions, bool includeDelisted, bool prerelease, CancellationToken token)
+            ISettings settings, ILogger logger, Log printJustified, bool isDetailedl, string listCommandNoPackages, string listCommandLicenseUrl, bool allVersions, bool includeDelisted, bool prerelease, CancellationToken token)
         {
-            if (arguments == null) //TODO NK - Check for nulls in every possible situation
+            if (arguments == null)
             {
                 throw new ArgumentNullException(nameof(arguments));
             }
-            else if (listEndpoints == null)
+            if (listEndpoints == null)
             {
                 throw new ArgumentNullException(nameof(listEndpoints));
             }
-            else if (settings == null)
+            if (settings == null)
             {
                 throw new ArgumentNullException(nameof(settings));
             }
-            else if (logger == null)
+            if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
             }
-            else if (printJustified == null)
+            if (printJustified == null)
             {
                 throw new ArgumentNullException(nameof(printJustified));
             }
-            else if (listCommandNoPackages == null)
+            if (listCommandNoPackages == null)
             {
                 throw new ArgumentNullException(nameof(listCommandNoPackages));
             }
-            else if (listCommandLicenseUrl == null)
+            if (listCommandLicenseUrl == null)
             {
                 throw new ArgumentNullException(nameof(listCommandLicenseUrl));
             }

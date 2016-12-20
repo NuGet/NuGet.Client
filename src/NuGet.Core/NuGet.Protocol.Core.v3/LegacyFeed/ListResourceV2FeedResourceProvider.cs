@@ -5,8 +5,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.LegacyFeed;
 
-namespace NuGet.Protocol
+namespace NuGet.Protocol.LegacyFeed
 {
     public class ListResourceV2FeedResourceProvider : ResourceProvider
     {
@@ -17,13 +18,12 @@ namespace NuGet.Protocol
             NuGetResourceProviderPositions.Last)
         {
         }
-
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source,
             CancellationToken token)
         {
             ListResource resource = null;
 
-            if (await source.GetFeedType(token) == FeedType.HttpV2)// TODO NK - Does the feed type matter at all?
+            if (await source.GetFeedType(token) == FeedType.HttpV2)
             {
                 var serviceDocument = await source.GetResourceAsync<ODataServiceDocumentResourceV2>(token);
 

@@ -42,59 +42,6 @@ namespace NuGet.CommandLine
 
         public IListCommandRunner ListCommandRunner { get; set; }
 
-
-        //[SuppressMessage(
-        //     "Microsoft.Design",
-        //     "CA1024:UsePropertiesWhereAppropriate",
-        //     Justification = "This call is expensive")]
-        //private IEnumerable<IPackage> GetPackages(IEnumerable<string> listEndpoints)
-        //{
-        //    IPackageRepository packageRepository = GetRepository(listEndpoints);
-        //    string searchTerm = Arguments != null ? Arguments.FirstOrDefault() : null;
-
-        //    IQueryable<IPackage> packages = packageRepository.Search(
-        //        searchTerm,
-        //        targetFrameworks: Enumerable.Empty<string>(),
-        //        allowPrereleaseVersions: Prerelease);
-
-        //    if (AllVersions)
-        //    {
-        //        return packages.OrderBy(p => p.Id);
-        //    }
-        //    else
-        //    {
-        //        if (Prerelease && packageRepository.SupportsPrereleasePackages)
-        //        {
-        //            packages = packages.Where(p => p.IsAbsoluteLatestVersion);
-        //        }
-        //        else
-        //        {
-        //            packages = packages.Where(p => p.IsLatestVersion);
-        //        }
-        //    }
-
-        //    var result = packages.OrderBy(p => p.Id)
-        //        .AsEnumerable();
-
-        //    // we still need to do client side filtering of delisted & prerelease packages.
-        //    if (IncludeDelisted == false)
-        //    {
-        //        result = result.Where(PackageExtensions.IsListed);
-        //    }
-        //    return result.Where(p => Prerelease || p.IsReleaseVersion())
-        //        .AsCollapsed();
-        //}
-
-        //private IPackageRepository GetRepository(IEnumerable<string> listEndpoints)
-        //{
-        //    var repositories = listEndpoints
-        //        .Select(RepositoryFactory.CreateRepository)
-        //        .ToList();
-
-        //    var repository = new AggregateRepository(repositories);
-        //    return repository;
-        //}
-
         private async Task<IList<KeyValuePair<Configuration.PackageSource, string>>> GetListEndpointsAsync()
         {
             var configurationSources = SourceProvider.LoadPackageSources()
@@ -143,75 +90,6 @@ namespace NuGet.CommandLine
             return partitioned[key: true].ToList();
         }
 
-        //private async Task ExecuteCommandAsyncOld()
-        //{
-        //    if (Verbose)
-        //    {
-        //        Console.WriteWarning(LocalizedResourceManager.GetString("Option_VerboseDeprecated"));
-        //        Verbosity = Verbosity.Detailed;
-        //    }
-
-        //    var listEndpoints = await GetListEndpointsAsync(); // local method 
-
-        //    // override v2 credentials adapter with new one having endpoints mapping
-        //    var adapter = new Credentials.CredentialServiceAdapter(CredentialService);
-        //    adapter.SetEndpoints(listEndpoints);
-        //    HttpClient.DefaultCredentialProvider = adapter;
-
-        //    var packages = GetPackages(listEndpoints.Select(kv => kv.Value));
-
-        //    bool hasPackages = false;
-
-        //    if (packages != null)
-        //    {
-        //        if (Verbosity == Verbosity.Detailed)
-        //        {
-        //            /***********************************************
-        //             * Package-Name
-        //             *  1.0.0.2010
-        //             *  This is the package Description
-        //             * 
-        //             * Package-Name-Two
-        //             *  2.0.0.2010
-        //             *  This is the second package Description
-        //             ***********************************************/
-        //            foreach (var p in packages)
-        //            {
-        //                Console.PrintJustified(0, p.Id);
-        //                Console.PrintJustified(1, p.Version.ToString());
-        //                Console.PrintJustified(1, p.Description);
-        //                if (!string.IsNullOrEmpty(p.LicenseUrl?.OriginalString))
-        //                {
-        //                    Console.PrintJustified(1,
-        //                        string.Format(
-        //                            CultureInfo.InvariantCulture,
-        //                            LocalizedResourceManager.GetString("ListCommand_LicenseUrl"),
-        //                            p.LicenseUrl.OriginalString));
-        //                }
-        //                Console.WriteLine();
-        //                hasPackages = true;
-        //            }
-        //        }
-        //        else
-        //        {
-        //            /***********************************************
-        //             * Package-Name 1.0.0.2010
-        //             * Package-Name-Two 2.0.0.2010
-        //             ***********************************************/
-        //            foreach (var p in packages)
-        //            {
-        //                Console.PrintJustified(0, p.GetFullName());
-        //                hasPackages = true;
-        //            }
-        //        }
-        //    }
-
-        //    if (!hasPackages)
-        //    {
-        //        Console.WriteLine(LocalizedResourceManager.GetString("ListCommandNoPackages"));
-        //    }
-        //}
-
         public async override Task ExecuteCommandAsync()
         {
             if (Verbose)
@@ -232,13 +110,12 @@ namespace NuGet.CommandLine
             }
             var listEndpoints = await GetListEndpointsAsync();
 
-            //TODO NK - logger? How to handle this? 
             var list = new ListArgs(Arguments,
                 listEndpoints,
                 Settings,
                 Console,
                 Console.PrintJustified,
-                Verbose,
+                Verbosity == Verbosity.Detailed,
                 LocalizedResourceManager.GetString("ListCommandNoPackages"), 
                 LocalizedResourceManager.GetString("ListCommand_LicenseUrl"),
                 AllVersions, 

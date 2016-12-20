@@ -41,17 +41,14 @@ namespace NuGet.Commands
                 }
             }
 
-
             IList<IEnumerableAsync<IPackageSearchMetadata>> allPackages = new List<IEnumerableAsync<IPackageSearchMetadata>>();
+            var log = listArgs.IsDetailed ? listArgs.Logger : NullLogger.Instance;
             foreach (var feed in sourceFeeds)
             {
-                
-               var packagesFromSource = await feed.ListAsync(listArgs.Arguments[0], listArgs.Prerelease, listArgs.AllVersions,
-                    listArgs.IncludeDelisted, listArgs.Logger , listArgs.CancellationToken);
+                var packagesFromSource = await feed.ListAsync(listArgs.Arguments[0], listArgs.Prerelease, listArgs.AllVersions,
+                     listArgs.IncludeDelisted, log, listArgs.CancellationToken);
                 allPackages.Add(packagesFromSource);
             }
-            //TODO NK - Find an IComparer
-
             CompareIPackageSearchMetadata comparer = new CompareIPackageSearchMetadata();
             await PrintPackages(listArgs, new AggregateEnumerableAsync<IPackageSearchMetadata>(allPackages, comparer, comparer).GetEnumeratorAsync());
         }
@@ -95,7 +92,6 @@ namespace NuGet.Commands
 
             public int GetHashCode(IPackageSearchMetadata obj)
             {
-                // TODO NK - does this make sense to be fixed? 
                 return comparer.GetHashCode(obj.Identity);
             }
         }
@@ -105,18 +101,18 @@ namespace NuGet.Commands
 
             private readonly IList<IEnumerableAsync<T>> _asyncEnumerables;
             private readonly IComparer<T> _comparer;
-            private readonly IEqualityComparer<T> _equalityComparer; 
+            private readonly IEqualityComparer<T> _equalityComparer;
 
-            public AggregateEnumerableAsync(IList<IEnumerableAsync<T>> asyncEnumerables, IComparer<T> comparer, IEqualityComparer<T> equalityComparer )
+            public AggregateEnumerableAsync(IList<IEnumerableAsync<T>> asyncEnumerables, IComparer<T> comparer, IEqualityComparer<T> equalityComparer)
             {
                 _asyncEnumerables = asyncEnumerables;
                 _comparer = comparer;
                 _equalityComparer = equalityComparer;
-            } 
-             
+            }
+
             public IEnumeratorAsync<T> GetEnumeratorAsync()
             {
-                return new AggregateEnumeratorAsync<T>(_asyncEnumerables,_comparer,_equalityComparer);
+                return new AggregateEnumeratorAsync<T>(_asyncEnumerables, _comparer, _equalityComparer);
             }
         }
 
@@ -226,8 +222,6 @@ namespace NuGet.Commands
                      * Package-Name 1.0.0.2010
                      * Package-Name-Two 2.0.0.2010
                      ***********************************************/
-//                    IEnumeratorAsync<IPackageSearchMetadata> asyncEnumerator = packages.GetAsyncEnumerator();
-
                     while (await asyncEnumerator.MoveNextAsync())
                     {
                         var p = asyncEnumerator.Current;

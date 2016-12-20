@@ -161,15 +161,15 @@ namespace NuGet.CommandLine
         {
             CredentialService = new CredentialService(GetCredentialProviders(), NonInteractive);
 
-           // HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(CredentialService); COREREMOVAL
+            CoreV2.NuGet.HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(CredentialService);
 
             HttpHandlerResourceV3.CredentialService = CredentialService;
 
-            /*HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>//
+            HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>//
             {
                 // v2 stack credentials update
-                //NuGet.CredentialStore.Instance.Add(uri, credentials); //COREREMOVAL
-            };*/
+                CoreV2.NuGet.CredentialStore.Instance.Add(uri, credentials);
+            };
         }
 
         private IEnumerable<NuGet.Credentials.ICredentialProvider> GetCredentialProviders()
@@ -180,7 +180,7 @@ namespace NuGet.CommandLine
                 .BuildAll(Verbosity.ToString())
                 .ToList();
 
-           // providers.Add(new CredentialProviderAdapter(new SettingsCredentialProvider(SourceProvider, Console))); COREREMOVAL 
+            providers.Add(new CredentialProviderAdapter(new SettingsCredentialProvider(SourceProvider, Console))); 
             if (pluginProviders.Any())
             {
                 providers.AddRange(pluginProviders);

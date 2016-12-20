@@ -10,12 +10,13 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 
-namespace NuGet.Protocol
+namespace NuGet.Protocol.LegacyFeed
 {
     public class ListResourceV2Feed : ListResource
     {
         private readonly ILegacyFeedCapabilityResource _feedCapabilities;
         private readonly IV2FeedParser _feedParser;
+        private const int Take = 30;
 
         public ListResourceV2Feed(IV2FeedParser feedParser, ILegacyFeedCapabilityResource feedCapabilities)
         {
@@ -31,8 +32,7 @@ namespace NuGet.Protocol
             ILogger logger,
             CancellationToken token)
         {
-            var take = 30; // TODO NK - Should this be customizable? 
-            return ListRangeAsync(searchTime, prerelease, allVersions, includeDelisted, 0, take, logger, token);
+            return ListRangeAsync(searchTime, prerelease, allVersions, includeDelisted, 0, Take, logger, token);
         }
 
         private async Task<IEnumerableAsync<IPackageSearchMetadata>> ListRangeAsync(string searchTime,
@@ -95,7 +95,6 @@ namespace NuGet.Protocol
                     filter.OrderBy = SearchOrderBy.Id;
 
                     return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTime, filter, skip, take, logger, token);
-
                 }
 
                 var supportsIsAbsoluteLatestVersion =
@@ -125,39 +124,39 @@ namespace NuGet.Protocol
 
     class EnumerableAsync<T> : IEnumerableAsync<T>
     {
-        private SearchFilter filter;
-        private ILogger logger;
-        private string searchTime;
-        private int skip;
-        private int take;
-        private CancellationToken token;
-        private IV2FeedParser _feedParser;
+        private readonly SearchFilter _filter;
+        private readonly ILogger _logger;
+        private  readonly string _searchTime;
+        private readonly int _skip;
+        private readonly int _take;
+        private readonly CancellationToken _token;
+        private readonly IV2FeedParser _feedParser;
 
-        public EnumerableAsync(IV2FeedParser _feedParser, string searchTime, SearchFilter filter, int skip, int take, ILogger logger, CancellationToken token)
+        public EnumerableAsync(IV2FeedParser feedParser, string searchTime, SearchFilter filter, int skip, int take, ILogger logger, CancellationToken token)
         {
-            this._feedParser = _feedParser;
-            this.searchTime = searchTime;
-            this.filter = filter;
-            this.skip = skip;
-            this.take = take;
-            this.logger = logger;
-            this.token = token;
+            _feedParser = feedParser;
+            _searchTime = searchTime;
+            _filter = filter;
+            _skip = skip;
+            _take = take;
+            _logger = logger;
+            _token = token;
         }
 
         public IEnumeratorAsync<T> GetEnumeratorAsync()
         {
-            return (IEnumeratorAsync<T>)new EnumeratorAsync(_feedParser, searchTime, filter, skip, take, logger, token);
+            return (IEnumeratorAsync<T>)new EnumeratorAsync(_feedParser, _searchTime, _filter, _skip, _take, _logger, _token);
         }
     }
 
     internal class EnumeratorAsync : IEnumeratorAsync<IPackageSearchMetadata>
     {
-        private readonly SearchFilter filter;
-        private readonly ILogger logger;
+        private readonly SearchFilter _filter;
+        private readonly ILogger _logger;
         private readonly string _searchTime;
-        private readonly int skip;
-        private readonly int take;
-        private readonly CancellationToken token;
+        private int _skip;
+        private readonly int _take;
+        private readonly CancellationToken _token;
         private readonly IV2FeedParser _feedParser;
 
         private IEnumerator<IPackageSearchMetadata> _currentEnumerator;
@@ -166,13 +165,13 @@ namespace NuGet.Protocol
         public EnumeratorAsync(IV2FeedParser feedParser, string searchTime, SearchFilter filter, int skip, int take,
             ILogger logger, CancellationToken token)
         {
-            this._feedParser = feedParser;
-            this._searchTime = searchTime;
-            this.filter = filter;
-            this.skip = skip;
-            this.take = take;
-            this.logger = logger;
-            this.token = token;
+            _feedParser = feedParser;
+            _searchTime = searchTime;
+            _filter = filter;
+            _skip = skip;
+            _take = take;
+            _logger = logger;
+            _token = token;
         }
 
         public IPackageSearchMetadata Current
@@ -190,13 +189,13 @@ namespace NuGet.Protocol
             if (_currentPage == null)
             {
 
-                _currentPage = await _feedParser.GetSearchPageAsync(_searchTime, filter, skip, take, logger, token);
+                _currentPage = await _feedParser.GetSearchPageAsync(_searchTime, _filter, _skip, _take, _logger, _token);
                 var results = _currentPage.Items.GroupBy(p => p.Id)
                     .Select(group => group.OrderByDescending(p => p.Version).First())
                     .Select(
                         package =>
-                            PackageSearchResourceV2Feed.CreatePackageSearchResult(package, filter,
-                                (V2FeedParser)_feedParser, logger, token));
+                            PackageSearchResourceV2Feed.CreatePackageSearchResult(package, _filter,
+                                (V2FeedParser)_feedParser, _logger, _token));
                 var enumerator = results.GetEnumerator();
                 _currentEnumerator = enumerator;
                 _currentEnumerator.MoveNext();
@@ -206,21 +205,21 @@ namespace NuGet.Protocol
             {
                 if (!_currentEnumerator.MoveNext())
                 {
-                    string nextUri = _currentPage.NextUri;
-
-                    if (nextUri == null)
+                    if (_currentPage.Items.Count != _take) // Last page not filled completely, no more pages left
                     {
                         return false;
                     }
-                    _currentPage = await _feedParser.QueryV2FeedAsync(nextUri, null, take, false, logger, token);
+                    _skip += _take;
+                    _currentPage =  await _feedParser.GetSearchPageAsync(_searchTime, _filter, _skip, _take, _logger, _token);
                     var results = _currentPage.Items.GroupBy(p => p.Id)
                         .Select(group => group.OrderByDescending(p => p.Version).First())
                         .Select(
                             package =>
-                                PackageSearchResourceV2Feed.CreatePackageSearchResult(package, filter,
-                                    (V2FeedParser)_feedParser, logger, token));
+                                PackageSearchResourceV2Feed.CreatePackageSearchResult(package, _filter,
+                                    (V2FeedParser)_feedParser, _logger, _token));
                     var enumerator = results.GetEnumerator();
                     _currentEnumerator = enumerator;
+                    _currentEnumerator.MoveNext();
                     return true;
                 }
                 else

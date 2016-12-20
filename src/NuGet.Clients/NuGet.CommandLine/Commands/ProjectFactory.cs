@@ -458,7 +458,7 @@ namespace NuGet.CommandLine
                 string outputPath = _project.GetPropertyValue("OutputPath");
                 string configuration = _project.GetPropertyValue("Configuration");
                 string projectName = Path.GetFileName(Path.GetDirectoryName(_project.FullPath));
-                targetPath = PathUtility.EnsureTrailingSlash(Path.Combine(outputPath, projectName, "bin", configuration));  // TODO NK - Is this ok?
+                targetPath = PathUtility.EnsureTrailingSlash(Path.Combine(outputPath, projectName, "bin", configuration));
             }
 
             return targetPath;
@@ -1366,47 +1366,7 @@ namespace NuGet.CommandLine
             {
                 Path = file.Path + ".transform";
                 _streamFactory = new Lazy<Func<Stream>>(() => ReverseTransform(file, transforms), isThreadSafe: false);
-                TargetFramework = ParseFrameworkNameFromFilePath(Path, out _effectivePath); //TODO NK
-            }
-
-            public static FrameworkName ParseFrameworkNameFromFilePath(string filePath, out string effectivePath)
-            {
-                var knownFolders = new string[]
-                {
-                CoreV2.NuGet.Constants.ContentDirectory,
-                CoreV2.NuGet.Constants.LibDirectory,
-                CoreV2.NuGet.Constants.ToolsDirectory,
-                CoreV2.NuGet.Constants.BuildDirectory
-                };
-
-                for (int i = 0; i < knownFolders.Length; i++)
-                {
-                    string folderPrefix = knownFolders[i] + System.IO.Path.DirectorySeparatorChar;
-                    if (filePath.Length > folderPrefix.Length &&
-                        filePath.StartsWith(folderPrefix, StringComparison.OrdinalIgnoreCase))
-                    {
-                        string frameworkPart = filePath.Substring(folderPrefix.Length);
-
-                        try
-                        {
-                            return CoreV2.NuGet.VersionUtility.ParseFrameworkFolderName(
-                                frameworkPart,
-                                strictParsing: knownFolders[i] == CoreV2.NuGet.Constants.LibDirectory,
-                                effectivePath: out effectivePath);
-                        }
-                        catch (ArgumentException)
-                        {
-                            // if the parsing fails, we treat it as if this file
-                            // doesn't have target framework.
-                            effectivePath = frameworkPart;
-                            return null;
-                        }
-                    }
-
-                }
-
-                effectivePath = filePath;
-                return null;
+                TargetFramework = CoreV2.NuGet.VersionUtility.ParseFrameworkNameFromFilePath(Path, out _effectivePath);
             }
 
             public string Path

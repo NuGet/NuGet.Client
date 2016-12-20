@@ -1,5 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+extern alias CoreV2;
 
 using System;
 using System.Net;
@@ -14,18 +15,17 @@ namespace NuGet.Credentials
     /// </summary>
     public class CredentialProviderAdapter : ICredentialProvider
     {
-        //private readonly NuGet.ICredentialProvider _provider;
-        private readonly ICredentialService _credentialService;
+        private readonly CoreV2.NuGet.ICredentialProvider _provider;
 
-        public CredentialProviderAdapter(CredentialService credentialService) // TODO NK - Does this really make sense?
+        public CredentialProviderAdapter(CoreV2.NuGet.ICredentialProvider provider)
         {
-            if (credentialService == null)
+            if (provider == null)
             {
-                throw new ArgumentNullException(nameof(credentialService));
+                throw new ArgumentNullException(nameof(provider));
             }
 
-            _credentialService = credentialService;
-            Id = $"{typeof (CredentialProviderAdapter).Name}_{_credentialService.GetType().Name}_{Guid.NewGuid()}";
+            _provider = provider;
+            Id = $"{typeof(CredentialProviderAdapter).Name}_{provider.GetType().Name}_{Guid.NewGuid()}";
         }
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace NuGet.Credentials
         /// </summary>
         public string Id { get; }
 
-        public async Task<CredentialResponse> GetAsync( // TODO NK - REVIEW!
+        public Task<CredentialResponse> GetAsync(
             Uri uri,
             IWebProxy proxy,
             CredentialRequestType type,
@@ -49,22 +49,17 @@ namespace NuGet.Credentials
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var credsTask = _credentialService.GetCredentialsAsync(uri, proxy, type,"TODO NK", cancellationToken);
-            var creds = await credsTask;
-            //var cred = _provider.GetCredentials(
-            //    uri,
-            //    proxy,
-            //    type == CredentialRequestType.Proxy ? CredentialType.ProxyCredentials : CredentialType.RequestCredentials,
-            //    isRetry);
+            var cred = _provider.GetCredentials(
+                uri,
+                proxy,
+                type == CredentialRequestType.Proxy ? CoreV2.NuGet.CredentialType.ProxyCredentials : CoreV2.NuGet.CredentialType.RequestCredentials,
+                isRetry);
 
-            //var response = cred != null
-            //    ? new CredentialResponse(cred)
-            //    : new CredentialResponse(CredentialStatus.ProviderNotApplicable);
-            var response = creds != null
-               ? new CredentialResponse(creds)
-               : new CredentialResponse(CredentialStatus.ProviderNotApplicable);
+            var response = cred != null
+                ? new CredentialResponse(cred)
+                : new CredentialResponse(CredentialStatus.ProviderNotApplicable);
 
-            return response;
+            return Task.FromResult(response);
         }
     }
 }
