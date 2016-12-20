@@ -50,9 +50,9 @@ namespace NuGet.CommandLine.XPlat
                     CommandOptionType.SingleValue);
 
                 var frameworks = addpkg.Option(
-                    "-f|--framework",
+                    "-f|--frameworks",
                     Strings.AddPkg_FrameworksDescription,
-                    CommandOptionType.MultipleValue);
+                    CommandOptionType.SingleValue);
 
                 var noRestore = addpkg.Option(
                     "-n|--no-restore",
@@ -62,7 +62,7 @@ namespace NuGet.CommandLine.XPlat
                 var sources = addpkg.Option(
                     "-s|--source",
                     Strings.AddPkg_SourcesDescription,
-                    CommandOptionType.MultipleValue);
+                    CommandOptionType.SingleValue);
 
                 var packageDirectory = addpkg.Option(
                     "--package-directory",

@@ -12,8 +12,7 @@ namespace NuGet.Common
         private readonly string _filePath;
 
         /// <summary>
-        /// Constructor. It creates an empty temp file under the temp directory / NuGet, with
-        /// extension <paramref name="extension"/>.
+        /// Constructor. It creates an empty temp file under the temp directory with extension <paramref name="extension"/>.
         /// </summary>
         /// <param name="extension">The extension of the temp file.</param>
         public TempFile(string extension)
@@ -25,8 +24,9 @@ namespace NuGet.Common
 
             var tempDirectory = Path.GetTempPath();
             var randomFolderName = Guid.NewGuid().ToString();
+            var randomFileName = Guid.NewGuid().ToString();
             Directory.CreateDirectory(Path.Combine(tempDirectory, randomFolderName));
-            _filePath = Path.Combine(tempDirectory, Guid.NewGuid().ToString() + extension);
+            _filePath = Path.Combine(tempDirectory, randomFolderName, randomFileName + extension);
 
             if (!File.Exists(_filePath))
             {
@@ -38,7 +38,8 @@ namespace NuGet.Common
                 }
                 catch (Exception ex)
                 {
-                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_FailedToCreateRandomFile, _filePath) + " : " +
+                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
+                        Strings.Error_FailedToCreateRandomFile, _filePath) + " : " +
                             ex.Message,
                             ex);
                 }
@@ -49,8 +50,9 @@ namespace NuGet.Common
         {
             var tempDirectory = Path.GetTempPath();
             var randomFolderName = Guid.NewGuid().ToString();
+            var randomFileName = Guid.NewGuid().ToString();
             Directory.CreateDirectory(Path.Combine(tempDirectory, randomFolderName));
-            _filePath = Path.Combine(tempDirectory, Guid.NewGuid().ToString());
+            _filePath = Path.Combine(tempDirectory, randomFolderName, randomFileName);
 
             if (!File.Exists(_filePath))
             {
@@ -62,7 +64,8 @@ namespace NuGet.Common
                 }
                 catch (Exception ex)
                 {
-                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_FailedToCreateRandomFile, _filePath) + " : " +
+                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
+                        Strings.Error_FailedToCreateRandomFile, _filePath) + " : " +
                             ex.Message,
                             ex);
                 }
