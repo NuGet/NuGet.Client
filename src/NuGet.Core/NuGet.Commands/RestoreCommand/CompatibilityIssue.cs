@@ -33,17 +33,6 @@ namespace NuGet.Commands
             AvailableFrameworks = availableFrameworks.ToList();
         }
 
-        public static CompatibilityIssue ReferenceAssemblyNotImplemented(string assemblyName, PackageIdentity referenceAssemblyPackage, NuGetFramework framework, string runtimeIdentifier)
-        {
-            return new CompatibilityIssue(
-                CompatibilityIssueType.ReferenceAssemblyNotImplemented,
-                referenceAssemblyPackage,
-                assemblyName,
-                framework,
-                runtimeIdentifier,
-                Enumerable.Empty<NuGetFramework>());
-        }
-
         public static CompatibilityIssue IncompatiblePackage(
             PackageIdentity referenceAssemblyPackage,
             NuGetFramework framework,
@@ -85,16 +74,7 @@ namespace NuGet.Commands
 
         public string Format()
         {
-            if (Type == CompatibilityIssueType.ReferenceAssemblyNotImplemented)
-            {
-                if (string.IsNullOrEmpty(RuntimeIdentifier))
-                {
-                    return string.Format(CultureInfo.CurrentCulture, Strings.Log_MissingImplementationFx, Package.Id, Package.Version, AssemblyName, Framework);
-                }
-
-                return string.Format(CultureInfo.CurrentCulture, Strings.Log_MissingImplementationFxRuntime, Package.Id, Package.Version, AssemblyName, Framework, RuntimeIdentifier);
-            }
-            else if (Type == CompatibilityIssueType.PackageIncompatible)
+            if (Type == CompatibilityIssueType.PackageIncompatible)
             {
                 var message = string.Format(CultureInfo.CurrentCulture,
                     Strings.Log_PackageNotCompatibleWithFx,
@@ -213,7 +193,6 @@ namespace NuGet.Commands
 
     public enum CompatibilityIssueType
     {
-        ReferenceAssemblyNotImplemented,
         PackageIncompatible,
         ProjectIncompatible
     }

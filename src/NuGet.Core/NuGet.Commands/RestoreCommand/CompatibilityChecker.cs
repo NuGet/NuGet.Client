@@ -33,30 +33,9 @@ namespace NuGet.Commands
             RestoreTargetGraph graph,
             Dictionary<string, LibraryIncludeFlags> includeFlags)
         {
-            // The Compatibility Check is designed to alert the user to cases where packages are not behaving as they would
-            // expect, due to compatibility issues.
-            //
-            // During this check, we scan all packages for a given restore graph and check the following conditions
-            // (using an example TxM 'foo' and an example Runtime ID 'bar'):
-            //
-            // * If any package provides a "ref/foo/Thingy.dll", there MUST be a matching "lib/foo/Thingy.dll" or
-            //   "runtimes/bar/lib/foo/Thingy.dll" provided by a package in the graph.
-            // * All packages that contain Managed Assemblies must provide assemblies for 'foo'. If a package
-            //   contains any of 'ref/' folders, 'lib/' folders, or framework assemblies, it must provide at least
-            //   one of those for the 'foo' framework. Otherwise, the package is intending to provide managed assemblies
-            //   but it does not support the target platform. If a package contains only 'content/', 'build/', 'tools/' or
-            //   other NuGet convention folders, it is exempt from this check. Thus, content-only packages are always considered
-            //   compatible, regardless of if they actually provide useful content.
-            //
-            // It is up to callers to invoke the compatibility check on the graphs they wish to check, but the general behavior in
-            // the restore command is to invoke a compatibility check for each of:
-            //
-            // * The Targets (TxMs) defined in the project.json, with no Runtimes
-            // * All combinations of TxMs and Runtimes defined in the project.json
-            // * Additional (TxMs, Runtime) pairs defined by the "supports" mechanism in project.json
-
-            var runtimeAssemblies = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var compileAssemblies = new Dictionary<string, LibraryIdentity>(StringComparer.OrdinalIgnoreCase);
+            // Verify that each package contains assets for the TFM,
+            // packages pulled into TFMs that do not contain compatible
+            // assets will be marked as incompatible.
             var issues = new List<CompatibilityIssue>();
             foreach (var node in graph.Flattened)
             {
@@ -124,79 +103,6 @@ namespace NuGet.Commands
                         graph.Framework,
                         graph.RuntimeIdentifier,
                         available);
-
-                    issues.Add(issue);
-                    _log.LogError(issue.Format());
-                }
-
-                // Check for matching ref/libs if we're checking a runtime-specific graph
-                var targetLibrary = compatibilityData.TargetLibrary;
-                if (!string.IsNullOrEmpty(graph.RuntimeIdentifier))
-                {
-                    // Skip runtime checks for packages that have runtime references excluded,
-                    // this allows compile only packages that do not have runtimes for the 
-                    // graph RID to be used.
-                    if ((packageIncludeFlags & LibraryIncludeFlags.Runtime) == LibraryIncludeFlags.Runtime)
-                    {
-                        // Scan the package for ref assemblies
-                        foreach (var compile in targetLibrary.CompileTimeAssemblies
-                            .Where(p => Path.GetExtension(p.Path)
-                                .Equals(".dll", StringComparison.OrdinalIgnoreCase)))
-                        {
-                            string name = Path.GetFileNameWithoutExtension(compile.Path);
-
-                            // If we haven't already started tracking this compile-time assembly, AND there isn't already a runtime-loadable version
-                            if (!compileAssemblies.ContainsKey(name) && !runtimeAssemblies.Contains(name))
-                            {
-                                // Track this assembly as potentially compile-time-only
-                                compileAssemblies.Add(name, node.Key);
-                            }
-                        }
-
-                        // Match up runtime assemblies
-                        foreach (var runtime in targetLibrary.RuntimeAssemblies
-                            .Where(p => Path.GetExtension(p.Path)
-                                .Equals(".dll", StringComparison.OrdinalIgnoreCase)))
-                        {
-                            string name = Path.GetFileNameWithoutExtension(runtime.Path);
-
-                            // If there was a compile-time-only assembly under this name...
-                            if (compileAssemblies.ContainsKey(name))
-                            {
-                                // Remove it, we've found a matching runtime ref
-                                compileAssemblies.Remove(name);
-                            }
-
-                            // Track this assembly as having a runtime assembly
-                            runtimeAssemblies.Add(name);
-
-                            // Fix for NuGet/Home#752 - Consider ".ni.dll" (native image/ngen) files matches for ref/ assemblies
-                            if (name.EndsWith(".ni", StringComparison.OrdinalIgnoreCase))
-                            {
-                                var withoutNi = name.Substring(0, name.Length - 3);
-
-                                if (compileAssemblies.ContainsKey(withoutNi))
-                                {
-                                    compileAssemblies.Remove(withoutNi);
-                                }
-
-                                runtimeAssemblies.Add(withoutNi);
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Generate errors for un-matched reference assemblies, if we're checking a runtime-specific graph
-            if (!string.IsNullOrEmpty(graph.RuntimeIdentifier))
-            {
-                foreach (var compile in compileAssemblies)
-                {
-                    var issue = CompatibilityIssue.ReferenceAssemblyNotImplemented(
-                        compile.Key,
-                        new PackageIdentity(compile.Value.Name, compile.Value.Version),
-                        graph.Framework,
-                        graph.RuntimeIdentifier);
 
                     issues.Add(issue);
                     _log.LogError(issue.Format());

@@ -765,7 +765,7 @@ namespace NuGet.Test
         {
             // Arrange
             // This package is not compatible with netcore50 and will cause the rollback.
-            var oldVersioning = new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("1.0.5"));
+            var oldCore = new PackageIdentity("NuGet.Core", NuGetVersion.Parse("2.8.6"));
 
             // This package is compatible.
             var oldJson = new PackageIdentity("Newtonsoft.Json", NuGetVersion.Parse("6.0.8"));
@@ -782,31 +782,16 @@ namespace NuGet.Test
                     new TestDeleteOnRestartManager());
 
                 var projectJson = Path.Combine(randomProjectFolderPath, "project.json");
-                CreateConfigJson(projectJson);
+                var json = BasicConfig;
+                json["dependencies"]["NuGet.Core"] = "2.8.6";
+                json["dependencies"]["Newtonsoft.Json"] = "6.0.8";
+                CreateConfigJson(projectJson, json);
 
                 var projectTargetFramework = NuGetFramework.Parse("net45");
                 var testNuGetProjectContext = new TestNuGetProjectContext();
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
                 var projectFilePath = Path.Combine(randomProjectFolderPath, $"{msBuildNuGetProjectSystem.ProjectName}.csproj");
                 var buildIntegratedProject = new ProjectJsonBuildIntegratedNuGetProject(projectJson, projectFilePath, msBuildNuGetProjectSystem);
-
-                await nuGetPackageManager.InstallPackageAsync(
-                    buildIntegratedProject,
-                    oldVersioning,
-                    new ResolutionContext(),
-                    new TestNuGetProjectContext(),
-                    sourceRepositoryProvider.GetRepositories(),
-                    sourceRepositoryProvider.GetRepositories(),
-                    CancellationToken.None);
-
-                await nuGetPackageManager.InstallPackageAsync(
-                    buildIntegratedProject,
-                    oldJson,
-                    new ResolutionContext(),
-                    new TestNuGetProjectContext(),
-                    sourceRepositoryProvider.GetRepositories(),
-                    sourceRepositoryProvider.GetRepositories(),
-                    CancellationToken.None);
 
                 var actions = await nuGetPackageManager.PreviewUpdatePackagesAsync(
                     new List<NuGetProject> { buildIntegratedProject },
@@ -832,9 +817,9 @@ namespace NuGet.Test
 
                 var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
 
-                var rollbackVersioning = installedPackages.FirstOrDefault(x => x.PackageIdentity.Id == "NuGet.Versioning");
+                var rollbackVersioning = installedPackages.FirstOrDefault(x => x.PackageIdentity.Id == "NuGet.Core");
                 Assert.NotNull(rollbackVersioning);
-                Assert.Equal(oldVersioning, rollbackVersioning.PackageIdentity);
+                Assert.Equal(oldCore, rollbackVersioning.PackageIdentity);
 
                 var rollbackJson = installedPackages.FirstOrDefault(x => x.PackageIdentity.Id == "Newtonsoft.Json");
                 Assert.NotNull(rollbackJson);
@@ -1614,9 +1599,14 @@ namespace NuGet.Test
 
         private static void CreateConfigJson(string path)
         {
+            CreateConfigJson(path, BasicConfig);
+        }
+
+        private static void CreateConfigJson(string path, JObject json)
+        {
             using (var writer = new StreamWriter(path))
             {
-                writer.Write(BasicConfig.ToString());
+                writer.Write(json.ToString());
             }
         }
 
