@@ -8,16 +8,14 @@ using System.Reflection;
 
 namespace NuGet.CommandLine
 {
-    using NuGet.Packaging;
-    using NuGet.Versioning;
+    using Packaging;
+    using Versioning;
 
     public static class AssemblyMetadataExtractor
     {
-
-        public static T CreateInstance<T>(this AppDomain domain)
+        private static T CreateInstance<T>(this AppDomain domain)
         {
-            return (T)domain.CreateInstanceAndUnwrap(typeof(T).Assembly.FullName,
-                                                     typeof(T).FullName);
+            return (T)domain.CreateInstanceAndUnwrap(typeof(T).Assembly.FullName, typeof(T).FullName);
         }
 
         public static AssemblyMetadata GetMetadata(string assemblyPath)

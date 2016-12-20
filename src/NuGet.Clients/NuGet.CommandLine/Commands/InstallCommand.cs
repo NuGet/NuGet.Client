@@ -45,11 +45,8 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "InstallCommandSolutionDirectory")]
         public string SolutionDirectory { get; set; }
 
-  //      [ImportingConstructor] TODO- Do we need an "Importing Constructor"
-  
-        protected internal InstallCommand() :
-            base()
-        {
+        [ImportingConstructor]
+        protected internal InstallCommand(){
             // On mono, parallel builds are broken for some reason. See https://gist.github.com/4201936 for the errors
             // That are thrown.
             DisableParallelProcessing = RuntimeEnvironmentHelper.IsMono;

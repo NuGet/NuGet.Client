@@ -37,33 +37,5 @@ namespace NuGet.CommandLine
                 fileName.StartsWith("packages.", StringComparison.OrdinalIgnoreCase) &&
                 fileName.EndsWith(".config", StringComparison.OrdinalIgnoreCase);
         }
-
-
-        //public static ICollection<PackageReference> GetPackageReferences(PackageReferenceFile configFile, bool requireVersion)
-        //{
-        //    if (configFile == null)
-        //    {
-        //        throw new ArgumentNullException("configFile");
-        //    }
-
-        //    var packageReferences = configFile.GetPackageReferences(requireVersion).ToList();
-        //    foreach (var package in packageReferences)
-        //    {
-        //        // GetPackageReferences returns all records without validating values. We'll throw if we encounter packages
-        //        // with malformed ids / Versions.
-        //        if (String.IsNullOrEmpty(package.Id))
-        //        {
-        //            throw new InvalidDataException(
-        //                String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("InstallCommandInvalidPackageReference"), 
-        //                configFile.FullPath));
-        //        }
-        //        if (requireVersion && (package.Version == null))
-        //        {
-        //            throw new InvalidDataException(String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("InstallCommandPackageReferenceInvalidVersion"), package.Id));
-        //        }
-        //    }
-
-        //    return packageReferences;
-        //}
     }
 }

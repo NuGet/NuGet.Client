@@ -16,14 +16,12 @@ namespace NuGet.CommandLine
 {
     public abstract class DownloadCommandBase : Command
     {
-        //private readonly IPackageRepository _cacheRepository;
         private readonly List<string> _sources = new List<string>();
 
         protected PackageSaveMode EffectivePackageSaveMode { get; set; }
 
         protected DownloadCommandBase()
         {
-            //_cacheRepository = cacheRepository;
         }
 
         [Option(typeof(NuGetCommand), "CommandSourceDescription")]

@@ -49,7 +49,6 @@ namespace NuGet.CommandLine
 
         [ImportingConstructor]
         public RestoreCommand()
-            : base()
         {
         }
 
