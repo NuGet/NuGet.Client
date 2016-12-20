@@ -71,7 +71,6 @@
     <Compile Include="Common\PackageSourceProviderExtensions.cs" />
     <Compile Include="Common\ProjectHelper.cs" />
     <Compile Include="Common\ProjectInSolution.cs" />
-    <Compile Include="Common\ReadOnlyPackageRepository.cs" />
     <Compile Include="Common\ResourceHelper.cs" />
     <Compile Include="Common\SelfUpdater.cs" />
     <Compile Include="Common\Solution.cs" />
@@ -101,7 +100,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="SettingsCredentialProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StrictSemanticVersionValidationRule.cs" />
+    <Compile Include="StreamExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="NuGetCommand.resx">
