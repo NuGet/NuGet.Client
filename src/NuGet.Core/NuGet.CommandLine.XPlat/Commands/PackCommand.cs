@@ -65,7 +65,7 @@ namespace NuGet.CommandLine.XPlat
 
                 var properties = pack.Option(
                     "-p|--properties <properties>",
-                    Strings.OutputDirectory_Description,
+                    Strings.Properties_Description,
                     CommandOptionType.SingleValue);
 
                 var serviceable = pack.Option(
