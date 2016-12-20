@@ -150,7 +150,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to usage: dotnet add --package &lt;Package Id&gt; [Options].
+        ///    Looks up a localized string similar to usage: dotnet add package &lt;Package Id&gt; [Options].
         /// </summary>
         public static string AddPkg_Usage {
             get {
@@ -285,7 +285,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Failed to locate dotnet in dotnet add pkg command..
+        ///    Looks up a localized string similar to Failed to locate dotnet in dotnet add package command..
         /// </summary>
         public static string Error_DotnetNotFound {
             get {
@@ -294,7 +294,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Failed to create random file for dotnet add pkg command..
+        ///    Looks up a localized string similar to Failed to create random file at &apos;{0}&apos; for dotnet add package command..
         /// </summary>
         public static string Error_FailedToCreateRandomFile {
             get {
@@ -321,7 +321,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to MSBuild was unable to open Project &apos;{0}&apos;..
+        ///    Looks up a localized string similar to msbuild was unable to open Project &apos;{0}&apos;..
         /// </summary>
         public static string Error_MSBuildUnableToOpenProject {
             get {

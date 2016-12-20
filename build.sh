@@ -18,7 +18,7 @@ curl -o cli/dotnet-install.sh https://raw.githubusercontent.com/dotnet/cli/rel/1
 # Download the CLI install script to cli
 echo "Installing dotnet CLI test"
 mkdir -p cli_test
-curl -o cli_test/dotnet-install.sh https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/dotnet-install.sh
+curl -o cli_test/dotnet-install.sh https://github.com/dotnet/cli/blob/58b0566d9ac399f5fa973315c6827a040b7aae1f/scripts/obtain/dotnet-install.ps1
 
 # Run install.sh
 chmod +x cli/dotnet-install.sh

@@ -338,14 +338,15 @@ usage: NuGet locals &lt;all | http-cache | global-packages | temp&gt; [--clear |
 For more information, visit http://docs.nuget.org/docs/reference/command-line-reference</value>
   </data>
   <data name="Error_MSBuildUnableToOpenProject" xml:space="preserve">
-    <value>MSBuild was unable to open Project '{0}'.</value>
+    <value>msbuild was unable to open Project '{0}'.</value>
     <comment>{0} - Project/csproj path</comment>
   </data>
   <data name="Error_DotnetNotFound" xml:space="preserve">
-    <value>Failed to locate dotnet in dotnet add pkg command.</value>
+    <value>Failed to locate dotnet in dotnet add package command.</value>
   </data>
   <data name="Error_FailedToCreateRandomFile" xml:space="preserve">
-    <value>Failed to create random file for dotnet add pkg command.</value>
+    <value>Failed to create random file at '{0}' for dotnet add package command.</value>
+    <comment>{0} - File path</comment>
   </data>
   <data name="Error_GenerateDGSpecTaskFailed" xml:space="preserve">
     <value>Generate Dependency Spec task failed.</value>
@@ -389,7 +390,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>Frameworks for which the package reference should be added.</value>
   </data>
   <data name="AddPkg_Usage" xml:space="preserve">
-    <value>usage: dotnet add --package &lt;Package Id&gt; [Options]</value>
+    <value>usage: dotnet add package &lt;Package Id&gt; [Options]</value>
   </data>
   <data name="AddPkg_MissingArgument" xml:space="preserve">
     <value>Unable to add package Reference, argument '{0}' not provided. Please use -h|--help for help.</value>

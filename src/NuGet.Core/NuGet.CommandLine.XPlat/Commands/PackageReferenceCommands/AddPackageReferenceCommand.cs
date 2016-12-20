@@ -50,9 +50,9 @@ namespace NuGet.CommandLine.XPlat
                     CommandOptionType.SingleValue);
 
                 var frameworks = addpkg.Option(
-                    "-f|--frameworks",
+                    "-f|--framework",
                     Strings.AddPkg_FrameworksDescription,
-                    CommandOptionType.SingleValue);
+                    CommandOptionType.MultipleValue);
 
                 var noRestore = addpkg.Option(
                     "-n|--no-restore",
@@ -60,9 +60,9 @@ namespace NuGet.CommandLine.XPlat
                     CommandOptionType.NoValue);
 
                 var sources = addpkg.Option(
-                    "-s|--sources",
+                    "-s|--source",
                     Strings.AddPkg_SourcesDescription,
-                    CommandOptionType.SingleValue);
+                    CommandOptionType.MultipleValue);
 
                 var packageDirectory = addpkg.Option(
                     "--package-directory",
@@ -96,7 +96,7 @@ namespace NuGet.CommandLine.XPlat
 
         private static void ValidateArgument(CommandOption arg, string argName)
         {
-            if ((arg.Values.Count < 1) || string.IsNullOrWhiteSpace(arg.Values[0]))
+            if (arg.Values.Count < 1)
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.AddPkg_MissingArgument, argName));
             }

@@ -23,11 +23,10 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(extension));
             }
 
-            var tempDirectory = Path.Combine(Path.GetTempPath(), "NuGet-Scratch");
-
-            Directory.CreateDirectory(tempDirectory);
-
-            _filePath = Path.Combine(tempDirectory, Path.GetRandomFileName() + extension);
+            var tempDirectory = Path.GetTempPath();
+            var randomFolderName = Guid.NewGuid().ToString();
+            Directory.CreateDirectory(Path.Combine(tempDirectory, randomFolderName));
+            _filePath = Path.Combine(tempDirectory, Guid.NewGuid().ToString() + extension);
 
             if (!File.Exists(_filePath))
             {
@@ -39,7 +38,7 @@ namespace NuGet.Common
                 }
                 catch (Exception ex)
                 {
-                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_FailedToCreateRandomFile) + " : " +
+                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_FailedToCreateRandomFile, _filePath) + " : " +
                             ex.Message,
                             ex);
                 }
@@ -48,11 +47,10 @@ namespace NuGet.Common
 
         public TempFile()
         {
-            var tempDirectory = Path.Combine(Path.GetTempPath(), "NuGet-Scratch");
-
-            Directory.CreateDirectory(tempDirectory);
-
-            _filePath = Path.Combine(tempDirectory, Path.GetRandomFileName());
+            var tempDirectory = Path.GetTempPath();
+            var randomFolderName = Guid.NewGuid().ToString();
+            Directory.CreateDirectory(Path.Combine(tempDirectory, randomFolderName));
+            _filePath = Path.Combine(tempDirectory, Guid.NewGuid().ToString());
 
             if (!File.Exists(_filePath))
             {
@@ -64,7 +62,7 @@ namespace NuGet.Common
                 }
                 catch (Exception ex)
                 {
-                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_FailedToCreateRandomFile) + " : " +
+                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_FailedToCreateRandomFile, _filePath) + " : " +
                             ex.Message,
                             ex);
                 }
@@ -80,13 +78,7 @@ namespace NuGet.Common
         {
             if (File.Exists(_filePath))
             {
-                try
-                {
-                    File.Delete(_filePath);
-                }
-                catch
-                {
-                }
+                File.Delete(_filePath);
             }
         }
     }

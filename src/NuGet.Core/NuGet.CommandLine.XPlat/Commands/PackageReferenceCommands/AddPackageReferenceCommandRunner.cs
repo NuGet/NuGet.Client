@@ -27,7 +27,7 @@ namespace NuGet.CommandLine.XPlat
         private const string NUGET_RESTORE_MSBUILD_VERBOSITY = "NUGET_RESTORE_MSBUILD_VERBOSITY";
         private const int MSBUILD_WAIT_TIME = 2 * 60 * 1000; // 2 minutes in milliseconds
 
-        public int ExecuteCommand(PackageReferenceArgs packageReferenceArgs, MSBuildAPIUtility msBuild)
+        public async Task<int> ExecuteCommand(PackageReferenceArgs packageReferenceArgs, MSBuildAPIUtility msBuild)
         {
             packageReferenceArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                 Strings.Info_AddPkgAddingReference,
@@ -47,10 +47,9 @@ namespace NuGet.CommandLine.XPlat
             {
                 // 1. Get project dg file
                 packageReferenceArgs.Logger.LogDebug("Generating project Dependency Graph");
-                var dgSpec = GetProjectDependencyGraphAsync(packageReferenceArgs,
+                var dgSpec = await GetProjectDependencyGraphAsync(packageReferenceArgs,
                     dgFilePath,
-                    timeOut: MSBUILD_WAIT_TIME)
-                    .Result;
+                    timeOut: MSBUILD_WAIT_TIME);
                 packageReferenceArgs.Logger.LogDebug("Project Dependency Graph Generated");
                 var projectName = dgSpec.Restore.FirstOrDefault();
                 var originalPackageSpec = dgSpec.GetProjectSpec(projectName);
@@ -64,10 +63,9 @@ namespace NuGet.CommandLine.XPlat
 
                 // 2. Run Restore Preview
                 packageReferenceArgs.Logger.LogDebug("Running Restore preview");
-                var restorePreviewResult = PreviewAddPackageReference(packageReferenceArgs,
+                var restorePreviewResult = await PreviewAddPackageReference(packageReferenceArgs,
                     updatedDgSpec,
-                    updatedPackageSpec)
-                    .Result;
+                    updatedPackageSpec);
                 packageReferenceArgs.Logger.LogDebug("Restore Review completed");
 
                 // 3. Process Restore Result
@@ -78,7 +76,7 @@ namespace NuGet.CommandLine.XPlat
                     .Where(t => t.Success)
                     .Select(t => t.Graph.Framework));
 
-                if (packageReferenceArgs.Frameworks != null && packageReferenceArgs.Frameworks.Count() > 0)
+                if (packageReferenceArgs.Frameworks?.Any() == true)
                 {
                     // If the user has specified frameworks then we intersect that with the compatible frameworks.
                     var userSpecifiedFrameworks = new HashSet<NuGetFramework>(
@@ -152,7 +150,7 @@ namespace NuGet.CommandLine.XPlat
             using (var cacheContext = new SourceCacheContext())
             {
                 cacheContext.NoCache = false;
-                cacheContext.IgnoreFailedSources = true;
+                cacheContext.IgnoreFailedSources = false;
 
                 // Pre-loaded request provider containing the graph file
                 var providers = new List<IPreLoadedRestoreRequestProvider>();
