@@ -96,7 +96,6 @@ namespace NuGetVSExtension
             RuntimeEnvironmentHelper.IsDev14 = true;
 #endif
             ServiceLocator.InitializePackageServiceProvider(this);
-            StandaloneSwitch.IsRunningStandalone = false;
             _nugetSettings = new NuGetSettings();
             _credentialRequested = new HashSet<Uri>();
         }
