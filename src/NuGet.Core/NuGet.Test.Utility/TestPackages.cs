@@ -9,7 +9,6 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using NuGet.Common;
 
 namespace NuGet.Test.Utility
 {
@@ -788,6 +787,50 @@ namespace NuGet.Test.Utility
 
             return string.Format(NuspecStringFormat, packageId, packageVersion, language,
                 string.Join(Environment.NewLine, frameworkAssemblyReferences, dependenciesString));
+        }
+
+        public class TempFile : IDisposable
+        {
+            private readonly string _filePath;
+
+            public TempFile()
+            {
+                string packagesFolder = Path.Combine(TestFileSystemUtility.NuGetTestFolder, "NuGetTestPackages");
+
+                Directory.CreateDirectory(packagesFolder);
+
+                int count = 0;
+                do
+                {
+                    _filePath = Path.Combine(packagesFolder, Path.GetRandomFileName() + ".nupkg");
+                    count++;
+                }
+                while (File.Exists(_filePath) && count < 3);
+
+                if (count == 3)
+                {
+                    throw new InvalidOperationException("Failed to create a random file.");
+                }
+            }
+
+            public static implicit operator string(TempFile f)
+            {
+                return f._filePath;
+            }
+
+            public void Dispose()
+            {
+                if (_filePath != null)
+                {
+                    try
+                    {
+                        File.Delete(_filePath);
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
         }
     }
 }

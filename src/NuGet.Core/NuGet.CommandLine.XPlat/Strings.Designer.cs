@@ -150,15 +150,6 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to usage: dotnet add package &lt;Package Id&gt; [Options].
-        /// </summary>
-        public static string AddPkg_Usage {
-            get {
-                return ResourceManager.GetString("AddPkg_Usage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///    Looks up a localized string similar to The API key for the server..
         /// </summary>
         public static string ApiKey_Description {
@@ -265,7 +256,7 @@ namespace NuGet.CommandLine.XPlat {
                 return ResourceManager.GetString("Error_AddPkgIncompatibleWithAllFrameworks", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///    Looks up a localized string similar to Source parameter was not specified..
         /// </summary>
@@ -276,11 +267,20 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to msbuild was unable to open Project &apos;{0}&apos;..
+        ///    Looks up a localized string similar to MsBuild was unable to open Project &apos;{0}&apos;..
         /// </summary>
-        public static string Error_MSBuildUnableToOpenProject {
+        public static string Error_MsBuildUnableToOpenProject {
             get {
-                return ResourceManager.GetString("Error_MSBuildUnableToOpenProject", resourceCulture);
+                return ResourceManager.GetString("Error_MsBuildUnableToOpenProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to None or invalid DgSpec was passed to NuGet add package command..
+        /// </summary>
+        public static string Error_NoDgSpec {
+            get {
+                return ResourceManager.GetString("Error_NoDgSpec", resourceCulture);
             }
         }
         

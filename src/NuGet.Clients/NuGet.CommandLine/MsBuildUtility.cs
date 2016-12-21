@@ -807,5 +807,78 @@ namespace NuGet.CommandLine
                 return Path.Combine(msbuildDirectory, "msbuild.exe");
             }
         }
+
+        /// <summary>
+        /// This class is used to create a temp file, which is deleted in Dispose().
+        /// </summary>
+        private class TempFile : IDisposable
+        {
+            private readonly string _filePath;
+
+            /// <summary>
+            /// Constructor. It creates an empty temp file under the temp directory / NuGet, with
+            /// extension <paramref name="extension"/>.
+            /// </summary>
+            /// <param name="extension">The extension of the temp file.</param>
+            public TempFile(string extension)
+            {
+                if (string.IsNullOrEmpty(extension))
+                {
+                    throw new ArgumentNullException(nameof(extension));
+                }
+
+                var tempDirectory = Path.Combine(Path.GetTempPath(), "NuGet-Scratch");
+
+                Directory.CreateDirectory(tempDirectory);
+
+                int count = 0;
+                do
+                {
+                    _filePath = Path.Combine(tempDirectory, Path.GetRandomFileName() + extension);
+
+                    if (!File.Exists(_filePath))
+                    {
+                        try
+                        {
+                            // create an empty file
+                            using (var filestream = File.Open(_filePath, FileMode.CreateNew))
+                            {
+                            }
+
+                            // file is created successfully.
+                            return;
+                        }
+                        catch
+                        {
+                        }
+                    }
+
+                    count++;
+                }
+                while (count < 3);
+
+                throw new InvalidOperationException(
+                    LocalizedResourceManager.GetString(nameof(NuGetResources.Error_FailedToCreateRandomFileForP2P)));
+            }
+
+            public static implicit operator string(TempFile f)
+            {
+                return f._filePath;
+            }
+
+            public void Dispose()
+            {
+                if (File.Exists(_filePath))
+                {
+                    try
+                    {
+                        File.Delete(_filePath);
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+        }
     }
 }

@@ -344,7 +344,7 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("net46", "unknown_framework")]
         [InlineData("netcoreapp1.0", "unknown_framework")]
         [InlineData("net46; netcoreapp1.0", "unknown_framework")]
-        public async void AddPkg_Failure(string packageFrameworks, string userInputFrameworks)
+        public async void AddPkg_FailureIncompatibleFrameworks(string packageFrameworks, string userInputFrameworks)
         {
             // Arrange
 
@@ -371,6 +371,37 @@ namespace NuGet.XPlat.FuncTest
                 // Assert
                 Assert.Equal(1, result);
                 Assert.True(ValidateNoReference(projectXmlRoot, packageX.Id));
+            }
+        }
+
+        [Fact]
+        public async void AddPkg_FailureUnknownPackage()
+        {
+            // Arrange
+
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectA = CreateProject(projectName, pathContext, "net46; netcoreapp1.0");
+                var packageX = CreatePackage();
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                var packageArgs = GetPackageReferenceArgs("unknown_package_id", "1.0.0", projectA);
+                var commandRunner = new AddPackageReferenceCommandRunner();
+
+                // Act
+                var result = commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility())
+                    .Result;
+                var projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
+
+                // Assert
+                Assert.Equal(1, result);
+                Assert.True(ValidateNoReference(projectXmlRoot, packageX.Id));
+                Assert.True(ValidateNoReference(projectXmlRoot, "unknown_package_id"));
             }
         }
 
@@ -589,7 +620,7 @@ namespace NuGet.XPlat.FuncTest
             using (var pathContext = new SimpleTestPathContext())
             {
                 var projectA = CreateProject(projectName, pathContext, projectFrameworks);
-                var packageX = CreatePackage();
+                var packageX = CreatePackage(frameworkString: packageFrameworks);
 
                 // Generate Package
                 await SimpleTestPackageUtility.CreateFolderFeedV3(

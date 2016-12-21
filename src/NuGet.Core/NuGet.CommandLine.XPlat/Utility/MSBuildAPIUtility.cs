@@ -29,7 +29,7 @@ namespace NuGet.CommandLine.XPlat
             var projectRootElement = TryOpenProjectRootElement(projectCSProjPath);
             if (projectCSProjPath == null)
             {
-                throw new Exception(Strings.Error_MSBuildUnableToOpenProject);
+                throw new Exception(Strings.Error_MsBuildUnableToOpenProject);
             }
             return new Project(projectRootElement);
         }
@@ -45,7 +45,7 @@ namespace NuGet.CommandLine.XPlat
             var projectRootElement = TryOpenProjectRootElement(projectCSProjPath);
             if (projectCSProjPath == null)
             {
-                throw new Exception(Strings.Error_MSBuildUnableToOpenProject);
+                throw new Exception(Strings.Error_MsBuildUnableToOpenProject);
             }
             return new Project(projectRootElement, globalProperties, toolsVersion: null);
         }

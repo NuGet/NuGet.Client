@@ -46,6 +46,10 @@ namespace NuGet.CommandLine.XPlat
             // 1. Get project dg file
             packageReferenceArgs.Logger.LogDebug("Reading project Dependency Graph");
             var dgSpec = ReadProjectDependencyGraph(packageReferenceArgs);
+            if (dgSpec == null)
+            {
+                throw new Exception(Strings.Error_NoDgSpec);
+            }
             packageReferenceArgs.Logger.LogDebug("Project Dependency Graph Read");
 
             var projectName = dgSpec.Restore.FirstOrDefault();
@@ -72,6 +76,8 @@ namespace NuGet.CommandLine.XPlat
                 .CompatibilityCheckResults
                 .Where(t => t.Success)
                 .Select(t => t.Graph.Framework));
+
+            var x = restorePreviewResult.Result.GetAllUnresolved();
 
             if (packageReferenceArgs.Frameworks?.Any() == true)
             {
@@ -188,10 +194,6 @@ namespace NuGet.CommandLine.XPlat
             {
                 spec = DependencyGraphSpec.Load(packageReferenceArgs.DgFilePath);
             }
-            else
-            {
-                spec = new DependencyGraphSpec();
-            }
 
             return spec;
         }
@@ -219,25 +221,6 @@ namespace NuGet.CommandLine.XPlat
                 //Update the packagedependency with the new version
                 packageReferenceArgs.PackageDependency = new PackageDependency(packageReferenceArgs.PackageDependency.Id,
                     VersionRange.Parse(resolvedVersion.ToString()));
-            }
-        }
-
-        private static void LogQueue(ConcurrentQueue<string> outputs, ILogger logger)
-        {
-            foreach (var line in outputs)
-            {
-                logger.LogError(line);
-            }
-        }
-
-        private static async Task ConsumeStreamReaderAsync(StreamReader reader, ConcurrentQueue<string> lines)
-        {
-            await Task.Yield();
-
-            string line;
-            while ((line = await reader.ReadLineAsync()) != null)
-            {
-                lines.Enqueue(line);
             }
         }
     }

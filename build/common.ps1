@@ -9,7 +9,6 @@ $PackageReleaseVersion = "4.0.0"
 
 $NuGetClientRoot = Split-Path -Path $PSScriptRoot -Parent
 $CLIRoot = Join-Path $NuGetClientRoot cli
-$CLIRootTest = Join-Path $NuGetClientRoot cli_test
 $Nupkgs = Join-Path $NuGetClientRoot nupkgs
 $Artifacts = Join-Path $NuGetClientRoot artifacts
 $ReleaseNupkgs = Join-Path $Artifacts ReleaseNupkgs
@@ -17,7 +16,6 @@ $ConfigureJson = Join-Path $Artifacts configure.json
 $ILMergeOutputDir = Join-Path $Artifacts "VS14"
 
 $DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
-$DotNetExeTest = Join-Path $CLIRootTest 'dotnet.exe'
 $NuGetExe = Join-Path $NuGetClientRoot '.nuget\nuget.exe'
 $XunitConsole = Join-Path $NuGetClientRoot 'packages\xunit.runner.console.2.1.0\tools\xunit.console.exe'
 $ILMerge = Join-Path $NuGetClientRoot 'packages\ILMerge.2.14.1208\tools\ILMerge.exe'
@@ -214,32 +212,6 @@ Function Install-DotnetCLI {
 
     # Display build info
     & $DotNetExe --info
-}
-
-Function Install-DotnetCLI-Test {
-    [CmdletBinding()]
-    param(
-        [switch]$Force
-    )
-
-    if ($Force -or -not (Test-Path $DotNetExeTest)) {
-        Trace-Log 'Downloading .NET CLI Test'
-
-        New-Item -ItemType Directory -Force -Path $CLIRootTest | Out-Null
-
-        $installDotnet = Join-Path $CLIRootTest "dotnet-install.ps1"
-
-        wget 'https://raw.githubusercontent.com/dotnet/cli/58b0566d9ac399f5fa973315c6827a040b7aae1f/scripts/obtain/dotnet-install.ps1' -OutFile $installDotnet
-
-        & $installDotnet -Channel preview -i $CLIRootTest -Version 1.0.0-preview5-004232
-    }
-
-    if (-not (Test-Path $DotNetExeTest)) {
-        Error-Log "Unable to find dotnet.exe. The CLI Test install may have failed." -Fatal
-    }
-
-    # Display build info
-    & $DotNetExeTest --info
 }
 
 
