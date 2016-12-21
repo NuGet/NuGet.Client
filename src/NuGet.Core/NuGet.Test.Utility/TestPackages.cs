@@ -96,7 +96,6 @@ namespace NuGet.Test.Utility
             return result;
         }
 
-
         public static TestPackageInfo GetPackageWithNupkgCopy()
         {
             var file = new TempFile();
@@ -641,12 +640,12 @@ namespace NuGet.Test.Utility
             string packageId,
             string packageVersion)
         {
-           return await GeneratePackageAsync(
-               path,
-               packageId,
-               packageVersion,
-               DateTimeOffset.UtcNow.LocalDateTime,
-               "lib/net45/A.dll");
+            return await GeneratePackageAsync(
+                path,
+                packageId,
+                packageVersion,
+                DateTimeOffset.UtcNow.LocalDateTime,
+                "lib/net45/A.dll");
         }
 
         public static async Task<FileInfo> GetSatellitePackageAsync(

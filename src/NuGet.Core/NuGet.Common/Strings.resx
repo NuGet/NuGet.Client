@@ -123,6 +123,9 @@
   <data name="ArgumentNullOrEmpty" xml:space="preserve">
     <value>Argument cannot be null or empty</value>
   </data>
+  <data name="Error_FailedToCreateRandomFile" xml:space="preserve">
+    <value>Failed to create random file for dotnet add pkg command.</value>
+  </data>
   <data name="NoPackageFoldersFound" xml:space="preserve">
     <value>At least one package folder path must be provided.</value>
   </data>

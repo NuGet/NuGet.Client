@@ -1,4 +1,9 @@
-﻿using System.IO;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Diagnostics;
+using System.IO;
 using System.Xml;
 using System.Xml.Linq;
 using Newtonsoft.Json;
@@ -79,6 +84,41 @@ namespace NuGet.XPlat.FuncTest
 
                 return element?.Element("ApiKey")?.Value;
             }
+        }
+
+        public static void WaitForDebugger()
+        {
+            Console.WriteLine("Waiting for debugger to attach.");
+            Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
+
+            while (!Debugger.IsAttached)
+            {
+                System.Threading.Thread.Sleep(100);
+            }
+            Debugger.Break();
+        }
+
+        public static XDocument LoadSafe(string filePath)
+        {
+            var settings = CreateSafeSettings();
+            using (var reader = XmlReader.Create(filePath, settings))
+            {
+                return XDocument.Load(reader);
+            }
+        }
+
+        public static XmlReaderSettings CreateSafeSettings(bool ignoreWhiteSpace = false)
+        {
+            var safeSettings = new XmlReaderSettings
+            {
+#if !IS_CORECLR
+                XmlResolver = null,
+#endif
+                DtdProcessing = DtdProcessing.Prohibit,
+                IgnoreWhitespace = ignoreWhiteSpace
+            };
+
+            return safeSettings;
         }
     }
 }

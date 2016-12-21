@@ -339,7 +339,7 @@ namespace NuGet.CommandLine
         /// Returns the msbuild directory. If <paramref name="userVersion"/> is null, then the directory containing
         /// the highest installed msbuild version is returned. Otherwise, the directory containing msbuild
         /// whose version matches <paramref name="userVersion"/> is returned. If no match is found,
-        /// an exception will be thrown. Note that we use Microsoft.Build types as 
+        /// an exception will be thrown. Note that we use Microsoft.Build types as
         /// </summary>
         /// <param name="userVersion">version string as passed by user (so may be empty)</param>
         /// <param name="console">The console used to output messages.</param>
@@ -363,7 +363,6 @@ namespace NuGet.CommandLine
                 var installed = ((dynamic)projectCollection)?.Toolsets;
                 if (installed != null)
                 {
-
                     foreach (dynamic item in installed)
                     {
                         installedToolsets.Add(new MsBuildToolset(version: item.ToolsVersion, path: item.ToolsPath));
@@ -401,13 +400,13 @@ namespace NuGet.CommandLine
         }
 
         /// <summary>
-        /// This method is called by GetMsBuildDirectory(). This method is not intended to be called directly. 
+        /// This method is called by GetMsBuildDirectory(). This method is not intended to be called directly.
         /// It's marked public so that it can be called by unit tests.
         /// </summary>
         /// <param name="userVersion">version string as passed by user (so may be empty)</param>
         /// <param name="console">console for status reporting</param>
         /// <param name="installedToolsets">all msbuild toolsets discovered by caller</param>
-        /// <param name="getMsBuildPathInPathVar">delegate to provide msbuild exe discovered in path environemtnb var/s 
+        /// <param name="getMsBuildPathInPathVar">delegate to provide msbuild exe discovered in path environemtnb var/s
         /// (using a delegate allows for testability)</param>
         /// <returns>directory to use for msbuild exe</returns>
         public static string GetMsBuildDirectoryInternal(
@@ -448,7 +447,7 @@ namespace NuGet.CommandLine
                 Type projectCollectionType = msBuildTypesAssembly.GetType("Microsoft.Build.Evaluation.ProjectCollection", throwOnError: true);
                 return Activator.CreateInstance(projectCollectionType) as IDisposable;
             }
-            catch(Exception)
+            catch (Exception)
             {
                 return null;
             }
@@ -490,7 +489,7 @@ namespace NuGet.CommandLine
         /// <summary>
         /// Gets the (first) path of MSBuild to appear in environment variable PATH.
         /// </summary>
-        /// <returns>The path of MSBuild in PATH environment variable. Returns null if MSBuild location does not exist 
+        /// <returns>The path of MSBuild in PATH environment variable. Returns null if MSBuild location does not exist
         /// in the variable string.</returns>
         private static string GetMsBuildPathInPathVar()
         {
@@ -542,9 +541,9 @@ namespace NuGet.CommandLine
             else
             {
                 // Search by path. We use a StartsWith match because a toolset's path may have an architecture specialization.
-                // e.g. 
+                // e.g.
                 //     c:\Program Files (x86)\MSBuild\14.0\Bin
-                // is specified in the path (a path which we have validated contains an msbuild.exe) and the toolset is located at 
+                // is specified in the path (a path which we have validated contains an msbuild.exe) and the toolset is located at
                 //     c:\Program Files (x86)\MSBuild\14.0\Bin\amd64
                 selectedToolset = installedToolsets.FirstOrDefault(
                     t => t.Path.StartsWith(msBuildPath, StringComparison.OrdinalIgnoreCase));
@@ -729,7 +728,7 @@ namespace NuGet.CommandLine
                     break;
                 }
 
-                // fetched will return the value 3 even if only one instance returned                
+                // fetched will return the value 3 even if only one instance returned
                 int index = 0;
                 while (index < fetched)
                 {
