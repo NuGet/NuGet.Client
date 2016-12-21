@@ -510,14 +510,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GenerateRestoreGraphWalkPerFramework"
-    DependsOnTargets="_GenerateRestoreProjectReferencePaths;_GetRestoreProjectStyle"
+    DependsOnTargets="_GetRestoreProjectStyle"
     Returns="@(_RestoreGraphEntry)">
 
     <!-- Write out project references -->
     <GetRestoreProjectReferencesTask
       ProjectUniqueName="$(MSBuildProjectFullPath)"
-      ProjectReferences="@(RestoreGraphProjectFullPathForOutput)"
-      TargetFrameworks="$(TargetFramework)">
+      ProjectReferences="@(ProjectReference)"
+      TargetFrameworks="$(TargetFramework)"
+      ParentProjectPath="$(MSBuildProjectFullPath)">
 
       <Output
         TaskParameter="RestoreGraphItems"
