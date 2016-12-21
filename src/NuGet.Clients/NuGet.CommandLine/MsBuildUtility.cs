@@ -141,10 +141,7 @@ namespace NuGet.CommandLine
                 argumentBuilder.Append(" /p:ExcludeRestorePackageImports=true ");
 
                 // Add all depenencies as top level restore projects if recursive is set
-                if (recursive)
-                {
-                    argumentBuilder.Append($" /p:RestoreRecursive=true ");
-                }
+                argumentBuilder.Append($" /p:RestoreRecursive={recursive} ");
 
                 // Projects to restore
                 bool isMono = RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows;

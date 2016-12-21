@@ -222,6 +222,15 @@ namespace NuGet.ProjectModel
                 }
             }
 
+            var filesObj = rawMSBuildMetadata.GetValue<JObject>("files");
+            if (filesObj != null)
+            {
+                foreach (var prop in filesObj.Properties())
+                {
+                    msbuildMetadata.Files.Add(new ProjectRestoreMetadataFile(prop.Name, prop.Value.ToObject<string>()));
+                }
+            }
+
             var frameworksObj = rawMSBuildMetadata.GetValue<JObject>("frameworks");
             if (frameworksObj != null)
             {
