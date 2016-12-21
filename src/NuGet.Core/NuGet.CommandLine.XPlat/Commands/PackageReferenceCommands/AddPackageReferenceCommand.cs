@@ -50,7 +50,7 @@ namespace NuGet.CommandLine.XPlat
                     CommandOptionType.SingleValue);
 
                 var frameworks = addpkg.Option(
-                    "-f|--frameworks",
+                    "-f|--framework",
                     Strings.AddPkg_FrameworksDescription,
                     CommandOptionType.SingleValue);
 

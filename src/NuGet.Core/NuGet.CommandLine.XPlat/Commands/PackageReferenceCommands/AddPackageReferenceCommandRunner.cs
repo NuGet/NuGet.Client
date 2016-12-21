@@ -47,6 +47,7 @@ namespace NuGet.CommandLine.XPlat
             packageReferenceArgs.Logger.LogDebug("Reading project Dependency Graph");
             var dgSpec = ReadProjectDependencyGraph(packageReferenceArgs);
             packageReferenceArgs.Logger.LogDebug("Project Dependency Graph Read");
+
             var projectName = dgSpec.Restore.FirstOrDefault();
             var originalPackageSpec = dgSpec.GetProjectSpec(projectName);
 

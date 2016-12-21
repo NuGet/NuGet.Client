@@ -13,6 +13,7 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -21,30 +22,27 @@ namespace NuGet.XPlat.FuncTest
 {
     public class XPlatAddPkgTests
     {
-        private static readonly string DotnetCli = DotnetCliUtil.GetDotnetCli(getLatestCli: true);
-        private static readonly string XplatDll = DotnetCliUtil.GetXplatDll();
         private static readonly string projectName = "test_project_addpkg";
 
         // Argument parsing related tests
 
         [Theory]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "--dg-file", "dotnet_foo", "--project", "project_foo", "", "", "", "", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "", "", "", "", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "--frameworks", "net46;netcoreapp1.0", "", "", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "-f", "net46 ; netcoreapp1.0 ; ", "", "", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "-f", "net46", "", "", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "", "", "--sources", "a;b", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "", "", "-s", "a ; b ;", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "", "", "-s", "a", "", "", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "", "", "", "", "--package-directory", @"foo\dir", "")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "", "", "", "", "", "", "--no-restore")]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "", "", "", "", "", "", "-n")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "--dg-file", "dgfile_foo", "--project", "project_foo", "", "", "", "", "", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo", "", "", "", "", "", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo", "--framework", "net46;netcoreapp1.0", "", "", "", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo", "-f", "net46 ; netcoreapp1.0 ; ", "", "", "", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo", "-f", "net46", "", "", "", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo", "", "", "--source", "a;b", "", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo", "", "", "-s", "a ; b ;", "", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo", "", "", "-s", "a", "", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo", "", "", "", "", "--package-directory", @"foo\dir", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo", "", "", "", "", "", "", "--no-restore")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo", "", "", "", "", "", "", "-n")]
         public void AddPkg_ArgParsing(string packageOption, string package, string versionOption, string version, string dgFileOption,
         string dgFilePath, string projectOption, string project, string frameworkOption, string frameworkString, string sourceOption,
         string sourceString, string packageDirectoryOption, string packageDirectory, string noRestoreSwitch)
         {
             // Arrange
-            AssertDotnetAndXPlatPaths();
 
             var argList = new List<string>() {
                 "add",
@@ -116,7 +114,6 @@ namespace NuGet.XPlat.FuncTest
         public async void AddPkg_UnconditionalAdd_Success(string userInputVersion)
         {
             // Arrange
-            AssertDotnetAndXPlatPaths();
 
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -129,7 +126,7 @@ namespace NuGet.XPlat.FuncTest
                     PackageSaveMode.Defaultv3,
                     packageX);
 
-                var packageArgs = GetPackageReferenceArgs(packageX.Id, userInputVersion, projectA.ProjectPath);
+                var packageArgs = GetPackageReferenceArgs(packageX.Id, userInputVersion, projectA);
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
@@ -155,7 +152,6 @@ namespace NuGet.XPlat.FuncTest
             string userInputVersion)
         {
             // Arrange
-            AssertDotnetAndXPlatPaths();
 
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -168,7 +164,7 @@ namespace NuGet.XPlat.FuncTest
                     PackageSaveMode.Defaultv3,
                     packageX);
 
-                var packageArgs = GetPackageReferenceArgs(packageX.Id, userInputVersion, projectA.ProjectPath, noRestore: true);
+                var packageArgs = GetPackageReferenceArgs(packageX.Id, userInputVersion, projectA, noRestore: true);
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
@@ -191,7 +187,6 @@ namespace NuGet.XPlat.FuncTest
         public async void AddPkg_UnconditionalAddWithoutVersion_Success()
         {
             // Arrange
-            AssertDotnetAndXPlatPaths();
 
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -205,7 +200,7 @@ namespace NuGet.XPlat.FuncTest
                     packageX);
 
                 // Since user is not inputing a version, it is converted to a "*"
-                var packageArgs = GetPackageReferenceArgs(packageX.Id, "*", projectA.ProjectPath, noVersion: true);
+                var packageArgs = GetPackageReferenceArgs(packageX.Id, "*", projectA, noVersion: true);
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
@@ -228,7 +223,7 @@ namespace NuGet.XPlat.FuncTest
             string projectFrameworks, string userInputVersion)
         {
             // Arrange
-            AssertDotnetAndXPlatPaths();
+
             using (var pathContext = new SimpleTestPathContext())
             {
                 var projectA = CreateProject(projectName, pathContext, projectFrameworks);
@@ -240,7 +235,7 @@ namespace NuGet.XPlat.FuncTest
                     PackageSaveMode.Defaultv3,
                     packageX);
 
-                var packageArgs = GetPackageReferenceArgs(packageX.Id, userInputVersion, projectA.ProjectPath);
+                var packageArgs = GetPackageReferenceArgs(packageX.Id, userInputVersion, projectA);
                 var commandRunner = new AddPackageReferenceCommandRunner();
                 var commonFramework = GetCommonFramework(packageFrameworks, projectFrameworks);
 
@@ -266,8 +261,7 @@ namespace NuGet.XPlat.FuncTest
         public async void AddPkg_ConditionalAddWithUserInputFramework_Success(string packageFrameworks, string projectFrameworks, string userInputFrameworks)
         {
             // Arrange
-            AssertDotnetAndXPlatPaths();
-            //WaitForDebugger();
+
             using (var pathContext = new SimpleTestPathContext())
             {
                 var projectA = CreateProject(projectName, pathContext, "net46; netcoreapp1.0");
@@ -279,7 +273,7 @@ namespace NuGet.XPlat.FuncTest
                     PackageSaveMode.Defaultv3,
                     packageX);
 
-                var packageArgs = GetPackageReferenceArgs(packageX.Id, packageX.Version, projectA.ProjectPath,
+                var packageArgs = GetPackageReferenceArgs(packageX.Id, packageX.Version, projectA,
                     frameworks: userInputFrameworks);
                 var commandRunner = new AddPackageReferenceCommandRunner();
                 var commonFramework = GetCommonFramework(packageFrameworks, projectFrameworks, userInputFrameworks);
@@ -308,7 +302,6 @@ namespace NuGet.XPlat.FuncTest
             string userInputFrameworks)
         {
             // Arrange
-            AssertDotnetAndXPlatPaths();
 
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -323,7 +316,7 @@ namespace NuGet.XPlat.FuncTest
 
                 // Since user is not inputing a version, it is converted to a "*" in the command
                 var packageArgs = GetPackageReferenceArgs(packageX.Id, "*",
-                    projectA.ProjectPath,
+                    projectA,
                     frameworks: userInputFrameworks,
                     noVersion: true);
 
@@ -354,7 +347,6 @@ namespace NuGet.XPlat.FuncTest
         public async void AddPkg_Failure(string packageFrameworks, string userInputFrameworks)
         {
             // Arrange
-            AssertDotnetAndXPlatPaths();
 
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -367,7 +359,7 @@ namespace NuGet.XPlat.FuncTest
                     PackageSaveMode.Defaultv3,
                     packageX);
 
-                var packageArgs = GetPackageReferenceArgs(packageX.Id, packageX.Version, projectA.ProjectPath,
+                var packageArgs = GetPackageReferenceArgs(packageX.Id, packageX.Version, projectA,
                     frameworks: userInputFrameworks);
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
@@ -386,7 +378,6 @@ namespace NuGet.XPlat.FuncTest
         public async void AddPkg_UnconditionalAddTwoPackages_Success()
         {
             // Arrange
-            AssertDotnetAndXPlatPaths();
 
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -404,7 +395,7 @@ namespace NuGet.XPlat.FuncTest
                     PackageSaveMode.Defaultv3,
                     packageY);
 
-                var packageArgs = GetPackageReferenceArgs(packageX.Id, packageX.Version, projectA.ProjectPath);
+                var packageArgs = GetPackageReferenceArgs(packageX.Id, packageX.Version, projectA);
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
@@ -412,7 +403,7 @@ namespace NuGet.XPlat.FuncTest
                     .Result;
                 var projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
 
-                packageArgs = GetPackageReferenceArgs(packageY.Id, packageY.Version, projectA.ProjectPath);
+                packageArgs = GetPackageReferenceArgs(packageY.Id, packageY.Version, projectA);
 
                 // Act
                 result = commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility())
@@ -434,8 +425,7 @@ namespace NuGet.XPlat.FuncTest
         public async void AddPkg_ConditionalAddTwoPackages_Success(string packageFrameworks, string projectFrameworks, string userInputFrameworks)
         {
             // Arrange
-            AssertDotnetAndXPlatPaths();
-            //WaitForDebugger();
+
             using (var pathContext = new SimpleTestPathContext())
             {
                 var projectA = CreateProject(projectName, pathContext, projectFrameworks);
@@ -452,7 +442,7 @@ namespace NuGet.XPlat.FuncTest
                     PackageSaveMode.Defaultv3,
                     packageY);
 
-                var packageArgs = GetPackageReferenceArgs(packageX.Id, packageX.Version, projectA.ProjectPath, frameworks: userInputFrameworks);
+                var packageArgs = GetPackageReferenceArgs(packageX.Id, packageX.Version, projectA, frameworks: userInputFrameworks);
                 var commandRunner = new AddPackageReferenceCommandRunner();
                 var commonFramework = GetCommonFramework(packageFrameworks, projectFrameworks, userInputFrameworks);
 
@@ -461,7 +451,7 @@ namespace NuGet.XPlat.FuncTest
                     .Result;
                 var projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
 
-                packageArgs = GetPackageReferenceArgs(packageY.Id, packageY.Version, projectA.ProjectPath);
+                packageArgs = GetPackageReferenceArgs(packageY.Id, packageY.Version, projectA);
 
                 // Act
                 result = commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility())
@@ -479,7 +469,6 @@ namespace NuGet.XPlat.FuncTest
         public async void AddPkg_UnconditionalAddWithPackageDirectory_Success()
         {
             // Arrange
-            AssertDotnetAndXPlatPaths();
 
             using (var tempGlobalPackagesDirectory = TestDirectory.Create())
             using (var pathContext = new SimpleTestPathContext())
@@ -493,7 +482,7 @@ namespace NuGet.XPlat.FuncTest
                     PackageSaveMode.Defaultv3,
                     packageX);
 
-                var packageArgs = GetPackageReferenceArgs(packageX.Id, packageX.Version, projectA.ProjectPath,
+                var packageArgs = GetPackageReferenceArgs(packageX.Id, packageX.Version, projectA,
                     packageDirectory: tempGlobalPackagesDirectory.Path);
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
@@ -525,7 +514,6 @@ namespace NuGet.XPlat.FuncTest
         public async void AddPkg_UnconditionalAddAsUpdate_Succcess(string userInputVersionOld, string userInputVersionNew)
         {
             // Arrange
-            AssertDotnetAndXPlatPaths();
 
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -538,7 +526,7 @@ namespace NuGet.XPlat.FuncTest
                     PackageSaveMode.Defaultv3,
                     packageX);
 
-                var packageArgs = GetPackageReferenceArgs(packageX.Id, userInputVersionOld, projectA.ProjectPath);
+                var packageArgs = GetPackageReferenceArgs(packageX.Id, userInputVersionOld, projectA);
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Create a package ref with the old version
@@ -546,7 +534,7 @@ namespace NuGet.XPlat.FuncTest
                     .Result;
                 var projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
 
-                packageArgs = GetPackageReferenceArgs(packageX.Id, userInputVersionNew, projectA.ProjectPath);
+                packageArgs = GetPackageReferenceArgs(packageX.Id, userInputVersionNew, projectA);
                 commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
@@ -597,7 +585,6 @@ namespace NuGet.XPlat.FuncTest
             string userInputFrameworks, string userInputVersionOld, string userInputVersionNew)
         {
             // Arrange
-            AssertDotnetAndXPlatPaths();
 
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -610,7 +597,7 @@ namespace NuGet.XPlat.FuncTest
                     PackageSaveMode.Defaultv3,
                     packageX);
 
-                var packageArgs = GetPackageReferenceArgs(packageX.Id, userInputVersionOld, projectA.ProjectPath);
+                var packageArgs = GetPackageReferenceArgs(packageX.Id, userInputVersionOld, projectA);
                 var commandRunner = new AddPackageReferenceCommandRunner();
                 var msBuild = new MSBuildAPIUtility();
 
@@ -619,7 +606,7 @@ namespace NuGet.XPlat.FuncTest
                     .Result;
                 var projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
 
-                packageArgs = GetPackageReferenceArgs(packageX.Id, userInputVersionNew, projectA.ProjectPath);
+                packageArgs = GetPackageReferenceArgs(packageX.Id, userInputVersionNew, projectA);
                 commandRunner = new AddPackageReferenceCommandRunner();
                 var commonFramework = GetCommonFramework(packageFrameworks, projectFrameworks, userInputFrameworks);
 
@@ -639,21 +626,27 @@ namespace NuGet.XPlat.FuncTest
         // Helper Methods
 
         // Arrange Helper Methods
+
         private SimpleTestProjectContext CreateProject(string projectName, SimpleTestPathContext pathContext, string projectFrameworks)
         {
-            var projectFrameworkList = new List<NuGetFramework>();
-            StringUtility.Split(projectFrameworks)
-                .ToList()
-                .ForEach(f => projectFrameworkList.Add(NuGetFramework.Parse(f)));
-
             var project = SimpleTestProjectContext.CreateNETCoreWithSDK(
                     projectName: projectName,
                     solutionRoot: pathContext.SolutionRoot,
                     isToolingVersion15: true,
-                    frameworks: projectFrameworkList.ToArray());
+                    frameworks: StringUtility.Split(projectFrameworks));
 
             project.Save();
             return project;
+        }
+
+        private string CreateDGFileForProject(SimpleTestProjectContext project)
+        {
+            var dgSpec = new DependencyGraphSpec();
+            var dgFilePath = Path.Combine(Directory.GetParent(project.ProjectPath).FullName, "temp.dg");
+            dgSpec.AddRestore(project.ProjectName);
+            dgSpec.AddProject(project.PackageSpec);
+            dgSpec.Save(dgFilePath);
+            return dgFilePath;
         }
 
         private SimpleTestPackageContext CreatePackage(string packageId = "packageX", string packageVersion = "1.0.0", string frameworkString = null)
@@ -676,19 +669,24 @@ namespace NuGet.XPlat.FuncTest
             return package;
         }
 
-        private PackageReferenceArgs GetPackageReferenceArgs(string packageId, string packageVersion, string projectPath,
+        private PackageReferenceArgs GetPackageReferenceArgs(string packageId, string packageVersion, SimpleTestProjectContext project,
             string frameworks = "", string packageDirectory = "", string sources = "", bool noRestore = false, bool noVersion = false)
         {
             var logger = new TestCommandOutputLogger();
             var packageDependency = new PackageDependency(packageId, VersionRange.Parse(packageVersion));
-
-            return new PackageReferenceArgs(DotnetCli, projectPath, packageDependency, logger)
+            var dgFilePath = string.Empty;
+            if (!noRestore)
+            {
+                dgFilePath = CreateDGFileForProject(project);
+            }
+            return new PackageReferenceArgs(project.ProjectPath, packageDependency, logger)
             {
                 Frameworks = StringUtility.Split(frameworks),
                 Sources = StringUtility.Split(sources),
                 PackageDirectory = packageDirectory,
                 NoRestore = noRestore,
-                NoVersion = noVersion
+                NoVersion = noVersion,
+                DgFilePath = dgFilePath
             };
         }
 
@@ -802,12 +800,6 @@ namespace NuGet.XPlat.FuncTest
         private string GetTargetFrameworkCondition(string targetFramework)
         {
             return string.Format("'$(TargetFramework)' == '{0}'", targetFramework);
-        }
-
-        private void AssertDotnetAndXPlatPaths()
-        {
-            Assert.NotNull(DotnetCli);
-            Assert.NotNull(XplatDll);
         }
     }
 }

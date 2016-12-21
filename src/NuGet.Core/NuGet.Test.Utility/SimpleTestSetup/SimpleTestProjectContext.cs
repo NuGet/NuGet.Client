@@ -19,6 +19,8 @@ namespace NuGet.Test.Utility
 {
     public class SimpleTestProjectContext
     {
+        private PackageSpec _packageSpec;
+
         public SimpleTestProjectContext(string projectName, RestoreOutputType type, string solutionRoot)
         {
             if (string.IsNullOrWhiteSpace(projectName))
@@ -65,6 +67,11 @@ namespace NuGet.Test.Utility
         /// Target frameworks containing dependencies.
         /// </summary>
         public List<SimpleTestProjectFrameworkContext> Frameworks { get; set; } = new List<SimpleTestProjectFrameworkContext>();
+
+        /// <summary>
+        /// Original Target framework strings.
+        /// </summary>
+        public List<string> OriginalFrameworkStrings { get; set; } = new List<string>();
 
         /// <summary>
         /// Project type
@@ -171,6 +178,41 @@ namespace NuGet.Test.Utility
             }
         }
 
+        public PackageSpec PackageSpec
+        {
+            get
+            {
+                if (_packageSpec == null)
+                {
+                    _packageSpec = new PackageSpec(Frameworks
+                        .Select(f => new TargetFrameworkInformation() { FrameworkName = f.Framework })
+                        .ToList());
+                    _packageSpec.RestoreMetadata = new ProjectRestoreMetadata();
+                    _packageSpec.Name = ProjectName;
+                    _packageSpec.FilePath = ProjectPath;
+                    _packageSpec.RestoreMetadata.ProjectUniqueName = ProjectName;
+                    _packageSpec.RestoreMetadata.ProjectName = ProjectName;
+                    _packageSpec.RestoreMetadata.ProjectPath = ProjectPath;
+                    _packageSpec.RestoreMetadata.OutputType = Type;
+                    _packageSpec.RestoreMetadata.OutputPath = AssetsFileOutputPath;
+                    _packageSpec.RestoreMetadata.OriginalTargetFrameworks = OriginalFrameworkStrings;
+                    _packageSpec.RestoreMetadata.TargetFrameworks = Frameworks
+                        .Select(f => new ProjectRestoreMetadataFrameworkInfo(f.Framework))
+                        .ToList();
+                    if (Type == RestoreOutputType.UAP)
+                    {
+                        _packageSpec.RestoreMetadata.ProjectJsonPath = Path.Combine(Path.GetDirectoryName(ProjectPath), "project.json");
+                    }
+                    if (Frameworks.Count() > 1)
+                    {
+                        _packageSpec.RestoreMetadata.CrossTargeting = true;
+                    }
+                }
+
+                return _packageSpec;
+            }
+        }
+
         public void AddPackageToAllFrameworks(params SimpleTestPackageContext[] packages)
         {
             foreach (var framework in Frameworks)
@@ -251,6 +293,19 @@ namespace NuGet.Test.Utility
         {
             var context = new SimpleTestProjectContext(projectName, RestoreOutputType.NETCore, solutionRoot);
             context.Frameworks.AddRange(frameworks.Select(e => new SimpleTestProjectFrameworkContext(e)));
+            context.ToolingVersion15 = isToolingVersion15;
+            return context;
+        }
+
+        public static SimpleTestProjectContext CreateNETCoreWithSDK(
+            string projectName,
+            string solutionRoot,
+            bool isToolingVersion15,
+            params string[] frameworks)
+        {
+            var context = new SimpleTestProjectContext(projectName, RestoreOutputType.NETCore, solutionRoot);
+            context.OriginalFrameworkStrings.AddRange(frameworks);
+            context.Frameworks.AddRange(frameworks.Select(f => new SimpleTestProjectFrameworkContext(NuGetFramework.Parse(f))));
             context.ToolingVersion15 = isToolingVersion15;
             return context;
         }
