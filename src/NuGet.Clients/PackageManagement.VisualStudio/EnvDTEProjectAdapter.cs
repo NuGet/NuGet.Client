@@ -27,7 +27,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly Project _project;
 
         // Interface casts
-        private IVsBuildPropertyStorage _asIVsBuildPropertyStorage;
         private IVsHierarchy _asIVsHierarchy;
         private VSProject _asVSProject;
         private VSProject4 _asVSProject4;
