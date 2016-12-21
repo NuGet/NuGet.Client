@@ -69,11 +69,11 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Path to dotnet to be used to execute msbuild /t:restore..
+        ///    Looks up a localized string similar to Path to the dependency graph file to be used to restore preview and compatibility check..
         /// </summary>
-        public static string AddPkg_DotnetDescription {
+        public static string AddPkg_DgFileDescription {
             get {
-                return ResourceManager.GetString("AddPkg_DotnetDescription", resourceCulture);
+                return ResourceManager.GetString("AddPkg_DgFileDescription", resourceCulture);
             }
         }
         
@@ -265,52 +265,7 @@ namespace NuGet.CommandLine.XPlat {
                 return ResourceManager.GetString("Error_AddPkgIncompatibleWithAllFrameworks", resourceCulture);
             }
         }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to Dotnet msbuild timeout out while trying to get project references and dotnet could not kill the process..
-        /// </summary>
-        public static string Error_CannotKillDotnetMsBuild {
-            get {
-                return ResourceManager.GetString("Error_CannotKillDotnetMsBuild", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to Dotnet msbuild timeout out while trying to get project references..
-        /// </summary>
-        public static string Error_DotnetMsBuildTimedOut {
-            get {
-                return ResourceManager.GetString("Error_DotnetMsBuildTimedOut", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to Failed to locate dotnet in dotnet add package command..
-        /// </summary>
-        public static string Error_DotnetNotFound {
-            get {
-                return ResourceManager.GetString("Error_DotnetNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to Failed to create random file at &apos;{0}&apos; for dotnet add package command..
-        /// </summary>
-        public static string Error_FailedToCreateRandomFile {
-            get {
-                return ResourceManager.GetString("Error_FailedToCreateRandomFile", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to Generate Dependency Spec task failed..
-        /// </summary>
-        public static string Error_GenerateDGSpecTaskFailed {
-            get {
-                return ResourceManager.GetString("Error_GenerateDGSpecTaskFailed", resourceCulture);
-            }
-        }
-        
+
         /// <summary>
         ///    Looks up a localized string similar to Source parameter was not specified..
         /// </summary>

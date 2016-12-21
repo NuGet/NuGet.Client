@@ -383,9 +383,6 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="AddPkg_Description" xml:space="preserve">
     <value>Adds a package reference to a project.</value>
   </data>
-  <data name="AddPkg_DotnetDescription" xml:space="preserve">
-    <value>Path to dotnet to be used to execute msbuild /t:restore.</value>
-  </data>
   <data name="AddPkg_FrameworksDescription" xml:space="preserve">
     <value>Frameworks for which the package reference should be added.</value>
   </data>
@@ -413,5 +410,8 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   </data>
   <data name="AddPkg_SourcesDescription" xml:space="preserve">
     <value>Specifies NuGet package sources to use during the restore.</value>
+  </data>
+  <data name="AddPkg_DgFileDescription" xml:space="preserve">
+    <value>Path to the dependency graph file to be used to restore preview and compatibility check.</value>
   </data>
 </root>

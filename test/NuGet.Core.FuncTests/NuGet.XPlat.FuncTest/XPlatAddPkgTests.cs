@@ -28,7 +28,7 @@ namespace NuGet.XPlat.FuncTest
         // Argument parsing related tests
 
         [Theory]
-        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "--dotnet", "dotnet_foo", "--project", "project_foo", "", "", "", "", "", "", "")]
+        [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "--dg-file", "dotnet_foo", "--project", "project_foo", "", "", "", "", "", "", "")]
         [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "", "", "", "", "", "", "")]
         [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "--frameworks", "net46;netcoreapp1.0", "", "", "", "", "")]
         [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "-f", "net46 ; netcoreapp1.0 ; ", "", "", "", "", "")]
@@ -39,8 +39,8 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "", "", "", "", "--package-directory", @"foo\dir", "")]
         [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "", "", "", "", "", "", "--no-restore")]
         [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dotnet_foo", "-p", "project_foo", "", "", "", "", "", "", "-n")]
-        public void AddPkg_ArgParsing(string packageOption, string package, string versionOption, string version, string dotnetOption,
-        string dotnet, string projectOption, string project, string frameworkOption, string frameworkString, string sourceOption,
+        public void AddPkg_ArgParsing(string packageOption, string package, string versionOption, string version, string dgFileOption,
+        string dgFilePath, string projectOption, string project, string frameworkOption, string frameworkString, string sourceOption,
         string sourceString, string packageDirectoryOption, string packageDirectory, string noRestoreSwitch)
         {
             // Arrange
@@ -52,8 +52,8 @@ namespace NuGet.XPlat.FuncTest
                 package,
                 versionOption,
                 version,
-                dotnetOption,
-                dotnet,
+                dgFileOption,
+                dgFilePath,
                 projectOption,
                 project};
 
@@ -96,7 +96,7 @@ namespace NuGet.XPlat.FuncTest
             mockCommandRunner.Verify(m => m.ExecuteCommand(It.Is<PackageReferenceArgs>(p => p.PackageDependency.Id == package &&
             p.PackageDependency.VersionRange.OriginalString == version &&
             p.ProjectPath == project &&
-            p.DotnetPath == dotnet &&
+            p.DgFilePath == dgFilePath &&
             p.NoRestore == !string.IsNullOrEmpty(noRestoreSwitch) &&
             (string.IsNullOrEmpty(frameworkOption) || !string.IsNullOrEmpty(frameworkOption) && p.Frameworks.SequenceEqual(StringUtility.Split(frameworkString))) &&
             (string.IsNullOrEmpty(sourceOption) || !string.IsNullOrEmpty(sourceOption) && p.Sources.SequenceEqual(StringUtility.Split(sourceString))) &&

@@ -39,9 +39,9 @@ namespace NuGet.CommandLine.XPlat
                     Strings.AddPkg_PackageVersionDescription,
                     CommandOptionType.SingleValue);
 
-                var dotnetPath = addpkg.Option(
-                    "-d|--dotnet",
-                    Strings.AddPkg_DotnetDescription,
+                var dgFilePath = addpkg.Option(
+                    "-d|--dg-file",
+                    Strings.AddPkg_DgFileDescription,
                     CommandOptionType.SingleValue);
 
                 var projectPath = addpkg.Option(
@@ -72,20 +72,23 @@ namespace NuGet.CommandLine.XPlat
                 addpkg.OnExecute(() =>
                 {
                     ValidateArgument(id, id.Template);
-                    ValidateArgument(dotnetPath, dotnetPath.Template);
                     ValidateArgument(projectPath, projectPath.Template);
-
+                    if (!noRestore.HasValue())
+                    {
+                        ValidateArgument(dgFilePath, dgFilePath.Template);
+                    }
                     var logger = getLogger();
                     var noVersion = !version.HasValue();
                     var packageVersion = version.HasValue() ? version.Value() : "*";
                     var packageDependency = new PackageDependency(id.Values[0], VersionRange.Parse(packageVersion));
-                    var packageRefArgs = new PackageReferenceArgs(dotnetPath.Value(), projectPath.Value(), packageDependency, logger)
+                    var packageRefArgs = new PackageReferenceArgs(projectPath.Value(), packageDependency, logger)
                     {
                         Frameworks = StringUtility.Split(frameworks.Value()),
                         Sources = StringUtility.Split(sources.Value()),
                         PackageDirectory = packageDirectory.Value(),
                         NoRestore = noRestore.HasValue(),
-                        NoVersion = noVersion
+                        NoVersion = noVersion,
+                        DgFilePath = dgFilePath.Value()
                     };
                     var msBuild = new MSBuildAPIUtility();
                     var addPackageRefCommandRunner = getCommandRunner();

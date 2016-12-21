@@ -11,9 +11,9 @@ namespace NuGet.CommandLine.XPlat
 {
     public class PackageReferenceArgs
     {
-        public string DotnetPath { get; }
         public string ProjectPath { get; }
         public ILogger Logger { get; }
+        public string DgFilePath { get; set; }
         public PackageDependency PackageDependency { get; set; }
         public string[] Frameworks { get; set; }
         public string[] Sources { get; set; }
@@ -21,9 +21,8 @@ namespace NuGet.CommandLine.XPlat
         public bool NoRestore { get; set; }
         public bool NoVersion { get; set; }
 
-        public PackageReferenceArgs(string dotnetPath, string projectPath, PackageDependency packageDependency, ILogger logger)
+        public PackageReferenceArgs(string projectPath, PackageDependency packageDependency, ILogger logger)
         {
-            ValidateArgument(dotnetPath);
             ValidateArgument(projectPath);
             ValidateArgument(packageDependency);
             ValidateArgument(logger);
@@ -31,7 +30,6 @@ namespace NuGet.CommandLine.XPlat
             ProjectPath = projectPath;
             PackageDependency = packageDependency;
             Logger = logger;
-            DotnetPath = dotnetPath;
         }
 
         private void ValidateArgument(object arg)

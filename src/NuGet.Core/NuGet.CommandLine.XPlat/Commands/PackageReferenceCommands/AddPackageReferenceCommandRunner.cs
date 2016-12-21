@@ -43,98 +43,94 @@ namespace NuGet.CommandLine.XPlat
                 return 0;
             }
 
-            using (var dgFilePath = new TempFile(".dg"))
+            // 1. Get project dg file
+            packageReferenceArgs.Logger.LogDebug("Reading project Dependency Graph");
+            var dgSpec = ReadProjectDependencyGraph(packageReferenceArgs);
+            packageReferenceArgs.Logger.LogDebug("Project Dependency Graph Read");
+            var projectName = dgSpec.Restore.FirstOrDefault();
+            var originalPackageSpec = dgSpec.GetProjectSpec(projectName);
+
+            // Create a copy to avoid modifying the original spec which may be shared.
+            var updatedPackageSpec = originalPackageSpec.Clone();
+            PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, packageReferenceArgs.PackageDependency);
+
+            var updatedDgSpec = dgSpec.WithReplacedSpec(updatedPackageSpec).WithoutRestores();
+            updatedDgSpec.AddRestore(updatedPackageSpec.RestoreMetadata.ProjectUniqueName);
+
+            // 2. Run Restore Preview
+            packageReferenceArgs.Logger.LogDebug("Running Restore preview");
+            var restorePreviewResult = await PreviewAddPackageReference(packageReferenceArgs,
+                updatedDgSpec,
+                updatedPackageSpec);
+            packageReferenceArgs.Logger.LogDebug("Restore Review completed");
+
+            // 3. Process Restore Result
+            var compatibleFrameworks = new HashSet<NuGetFramework>(
+                restorePreviewResult
+                .Result
+                .CompatibilityCheckResults
+                .Where(t => t.Success)
+                .Select(t => t.Graph.Framework));
+
+            if (packageReferenceArgs.Frameworks?.Any() == true)
             {
-                // 1. Get project dg file
-                packageReferenceArgs.Logger.LogDebug("Generating project Dependency Graph");
-                var dgSpec = await GetProjectDependencyGraphAsync(packageReferenceArgs,
-                    dgFilePath,
-                    timeOut: MSBUILD_WAIT_TIME);
-                packageReferenceArgs.Logger.LogDebug("Project Dependency Graph Generated");
-                var projectName = dgSpec.Restore.FirstOrDefault();
-                var originalPackageSpec = dgSpec.GetProjectSpec(projectName);
+                // If the user has specified frameworks then we intersect that with the compatible frameworks.
+                var userSpecifiedFrameworks = new HashSet<NuGetFramework>(
+                    packageReferenceArgs
+                    .Frameworks
+                    .Select(f => NuGetFramework.Parse(f)));
 
-                // Create a copy to avoid modifying the original spec which may be shared.
-                var updatedPackageSpec = originalPackageSpec.Clone();
-                PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, packageReferenceArgs.PackageDependency);
-
-                var updatedDgSpec = dgSpec.WithReplacedSpec(updatedPackageSpec).WithoutRestores();
-                updatedDgSpec.AddRestore(updatedPackageSpec.RestoreMetadata.ProjectUniqueName);
-
-                // 2. Run Restore Preview
-                packageReferenceArgs.Logger.LogDebug("Running Restore preview");
-                var restorePreviewResult = await PreviewAddPackageReference(packageReferenceArgs,
-                    updatedDgSpec,
-                    updatedPackageSpec);
-                packageReferenceArgs.Logger.LogDebug("Restore Review completed");
-
-                // 3. Process Restore Result
-                var compatibleFrameworks = new HashSet<NuGetFramework>(
-                    restorePreviewResult
-                    .Result
-                    .CompatibilityCheckResults
-                    .Where(t => t.Success)
-                    .Select(t => t.Graph.Framework));
-
-                if (packageReferenceArgs.Frameworks?.Any() == true)
-                {
-                    // If the user has specified frameworks then we intersect that with the compatible frameworks.
-                    var userSpecifiedFrameworks = new HashSet<NuGetFramework>(
-                        packageReferenceArgs
-                        .Frameworks
-                        .Select(f => NuGetFramework.Parse(f)));
-
-                    compatibleFrameworks.IntersectWith(userSpecifiedFrameworks);
-                }
-
-                // 4. Write to Project
-                if (compatibleFrameworks.Count == 0)
-                {
-                    // Package is compatible with none of the project TFMs
-                    // Do not add a package reference, throw appropriate error
-                    packageReferenceArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture,
-                        Strings.Error_AddPkgIncompatibleWithAllFrameworks,
-                        packageReferenceArgs.PackageDependency.Id,
-                        packageReferenceArgs.ProjectPath));
-
-                    return 1;
-                }
-                else if (compatibleFrameworks.Count == restorePreviewResult.Result.CompatibilityCheckResults.Count())
-                {
-                    // Package is compatible with all the project TFMs
-                    // Add an unconditional package reference to the project
-                    packageReferenceArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
-                        Strings.Info_AddPkgCompatibleWithAllFrameworks,
-                        packageReferenceArgs.PackageDependency.Id,
-                        packageReferenceArgs.ProjectPath));
-
-                    // If the user did not specify a version then update the version to resolved version
-                    UpdatePackageVersionIfNeeded(restorePreviewResult, packageReferenceArgs);
-
-                    msBuild.AddPackageReference(packageReferenceArgs.ProjectPath,
-                        packageReferenceArgs.PackageDependency);
-                }
-                else
-                {
-                    // Package is compatible with some of the project TFMs
-                    // Add conditional package references to the project for the compatible TFMs
-                    packageReferenceArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
-                        Strings.Info_AddPkgCompatibleWithSubsetFrameworks,
-                        packageReferenceArgs.PackageDependency.Id,
-                        packageReferenceArgs.ProjectPath));
-
-                    var compatibleOriginalFrameworks = originalPackageSpec.RestoreMetadata
-                        .OriginalTargetFrameworks
-                        .Where(s => compatibleFrameworks.Contains(NuGetFramework.Parse(s)));
-
-                    // If the user did not specify a version then update the version to resolved version
-                    UpdatePackageVersionIfNeeded(restorePreviewResult, packageReferenceArgs);
-
-                    msBuild.AddPackageReferencePerTFM(packageReferenceArgs.ProjectPath,
-                        packageReferenceArgs.PackageDependency,
-                        compatibleOriginalFrameworks);
-                }
+                compatibleFrameworks.IntersectWith(userSpecifiedFrameworks);
             }
+
+            // 4. Write to Project
+            if (compatibleFrameworks.Count == 0)
+            {
+                // Package is compatible with none of the project TFMs
+                // Do not add a package reference, throw appropriate error
+                packageReferenceArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Error_AddPkgIncompatibleWithAllFrameworks,
+                    packageReferenceArgs.PackageDependency.Id,
+                    packageReferenceArgs.ProjectPath));
+
+                return 1;
+            }
+            else if (compatibleFrameworks.Count == restorePreviewResult.Result.CompatibilityCheckResults.Count())
+            {
+                // Package is compatible with all the project TFMs
+                // Add an unconditional package reference to the project
+                packageReferenceArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Info_AddPkgCompatibleWithAllFrameworks,
+                    packageReferenceArgs.PackageDependency.Id,
+                    packageReferenceArgs.ProjectPath));
+
+                // If the user did not specify a version then update the version to resolved version
+                UpdatePackageVersionIfNeeded(restorePreviewResult, packageReferenceArgs);
+
+                msBuild.AddPackageReference(packageReferenceArgs.ProjectPath,
+                    packageReferenceArgs.PackageDependency);
+            }
+            else
+            {
+                // Package is compatible with some of the project TFMs
+                // Add conditional package references to the project for the compatible TFMs
+                packageReferenceArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Info_AddPkgCompatibleWithSubsetFrameworks,
+                    packageReferenceArgs.PackageDependency.Id,
+                    packageReferenceArgs.ProjectPath));
+
+                var compatibleOriginalFrameworks = originalPackageSpec.RestoreMetadata
+                    .OriginalTargetFrameworks
+                    .Where(s => compatibleFrameworks.Contains(NuGetFramework.Parse(s)));
+
+                // If the user did not specify a version then update the version to resolved version
+                UpdatePackageVersionIfNeeded(restorePreviewResult, packageReferenceArgs);
+
+                msBuild.AddPackageReferencePerTFM(packageReferenceArgs.ProjectPath,
+                    packageReferenceArgs.PackageDependency,
+                    compatibleOriginalFrameworks);
+            }
+
             return 0;
         }
 
@@ -183,88 +179,13 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        private static async Task<DependencyGraphSpec> GetProjectDependencyGraphAsync(
-            PackageReferenceArgs packageReferenceArgs,
-            string dgFilePath,
-            int timeOut)
+        private DependencyGraphSpec ReadProjectDependencyGraph(PackageReferenceArgs packageReferenceArgs)
         {
-            var dotnetLocation = packageReferenceArgs.DotnetPath;
-
-            if (!File.Exists(dotnetLocation))
-            {
-                throw new Exception(
-                    string.Format(CultureInfo.CurrentCulture, Strings.Error_DotnetNotFound));
-            }
-            var argumentBuilder = new StringBuilder($@" /t:GenerateRestoreGraphFile");
-
-            // Set the msbuild verbosity level if specified
-            var msbuildVerbosity = Environment.GetEnvironmentVariable(NUGET_RESTORE_MSBUILD_VERBOSITY);
-
-            if (string.IsNullOrEmpty(msbuildVerbosity))
-            {
-                argumentBuilder.Append(" /v:q ");
-            }
-            else
-            {
-                argumentBuilder.Append($" /v:{msbuildVerbosity} ");
-            }
-
-            // Pass dg file output path
-            argumentBuilder.Append(" /p:RestoreGraphOutputPath=");
-            AppendQuoted(argumentBuilder, dgFilePath);
-
-            packageReferenceArgs.Logger.LogInformation($"{dotnetLocation} msbuild {argumentBuilder.ToString()}");
-
-            var processStartInfo = new ProcessStartInfo
-            {
-                UseShellExecute = false,
-                FileName = dotnetLocation,
-                WorkingDirectory = Path.GetDirectoryName(packageReferenceArgs.ProjectPath),
-                Arguments = $"msbuild {argumentBuilder.ToString()}",
-                RedirectStandardError = true,
-                RedirectStandardOutput = true
-            };
-
-            packageReferenceArgs.Logger.LogDebug($"{processStartInfo.FileName} {processStartInfo.Arguments}");
-
-            using (var process = Process.Start(processStartInfo))
-            {
-                var outputs = new ConcurrentQueue<string>();
-                var outputTask = ConsumeStreamReaderAsync(process.StandardOutput, outputs);
-                var errorTask = ConsumeStreamReaderAsync(process.StandardError, outputs);
-
-                var finished = process.WaitForExit(timeOut);
-                if (!finished)
-                {
-                    try
-                    {
-                        process.Kill();
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new Exception(string.Format(CultureInfo.CurrentCulture, Strings.Error_CannotKillDotnetMsBuild) + " : " +
-                            ex.Message,
-                            ex);
-                    }
-
-                    throw new Exception(string.Format(CultureInfo.CurrentCulture, Strings.Error_DotnetMsBuildTimedOut));
-                }
-
-                if (process.ExitCode != 0)
-                {
-                    await errorTask;
-                    await outputTask;
-                    LogQueue(outputs, packageReferenceArgs.Logger);
-                    throw new Exception(string.Format(CultureInfo.CurrentCulture, Strings.Error_GenerateDGSpecTaskFailed));
-                }
-            }
-
             DependencyGraphSpec spec = null;
 
-            if (File.Exists(dgFilePath))
+            if (File.Exists(packageReferenceArgs.DgFilePath))
             {
-                spec = DependencyGraphSpec.Load(dgFilePath);
-                File.Delete(dgFilePath);
+                spec = DependencyGraphSpec.Load(packageReferenceArgs.DgFilePath);
             }
             else
             {
@@ -306,14 +227,6 @@ namespace NuGet.CommandLine.XPlat
             {
                 logger.LogError(line);
             }
-        }
-
-        private static void AppendQuoted(StringBuilder builder, string targetPath)
-        {
-            builder
-                .Append('"')
-                .Append(targetPath)
-                .Append('"');
         }
 
         private static async Task ConsumeStreamReaderAsync(StreamReader reader, ConcurrentQueue<string> lines)
