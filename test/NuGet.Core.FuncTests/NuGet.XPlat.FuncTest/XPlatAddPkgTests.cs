@@ -9,6 +9,7 @@ using System.Xml.Linq;
 using Microsoft.Extensions.CommandLineUtils;
 using Moq;
 using NuGet.CommandLine.XPlat;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
@@ -96,8 +97,8 @@ namespace NuGet.XPlat.FuncTest
             p.ProjectPath == project &&
             p.DgFilePath == dgFilePath &&
             p.NoRestore == !string.IsNullOrEmpty(noRestoreSwitch) &&
-            (string.IsNullOrEmpty(frameworkOption) || !string.IsNullOrEmpty(frameworkOption) && p.Frameworks.SequenceEqual(StringUtility.Split(frameworkString))) &&
-            (string.IsNullOrEmpty(sourceOption) || !string.IsNullOrEmpty(sourceOption) && p.Sources.SequenceEqual(StringUtility.Split(sourceString))) &&
+            (string.IsNullOrEmpty(frameworkOption) || !string.IsNullOrEmpty(frameworkOption) && p.Frameworks.SequenceEqual(MsBuildStringUtility.Split(frameworkString))) &&
+            (string.IsNullOrEmpty(sourceOption) || !string.IsNullOrEmpty(sourceOption) && p.Sources.SequenceEqual(MsBuildStringUtility.Split(sourceString))) &&
             (string.IsNullOrEmpty(packageDirectoryOption) || !string.IsNullOrEmpty(packageDirectoryOption) && p.PackageDirectory == packageDirectory)),
             It.IsAny<MSBuildAPIUtility>()));
 
@@ -664,7 +665,7 @@ namespace NuGet.XPlat.FuncTest
                     projectName: projectName,
                     solutionRoot: pathContext.SolutionRoot,
                     isToolingVersion15: true,
-                    frameworks: StringUtility.Split(projectFrameworks));
+                    frameworks: MsBuildStringUtility.Split(projectFrameworks));
 
             project.Save();
             return project;
@@ -687,7 +688,7 @@ namespace NuGet.XPlat.FuncTest
                 Id = packageId,
                 Version = packageVersion
             };
-            var frameworks = StringUtility.Split(frameworkString);
+            var frameworks = MsBuildStringUtility.Split(frameworkString);
 
             // Make the package Compatible with specific frameworks
             frameworks?
@@ -712,8 +713,8 @@ namespace NuGet.XPlat.FuncTest
             }
             return new PackageReferenceArgs(project.ProjectPath, packageDependency, logger)
             {
-                Frameworks = StringUtility.Split(frameworks),
-                Sources = StringUtility.Split(sources),
+                Frameworks = MsBuildStringUtility.Split(frameworks),
+                Sources = MsBuildStringUtility.Split(sources),
                 PackageDirectory = packageDirectory,
                 NoRestore = noRestore,
                 NoVersion = noVersion,
@@ -723,9 +724,9 @@ namespace NuGet.XPlat.FuncTest
 
         private string GetCommonFramework(string frameworkStringA, string frameworkStringB, string frameworkStringC)
         {
-            var frameworksA = StringUtility.Split(frameworkStringA);
-            var frameworksB = StringUtility.Split(frameworkStringB);
-            var frameworksC = StringUtility.Split(frameworkStringC);
+            var frameworksA = MsBuildStringUtility.Split(frameworkStringA);
+            var frameworksB = MsBuildStringUtility.Split(frameworkStringB);
+            var frameworksC = MsBuildStringUtility.Split(frameworkStringC);
             return frameworksA.ToList()
                 .Intersect(frameworksB.ToList())
                 .Intersect(frameworksC.ToList())
@@ -734,8 +735,8 @@ namespace NuGet.XPlat.FuncTest
 
         private string GetCommonFramework(string frameworkStringA, string frameworkStringB)
         {
-            var frameworksA = StringUtility.Split(frameworkStringA);
-            var frameworksB = StringUtility.Split(frameworkStringB);
+            var frameworksA = MsBuildStringUtility.Split(frameworkStringA);
+            var frameworksB = MsBuildStringUtility.Split(frameworkStringB);
             return frameworksA.ToList()
                 .Intersect(frameworksB.ToList())
                 .First();

@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using Microsoft.Extensions.CommandLineUtils;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging.Core;
@@ -83,8 +84,8 @@ namespace NuGet.CommandLine.XPlat
                     var packageDependency = new PackageDependency(id.Values[0], VersionRange.Parse(packageVersion));
                     var packageRefArgs = new PackageReferenceArgs(projectPath.Value(), packageDependency, logger)
                     {
-                        Frameworks = StringUtility.Split(frameworks.Value()),
-                        Sources = StringUtility.Split(sources.Value()),
+                        Frameworks = MsBuildStringUtility.Split(frameworks.Value()),
+                        Sources = MsBuildStringUtility.Split(sources.Value()),
                         PackageDirectory = packageDirectory.Value(),
                         NoRestore = noRestore.HasValue(),
                         NoVersion = noVersion,
