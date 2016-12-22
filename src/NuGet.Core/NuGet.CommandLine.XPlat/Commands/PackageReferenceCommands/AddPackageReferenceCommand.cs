@@ -84,8 +84,8 @@ namespace NuGet.CommandLine.XPlat
                     var packageDependency = new PackageDependency(id.Values[0], VersionRange.Parse(packageVersion));
                     var packageRefArgs = new PackageReferenceArgs(projectPath.Value(), packageDependency, logger)
                     {
-                        Frameworks = MsBuildStringUtility.Split(frameworks.Value()),
-                        Sources = MsBuildStringUtility.Split(sources.Value()),
+                        Frameworks = MSBuildStringUtility.Split(frameworks.Value()),
+                        Sources = MSBuildStringUtility.Split(sources.Value()),
                         PackageDirectory = packageDirectory.Value(),
                         NoRestore = noRestore.HasValue(),
                         NoVersion = noVersion,

@@ -97,8 +97,8 @@ namespace NuGet.XPlat.FuncTest
             p.ProjectPath == project &&
             p.DgFilePath == dgFilePath &&
             p.NoRestore == !string.IsNullOrEmpty(noRestoreSwitch) &&
-            (string.IsNullOrEmpty(frameworkOption) || !string.IsNullOrEmpty(frameworkOption) && p.Frameworks.SequenceEqual(MsBuildStringUtility.Split(frameworkString))) &&
-            (string.IsNullOrEmpty(sourceOption) || !string.IsNullOrEmpty(sourceOption) && p.Sources.SequenceEqual(MsBuildStringUtility.Split(sourceString))) &&
+            (string.IsNullOrEmpty(frameworkOption) || !string.IsNullOrEmpty(frameworkOption) && p.Frameworks.SequenceEqual(MSBuildStringUtility.Split(frameworkString))) &&
+            (string.IsNullOrEmpty(sourceOption) || !string.IsNullOrEmpty(sourceOption) && p.Sources.SequenceEqual(MSBuildStringUtility.Split(sourceString))) &&
             (string.IsNullOrEmpty(packageDirectoryOption) || !string.IsNullOrEmpty(packageDirectoryOption) && p.PackageDirectory == packageDirectory)),
             It.IsAny<MSBuildAPIUtility>()));
 
@@ -665,7 +665,7 @@ namespace NuGet.XPlat.FuncTest
                     projectName: projectName,
                     solutionRoot: pathContext.SolutionRoot,
                     isToolingVersion15: true,
-                    frameworks: MsBuildStringUtility.Split(projectFrameworks));
+                    frameworks: MSBuildStringUtility.Split(projectFrameworks));
 
             project.Save();
             return project;
@@ -688,7 +688,7 @@ namespace NuGet.XPlat.FuncTest
                 Id = packageId,
                 Version = packageVersion
             };
-            var frameworks = MsBuildStringUtility.Split(frameworkString);
+            var frameworks = MSBuildStringUtility.Split(frameworkString);
 
             // Make the package Compatible with specific frameworks
             frameworks?
@@ -713,8 +713,8 @@ namespace NuGet.XPlat.FuncTest
             }
             return new PackageReferenceArgs(project.ProjectPath, packageDependency, logger)
             {
-                Frameworks = MsBuildStringUtility.Split(frameworks),
-                Sources = MsBuildStringUtility.Split(sources),
+                Frameworks = MSBuildStringUtility.Split(frameworks),
+                Sources = MSBuildStringUtility.Split(sources),
                 PackageDirectory = packageDirectory,
                 NoRestore = noRestore,
                 NoVersion = noVersion,
@@ -724,9 +724,9 @@ namespace NuGet.XPlat.FuncTest
 
         private string GetCommonFramework(string frameworkStringA, string frameworkStringB, string frameworkStringC)
         {
-            var frameworksA = MsBuildStringUtility.Split(frameworkStringA);
-            var frameworksB = MsBuildStringUtility.Split(frameworkStringB);
-            var frameworksC = MsBuildStringUtility.Split(frameworkStringC);
+            var frameworksA = MSBuildStringUtility.Split(frameworkStringA);
+            var frameworksB = MSBuildStringUtility.Split(frameworkStringB);
+            var frameworksC = MSBuildStringUtility.Split(frameworkStringC);
             return frameworksA.ToList()
                 .Intersect(frameworksB.ToList())
                 .Intersect(frameworksC.ToList())
@@ -735,8 +735,8 @@ namespace NuGet.XPlat.FuncTest
 
         private string GetCommonFramework(string frameworkStringA, string frameworkStringB)
         {
-            var frameworksA = MsBuildStringUtility.Split(frameworkStringA);
-            var frameworksB = MsBuildStringUtility.Split(frameworkStringB);
+            var frameworksA = MSBuildStringUtility.Split(frameworkStringA);
+            var frameworksB = MSBuildStringUtility.Split(frameworkStringB);
             return frameworksA.ToList()
                 .Intersect(frameworksB.ToList())
                 .First();

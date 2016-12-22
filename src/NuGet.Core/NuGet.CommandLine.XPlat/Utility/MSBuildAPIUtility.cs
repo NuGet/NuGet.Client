@@ -233,7 +233,7 @@ namespace NuGet.CommandLine.XPlat
                     .Where(p => p.Name.Equals(FRAMEWORKS_TAG, StringComparison.OrdinalIgnoreCase))
                     .Select(p => p.EvaluatedValue)
                     .FirstOrDefault();
-                frameworks = MsBuildStringUtility.Split(frameworksString);
+                frameworks = MSBuildStringUtility.Split(frameworksString);
             }
             return frameworks;
         }

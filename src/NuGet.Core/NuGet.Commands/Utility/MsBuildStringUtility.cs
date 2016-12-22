@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace NuGet.Commands
 {
-    public static class MsBuildStringUtility
+    public static class MSBuildStringUtility
     {
         /// <summary>
         /// Split on ; and trim. Null or empty inputs will return an

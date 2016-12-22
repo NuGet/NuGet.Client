@@ -309,7 +309,7 @@ namespace NuGet.Build.Tasks.Pack
                 var packagePathString = packageFile.GetProperty("PackagePath");
                 targetPaths = packagePathString == null
                     ? new string[] { String.Empty }.ToList()
-                    : MsBuildStringUtility.Split(packagePathString)
+                    : MSBuildStringUtility.Split(packagePathString)
                     .Distinct()
                     .ToList();
 
