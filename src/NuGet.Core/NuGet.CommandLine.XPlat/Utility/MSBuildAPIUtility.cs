@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 
@@ -232,7 +233,7 @@ namespace NuGet.CommandLine.XPlat
                     .Where(p => p.Name.Equals(FRAMEWORKS_TAG, StringComparison.OrdinalIgnoreCase))
                     .Select(p => p.EvaluatedValue)
                     .FirstOrDefault();
-                frameworks = StringUtility.Split(frameworksString);
+                frameworks = MSBuildStringUtility.Split(frameworksString);
             }
             return frameworks;
         }

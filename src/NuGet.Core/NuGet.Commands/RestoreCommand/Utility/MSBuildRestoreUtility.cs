@@ -167,12 +167,12 @@ namespace NuGet.Commands
                     AddPackageReferences(result, items);
                     result.RestoreMetadata.OutputPath = specItem.GetProperty("OutputPath");
 
-                    foreach (var source in StringUtility.Split(specItem.GetProperty("Sources")))
+                    foreach (var source in MSBuildStringUtility.Split(specItem.GetProperty("Sources")))
                     {
                         result.RestoreMetadata.Sources.Add(new PackageSource(source));
                     }
 
-                    foreach (var folder in StringUtility.Split(specItem.GetProperty("FallbackFolders")))
+                    foreach (var folder in MSBuildStringUtility.Split(specItem.GetProperty("FallbackFolders")))
                     {
                         result.RestoreMetadata.FallbackFolders.Add(folder);
                     }
@@ -227,7 +227,7 @@ namespace NuGet.Commands
 
                 if (targetFrameworkInfo != null)
                 {
-                    var fallbackList = StringUtility.Split(item.GetProperty("PackageTargetFallback"))
+                    var fallbackList = MSBuildStringUtility.Split(item.GetProperty("PackageTargetFallback"))
                         .Select(NuGetFramework.Parse)
                         .ToList();
 
@@ -245,12 +245,12 @@ namespace NuGet.Commands
 
         private static RuntimeGraph GetRuntimeGraph(IMSBuildItem specItem)
         {
-            var runtimes = StringUtility.Split(specItem.GetProperty("RuntimeIdentifiers"))
+            var runtimes = MSBuildStringUtility.Split(specItem.GetProperty("RuntimeIdentifiers"))
                 .Distinct(StringComparer.Ordinal)
                 .Select(rid => new RuntimeDescription(rid))
                 .ToList();
 
-            var supports = StringUtility.Split(specItem.GetProperty("RuntimeSupports"))
+            var supports = MSBuildStringUtility.Split(specItem.GetProperty("RuntimeSupports"))
                 .Distinct(StringComparer.Ordinal)
                 .Select(s => new CompatibilityProfile(s))
                 .ToList();
@@ -386,7 +386,7 @@ namespace NuGet.Commands
 
         private static LibraryIncludeFlags GetIncludeFlags(string value, LibraryIncludeFlags defaultValue)
         {
-            var parts = StringUtility.Split(value);
+            var parts = MSBuildStringUtility.Split(value);
 
             if (parts.Length > 0)
             {
@@ -497,7 +497,7 @@ namespace NuGet.Commands
             var frameworksString = item.GetProperty("TargetFrameworks");
             if (!string.IsNullOrEmpty(frameworksString))
             {
-                frameworks.UnionWith(StringUtility.Split(frameworksString));
+                frameworks.UnionWith(MSBuildStringUtility.Split(frameworksString));
             }
 
             return frameworks;

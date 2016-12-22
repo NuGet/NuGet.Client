@@ -155,7 +155,7 @@ namespace NuGet.Build.Tasks
                 {
                     CacheContext = cacheContext,
                     LockFileVersion = LockFileFormat.Version,
-                    ConfigFile = StringUtility.TrimAndGetNullForEmpty(RestoreConfigFile),
+                    ConfigFile = MSBuildStringUtility.TrimAndGetNullForEmpty(RestoreConfigFile),
                     DisableParallel = RestoreDisableParallel,
                     GlobalPackagesFolder = RestorePackagesPath,
                     Log = log,
@@ -166,7 +166,7 @@ namespace NuGet.Build.Tasks
 
                 if (!string.IsNullOrEmpty(RestoreSources))
                 {
-                    var sources = StringUtility.Split(RestoreSources);
+                    var sources = MSBuildStringUtility.Split(RestoreSources);
                     restoreContext.Sources.AddRange(sources);
                 }
 
