@@ -74,20 +74,12 @@ namespace NuGet.CommandLine.XPlat
         {
             var project = GetProject(projectPath);
 
-            // Here we get package references for any framework.
-            // If the project has a conditional reference, then an unconditional reference is not added.
-
             var existingPackageReferences = project.ItemsIgnoringCondition
                 .Where(item => item.ItemType.Equals(PACKAGE_REFERENCE_TYPE_TAG, StringComparison.OrdinalIgnoreCase) &&
                                item.EvaluatedInclude.Equals(packageDependency.Id, StringComparison.OrdinalIgnoreCase));
 
-            foreach (var packageReference in existingPackageReferences)
-            {
-                if (project.ItemsIgnoringCondition.Contains(packageReference))
-                {
-                    project.ItemsIgnoringCondition.Remove(packageReference);
-                }
-            }
+            project.RemoveItems(existingPackageReferences);
+
             project.Save();
             ProjectCollection.GlobalProjectCollection.UnloadProject(project);
         }
