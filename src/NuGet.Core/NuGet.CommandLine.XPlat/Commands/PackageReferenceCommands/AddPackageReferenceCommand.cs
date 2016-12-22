@@ -16,7 +16,7 @@ namespace NuGet.CommandLine.XPlat
     public static class AddPackageReferenceCommand
     {
         public static void Register(CommandLineApplication app, Func<ILogger> getLogger,
-            Func<IAddPackageReferenceCommandRunner> getCommandRunner)
+            Func<IPackageReferenceCommandRunner> getCommandRunner)
         {
             app.Command("add", addpkg =>
             {

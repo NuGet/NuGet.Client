@@ -430,4 +430,12 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="AddPkg_UserSpecified" xml:space="preserve">
     <value>user specified</value>
   </data>
+  <data name="Info_RemovePkgRemovingReference" xml:space="preserve">
+    <value>Removing PackageReference for package '{0}', from project '{1}'</value>
+    <comment>{0} - Package Id
+{1} - Project Path</comment>
+  </data>
+  <data name="RemovePkg_Description" xml:space="preserve">
+    <value>Removes a package reference from a project.</value>
+  </data>
 </root>

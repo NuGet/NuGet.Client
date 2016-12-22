@@ -402,6 +402,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Removing PackageReference for package &apos;{0}&apos;, from project &apos;{1}&apos;.
+        /// </summary>
+        public static string Info_RemovePkgRemovingReference {
+            get {
+                return ResourceManager.GetString("Info_RemovePkgRemovingReference", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Specify the location of the nuspec or project file to create a package..
         /// </summary>
         public static string InputFile_Description {
@@ -721,6 +730,15 @@ namespace NuGet.CommandLine.XPlat {
         public static string Push_Timeout_Error {
             get {
                 return ResourceManager.GetString("Push_Timeout_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Removes a package reference from a project..
+        /// </summary>
+        public static string RemovePkg_Description {
+            get {
+                return ResourceManager.GetString("RemovePkg_Description", resourceCulture);
             }
         }
         

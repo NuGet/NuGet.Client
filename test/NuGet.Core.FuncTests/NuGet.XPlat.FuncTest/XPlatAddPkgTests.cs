@@ -81,7 +81,7 @@ namespace NuGet.XPlat.FuncTest
 
             var logger = new TestCommandOutputLogger();
             var testApp = new CommandLineApplication();
-            var mockCommandRunner = new Mock<IAddPackageReferenceCommandRunner>();
+            var mockCommandRunner = new Mock<IPackageReferenceCommandRunner>();
             mockCommandRunner
                 .Setup(m => m.ExecuteCommand(It.IsAny<PackageReferenceArgs>(), It.IsAny<MSBuildAPIUtility>()))
                 .ReturnsAsync(0);
