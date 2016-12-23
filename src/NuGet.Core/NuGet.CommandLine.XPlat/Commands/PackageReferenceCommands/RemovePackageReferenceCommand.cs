@@ -25,12 +25,12 @@ namespace NuGet.CommandLine.XPlat
 
                 var id = removePkg.Option(
                     "--package",
-                    Strings.AddPkg_PackageIdDescription,
+                    Strings.RemovePkg_PackageIdDescription,
                     CommandOptionType.SingleValue);
 
                 var projectPath = removePkg.Option(
                     "-p|--project",
-                    Strings.AddPkg_ProjectPathDescription,
+                    Strings.RemovePkg_ProjectPathDescription,
                     CommandOptionType.SingleValue);
 
                 removePkg.OnExecute(() =>
@@ -50,7 +50,7 @@ namespace NuGet.CommandLine.XPlat
         {
             if (arg.Values.Count < 1)
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.AddPkg_MissingArgument, argName));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.RemovePkg_MissingArgument, argName));
             }
         }
     }

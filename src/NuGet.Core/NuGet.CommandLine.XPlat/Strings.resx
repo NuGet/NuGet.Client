@@ -438,4 +438,14 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="RemovePkg_Description" xml:space="preserve">
     <value>Removes a package reference from a project.</value>
   </data>
+  <data name="RemovePkg_MissingArgument" xml:space="preserve">
+    <value>Unable to remove package reference, argument '{0}' not provided. Please use -h|--help for help.</value>
+    <comment>{0} - Argument which was not provided</comment>
+  </data>
+  <data name="RemovePkg_PackageIdDescription" xml:space="preserve">
+    <value>Id of the package to be removed.</value>
+  </data>
+  <data name="RemovePkg_ProjectPathDescription" xml:space="preserve">
+    <value>Path to the project.</value>
+  </data>
 </root>

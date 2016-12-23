@@ -743,6 +743,33 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Unable to remove package reference, argument &apos;{0}&apos; not provided. Please use -h|--help for help..
+        /// </summary>
+        public static string RemovePkg_MissingArgument {
+            get {
+                return ResourceManager.GetString("RemovePkg_MissingArgument", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Id of the package to be removed..
+        /// </summary>
+        public static string RemovePkg_PackageIdDescription {
+            get {
+                return ResourceManager.GetString("RemovePkg_PackageIdDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Path to the project..
+        /// </summary>
+        public static string RemovePkg_ProjectPathDescription {
+            get {
+                return ResourceManager.GetString("RemovePkg_ProjectPathDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to List of projects and project folders to restore. Each value can be: a path to a project.json or global.json file, or a folder to recursively search for project.json files..
         /// </summary>
         public static string Restore_Arg_ProjectName_Description {
