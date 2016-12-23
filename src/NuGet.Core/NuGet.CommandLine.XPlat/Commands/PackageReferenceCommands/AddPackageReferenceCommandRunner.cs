@@ -204,24 +204,41 @@ namespace NuGet.CommandLine.XPlat
             // If the user did not specify a version then write the exact resolved version
             if (packageReferenceArgs.NoVersion)
             {
-                // Get the flattened restore graph
-                var flattenedRestoreGraph = restorePreviewResult
-                    .Result
-                    .RestoreGraphs
-                    .First()
-                    .Flattened;
+                // Get the package version from the graph
+                var resolvedVersion = privateGetPackageVersionFromRestoreResult(restorePreviewResult, packageReferenceArgs);
 
-                // Get the package entry and version from the graph
-                var packageEntry = flattenedRestoreGraph
-                    .Single(p => p.Key.Name.Equals(packageReferenceArgs.PackageDependency.Id, StringComparison.OrdinalIgnoreCase));
-                var resolvedVersion = packageEntry
-                    .Key
-                    .Version;
-
-                //Update the packagedependency with the new version
-                packageReferenceArgs.PackageDependency = new PackageDependency(packageReferenceArgs.PackageDependency.Id,
-                    VersionRange.Parse(resolvedVersion.ToString()));
+                if (resolvedVersion != null)
+                {
+                    //Update the packagedependency with the new version
+                    packageReferenceArgs.PackageDependency = new PackageDependency(packageReferenceArgs.PackageDependency.Id,
+                        VersionRange.Parse(resolvedVersion.ToString()));
+                }
             }
+        }
+
+        private NuGetVersion privateGetPackageVersionFromRestoreResult(RestoreResultPair restorePreviewResult,
+            PackageReferenceArgs packageReferenceArgs)
+        {
+            // Get the flattened restore graph
+            var flattenedRestoreGraphs = restorePreviewResult
+                .Result
+                .RestoreGraphs
+                .Select(r => r.Flattened);
+
+            foreach (var flattenedRestoreGraph in flattenedRestoreGraphs)
+            {
+                var matchingPackageEntries = flattenedRestoreGraph
+                    .Select(p => p)
+                    .Where(p => p.Key.Name.Equals(packageReferenceArgs.PackageDependency.Id, StringComparison.OrdinalIgnoreCase));
+                if (matchingPackageEntries.Count() > 0)
+                {
+                    return matchingPackageEntries
+                        .First()
+                        .Key
+                        .Version;
+                }
+            }
+            return null;
         }
     }
 }
