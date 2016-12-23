@@ -66,11 +66,11 @@ namespace NuGet.Commands
                 {
                     return 0;
                 }
-                else if (x == null && y != null)
+                else if (x == null)
                 {
                     return 1;
                 }
-                else if (x != null && y == null)
+                else if (y == null)
                 {
                     return -1;
                 }

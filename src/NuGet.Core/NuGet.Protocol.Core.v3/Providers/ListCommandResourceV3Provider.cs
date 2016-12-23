@@ -15,7 +15,7 @@ namespace NuGet.Protocol
             : base(
                   typeof(ListCommandResource),
                   nameof(ListCommandResourceV3Provider),
-                  "ListCommandResourceV2Provider") { }
+                  nameof(ListCommandResourceLegacyV2Provider)) { }
 
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(
             SourceRepository source,

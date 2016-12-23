@@ -5,17 +5,17 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.LegacyFeed;
+using NuGet.Protocol.LocalRepositories;
 
 namespace NuGet.Protocol.LegacyFeed
 {
-    public class ListResourceV2FeedResourceProvider : ResourceProvider
+    public class V2FeedListResourceProvider : ResourceProvider
     {
 
-        public ListResourceV2FeedResourceProvider() : base(
+        public V2FeedListResourceProvider() : base(
             typeof(ListResource),
-            nameof(ListResourceV2FeedResourceProvider),
-            NuGetResourceProviderPositions.Last)
+            nameof(V2FeedListResourceProvider),
+            nameof(LocalPackageListResourceProvider))
         {
         }
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source,
@@ -32,7 +32,7 @@ namespace NuGet.Protocol.LegacyFeed
 
                 var feedCapabilityResource = new LegacyFeedCapabilityResourceV2Feed(parser, serviceDocument.BaseAddress);
 
-                resource = new ListResourceV2Feed(parser,feedCapabilityResource);
+                resource = new V2FeedListResource(parser,feedCapabilityResource);
             }
             return new Tuple<bool, INuGetResource>(resource != null, resource);
         }
