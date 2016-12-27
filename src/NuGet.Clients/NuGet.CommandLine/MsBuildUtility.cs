@@ -24,7 +24,7 @@ namespace NuGet.CommandLine
         private const string NuGetTargets =
             "NuGet.CommandLine.NuGet.targets";
 
-        private static string[] MsbuildVersion = new string[] { "14", "12", "4" };
+        private readonly static string[] MSBuildVersions = new string[] { "14", "12", "4" };
 
         public static bool IsMsBuildBasedProject(string projectFullPath)
         {
@@ -443,7 +443,7 @@ namespace NuGet.CommandLine
         /// <returns>ProjectCollection instance to use for toolset enumeration</returns>
         private static IDisposable LoadProjectCollection()
         {
-            foreach (var version in MsbuildVersion)
+            foreach (var version in MSBuildVersions)
             {
                 try
                 {
