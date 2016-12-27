@@ -153,6 +153,18 @@ namespace NuGet.ProjectModel
                 writer.WriteObjectEnd();
             }
 
+            if (msbuildMetadata.Files?.Count > 0)
+            {
+                writer.WriteObjectStart("files");
+
+                foreach (var file in msbuildMetadata.Files)
+                {
+                    SetValue(writer, file.PackagePath, file.AbsolutePath);
+                }
+
+                writer.WriteObjectEnd();
+            }
+
             if (msbuildMetadata.TargetFrameworks?.Count > 0)
             {
                 writer.WriteObjectStart("frameworks");

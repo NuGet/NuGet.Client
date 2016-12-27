@@ -5,17 +5,21 @@ using System.IO;
 using System.Linq;
 using NuGet.Client;
 using NuGet.ContentModel;
+using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
+using NuGet.Versioning;
 
 namespace NuGet.Commands
 {
     public static class LockFileUtils
     {
+        public static readonly string LIBANY = nameof(LIBANY);
+
         public static LockFileTargetLibrary CreateLockFileTargetLibrary(
             LockFileLibrary library,
             LocalPackageInfo package,
@@ -43,7 +47,7 @@ namespace NuGet.Commands
 
             var framework = targetFrameworkOverride ?? targetGraph.Framework;
             var runtimeIdentifier = targetGraph.RuntimeIdentifier;
-            
+
             lockFileLib.Name = package.Id;
             lockFileLib.Version = package.Version;
             lockFileLib.Type = LibraryType.Package;
@@ -266,38 +270,152 @@ namespace NuGet.Commands
             }
 
             // Exclude items
-            if ((dependencyType & LibraryIncludeFlags.Runtime) == LibraryIncludeFlags.None)
-            {
-                ClearIfExists(lockFileLib.RuntimeAssemblies);
-                lockFileLib.FrameworkAssemblies.Clear();
-                lockFileLib.ResourceAssemblies.Clear();
-            }
-
-            if ((dependencyType & LibraryIncludeFlags.Compile) == LibraryIncludeFlags.None)
-            {
-                ClearIfExists(lockFileLib.CompileTimeAssemblies);
-            }
-
-            if ((dependencyType & LibraryIncludeFlags.Native) == LibraryIncludeFlags.None)
-            {
-                ClearIfExists(lockFileLib.NativeLibraries);
-            }
-
-            if ((dependencyType & LibraryIncludeFlags.ContentFiles) == LibraryIncludeFlags.None
-                && GroupHasNonEmptyItems(lockFileLib.ContentFiles))
-            {
-                // Empty lock file items still need lock file properties for language, action, and output.
-                lockFileLib.ContentFiles.Clear();
-                lockFileLib.ContentFiles.Add(ContentFileUtils.CreateEmptyItem());
-            }
-
-            if ((dependencyType & LibraryIncludeFlags.Build) == LibraryIncludeFlags.None)
-            {
-                ClearIfExists(lockFileLib.Build);
-                ClearIfExists(lockFileLib.BuildMultiTargeting);
-            }
+            ExcludeItems(lockFileLib, dependencyType);
 
             return lockFileLib;
+        }
+
+        /// <summary>
+        /// Create a library for a project.
+        /// </summary>
+        public static LockFileTargetLibrary CreateLockFileTargetProject(
+            GraphItem<RemoteResolveResult> graphItem,
+            LibraryIdentity library,
+            LibraryIncludeFlags dependencyType,
+            RestoreTargetGraph targetGraph,
+            ProjectStyle rootProjectStyle)
+        {
+            var localMatch = (LocalMatch)graphItem.Data.Match;
+
+            // Target framework information is optional and may not exist for csproj projects
+            // that do not have a project.json file.
+            string projectFramework = null;
+            object frameworkInfoObject;
+            if (localMatch.LocalLibrary.Items.TryGetValue(
+                KnownLibraryProperties.TargetFrameworkInformation,
+                out frameworkInfoObject))
+            {
+                // Retrieve the resolved framework name, if this is null it means that the
+                // project is incompatible. This is marked as Unsupported.
+                var targetFrameworkInformation = (TargetFrameworkInformation)frameworkInfoObject;
+                projectFramework = targetFrameworkInformation.FrameworkName?.DotNetFrameworkName
+                    ?? NuGetFramework.UnsupportedFramework.DotNetFrameworkName;
+            }
+
+            // Create the target entry
+            var projectLib = new LockFileTargetLibrary()
+            {
+                Name = library.Name,
+                Version = library.Version,
+                Type = LibraryType.Project,
+                Framework = projectFramework,
+
+                // Find all dependencies which would be in the nuspec
+                // Include dependencies with no constraints, or package/project/external
+                // Exclude suppressed dependencies, the top level project is not written 
+                // as a target so the node depth does not matter.
+                Dependencies = graphItem.Data.Dependencies
+                    .Where(
+                        d => (d.LibraryRange.TypeConstraintAllowsAnyOf(
+                            LibraryDependencyTarget.PackageProjectExternal))
+                             && d.SuppressParent != LibraryIncludeFlags.All)
+                    .Select(d => GetDependencyVersionRange(d))
+                    .ToList()
+            };
+
+            if (rootProjectStyle == ProjectStyle.PackageReference)
+            {
+                // Add files under asset groups
+                object filesObject;
+                object msbuildPath;
+                if (localMatch.LocalLibrary.Items.TryGetValue(KnownLibraryProperties.ProjectRestoreMetadataFiles, out filesObject)
+                     && localMatch.LocalLibrary.Items.TryGetValue(KnownLibraryProperties.MSBuildProjectPath, out msbuildPath))
+                {
+                    var files = (List<ProjectRestoreMetadataFile>)filesObject;
+                    var fileLookup = new Dictionary<string, ProjectRestoreMetadataFile>(StringComparer.OrdinalIgnoreCase);
+
+                    foreach (var file in files)
+                    {
+                        var path = file.PackagePath;
+
+                        // LIBANY avoid compatibility checks and will always be used.
+                        if (LIBANY.Equals(path, StringComparison.Ordinal))
+                        {
+                            path = $"lib/{targetGraph.Framework.GetShortFolderName()}/{Guid.NewGuid()}.dll";
+                        }
+
+                        if (!fileLookup.ContainsKey(path))
+                        {
+                            fileLookup.Add(path, file);
+                        }
+                    }
+
+                    var msbuildFilePathInfo = new FileInfo((string)msbuildPath);
+
+                    // Ensure a trailing slash for the relative path helper.
+                    var projectDir = msbuildFilePathInfo.Directory.FullName
+                        .TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+
+                    var contentItems = new ContentItemCollection();
+                    contentItems.Load(fileLookup.Keys);
+
+                    // Create an ordered list of selection criteria. Each will be applied, if the result is empty
+                    // fallback frameworks from "imports" will be tried.
+                    // These are only used for framework/RID combinations where content model handles everything.
+                    var orderedCriteria = CreateCriteria(targetGraph, targetGraph.Framework);
+
+                    // Compile
+                    var compileGroup = GetLockFileItems(
+                        orderedCriteria,
+                        contentItems,
+                        targetGraph.Conventions.Patterns.CompileAssemblies,
+                        targetGraph.Conventions.Patterns.RuntimeAssemblies);
+
+                    projectLib.CompileTimeAssemblies.AddRange(
+                        ConvertToProjectPaths(fileLookup, projectDir, compileGroup));
+
+                    // Runtime
+                    var runtimeGroup = GetLockFileItems(
+                        orderedCriteria,
+                        contentItems,
+                        targetGraph.Conventions.Patterns.RuntimeAssemblies);
+
+                    projectLib.RuntimeAssemblies.AddRange(
+                        ConvertToProjectPaths(fileLookup, projectDir, runtimeGroup));
+                }
+            }
+
+            // Add frameworkAssemblies for projects
+            object frameworkAssembliesObject;
+            if (localMatch.LocalLibrary.Items.TryGetValue(
+                KnownLibraryProperties.FrameworkAssemblies,
+                out frameworkAssembliesObject))
+            {
+                projectLib.FrameworkAssemblies.AddRange((List<string>)frameworkAssembliesObject);
+            }
+
+            // Exclude items
+            ExcludeItems(projectLib, dependencyType);
+
+            return projectLib;
+        }
+
+        /// <summary>
+        /// Convert from the expected nupkg path to the on disk path.
+        /// </summary>
+        private static IEnumerable<LockFileItem> ConvertToProjectPaths(
+            Dictionary<string, ProjectRestoreMetadataFile> fileLookup,
+            string projectDir,
+            IEnumerable<LockFileItem> items)
+        {
+            foreach (var item in items)
+            {
+                var diskPath = fileLookup[item.Path].AbsolutePath;
+                var fixedPath = PathUtility.GetPathWithForwardSlashes(
+                    PathUtility.GetRelativePath(projectDir, diskPath));
+
+                yield return new LockFileItem(fixedPath);
+            }
         }
 
         /// <summary>
@@ -624,6 +742,63 @@ namespace NuGet.Commands
             }
 
             return path.Replace('/', Path.DirectorySeparatorChar);
+        }
+
+        private static PackageDependency GetDependencyVersionRange(LibraryDependency dependency)
+        {
+            var range = dependency.LibraryRange.VersionRange ?? VersionRange.All;
+
+            if (VersionRange.All.Equals(range)
+                && (dependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.ExternalProject)))
+            {
+                // For csproj -> csproj type references where there is no range, use 1.0.0
+                range = VersionRange.Parse("1.0.0");
+            }
+            else
+            {
+                // For project dependencies drop the snapshot version.
+                // Ex: 1.0.0-* -> 1.0.0
+                range = range.ToNonSnapshotRange();
+            }
+
+            return new PackageDependency(dependency.Name, range);
+        }
+
+        /// <summary>
+        /// Replace excluded asset groups with _._ if they have > 0 items.
+        /// </summary>
+        private static void ExcludeItems(LockFileTargetLibrary lockFileLib, LibraryIncludeFlags dependencyType)
+        {
+            if ((dependencyType & LibraryIncludeFlags.Runtime) == LibraryIncludeFlags.None)
+            {
+                ClearIfExists(lockFileLib.RuntimeAssemblies);
+                lockFileLib.FrameworkAssemblies.Clear();
+                lockFileLib.ResourceAssemblies.Clear();
+            }
+
+            if ((dependencyType & LibraryIncludeFlags.Compile) == LibraryIncludeFlags.None)
+            {
+                ClearIfExists(lockFileLib.CompileTimeAssemblies);
+            }
+
+            if ((dependencyType & LibraryIncludeFlags.Native) == LibraryIncludeFlags.None)
+            {
+                ClearIfExists(lockFileLib.NativeLibraries);
+            }
+
+            if ((dependencyType & LibraryIncludeFlags.ContentFiles) == LibraryIncludeFlags.None
+                && GroupHasNonEmptyItems(lockFileLib.ContentFiles))
+            {
+                // Empty lock file items still need lock file properties for language, action, and output.
+                lockFileLib.ContentFiles.Clear();
+                lockFileLib.ContentFiles.Add(ContentFileUtils.CreateEmptyItem());
+            }
+
+            if ((dependencyType & LibraryIncludeFlags.Build) == LibraryIncludeFlags.None)
+            {
+                ClearIfExists(lockFileLib.Build);
+                ClearIfExists(lockFileLib.BuildMultiTargeting);
+            }
         }
     }
 }

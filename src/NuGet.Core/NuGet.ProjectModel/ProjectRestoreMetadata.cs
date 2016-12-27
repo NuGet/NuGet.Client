@@ -78,6 +78,12 @@ namespace NuGet.ProjectModel
         /// </summary>
         public bool LegacyPackagesDirectory { get; set; }
 
+        /// <summary>
+        /// Asset files. These should be equivalent to the files that would be
+        /// in the nupkg after packing the project.
+        /// </summary>
+        public IList<ProjectRestoreMetadataFile> Files { get; set; } = new List<ProjectRestoreMetadataFile>();
+
         public override int GetHashCode()
         {
             var hashCode = new HashCodeCombiner();
@@ -95,6 +101,7 @@ namespace NuGet.ProjectModel
             hashCode.AddSequence(OriginalTargetFrameworks);
             hashCode.AddObject(CrossTargeting);
             hashCode.AddObject(LegacyPackagesDirectory);
+            hashCode.AddObject(Files);
 
             return hashCode.CombinedHash;
         }
@@ -128,7 +135,8 @@ namespace NuGet.ProjectModel
                    EqualityUtility.SequenceEqualWithNullCheck(TargetFrameworks, other.TargetFrameworks) &&
                    EqualityUtility.SequenceEqualWithNullCheck(OriginalTargetFrameworks, other.OriginalTargetFrameworks) &&
                    CrossTargeting == other.CrossTargeting &&
-                   LegacyPackagesDirectory == other.LegacyPackagesDirectory;
+                   LegacyPackagesDirectory == other.LegacyPackagesDirectory &&
+                   EqualityUtility.SequenceEqualWithNullCheck(Files, other.Files);
         }
     }
 }

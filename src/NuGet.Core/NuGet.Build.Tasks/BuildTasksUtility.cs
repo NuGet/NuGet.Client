@@ -42,6 +42,20 @@ namespace NuGet.Build.Tasks
             }
         }
 
+        public static string GetPropertyIfExists(ITaskItem item, string key)
+        {
+            var wrapper = new MSBuildTaskItem(item);
+
+            var propertyValue = wrapper.GetProperty(key);
+
+            if (!string.IsNullOrEmpty(propertyValue))
+            {
+                return propertyValue;
+            }
+
+            return null;
+        }
+
         public static void AddPropertyIfExists(IDictionary<string, string> properties, string key, string value)
         {
             if (!string.IsNullOrEmpty(value)

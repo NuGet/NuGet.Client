@@ -114,26 +114,13 @@ namespace NuGet.Commands
 
             var type = rootProject.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
 
-            // Leave the spec null for non-nuget projects.
-            // In the future additional P2P TFM checking could be handled by
-            // creating a spec for non-NuGet projects and including the TFM.
-            PackageSpec projectSpec = null;
-
-            if (type == ProjectStyle.PackageReference
-                || type == ProjectStyle.ProjectJson
-                || type == ProjectStyle.DotnetCliTool
-                || type == ProjectStyle.Standalone)
-            {
-                projectSpec = rootProject;
-            }
-
             var uniqueReferences = projectReferences
                 .Select(p => p.ProjectUniqueName)
                 .Distinct(StringComparer.OrdinalIgnoreCase);
 
             return new ExternalProjectReference(
                 rootProject.RestoreMetadata.ProjectUniqueName,
-                projectSpec,
+                rootProject,
                 rootProject.RestoreMetadata?.ProjectPath,
                 uniqueReferences);
         }
