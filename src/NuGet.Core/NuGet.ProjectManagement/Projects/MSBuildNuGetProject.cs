@@ -607,7 +607,7 @@ namespace NuGet.ProjectManagement
 
             // Some projects like website project don't have project file.
             // Return empty list for this case.
-            if (MSBuildNuGetProjectSystem.ProjectFileFullPath == null)
+            if (String.IsNullOrEmpty(MSBuildNuGetProjectSystem.ProjectFileFullPath))
             {
                 return new List<PackageSpec>();
             }
