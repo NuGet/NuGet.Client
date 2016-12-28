@@ -14,6 +14,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup Condition="$(NugetTaskAssemblyFile) == ''">
     <NugetTaskAssemblyFile Condition="'$(MSBuildRuntimeType)' == 'Core'">..\CoreCLR\NuGet.Build.Tasks.Pack.dll</NugetTaskAssemblyFile>
     <NugetTaskAssemblyFile Condition="'$(MSBuildRuntimeType)' != 'Core'">..\Desktop\NuGet.Build.Tasks.Pack.dll</NugetTaskAssemblyFile>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <UsingTask TaskName="NuGet.Build.Tasks.Pack.PackTask" AssemblyFile="$(NugetTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.Pack.PackNuspecTask" AssemblyFile="$(NugetTaskAssemblyFile)" />
