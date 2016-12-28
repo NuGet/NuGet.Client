@@ -17,6 +17,29 @@ namespace NuGet.Commands.Test
     public class BuildAssetsUtilsTests
     {
         [Fact]
+        public void BuildAssetsUtils_GenerateProjectAssetsFilePath()
+        {
+            // Arrange
+            var path = "/tmp/test/project.assets.json";
+
+            var doc = BuildAssetsUtils.GenerateEmptyImportsFile();
+
+            // Act
+            BuildAssetsUtils.AddNuGetProperties(
+                doc,
+                Enumerable.Empty<string>(),
+                string.Empty,
+                ProjectStyle.PackageReference,
+                path,
+                success: true);
+
+            var props = doc.Root.Elements().First().Elements().ToDictionary(e => e.Name.LocalName, e => e.Value, StringComparer.OrdinalIgnoreCase);
+
+            // Assert
+            Assert.Equal(path, props["ProjectAssetsFile"]);
+        }
+
+        [Fact]
         public void BuildAssetsUtils_GenerateContentFilesItem_CompileAsset()
         {
             // Arrange
@@ -124,6 +147,7 @@ namespace NuGet.Commands.Test
                         new[] { globalPackagesFolder },
                         globalPackagesFolder,
                         ProjectStyle.PackageReference,
+                        assetsFilePath: string.Empty,
                         success: true);
 
                     // Assert
