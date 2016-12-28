@@ -17,6 +17,18 @@ namespace NuGet.Commands.Test
     public class BuildAssetsUtilsTests
     {
         [Fact]
+        public void BuildAssetsUtils_GenerateMSBuildAllProjectsProperty()
+        {
+            // Arrange & Act
+            var doc = BuildAssetsUtils.GenerateEmptyImportsFile();
+
+            var props = TargetsUtility.GetMSBuildProperties(doc);
+
+            // Assert
+            Assert.Equal("$(MSBuildAllProjects);$(MSBuildThisFileFullPath)", props["MSBuildAllProjects"]);
+        }
+
+        [Fact]
         public void BuildAssetsUtils_GenerateProjectAssetsFilePath()
         {
             // Arrange
@@ -33,7 +45,7 @@ namespace NuGet.Commands.Test
                 path,
                 success: true);
 
-            var props = doc.Root.Elements().First().Elements().ToDictionary(e => e.Name.LocalName, e => e.Value, StringComparer.OrdinalIgnoreCase);
+            var props = TargetsUtility.GetMSBuildProperties(doc);
 
             // Assert
             Assert.Equal(path, props["ProjectAssetsFile"]);

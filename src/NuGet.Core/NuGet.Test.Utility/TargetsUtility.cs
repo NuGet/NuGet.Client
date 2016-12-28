@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -9,6 +10,44 @@ namespace NuGet.Test.Utility
 {
     public static class TargetsUtility
     {
+        /// <summary>
+        /// Read a targets or props file and find all properties.
+        /// </summary>
+        public static Dictionary<string, string> GetMSBuildProperties(string path)
+        {
+            if (File.Exists(path))
+            {
+                return GetMSBuildProperties(XDocument.Load(path));
+            }
+
+            return new Dictionary<string, string>();
+        }
+
+        /// <summary>
+        /// Read a targets or props file and find all properties.
+        /// </summary>
+        public static Dictionary<string, string> GetMSBuildProperties(XDocument doc)
+        {
+            var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            var propertyGroupName = XName.Get("PropertyGroup", "http://schemas.microsoft.com/developer/msbuild/2003");
+
+            foreach (var group in doc.Root.Elements(propertyGroupName))
+            {
+                foreach (var item in group.Elements())
+                {
+                    var key = item.Name.LocalName;
+
+                    if (!result.ContainsKey(key))
+                    {
+                        result.Add(key, item.Value);
+                    }
+                }
+            }
+
+            return result;
+        }
+
         /// <summary>
         /// Read a targets or props file and find all package related items.
         /// </summary>
