@@ -44,10 +44,11 @@ namespace NuGet.Commands
             IList<IEnumerableAsync<IPackageSearchMetadata>> allPackages = new List<IEnumerableAsync<IPackageSearchMetadata>>();
             var log = listArgs.IsDetailed ? listArgs.Logger : NullLogger.Instance;
             foreach (var feed in sourceFeeds)
-            {
-                var packagesFromSource = await feed.ListAsync(listArgs.Arguments[0], listArgs.Prerelease, listArgs.AllVersions,
-                     listArgs.IncludeDelisted, log, listArgs.CancellationToken);
-                allPackages.Add(packagesFromSource);
+            { // TODO NK - Does it make sense to catch the exception here?
+                    var packagesFromSource =
+                        await feed.ListAsync(listArgs.Arguments[0], listArgs.Prerelease, listArgs.AllVersions,
+                            listArgs.IncludeDelisted, log, listArgs.CancellationToken);
+                    allPackages.Add(packagesFromSource); 
             }
             CompareIPackageSearchMetadata comparer = new CompareIPackageSearchMetadata();
             await PrintPackages(listArgs, new AggregateEnumerableAsync<IPackageSearchMetadata>(allPackages, comparer, comparer).GetEnumeratorAsync());

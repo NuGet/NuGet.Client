@@ -51,7 +51,7 @@ namespace NuGet.Protocol.LegacyFeed
                 {
                     var filter = new SearchFilter(includePrerelease: false, filter: null);
                     filter.OrderBy = SearchOrderBy.Id;
-                    // whether prerelease is included should not matter as allVersions precedes it
+                    // whether prerelease is included should noListt matter as allVersions precedes it
                     filter.IncludeDelisted = includeDelisted;
 
                     return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTerm, filter, skip, take,isSearchSupported,
@@ -200,11 +200,10 @@ namespace NuGet.Protocol.LegacyFeed
                     .Select(
                         package =>
                             V2FeedUtilities.CreatePackageSearchResult(package, _filter,
-                                (V2FeedParser)_feedParser, _logger, _token));
+                                (V2FeedParser)_feedParser, _logger, _token)).Where(p => _filter.IncludeDelisted || p.IsListed);
                 var enumerator = results.GetEnumerator();
                 _currentEnumerator = enumerator;
-                _currentEnumerator.MoveNext();
-                return true;
+                return _currentEnumerator.MoveNext();
             }
             else
             {
@@ -223,7 +222,7 @@ namespace NuGet.Protocol.LegacyFeed
                         .Select(
                             package =>
                                 V2FeedUtilities.CreatePackageSearchResult(package, _filter,
-                                    (V2FeedParser)_feedParser, _logger, _token));
+                                    (V2FeedParser)_feedParser, _logger, _token)).Where(p => _filter.IncludeDelisted || p.IsListed);
                     var enumerator = results.GetEnumerator();
                     _currentEnumerator = enumerator;
                     _currentEnumerator.MoveNext();

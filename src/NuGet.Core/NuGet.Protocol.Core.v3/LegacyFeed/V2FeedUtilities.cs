@@ -31,7 +31,6 @@ namespace NuGet.Protocol.LegacyFeed
             CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-
             // apply the filters to the version list returned
             var packages = await feedParser.FindPackagesByIdAsync(
                 package.Id,

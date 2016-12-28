@@ -31,8 +31,11 @@ namespace NuGet.Protocol
                 (source.PackageSource.IsHttp &&
                  !url.EndsWith(".json", StringComparison.OrdinalIgnoreCase)))
             {
-                listCommandResource = new ListCommandResource(source.PackageSource.Source);
-            }
+                    var serviceDocument = await source.GetResourceAsync<ODataServiceDocumentResourceV2>(token);
+                    if (serviceDocument != null) { 
+                        listCommandResource = new ListCommandResource(serviceDocument.BaseAddress);
+                    }
+                }
 
             }
 
