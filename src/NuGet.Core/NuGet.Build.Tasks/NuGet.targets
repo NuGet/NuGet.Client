@@ -50,6 +50,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreProjectReferencesTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestorePackageReferencesTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreDotnetCliToolsTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
+  <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreProjectFrameworks" AssemblyFile="$(RestoreTaskAssemblyFile)" />
 
   <!--
     ============================================================
@@ -274,31 +275,33 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!--
     ============================================================
     _GetRestoreTargetFrameworksOutput
-    Get frameworks to be passed in as $(TargetFramework)
+    Read target frameworks from the project.
     ============================================================
   -->
   <Target Name="_GetRestoreTargetFrameworksOutput"
     DependsOnTargets="_GetRestoreProjectStyle"
+    Condition=" '$(RestoreProjectStyle)' != 'ProjectJson' "
     Returns="@(_RestoreTargetFrameworksOutputFiltered)">
+    <PropertyGroup>
+      <_RestoreProjectFramework></_RestoreProjectFramework>
+    </PropertyGroup>
 
-    <!-- Loop on target frameworks, if no frameworks exist the targets below will
-         run once using an empty framework string -->
-    <ItemGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' AND '$(TargetFrameworks)' != '' ">
-      <_RestoreTargetFrameworksOutput Include="$(TargetFrameworks.Split(';'))" />
-    </ItemGroup>
-
-    <!-- Use $(TargetFramework) if $(TargetFrameworks) is empty  -->
-    <ItemGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' AND '$(TargetFrameworks)' == '' AND '$(TargetFramework)' != '' ">
-      <_RestoreTargetFrameworksOutput Include="$(TargetFramework)" />
-    </ItemGroup>
-
-    <!-- Remove duplicate frameworks -->
-    <RemoveDuplicates
-      Inputs="@(_RestoreTargetFrameworksOutput)">
+    <!-- For project.json projects target frameworks will be read from project.json. -->
+    <GetRestoreProjectFrameworks
+      ProjectPath="$(MSBuildProjectFullPath)"
+      TargetFrameworks="$(TargetFrameworks)"
+      TargetFramework="$(TargetFramework)"
+      TargetFrameworkMoniker="$(TargetFrameworkMoniker)"
+      TargetPlatformIdentifier="$(TargetPlatformIdentifier)"
+      TargetPlatformVersion="$(TargetPlatformVersion)">
       <Output
-          TaskParameter="Filtered"
-          ItemName="_RestoreTargetFrameworksOutputFiltered" />
-    </RemoveDuplicates>
+        TaskParameter="ProjectTargetFrameworks"
+        PropertyName="_RestoreProjectFramework" />
+    </GetRestoreProjectFrameworks>
+
+    <ItemGroup Condition=" '$(_RestoreProjectFramework)' != '' ">
+      <_RestoreTargetFrameworksOutputFiltered Include="$(_RestoreProjectFramework.Split(';'))" />
+    </ItemGroup>
   </Target>
 
   <!--
@@ -396,7 +399,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <ProjectPath>$(MSBuildProjectFullPath)</ProjectPath>
         <ProjectName>$(_RestoreProjectName)</ProjectName>
         <ProjectStyle>$(RestoreProjectStyle)</ProjectStyle>
-        <TargetFrameworks>$(TargetFrameworkMoniker)</TargetFrameworks>
+        <TargetFrameworks>@(_RestoreTargetFrameworksOutputFiltered)</TargetFrameworks>
       </_RestoreGraphEntry>
     </ItemGroup>
   </Target>

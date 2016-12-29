@@ -44,6 +44,11 @@ namespace NuGet.Test.Utility
         public Guid ProjectGuid { get; set; } = Guid.NewGuid();
 
         /// <summary>
+        /// True for non-xplat.
+        /// </summary>
+        public bool IsLegacyPackageReference { get; set; }
+
+        /// <summary>
         /// MSBuild project name
         /// </summary>
         public string ProjectName { get; set; }
@@ -275,6 +280,20 @@ namespace NuGet.Test.Utility
             }
         }
 
+        /// <summary>
+        /// Create a UAP package reference project. Framework is only used internally.
+        /// </summary>
+        public static SimpleTestProjectContext CreateLegacyPackageReference(
+            string projectName,
+            string solutionRoot,
+            NuGetFramework framework)
+        {
+            var context = new SimpleTestProjectContext(projectName, ProjectStyle.PackageReference, solutionRoot);
+            context.Frameworks.Add(new SimpleTestProjectFrameworkContext(framework));
+            context.IsLegacyPackageReference = true;
+            return context;
+        }
+
         public static SimpleTestProjectContext CreateNETCore(
             string projectName,
             string solutionRoot,
@@ -355,9 +374,16 @@ namespace NuGet.Test.Utility
                 AddProperties(xml, new Dictionary<string, string>()
                 {
                     { "Version", Version },
-                    { "DebugType", "portable" },
-                    { "TargetFrameworks", string.Join(";", Frameworks.Select(f => f.Framework.GetShortFolderName())) },
+                    { "DebugType", "portable" }
                 });
+
+                if (!IsLegacyPackageReference)
+                {
+                    AddProperties(xml, new Dictionary<string, string>()
+                    {
+                        { "TargetFrameworks", string.Join(";", Frameworks.Select(f => f.Framework.GetShortFolderName())) },
+                    });
+                }
 
                 var addedToAll = new HashSet<SimpleTestProjectContext>();
 
