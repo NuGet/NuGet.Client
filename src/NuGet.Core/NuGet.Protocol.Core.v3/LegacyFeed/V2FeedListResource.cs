@@ -49,9 +49,8 @@ namespace NuGet.Protocol.LegacyFeed
 
                 if (allVersions)
                 {
-                    var filter = new SearchFilter(includePrerelease: false, filter: null);
+                    var filter = new SearchFilter(includePrerelease: prerelease, filter: null);
                     filter.OrderBy = SearchOrderBy.Id;
-                    // whether prerelease is included should noListt matter as allVersions precedes it
                     filter.IncludeDelisted = includeDelisted;
 
                     return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTerm, filter, skip, take,isSearchSupported,
@@ -61,7 +60,7 @@ namespace NuGet.Protocol.LegacyFeed
                 var supportsIsAbsoluteLatestVersion =
                     await _feedCapabilities.SupportsIsAbsoluteLatestVersionAsync(logger, token);
 
-                if (prerelease && supportsIsAbsoluteLatestVersion)
+                if (prerelease && supportsIsAbsoluteLatestVersion) //TODO NK - Does this matter? 
                 {
                     var filter = new SearchFilter(includePrerelease: true,
                         filter: SearchFilterType.IsAbsoluteLatestVersion);
@@ -85,8 +84,7 @@ namespace NuGet.Protocol.LegacyFeed
             {
                 if (allVersions)
                 {
-                    var filter = new SearchFilter(includePrerelease: false, filter: null);
-                    // whether prerelease is included should not matter as allVersions precedes it
+                    var filter = new SearchFilter(includePrerelease: prerelease, filter: null);
                     filter.IncludeDelisted = includeDelisted;
                     filter.OrderBy = SearchOrderBy.Id;
 
