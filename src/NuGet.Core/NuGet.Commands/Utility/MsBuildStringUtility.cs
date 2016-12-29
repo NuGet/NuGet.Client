@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 
 namespace NuGet.Commands
@@ -55,6 +56,22 @@ namespace NuGet.Commands
                 .Select(s => TrimAndGetNullForEmpty(s))
                 .Where(s => s != null)
                 .ToArray();
+        }
+
+        /// <summary>
+        /// True if the property is set to true
+        /// </summary>
+        public static bool IsTrue(string value)
+        {
+            return Boolean.TrueString.Equals(TrimAndGetNullForEmpty(value), StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// True if the property is set to true or empty.
+        /// </summary>
+        public static bool IsTrueOrEmpty(string value)
+        {
+            return TrimAndGetNullForEmpty(value) == null || IsTrue(value);
         }
     }
 }

@@ -170,7 +170,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     ThreadHelper.JoinableTaskFactory.Run(async delegate
                         {
                             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                            _targetFramework = EnvDTEProjectUtility.GetTargetNuGetFramework(EnvDTEProject) ?? NuGetFramework.UnsupportedFramework;
+                            _targetFramework = EnvDTEProjectUtility.GetTargetNuGetFramework(EnvDTEProject);
                         });
                 }
 
@@ -791,7 +791,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 // Silverlight projects and Windows Phone projects do not support binding redirect.
                 // They both share the same identifier as "Silverlight"
-                return !SilverlightTargetFrameworkIdentifier.Equals(TargetFramework.DotNetFrameworkName, StringComparison.OrdinalIgnoreCase);
+                return !SilverlightTargetFrameworkIdentifier.Equals(TargetFramework.Framework, StringComparison.OrdinalIgnoreCase);
             }
         }
 
