@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Commands.ListCommand;
@@ -46,7 +47,7 @@ namespace NuGet.Commands
             foreach (var feed in sourceFeeds)
             { // TODO NK - Does it make sense to catch the exception here?
                     var packagesFromSource =
-                        await feed.ListAsync(listArgs.Arguments[0], listArgs.Prerelease, listArgs.AllVersions,
+                        await feed.ListAsync(listArgs.Arguments.FirstOrDefault(), listArgs.Prerelease, listArgs.AllVersions,
                             listArgs.IncludeDelisted, log, listArgs.CancellationToken);
                     allPackages.Add(packagesFromSource); 
             }

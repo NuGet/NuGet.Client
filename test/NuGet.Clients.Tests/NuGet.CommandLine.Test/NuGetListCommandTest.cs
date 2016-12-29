@@ -61,9 +61,10 @@ namespace NuGet.CommandLine.Test
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
             var hostName = Guid.NewGuid().ToString();
+            var fullHostName = "https://" + hostName + "/";
             var expected = "System.AggregateException: One or more errors occurred. ---> " + 
-                           "System.Net.WebException: The remote name could not be resolved: " +
-                           $"'{hostName}'";
+                           "NuGet.Protocol.Core.Types.FatalProtocolException: Unable to load the service index for source " +
+                           $"{fullHostName}";
 
             if (RuntimeEnvironmentHelper.IsMono)
             {
@@ -72,7 +73,7 @@ namespace NuGet.CommandLine.Test
             }
 
 
-            var args = new[] { "list", "-Source", "https://" + hostName + "/" };
+            var args = new[] { "list", "-Source", fullHostName };
 
             // Act
             var result = CommandRunner.Run(
@@ -295,6 +296,7 @@ namespace NuGet.CommandLine.Test
                 var packageFileName2 = Util.CreateTestPackage("testPackage2", "2.1", packageDirectory);
                 var package1 = new ZipPackage(packageFileName1);
                 var package2 = new ZipPackage(packageFileName2);
+                package1.Published = new DateTimeOffset?(new DateTime(1800,1,1));
                 package1.Listed = false;
 
                 using (var server = new MockServer())
@@ -907,7 +909,7 @@ namespace NuGet.CommandLine.Test
             {
                 Assert.True(
                     result.Item3.Contains(
-                        "The remote name could not be resolved: 'invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org'"),
+                        $"Unable to load the service index for source {invalidInput}."),
                     "Expected error message not found in " + result.Item3
                     );
             }
@@ -935,8 +937,8 @@ namespace NuGet.CommandLine.Test
 
             Assert.True(
                 result.Item3.Contains(
-                    "The remote server returned an error: (404) Not Found."),
-                "Expected error message not found in " + result.Item3
+                    "returned an unexpected status code '404 Not Found'."),
+                "Expected error message not found in:\n " + result.Item3
                 );
         }
 

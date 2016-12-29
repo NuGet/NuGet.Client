@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿extern alias CoreV2;
+
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -98,17 +100,17 @@ namespace NuGet.CommandLine
                 Verbosity = Verbosity.Detailed;
             }
 
-            if ((!Arguments.Any() || string.IsNullOrWhiteSpace(Arguments[0])))
-            {
-                HelpCommand.ViewHelpForCommand(CommandAttribute.CommandName);
-                return;
-            }
-
             if (ListCommandRunner == null)
             {
                 ListCommandRunner = new ListCommandRunner();
             }
             var listEndpoints = await GetListEndpointsAsync();
+
+            var adapter = new Credentials.CredentialServiceAdapter(CredentialService);
+            adapter.SetEndpoints(listEndpoints);
+            CoreV2.NuGet.HttpClient.DefaultCredentialProvider = adapter;
+            //           SetDefaultCredentialProvider();
+
 
             var list = new ListArgs(Arguments,
                 listEndpoints,
