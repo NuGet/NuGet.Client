@@ -123,7 +123,7 @@ namespace NuGet.Commands.Rules {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Replace with an appropriate value or remove and it and rebuild your package..
+        ///    Looks up a localized string similar to Replace it with an appropriate value or remove it and rebuild your package..
         /// </summary>
         public static string DefaultSpecValueSolution {
             get {
@@ -164,6 +164,33 @@ namespace NuGet.Commands.Rules {
         public static string InvalidFrameworkTitle {
             get {
                 return ResourceManager.GetString("InvalidFrameworkTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to A stable release of a package should not have a prerelease dependency..
+        /// </summary>
+        public static string InvalidPrereleaseDependency_Description {
+            get {
+                return ResourceManager.GetString("InvalidPrereleaseDependency_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Either modify the version spec of dependency &quot;{0}&quot; or update the version field in the nuspec..
+        /// </summary>
+        public static string InvalidPrereleaseDependency_Solution {
+            get {
+                return ResourceManager.GetString("InvalidPrereleaseDependency_Solution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Prerelease dependency in stable package..
+        /// </summary>
+        public static string InvalidPrereleaseDependency_Title {
+            get {
+                return ResourceManager.GetString("InvalidPrereleaseDependency_Title", resourceCulture);
             }
         }
         
