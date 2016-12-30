@@ -44,6 +44,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PackDependsOn>PackUsingNuspec; $(PackDependsOn)</PackDependsOn>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectCapability Include="Pack"/>
     <_TargetFrameworks Condition="'$(TargetFramework)' == ''" Include="$(TargetFrameworks.Split(';'))"/>
     <_TargetFrameworks Condition="'$(TargetFramework)' != ''" Include="$(TargetFramework)"/>
   </ItemGroup>
