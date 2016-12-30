@@ -20,7 +20,7 @@ namespace NuGet.Protocol.LegacyFeed
         {
             var metadata = new PackageSearchMetadataV2Feed(package);
             return metadata
-                .WithVersions(() => GetVersions(package, filter, feedParser, log, cancellationToken)); // TODO NK - Does this do the filtering of Delisted packages correctly? 
+                .WithVersions(() => GetVersions(package, filter, feedParser, log, cancellationToken));
         }
 
         private static async Task<IEnumerable<VersionInfo>> GetVersions(

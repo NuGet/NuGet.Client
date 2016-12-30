@@ -33,12 +33,14 @@ namespace NuGet.Commands.ListCommand
 
         public string ListCommandLicenseUrl { get; }
 
+        public string ListCommandListNotSupported { get; }
+
         public CancellationToken CancellationToken { get; }
 
-        public IList<KeyValuePair<Configuration.PackageSource, string>> ListEndpoints { get; }
+        public IList<Configuration.PackageSource> ListEndpoints { get; }
 
-        public ListArgs(IList<string> arguments, IList<KeyValuePair<Configuration.PackageSource, string>> listEndpoints,
-            ISettings settings, ILogger logger, Log printJustified, bool isDetailedl, string listCommandNoPackages, string listCommandLicenseUrl, bool allVersions, bool includeDelisted, bool prerelease, CancellationToken token)
+        public ListArgs(IList<string> arguments, IList<Configuration.PackageSource> listEndpoints,
+            ISettings settings, ILogger logger, Log printJustified, bool isDetailedl, string listCommandNoPackages, string listCommandLicenseUrl, string listCommandListNotSupported, bool allVersions, bool includeDelisted, bool prerelease, CancellationToken token)
         {
             if (arguments == null)
             {
@@ -68,6 +70,10 @@ namespace NuGet.Commands.ListCommand
             {
                 throw new ArgumentNullException(nameof(listCommandLicenseUrl));
             }
+            if (listCommandListNotSupported == null)
+            {
+                throw new ArgumentNullException(nameof(listCommandListNotSupported));
+            }
             Arguments = arguments;
             ListEndpoints = listEndpoints;
             Settings = settings;
@@ -79,6 +85,7 @@ namespace NuGet.Commands.ListCommand
             IsDetailed = isDetailedl;
             ListCommandNoPackages = listCommandNoPackages;
             ListCommandLicenseUrl = listCommandLicenseUrl;
+            ListCommandListNotSupported = listCommandListNotSupported;
             CancellationToken = token;
         }
     }

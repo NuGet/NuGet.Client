@@ -45,15 +45,12 @@ namespace NuGet.Protocol
             yield return new Lazy<INuGetResourceProvider>(() => new RemoteV2FindPackageByIdResourceProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new LocalV3FindPackageByIdResourceProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new LocalV2FindPackageByIdResourceProvider());
-            yield return new Lazy<INuGetResourceProvider>(() => new ListCommandResourceV3Provider());
-            yield return new Lazy<INuGetResourceProvider>(() => new ListCommandResourceLegacyV2Provider());
-            yield return new Lazy<INuGetResourceProvider>(() => new ListCommandResourceLocalPackagesProvider());
-
             yield return new Lazy<INuGetResourceProvider>(() => new PackageUpdateResourceV2Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new PackageUpdateResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new DependencyInfoResourceV2FeedProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new DownloadResourceV2FeedProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new MetadataResourceV2FeedProvider());
+            yield return new Lazy<INuGetResourceProvider>(() => new V3FeedListResourceProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new V2FeedListResourceProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new LocalPackageListResourceProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new PackageSearchResourceV2FeedProvider());

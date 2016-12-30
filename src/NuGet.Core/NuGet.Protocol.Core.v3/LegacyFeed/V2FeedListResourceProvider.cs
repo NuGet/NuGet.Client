@@ -25,16 +25,27 @@ namespace NuGet.Protocol.LegacyFeed
 
             if (await source.GetFeedType(token) == FeedType.HttpV2)
             {
-                var serviceDocument = await source.GetResourceAsync<ODataServiceDocumentResourceV2>(token);
-
                 var httpSource = await source.GetResourceAsync<HttpSourceResource>(token);
+
+                var serviceDocument = await source.GetResourceAsync<ODataServiceDocumentResourceV2>(token);
                 var parser = new V2FeedParser(httpSource.HttpSource, serviceDocument.BaseAddress, source.PackageSource);
-
                 var feedCapabilityResource = new LegacyFeedCapabilityResourceV2Feed(parser, serviceDocument.BaseAddress);
-
                 resource = new V2FeedListResource(parser,feedCapabilityResource);
             }
             return new Tuple<bool, INuGetResource>(resource != null, resource);
         }
     }
+
+//    var url = source.PackageSource.Source;
+//            if (source.PackageSource.ProtocolVersion == 2 ||
+//                (source.PackageSource.IsHttp &&
+//                 !url.EndsWith(".json", StringComparison.OrdinalIgnoreCase)))
+//            {
+//                    var serviceDocument = await source.GetResourceAsync<ODataServiceDocumentResourceV2>(token);
+//                    if (serviceDocument != null) { 
+//                        listCommandResource = new ListCommandResource(serviceDocument.BaseAddress);
+//}
+//                }
+
+//            }
 }

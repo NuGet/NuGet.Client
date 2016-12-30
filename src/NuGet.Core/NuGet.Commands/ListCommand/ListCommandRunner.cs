@@ -31,21 +31,25 @@ namespace NuGet.Commands
         {
             //Create SourceFeed for each packageSource
             IList<ListResource> sourceFeeds = new List<ListResource>();
-            foreach (KeyValuePair<PackageSource, string> packageSource in listArgs.ListEndpoints)
+            foreach (PackageSource packageSource in listArgs.ListEndpoints)
             {
-                var sourceRepository = Repository.Factory.GetCoreV3(packageSource.Value);
+                var sourceRepository = Repository.Factory.GetCoreV3(packageSource.Source);
                 var feed = await sourceRepository.GetResourceAsync<ListResource>(listArgs.CancellationToken);
 
                 if (feed != null)
                 {
                     sourceFeeds.Add(feed);
                 }
+                else
+                {
+                    listArgs.Logger.LogWarning(string.Format(listArgs.ListCommandListNotSupported,packageSource.Source));
+                }
             }
 
             IList<IEnumerableAsync<IPackageSearchMetadata>> allPackages = new List<IEnumerableAsync<IPackageSearchMetadata>>();
             var log = listArgs.IsDetailed ? listArgs.Logger : NullLogger.Instance;
             foreach (var feed in sourceFeeds)
-            { // TODO NK - Does it make sense to catch the exception here?
+            {
                     var packagesFromSource =
                         await feed.ListAsync(listArgs.Arguments.FirstOrDefault(), listArgs.Prerelease, listArgs.AllVersions,
                             listArgs.IncludeDelisted, log, listArgs.CancellationToken);

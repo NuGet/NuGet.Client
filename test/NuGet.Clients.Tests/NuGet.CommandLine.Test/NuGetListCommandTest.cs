@@ -1076,8 +1076,15 @@ namespace NuGet.CommandLine.Test
     </vsts>
   </packageSourceCredentials>
  </configuration>";
+//                        < add key = 'vsts2' value = '{serverV3.Uri}{listEndpoint}' protocolVersion = '2' />
+// <vsts2>
+//      < add key = 'Username' value = 'user' />
+   
+  //       < add key = 'ClearTextPassword' value = 'password' />
+      
+    //      </ vsts2 >
 
-                    var configFileName = Path.Combine(randomTestFolder, "nuget.config");
+                               var configFileName = Path.Combine(randomTestFolder, "nuget.config");
                     File.WriteAllText(configFileName, config);
 
                     serverV3.Start();

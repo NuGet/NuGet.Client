@@ -56,7 +56,8 @@ namespace NuGet.Protocol
                     // check the cache again, another thread may have finished this one waited for the lock
                     if (!_cache.TryGetValue(url, out cacheInfo) || entryValidCutoff > cacheInfo.CachedTime)
                     {
-                        serviceDocument = await CreateODataServiceDocumentResourceV2(source, utcNow, NullLogger.Instance, token);
+                        var client = (await source.GetResourceAsync<HttpSourceResource>(token)).HttpSource;
+                        serviceDocument = await ODataServiceDocumentUtils.CreateODataServiceDocumentResourceV2(url,client, utcNow, NullLogger.Instance, token);
 
                         // cache the value even if it is null to avoid checking it again later
                         var cacheEntry = new ODataServiceDocumentCacheInfo
@@ -84,48 +85,6 @@ namespace NuGet.Protocol
             }
 
             return new Tuple<bool, INuGetResource>(serviceDocument != null, serviceDocument);
-        }
-
-        private static async Task<ODataServiceDocumentResourceV2> CreateODataServiceDocumentResourceV2(
-            SourceRepository source,
-            DateTime utcNow,
-            ILogger log,
-            CancellationToken token)
-        {
-            var url = source.PackageSource.Source;
-            var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
-            var client = httpSourceResource.HttpSource;
-
-            // Get the service document and record the URL after any redirects.
-            string lastRequestUri;
-            try
-            {
-                lastRequestUri = await client.ProcessResponseAsync(
-                    new HttpSourceRequest(() => HttpRequestMessageFactory.Create(HttpMethod.Get, url, log)),
-                    response =>
-                    {
-                        if (response.RequestMessage == null)
-                        {
-                            return Task.FromResult(url);
-                        }
-
-                        return Task.FromResult(response.RequestMessage.RequestUri.ToString());
-                    },
-                    log,
-                    token);
-            }
-            catch (Exception ex) when (!(ex is FatalProtocolException) && (!(ex is OperationCanceledException)))
-            {
-                string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToReadServiceIndex, source.PackageSource.Source);
-
-                throw new FatalProtocolException(message, ex);
-            }
-
-            // Trim the query string or any trailing slash.
-            var builder = new UriBuilder(lastRequestUri) { Query = null };
-            var baseAddress = builder.Uri.AbsoluteUri.Trim('/');
-
-            return new ODataServiceDocumentResourceV2(baseAddress, DateTime.UtcNow);
         }
 
         protected class ODataServiceDocumentCacheInfo

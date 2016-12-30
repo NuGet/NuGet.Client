@@ -92,6 +92,26 @@ namespace NuGet.CommandLine
             return partitioned[key: true].ToList();
         }
 
+        private IList<Configuration.PackageSource> GetEndpointsAsync()
+        {
+            var configurationSources = SourceProvider.LoadPackageSources()
+                .Where(p => p.IsEnabled)
+                .ToList();
+
+            IList<Configuration.PackageSource> packageSources;
+            if (Source.Count > 0)
+            {
+                packageSources = Source
+                    .Select(s => Common.PackageSourceProviderExtensions.ResolveSource(configurationSources, s))
+                    .ToList();
+            }
+            else
+            {
+                packageSources = configurationSources;
+            }
+            return packageSources;
+        }
+
         public async override Task ExecuteCommandAsync()
         {
             if (Verbose)
@@ -104,11 +124,11 @@ namespace NuGet.CommandLine
             {
                 ListCommandRunner = new ListCommandRunner();
             }
-            var listEndpoints = await GetListEndpointsAsync();
+            var listEndpoints = GetEndpointsAsync();
 
-            var adapter = new Credentials.CredentialServiceAdapter(CredentialService);
-            adapter.SetEndpoints(listEndpoints);
-            CoreV2.NuGet.HttpClient.DefaultCredentialProvider = adapter;
+            //var adapter = new Credentials.CredentialServiceAdapter(CredentialService);
+            //adapter.SetEndpoints(listEndpoints);
+            //CoreV2.NuGet.HttpClient.DefaultCredentialProvider = adapter;
             //           SetDefaultCredentialProvider();
 
 
@@ -120,6 +140,7 @@ namespace NuGet.CommandLine
                 Verbosity == Verbosity.Detailed,
                 LocalizedResourceManager.GetString("ListCommandNoPackages"), 
                 LocalizedResourceManager.GetString("ListCommand_LicenseUrl"),
+                LocalizedResourceManager.GetString("ListCommand_ListNotSupported"),
                 AllVersions, 
                 IncludeDelisted,
                 Prerelease,
