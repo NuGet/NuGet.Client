@@ -325,7 +325,7 @@ namespace NuGet.Packaging
                 throw new InvalidOperationException(NuGetResources.CannotCreateEmptyPackage);
             }
 
-            ValidateDependencyGroups(Version, DependencyGroups);
+            ValidateDependencies(Version, DependencyGroups);
             ValidateReferenceAssemblies(Files, PackageAssemblyReferences);
 
             using (var package = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
@@ -436,7 +436,8 @@ namespace NuGet.Packaging
                  file.Path.EndsWith(".uninstall.xdt", StringComparison.OrdinalIgnoreCase)));
         }
 
-        public static void ValidateDependencyGroups(SemanticVersion version, IEnumerable<PackageDependencyGroup> dependencies)
+        private static void ValidateDependencies(SemanticVersion version,
+            IEnumerable<PackageDependencyGroup> dependencies)
         {
             if (version == null)
             {
@@ -447,16 +448,6 @@ namespace NuGet.Packaging
             foreach (var dep in dependencies.SelectMany(s => s.Packages))
             {
                 PackageIdValidator.ValidatePackageId(dep.Id);
-            }
-
-            if (!version.IsPrerelease)
-            {
-                // If we are creating a production package, do not allow any of the dependencies to be a prerelease version.
-                var prereleaseDependency = dependencies.SelectMany(set => set.Packages).FirstOrDefault(IsPrereleaseDependency);
-                if (prereleaseDependency != null)
-                {
-                    throw new InvalidDataException(String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_InvalidPrereleaseDependency, prereleaseDependency.ToString()));
-                }
             }
         }
 
@@ -765,12 +756,6 @@ namespace NuGet.Packaging
             Debug.Assert(tags != null);
             return from tag in tags.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
                    select tag.Trim();
-        }
-
-        private static bool IsPrereleaseDependency(PackageDependency dependency)
-        {
-            return dependency.VersionRange.MinVersion?.IsPrerelease == true ||
-                   dependency.VersionRange.MaxVersion?.IsPrerelease == true;
         }
 
         private void WriteOpcManifestRelationship(ZipArchive package, string path, string psmdcpPath)
