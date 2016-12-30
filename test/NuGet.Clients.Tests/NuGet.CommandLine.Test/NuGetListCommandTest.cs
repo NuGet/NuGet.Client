@@ -12,7 +12,8 @@ using NuGet.Common;
 
 namespace NuGet.CommandLine.Test
 {
-    public class NuGetListCommandTest
+    public class 
+
     {
         [SkipMonoTheory]
         [InlineData("https://www.ssllabs.com:10200/index.json", false)] // SSLv2.0
@@ -65,13 +66,6 @@ namespace NuGet.CommandLine.Test
             var expected = "System.AggregateException: One or more errors occurred. ---> " + 
                            "NuGet.Protocol.Core.Types.FatalProtocolException: Unable to load the service index for source " +
                            $"{fullHostName}";
-
-            if (RuntimeEnvironmentHelper.IsMono)
-            {
-                expected = "System.AggregateException: One or more errors occurred. ---> " +
-                           "System.Net.WebException: Error: NameResolutionFailure";
-            }
-
 
             var args = new[] { "list", "-Source", fullHostName };
 
