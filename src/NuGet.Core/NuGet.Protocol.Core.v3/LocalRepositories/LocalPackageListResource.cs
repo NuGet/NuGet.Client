@@ -24,21 +24,26 @@ namespace NuGet.Protocol
 
             if (allVersions)
             {
-                filter = new SearchFilter(includePrerelease: true);
-                filter.OrderBy = SearchOrderBy.Id;
-                // whether prerelease is included should not matter as allVersions precedes it
-                filter.IncludeDelisted = includeDelisted;
+                filter = new SearchFilter(includePrerelease: prerelease, filter:null)
+                {
+                    OrderBy = SearchOrderBy.Id,
+                    IncludeDelisted = includeDelisted
+                };
             }
             else if (prerelease)
             {
-                filter = new SearchFilter(includePrerelease: true, filter: SearchFilterType.IsAbsoluteLatestVersion);
-                filter.OrderBy = SearchOrderBy.Id;
-                filter.IncludeDelisted = includeDelisted;
+                filter = new SearchFilter(includePrerelease: true, filter: SearchFilterType.IsAbsoluteLatestVersion)
+                {
+                    OrderBy = SearchOrderBy.Id,
+                    IncludeDelisted = includeDelisted
+                };
             }
             else
             {
-                filter = new SearchFilter(includePrerelease: false, filter: SearchFilterType.IsLatestVersion);
-                filter.OrderBy = SearchOrderBy.Id;
+                filter = new SearchFilter(includePrerelease: false, filter: SearchFilterType.IsLatestVersion)
+                {
+                    OrderBy = SearchOrderBy.Id
+                };
             }
             IEnumerableAsync<IPackageSearchMetadata> enumerable = new EnumerableAsync<IPackageSearchMetadata>(_localPackageSearchResource, searchTerm, filter,
                 logger, token);
@@ -100,10 +105,18 @@ namespace NuGet.Protocol
 
             public async Task<bool> MoveNextAsync()
             {
-                if (_currentEnumerator == null) // TODO NK - paginate this/rearchitect the enumerableAsync
-                {
+                if (_currentEnumerator == null) 
+                { // TODO: This resource searches very very inefficiently. Even if I would request a page of ex. 30 values, it will still load all the files from FS and just do a select on that.
                     var results = await _packageSearchResource.SearchAsync(_searchTerm, _filter, 0, Int32.MaxValue, _logger, _token);
-                    _currentEnumerator = results.OrderBy(p => p.Identity).GetEnumerator();
+                    switch (_filter.OrderBy)
+                    {
+                        case SearchOrderBy.Id:
+                            _currentEnumerator = results.OrderBy(p => p.Identity).GetEnumerator();
+                            break;
+                        default:
+                            _currentEnumerator = results.GetEnumerator();
+                            break;
+                    }
                 }
 
                 if (!_currentEnumerator.MoveNext())

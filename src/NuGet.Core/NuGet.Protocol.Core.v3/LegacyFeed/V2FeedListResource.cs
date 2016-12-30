@@ -6,7 +6,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.LegacyFeed;
 
 namespace NuGet.Protocol.LegacyFeed
 {
@@ -22,7 +24,7 @@ namespace NuGet.Protocol.LegacyFeed
             _feedCapabilities = feedCapabilities;
         }
 
-        public override Task<IEnumerableAsync<IPackageSearchMetadata>> ListAsync(
+        public async override Task<IEnumerableAsync<IPackageSearchMetadata>> ListAsync(
             string searchTerm,
             bool prerelease,
             bool allVersions,
@@ -30,65 +32,18 @@ namespace NuGet.Protocol.LegacyFeed
             ILogger logger,
             CancellationToken token)
         {
-            return ListRangeAsync(searchTerm, prerelease, allVersions, includeDelisted, 0, Take, logger, token);
-        }
-
-        private async Task<IEnumerableAsync<IPackageSearchMetadata>> ListRangeAsync(string searchTerm,
-            bool prerelease,
-            bool allVersions,
-            bool includeDelisted,
-            int skip,
-            int take,
-            ILogger logger,
-            CancellationToken token)
-        {
             var isSearchSupported = await _feedCapabilities.SupportsSearchAsync(logger, token);
-
+            SearchFilter filter = null;
             if (isSearchSupported)
             {
-
                 if (allVersions)
                 {
-                    var filter = new SearchFilter(includePrerelease: prerelease, filter: null);
-                    filter.OrderBy = SearchOrderBy.Id;
-                    filter.IncludeDelisted = includeDelisted;
+                    filter = new SearchFilter(includePrerelease: prerelease, filter: null)
+                    {
+                        OrderBy = SearchOrderBy.Id,
+                        IncludeDelisted = includeDelisted
+                    };
 
-                    return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTerm, filter, skip, take,isSearchSupported,
-                        logger, token);
-                }
-
-                var supportsIsAbsoluteLatestVersion =
-                    await _feedCapabilities.SupportsIsAbsoluteLatestVersionAsync(logger, token);
-
-                if (prerelease && supportsIsAbsoluteLatestVersion) //TODO NK - Does this matter? 
-                {
-                    var filter = new SearchFilter(includePrerelease: true,
-                        filter: SearchFilterType.IsAbsoluteLatestVersion);
-                    filter.OrderBy = SearchOrderBy.Id;
-                    filter.IncludeDelisted = includeDelisted;
-
-                    return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTerm, filter, skip, take, isSearchSupported,
-                        logger, token);
-
-                }
-                else
-                {
-                    var filter = new SearchFilter(includePrerelease: false,
-                        filter: SearchFilterType.IsLatestVersion);
-                    filter.OrderBy = SearchOrderBy.Id;
-                    return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTerm, filter, skip, take, isSearchSupported,
-                        logger, token);
-                }
-            }
-            else
-            {
-                if (allVersions)
-                {
-                    var filter = new SearchFilter(includePrerelease: prerelease, filter: null);
-                    filter.IncludeDelisted = includeDelisted;
-                    filter.OrderBy = SearchOrderBy.Id;
-
-                    return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTerm, filter, skip, take, isSearchSupported, logger, token);
                 }
 
                 var supportsIsAbsoluteLatestVersion =
@@ -96,103 +51,156 @@ namespace NuGet.Protocol.LegacyFeed
 
                 if (prerelease && supportsIsAbsoluteLatestVersion)
                 {
-                    var filter = new SearchFilter(includePrerelease: true,
-                        filter: SearchFilterType.IsAbsoluteLatestVersion);
-                    filter.IncludeDelisted = includeDelisted;
-                    filter.OrderBy = SearchOrderBy.Id;
-
-                    return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTerm, filter, skip, take, isSearchSupported, logger, token);
+                    //TODO: Does it matter if the server supports IsAbsoluteLatestVersion ? 
+                    filter = new SearchFilter(includePrerelease: true, filter: SearchFilterType.IsAbsoluteLatestVersion)
+                    {
+                        OrderBy = SearchOrderBy.Id,
+                        IncludeDelisted = includeDelisted
+                    };
                 }
                 else
                 {
-                    var filter = new SearchFilter(includePrerelease: false,
-                        filter: SearchFilterType.IsLatestVersion);
-                    filter.OrderBy = SearchOrderBy.Id;
+                    filter = new SearchFilter(includePrerelease: false,
+                        filter: SearchFilterType.IsLatestVersion)
+                    { OrderBy = SearchOrderBy.Id };
+                }
+            }
+            else
+            {
+                if (allVersions)
+                {
+                    filter = new SearchFilter(includePrerelease: prerelease, filter: null)
+                    {
+                        IncludeDelisted = includeDelisted,
+                        OrderBy = SearchOrderBy.Id
+                    };
+                }
 
-                    return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTerm, filter, skip, take, isSearchSupported, logger, token);
+                var supportsIsAbsoluteLatestVersion =
+                    await _feedCapabilities.SupportsIsAbsoluteLatestVersionAsync(logger, token);
+
+                if (prerelease && supportsIsAbsoluteLatestVersion)
+                {
+                    filter = new SearchFilter(includePrerelease: true,
+                        filter: SearchFilterType.IsAbsoluteLatestVersion)
+                    {
+                        IncludeDelisted = includeDelisted,
+                        OrderBy = SearchOrderBy.Id
+                    };
+                }
+                else
+                {
+                    filter = new SearchFilter(includePrerelease: false,
+                        filter: SearchFilterType.IsLatestVersion)
+                    { OrderBy = SearchOrderBy.Id };
                 }
 
             }
+            return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTerm, filter, 0, Take, isSearchSupported,
+                        logger, token);
+        }
+    }
+}
+
+class EnumerableAsync<T> : IEnumerableAsync<T>
+{
+    private readonly SearchFilter _filter;
+    private readonly ILogger _logger;
+    private readonly string _searchTerm;
+    private readonly int _skip;
+    private readonly int _take;
+    private readonly CancellationToken _token;
+    private readonly IV2FeedParser _feedParser;
+    private readonly bool _isSearchAvailable;
+
+
+    public EnumerableAsync(IV2FeedParser feedParser, string searchTerm, SearchFilter filter, int skip, int take, bool isSearchAvailable, ILogger logger, CancellationToken token)
+    {
+        _feedParser = feedParser;
+        _searchTerm = searchTerm;
+        _filter = filter;
+        _skip = skip;
+        _take = take;
+        _isSearchAvailable = isSearchAvailable;
+        _logger = logger;
+        _token = token;
+    }
+
+    public IEnumeratorAsync<T> GetEnumeratorAsync()
+    {
+        return (IEnumeratorAsync<T>)new EnumeratorAsync(_feedParser, _searchTerm, _filter, _skip, _take, _isSearchAvailable, _logger, _token);
+    }
+}
+
+internal class EnumeratorAsync : IEnumeratorAsync<IPackageSearchMetadata>
+{
+    private readonly SearchFilter _filter;
+    private readonly ILogger _logger;
+    private readonly string _searchTerm;
+    private int _skip;
+    private readonly int _take;
+    private readonly CancellationToken _token;
+    private readonly IV2FeedParser _feedParser;
+    private readonly bool _isSearchAvailable;
+
+
+    private IEnumerator<IPackageSearchMetadata> _currentEnumerator;
+    private V2FeedPage _currentPage;
+
+    public EnumeratorAsync(IV2FeedParser feedParser, string searchTerm, SearchFilter filter, int skip, int take, bool isSearchAvailable,
+        ILogger logger, CancellationToken token)
+    {
+        _feedParser = feedParser;
+        _searchTerm = searchTerm;
+        _filter = filter;
+        _skip = skip;
+        _take = take;
+        _isSearchAvailable = isSearchAvailable;
+        _logger = logger;
+        _token = token;
+    }
+
+    public IPackageSearchMetadata Current
+    {
+        get
+        {
+            if (_currentEnumerator != null)
+                return _currentEnumerator.Current;
+            else return null;
         }
     }
 
-    class EnumerableAsync<T> : IEnumerableAsync<T>
+    public async Task<bool> MoveNextAsync()
     {
-        private readonly SearchFilter _filter;
-        private readonly ILogger _logger;
-        private  readonly string _searchTerm;
-        private readonly int _skip;
-        private readonly int _take;
-        private readonly CancellationToken _token;
-        private readonly IV2FeedParser _feedParser;
-        private readonly bool _isSearchAvailable;
-
-
-        public EnumerableAsync(IV2FeedParser feedParser, string searchTerm, SearchFilter filter, int skip, int take, bool isSearchAvailable, ILogger logger, CancellationToken token)
+        if (_currentPage == null)
         {
-            _feedParser = feedParser;
-            _searchTerm = searchTerm;
-            _filter = filter;
-            _skip = skip;
-            _take = take;
-            _isSearchAvailable = isSearchAvailable;
-            _logger = logger;
-            _token = token;
+
+
+            _currentPage = _isSearchAvailable
+                ? await _feedParser.GetSearchPageAsync(_searchTerm, _filter, _skip, _take, _logger, _token)
+                : await _feedParser.GetPackagesPageAsync(_searchTerm, _filter, _skip, _take, _logger, _token);
+            var results = _currentPage.Items.GroupBy(p => p.Id)
+                .Select(group => group.OrderByDescending(p => p.Version).First())
+                .Select(
+                    package =>
+                        V2FeedUtilities.CreatePackageSearchResult(package, _filter,
+                            (V2FeedParser)_feedParser, _logger, _token)).Where(p => _filter.IncludeDelisted || p.IsListed);
+            var enumerator = results.GetEnumerator();
+            _currentEnumerator = enumerator;
+            return _currentEnumerator.MoveNext();
         }
-
-        public IEnumeratorAsync<T> GetEnumeratorAsync()
+        else
         {
-            return (IEnumeratorAsync<T>)new EnumeratorAsync(_feedParser, _searchTerm, _filter, _skip, _take,_isSearchAvailable, _logger, _token);
-        }
-    }
-
-    internal class EnumeratorAsync : IEnumeratorAsync<IPackageSearchMetadata>
-    {
-        private readonly SearchFilter _filter;
-        private readonly ILogger _logger;
-        private readonly string _searchTerm;
-        private int _skip;
-        private readonly int _take;
-        private readonly CancellationToken _token;
-        private readonly IV2FeedParser _feedParser;
-        private readonly bool _isSearchAvailable;
-
-
-        private IEnumerator<IPackageSearchMetadata> _currentEnumerator;
-        private V2FeedPage _currentPage;
-
-        public EnumeratorAsync(IV2FeedParser feedParser, string searchTerm, SearchFilter filter, int skip, int take, bool isSearchAvailable,
-            ILogger logger, CancellationToken token)
-        {
-            _feedParser = feedParser;
-            _searchTerm = searchTerm;
-            _filter = filter;
-            _skip = skip;
-            _take = take;
-            _isSearchAvailable = isSearchAvailable;
-            _logger = logger;
-            _token = token;
-        }
-
-        public IPackageSearchMetadata Current
-        {
-            get
+            if (!_currentEnumerator.MoveNext())
             {
-                if (_currentEnumerator != null)
-                    return _currentEnumerator.Current;
-                else return null;
-            }
-        }
-
-        public async Task<bool> MoveNextAsync()
-        {
-            if (_currentPage == null)
-            {
-
-
+                if (_currentPage.Items.Count != _take) // Last page not filled completely, no more pages left
+                {
+                    return false;
+                }
+                _skip += _take;
                 _currentPage = _isSearchAvailable
-                    ? await _feedParser.GetSearchPageAsync(_searchTerm, _filter, _skip, _take, _logger, _token)
-                    : await _feedParser.GetPackagesPageAsync(_searchTerm, _filter, _skip, _take, _logger, _token);
+                                    ? await _feedParser.GetSearchPageAsync(_searchTerm, _filter, _skip, _take, _logger, _token)
+                                    : await _feedParser.GetPackagesPageAsync(_searchTerm, _filter, _skip, _take, _logger, _token);
                 var results = _currentPage.Items.GroupBy(p => p.Id)
                     .Select(group => group.OrderByDescending(p => p.Version).First())
                     .Select(
@@ -201,37 +209,14 @@ namespace NuGet.Protocol.LegacyFeed
                                 (V2FeedParser)_feedParser, _logger, _token)).Where(p => _filter.IncludeDelisted || p.IsListed);
                 var enumerator = results.GetEnumerator();
                 _currentEnumerator = enumerator;
-                return _currentEnumerator.MoveNext();
+                _currentEnumerator.MoveNext();
+                return true;
             }
             else
             {
-                if (!_currentEnumerator.MoveNext())
-                {
-                    if (_currentPage.Items.Count != _take) // Last page not filled completely, no more pages left
-                    {
-                        return false;
-                    }
-                    _skip += _take;
-                    _currentPage = _isSearchAvailable
-                                        ? await _feedParser.GetSearchPageAsync(_searchTerm, _filter, _skip, _take, _logger, _token)
-                                        : await _feedParser.GetPackagesPageAsync(_searchTerm, _filter, _skip, _take, _logger, _token);
-                    var results = _currentPage.Items.GroupBy(p => p.Id)
-                        .Select(group => group.OrderByDescending(p => p.Version).First())
-                        .Select(
-                            package =>
-                                V2FeedUtilities.CreatePackageSearchResult(package, _filter,
-                                    (V2FeedParser)_feedParser, _logger, _token)).Where(p => _filter.IncludeDelisted || p.IsListed);
-                    var enumerator = results.GetEnumerator();
-                    _currentEnumerator = enumerator;
-                    _currentEnumerator.MoveNext();
-                    return true;
-                }
-                else
-                {
-                    return true;
-                }
-
+                return true;
             }
+
         }
     }
 }
