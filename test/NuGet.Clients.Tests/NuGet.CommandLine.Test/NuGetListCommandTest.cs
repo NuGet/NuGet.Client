@@ -12,8 +12,7 @@ using NuGet.Common;
 
 namespace NuGet.CommandLine.Test
 {
-    public class 
-
+    public class NuGetListCommandTest
     {
         [SkipMonoTheory]
         [InlineData("https://www.ssllabs.com:10200/index.json", false)] // SSLv2.0

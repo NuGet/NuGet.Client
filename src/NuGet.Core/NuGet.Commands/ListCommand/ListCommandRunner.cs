@@ -61,130 +61,51 @@ namespace NuGet.Commands
 
         private class CompareIPackageSearchMetadata : IComparer<IPackageSearchMetadata>, IEqualityComparer<IPackageSearchMetadata>
         {
-            private PackageIdentityComparer comparer;
+            private readonly PackageIdentityComparer _comparer;
             public CompareIPackageSearchMetadata()
             {
-                comparer = PackageIdentityComparer.Default;
+                _comparer = PackageIdentityComparer.Default;
             }
             public int Compare(IPackageSearchMetadata x, IPackageSearchMetadata y)
             {
-                if (x == null && y == null)
+                if (ReferenceEquals(x, y))
                 {
                     return 0;
                 }
-                else if (x == null)
-                {
-                    return 1;
-                }
-                else if (y == null)
+
+                if (ReferenceEquals(x, null))
                 {
                     return -1;
                 }
-                return comparer.Compare(x.Identity, y.Identity);
+
+                if (ReferenceEquals(y, null))
+                {
+                    return 1;
+                }
+                return _comparer.Compare(x.Identity, y.Identity);
             }
 
             public bool Equals(IPackageSearchMetadata x, IPackageSearchMetadata y)
             {
-                if (x == null && y == null)
+                if (ReferenceEquals(x, y))
                 {
                     return true;
                 }
-                if (x == null || y == null)
+
+                if (ReferenceEquals(x, null) || ReferenceEquals(y, null))
                 {
                     return false;
                 }
-                return comparer.Equals(x.Identity, y.Identity);
+                return _comparer.Equals(x.Identity, y.Identity);
             }
 
             public int GetHashCode(IPackageSearchMetadata obj)
             {
-                return comparer.GetHashCode(obj.Identity);
-            }
-        }
-
-        class AggregateEnumerableAsync<T> : IEnumerableAsync<T>
-        {
-
-            private readonly IList<IEnumerableAsync<T>> _asyncEnumerables;
-            private readonly IComparer<T> _comparer;
-            private readonly IEqualityComparer<T> _equalityComparer;
-
-            public AggregateEnumerableAsync(IList<IEnumerableAsync<T>> asyncEnumerables, IComparer<T> comparer, IEqualityComparer<T> equalityComparer)
-            {
-                _asyncEnumerables = asyncEnumerables;
-                _comparer = comparer;
-                _equalityComparer = equalityComparer;
-            }
-
-            public IEnumeratorAsync<T> GetEnumeratorAsync()
-            {
-                return new AggregateEnumeratorAsync<T>(_asyncEnumerables, _comparer, _equalityComparer);
-            }
-        }
-
-        class AggregateEnumeratorAsync<T> : IEnumeratorAsync<T>
-        {
-
-            private readonly HashSet<T> _seen;
-            private readonly IComparer<T> _comparer;
-            private readonly List<IEnumeratorAsync<T>> _asyncEnumerators = new List<IEnumeratorAsync<T>>();
-            private IEnumeratorAsync<T> _currentEnumeratorAsync;
-            private IEnumeratorAsync<T> _lastAwaitedEnumeratorAsync;
-
-
-            public AggregateEnumeratorAsync(IList<IEnumerableAsync<T>> asyncEnumerables, IComparer<T> comparer, IEqualityComparer<T> equalityComparer)
-            {
-                for (int i = 0; i < asyncEnumerables.Count; i++)
+                if (ReferenceEquals(obj, null))
                 {
-                    var enumerator = asyncEnumerables[i].GetEnumeratorAsync();
-                    _asyncEnumerators.Add(enumerator);
+                    return 0;
                 }
-                _comparer = comparer;
-                _seen = new HashSet<T>(equalityComparer);
-            }
-
-            public T Current
-            {
-                get
-                {
-                    if (_currentEnumeratorAsync == null)
-                    {
-                        return default(T);
-                    }
-                    return _currentEnumeratorAsync.Current;
-                }
-            }
-
-            public async Task<bool> MoveNextAsync()
-            {
-                while (_asyncEnumerators.Count > 0)
-                {
-                    T currentValue = default(T);
-                    foreach (IEnumeratorAsync<T> enumerator in _asyncEnumerators)
-                    {
-                        if (enumerator.Current == null || enumerator == _lastAwaitedEnumeratorAsync)
-                        {
-                            await enumerator.MoveNextAsync();
-                        }
-
-                        if (_comparer.Compare(enumerator.Current, currentValue) < 0)
-                        {
-                            currentValue = enumerator.Current;
-                            _currentEnumeratorAsync = enumerator;
-                        }
-                    }
-                    _lastAwaitedEnumeratorAsync = _currentEnumeratorAsync;
-                    //Remove all the feeds with a null current
-                    _asyncEnumerators.RemoveAll(enumerator => enumerator.Current == null);
-                    if (currentValue != null)
-                    {
-                        if (_seen.Add(currentValue))
-                        {
-                            return true;
-                        }
-                    }
-                }
-                return false;
+                return _comparer.GetHashCode(obj.Identity);
             }
         }
 

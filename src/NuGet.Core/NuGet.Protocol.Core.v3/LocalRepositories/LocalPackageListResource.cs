@@ -106,7 +106,7 @@ namespace NuGet.Protocol
             public async Task<bool> MoveNextAsync()
             {
                 if (_currentEnumerator == null) 
-                { // TODO: This resource searches very very inefficiently. Even if I would request a page of ex. 30 values, it will still load all the files from FS and just do a select on that.
+                { // TODO: We need to sort the values so this is very innefficient by design. The FS search resource would return the results ordered in FS nat ordering.
                     var results = await _packageSearchResource.SearchAsync(_searchTerm, _filter, 0, Int32.MaxValue, _logger, _token);
                     switch (_filter.OrderBy)
                     {
