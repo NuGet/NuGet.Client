@@ -243,7 +243,7 @@ namespace NuGet.CommandLine
             if (version == null)
             {
                 // Find the latest version using NuGetPackageManager
-                version = await NuGetPackageManager.GetLatestVersionAsync(
+                var resolvePackage = await NuGetPackageManager.GetLatestVersionAsync(
                     packageId,
                     folderProject,
                     resolutionContext,
@@ -251,7 +251,7 @@ namespace NuGet.CommandLine
                     Console,
                     CancellationToken.None);
 
-                if (version == null)
+                if (resolvePackage == null || resolvePackage.LatestVersion == null)
                 {
                     var message = string.Format(
                         CultureInfo.CurrentCulture,
@@ -260,6 +260,8 @@ namespace NuGet.CommandLine
 
                     throw new CommandLineException(message);
                 }
+
+                version = resolvePackage.LatestVersion;
             }
 
             var packageIdentity = new PackageIdentity(packageId, version);

@@ -13,17 +13,17 @@ using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.PackageManagement;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
+using NuGet.Protocol.Core.Types;
+using NuGet.Resolver;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
-using NuGet.Protocol.Core.Types;
-using NuGet.Packaging;
-using NuGet.Configuration;
 
 namespace NuGet.Test
 {
@@ -1609,6 +1609,70 @@ namespace NuGet.Test
                 // Assert
                 Assert.Equal(1, buildIntegratedProject.ExecuteInitScriptAsyncCalls.Count);
                 Assert.True(buildIntegratedProject.ExecuteInitScriptAsyncCalls.Contains(updateIdentity));
+            }
+        }
+
+        [Fact]
+        public async void TestPacMan_BuildIntegrated_PreviewUpdatesAsync_NoUpdatesAvailable()
+        {
+            using (var packageSource = TestDirectory.Create())
+            {
+                // Arrange
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
+                    new List<Configuration.PackageSource>()
+                    {
+                        new Configuration.PackageSource(packageSource.Path)
+                    });
+
+                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var randomProjectFolderPath = TestDirectory.Create())
+                {
+                    var testSettings = new Configuration.NullSettings();
+                    var token = CancellationToken.None;
+                    var resolutionContext = new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true, includeUnlisted: true, versionConstraints: VersionConstraints.None);
+                    var testNuGetProjectContext = new TestNuGetProjectContext();
+                    var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                    var nuGetPackageManager = new NuGetPackageManager(
+                        sourceRepositoryProvider,
+                        testSettings,
+                        testSolutionManager,
+                        deleteOnRestartManager);
+                    var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+                    var packagePathResolver = new PackagePathResolver(packagesFolderPath);
+
+                    var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
+
+                    CreateConfigJsonNet452(randomConfig);
+
+                    var projectTargetFramework = NuGetFramework.Parse("net452");
+                    var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
+                    var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
+
+                    var packageContext = new SimpleTestPackageContext("packageA", "1.0.0-beta1");
+                    packageContext.AddFile("lib/net45/a.dll");
+                    SimpleTestPackageUtility.CreateOPCPackage(packageContext, packageSource);
+
+                    // Install
+                    await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, "packageA",
+                        resolutionContext, testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+
+                    // Pre-Assert
+                    var installedPackages = (await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None)).ToList();
+                    Assert.Equal(1, installedPackages.Count);
+
+                    // Main Act
+                    var actions = await nuGetPackageManager.PreviewUpdatePackagesAsync(
+                        "packageA",
+                        new List<NuGetProject> { buildIntegratedProject },
+                        new ResolutionContext(),
+                        new TestNuGetProjectContext(),
+                        sourceRepositoryProvider.GetRepositories(),
+                        sourceRepositoryProvider.GetRepositories(),
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.False(actions.Any());
+                }
             }
         }
 

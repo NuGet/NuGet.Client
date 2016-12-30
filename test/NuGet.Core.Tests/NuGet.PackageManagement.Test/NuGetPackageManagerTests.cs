@@ -928,7 +928,7 @@ namespace NuGet.Test
                 var projectA = testSolutionManager.AddNewMSBuildProject();
                 var packageIdentity0 = PackageWithDependents[0];
 
-                var latestVersion = await NuGetPackageManager.GetLatestVersionAsync(
+                var resolvedPackage = await NuGetPackageManager.GetLatestVersionAsync(
                     packageIdentity0.Id,
                     projectA,
                     resolutionContext,
@@ -936,7 +936,7 @@ namespace NuGet.Test
                     Common.NullLogger.Instance,
                     token);
 
-                var packageLatest = new PackageIdentity(packageIdentity0.Id, latestVersion);
+                var packageLatest = new PackageIdentity(packageIdentity0.Id, resolvedPackage.LatestVersion);
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity0,
@@ -986,7 +986,7 @@ namespace NuGet.Test
                 var packageIdentity0 = PackageWithDependents[0];
                 var dependentPackage = PackageWithDependents[2];
 
-                var latestVersion = await NuGetPackageManager.GetLatestVersionAsync(
+                var resolvedPackage = await NuGetPackageManager.GetLatestVersionAsync(
                     packageIdentity0.Id,
                     projectA,
                     resolutionContext,
@@ -994,7 +994,7 @@ namespace NuGet.Test
                     Common.NullLogger.Instance,
                     token);
 
-                var packageLatest = new PackageIdentity(packageIdentity0.Id, latestVersion);
+                var packageLatest = new PackageIdentity(packageIdentity0.Id, resolvedPackage.LatestVersion);
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, dependentPackage,
@@ -1101,7 +1101,7 @@ namespace NuGet.Test
                 var packageIdentity0 = PackageWithDependents[0];
                 var dependentPackage = PackageWithDependents[2];
 
-                var latestVersion = await NuGetPackageManager.GetLatestVersionAsync(
+                var resolvedPackage = await NuGetPackageManager.GetLatestVersionAsync(
                     packageIdentity0.Id,
                     projectA,
                     resolutionContext,
@@ -1109,7 +1109,7 @@ namespace NuGet.Test
                     Common.NullLogger.Instance,
                     token);
 
-                var packageLatest = new PackageIdentity(packageIdentity0.Id, latestVersion);
+                var packageLatest = new PackageIdentity(packageIdentity0.Id, resolvedPackage.LatestVersion);
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, dependentPackage,
@@ -1410,7 +1410,7 @@ namespace NuGet.Test
                 var packageIdentity2 = PackageWithDependents[2];
                 var packageIdentity3 = PackageWithDependents[3];
 
-                var latestVersion = await NuGetPackageManager.GetLatestVersionAsync(
+                var resolvedPackage = await NuGetPackageManager.GetLatestVersionAsync(
                     packageIdentity0.Id,
                     projectA,
                     resolutionContext,
@@ -1418,7 +1418,7 @@ namespace NuGet.Test
                     Common.NullLogger.Instance,
                     token);
 
-                var packageLatest = new PackageIdentity(packageIdentity0.Id, latestVersion);
+                var packageLatest = new PackageIdentity(packageIdentity0.Id, resolvedPackage.LatestVersion);
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, packageIdentity3,
@@ -2228,7 +2228,7 @@ namespace NuGet.Test
                 var packageIdentity0 = PackageWithDependents[0]; // jQuery.1.4.4
 
                 var resolutionContext = new ResolutionContext();
-                var latestVersion = await NuGetPackageManager.GetLatestVersionAsync(
+                var resolvedPackage = await NuGetPackageManager.GetLatestVersionAsync(
                     packageIdentity0.Id,
                     msBuildNuGetProject,
                     new ResolutionContext(),
@@ -2236,7 +2236,7 @@ namespace NuGet.Test
                     Common.NullLogger.Instance,
                     token);
 
-                var packageLatest = new PackageIdentity(packageIdentity0.Id, latestVersion);
+                var packageLatest = new PackageIdentity(packageIdentity0.Id, resolvedPackage.LatestVersion);
 
                 // Pre-Assert
                 // Check that the packages.config file does not exist
@@ -3414,7 +3414,7 @@ namespace NuGet.Test
                 var newtonsoftJsonPackageId = "newtonsoft.json";
 
                 // Act
-                var latestNewtonsoftPrereleaseVersion = await NuGetPackageManager.GetLatestVersionAsync(
+                var resolvedPackage = await NuGetPackageManager.GetLatestVersionAsync(
                     newtonsoftJsonPackageId,
                     msBuildNuGetProject,
                     resolutionContext,
@@ -3422,7 +3422,7 @@ namespace NuGet.Test
                     Common.NullLogger.Instance,
                     CancellationToken.None);
 
-                var newtonsoftJsonPackageIdentity = new PackageIdentity(newtonsoftJsonPackageId, latestNewtonsoftPrereleaseVersion);
+                var newtonsoftJsonPackageIdentity = new PackageIdentity(newtonsoftJsonPackageId, resolvedPackage.LatestVersion);
 
                 var nuGetProjectActions = (await nuGetPackageManager.PreviewInstallPackageAsync(msBuildNuGetProject, dotnetrdfPackageIdentity, resolutionContext,
                     new TestNuGetProjectContext(), primarySourceRepository, null, CancellationToken.None)).ToList();
@@ -3462,7 +3462,7 @@ namespace NuGet.Test
                 var newtonsoftJsonPackageId = "newtonsoft.json";
 
                 // Act
-                var latestNewtonsoftPrereleaseVersion = await NuGetPackageManager.GetLatestVersionAsync(
+                var resolvedPackage = await NuGetPackageManager.GetLatestVersionAsync(
                     newtonsoftJsonPackageId,
                     msBuildNuGetProject,
                     resolutionContext,
@@ -3470,7 +3470,7 @@ namespace NuGet.Test
                     Common.NullLogger.Instance,
                     CancellationToken.None);
 
-                var newtonsoftJsonLatestPrereleasePackageIdentity = new PackageIdentity(newtonsoftJsonPackageId, latestNewtonsoftPrereleaseVersion);
+                var newtonsoftJsonLatestPrereleasePackageIdentity = new PackageIdentity(newtonsoftJsonPackageId, resolvedPackage.LatestVersion);
 
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, webgreasePackageIdentity, resolutionContext,
                     new TestNuGetProjectContext(), primarySourceRepository, null, CancellationToken.None);
