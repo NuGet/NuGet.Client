@@ -107,10 +107,14 @@ namespace NuGet.Commands
                 {
                     platformIdentifier = FrameworkConstants.FrameworkIdentifiers.Windows;
                 }
+
+                frameworks.Add($"{platformIdentifier}, Version={platformVersion}");
+
+                return frameworks;
             }
 
-            if (!string.IsNullOrEmpty(platformIdentifier)
-                && !string.IsNullOrEmpty(platformVersion))
+            if (!string.IsNullOrEmpty(platformVersion)
+                && StringComparer.OrdinalIgnoreCase.Equals(platformIdentifier, "UAP"))
             {
                 // Use the platform id and versions, this is done for UAP projects
                 frameworks.Add($"{platformIdentifier}, Version={platformVersion}");

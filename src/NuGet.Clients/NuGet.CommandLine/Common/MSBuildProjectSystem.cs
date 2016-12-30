@@ -61,8 +61,16 @@ namespace NuGet.Common
                         targetPlatformVersion: GetPropertyValue("TargetPlatformVersion"));
 
                     // Parse the framework of the project or return unsupported.
-                    _targetFramework = MSBuildProjectFrameworkUtility.GetProjectFrameworks(frameworkStrings).FirstOrDefault()
-                        ?? NuGetFramework.UnsupportedFramework;
+                    var frameworks = MSBuildProjectFrameworkUtility.GetProjectFrameworks(frameworkStrings).ToArray();
+
+                    if (frameworks.Length > 0)
+                    {
+                        _targetFramework = frameworks[0];
+                    }
+                    else
+                    {
+                        _targetFramework = NuGetFramework.UnsupportedFramework;
+                    }
                 }
 
                 return _targetFramework;
