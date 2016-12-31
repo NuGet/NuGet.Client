@@ -75,7 +75,7 @@ namespace NuGet.Common
                         await enumerator.MoveNextAsync();
                     }
 
-                    if (_comparer.Compare(enumerator.Current, currentValue) < 0)
+                    if (_comparer.Compare(enumerator.Current, currentValue) > 0)
                     {
                         currentValue = enumerator.Current;
                         _currentEnumeratorAsync = enumerator;

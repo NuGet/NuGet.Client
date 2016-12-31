@@ -62,7 +62,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
             var hostName = Guid.NewGuid().ToString();
             var fullHostName = "https://" + hostName + "/";
-            var expected = "System.AggregateException: One or more errors occurred. ---> " + 
+            var expected = "System.AggregateException: One or more errors occurred. ---> " +
                            "NuGet.Protocol.Core.Types.FatalProtocolException: Unable to load the service index for source " +
                            $"{fullHostName}";
 
@@ -289,7 +289,7 @@ namespace NuGet.CommandLine.Test
                 var packageFileName2 = Util.CreateTestPackage("testPackage2", "2.1", packageDirectory);
                 var package1 = new ZipPackage(packageFileName1);
                 var package2 = new ZipPackage(packageFileName2);
-                package1.Published = new DateTimeOffset?(new DateTime(1800,1,1));
+                package1.Published = new DateTimeOffset?(new DateTime(1800, 1, 1));
                 package1.Listed = false;
 
                 using (var server = new MockServer())
@@ -1058,26 +1058,18 @@ namespace NuGet.CommandLine.Test
                     });
 
                     var config = $@"<?xml version='1.0' encoding='utf-8'?>
-<configuration>
-  <packageSources>
-    <add key='vsts' value='{serverV3.Uri}index.json' protocolVersion='3' />
-  </packageSources>
-  <packageSourceCredentials>
-    <vsts>
-      <add key='Username' value='user' />
-      <add key='ClearTextPassword' value='password' />
-    </vsts>
-  </packageSourceCredentials>
- </configuration>";
-//                        < add key = 'vsts2' value = '{serverV3.Uri}{listEndpoint}' protocolVersion = '2' />
-// <vsts2>
-//      < add key = 'Username' value = 'user' />
-   
-  //       < add key = 'ClearTextPassword' value = 'password' />
-      
-    //      </ vsts2 >
-
-                               var configFileName = Path.Combine(randomTestFolder, "nuget.config");
+                                <configuration>
+                                  <packageSources>
+                                    <add key='vsts' value='{serverV3.Uri}index.json' protocolVersion='3' />
+                                  </packageSources>
+                                  <packageSourceCredentials>
+                                    <vsts>
+                                      <add key='Username' value='user' />
+                                      <add key='ClearTextPassword' value='password' />
+                                    </vsts>
+                                  </packageSourceCredentials>
+                                 </configuration>";
+                    var configFileName = Path.Combine(randomTestFolder, "nuget.config");
                     File.WriteAllText(configFileName, config);
 
                     serverV3.Start();
@@ -1086,7 +1078,111 @@ namespace NuGet.CommandLine.Test
                     var result = CommandRunner.Run(
                         Util.GetNuGetExePath(),
                         Directory.GetCurrentDirectory(),
-                        $"list test -source {serverV3.Uri}index.json -configfile {configFileName} -verbosity detailed -noninteractive",
+                        $"list test -source {serverV3.Uri}index.json -configfile {configFileName} -verbosity detailed -noninteractive --debug",
+                        waitForExit: true);
+
+                    serverV3.Stop();
+
+                    // Assert
+                    Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
+                    Assert.Contains("Using credentials from config. UserName: user", result.Item2);
+                    Assert.Contains($"GET {serverV3.Uri}{listEndpoint}/Search()", result.Item2);
+                    // verify that only package id & version is displayed
+                    Assert.Matches(@"(?m)testPackage1\s+1\.1\.0", result.Item2);
+
+                }
+            }
+        }
+        //TODO NK - Fix this test
+        public void ListCommand_WithAuthenticatedSourceV2_AppliesCredentialsFromSettings()
+        {
+            Util.ClearWebCache();
+            var expectedAuthHeader = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes("user:password"));
+            var listEndpoint = Guid.NewGuid().ToString() + "/api/v2";
+
+            using (var randomTestFolder = TestDirectory.Create())
+            {
+                // Arrange
+                var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", randomTestFolder);
+                var package1 = new ZipPackage(packageFileName1);
+
+                // Server setup
+                using (var serverV3 = new MockServer())
+                {
+                    //var indexJson = Util.CreateIndexJson();
+                    //Util.AddFlatContainerResource(indexJson, serverV3);
+                    //Util.AddLegacyGalleryResource(indexJson, serverV3, listEndpoint);
+
+                    serverV3.Get.Add("/", r =>
+                    {
+                        var h = r.Headers["Authorization"];
+                        if (h == null)
+                        {
+                            return new Action<HttpListenerResponse>(response =>
+                            {
+                                response.StatusCode = 401;
+                                response.AddHeader("WWW-Authenticate", @"Basic realm=""Test""");
+                                MockServer.SetResponseContent(response, "401 Unauthenticated");
+                            });
+                        }
+
+                        if (expectedAuthHeader != h)
+                        {
+                            return HttpStatusCode.Forbidden;
+                        }
+
+                        var path = serverV3.GetRequestUrlAbsolutePath(r);
+
+                        //if (path == "/index.json")
+                        //{
+                        //    return new Action<HttpListenerResponse>(response =>
+                        //    {
+                        //        response.StatusCode = 200;
+                        //        response.ContentType = "text/javascript";
+                        //        MockServer.SetResponseContent(response, indexJson.ToString());
+                        //    });
+                        //}
+
+                        if (path == $"/{listEndpoint}/$metadata")
+                        {
+                            return MockServerResource.NuGetV2APIMetadata;
+                        }
+
+                        if (path == $"/{listEndpoint}/Search()")
+                        {
+                            return new Action<HttpListenerResponse>(response =>
+                            {
+                                response.ContentType = "application/atom+xml;type=feed;charset=utf-8";
+                                var feed = serverV3.ToODataFeed(new[] { package1 }, "Search");
+                                MockServer.SetResponseContent(response, feed);
+                            });
+                        }
+
+                        return "OK";
+                    });
+
+                    var config = $@"<?xml version='1.0' encoding='utf-8'?>
+                    <configuration>
+                      <packageSources>
+                        <add key='vsts' value='{serverV3.Uri}api/v2' protocolVersion='2' />
+                      </packageSources>
+                      <packageSourceCredentials>
+                        <vsts>
+                          <add key='Username' value='user' />
+                          <add key='ClearTextPassword' value='password' />
+                        </vsts>
+                      </packageSourceCredentials>
+                     </configuration>";
+                    var configFileName = Path.Combine(randomTestFolder, "nuget.config");
+                    File.WriteAllText(configFileName, config);
+
+                    serverV3.Start();
+
+                    // Act
+                    var result = CommandRunner.Run(
+                        Util.GetNuGetExePath(),
+                        Directory.GetCurrentDirectory(),
+                        $"list test -source {serverV3.Uri}api/v2 -configfile {configFileName} -verbosity detailed -noninteractive --debug",
                         waitForExit: true);
 
                     serverV3.Stop();

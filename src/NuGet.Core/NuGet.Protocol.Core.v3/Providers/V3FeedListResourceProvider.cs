@@ -41,7 +41,7 @@ namespace NuGet.Protocol
                     var serviceDocument =
                         await ODataServiceDocumentUtils.CreateODataServiceDocumentResourceV2(
                             baseUrl.AbsoluteUri, httpSource.HttpSource, DateTime.UtcNow, NullLogger.Instance, token);
-                    var parser = new V2FeedParser(httpSource.HttpSource, serviceDocument.BaseAddress, source.PackageSource);
+                    var parser = new V2FeedParser(httpSource.HttpSource, serviceDocument.BaseAddress, source.PackageSource.Source);
                     var feedCapabilityResource = new LegacyFeedCapabilityResourceV2Feed(parser, serviceDocument.BaseAddress);
                     resource = new V2FeedListResource(parser, feedCapabilityResource);
                 }

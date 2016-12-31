@@ -45,24 +45,26 @@ namespace NuGet.Protocol.LegacyFeed
                     };
 
                 }
-
-                var supportsIsAbsoluteLatestVersion =
-                    await _feedCapabilities.SupportsIsAbsoluteLatestVersionAsync(logger, token);
-
-                if (prerelease && supportsIsAbsoluteLatestVersion)
-                {
-                    //TODO: Does it matter if the server supports IsAbsoluteLatestVersion ? 
-                    filter = new SearchFilter(includePrerelease: true, filter: SearchFilterType.IsAbsoluteLatestVersion)
-                    {
-                        OrderBy = SearchOrderBy.Id,
-                        IncludeDelisted = includeDelisted
-                    };
-                }
                 else
                 {
-                    filter = new SearchFilter(includePrerelease: false,
-                        filter: SearchFilterType.IsLatestVersion)
-                    { OrderBy = SearchOrderBy.Id };
+                    var supportsIsAbsoluteLatestVersion =
+                        await _feedCapabilities.SupportsIsAbsoluteLatestVersionAsync(logger, token);
+
+                    if (prerelease && supportsIsAbsoluteLatestVersion)
+                    {
+                        //TODO: Does it matter if the server supports IsAbsoluteLatestVersion ? 
+                        filter = new SearchFilter(includePrerelease: true, filter: SearchFilterType.IsAbsoluteLatestVersion)
+                        {
+                            OrderBy = SearchOrderBy.Id,
+                            IncludeDelisted = includeDelisted
+                        };
+                    }
+                    else
+                    {
+                        filter = new SearchFilter(includePrerelease: false,
+                            filter: SearchFilterType.IsLatestVersion)
+                        { OrderBy = SearchOrderBy.Id };
+                    }
                 }
             }
             else
@@ -75,24 +77,26 @@ namespace NuGet.Protocol.LegacyFeed
                         OrderBy = SearchOrderBy.Id
                     };
                 }
-
-                var supportsIsAbsoluteLatestVersion =
-                    await _feedCapabilities.SupportsIsAbsoluteLatestVersionAsync(logger, token);
-
-                if (prerelease && supportsIsAbsoluteLatestVersion)
-                {
-                    filter = new SearchFilter(includePrerelease: true,
-                        filter: SearchFilterType.IsAbsoluteLatestVersion)
-                    {
-                        IncludeDelisted = includeDelisted,
-                        OrderBy = SearchOrderBy.Id
-                    };
-                }
                 else
                 {
-                    filter = new SearchFilter(includePrerelease: false,
-                        filter: SearchFilterType.IsLatestVersion)
-                    { OrderBy = SearchOrderBy.Id };
+                    var supportsIsAbsoluteLatestVersion =
+                        await _feedCapabilities.SupportsIsAbsoluteLatestVersionAsync(logger, token);
+
+                    if (prerelease && supportsIsAbsoluteLatestVersion)
+                    {
+                        filter = new SearchFilter(includePrerelease: true,
+                            filter: SearchFilterType.IsAbsoluteLatestVersion)
+                        {
+                            IncludeDelisted = includeDelisted,
+                            OrderBy = SearchOrderBy.Id
+                        };
+                    }
+                    else
+                    {
+                        filter = new SearchFilter(includePrerelease: false,
+                            filter: SearchFilterType.IsLatestVersion)
+                        { OrderBy = SearchOrderBy.Id };
+                    }
                 }
 
             }

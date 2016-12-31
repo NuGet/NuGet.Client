@@ -34,7 +34,7 @@ namespace NuGet.Protocol.LegacyFeed
                 if (serviceDocument != null)
                 {
                     var parser = new V2FeedParser(httpSource.HttpSource, serviceDocument.BaseAddress,
-                        source.PackageSource);
+                        source.PackageSource.Source);
                     var feedCapabilityResource = new LegacyFeedCapabilityResourceV2Feed(parser,
                         serviceDocument.BaseAddress);
                     resource = new V2FeedListResource(parser, feedCapabilityResource);

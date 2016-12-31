@@ -126,12 +126,6 @@ namespace NuGet.CommandLine
             }
             var listEndpoints = GetEndpointsAsync();
 
-            //var adapter = new Credentials.CredentialServiceAdapter(CredentialService);
-            //adapter.SetEndpoints(listEndpoints);
-            //CoreV2.NuGet.HttpClient.DefaultCredentialProvider = adapter;
-            //           SetDefaultCredentialProvider();
-
-
             var list = new ListArgs(Arguments,
                 listEndpoints,
                 Settings,

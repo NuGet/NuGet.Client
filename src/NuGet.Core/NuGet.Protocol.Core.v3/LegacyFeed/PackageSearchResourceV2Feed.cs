@@ -31,7 +31,7 @@ namespace NuGet.Protocol
 
             _httpSource = httpSourceResource.HttpSource;
             _packageSource = packageSource;
-            _feedParser = new V2FeedParser(_httpSource, baseAddress, packageSource);
+            _feedParser = new V2FeedParser(_httpSource, baseAddress, packageSource.Source);
         }
 
         public async override Task<IEnumerable<IPackageSearchMetadata>> SearchAsync(

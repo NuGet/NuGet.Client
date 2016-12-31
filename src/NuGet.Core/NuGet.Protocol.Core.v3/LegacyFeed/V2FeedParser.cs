@@ -65,7 +65,7 @@ namespace NuGet.Protocol
         /// <param name="httpSource">HttpSource and message handler containing auth/proxy support</param>
         /// <param name="baseAddress">base address for all services from this OData service</param>
         public V2FeedParser(HttpSource httpSource, string baseAddress)
-            : this(httpSource, baseAddress, new PackageSource(baseAddress))
+            : this(httpSource, baseAddress, baseAddress)
         {
         }
 
@@ -75,7 +75,7 @@ namespace NuGet.Protocol
         /// <param name="httpSource">HttpSource and message handler containing auth/proxy support</param>
         /// <param name="baseAddress">base address for all services from this OData service</param>
         /// <param name="source">PackageSource useful for reporting meaningful errors that relate back to the configuration</param>
-        public V2FeedParser(HttpSource httpSource, string baseAddress, PackageSource source)
+        public V2FeedParser(HttpSource httpSource, string baseAddress, string source)
         {
             if (httpSource == null)
             {
@@ -98,7 +98,7 @@ namespace NuGet.Protocol
             Source = source;
         }
 
-        public PackageSource Source { get; private set; }
+        public string Source { get; private set; }
 
         /// <summary>
         /// Get an exact package
