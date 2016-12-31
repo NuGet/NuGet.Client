@@ -74,6 +74,8 @@ namespace NuGet.SolutionRestoreManager
                     new UserAgentStringBuilder().WithVisualStudioSKU(dte.GetFullVsVersionString()));
             });
 
+            await SolutionRestoreCommand.InitializeAsync(this);
+
             await base.InitializeAsync(cancellationToken, progress);
         }
 
