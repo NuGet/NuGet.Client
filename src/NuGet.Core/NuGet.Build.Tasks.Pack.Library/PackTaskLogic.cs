@@ -129,6 +129,20 @@ namespace NuGet.Build.Tasks.Pack
             {
                 builder.Repository = new RepositoryMetadata(request.RepositoryType, request.RepositoryUrl);
             }
+            if (request.MinClientVersion != null)
+            {
+                Version version;
+                if (!Version.TryParse(request.MinClientVersion, out version))
+                {
+                    throw new ArgumentException(string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.InvalidMinClientVersion,
+                        request.MinClientVersion));
+                }
+
+                builder.MinClientVersion = version;
+            }
+
             ParseProjectToProjectReferences(request, builder);
             GetPackageReferences(request, builder);
             return builder;
