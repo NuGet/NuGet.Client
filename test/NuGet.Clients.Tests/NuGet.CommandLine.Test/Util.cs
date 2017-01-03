@@ -401,7 +401,7 @@ namespace NuGet.CommandLine.Test
         public static string GetNuGetExePath()
         {
             var targetDir = ConfigurationManager.AppSettings["TestTargetDir"] ?? Directory.GetCurrentDirectory();
-            var nugetexe = Path.Combine(targetDir, "nuget.exe");
+            var nugetexe = Path.Combine(targetDir, "NuGet.exe");
             return nugetexe;
         }
 
@@ -755,7 +755,7 @@ EndProject";
             string packagesDirectory)
         {
             string normalizedId = packageIdentity.Id.ToLowerInvariant();
-            string normalizedVersion = packageIdentity.Version.ToNormalizedString();
+            string normalizedVersion = packageIdentity.Version.ToNormalizedString().ToLowerInvariant();
 
             var packageIdDirectory = Path.Combine(packagesDirectory, normalizedId);
             Assert.True(Directory.Exists(packageIdDirectory));
