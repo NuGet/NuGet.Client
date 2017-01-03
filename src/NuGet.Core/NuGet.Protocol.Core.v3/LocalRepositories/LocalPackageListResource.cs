@@ -106,7 +106,7 @@ namespace NuGet.Protocol
             public async Task<bool> MoveNextAsync()
             {
                 if (_currentEnumerator == null) 
-                { // TODO: We need to sort the values so this is very innefficient by design. The FS search resource would return the results ordered in FS nat ordering.
+                { // NOTE: We need to sort the values so this is very innefficient by design. The FS search resource would return the results ordered in FS nat ordering.
                     var results = await _packageSearchResource.SearchAsync(_searchTerm, _filter, 0, Int32.MaxValue, _logger, _token);
                     switch (_filter.OrderBy)
                     {
@@ -118,13 +118,7 @@ namespace NuGet.Protocol
                             break;
                     }
                 }
-
-                if (!_currentEnumerator.MoveNext())
-                {
-                    _currentEnumerator = null; //TODO NK - This is wrong
-                    return false;
-                }
-                return true;
+                return _currentEnumerator.MoveNext();
             }
         }
     }

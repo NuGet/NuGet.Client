@@ -213,8 +213,7 @@ internal class EnumeratorAsync : IEnumeratorAsync<IPackageSearchMetadata>
                                 (V2FeedParser)_feedParser, _logger, _token)).Where(p => _filter.IncludeDelisted || p.IsListed);
                 var enumerator = results.GetEnumerator();
                 _currentEnumerator = enumerator;
-                _currentEnumerator.MoveNext();
-                return true;
+                return _currentEnumerator.MoveNext();
             }
             else
             {
