@@ -6,10 +6,8 @@ using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Properties;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Utilities;
 using NuGet.ProjectManagement;
-using NuGet.ProjectModel;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -52,21 +50,14 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // The project must be an IVsHierarchy.
             var hierarchy = VsHierarchyUtility.ToVsHierarchy(dteProject);
-
+            
             if (hierarchy == null)
             {
                 return false;
             }
 
-            // check for RestoreProjectStyle property
-            var restoreProjectStyle = VsHierarchyUtility.GetMSBuildProperty(hierarchy, "RestoreProjectStyle");
-
-            if (!string.IsNullOrEmpty(restoreProjectStyle) &&
-                !restoreProjectStyle.Equals(ProjectStyle.PackageReference.ToString(), StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-            else if(!hierarchy.IsCapabilityMatch("CPS"))
+            if (!hierarchy.IsCapabilityMatch("CPS") ||
+                !hierarchy.IsCapabilityMatch("PackageReferences"))
             {
                 return false;
             }
