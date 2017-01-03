@@ -608,19 +608,21 @@ namespace NuGet.Commands
         {
             if (_isPersistDGSet.Value)
             {
-                var path = Path.Combine(
-                    NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp),
-                    "nuget-dg",
-                    $"{Guid.NewGuid()}.dg");
-
+                string path;
                 var envPath = Environment.GetEnvironmentVariable("NUGET_PERSIST_DG_PATH");
-
                 if (!string.IsNullOrEmpty(envPath))
                 {
                     path = envPath;
+                    Directory.CreateDirectory(Path.GetDirectoryName(path));
                 }
-
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                else
+                {
+                    path = Path.Combine(
+                        NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp),
+                        "nuget-dg",
+                        $"{Guid.NewGuid()}.dg");
+                    DirectoryUtility.CreateSharedDirectory(Path.GetDirectoryName(path));
+                }
 
                 log.LogMinimal(
                     string.Format(
