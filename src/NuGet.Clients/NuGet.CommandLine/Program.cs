@@ -135,7 +135,7 @@ namespace NuGet.CommandLine
                 Exception unwrappedEx = ExceptionUtility.Unwrap(exception);
                 if (unwrappedEx is ExitCodeException)
                 {
-                    // Return /the exit code without writing out the exception type
+                    // Return the exit code without writing out the exception type
                     var exitCodeEx = unwrappedEx as ExitCodeException;
                     return exitCodeEx.ExitCode;
                 }

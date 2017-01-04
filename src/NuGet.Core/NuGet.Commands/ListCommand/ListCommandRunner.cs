@@ -30,15 +30,21 @@ namespace NuGet.Commands
 
         {
             //Create SourceFeed for each packageSource
-            IList<ListResource> sourceFeeds = new List<ListResource>();
+            var sourceFeeds = new List<ListResource>();
+            // this is to avoid duplicate remote calls in case of duplicate final endpoints (Ex. api/index.json and /api/v2/ point to the same target)
+            var sources = new HashSet<string>();
+
             foreach (PackageSource packageSource in listArgs.ListEndpoints)
             {
                 var sourceRepository = Repository.Factory.GetCoreV3(packageSource.Source);
                 var feed = await sourceRepository.GetResourceAsync<ListResource>(listArgs.CancellationToken);
-
+                
                 if (feed != null)
                 {
-                    sourceFeeds.Add(feed);
+                    if (sources.Add(feed.Source))
+                    {
+                        sourceFeeds.Add(feed);
+                    }
                 }
                 else
                 {
@@ -46,7 +52,7 @@ namespace NuGet.Commands
                 }
             }
 
-            IList<IEnumerableAsync<IPackageSearchMetadata>> allPackages = new List<IEnumerableAsync<IPackageSearchMetadata>>();
+            var allPackages = new List<IEnumerableAsync<IPackageSearchMetadata>>();
             var log = listArgs.IsDetailed ? listArgs.Logger : NullLogger.Instance;
             foreach (var feed in sourceFeeds)
             {

@@ -96,7 +96,7 @@ namespace NuGet.Protocol
         public VersionInfo[] ParsedVersions { get; private set; }
 
         public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => Task.FromResult<IEnumerable<VersionInfo>>(ParsedVersions);
-
+        //The V3 source currently does return a listed property
         public bool IsListed => true;
     }
 }

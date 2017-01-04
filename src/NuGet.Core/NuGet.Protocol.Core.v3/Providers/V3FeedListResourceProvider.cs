@@ -43,7 +43,7 @@ namespace NuGet.Protocol
                             baseUrl.AbsoluteUri, httpSource.HttpSource, DateTime.UtcNow, NullLogger.Instance, token);
                     var parser = new V2FeedParser(httpSource.HttpSource, serviceDocument.BaseAddress, source.PackageSource.Source);
                     var feedCapabilityResource = new LegacyFeedCapabilityResourceV2Feed(parser, serviceDocument.BaseAddress);
-                    resource = new V2FeedListResource(parser, feedCapabilityResource);
+                    resource = new V2FeedListResource(parser, feedCapabilityResource, serviceDocument.BaseAddress);
                 }
             }
 

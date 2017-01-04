@@ -37,7 +37,7 @@ namespace NuGet.Protocol.LegacyFeed
                         source.PackageSource.Source);
                     var feedCapabilityResource = new LegacyFeedCapabilityResourceV2Feed(parser,
                         serviceDocument.BaseAddress);
-                    resource = new V2FeedListResource(parser, feedCapabilityResource);
+                    resource = new V2FeedListResource(parser, feedCapabilityResource, serviceDocument.BaseAddress);
                 }
             }
             return new Tuple<bool, INuGetResource>(resource != null, resource);

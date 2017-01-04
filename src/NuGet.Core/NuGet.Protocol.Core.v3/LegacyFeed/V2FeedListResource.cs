@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -16,13 +17,17 @@ namespace NuGet.Protocol.LegacyFeed
     {
         private readonly ILegacyFeedCapabilityResource _feedCapabilities;
         private readonly IV2FeedParser _feedParser;
+        private readonly string _baseAddress;
         private const int Take = 30;
 
-        public V2FeedListResource(IV2FeedParser feedParser, ILegacyFeedCapabilityResource feedCapabilities)
+        public V2FeedListResource(IV2FeedParser feedParser, ILegacyFeedCapabilityResource feedCapabilities, string baseAddress)
         {
             _feedParser = feedParser;
             _feedCapabilities = feedCapabilities;
+            _baseAddress = baseAddress;
         }
+
+        public override string Source => _baseAddress;
 
         public async override Task<IEnumerableAsync<IPackageSearchMetadata>> ListAsync(
             string searchTerm,
@@ -168,9 +173,7 @@ internal class EnumeratorAsync : IEnumeratorAsync<IPackageSearchMetadata>
     {
         get
         {
-            if (_currentEnumerator != null)
-                return _currentEnumerator.Current;
-            else return null;
+            return _currentEnumerator?.Current;
         }
     }
 

@@ -102,7 +102,6 @@ namespace NuGet.Common
                                 currentValue = enumerator.Current;
                                 _currentEnumeratorAsync = enumerator;
                             }
-                            firstPass = false;
                         }
                     }
                     firstPass = false;

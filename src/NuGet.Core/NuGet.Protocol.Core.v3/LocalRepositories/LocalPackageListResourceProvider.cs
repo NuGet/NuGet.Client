@@ -25,7 +25,7 @@ namespace NuGet.Protocol.LocalRepositories
 
             if(findLocalPackagesResource != null)
             {
-                resource = new LocalPackageListResource(new LocalPackageSearchResource(findLocalPackagesResource));
+                resource = new LocalPackageListResource(new LocalPackageSearchResource(findLocalPackagesResource), source.PackageSource.Source);
             }
             return new Tuple<bool, INuGetResource>(resource != null, resource);
         }

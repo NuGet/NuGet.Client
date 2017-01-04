@@ -11,11 +11,13 @@ namespace NuGet.Protocol
     public class LocalPackageListResource : ListResource
     {
         private readonly PackageSearchResource _localPackageSearchResource;
-
-        public LocalPackageListResource(PackageSearchResource localPackageSearchResource)
+        private readonly string _baseAddress;
+        public LocalPackageListResource(PackageSearchResource localPackageSearchResource, string baseAddress)
         {
             _localPackageSearchResource = localPackageSearchResource;
+            _baseAddress = baseAddress;
         }
+        public override string Source => _baseAddress;
 
         public override Task<IEnumerableAsync<IPackageSearchMetadata>> ListAsync(string searchTerm, bool prerelease, bool allVersions, bool includeDelisted, ILogger logger,
             CancellationToken token)

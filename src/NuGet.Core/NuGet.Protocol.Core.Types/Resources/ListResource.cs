@@ -16,5 +16,7 @@ namespace NuGet.Protocol.Core.Types
             bool includeDelisted,
             ILogger log,
             CancellationToken token);
+
+        public abstract string Source { get; }
     }
 }
