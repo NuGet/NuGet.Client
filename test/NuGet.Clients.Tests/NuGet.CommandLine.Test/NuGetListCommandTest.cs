@@ -1082,7 +1082,6 @@ namespace NuGet.CommandLine.Test
                         waitForExit: true);
 
                     serverV3.Stop();
-
                     // Assert
                     Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
                     Assert.Contains("Using credentials from config. UserName: user", result.Item2);
@@ -1093,12 +1092,12 @@ namespace NuGet.CommandLine.Test
                 }
             }
         }
-        //TODO NK - Fix this test
+        [Fact]
         public void ListCommand_WithAuthenticatedSourceV2_AppliesCredentialsFromSettings()
         {
             Util.ClearWebCache();
             var expectedAuthHeader = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes("user:password"));
-            var listEndpoint = Guid.NewGuid().ToString() + "/api/v2";
+            var listEndpoint = "api/v2";
 
             using (var randomTestFolder = TestDirectory.Create())
             {
