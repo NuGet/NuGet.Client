@@ -204,7 +204,7 @@ namespace NuGet.CommandLine.XPlat
                 {
                     //Update the packagedependency with the new version
                     packageReferenceArgs.PackageDependency = new PackageDependency(packageReferenceArgs.PackageDependency.Id,
-                        VersionRange.Parse(resolvedVersion.ToString()));
+                        new VersionRange(resolvedVersion));
                 }
             }
         }

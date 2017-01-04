@@ -432,17 +432,16 @@ namespace NuGet.XPlat.FuncTest
 
                 var packageArgs = GetPackageReferenceArgs(packageX.Id, packageX.Version, projectA);
                 var commandRunner = new AddPackageReferenceCommandRunner();
-                var msBuild = MsBuild;
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, msBuild)
+                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
                     .Result;
                 var projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
 
                 packageArgs = GetPackageReferenceArgs(packageY.Id, packageY.Version, projectA);
 
                 // Act
-                result = commandRunner.ExecuteCommand(packageArgs, msBuild)
+                result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
                     .Result;
                 projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
 
