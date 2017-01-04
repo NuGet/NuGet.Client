@@ -249,6 +249,24 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Item : {0} for {1} in Imported file : {2}.
+        /// </summary>
+        public static string Error_AddPkgErrorStringForImportedEdit {
+            get {
+                return ResourceManager.GetString("Error_AddPkgErrorStringForImportedEdit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Error while performing : {0} for package : {1}. Cannot edit items in imported files - {2}{3}.
+        /// </summary>
+        public static string Error_AddPkgFailOnImportEdit {
+            get {
+                return ResourceManager.GetString("Error_AddPkgFailOnImportEdit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Package : &apos;{0}&apos; is incompatible with all the frameworks in project : &apos;{1}&apos;.
         /// </summary>
         public static string Error_AddPkgIncompatibleWithAllFrameworks {
@@ -321,6 +339,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to PackageReference for package : {0} version : {1} added to file : {2}.
+        /// </summary>
+        public static string Info_AddPkgAdded {
+            get {
+                return ResourceManager.GetString("Info_AddPkgAdded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Adding PackageReference for package : &apos;{0}&apos;, into project : &apos;{1}&apos;.
         /// </summary>
         public static string Info_AddPkgAddingReference {
@@ -344,6 +371,15 @@ namespace NuGet.CommandLine.XPlat {
         public static string Info_AddPkgCompatibleWithSubsetFrameworks {
             get {
                 return ResourceManager.GetString("Info_AddPkgCompatibleWithSubsetFrameworks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to PackageReference for package : {0} version : {1} updated in file : {2}.
+        /// </summary>
+        public static string Info_AddPkgUpdated {
+            get {
+                return ResourceManager.GetString("Info_AddPkgUpdated", resourceCulture);
             }
         }
         

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using NuGet.Commands;
@@ -19,6 +20,19 @@ namespace NuGet.CommandLine.XPlat
         private const string VERSION_TAG = "Version";
         private const string FRAMEWORK_TAG = "TargetFramework";
         private const string FRAMEWORKS_TAG = "TargetFrameworks";
+        private const string UPDATE_OPERATION = "Update";
+        private const string REMOVE_OPERATION = "Remove";
+
+        public ILogger Logger { get; }
+
+        public MSBuildAPIUtility(ILogger logger)
+        {
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+            Logger = logger;
+        }
 
         /// <summary>
         /// Opens an MSBuild.Evaluation.Project type from a csproj file.
@@ -88,7 +102,8 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        private void AddPackageReference(Project project, PackageDependency packageDependency,
+        private void AddPackageReference(Project project,
+            PackageDependency packageDependency,
             IEnumerable<ProjectItem> existingPackageReferences,
             string framework = null)
         {
@@ -112,6 +127,7 @@ namespace NuGet.CommandLine.XPlat
         {
             return project
                 .Items
+                .Where(i => !i.IsImported)
                 .Select(item => item.Xml.Parent as ProjectItemGroupElement)
                 .Distinct();
         }
@@ -147,20 +163,36 @@ namespace NuGet.CommandLine.XPlat
         private void UpdatePackageReferenceItems(IEnumerable<ProjectItem> packageReferencesItems,
             PackageDependency packageDependency)
         {
+            var importedPackageReferences = packageReferencesItems
+                .Where(i => i.IsImported);
+
+            // Throw if any of the package references to be updated are imported.
+            if (importedPackageReferences.Any())
+            {
+                var errors = new StringBuilder();
+                foreach (var importedPackageReference in importedPackageReferences)
+                {
+                    errors.AppendLine(string.Format(CultureInfo.CurrentCulture,
+                        "\t " + Strings.Error_AddPkgErrorStringForImportedEdit,
+                        importedPackageReference.ItemType,
+                        importedPackageReference.UnevaluatedInclude,
+                        importedPackageReference.Xml.ContainingProject.FullPath));
+                }
+                throw new Exception(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Error_AddPkgFailOnImportEdit,
+                    UPDATE_OPERATION,
+                    packageDependency.Id,
+                    Environment.NewLine,
+                    errors));
+            }
             foreach (var packageReferenceItem in packageReferencesItems)
             {
-                var versionMetadata = packageReferenceItem
-                    .Metadata
-                    .Where(m => m.Name.Equals(VERSION_TAG, StringComparison.OrdinalIgnoreCase))
-                    .FirstOrDefault();
-                if (versionMetadata == null)
-                {
-                    packageReferenceItem.SetMetadataValue(VERSION_TAG, packageDependency.VersionRange.OriginalString);
-                }
-                else
-                {
-                    versionMetadata.UnevaluatedValue = packageDependency.VersionRange.OriginalString;
-                }
+                packageReferenceItem.SetMetadataValue(VERSION_TAG, packageDependency.VersionRange.OriginalString);
+                Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Info_AddPkgUpdated,
+                    packageDependency.Id,
+                    packageDependency.VersionRange.OriginalString,
+                    packageReferenceItem.Xml.ContainingProject.FullPath));
             }
         }
 
@@ -174,6 +206,11 @@ namespace NuGet.CommandLine.XPlat
 
             itemGroup.AddItem(PACKAGE_REFERENCE_TYPE_TAG, packageDependency.Id, packageMetadata);
             itemGroup.ContainingProject.Save();
+            Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                Strings.Info_AddPkgAdded,
+                packageDependency.Id,
+                packageDependency.VersionRange.OriginalString,
+                itemGroup.ContainingProject.FullPath));
         }
 
         /// <summary>
@@ -211,9 +248,7 @@ namespace NuGet.CommandLine.XPlat
                 { { "TargetFramework", framework } };
                 var projectPerFramework = GetProject(project.FullPath, globalProperties);
 
-                mergedPackageReferences.AddRange(projectPerFramework.AllEvaluatedItems
-                .Where(item => item.ItemType.Equals(PACKAGE_REFERENCE_TYPE_TAG, StringComparison.OrdinalIgnoreCase) &&
-                               item.EvaluatedInclude.Equals(packageDependency.Id, StringComparison.OrdinalIgnoreCase)));
+                mergedPackageReferences.AddRange(GetPackageReferences(projectPerFramework, packageDependency));
                 ProjectCollection.GlobalProjectCollection.UnloadProject(projectPerFramework);
             }
             return mergedPackageReferences;

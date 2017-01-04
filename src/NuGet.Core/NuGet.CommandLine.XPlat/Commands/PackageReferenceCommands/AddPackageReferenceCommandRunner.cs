@@ -2,21 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using NuGet.Commands;
-using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
-using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
@@ -76,8 +71,6 @@ namespace NuGet.CommandLine.XPlat
                 .CompatibilityCheckResults
                 .Where(t => t.Success)
                 .Select(t => t.Graph.Framework));
-
-            var x = restorePreviewResult.Result.GetAllUnresolved();
 
             if (packageReferenceArgs.Frameworks?.Any() == true)
             {
@@ -219,17 +212,30 @@ namespace NuGet.CommandLine.XPlat
         private NuGetVersion privateGetPackageVersionFromRestoreResult(RestoreResultPair restorePreviewResult,
             PackageReferenceArgs packageReferenceArgs)
         {
-            // Get the flattened restore graph
-            var flattenedRestoreGraphs = restorePreviewResult
+            // Get the restore graphs from the restore result
+            var restoreGraphs = restorePreviewResult
                 .Result
-                .RestoreGraphs
-                .Select(r => r.Flattened);
+                .RestoreGraphs;
 
-            foreach (var flattenedRestoreGraph in flattenedRestoreGraphs)
+            if (packageReferenceArgs.Frameworks?.Any() == true)
             {
-                var matchingPackageEntries = flattenedRestoreGraph
+                // If the user specified frameworks then we get the flattened graphs  only from the compatible frameworks.
+                var userSpecifiedFrameworks = new HashSet<NuGetFramework>(
+                    packageReferenceArgs
+                    .Frameworks
+                    .Select(f => NuGetFramework.Parse(f)));
+
+                restoreGraphs = restoreGraphs
+                    .Where(r => userSpecifiedFrameworks.Contains(r.Framework));
+            }
+
+            foreach (var restoreGraph in restoreGraphs)
+            {
+                var matchingPackageEntries = restoreGraph
+                    .Flattened
                     .Select(p => p)
                     .Where(p => p.Key.Name.Equals(packageReferenceArgs.PackageDependency.Id, StringComparison.OrdinalIgnoreCase));
+
                 if (matchingPackageEntries.Count() > 0)
                 {
                     return matchingPackageEntries

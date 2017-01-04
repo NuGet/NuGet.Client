@@ -398,4 +398,29 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="Error_NoDgSpec" xml:space="preserve">
     <value>None or invalid DgSpec was passed to NuGet add package command.</value>
   </data>
+  <data name="Error_AddPkgErrorStringForImportedEdit" xml:space="preserve">
+    <value>Item : {0} for {1} in Imported file : {2}</value>
+    <comment>{0} - ItemType
+{1} - Package Id
+{2} - Imported File Path</comment>
+  </data>
+  <data name="Error_AddPkgFailOnImportEdit" xml:space="preserve">
+    <value>Error while performing : {0} for package : {1}. Cannot edit items in imported files - {2}{3}</value>
+    <comment>{0} - Operation Name
+{1} - packageId
+{2} - New line
+{3} - Error string</comment>
+  </data>
+  <data name="Info_AddPkgAdded" xml:space="preserve">
+    <value>PackageReference for package : {0} version : {1} added to file : {2}</value>
+    <comment>{0} - Package Id
+{1} - package version
+{2} - project file path</comment>
+  </data>
+  <data name="Info_AddPkgUpdated" xml:space="preserve">
+    <value>PackageReference for package : {0} version : {1} updated in file : {2}</value>
+    <comment>{0} - Package Id
+{1} - package version
+{2} - project file path</comment>
+  </data>
 </root>
