@@ -11,6 +11,7 @@ artifacts/
 **/.vscode/
 
 cli/
+cli_test/
 **/nupkgs/*.nupkg
 packages/
 .nuget/nuget.exe
