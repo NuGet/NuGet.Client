@@ -342,11 +342,13 @@ namespace NuGet.PackageManagement.VisualStudio
                 EnvDTEProperty property = envDTEProject.Properties.Item(propertyName);
                 if (property != null)
                 {
-                    // REVIEW: Should this cast or convert?
                     return (T)property.Value;
                 }
             }
             catch (ArgumentException)
+            {
+            }
+            catch (InvalidCastException)
             {
             }
             return default(T);
@@ -626,15 +628,15 @@ namespace NuGet.PackageManagement.VisualStudio
             var platformIdentifier = GetPropertyValue<string>(envDTEProject, "TargetPlatformIdentifier");
             var platformVersion = GetPropertyValue<string>(envDTEProject, "TargetPlatformVersion");
             var targetFrameworkMoniker = GetPropertyValue<string>(envDTEProject, "TargetFrameworkMoniker");
-            var targetFramework = GetPropertyValue<string>(envDTEProject, "TargetFramework");
-            var targetFrameworks = GetPropertyValue<string>(envDTEProject, "TargetFrameworks");
             var isManagementPackProject = IsManagementPackProject(envDTEProject);
             var isXnaWindowsPhoneProject = IsXnaWindowsPhoneProject(envDTEProject);
 
+            // Projects supporting TargetFramework and TargetFrameworks are detected before
+            // this check. The values can be passed as null here.
             var frameworkStrings = MSBuildProjectFrameworkUtility.GetProjectFrameworkStrings(
                 projectFilePath: projectPath,
-                targetFrameworks: targetFrameworks,
-                targetFramework: targetFramework,
+                targetFrameworks: null,
+                targetFramework: null,
                 targetFrameworkMoniker: targetFrameworkMoniker,
                 targetPlatformIdentifier: platformIdentifier,
                 targetPlatformVersion: platformVersion,
