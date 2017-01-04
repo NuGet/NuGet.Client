@@ -10,8 +10,6 @@ using Microsoft.Extensions.CommandLineUtils;
 using Moq;
 using NuGet.CommandLine.XPlat;
 using NuGet.Commands;
-using NuGet.Common;
-using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
@@ -24,7 +22,11 @@ namespace NuGet.XPlat.FuncTest
     public class XPlatAddPkgTests
     {
         private static readonly string projectName = "test_project_addpkg";
-        private static MSBuildAPIUtility msBuild = new MSBuildAPIUtility(new TestCommandOutputLogger());
+
+        private static MSBuildAPIUtility MsBuild
+        {
+            get { return new MSBuildAPIUtility(new TestCommandOutputLogger()); }
+        }
 
         // Argument parsing related tests
 
@@ -132,7 +134,7 @@ namespace NuGet.XPlat.FuncTest
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, msBuild).Result;
+                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild).Result;
                 var projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
                 var itemGroup = GetItemGroupForAllFrameworks(projectXmlRoot);
 
@@ -170,7 +172,7 @@ namespace NuGet.XPlat.FuncTest
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, msBuild)
+                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
                     .Result;
                 var projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
 
@@ -206,7 +208,7 @@ namespace NuGet.XPlat.FuncTest
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, msBuild)
+                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
                     .Result;
                 var projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
 
@@ -242,7 +244,7 @@ namespace NuGet.XPlat.FuncTest
                 var commonFramework = GetCommonFramework(packageFrameworks, projectFrameworks);
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, msBuild)
+                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
                     .Result;
                 var projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
                 var itemGroup = GetItemGroupForFramework(projectXmlRoot, commonFramework);
@@ -281,7 +283,7 @@ namespace NuGet.XPlat.FuncTest
                 var commonFramework = GetCommonFramework(packageFrameworks, projectFrameworks, userInputFrameworks);
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, msBuild)
+                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
                     .Result;
                 var projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
                 var itemGroup = GetItemGroupForFramework(projectXmlRoot, commonFramework);
@@ -326,7 +328,7 @@ namespace NuGet.XPlat.FuncTest
                 var commonFramework = GetCommonFramework(packageFrameworks, projectFrameworks, userInputFrameworks);
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, msBuild)
+                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
                     .Result;
                 var projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
                 var itemGroup = GetItemGroupForFramework(projectXmlRoot, commonFramework);
@@ -366,7 +368,7 @@ namespace NuGet.XPlat.FuncTest
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, msBuild)
+                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
                     .Result;
                 var projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
 
@@ -396,7 +398,7 @@ namespace NuGet.XPlat.FuncTest
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, msBuild)
+                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
                     .Result;
                 var projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
 
@@ -430,6 +432,7 @@ namespace NuGet.XPlat.FuncTest
 
                 var packageArgs = GetPackageReferenceArgs(packageX.Id, packageX.Version, projectA);
                 var commandRunner = new AddPackageReferenceCommandRunner();
+                var msBuild = MsBuild;
 
                 // Act
                 var result = commandRunner.ExecuteCommand(packageArgs, msBuild)
@@ -478,6 +481,7 @@ namespace NuGet.XPlat.FuncTest
                 var packageArgs = GetPackageReferenceArgs(packageX.Id, packageX.Version, projectA, frameworks: userInputFrameworks);
                 var commandRunner = new AddPackageReferenceCommandRunner();
                 var commonFramework = GetCommonFramework(packageFrameworks, projectFrameworks, userInputFrameworks);
+                var msBuild = MsBuild;
 
                 // Act
                 var result = commandRunner.ExecuteCommand(packageArgs, msBuild)
@@ -520,7 +524,7 @@ namespace NuGet.XPlat.FuncTest
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, msBuild)
+                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
                     .Result;
                 var projectXmlRoot = LoadCSProj(projectA.ProjectPath).Root;
                 var itemGroup = GetItemGroupForAllFrameworks(projectXmlRoot);
@@ -561,6 +565,7 @@ namespace NuGet.XPlat.FuncTest
 
                 var packageArgs = GetPackageReferenceArgs(packageX.Id, userInputVersionOld, projectA);
                 var commandRunner = new AddPackageReferenceCommandRunner();
+                var msBuild = MsBuild;
 
                 // Create a package ref with the old version
                 var result = commandRunner.ExecuteCommand(packageArgs, msBuild)
@@ -632,6 +637,7 @@ namespace NuGet.XPlat.FuncTest
 
                 var packageArgs = GetPackageReferenceArgs(packageX.Id, userInputVersionOld, projectA);
                 var commandRunner = new AddPackageReferenceCommandRunner();
+                var msBuild = MsBuild;
 
                 // Create a package ref with old version
                 var result = commandRunner.ExecuteCommand(packageArgs, msBuild)

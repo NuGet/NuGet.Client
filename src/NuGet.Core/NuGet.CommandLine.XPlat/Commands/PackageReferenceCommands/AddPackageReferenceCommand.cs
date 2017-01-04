@@ -15,8 +15,6 @@ namespace NuGet.CommandLine.XPlat
 {
     public static class AddPackageReferenceCommand
     {
-        private const string MSBuildExeName = "MSBuild.dll";
-
         public static void Register(CommandLineApplication app, Func<ILogger> getLogger,
             Func<IAddPackageReferenceCommandRunner> getCommandRunner)
         {

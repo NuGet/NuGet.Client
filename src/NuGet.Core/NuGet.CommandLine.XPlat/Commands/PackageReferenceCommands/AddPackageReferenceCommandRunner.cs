@@ -134,7 +134,7 @@ namespace NuGet.CommandLine.XPlat
             return 0;
         }
 
-        private async Task<RestoreResultPair> PreviewAddPackageReference(PackageReferenceArgs packageReferenceArgs,
+        private static async Task<RestoreResultPair> PreviewAddPackageReference(PackageReferenceArgs packageReferenceArgs,
             DependencyGraphSpec dgSpec,
             PackageSpec originalPackageSpec)
         {
@@ -179,7 +179,7 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        private DependencyGraphSpec ReadProjectDependencyGraph(PackageReferenceArgs packageReferenceArgs)
+        private static DependencyGraphSpec ReadProjectDependencyGraph(PackageReferenceArgs packageReferenceArgs)
         {
             DependencyGraphSpec spec = null;
 
@@ -191,14 +191,14 @@ namespace NuGet.CommandLine.XPlat
             return spec;
         }
 
-        private void UpdatePackageVersionIfNeeded(RestoreResultPair restorePreviewResult,
+        private static void UpdatePackageVersionIfNeeded(RestoreResultPair restorePreviewResult,
             PackageReferenceArgs packageReferenceArgs)
         {
             // If the user did not specify a version then write the exact resolved version
             if (packageReferenceArgs.NoVersion)
             {
                 // Get the package version from the graph
-                var resolvedVersion = privateGetPackageVersionFromRestoreResult(restorePreviewResult, packageReferenceArgs);
+                var resolvedVersion = GetPackageVersionFromRestoreResult(restorePreviewResult, packageReferenceArgs);
 
                 if (resolvedVersion != null)
                 {
@@ -209,7 +209,7 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        private NuGetVersion privateGetPackageVersionFromRestoreResult(RestoreResultPair restorePreviewResult,
+        private static NuGetVersion GetPackageVersionFromRestoreResult(RestoreResultPair restorePreviewResult,
             PackageReferenceArgs packageReferenceArgs)
         {
             // Get the restore graphs from the restore result
@@ -236,7 +236,7 @@ namespace NuGet.CommandLine.XPlat
                     .Select(p => p)
                     .Where(p => p.Key.Name.Equals(packageReferenceArgs.PackageDependency.Id, StringComparison.OrdinalIgnoreCase));
 
-                if (matchingPackageEntries.Count() > 0)
+                if (matchingPackageEntries.Any())
                 {
                     return matchingPackageEntries
                         .First()

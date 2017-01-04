@@ -39,7 +39,7 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="projectCSProjPath">CSProj file which needs to be evaluated</param>
         /// <returns>MSBuild.Evaluation.Project</returns>
-        private Project GetProject(string projectCSProjPath)
+        private static Project GetProject(string projectCSProjPath)
         {
             var projectRootElement = TryOpenProjectRootElement(projectCSProjPath);
             if (projectCSProjPath == null)
@@ -55,7 +55,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="projectCSProjPath">CSProj file which needs to be evaluated</param>
         /// <param name="globalProperties">Global properties that should be used to evaluate the project while opening.</param>
         /// <returns>MSBuild.Evaluation.Project</returns>
-        private Project GetProject(string projectCSProjPath, IDictionary<string, string> globalProperties)
+        private static Project GetProject(string projectCSProjPath, IDictionary<string, string> globalProperties)
         {
             var projectRootElement = TryOpenProjectRootElement(projectCSProjPath);
             if (projectCSProjPath == null)
@@ -123,7 +123,7 @@ namespace NuGet.CommandLine.XPlat
             project.Save();
         }
 
-        private IEnumerable<ProjectItemGroupElement> GetItemGroups(Project project)
+        private static IEnumerable<ProjectItemGroupElement> GetItemGroups(Project project)
         {
             return project
                 .Items
@@ -139,7 +139,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="itemGroups">List of all item groups in the project</param>
         /// <param name="itemType">An item type tag that must be in the item group. It if PackageReference in this case.</param>
         /// <returns>An ItemGroup, which could be null.</returns>
-        private ProjectItemGroupElement GetItemGroup(Project project, IEnumerable<ProjectItemGroupElement> itemGroups,
+        private static ProjectItemGroupElement GetItemGroup(Project project, IEnumerable<ProjectItemGroupElement> itemGroups,
             string itemType)
         {
             var itemGroup = itemGroups?
@@ -149,7 +149,7 @@ namespace NuGet.CommandLine.XPlat
             return itemGroup;
         }
 
-        private ProjectItemGroupElement CreateItemGroup(Project project, string framework = null)
+        private static ProjectItemGroupElement CreateItemGroup(Project project, string framework = null)
         {
             // Create a new item group and add a condition if given
             var itemGroup = project.Xml.AddItemGroup();
@@ -221,7 +221,7 @@ namespace NuGet.CommandLine.XPlat
         /// The project should have the global property set to have a specific framework</param>
         /// <param name="packageDependency">Dependency of the package.</param>
         /// <returns>List of Items containing the package reference for the package.</returns>
-        private IEnumerable<ProjectItem> GetPackageReferences(Project project, PackageDependency packageDependency)
+        private static IEnumerable<ProjectItem> GetPackageReferences(Project project, PackageDependency packageDependency)
         {
             return project.AllEvaluatedItems
                 .Where(item => item.ItemType.Equals(PACKAGE_REFERENCE_TYPE_TAG, StringComparison.OrdinalIgnoreCase) &&
@@ -237,7 +237,7 @@ namespace NuGet.CommandLine.XPlat
         /// The project should have the global property set to have a specific framework</param>
         /// <param name="packageDependency">Dependency of the package.</param>
         /// <returns>List of Items containing the package reference for the package.</returns>
-        private IEnumerable<ProjectItem> GetPackageReferencesForAllFrameworks(Project project,
+        private static IEnumerable<ProjectItem> GetPackageReferencesForAllFrameworks(Project project,
             PackageDependency packageDependency)
         {
             var frameworks = GetProjectFrameworks(project);
@@ -254,7 +254,7 @@ namespace NuGet.CommandLine.XPlat
             return mergedPackageReferences;
         }
 
-        private IEnumerable<string> GetProjectFrameworks(Project project)
+        private static IEnumerable<string> GetProjectFrameworks(Project project)
         {
             var frameworks = project
                 .AllEvaluatedProperties
@@ -273,7 +273,7 @@ namespace NuGet.CommandLine.XPlat
             return frameworks;
         }
 
-        private ProjectRootElement TryOpenProjectRootElement(string filename)
+        private static ProjectRootElement TryOpenProjectRootElement(string filename)
         {
             try
             {
@@ -287,7 +287,7 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        private string GetTargetFrameworkCondition(string targetFramework)
+        private static string GetTargetFrameworkCondition(string targetFramework)
         {
             return string.Format("'$(TargetFramework)' == '{0}'", targetFramework);
         }
