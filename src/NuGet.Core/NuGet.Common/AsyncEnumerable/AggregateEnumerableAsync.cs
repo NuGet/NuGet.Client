@@ -42,6 +42,7 @@ namespace NuGet.Common
         private readonly List<IEnumeratorAsync<T>> _asyncEnumerators = new List<IEnumeratorAsync<T>>();
         private IEnumeratorAsync<T> _currentEnumeratorAsync;
         private IEnumeratorAsync<T> _lastAwaitedEnumeratorAsync;
+        private bool firstPass = true;
 
 
         public AggregateEnumeratorAsync(IList<IEnumerableAsync<T>> asyncEnumerables, IComparer<T> orderingComparer, IEqualityComparer<T> equalityComparer)
@@ -77,27 +78,59 @@ namespace NuGet.Common
             while (_asyncEnumerators.Count > 0)
             {
                 T currentValue = default(T);
-                List<IEnumeratorAsync<T>> completedEnums = null; 
-                foreach (IEnumeratorAsync<T> enumerator in _asyncEnumerators)
+                var hasValue = false;
+                List<IEnumeratorAsync<T>> completedEnums = null;
+
+                if (firstPass)
                 {
-                    bool hasNext = true;
-                    if (enumerator.Current == null || enumerator == _lastAwaitedEnumeratorAsync)
+                    foreach (IEnumeratorAsync<T> enumerator in _asyncEnumerators)
                     {
-                        hasNext = await enumerator.MoveNextAsync();
-                        if (!hasNext)
+                        if (!await enumerator.MoveNextAsync())
                         {
                             if (completedEnums == null)
                             {
                                 completedEnums = new List<IEnumeratorAsync<T>>();
                             }
                             completedEnums.Add(enumerator);
+
+                        }
+                        else
+                        {
+                            if (!hasValue || _orderingComparer.Compare(currentValue, enumerator.Current) > 0)
+                            {
+                                hasValue = true;
+                                currentValue = enumerator.Current;
+                                _currentEnumeratorAsync = enumerator;
+                            }
+                            firstPass = false;
                         }
                     }
-
-                    if (hasNext && _orderingComparer.Compare(currentValue,enumerator.Current) < 0)
+                    firstPass = false;
+                }
+                else
+                {
+                    foreach (IEnumeratorAsync<T> enumerator in _asyncEnumerators)
                     {
-                        currentValue = enumerator.Current;
-                        _currentEnumeratorAsync = enumerator;
+                        bool hasNext = true;
+                        if (enumerator == _lastAwaitedEnumeratorAsync)
+                        {
+                            hasNext = await enumerator.MoveNextAsync();
+                            if (!hasNext)
+                            {
+                                if (completedEnums == null)
+                                {
+                                    completedEnums = new List<IEnumeratorAsync<T>>();
+                                }
+                                completedEnums.Add(enumerator);
+                            }
+                        }
+
+                        if (hasNext && (!hasValue || _orderingComparer.Compare(currentValue, enumerator.Current) > 0))
+                        {
+                            hasValue = true;
+                            currentValue = enumerator.Current;
+                            _currentEnumeratorAsync = enumerator;
+                        }
                     }
                 }
                 _lastAwaitedEnumeratorAsync = _currentEnumeratorAsync;
@@ -107,7 +140,7 @@ namespace NuGet.Common
                     _asyncEnumerators.RemoveAll(obj => completedEnums.Contains(obj));
                 }
 
-                if (currentValue != null)
+                if (hasValue)
                 {
                     if (_seen.Add(currentValue))
                     {

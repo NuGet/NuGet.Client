@@ -1,18 +1,14 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
-using NuGet.Common;
 
 namespace NuGet.Common.Test
 {
     public class AggregateEnumerableAsyncTest
     {
-
         [Fact]
         public async Task TestAllEmptyEnums()
         {
@@ -64,6 +60,7 @@ namespace NuGet.Common.Test
             var expectedUniqueCount = 10;
             var actualCount = 0;
             var last = int.MinValue;
+
             while (await enumerator.MoveNextAsync())
             {
                 actualCount++;
@@ -141,7 +138,7 @@ namespace NuGet.Common.Test
             var aggregateEnumerable = new AggregateEnumerableAsync<int>(new List<IEnumerableAsync<int>> { enum1, enum2, enum3 }, null, null);
             var enumerator = aggregateEnumerable.GetEnumeratorAsync();
 
-            var expectedUniqueCount = 10;
+            var expectedUniqueCount = 12;
             var actualCount = 0;
             var last = int.MinValue;
             while (await enumerator.MoveNextAsync())
