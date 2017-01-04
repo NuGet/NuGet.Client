@@ -2,21 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using NuGet.Commands;
-using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
-using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
@@ -77,8 +72,6 @@ namespace NuGet.CommandLine.XPlat
                 .Where(t => t.Success)
                 .Select(t => t.Graph.Framework));
 
-            var x = restorePreviewResult.Result.GetAllUnresolved();
-
             if (packageReferenceArgs.Frameworks?.Any() == true)
             {
                 // If the user has specified frameworks then we intersect that with the compatible frameworks.
@@ -98,6 +91,7 @@ namespace NuGet.CommandLine.XPlat
                 packageReferenceArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture,
                     Strings.Error_AddPkgIncompatibleWithAllFrameworks,
                     packageReferenceArgs.PackageDependency.Id,
+                    packageReferenceArgs.Frameworks?.Any() == true ? Strings.AddPkg_UserSpecified : Strings.AddPkg_All,
                     packageReferenceArgs.ProjectPath));
 
                 return 1;
@@ -141,7 +135,7 @@ namespace NuGet.CommandLine.XPlat
             return 0;
         }
 
-        private async Task<RestoreResultPair> PreviewAddPackageReference(PackageReferenceArgs packageReferenceArgs,
+        private static async Task<RestoreResultPair> PreviewAddPackageReference(PackageReferenceArgs packageReferenceArgs,
             DependencyGraphSpec dgSpec,
             PackageSpec originalPackageSpec)
         {
@@ -186,7 +180,7 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        private DependencyGraphSpec ReadProjectDependencyGraph(PackageReferenceArgs packageReferenceArgs)
+        private static DependencyGraphSpec ReadProjectDependencyGraph(PackageReferenceArgs packageReferenceArgs)
         {
             DependencyGraphSpec spec = null;
 
@@ -198,30 +192,60 @@ namespace NuGet.CommandLine.XPlat
             return spec;
         }
 
-        private void UpdatePackageVersionIfNeeded(RestoreResultPair restorePreviewResult,
+        private static void UpdatePackageVersionIfNeeded(RestoreResultPair restorePreviewResult,
             PackageReferenceArgs packageReferenceArgs)
         {
             // If the user did not specify a version then write the exact resolved version
             if (packageReferenceArgs.NoVersion)
             {
-                // Get the flattened restore graph
-                var flattenedRestoreGraph = restorePreviewResult
-                    .Result
-                    .RestoreGraphs
-                    .First()
-                    .Flattened;
+                // Get the package version from the graph
+                var resolvedVersion = GetPackageVersionFromRestoreResult(restorePreviewResult, packageReferenceArgs);
 
-                // Get the package entry and version from the graph
-                var packageEntry = flattenedRestoreGraph
-                    .Single(p => p.Key.Name.Equals(packageReferenceArgs.PackageDependency.Id, StringComparison.OrdinalIgnoreCase));
-                var resolvedVersion = packageEntry
-                    .Key
-                    .Version;
-
-                //Update the packagedependency with the new version
-                packageReferenceArgs.PackageDependency = new PackageDependency(packageReferenceArgs.PackageDependency.Id,
-                    VersionRange.Parse(resolvedVersion.ToString()));
+                if (resolvedVersion != null)
+                {
+                    //Update the packagedependency with the new version
+                    packageReferenceArgs.PackageDependency = new PackageDependency(packageReferenceArgs.PackageDependency.Id,
+                        new VersionRange(resolvedVersion));
+                }
             }
+        }
+
+        private static NuGetVersion GetPackageVersionFromRestoreResult(RestoreResultPair restorePreviewResult,
+            PackageReferenceArgs packageReferenceArgs)
+        {
+            // Get the restore graphs from the restore result
+            var restoreGraphs = restorePreviewResult
+                .Result
+                .RestoreGraphs;
+
+            if (packageReferenceArgs.Frameworks?.Any() == true)
+            {
+                // If the user specified frameworks then we get the flattened graphs  only from the compatible frameworks.
+                var userSpecifiedFrameworks = new HashSet<NuGetFramework>(
+                    packageReferenceArgs
+                    .Frameworks
+                    .Select(f => NuGetFramework.Parse(f)));
+
+                restoreGraphs = restoreGraphs
+                    .Where(r => userSpecifiedFrameworks.Contains(r.Framework));
+            }
+
+            foreach (var restoreGraph in restoreGraphs)
+            {
+                var matchingPackageEntries = restoreGraph
+                    .Flattened
+                    .Select(p => p)
+                    .Where(p => p.Key.Name.Equals(packageReferenceArgs.PackageDependency.Id, StringComparison.OrdinalIgnoreCase));
+
+                if (matchingPackageEntries.Any())
+                {
+                    return matchingPackageEntries
+                        .First()
+                        .Key
+                        .Version;
+                }
+            }
+            return null;
         }
     }
 }

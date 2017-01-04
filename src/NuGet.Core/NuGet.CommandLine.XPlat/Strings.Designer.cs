@@ -60,6 +60,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to all.
+        /// </summary>
+        public static string AddPkg_All {
+            get {
+                return ResourceManager.GetString("AddPkg_All", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Adds a package reference to a project..
         /// </summary>
         public static string AddPkg_Description {
@@ -146,6 +155,15 @@ namespace NuGet.CommandLine.XPlat {
         public static string AddPkg_SourcesDescription {
             get {
                 return ResourceManager.GetString("AddPkg_SourcesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to user specified.
+        /// </summary>
+        public static string AddPkg_UserSpecified {
+            get {
+                return ResourceManager.GetString("AddPkg_UserSpecified", resourceCulture);
             }
         }
         
@@ -249,7 +267,25 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Package : &apos;{0}&apos; is incompatible with all the frameworks in project : &apos;{1}&apos;.
+        ///    Looks up a localized string similar to Item &apos;{0}&apos; for &apos;{1}&apos; in Imported file &apos;{2}&apos;.
+        /// </summary>
+        public static string Error_AddPkgErrorStringForImportedEdit {
+            get {
+                return ResourceManager.GetString("Error_AddPkgErrorStringForImportedEdit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Error while performing  &apos;{0}&apos; for package &apos;{1}&apos;. Cannot edit items in imported files - {2}{3}.
+        /// </summary>
+        public static string Error_AddPkgFailOnImportEdit {
+            get {
+                return ResourceManager.GetString("Error_AddPkgFailOnImportEdit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Package &apos;{0}&apos; is incompatible with &apos;{1}&apos; frameworks in project &apos;{2}&apos;.
         /// </summary>
         public static string Error_AddPkgIncompatibleWithAllFrameworks {
             get {
@@ -321,7 +357,16 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Adding PackageReference for package : &apos;{0}&apos;, into project : &apos;{1}&apos;.
+        ///    Looks up a localized string similar to PackageReference for package &apos;{0}&apos; version &apos;{1}&apos; added to file &apos;{2}&apos;.
+        /// </summary>
+        public static string Info_AddPkgAdded {
+            get {
+                return ResourceManager.GetString("Info_AddPkgAdded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Adding PackageReference for package &apos;{0}&apos;, into project &apos;{1}&apos;.
         /// </summary>
         public static string Info_AddPkgAddingReference {
             get {
@@ -330,7 +375,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Package : &apos;{0}&apos; is compatible with all the specified frameworks in project : &apos;{1}&apos;.
+        ///    Looks up a localized string similar to Package &apos;{0}&apos; is compatible with all the specified frameworks in project &apos;{1}&apos;.
         /// </summary>
         public static string Info_AddPkgCompatibleWithAllFrameworks {
             get {
@@ -339,11 +384,20 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Package : &apos;{0}&apos; is compatible with a subset of the specified frameworks in project : &apos;{1}&apos;.
+        ///    Looks up a localized string similar to Package &apos;{0}&apos; is compatible with a subset of the specified frameworks in project &apos;{1}&apos;.
         /// </summary>
         public static string Info_AddPkgCompatibleWithSubsetFrameworks {
             get {
                 return ResourceManager.GetString("Info_AddPkgCompatibleWithSubsetFrameworks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to PackageReference for package &apos;{0}&apos; version &apos;{1}&apos; updated in file &apos;{2}&apos;.
+        /// </summary>
+        public static string Info_AddPkgUpdated {
+            get {
+                return ResourceManager.GetString("Info_AddPkgUpdated", resourceCulture);
             }
         }
         
