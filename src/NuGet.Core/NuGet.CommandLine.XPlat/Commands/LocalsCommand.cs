@@ -3,7 +3,7 @@
 
 using System;
 using System.Globalization;
-using Microsoft.Dnx.Runtime.Common.CommandLine;
+using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;

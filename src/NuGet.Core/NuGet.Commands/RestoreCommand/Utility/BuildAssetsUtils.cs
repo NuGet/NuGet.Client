@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Xml.Linq;
 using NuGet.Common;
 using NuGet.DependencyResolver;
@@ -132,6 +131,7 @@ namespace NuGet.Commands
             IEnumerable<string> packageFolders,
             string repositoryRoot,
             ProjectStyle projectStyle,
+            string assetsFilePath,
             bool success)
         {
             // For project.json not all files are written out. Find the first one
@@ -142,20 +142,27 @@ namespace NuGet.Commands
 
             if (firstImport != null)
             {
-                AddNuGetProperties(firstImport.Content, packageFolders, repositoryRoot, projectStyle, success);
+                AddNuGetProperties(firstImport.Content, packageFolders, repositoryRoot, projectStyle, assetsFilePath, success);
             }
         }
 
         /// <summary>
         /// Apply standard properties in a property group.
         /// </summary>
-        public static void AddNuGetProperties(XDocument doc, IEnumerable<string> packageFolders, string repositoryRoot, ProjectStyle projectStyle, bool success)
+        public static void AddNuGetProperties(
+            XDocument doc,
+            IEnumerable<string> packageFolders,
+            string repositoryRoot,
+            ProjectStyle projectStyle,
+            string assetsFilePath,
+            bool success)
         {
             doc.Root.AddFirst(
                 new XElement(Namespace + "PropertyGroup",
                             new XAttribute("Condition", $" {ExcludeAllCondition} "),
                             GenerateProperty("RestoreSuccess", success.ToString()),
                             GenerateProperty("RestoreTool", "NuGet"),
+                            GenerateProperty("ProjectAssetsFile", assetsFilePath),
                             GenerateProperty("NuGetPackageRoot", ReplacePathsWithMacros(repositoryRoot)),
                             GenerateProperty("NuGetPackageFolders", string.Join(";", packageFolders)),
                             GenerateProperty("NuGetProjectStyle", projectStyle.ToString()),
@@ -171,7 +178,9 @@ namespace NuGet.Commands
                 new XDeclaration("1.0", "utf-8", "no"),
 
                 new XElement(Namespace + "Project",
-                    new XAttribute("ToolsVersion", "14.0")));
+                    new XAttribute("ToolsVersion", "14.0"),
+                    new XElement(Namespace + "PropertyGroup", 
+                        new XElement(Namespace + "MSBuildAllProjects", "$(MSBuildAllProjects);$(MSBuildThisFileFullPath)"))));
 
             return doc;
         }
@@ -227,7 +236,7 @@ namespace NuGet.Commands
             entry.Add(new XElement(Namespace + "Private", privateFlag.ToString()));
 
             // Remove contentFile/lang/tfm/ from start of the path
-            var linkPath = string.Join(string.Empty + Path.DirectorySeparatorChar, 
+            var linkPath = string.Join(string.Empty + Path.DirectorySeparatorChar,
                     item.Path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries)
                         .Skip(3)
                         .ToArray());
@@ -357,6 +366,7 @@ namespace NuGet.Commands
             IEnumerable<RestoreTargetGraph> targetGraphs,
             IReadOnlyList<NuGetv3LocalRepository> repositories,
             RestoreRequest request,
+            string assetsFilePath,
             bool restoreSuccess,
             ILogger log)
         {
@@ -545,7 +555,7 @@ namespace NuGet.Commands
 
             var packageFolders = repositories.Select(e => e.RepositoryRoot);
 
-            AddNuGetPropertiesToFirstImport(files, packageFolders, repositoryRoot, request.ProjectStyle, restoreSuccess);
+            AddNuGetPropertiesToFirstImport(files, packageFolders, repositoryRoot, request.ProjectStyle, assetsFilePath, restoreSuccess);
 
             return files;
         }

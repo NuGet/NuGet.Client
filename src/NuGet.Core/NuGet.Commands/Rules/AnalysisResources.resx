@@ -153,6 +153,15 @@
   <data name="InvalidFrameworkTitle" xml:space="preserve">
     <value>Invalid framework folder.</value>
   </data>
+  <data name="InvalidPrereleaseDependency_Description" xml:space="preserve">
+    <value>A stable release of a package should not have a prerelease dependency.</value>
+  </data>
+  <data name="InvalidPrereleaseDependency_Solution" xml:space="preserve">
+    <value>Either modify the version spec of dependency "{0}" or update the version field in the nuspec.</value>
+  </data>
+  <data name="InvalidPrereleaseDependency_Title" xml:space="preserve">
+    <value>Prerelease dependency in stable package.</value>
+  </data>
   <data name="LegacyVersionDescription" xml:space="preserve">
     <value>The package version '{0}' uses SemVer 2.0.0 or components of SemVer 1.0.0 that are not supported on legacy clients. This message can be ignored if the package is not intended for older clients.</value>
   </data>

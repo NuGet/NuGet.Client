@@ -1134,7 +1134,7 @@ namespace NuGet.Commands.Test
         public void MSBuildRestoreUtility_Split(string input, string expected)
         {
             // Arrange && Act
-            var parts = StringUtility.Split(input);
+            var parts = MSBuildStringUtility.Split(input);
             var output = string.Join("|", parts);
 
             // Assert

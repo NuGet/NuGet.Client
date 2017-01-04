@@ -268,11 +268,11 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to resolve all project references. The package restore result for &apos;{0}&apos; or a dependent project may be incomplete..
+        ///   Looks up a localized string similar to Failed to resolve all items referenced by &apos;{0}&apos;. This message can typically be ignored. The issue may be resolved by fully restoring and building the solution. If the unresolved item is a project reference this can lead to an incomplete NuGet restore result and missing package references. To ensure that restore is able to find all projects verify that all projects are referenced correctly and exist on disk..
         /// </summary>
-        public static string Warning_ErrorDuringProjectClosureWalk {
+        public static string UnresolvedItemDuringProjectClosureWalk {
             get {
-                return ResourceManager.GetString("Warning_ErrorDuringProjectClosureWalk", resourceCulture);
+                return ResourceManager.GetString("UnresolvedItemDuringProjectClosureWalk", resourceCulture);
             }
         }
         

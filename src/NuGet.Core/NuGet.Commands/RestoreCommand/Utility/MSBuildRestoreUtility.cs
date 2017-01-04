@@ -167,12 +167,12 @@ namespace NuGet.Commands
                     AddPackageReferences(result, items);
                     result.RestoreMetadata.OutputPath = specItem.GetProperty("OutputPath");
 
-                    foreach (var source in StringUtility.Split(specItem.GetProperty("Sources")))
+                    foreach (var source in MSBuildStringUtility.Split(specItem.GetProperty("Sources")))
                     {
                         result.RestoreMetadata.Sources.Add(new PackageSource(source));
                     }
 
-                    foreach (var folder in StringUtility.Split(specItem.GetProperty("FallbackFolders")))
+                    foreach (var folder in MSBuildStringUtility.Split(specItem.GetProperty("FallbackFolders")))
                     {
                         result.RestoreMetadata.FallbackFolders.Add(folder);
                     }
@@ -206,9 +206,61 @@ namespace NuGet.Commands
                         specItem,
                         "RestoreLegacyPackagesDirectory");
                 }
+
+                // File assets
+                if (restoreType == ProjectStyle.PackageReference
+                    || restoreType == ProjectStyle.ProjectJson
+                    || restoreType == ProjectStyle.Unknown
+                    || restoreType == ProjectStyle.PackagesConfig)
+                {
+                    var projectDir = string.Empty;
+
+                    if (result.RestoreMetadata.ProjectPath != null)
+                    {
+                        projectDir = Path.GetDirectoryName(result.RestoreMetadata.ProjectPath);
+                    }
+
+                    AddPlaceHolderFiles(result, projectDir);
+                }
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Add placeholder files, these will be used under the compile and runtime sections.
+        /// </summary>
+        private static void AddPlaceHolderFiles(PackageSpec spec,  string projectDir)
+        {
+            var files = new List<ProjectRestoreMetadataFile>();
+
+            // Create fake placeholder file names
+            var assemblyName = $"{spec.RestoreMetadata.ProjectName}.dll";
+            var absoluteRoot = Path.Combine(projectDir, "bin", "placeholder");
+
+            if (spec.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference
+                || spec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson)
+            {
+                // Add paths based on actual frameworks if they exist
+                foreach (var framework in spec.TargetFrameworks
+                    .Select(tfi => tfi.FrameworkName)
+                    .Where(f => f.IsSpecificFramework))
+                {
+                    var packagePath = $"lib/{framework.GetShortFolderName()}/{assemblyName}";
+                    var absolutePath = Path.Combine(absoluteRoot, framework.GetShortFolderName(), assemblyName);
+
+                    files.Add(new ProjectRestoreMetadataFile(packagePath, absolutePath));
+                }
+            }
+
+            // If no TFMs exist use LIBANY which to guarantee something is added
+            if (files.Count == 0)
+            {
+                var absolutePath = Path.Combine(absoluteRoot, "any", assemblyName);
+                files.Add(new ProjectRestoreMetadataFile(LockFileUtils.LIBANY, absolutePath));
+            }
+
+            spec.RestoreMetadata.Files = files;
         }
 
         private static void AddPackageTargetFallbacks(PackageSpec spec, IEnumerable<IMSBuildItem> items)
@@ -227,7 +279,7 @@ namespace NuGet.Commands
 
                 if (targetFrameworkInfo != null)
                 {
-                    var fallbackList = StringUtility.Split(item.GetProperty("PackageTargetFallback"))
+                    var fallbackList = MSBuildStringUtility.Split(item.GetProperty("PackageTargetFallback"))
                         .Select(NuGetFramework.Parse)
                         .ToList();
 
@@ -245,12 +297,12 @@ namespace NuGet.Commands
 
         private static RuntimeGraph GetRuntimeGraph(IMSBuildItem specItem)
         {
-            var runtimes = StringUtility.Split(specItem.GetProperty("RuntimeIdentifiers"))
+            var runtimes = MSBuildStringUtility.Split(specItem.GetProperty("RuntimeIdentifiers"))
                 .Distinct(StringComparer.Ordinal)
                 .Select(rid => new RuntimeDescription(rid))
                 .ToList();
 
-            var supports = StringUtility.Split(specItem.GetProperty("RuntimeSupports"))
+            var supports = MSBuildStringUtility.Split(specItem.GetProperty("RuntimeSupports"))
                 .Distinct(StringComparer.Ordinal)
                 .Select(s => new CompatibilityProfile(s))
                 .ToList();
@@ -386,7 +438,7 @@ namespace NuGet.Commands
 
         private static LibraryIncludeFlags GetIncludeFlags(string value, LibraryIncludeFlags defaultValue)
         {
-            var parts = StringUtility.Split(value);
+            var parts = MSBuildStringUtility.Split(value);
 
             if (parts.Length > 0)
             {
@@ -497,7 +549,7 @@ namespace NuGet.Commands
             var frameworksString = item.GetProperty("TargetFrameworks");
             if (!string.IsNullOrEmpty(frameworksString))
             {
-                frameworks.UnionWith(StringUtility.Split(frameworksString));
+                frameworks.UnionWith(MSBuildStringUtility.Split(frameworksString));
             }
 
             return frameworks;

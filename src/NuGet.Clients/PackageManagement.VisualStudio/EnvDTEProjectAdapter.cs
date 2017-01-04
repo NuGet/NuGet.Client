@@ -9,6 +9,7 @@ using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Frameworks;
+using NuGet.ProjectModel;
 using NuGet.RuntimeModel;
 using VSLangProj;
 using VSLangProj150;
@@ -26,7 +27,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly Project _project;
 
         // Interface casts
-        private IVsBuildPropertyStorage _asIVsBuildPropertyStorage;
         private IVsHierarchy _asIVsHierarchy;
         private VSProject _asVSProject;
         private VSProject4 _asVSProject4;
@@ -95,7 +95,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 ThreadHelper.ThrowIfNotOnUIThread();
 
-                var baseIntermediateOutputPath = GetMSBuildProperty(AsIVsBuildPropertyStorage, "BaseIntermediateOutputPath");
+                var baseIntermediateOutputPath = VsHierarchyUtility.GetMSBuildProperty(AsIVsHierarchy, "BaseIntermediateOutputPath");
 
                 if (string.IsNullOrEmpty(baseIntermediateOutputPath))
                 {
@@ -116,12 +116,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 ThreadHelper.ThrowIfNotOnUIThread();
 
-                if (AsIVsBuildPropertyStorage == null)
-                {
-                    return String.Empty;
-                }
-
-                return GetMSBuildProperty(AsIVsBuildPropertyStorage, "PackageTargetFallback");
+                return VsHierarchyUtility.GetMSBuildProperty(AsIVsHierarchy, "PackageTargetFallback");
             }
         }
 
@@ -133,24 +128,35 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (!_isLegacyCSProjPackageReferenceProject.HasValue)
                 {
-                    // A legacy CSProj can't be CPS, must cast to VSProject4 and *must* have at least one package
-                    // reference already in the CSProj. In the future this logic may change. For now a user must
-                    // hand code their first package reference. Laid out in longhand for readability.
-                    if (AsIVsHierarchy?.IsCapabilityMatch("CPS") ?? true)
+                    // check for RestoreProjectStyle property
+                    var restoreProjectStyle = VsHierarchyUtility.GetMSBuildProperty(AsIVsHierarchy, "RestoreProjectStyle");
+
+                    if (string.IsNullOrEmpty(restoreProjectStyle))
                     {
-                        _isLegacyCSProjPackageReferenceProject = false;
+                        // A legacy CSProj can't be CPS, must cast to VSProject4 and *must* have at least one package
+                        // reference already in the CSProj. In the future this logic may change. For now a user must
+                        // hand code their first package reference. Laid out in longhand for readability.
+                        if (AsIVsHierarchy?.IsCapabilityMatch("CPS") ?? true)
+                        {
+                            _isLegacyCSProjPackageReferenceProject = false;
+                        }
+                        else if (AsVSProject4 == null ||
+                            (AsVSProject4.PackageReferences?.InstalledPackages?.Length ?? 0) == 0)
+                        {
+                            _isLegacyCSProjPackageReferenceProject = false;
+                        }
+                        else
+                        {
+                            _isLegacyCSProjPackageReferenceProject = true;
+                        }
                     }
-                    else if (AsVSProject4 == null)
+                    else if(restoreProjectStyle.Equals(ProjectStyle.PackageReference.ToString(), StringComparison.OrdinalIgnoreCase))
                     {
-                        _isLegacyCSProjPackageReferenceProject = false;
-                    }
-                    else if ((AsVSProject4.PackageReferences?.InstalledPackages?.Length ?? 0) == 0)
-                    {
-                        _isLegacyCSProjPackageReferenceProject = false;
+                        _isLegacyCSProjPackageReferenceProject = true;
                     }
                     else
                     {
-                        _isLegacyCSProjPackageReferenceProject = true;
+                        _isLegacyCSProjPackageReferenceProject = false;
                     }
                 }
 
@@ -166,7 +172,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 // Uncached, in case project file edited
                 // ex-project.json (e.g. UWP)
-                var nuGetTargetFramework = GetMSBuildProperty(AsIVsBuildPropertyStorage, "NuGetTargetFramework");
+                var nuGetTargetFramework = VsHierarchyUtility.GetMSBuildProperty(AsIVsHierarchy, "NuGetTargetFramework");
                 if (!string.IsNullOrEmpty(nuGetTargetFramework))
                 {
                     return NuGetFramework.ParseFrameworkName(nuGetTargetFramework, DefaultFrameworkNameProvider.Instance);
@@ -183,8 +189,8 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 ThreadHelper.ThrowIfNotOnUIThread();
 
-                var unparsedRuntimeIdentifer = GetMSBuildProperty(AsIVsBuildPropertyStorage, "RuntimeIdentifier");
-                var unparsedRuntimeIdentifers = GetMSBuildProperty(AsIVsBuildPropertyStorage, "RuntimeIdentifiers");
+                var unparsedRuntimeIdentifer = VsHierarchyUtility.GetMSBuildProperty(AsIVsHierarchy, "RuntimeIdentifier");
+                var unparsedRuntimeIdentifers = VsHierarchyUtility.GetMSBuildProperty(AsIVsHierarchy, "RuntimeIdentifiers");
 
                 var runtimes = Enumerable.Empty<string>();
 
@@ -213,12 +219,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 ThreadHelper.ThrowIfNotOnUIThread();
 
-                if (AsIVsBuildPropertyStorage == null)
-                {
-                    return Enumerable.Empty<CompatibilityProfile>();
-                }
-
-                var unparsedRuntimeSupports = GetMSBuildProperty(AsIVsBuildPropertyStorage, "RuntimeSupports");
+                var unparsedRuntimeSupports = VsHierarchyUtility.GetMSBuildProperty(AsIVsHierarchy, "RuntimeSupports");
                 
                 if (unparsedRuntimeSupports == null)
                 {
@@ -240,27 +241,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 ThreadHelper.ThrowIfNotOnUIThread();
 
                 return _asIVsHierarchy ?? (_asIVsHierarchy = VsHierarchyUtility.ToVsHierarchy(_project));
-            }
-        }
-
-        private IVsBuildPropertyStorage AsIVsBuildPropertyStorage
-        {
-            get
-            {
-                ThreadHelper.ThrowIfNotOnUIThread();
-
-                var output =
-                    _asIVsBuildPropertyStorage ??
-                    (_asIVsBuildPropertyStorage = AsIVsHierarchy as IVsBuildPropertyStorage);
-
-                if (output == null)
-                {
-                    throw new InvalidOperationException(string.Format(
-                        Strings.ProjectCouldNotBeCastedToBuildPropertyStorage,
-                        ProjectFullPath));
-                }
-
-                return output;
             }
         }
 
@@ -367,25 +347,6 @@ namespace NuGet.PackageManagement.VisualStudio
             ThreadHelper.ThrowIfNotOnUIThread();
 
             AsVSProject4.PackageReferences.Remove(packageName);
-        }
-
-        private static string GetMSBuildProperty(IVsBuildPropertyStorage buildPropertyStorage, string name)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            string output;
-            var result = buildPropertyStorage.GetPropertyValue(
-                name,
-                string.Empty,
-                (uint)_PersistStorageType.PST_PROJECT_FILE,
-                out output);
-
-            if (result != NuGetVSConstants.S_OK || string.IsNullOrWhiteSpace(output))
-            {
-                return null;
-            }
-
-            return output;
         }
     }
 }

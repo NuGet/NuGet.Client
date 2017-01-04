@@ -141,15 +141,6 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to A stable release of a package should not have a prerelease dependency. Either modify the version spec of dependency &quot;{0}&quot; or update the version field in the nuspec..
-        /// </summary>
-        public static string Manifest_InvalidPrereleaseDependency {
-            get {
-                return ResourceManager.GetString("Manifest_InvalidPrereleaseDependency", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///    Looks up a localized string similar to Invalid assembly reference &apos;{0}&apos;. Ensure that a file named &apos;{0}&apos; exists in the lib directory..
         /// </summary>
         public static string Manifest_InvalidReference {

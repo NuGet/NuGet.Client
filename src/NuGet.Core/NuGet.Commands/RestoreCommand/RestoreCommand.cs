@@ -77,7 +77,7 @@ namespace NuGet.Commands
                 token);
 
             // Create assets file
-            var lockFile = BuildLockFile(
+            var assetsFile = BuildAssetsFile(
                 _request.ExistingLockFile,
                 _request.Project,
                 graphs,
@@ -94,13 +94,23 @@ namespace NuGet.Commands
                 _request.Project,
                 _includeFlagGraphs,
                 localRepositories,
-                lockFile,
+                assetsFile,
                 graphs,
                 _logger);
 
             if (checkResults.Any(r => !r.Success))
             {
                 _success = false;
+            }
+
+            // Determine the lock file output path
+            var assetsFilePath = GetAssetsFilePath(assetsFile);
+
+            // Tool restores are unique since the output path is not known until after restore
+            if (_request.LockFilePath == null
+                && _request.ProjectStyle == ProjectStyle.DotnetCliTool)
+            {
+                _request.LockFilePath = assetsFilePath;
             }
 
             // Generate Targets/Props files
@@ -110,29 +120,20 @@ namespace NuGet.Commands
             {
                 msbuildOutputFiles = BuildAssetsUtils.GetMSBuildOutputFiles(
                     _request.Project,
-                    lockFile,
+                    assetsFile,
                     graphs,
                     localRepositories,
                     _request,
+                    assetsFilePath,
                     _success,
                     _logger);
             }
 
             // If the request is for a lower lock file version, downgrade it appropriately
-            DowngradeLockFileIfNeeded(lockFile);
+            DowngradeLockFileIfNeeded(assetsFile);
 
             // Revert to the original case if needed
-            await FixCaseForLegacyReaders(graphs, lockFile, token);
-
-            // Determine the lock file output path
-            var projectLockFilePath = GetLockFilePath(lockFile);
-
-            // Tool restores are unique since the output path is not known until after restore
-            if (_request.LockFilePath == null
-                && _request.ProjectStyle == ProjectStyle.DotnetCliTool)
-            {
-                _request.LockFilePath = projectLockFilePath;
-            }
+            await FixCaseForLegacyReaders(graphs, assetsFile, token);
 
             restoreTime.Stop();
 
@@ -142,14 +143,14 @@ namespace NuGet.Commands
                 graphs,
                 checkResults,
                 msbuildOutputFiles,
-                lockFile,
+                assetsFile,
                 _request.ExistingLockFile,
-                projectLockFilePath,
+                assetsFilePath,
                 _request.ProjectStyle,
                 restoreTime.Elapsed);
         }
 
-        private string GetLockFilePath(LockFile lockFile)
+        private string GetAssetsFilePath(LockFile lockFile)
         {
             var projectLockFilePath = _request.LockFilePath;
 
@@ -182,7 +183,7 @@ namespace NuGet.Commands
                 }
             }
 
-            return projectLockFilePath;
+            return Path.GetFullPath(projectLockFilePath);
         }
 
         private void DowngradeLockFileIfNeeded(LockFile lockFile)
@@ -218,7 +219,7 @@ namespace NuGet.Commands
             }
         }
 
-        private LockFile BuildLockFile(
+        private LockFile BuildAssetsFile(
             LockFile existingLockFile,
             PackageSpec project,
             IEnumerable<RestoreTargetGraph> graphs,

@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Dnx.Runtime.Common.CommandLine;
+using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
 
 namespace NuGet.CommandLine.XPlat
@@ -14,6 +14,8 @@ namespace NuGet.CommandLine.XPlat
     public class Program
     {
         private const string DebugOption = "--debug";
+        private const string DotnetNuGetAppName = "dotnet nuget";
+        private const string DotnetPackageAppName = "NuGet.CommandLine.XPlat.dll package";
 
         public static int Main(string[] args)
         {
@@ -45,17 +47,16 @@ namespace NuGet.CommandLine.XPlat
             }
 #endif
 
-            // First, optionally disable localization.
+            // Optionally disable localization.
             if (args.Any(arg => string.Equals(arg, CommandConstants.ForceEnglishOutputOption, StringComparison.OrdinalIgnoreCase)))
             {
                 CultureUtility.DisableLocalization();
             }
 
-            var app = new CommandLineApplication();
-            app.Name = "dotnet nuget";
-            app.FullName = Strings.App_FullName;
-            app.HelpOption(XPlatUtility.HelpOption);
-            app.VersionOption("--version", typeof(Program).GetTypeInfo().Assembly.GetName().Version.ToString());
+            var app = InitializeApp(args);
+            args = args
+                .Where(e => e != "package")
+                .ToArray();
 
             var verbosity = app.Option(XPlatUtility.VerbosityOption, Strings.Switch_Verbosity, CommandOptionType.SingleValue);
 
@@ -72,9 +73,7 @@ namespace NuGet.CommandLine.XPlat
             NetworkProtocolUtility.ConfigureSupportedSslProtocols();
 
             // Register commands
-            DeleteCommand.Register(app, () => log);
-            PushCommand.Register(app, () => log);
-            LocalsCommand.Register(app, () => log);
+            RegisterCommands(app, log);
 
             app.OnExecute(() =>
             {
@@ -116,6 +115,40 @@ namespace NuGet.CommandLine.XPlat
             }
 
             return exitCode;
+        }
+
+        private static CommandLineApplication InitializeApp(string[] args)
+        {
+            var app = new CommandLineApplication();
+
+            if (args.Any() && args[0] == "package")
+            {
+                app.Name = DotnetPackageAppName;
+            }
+            else
+            {
+                app.Name = DotnetNuGetAppName;
+            }
+            app.FullName = Strings.App_FullName;
+            app.HelpOption(XPlatUtility.HelpOption);
+            app.VersionOption("--version", typeof(Program).GetTypeInfo().Assembly.GetName().Version.ToString());
+
+            return app;
+        }
+
+        private static void RegisterCommands(CommandLineApplication app, CommandOutputLogger log)
+        {
+            // Register commands
+            if (app.Name == DotnetPackageAppName)
+            {
+                AddPackageReferenceCommand.Register(app, () => log, () => new AddPackageReferenceCommandRunner());
+            }
+            else
+            {
+                DeleteCommand.Register(app, () => log);
+                PushCommand.Register(app, () => log);
+                LocalsCommand.Register(app, () => log);
+            }
         }
 
         /// <summary>

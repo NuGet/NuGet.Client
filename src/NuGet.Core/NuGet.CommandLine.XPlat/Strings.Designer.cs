@@ -60,6 +60,96 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Adds a package reference to a project..
+        /// </summary>
+        public static string AddPkg_Description {
+            get {
+                return ResourceManager.GetString("AddPkg_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Path to the dependency graph file to be used to restore preview and compatibility check..
+        /// </summary>
+        public static string AddPkg_DgFileDescription {
+            get {
+                return ResourceManager.GetString("AddPkg_DgFileDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Frameworks for which the package reference should be added..
+        /// </summary>
+        public static string AddPkg_FrameworksDescription {
+            get {
+                return ResourceManager.GetString("AddPkg_FrameworksDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Unable to add package Reference, argument &apos;{0}&apos; not provided. Please use -h|--help for help..
+        /// </summary>
+        public static string AddPkg_MissingArgument {
+            get {
+                return ResourceManager.GetString("AddPkg_MissingArgument", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Do not perform restore preview and compatibility check. The added package reference will be unconditional..
+        /// </summary>
+        public static string AddPkg_NoRestoreDescription {
+            get {
+                return ResourceManager.GetString("AddPkg_NoRestoreDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Directory to restore packages in..
+        /// </summary>
+        public static string AddPkg_PackageDirectoryDescription {
+            get {
+                return ResourceManager.GetString("AddPkg_PackageDirectoryDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Id of the package to be added..
+        /// </summary>
+        public static string AddPkg_PackageIdDescription {
+            get {
+                return ResourceManager.GetString("AddPkg_PackageIdDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Version of the package to be added..
+        /// </summary>
+        public static string AddPkg_PackageVersionDescription {
+            get {
+                return ResourceManager.GetString("AddPkg_PackageVersionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Path to the project..
+        /// </summary>
+        public static string AddPkg_ProjectPathDescription {
+            get {
+                return ResourceManager.GetString("AddPkg_ProjectPathDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Specifies NuGet package sources to use during the restore..
+        /// </summary>
+        public static string AddPkg_SourcesDescription {
+            get {
+                return ResourceManager.GetString("AddPkg_SourcesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to The API key for the server..
         /// </summary>
         public static string ApiKey_Description {
@@ -159,11 +249,38 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Package : &apos;{0}&apos; is incompatible with all the frameworks in project : &apos;{1}&apos;.
+        /// </summary>
+        public static string Error_AddPkgIncompatibleWithAllFrameworks {
+            get {
+                return ResourceManager.GetString("Error_AddPkgIncompatibleWithAllFrameworks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Source parameter was not specified..
         /// </summary>
         public static string Error_MissingSourceParameter {
             get {
                 return ResourceManager.GetString("Error_MissingSourceParameter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to MsBuild was unable to open Project &apos;{0}&apos;..
+        /// </summary>
+        public static string Error_MsBuildUnableToOpenProject {
+            get {
+                return ResourceManager.GetString("Error_MsBuildUnableToOpenProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to None or invalid DgSpec was passed to NuGet add package command..
+        /// </summary>
+        public static string Error_NoDgSpec {
+            get {
+                return ResourceManager.GetString("Error_NoDgSpec", resourceCulture);
             }
         }
         
@@ -200,6 +317,33 @@ namespace NuGet.CommandLine.XPlat {
         public static string IncludeReferencedProjects_Description {
             get {
                 return ResourceManager.GetString("IncludeReferencedProjects_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Adding PackageReference for package : &apos;{0}&apos;, into project : &apos;{1}&apos;.
+        /// </summary>
+        public static string Info_AddPkgAddingReference {
+            get {
+                return ResourceManager.GetString("Info_AddPkgAddingReference", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Package : &apos;{0}&apos; is compatible with all the specified frameworks in project : &apos;{1}&apos;.
+        /// </summary>
+        public static string Info_AddPkgCompatibleWithAllFrameworks {
+            get {
+                return ResourceManager.GetString("Info_AddPkgCompatibleWithAllFrameworks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Package : &apos;{0}&apos; is compatible with a subset of the specified frameworks in project : &apos;{1}&apos;.
+        /// </summary>
+        public static string Info_AddPkgCompatibleWithSubsetFrameworks {
+            get {
+                return ResourceManager.GetString("Info_AddPkgCompatibleWithSubsetFrameworks", resourceCulture);
             }
         }
         
@@ -694,6 +838,15 @@ namespace NuGet.CommandLine.XPlat {
         public static string Version_Description {
             get {
                 return ResourceManager.GetString("Version_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to --no-restore|-n flag was used. No compatibility check will be done and the added package reference will be unconditional..
+        /// </summary>
+        public static string Warn_AddPkgWithoutRestore {
+            get {
+                return ResourceManager.GetString("Warn_AddPkgWithoutRestore", resourceCulture);
             }
         }
     }

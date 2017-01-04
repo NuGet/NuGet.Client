@@ -3,9 +3,9 @@
 
 using System.Linq;
 
-namespace NuGet.Common
+namespace NuGet.Commands
 {
-    public static class StringUtility
+    public static class MSBuildStringUtility
     {
         /// <summary>
         /// Split on ; and trim. Null or empty inputs will return an

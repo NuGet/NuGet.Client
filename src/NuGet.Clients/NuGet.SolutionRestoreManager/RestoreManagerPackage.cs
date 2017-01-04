@@ -9,6 +9,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
@@ -23,7 +24,7 @@ namespace NuGet.SolutionRestoreManager
     /// </summary>
     // Flag AllowsBackgroundLoading is set to False because switching to Main thread wiht JTF is creating
     // performance overhead in InitializeAsync() API.
-    [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = false)]
+    [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExists_string)]
     [Guid(PackageGuidString)]
     public sealed class RestoreManagerPackage : AsyncPackage
@@ -35,14 +36,13 @@ namespace NuGet.SolutionRestoreManager
         /// </summary>
         public const string PackageGuidString = "2b52ac92-4551-426d-bd34-c6d7d9fdd1c5";
 
-        [Import]
-        private Lazy<ISolutionRestoreWorker> SolutionRestoreWorker { get; set; }
+        private Lazy<ISolutionRestoreWorker> _restoreWorker;
+        private Lazy<ISettings> _settings;
+        private Lazy<IVsSolutionManager> _solutionManager;
 
-        [Import]
-        private Lazy<ISettings> Settings { get; set; }
-
-        [Import]
-        private Lazy<IVsSolutionManager> SolutionManager { get; set; }
+        private ISolutionRestoreWorker SolutionRestoreWorker => _restoreWorker.Value;
+        private ISettings Settings => _settings.Value;
+        private IVsSolutionManager SolutionManager => _solutionManager.Value;
 
         // keeps a reference to BuildEvents so that our event handler
         // won't get disconnected.
@@ -55,16 +55,25 @@ namespace NuGet.SolutionRestoreManager
             var componentModel = await GetServiceAsync(typeof(SComponentModel)) as IComponentModel;
             componentModel.DefaultCompositionService.SatisfyImportsOnce(this);
 
-            // Accessing DTE without confirming to Main thread because AllowsBackgroundLoading is false which
-            // will make sure that this piece is always executed on Main thread.
-            var dte = (EnvDTE.DTE)await GetServiceAsync(typeof(SDTE));
-            _buildEvents = dte.Events.BuildEvents;
-            _buildEvents.OnBuildBegin += BuildEvents_OnBuildBegin;
+            _restoreWorker = new Lazy<ISolutionRestoreWorker>(
+                () => componentModel.GetService<ISolutionRestoreWorker>());
 
-            UserAgent.SetUserAgentString(
-                new UserAgentStringBuilder().WithVisualStudioSKU(dte.GetFullVsVersionString()));
+            _settings = new Lazy<ISettings>(
+                () => componentModel.GetService<ISettings>());
 
-            await SolutionRestoreCommand.InitializeAsync(this);
+            _solutionManager = new Lazy<IVsSolutionManager>(
+                () => componentModel.GetService<IVsSolutionManager>());
+
+            await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                var dte = (EnvDTE.DTE)await GetServiceAsync(typeof(SDTE));
+                _buildEvents = dte.Events.BuildEvents;
+                _buildEvents.OnBuildBegin += BuildEvents_OnBuildBegin;
+
+                UserAgent.SetUserAgentString(
+                    new UserAgentStringBuilder().WithVisualStudioSKU(dte.GetFullVsVersionString()));
+            });
 
             await base.InitializeAsync(cancellationToken, progress);
         }
@@ -75,13 +84,13 @@ namespace NuGet.SolutionRestoreManager
             if (Action == EnvDTE.vsBuildAction.vsBuildActionClean)
             {
                 // Clear the project.json restore cache on clean to ensure that the next build restores again
-                SolutionRestoreWorker.Value.CleanCache();
+                SolutionRestoreWorker.CleanCache();
 
                 return;
             }
 
             // Check if solution is DPL enabled, then don't restore
-            if (SolutionManager.Value.IsSolutionDPLEnabled)
+            if (SolutionManager.IsSolutionDPLEnabled)
             {
                 return;
             }
@@ -94,7 +103,7 @@ namespace NuGet.SolutionRestoreManager
             var forceRestore = Action == EnvDTE.vsBuildAction.vsBuildActionRebuildAll;
 
             // Execute
-            SolutionRestoreWorker.Value.Restore(SolutionRestoreRequest.OnBuild(forceRestore));
+            SolutionRestoreWorker.Restore(SolutionRestoreRequest.OnBuild(forceRestore));
         }
 
         /// <summary>
@@ -104,7 +113,7 @@ namespace NuGet.SolutionRestoreManager
         {
             get
             {
-                var packageRestoreConsent = new PackageRestoreConsent(Settings.Value);
+                var packageRestoreConsent = new PackageRestoreConsent(Settings);
                 return packageRestoreConsent.IsAutomatic;
             }
         }

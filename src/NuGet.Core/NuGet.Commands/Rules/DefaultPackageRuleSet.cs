@@ -17,7 +17,8 @@ namespace NuGet.Commands.Rules
                 new WinRTNameIsObsoleteRule(),
                 new DefaultManifestValuesRule(),
                 new InvalidPlaceholderFileRule(),
-                new LegacyVersionRule()
+                new LegacyVersionRule(),
+                new InvalidPrereleaseDependencyRule()
             }
         );
 

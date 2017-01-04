@@ -177,8 +177,8 @@
   <data name="Warning_FailedToMarkPackageDirectoryForDeletion" xml:space="preserve">
     <value>Failed to mark package directory '{0}' for deletion on Visual Studio restart: {1}</value>
   </data>
-  <data name="Warning_ErrorDuringProjectClosureWalk" xml:space="preserve">
-    <value>Failed to resolve all project references. The package restore result for '{0}' or a dependent project may be incomplete.</value>
+  <data name="UnresolvedItemDuringProjectClosureWalk" xml:space="preserve">
+    <value>Failed to resolve all items referenced by '{0}'. This message can typically be ignored. The issue may be resolved by fully restoring and building the solution. If the unresolved item is a project reference this can lead to an incomplete NuGet restore result and missing package references. To ensure that restore is able to find all projects verify that all projects are referenced correctly and exist on disk.</value>
   </data>
   <data name="SolutionIsNotSaved" xml:space="preserve">
     <value>Solution is not saved. Please save your solution before managing NuGet packages.</value>

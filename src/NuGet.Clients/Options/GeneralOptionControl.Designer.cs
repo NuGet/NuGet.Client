@@ -36,6 +36,10 @@
             this.BindingRedirectsHeader = new System.Windows.Forms.Label();
             this.localsCommandButton = new System.Windows.Forms.Button();
             this.localsCommandStatusText = new System.Windows.Forms.RichTextBox();
+            this.PackageManagementHeader = new System.Windows.Forms.Label();
+            this.defaultPackageManagementFormatLabel = new System.Windows.Forms.Label();
+            this.showPackageManagementChooser = new System.Windows.Forms.CheckBox();
+            this.defaultPackageManagementFormatItems = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
             // 
             // skipBindingRedirects
@@ -79,15 +83,43 @@
             this.localsCommandStatusText.BackColor = System.Drawing.SystemColors.Control;
             this.localsCommandStatusText.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.localsCommandStatusText.Name = "localsCommandStatusText";
-            this.localsCommandStatusText.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.localsCommandStatusText_LinkClicked);
             this.localsCommandStatusText.ContentsResized += new System.Windows.Forms.ContentsResizedEventHandler(this.localsCommandStatusText_ContentChanged);
-            this.localsCommandStatusText.WordWrap = false;
-            this.localsCommandStatusText.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.None;           
+            this.localsCommandStatusText.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.localsCommandStatusText_LinkClicked);
+            // 
+            // PackageManagementHeader
+            // 
+            resources.ApplyResources(this.PackageManagementHeader, "PackageManagementHeader");
+            this.PackageManagementHeader.Name = "PackageManagementHeader";
+            // 
+            // defaultPackageManagementFormatLabel
+            // 
+            resources.ApplyResources(this.defaultPackageManagementFormatLabel, "defaultPackageManagementFormatLabel");
+            this.defaultPackageManagementFormatLabel.Name = "defaultPackageManagementFormatLabel";
+            // 
+            // showPackageManagementChooser
+            // 
+            resources.ApplyResources(this.showPackageManagementChooser, "showPackageManagementChooser");
+            this.showPackageManagementChooser.Name = "showPackageManagementChooser";
+            this.showPackageManagementChooser.UseVisualStyleBackColor = true;
+            // 
+            // defaultPackageManagementFormatItems
+            // 
+            this.defaultPackageManagementFormatItems.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.defaultPackageManagementFormatItems.FormattingEnabled = true;
+            this.defaultPackageManagementFormatItems.Items.AddRange(new object[] {
+            resources.GetString("defaultPackageManagementFormatItems.Items"),
+            resources.GetString("defaultPackageManagementFormatItems.Items1")});
+            resources.ApplyResources(this.defaultPackageManagementFormatItems, "defaultPackageManagementFormatItems");
+            this.defaultPackageManagementFormatItems.Name = "defaultPackageManagementFormatItems";
             // 
             // GeneralOptionControl
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.defaultPackageManagementFormatItems);
+            this.Controls.Add(this.showPackageManagementChooser);
+            this.Controls.Add(this.defaultPackageManagementFormatLabel);
+            this.Controls.Add(this.PackageManagementHeader);
             this.Controls.Add(this.BindingRedirectsHeader);
             this.Controls.Add(this.skipBindingRedirects);
             this.Controls.Add(this.PackageRestoreHeader);
@@ -110,5 +142,9 @@
         private System.Windows.Forms.Label BindingRedirectsHeader;
         private System.Windows.Forms.Button localsCommandButton;
         private System.Windows.Forms.RichTextBox localsCommandStatusText;
+        private System.Windows.Forms.Label PackageManagementHeader;
+        private System.Windows.Forms.Label defaultPackageManagementFormatLabel;
+        private System.Windows.Forms.CheckBox showPackageManagementChooser;
+        private System.Windows.Forms.ComboBox defaultPackageManagementFormatItems;
     }
 }

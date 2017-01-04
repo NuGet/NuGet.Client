@@ -214,6 +214,7 @@ Function Install-DotnetCLI {
     & $DotNetExe --info
 }
 
+
 Function Get-MSBuildRoot {
     param(
         [ValidateSet(14,15)]
