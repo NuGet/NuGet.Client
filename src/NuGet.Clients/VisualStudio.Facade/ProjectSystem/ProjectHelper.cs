@@ -9,6 +9,8 @@ using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.Shell;
 using MsBuildProject = Microsoft.Build.Evaluation.Project;
 using Task = System.Threading.Tasks.Task;
+using NuGet.Common;
+using System.Threading.Tasks;
 #if VS14
 using Microsoft.VisualStudio.ProjectSystem.Designers;
 #elif VS15
@@ -19,6 +21,11 @@ namespace NuGet.VisualStudio.Facade.ProjectSystem
 {
     public static class ProjectHelper
     {
+        public static INuGetLock GetProjectLock(Project project, IVsHierarchy hierarchy, string projectPath)
+        {
+            return new CPSProjectLock(project, hierarchy, projectPath);
+        }
+
         public static async Task DoWorkInWriterLockAsync(Project project, IVsHierarchy hierarchy, Action<MsBuildProject> action)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -50,7 +57,7 @@ namespace NuGet.VisualStudio.Facade.ProjectSystem
             }
         }
 
-        private static UnconfiguredProject GetUnconfiguredProject(IVsProject project)
+        internal static UnconfiguredProject GetUnconfiguredProject(IVsProject project)
         {
             IVsBrowseObjectContext context = project as IVsBrowseObjectContext;
             if (context == null)

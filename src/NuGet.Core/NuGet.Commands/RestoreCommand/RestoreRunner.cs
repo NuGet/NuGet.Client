@@ -19,13 +19,31 @@ namespace NuGet.Commands
         /// <summary>
         /// Create requests, execute requests, and commit restore results.
         /// </summary>
-        public static async Task<IReadOnlyList<RestoreSummary>> Run(RestoreArgs restoreContext)
+        public static Task<IReadOnlyList<RestoreSummary>> Run(RestoreArgs restoreContext)
+        {
+            return Run(restoreContext, Enumerable.Empty<INuGetLock>());
+        }
+
+        /// <summary>
+        /// Create requests, execute requests, and commit restore results.
+        /// </summary>
+        public static async Task<IReadOnlyList<RestoreSummary>> Run(RestoreArgs restoreContext, IEnumerable<INuGetLock> projectLocks)
         {
             // Create requests
             var requests = await GetRequests(restoreContext);
 
             // Run requests
-            return await Run(requests, restoreContext);
+            return await Run(requests, restoreContext, projectLocks);
+        }
+
+        /// <summary>
+        /// Execute and commit restore requests.
+        /// </summary>
+        public static Task<IReadOnlyList<RestoreSummary>> Run(
+            IEnumerable<RestoreSummaryRequest> restoreRequests,
+            RestoreArgs restoreContext)
+        {
+            return Run(restoreRequests, restoreContext, Enumerable.Empty<INuGetLock>());
         }
 
         /// <summary>
@@ -33,7 +51,8 @@ namespace NuGet.Commands
         /// </summary>
         public static async Task<IReadOnlyList<RestoreSummary>> Run(
             IEnumerable<RestoreSummaryRequest> restoreRequests,
-            RestoreArgs restoreContext)
+            RestoreArgs restoreContext,
+            IEnumerable<INuGetLock> projectLocks)
         {
             int maxTasks = GetMaxTaskCount(restoreContext);
 
@@ -50,6 +69,8 @@ namespace NuGet.Commands
             {
                 log.LogVerbose(Strings.Log_RunningNonParallelRestore);
             }
+
+            var pathToLocks = new ProjectSystemCompositeLock(projectLocks);
 
             // Get requests
             var requests = new Queue<RestoreSummaryRequest>(restoreRequests);
@@ -68,7 +89,7 @@ namespace NuGet.Commands
 
                 var request = requests.Dequeue();
 
-                var task = Task.Run(async () => await ExecuteAndCommit(request));
+                var task = Task.Run(async () => await ExecuteAndCommit(request, pathToLocks));
                 restoreTasks.Add(task);
             }
 
@@ -216,11 +237,23 @@ namespace NuGet.Commands
             return maxTasks;
         }
 
-        private static async Task<RestoreSummary> ExecuteAndCommit(RestoreSummaryRequest summaryRequest)
+        private static async Task<RestoreSummary> ExecuteAndCommit(
+            RestoreSummaryRequest summaryRequest,
+            ProjectSystemCompositeLock locks)
         {
             var result = await Execute(summaryRequest);
+            var projectPath = GetProjectPath(summaryRequest);
+            var projectLock = locks.GetProjectLock(projectPath);
 
-            return await Commit(result);
+            return await CommitInLock(result, projectLock);
+        }
+
+        public static async Task<RestoreSummary> CommitInLock(
+            RestoreResultPair result,
+            INuGetLock projectLock)
+        {
+            // Commit with lock
+            return await projectLock.ExecuteAsync<RestoreSummary>(async () => await Commit(result));
         }
 
         private static async Task<RestoreResultPair> Execute(RestoreSummaryRequest summaryRequest)
@@ -356,6 +389,36 @@ namespace NuGet.Commands
             }
 
             return Strings.Error_InvalidCommandLineInput;
+        }
+
+        private static Dictionary<string, List<INuGetLock>> GetIdToLocks(IEnumerable<INuGetLock> locks)
+        {
+            return locks.GroupBy(e => e.Id, StringComparer.Ordinal)
+                .ToDictionary(
+                    group => group.Key,
+                    group => group.ToList(),
+                    StringComparer.Ordinal);
+        }
+
+        private static List<INuGetLock> GetLocksForProject(Dictionary<string, List<INuGetLock>> locks, PackageSpec spec)
+        {
+            var path = spec.RestoreMetadata?.ProjectPath;
+
+            if (!string.IsNullOrEmpty(path))
+            {
+                List<INuGetLock> results;
+                if (locks.TryGetValue(path, out results))
+                {
+                    return results;
+                }
+            }
+
+            return new List<INuGetLock>();
+        }
+
+        private static string GetProjectPath(RestoreSummaryRequest summaryRequest)
+        {
+            return summaryRequest.Request.Project.RestoreMetadata?.ProjectPath ?? string.Empty;
         }
     }
 }
