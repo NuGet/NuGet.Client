@@ -42,16 +42,6 @@ namespace NuGet.Build.Tasks.Pack.Test
                     Assert.Equal(tc.Request.Description, nuspecReader.GetDescription());
                     Assert.False(nuspecReader.GetRequireLicenseAcceptance());
 
-                    var dependencyGroups = nuspecReader.GetDependencyGroups().ToList();
-                    Assert.Equal(1, dependencyGroups.Count);
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net45, dependencyGroups[0].TargetFramework);
-                    var packages = dependencyGroups[0].Packages.ToList();
-                    Assert.Equal(1, packages.Count);
-                    Assert.Equal("Newtonsoft.Json", packages[0].Id);
-                    Assert.Equal(new VersionRange(new NuGetVersion("8.0.1")), packages[0].VersionRange);
-                    Assert.Equal(new List<string> { "Analyzers", "Build" }, packages[0].Exclude);
-                    Assert.Empty(packages[0].Include);
-
                     // Validate the assets.
                     var libItems = nupkgReader.GetLibItems().ToList();
                     Assert.Equal(1, libItems.Count);
@@ -110,63 +100,6 @@ namespace NuGet.Build.Tasks.Pack.Test
         }
 
         [Fact]
-        public void PackTaskLogic_SupportsMultipleFrameworks()
-        {
-            // Arrange
-            using (var testDir = TestDirectory.Create())
-            {
-                var tc = new TestContext(testDir);
-                tc.Request.TargetPathsToAssemblies = new string[0];
-                tc.Request.TargetFrameworks = new[] { "netcoreapp1.0", "net45" };
-                tc.Request.PackageReferences = new[]
-                {
-                    new MSBuildItem("Newtonsoft.Json", new Dictionary<string, string>
-                    {
-                        { "Version", "9.0.1" },
-                        { "TargetFramework", "netcoreapp1.0" }
-                    }),
-                    new MSBuildItem("NuGet.Versioning", new Dictionary<string, string>
-                    {
-                        { "Version", "3.3.0" },
-                        { "TargetFramework", "net45" }
-                    })
-                };
-
-                // Act
-                tc.BuildPackage();
-
-                // Assert
-                using (var nupkgReader = new PackageArchiveReader(tc.NupkgPath))
-                {
-                    var nuspecReader = nupkgReader.NuspecReader;
-                    
-                    var dependencyGroups = nuspecReader
-                        .GetDependencyGroups()
-                        .OrderBy(x => x.TargetFramework, new NuGetFrameworkSorter())
-                        .ToList();
-
-                    Assert.Equal(2, dependencyGroups.Count);
-
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp10, dependencyGroups[0].TargetFramework);
-                    var packagesA = dependencyGroups[0].Packages.ToList();
-                    Assert.Equal(1, packagesA.Count);
-                    Assert.Equal("Newtonsoft.Json", packagesA[0].Id);
-                    Assert.Equal(new VersionRange(new NuGetVersion("9.0.1")), packagesA[0].VersionRange);
-                    Assert.Equal(new List<string> { "Analyzers", "Build" }, packagesA[0].Exclude);
-                    Assert.Empty(packagesA[0].Include);
-
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net45, dependencyGroups[1].TargetFramework);
-                    var packagesB = dependencyGroups[1].Packages.ToList();
-                    Assert.Equal(1, packagesB.Count);
-                    Assert.Equal("NuGet.Versioning", packagesB[0].Id);
-                    Assert.Equal(new VersionRange(new NuGetVersion("3.3.0")), packagesB[0].VersionRange);
-                    Assert.Equal(new List<string> { "Analyzers", "Build" }, packagesB[0].Exclude);
-                    Assert.Empty(packagesB[0].Include);
-                }
-            }
-        }
-
-        [Fact]
         public void PackTaskLogic_SupportsContentTargetFolders()
         {
             // Arrange
@@ -193,17 +126,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                     Assert.Equal(string.Join(",", tc.Request.Authors), nuspecReader.GetOwners());
                     Assert.Equal(tc.Request.Description, nuspecReader.GetDescription());
                     Assert.False(nuspecReader.GetRequireLicenseAcceptance());
-
-                    var dependencyGroups = nuspecReader.GetDependencyGroups().ToList();
-                    Assert.Equal(1, dependencyGroups.Count);
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net45, dependencyGroups[0].TargetFramework);
-                    var packages = dependencyGroups[0].Packages.ToList();
-                    Assert.Equal(1, packages.Count);
-                    Assert.Equal("Newtonsoft.Json", packages[0].Id);
-                    Assert.Equal(new VersionRange(new NuGetVersion("8.0.1")), packages[0].VersionRange);
-                    Assert.Equal(new List<string> { "Analyzers", "Build" }, packages[0].Exclude);
-                    Assert.Empty(packages[0].Include);
-
+                    
                     // Validate the assets.
                     var libItems = nupkgReader.GetLibItems().ToList();
                     Assert.Equal(1, libItems.Count);
@@ -440,71 +363,6 @@ namespace NuGet.Build.Tasks.Pack.Test
             }
         }
 
-        [Theory]
-        [InlineData(null,              null,     null,            true,  "",                                            "Analyzers,Build")]
-        [InlineData(null,              "Native", null,            true,  "",                                            "Analyzers,Build,Native")]
-        [InlineData("Compile",         null,     null,            true,  "",                                            "Analyzers,Build,Native,Runtime")]
-        [InlineData("Compile;Runtime", null,     null,            true,  "",                                            "Analyzers,Build,Native")]
-        [InlineData("All",             null,     "None",          true,  "All",                                         "")]
-        [InlineData("All",             null,     "Compile",       true,  "Analyzers,Build,ContentFiles,Native,Runtime", "")]
-        [InlineData("All",             null,     "Compile;Build", true,  "Analyzers,ContentFiles,Native,Runtime",       "")]
-        [InlineData("All",             "Native", "Compile;Build", true,  "Analyzers,ContentFiles,Runtime",              "")]
-        [InlineData("All",             "Native", "Native;Build",  true,  "Analyzers,Compile,ContentFiles,Runtime",      "")]
-        [InlineData("Compile",         "Native", "Native;Build",  true,  "",                                            "Analyzers,Build,Native,Runtime")]
-        [InlineData("All",             "All",    null,            false, null,                                          null)]
-        [InlineData("Compile;Runtime", "All",    null,            false, null,                                          null)]
-        [InlineData(null,              null,     "All",           false, null,                                          null)]
-        public void PackTaskLogic_SupportsIncludeExcludePrivateAssets_OnPackages(
-            string includeAssets,
-            string excludeAssets,
-            string privateAssets,
-            bool hasPackage,
-            string expectedInclude,
-            string expectedExclude)
-        {
-            // Arrange
-            using (var testDir = TestDirectory.Create())
-            {
-                var tc = new TestContext(testDir);
-                tc.Request.PackageReferences = new[]
-                {
-                    new MSBuildItem("NuGet.Versioning", new Dictionary<string, string>
-                    {
-                        { "Version", "3.3.0" },
-                        { "TargetFramework", "net45" },
-                        { "IncludeAssets", includeAssets },
-                        { "ExcludeAssets", excludeAssets },
-                        { "PrivateAssets", privateAssets },
-                    })
-                };
-
-                // Act
-                tc.BuildPackage();
-
-                // Assert
-                using (var nupkgReader = new PackageArchiveReader(tc.NupkgPath))
-                {
-                    var nuspecReader = nupkgReader.NuspecReader;
-                    var package = nuspecReader
-                        .GetDependencyGroups()
-                        .SingleOrDefault()?
-                        .Packages
-                        .SingleOrDefault();
-
-                    if (!hasPackage)
-                    {
-                        Assert.Null(package);
-                    }
-                    else
-                    {
-                        Assert.NotNull(package);
-                        Assert.Equal(expectedInclude, string.Join(",", package.Include));
-                        Assert.Equal(expectedExclude, string.Join(",", package.Exclude));
-                    }
-                }
-            }
-        }
-
         private class TestContext
         {
             public TestContext(TestDirectory testDir)
@@ -515,7 +373,9 @@ namespace NuGet.Build.Tasks.Pack.Test
                 var dllPath = Path.Combine(dllDir, "a.dll");
 
                 Directory.CreateDirectory(dllDir);
+                Directory.CreateDirectory(Path.Combine(testDir, "obj"));
                 File.WriteAllBytes(dllPath, new byte[0]);
+                File.Copy("assets/project.assets.json", Path.Combine(testDir, "obj", "project.assets.json"));
 
                 TestDir = testDir;
                 Request = new PackTaskRequest
@@ -535,18 +395,11 @@ namespace NuGet.Build.Tasks.Pack.Test
                     BuildOutputFolder = "lib",
                     NuspecOutputPath = "obj",
                     IncludeBuildOutput = true,
+                    RestoreOutputPath = Path.Combine(testDir, "obj"),
                     ContinuePackingAfterGeneratingNuspec = true,
                     TargetFrameworks = new[] { "net45" },
                     TargetPathsToAssemblies = new[] { dllPath },
-                    Logger = new TestLogger(),
-                    PackageReferences = new[]
-                    {
-                        new MSBuildItem("Newtonsoft.Json", new Dictionary<string, string>
-                        {
-                            { "Version", "8.0.1" },
-                            { "TargetFramework", "net45" }
-                        })
-                    }
+                    Logger = new TestLogger()
                 };
             }
 

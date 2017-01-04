@@ -117,6 +117,14 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AssetsFileDoesNotHaveValidPackageSpec" xml:space="preserve">
+    <value>The assets file found does not contain a valid package spec. Try restoring the project again. The location of the assets file is {0}.</value>
+    <comment>{0} is the path to the assets file.</comment>
+  </data>
+  <data name="AssetsFileNotFound" xml:space="preserve">
+    <value>The assets file produced by restore does not exist. Try restoring the project again. The expected location of the assets file is {0}.</value>
+    <comment>{0} is the path to the assets file.</comment>
+  </data>
   <data name="InvalidMinClientVersion" xml:space="preserve">
     <value>MinClientVersion string specified '{0}' is invalid.</value>
     <comment>{0} is the version.</comment>

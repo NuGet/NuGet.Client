@@ -7,7 +7,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using NuGet.Commands;
-using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
@@ -75,6 +74,16 @@ namespace NuGet.Build.Tasks.Pack
 
         public PackageBuilder GetPackageBuilder(IPackTaskRequest<IMSBuildItem> request)
         {
+            // Load the assets JSON file produced by restore.
+            var assetsFilePath = Path.Combine(request.RestoreOutputPath, LockFileFormat.AssetsFileName);
+            if (!File.Exists(assetsFilePath))
+            {
+                throw new InvalidOperationException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.AssetsFileNotFound,
+                    assetsFilePath));
+            }
+
             var builder = new PackageBuilder
             {
                 Id = request.PackageId,
@@ -143,8 +152,20 @@ namespace NuGet.Build.Tasks.Pack
                 builder.MinClientVersion = version;
             }
 
-            ParseProjectToProjectReferences(request, builder);
-            GetPackageReferences(request, builder);
+            // The assets file is necessary for project and package references. Pack should not do any traversal,
+            // so we leave that work up to restore (which produces the assets file).
+            var lockFileFormat = new LockFileFormat();
+            var assetsFile = lockFileFormat.Read(assetsFilePath);
+
+            if (assetsFile.PackageSpec == null)
+            {
+                throw new InvalidOperationException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.AssetsFileDoesNotHaveValidPackageSpec,
+                    assetsFilePath));
+            }
+            
+            PopulateProjectAndPackageReferences(builder, assetsFile);
             return builder;
         }
 
@@ -213,21 +234,6 @@ namespace NuGet.Build.Tasks.Pack
                 }
             }
             return listOfPackageTypes;
-        }
-
-        private LibraryDependency GetLibraryDependency(IMSBuildItem p2pReference, string packageId, string version)
-        {
-            LibraryIncludeFlags includeFlags, privateAssetsFlag;
-            GetAssetMetadata(p2pReference, out includeFlags, out privateAssetsFlag);
-
-            LibraryRange libraryRange = new LibraryRange(packageId, VersionRange.Parse(version, true), LibraryDependencyTarget.All);
-            var libDependency = new LibraryDependency()
-            {
-                LibraryRange = libraryRange,
-                IncludeType = includeFlags,
-                SuppressParent = privateAssetsFlag
-            };
-            return libDependency;
         }
 
         private void InitCurrentDirectoryAndFileName(IPackTaskRequest<IMSBuildItem> request, PackArgs packArgs)
@@ -435,134 +441,135 @@ namespace NuGet.Build.Tasks.Pack
             return sourceFiles;
         }
 
-        private void GetPackageReferences(IPackTaskRequest<IMSBuildItem> request, PackageBuilder packageBuilder)
+        private void PopulateProjectAndPackageReferences(PackageBuilder packageBuilder, LockFile assetsFile)
         {
-            var dependencyByFramework = new Dictionary<NuGetFramework, HashSet<LibraryDependency>>();
-            if (request.PackageReferences != null)
+            var dependenciesByFramework = new Dictionary<NuGetFramework, HashSet<LibraryDependency>>();
+
+            InitializeProjectDependencies(assetsFile, dependenciesByFramework);
+            InitializePackageDependencies(assetsFile, dependenciesByFramework);
+
+            foreach (var pair in dependenciesByFramework)
             {
-                foreach (var packageRef in request.PackageReferences)
-                {
-                    var dependencies = new HashSet<LibraryDependency>();
-                    string packageId, version;
-                    string targetFramework = packageRef.GetProperty("TargetFramework");
-                    NuGetFramework framework = NuGetFramework.Parse(targetFramework);
-                    if (dependencyByFramework.ContainsKey(framework))
-                    {
-                        dependencies = dependencyByFramework[framework];
-                    }
-                    else
-                    {
-                        dependencyByFramework.Add(framework, dependencies);
-                    }
-
-                    ParsePackageReference(packageRef, out packageId, out version);
-                    var libDependency = GetLibraryDependency(packageRef, packageId, version);
-
-                    PackCommandRunner.AddLibraryDependency(libDependency, dependencies);
-                }
-
-                foreach (var framework in dependencyByFramework.Keys)
-                {
-                    PackCommandRunner.AddDependencyGroups(dependencyByFramework[framework], framework, packageBuilder);
-                }
+                PackCommandRunner.AddDependencyGroups(pair.Value, pair.Key, packageBuilder);
             }
         }
 
-        private void ParseProjectToProjectReferences(IPackTaskRequest<IMSBuildItem> request, PackageBuilder packageBuilder)
+        private static void InitializeProjectDependencies(
+            LockFile assetsFile,
+            Dictionary<NuGetFramework, HashSet<LibraryDependency>> dependenciesByFramework)
         {
-            var dependencyByFramework = new Dictionary<NuGetFramework, HashSet<LibraryDependency>>();
-            if (request.ProjectReferences != null)
-            {
-                foreach (var p2pReference in request.ProjectReferences)
-                {
-                    var dependencies = new HashSet<LibraryDependency>();
-                    var typeOfReference = p2pReference.GetProperty("Type");
+            // From the package spec, all we know is each absolute path to the project reference the the target
+            // framework that project reference applies to.
 
-                    // TODO: implement project reference type = "project". From the design spec, it seems that this
-                    // should be indicated with:
-                    // <TreatAsPackageReference>false</TreatAsPackageReference>
+            if (assetsFile.PackageSpec.RestoreMetadata == null)
+            {
+                return;
+            }
+
+            // Using the libraries section of the assets file, the library name and version for the project path.
+            var projectPathToLibraryIdentities = assetsFile
+                .Libraries
+                .Where(library => library.MSBuildProject != null)
+                .ToLookup(
+                    library => Path.GetFullPath(Path.Combine(
+                        Path.GetDirectoryName(assetsFile.PackageSpec.RestoreMetadata.ProjectPath),
+                        PathUtility.GetPathWithDirectorySeparator(library.MSBuildProject))),
+                    library => new PackageIdentity(library.Name, library.Version));
+
+            // Consider all of the project references, grouped by target framework.
+            foreach (var framework in assetsFile.PackageSpec.RestoreMetadata.TargetFrameworks)
+            {
+                var target = assetsFile.GetTarget(framework.FrameworkName, runtimeIdentifier: null);
+                if (target == null)
+                {
+                    continue;
+                }
+
+                HashSet<LibraryDependency> dependencies;
+                if (!dependenciesByFramework.TryGetValue(framework.FrameworkName, out dependencies))
+                {
+                    dependencies = new HashSet<LibraryDependency>();
+                    dependenciesByFramework[framework.FrameworkName] = dependencies;
+                }
+
+                // For the current target framework, create a map from library identity to library model. This allows
+                // us to be sure we have picked the correct library (name and version) for this target framework.
+                var libraryIdentityToTargetLibrary = target
+                    .Libraries
+                    .ToLookup(library => new PackageIdentity(library.Name, library.Version));
+
+                foreach (var projectReference in framework.ProjectReferences)
+                {
+                    var libraryIdentities = projectPathToLibraryIdentities[projectReference.ProjectPath];
+
+                    var targetLibrary = libraryIdentities
+                       .Select(identity => libraryIdentityToTargetLibrary[identity].FirstOrDefault())
+                       .FirstOrDefault(library => library != null);
+
+                    if (targetLibrary == null)
+                    {
+                        continue;
+                    }
+
+                    // TODO: Implement <TreatAsPackageReference>false</TreatAsPackageReference>
+                    //   https://github.com/NuGet/Home/issues/3891
                     //
-                    // Issue: https://github.com/NuGet/Home/issues/3891
-
-                    if (string.Equals(typeOfReference, "package", StringComparison.OrdinalIgnoreCase))
+                    // For now, assume the project reference is a package dependency.
+                    var projectDependency = new LibraryDependency
                     {
-                        // This is to be treated as a nupkg dependency, add as library dependency.
-                        var packageId = p2pReference.GetProperty("PackageId");
-                        var version = p2pReference.GetProperty("PackageVersion");
-                        //TODO: Do the work to get the version from AssemblyInfo.cs
-                        if (string.IsNullOrEmpty(version))
-                        {
-                            version = "1.0.0";
-                        }
-                        var libDependency = GetLibraryDependency(p2pReference, packageId, version);
-                        var targetFramework = p2pReference.GetProperty("TargetFramework");
-                        var nugetFramework = NuGetFramework.Parse(targetFramework);
-                        if (dependencyByFramework.ContainsKey(nugetFramework))
-                        {
-                            dependencies = dependencyByFramework[nugetFramework];
-                        }
-                        else
-                        {
-                            dependencyByFramework.Add(nugetFramework, dependencies);
-                        }
-                        PackCommandRunner.AddLibraryDependency(libDependency, dependencies);
-                    }
-                }
+                        LibraryRange = new LibraryRange(
+                            targetLibrary.Name,
+                            new VersionRange(targetLibrary.Version),
+                            LibraryDependencyTarget.All),
+                        IncludeType = projectReference.IncludeAssets & ~projectReference.ExcludeAssets,
+                        SuppressParent = projectReference.PrivateAssets
+                    };
 
-                foreach (var nugetFramework in dependencyByFramework.Keys)
+                    PackCommandRunner.AddLibraryDependency(projectDependency, dependencies);
+                }
+            }
+        }
+
+        private static void InitializePackageDependencies(
+            LockFile assetsFile,
+            Dictionary<NuGetFramework, HashSet<LibraryDependency>> dependenciesByFramework)
+        {
+            // From the package spec, we know the direct package dependencies of this project.
+            foreach (var framework in assetsFile.PackageSpec.TargetFrameworks)
+            {
+                // First, add each of the generic package dependencies to the framework-specific list.
+                var packageDependencies = assetsFile
+                    .PackageSpec
+                    .Dependencies
+                    .Concat(framework.Dependencies);
+
+                HashSet<LibraryDependency> dependencies;
+                if (!dependenciesByFramework.TryGetValue(framework.FrameworkName, out dependencies))
                 {
-                    PackCommandRunner.AddDependencyGroups(dependencyByFramework[nugetFramework], nugetFramework, packageBuilder);
+                    dependencies = new HashSet<LibraryDependency>();
+                    dependenciesByFramework[framework.FrameworkName] = dependencies;
+                }
+
+                // Add each package dependency.
+                foreach (var packageDependency in packageDependencies)
+                {
+                    // If we have a floating package dependency like 1.2.3-xyz-*, we 
+                    // use the version of the package that restore resolved it to.
+                    if (packageDependency.LibraryRange.VersionRange.IsFloating)
+                    {
+                        var lockFileTarget = assetsFile.GetTarget(framework.FrameworkName, runtimeIdentifier: null);
+                        var package = lockFileTarget.Libraries.First(
+                            library =>
+                                string.Equals(library.Name, packageDependency.Name, StringComparison.OrdinalIgnoreCase));
+                        if (package != null)
+                        {
+                            packageDependency.LibraryRange.VersionRange = new VersionRange(package.Version);
+                        }
+                    }
+
+                    PackCommandRunner.AddLibraryDependency(packageDependency, dependencies);
                 }
             }
-        }
-
-        private void ParsePackageReference(IMSBuildItem packageReference, out string packageId, out string version)
-        {
-            packageId = packageReference.Identity;
-            version = packageReference.GetProperty("Version");
-            if (string.IsNullOrEmpty(version))
-            {
-                throw new InvalidOperationException(string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.InvalidPackageReferenceVersion,
-                    packageId));
-            }
-        }
-
-        private void GetAssetMetadata(
-            IMSBuildItem packageRef,
-            out LibraryIncludeFlags include,
-            out LibraryIncludeFlags suppressParent)
-        {
-            var includeFlags = ParseLibraryIncludeFlags(
-                packageRef.GetProperty("IncludeAssets"),
-                LibraryIncludeFlags.All);
-
-            var excludeFlags = ParseLibraryIncludeFlags(
-                packageRef.GetProperty("ExcludeAssets"),
-                LibraryIncludeFlags.None);
-
-            include = includeFlags & ~excludeFlags;
-
-            suppressParent = ParseLibraryIncludeFlags(
-                packageRef.GetProperty("PrivateAssets"),
-                LibraryIncludeFlagUtils.DefaultSuppressParent);
-        }
-
-        private LibraryIncludeFlags ParseLibraryIncludeFlags(string input, LibraryIncludeFlags defaultFlags)
-        {
-            if (input == null)
-            {
-                return defaultFlags;
-            }
-
-            var unparsedFlags = input
-                .Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(f => f.Trim())
-                .Where(f => f.Length != 0)
-                .ToArray();
-
-            return unparsedFlags.Any() ? LibraryIncludeFlagUtils.GetFlags(unparsedFlags) : defaultFlags;
         }
     }
 }
