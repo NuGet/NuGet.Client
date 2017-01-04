@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,56 +41,6 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "ListCommandIncludeDelisted")]
         public bool IncludeDelisted { get; set; }
 
-        public IListCommandRunner ListCommandRunner { get; set; }
-
-        private async Task<IList<KeyValuePair<Configuration.PackageSource, string>>> GetListEndpointsAsync()
-        {
-            var configurationSources = SourceProvider.LoadPackageSources()
-                .Where(p => p.IsEnabled)
-                .ToList();
-
-            IList<Configuration.PackageSource> packageSources;
-            if (Source.Count > 0)
-            {
-                packageSources = Source
-                    .Select(s => Common.PackageSourceProviderExtensions.ResolveSource(configurationSources, s))
-                    .ToList();
-            }
-            else
-            {
-                packageSources = configurationSources;
-            }
-
-            var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(SourceProvider);
-
-            var listCommandResourceTasks = packageSources
-                .Select(source =>
-                {
-                    var sourceRepository = sourceRepositoryProvider.CreateRepository(source);
-                    return sourceRepository.GetResourceAsync<ListCommandResource>();
-                })
-                .ToList();
-
-            var listCommandResources = await Task.WhenAll(listCommandResourceTasks);
-
-            var listEndpoints = packageSources.Zip(
-                listCommandResources,
-                (p, l) => new KeyValuePair<Configuration.PackageSource, string>(p, l?.GetListEndpoint()));
-
-            var partitioned = listEndpoints.ToLookup(kv => kv.Value != null);
-
-            foreach (var packageSource in partitioned[key: false].Select(kv => kv.Key))
-            {
-                var message = string.Format(
-                    LocalizedResourceManager.GetString("ListCommand_ListNotSupported"),
-                    packageSource.Source);
-
-                Console.LogWarning(message);
-            }
-
-            return partitioned[key: true].ToList();
-        }
-
         private IList<Configuration.PackageSource> GetEndpointsAsync()
         {
             var configurationSources = SourceProvider.LoadPackageSources()
@@ -118,10 +69,7 @@ namespace NuGet.CommandLine
                 Verbosity = Verbosity.Detailed;
             }
 
-            if (ListCommandRunner == null)
-            {
-                ListCommandRunner = new ListCommandRunner();
-            }
+            var listCommandRunner = new ListCommandRunner();
             var listEndpoints = GetEndpointsAsync();
 
             var list = new ListArgs(Arguments,
@@ -138,7 +86,7 @@ namespace NuGet.CommandLine
                 Prerelease,
                 CancellationToken.None);
 
-            await ListCommandRunner.ExecuteCommand(list);
+            await listCommandRunner.ExecuteCommand(list);
         }
     }
 }

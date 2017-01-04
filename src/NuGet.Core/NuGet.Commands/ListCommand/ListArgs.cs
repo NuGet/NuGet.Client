@@ -40,7 +40,9 @@ namespace NuGet.Commands.ListCommand
         public IList<Configuration.PackageSource> ListEndpoints { get; }
 
         public ListArgs(IList<string> arguments, IList<Configuration.PackageSource> listEndpoints,
-            ISettings settings, ILogger logger, Log printJustified, bool isDetailedl, string listCommandNoPackages, string listCommandLicenseUrl, string listCommandListNotSupported, bool allVersions, bool includeDelisted, bool prerelease, CancellationToken token)
+            ISettings settings, ILogger logger, Log printJustified, bool isDetailedl, 
+            string listCommandNoPackages, string listCommandLicenseUrl, string listCommandListNotSupported, 
+            bool allVersions, bool includeDelisted, bool prerelease, CancellationToken token)
         {
             if (arguments == null)
             {

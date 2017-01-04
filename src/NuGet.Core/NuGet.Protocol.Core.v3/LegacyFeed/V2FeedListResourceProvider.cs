@@ -11,7 +11,6 @@ namespace NuGet.Protocol.LegacyFeed
 {
     public class V2FeedListResourceProvider : ResourceProvider
     {
-
         public V2FeedListResourceProvider() : base(
             typeof (ListResource),
             nameof(V2FeedListResourceProvider),
@@ -24,9 +23,7 @@ namespace NuGet.Protocol.LegacyFeed
         {
             ListResource resource = null;
 
-            if (await source.GetFeedType(token) == FeedType.HttpV2 ||
-                (source.PackageSource.IsHttp &&
-                 !source.PackageSource.Source.EndsWith(".json", StringComparison.OrdinalIgnoreCase)))
+            if (await source.GetFeedType(token) == FeedType.HttpV2)
             {
                 var httpSource = await source.GetResourceAsync<HttpSourceResource>(token);
 

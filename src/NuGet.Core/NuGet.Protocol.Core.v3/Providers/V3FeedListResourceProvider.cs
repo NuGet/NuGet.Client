@@ -18,7 +18,8 @@ namespace NuGet.Protocol
                   typeof(ListResource),
                   nameof(V3FeedListResourceProvider),
                   nameof(V2FeedListResourceProvider))
-        { }
+        {
+        }
 
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(
             SourceRepository source,
@@ -30,10 +31,6 @@ namespace NuGet.Protocol
 
             if (serviceIndex != null)
             {
-                // Since it is a v3 package source, always return a ListCommandResource object
-                // which may or may not contain a list endpoint.
-                // Returning null here will result in ListCommandResource
-                // getting returned for this very v3 package source as if it was a v2 package source
                 var baseUrl = serviceIndex[ServiceTypes.LegacyGallery].FirstOrDefault();
                 if (baseUrl != null)
                 {

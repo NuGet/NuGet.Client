@@ -38,7 +38,7 @@ namespace NuGet.Commands
             {
                 var sourceRepository = Repository.Factory.GetCoreV3(packageSource.Source);
                 var feed = await sourceRepository.GetResourceAsync<ListResource>(listArgs.CancellationToken);
-                
+
                 if (feed != null)
                 {
                     if (sources.Add(feed.Source))
@@ -48,7 +48,7 @@ namespace NuGet.Commands
                 }
                 else
                 {
-                    listArgs.Logger.LogWarning(string.Format(listArgs.ListCommandListNotSupported,packageSource.Source));
+                    listArgs.Logger.LogWarning(string.Format(listArgs.ListCommandListNotSupported, packageSource.Source));
                 }
             }
 
@@ -56,22 +56,18 @@ namespace NuGet.Commands
             var log = listArgs.IsDetailed ? listArgs.Logger : NullLogger.Instance;
             foreach (var feed in sourceFeeds)
             {
-                    var packagesFromSource =
-                        await feed.ListAsync(listArgs.Arguments.FirstOrDefault(), listArgs.Prerelease, listArgs.AllVersions,
-                            listArgs.IncludeDelisted, log, listArgs.CancellationToken);
-                    allPackages.Add(packagesFromSource); 
+                var packagesFromSource =
+                    await feed.ListAsync(listArgs.Arguments.FirstOrDefault(), listArgs.Prerelease, listArgs.AllVersions,
+                        listArgs.IncludeDelisted, log, listArgs.CancellationToken);
+                allPackages.Add(packagesFromSource);
             }
-            CompareIPackageSearchMetadata comparer = new CompareIPackageSearchMetadata();
+            ComparePackageSearchMetadata comparer = new ComparePackageSearchMetadata();
             await PrintPackages(listArgs, new AggregateEnumerableAsync<IPackageSearchMetadata>(allPackages, comparer, comparer).GetEnumeratorAsync());
         }
 
-        private class CompareIPackageSearchMetadata : IComparer<IPackageSearchMetadata>, IEqualityComparer<IPackageSearchMetadata>
+        private class ComparePackageSearchMetadata : IComparer<IPackageSearchMetadata>, IEqualityComparer<IPackageSearchMetadata>
         {
-            private readonly PackageIdentityComparer _comparer;
-            public CompareIPackageSearchMetadata()
-            {
-                _comparer = PackageIdentityComparer.Default;
-            }
+            public PackageIdentityComparer _comparer { get; set; } = PackageIdentityComparer.Default;
             public int Compare(IPackageSearchMetadata x, IPackageSearchMetadata y)
             {
                 if (ReferenceEquals(x, y))
@@ -158,7 +154,7 @@ namespace NuGet.Commands
                     while (await asyncEnumerator.MoveNextAsync())
                     {
                         var p = asyncEnumerator.Current;
-                        listArgs.PrintJustified(0, p.GetFullName());
+                        listArgs.PrintJustified(0, p.Identity.Id + " " + p.Identity.Version.ToFullString());
                         hasPackages = true;
                     }
                 }

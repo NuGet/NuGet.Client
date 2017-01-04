@@ -6,8 +6,9 @@ namespace NuGet.CommandLine
     {
         public static string ReadToEnd(this Stream stream)
         {
-            using (StreamReader streamReader = new StreamReader(stream))
+            using (StreamReader streamReader = new StreamReader(stream)) { 
                 return streamReader.ReadToEnd();
+            }
         }
     }
 }

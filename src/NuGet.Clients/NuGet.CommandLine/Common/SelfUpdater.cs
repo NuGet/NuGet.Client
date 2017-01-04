@@ -13,7 +13,7 @@ using NuGet.Configuration;
 using static CoreV2.NuGet.PackageRepositoryExtensions;
 using static CoreV2.NuGet.CustomAttributeProviderExtensions;
 
-//TODO: This can be reworked with V3 APIs 
+//TODO: This can be reworked with V3 APIs - tracked in https://github.com/NuGet/Home/issues/4197
 namespace NuGet.CommandLine
 {
     /// <summary>

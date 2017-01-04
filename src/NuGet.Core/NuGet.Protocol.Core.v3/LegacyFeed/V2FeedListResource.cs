@@ -57,7 +57,6 @@ namespace NuGet.Protocol.LegacyFeed
 
                     if (prerelease && supportsIsAbsoluteLatestVersion)
                     {
-                        //TODO: Does it matter if the server supports IsAbsoluteLatestVersion ? 
                         filter = new SearchFilter(includePrerelease: true, filter: SearchFilterType.IsAbsoluteLatestVersion)
                         {
                             OrderBy = SearchOrderBy.Id,

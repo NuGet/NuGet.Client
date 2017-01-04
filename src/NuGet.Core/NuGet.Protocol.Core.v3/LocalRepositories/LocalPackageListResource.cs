@@ -53,7 +53,7 @@ namespace NuGet.Protocol
 
         }
 
-        class EnumerableAsync<T> : IEnumerableAsync<T>
+        internal class EnumerableAsync<T> : IEnumerableAsync<T>
         {
             private readonly SearchFilter _filter;
             private readonly ILogger _logger;
@@ -108,8 +108,10 @@ namespace NuGet.Protocol
             public async Task<bool> MoveNextAsync()
             {
                 if (_currentEnumerator == null) 
-                { // NOTE: We need to sort the values so this is very innefficient by design. The FS search resource would return the results ordered in FS nat ordering.
-                    var results = await _packageSearchResource.SearchAsync(_searchTerm, _filter, 0, Int32.MaxValue, _logger, _token);
+                { // NOTE: We need to sort the values so this is very innefficient by design. 
+                  // The FS search resource would return the results ordered in FS nat ordering.
+                    var results = await _packageSearchResource.SearchAsync(
+                        _searchTerm, _filter, 0, int.MaxValue, _logger, _token);
                     switch (_filter.OrderBy)
                     {
                         case SearchOrderBy.Id:
