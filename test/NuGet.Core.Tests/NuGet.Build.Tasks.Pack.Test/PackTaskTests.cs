@@ -212,9 +212,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 AssemblyReferences = new[] { null, new Mock<ITaskItem>().Object },
                 PackageFiles = new[] { null, new Mock<ITaskItem>().Object },
                 PackageFilesToExclude = new[] { null, new Mock<ITaskItem>().Object },
-                PackageReferences = new[] { null, new Mock<ITaskItem>().Object },
                 PackItem = new Mock<ITaskItem>().Object,
-                ProjectReferences = new[] { null, new Mock<ITaskItem>().Object },
                 SourceFiles = new[] { null, new Mock<ITaskItem>().Object }
             };
 
@@ -225,9 +223,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             Assert.Equal(1, actual.AssemblyReferences.OfType<MSBuildTaskItem>().Count());
             Assert.Equal(1, actual.PackageFiles.OfType<MSBuildTaskItem>().Count());
             Assert.Equal(1, actual.PackageFilesToExclude.OfType<MSBuildTaskItem>().Count());
-            Assert.Equal(1, actual.PackageReferences.OfType<MSBuildTaskItem>().Count());
             Assert.NotNull(actual.PackItem);
-            Assert.Equal(1, actual.ProjectReferences.OfType<MSBuildTaskItem>().Count());
             Assert.Equal(1, actual.SourceFiles.OfType<MSBuildTaskItem>().Count());
         }
 
@@ -241,9 +237,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                 Authors = null,
                 PackageFiles = null,
                 PackageFilesToExclude = null,
-                PackageReferences = null,
                 PackageTypes = null,
-                ProjectReferences = null,
                 SourceFiles = null,
                 Tags = null,
                 TargetFrameworks = null,
@@ -259,9 +253,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             Assert.Equal(0, actual.Authors.Length);
             Assert.Equal(0, actual.PackageFiles.Length);
             Assert.Equal(0, actual.PackageFilesToExclude.Length);
-            Assert.Equal(0, actual.PackageReferences.Length);
             Assert.Equal(0, actual.PackageTypes.Length);
-            Assert.Equal(0, actual.ProjectReferences.Length);
             Assert.Equal(0, actual.SourceFiles.Length);
             Assert.Equal(0, actual.Tags.Length);
             Assert.Equal(0, actual.TargetFrameworks.Length);
@@ -297,10 +289,8 @@ namespace NuGet.Build.Tasks.Pack.Test
                 PackageFilesToExclude = new ITaskItem[0],
                 PackageId = "PackageId",
                 PackageOutputPath = "PackageOutputPath",
-                PackageReferences = new ITaskItem[0],
                 PackageTypes = new string[0],
                 PackageVersion = "PackageVersion",
-                ProjectReferences = new ITaskItem[0],
                 ProjectUrl = "ProjectUrl",
                 ReleaseNotes = "ReleaseNotes",
                 RepositoryType = "RepositoryType",

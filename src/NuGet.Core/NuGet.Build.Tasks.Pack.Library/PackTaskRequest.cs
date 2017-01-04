@@ -30,16 +30,15 @@ namespace NuGet.Build.Tasks.Pack
         public IMSBuildItem[] PackageFilesToExclude { get; set; }
         public string PackageId { get; set; }
         public string PackageOutputPath { get; set; }
-        public IMSBuildItem[] PackageReferences { get; set; }
         public string[] PackageTypes { get; set; }
         public string PackageVersion { get; set; }
         public IMSBuildItem PackItem { get; set; }
-        public IMSBuildItem[] ProjectReferences { get; set; }
         public string ProjectUrl { get; set; }
         public string ReleaseNotes { get; set; }
         public string RepositoryType { get; set; }
         public string RepositoryUrl { get; set; }
         public bool RequireLicenseAcceptance { get; set; }
+        public string RestoreOutputPath { get; set; }
         public bool Serviceable { get; set; }
         public IMSBuildItem[] SourceFiles { get; set; }
         public string[] Tags { get; set; }

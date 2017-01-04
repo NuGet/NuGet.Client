@@ -71,7 +71,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
     <PropertyGroup>
       <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$(OutputPath)</PackageOutputPath>
+      <RestoreOutputPath Condition=" '$(RestoreOutputPath)' == '' " >$(BaseIntermediateOutputPath)</RestoreOutputPath>
     </PropertyGroup>
+    
+    <ConvertToAbsolutePath Paths="$(RestoreOutputPath)">
+      <Output TaskParameter="AbsolutePaths" PropertyName="RestoreOutputAbsolutePath" />
+    </ConvertToAbsolutePath>
+    
     <!-- Call Pack -->
     <PackTask PackItem="$(PackProjectInputFile)"
               PackageFiles="@(_PackageFiles)"
@@ -91,7 +97,6 @@ Copyright (c) .NET Foundation. All rights reserved.
               TargetPathsToSymbols="@(_TargetPathsToSymbols)"
               TargetFrameworks="@(_TargetFrameworks)"
               AssemblyName="$(AssemblyName)"
-              ProjectReferences="@(_ProjectReferences)"
               PackageOutputPath="$(PackageOutputPath)"
               IncludeSymbols="$(IncludeSymbols)"
               IncludeSource="$(IncludeSource)"
@@ -105,12 +110,12 @@ Copyright (c) .NET Foundation. All rights reserved.
               Serviceable="$(Serviceable)"
               VersionSuffix ="$(VersionSuffix)"
               AssemblyReferences="@(_References)"
-              PackageReferences="@(_PackageReferences)"
               ContinuePackingAfterGeneratingNuspec="$(ContinuePackingAfterGeneratingNuspec)"
               NuspecOutputPath="$(BaseIntermediateOutputPath)"
               IncludeBuildOutput="$(IncludeBuildOutput)"
               BuildOutputFolder="$(BuildOutputTargetFolder)"
-              ContentTargetFolders="$(ContentTargetFolders)"/>
+              ContentTargetFolders="$(ContentTargetFolders)"
+              RestoreOutputPath="$(RestoreOutputAbsolutePath)"/>
   </Target>
   <!--
     ============================================================
@@ -131,17 +136,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="_WalkEachTargetPerFramework">
-    <MSBuild
-      Projects="$(MSBuildProjectFullPath)"
-      Targets="_GetProjectToProjectReferences"
-      Properties="TargetFramework=%(_TargetFrameworks.Identity);
-                  BuildProjectReferences=false;">
-
-      <Output
-          TaskParameter="TargetOutputs"
-          ItemName="_ProjectReferences" />
-    </MSBuild>
-
     <MSBuild
       Condition="'$(IncludeBuildOutput)' == 'true'"
       Projects="$(MSBuildProjectFullPath)"
@@ -177,80 +171,6 @@ Copyright (c) .NET Foundation. All rights reserved.
           TaskParameter="TargetOutputs"
           ItemName="_SourceFiles" />
     </MSBuild>
-
-    <MSBuild
-      Projects="$(MSBuildProjectFullPath)"
-      Targets="_GetPackageReferences"
-      Properties="TargetFramework=%(_TargetFrameworks.Identity);
-                  BuildProjectReferences=false;">
-
-      <Output
-          TaskParameter="TargetOutputs"
-          ItemName="_PackageReferences" />
-    </MSBuild>
-  </Target>
-
-  <!--
-    ============================================================
-    _GetProjectMetadata
-    Collects metadata for pack from child projects to be used in
-    the generated .nuspec of the parent project.
-    ============================================================
-  -->
-  <Target Name="_GetProjectMetadata"
-          Returns="@(_ProjectReferences)">
-    <ItemGroup>
-      <_ProjectReferences Include="$(MSBuildProjectFullPath)">
-        <PackageId>$(PackageId)</PackageId>
-        <PackageVersion>$(PackageVersion)</PackageVersion>
-      </_ProjectReferences>
-    </ItemGroup>
-  </Target>
-
-  <!--
-    ============================================================
-    _GetProjectToProjectReferences
-    Entry point for generating the project to project references.
-    ============================================================
-  -->
-  <Target Name="_GetProjectToProjectReferences"
-      Condition="'$(TargetFramework)' != ''"
-      DependsOnTargets="ResolveProjectReferences"
-      Returns="@(_ProjectReferences)">
-
-    <ItemGroup>
-      <!-- Filter out project references that specify ReferenceOutputAssembly=false -->
-      <ValidProjectInputForPackGraph Include="@(ProjectReference)"
-          Condition=" ('%(ProjectReference.ReferenceOutputAssembly)' == '' OR '%(ProjectReference.ReferenceOutputAssembly)' == 'true')" />
-    </ItemGroup>
-
-    <MSBuild
-      Projects="@(ValidProjectInputForPackGraph)"
-      Targets="_GetProjectMetadata"
-      Properties="CustomAfterMicrosoftCommonTargets=$(MSBuildThisFileFullPath);
-                  CustomAfterMicrosoftCommonCrossTargetingTargets=$(MSBuildThisFileFullPath);
-                  BuildProjectReferences=false">
-
-      <Output
-          TaskParameter="TargetOutputs"
-          ItemName="_ProjectReferencesWithoutParentData" />
-    </MSBuild>
-
-    <ItemGroup>
-      <_ProjectReferences Include="@(_ProjectReferencesWithoutParentData)">
-        <TargetFramework>$(TargetFramework)</TargetFramework>
-        <Type>Package</Type>
-      </_ProjectReferences>
-      <_ProjectReferences Condition="'%(_ProjectReferences.IncludeAssets)' == ''">
-        <IncludeAssets>all</IncludeAssets>
-      </_ProjectReferences>
-      <_ProjectReferences Condition="'%(_ProjectReferences.ExcludeAssets)' == ''">
-        <ExcludeAssets>none</ExcludeAssets>
-      </_ProjectReferences>
-      <_ProjectReferences Condition="'%(_ProjectReferences.PrivateAssets)' == ''">
-        <PrivateAssets>build;contentFiles;analyzers</PrivateAssets>
-      </_ProjectReferences>
-    </ItemGroup>
   </Target>
 
   <!--
@@ -307,28 +227,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_PackageFiles Include="@(BundleResource)" Condition=" %(BundleResource.Pack) == 'true' ">
         <BuildAction>BundleResource</BuildAction>
       </_PackageFiles>
-    </ItemGroup>
-  </Target>
-
-  <!--
-    ============================================================
-    _GetPackageReferences
-    Entry point for getting the package references for a project and it's references
-    ============================================================
-  -->
-  <Target Name="_GetPackageReferences"
-      Condition="$(TargetFramework) != ''"
-      Returns="@(_PackageReferences)">
-
-    <!-- Project to project entry -->
-    <ItemGroup>
-      <_PackageReferences Include="%(PackageReference.Identity)">
-        <TargetFramework>$(TargetFramework)</TargetFramework>
-        <IncludeAssets>%(PackageReference.IncludeAssets)</IncludeAssets>
-        <ExcludeAssets>%(PackageReference.ExcludeAssets)</ExcludeAssets>
-        <PrivateAssets>%(PackageReference.PrivateAssets)</PrivateAssets>
-        <Version>%(PackageReference.Version)</Version>
-      </_PackageReferences>
     </ItemGroup>
   </Target>
 </Project>
