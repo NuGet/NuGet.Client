@@ -44,11 +44,6 @@ namespace NuGet.Commands
             bool isXnaWindowsPhoneProject,
             bool isManagementPackProject)
         {
-            if (projectFilePath == null)
-            {
-                throw new ArgumentNullException(nameof(projectFilePath));
-            }
-
             var frameworks = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
 
             // TargetFrameworks property
@@ -70,7 +65,7 @@ namespace NuGet.Commands
             }
 
             // C++ check
-            if (projectFilePath.EndsWith(".vcxproj", StringComparison.OrdinalIgnoreCase))
+            if (projectFilePath?.EndsWith(".vcxproj", StringComparison.OrdinalIgnoreCase) == true)
             {
                 // The C++ project does not have a TargetFrameworkMoniker property set. 
                 // We hard-code the return value to Native.
@@ -93,7 +88,7 @@ namespace NuGet.Commands
             var platformVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(targetPlatformVersion);
 
             // Check for JS project
-            if (projectFilePath.EndsWith(".jsproj", StringComparison.OrdinalIgnoreCase))
+            if (projectFilePath?.EndsWith(".jsproj", StringComparison.OrdinalIgnoreCase) == true)
             {
                 // JavaScript apps do not have a TargetFrameworkMoniker property set.
                 // We read the TargetPlatformIdentifier and TargetPlatformVersion instead
