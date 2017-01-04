@@ -60,6 +60,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to all.
+        /// </summary>
+        public static string AddPkg_All {
+            get {
+                return ResourceManager.GetString("AddPkg_All", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Adds a package reference to a project..
         /// </summary>
         public static string AddPkg_Description {
@@ -146,6 +155,15 @@ namespace NuGet.CommandLine.XPlat {
         public static string AddPkg_SourcesDescription {
             get {
                 return ResourceManager.GetString("AddPkg_SourcesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to user specified.
+        /// </summary>
+        public static string AddPkg_UserSpecified {
+            get {
+                return ResourceManager.GetString("AddPkg_UserSpecified", resourceCulture);
             }
         }
         
@@ -267,7 +285,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Package &apos;{0}&apos; is incompatible with all the frameworks in project &apos;{1}&apos;.
+        ///    Looks up a localized string similar to Package &apos;{0}&apos; is incompatible with &apos;{1}&apos; frameworks in project &apos;{2}&apos;.
         /// </summary>
         public static string Error_AddPkgIncompatibleWithAllFrameworks {
             get {

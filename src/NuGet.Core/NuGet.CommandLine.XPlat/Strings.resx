@@ -342,9 +342,10 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <comment>{0} - Project/csproj path</comment>
   </data>
   <data name="Error_AddPkgIncompatibleWithAllFrameworks" xml:space="preserve">
-    <value>Package '{0}' is incompatible with all the frameworks in project '{1}'</value>
+    <value>Package '{0}' is incompatible with '{1}' frameworks in project '{2}'</value>
     <comment>{0} - Package Id
-{1} - Project Path</comment>
+{1} - all / user specified
+{2} - Project Path</comment>
   </data>
   <data name="Info_AddPkgAddingReference" xml:space="preserve">
     <value>Adding PackageReference for package '{0}', into project '{1}'</value>
@@ -422,5 +423,11 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <comment>{0} - Package Id
 {1} - package version
 {2} - project file path</comment>
+  </data>
+  <data name="AddPkg_All" xml:space="preserve">
+    <value>all</value>
+  </data>
+  <data name="AddPkg_UserSpecified" xml:space="preserve">
+    <value>user specified</value>
   </data>
 </root>

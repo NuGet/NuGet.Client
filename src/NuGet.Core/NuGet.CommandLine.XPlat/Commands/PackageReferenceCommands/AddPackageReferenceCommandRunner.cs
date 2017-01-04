@@ -91,6 +91,7 @@ namespace NuGet.CommandLine.XPlat
                 packageReferenceArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture,
                     Strings.Error_AddPkgIncompatibleWithAllFrameworks,
                     packageReferenceArgs.PackageDependency.Id,
+                    packageReferenceArgs.Frameworks?.Any() == true ? Strings.AddPkg_UserSpecified : Strings.AddPkg_All,
                     packageReferenceArgs.ProjectPath));
 
                 return 1;
