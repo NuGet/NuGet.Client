@@ -17,11 +17,8 @@ using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat
 {
-    public class AddPackageReferenceCommandRunner : IAddPackageReferenceCommandRunner
+    public class AddPackageReferenceCommandRunner : IPackageReferenceCommandRunner
     {
-        private const string NUGET_RESTORE_MSBUILD_VERBOSITY = "NUGET_RESTORE_MSBUILD_VERBOSITY";
-        private const int MSBUILD_WAIT_TIME = 2 * 60 * 1000; // 2 minutes in milliseconds
-
         public async Task<int> ExecuteCommand(PackageReferenceArgs packageReferenceArgs, MSBuildAPIUtility msBuild)
         {
             packageReferenceArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,

@@ -66,6 +66,44 @@ namespace NuGet.CommandLine.XPlat
         }
 
         /// <summary>
+        /// Remove all package references to the project.
+        /// </summary>
+        /// <param name="projectPath">Path to the csproj file of the project.</param>
+        /// <param name="packageDependency">Package Dependency of the package to be removed.</param>
+        public int RemovePackageReference(string projectPath, PackageDependency packageDependency)
+        {
+            var project = GetProject(projectPath);
+
+            var existingPackageReferences = project.ItemsIgnoringCondition
+                .Where(item => item.ItemType.Equals(PACKAGE_REFERENCE_TYPE_TAG, StringComparison.OrdinalIgnoreCase) &&
+                               item.EvaluatedInclude.Equals(packageDependency.Id, StringComparison.OrdinalIgnoreCase));
+
+            if (existingPackageReferences.Any())
+            {
+                // We validate that the operation does not remove any imported items
+                // If it does then we throw a user friendly exception without making any changes
+                ValidateNoImportedItemsAreUpdated(existingPackageReferences, packageDependency, REMOVE_OPERATION);
+
+                project.RemoveItems(existingPackageReferences);
+                project.Save();
+                ProjectCollection.GlobalProjectCollection.UnloadProject(project);
+
+                return 0;
+            }
+            else
+            {
+                Logger.LogError(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Error_UpdatePkgNoSuchPackage,
+                    project.FullPath,
+                    packageDependency.Id,
+                    REMOVE_OPERATION));
+                ProjectCollection.GlobalProjectCollection.UnloadProject(project);
+
+                return 1;
+            }
+        }
+
+        /// <summary>
         /// Add an unconditional package reference to the project.
         /// </summary>
         /// <param name="projectPath">Path to the csproj file of the project.</param>
@@ -163,8 +201,50 @@ namespace NuGet.CommandLine.XPlat
         private void UpdatePackageReferenceItems(IEnumerable<ProjectItem> packageReferencesItems,
             PackageDependency packageDependency)
         {
+            // We validate that the operation does not update any imported items
+            // If it does then we throw a user friendly exception without making any changes
+            ValidateNoImportedItemsAreUpdated(packageReferencesItems, packageDependency, UPDATE_OPERATION);
+
+            foreach (var packageReferenceItem in packageReferencesItems)
+            {
+                var packageVersion = packageDependency.VersionRange.OriginalString ??
+                    packageDependency.VersionRange.MinVersion.ToString();
+                packageReferenceItem.SetMetadataValue(VERSION_TAG, packageVersion);
+                Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Info_AddPkgUpdated,
+                    packageDependency.Id,
+                    packageVersion,
+                    packageReferenceItem.Xml.ContainingProject.FullPath));
+            }
+        }
+
+        private void AddPackageReferenceIntoItemGroup(ProjectItemGroupElement itemGroup,
+            PackageDependency packageDependency)
+        {
+            var packageVersion = packageDependency.VersionRange.OriginalString ??
+                packageDependency.VersionRange.MinVersion.ToString();
+            var packageMetadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            { { VERSION_TAG, packageVersion } };
+
+            // Currently metadata is added as a metadata. As opposed to an attribute
+            // Due to https://github.com/Microsoft/msbuild/issues/1393
+
+            itemGroup.AddItem(PACKAGE_REFERENCE_TYPE_TAG, packageDependency.Id, packageMetadata);
+            itemGroup.ContainingProject.Save();
+            Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                Strings.Info_AddPkgAdded,
+                packageDependency.Id,
+                packageVersion,
+                itemGroup.ContainingProject.FullPath));
+        }
+
+        private static void ValidateNoImportedItemsAreUpdated(IEnumerable<ProjectItem> packageReferencesItems,
+            PackageDependency packageDependency,
+            string operationType)
+        {
             var importedPackageReferences = packageReferencesItems
-                .Where(i => i.IsImported);
+                .Where(i => i.IsImported)
+                .ToArray();
 
             // Throw if any of the package references to be updated are imported.
             if (importedPackageReferences.Any())
@@ -180,39 +260,11 @@ namespace NuGet.CommandLine.XPlat
                 }
                 throw new Exception(string.Format(CultureInfo.CurrentCulture,
                     Strings.Error_AddPkgFailOnImportEdit,
-                    UPDATE_OPERATION,
+                    operationType,
                     packageDependency.Id,
                     Environment.NewLine,
                     errors));
             }
-            foreach (var packageReferenceItem in packageReferencesItems)
-            {
-                packageReferenceItem.SetMetadataValue(VERSION_TAG, packageDependency.VersionRange.OriginalString);
-                Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
-                    Strings.Info_AddPkgUpdated,
-                    packageDependency.Id,
-                    packageDependency.VersionRange.OriginalString,
-                    packageReferenceItem.Xml.ContainingProject.FullPath));
-            }
-        }
-
-        private void AddPackageReferenceIntoItemGroup(ProjectItemGroupElement itemGroup, PackageDependency packageDependency)
-        {
-            var packageVersion = packageDependency.VersionRange.OriginalString ??
-                packageDependency.VersionRange.MinVersion.ToString();
-            var packageMetadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            { { VERSION_TAG, packageVersion } };
-
-            // Currently metadata is added as a metadata. As opposed to an attribute
-            // Due to https://github.com/Microsoft/msbuild/issues/1393
-
-            itemGroup.AddItem(PACKAGE_REFERENCE_TYPE_TAG, packageDependency.Id, packageMetadata);
-            itemGroup.ContainingProject.Save();
-            Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
-                Strings.Info_AddPkgAdded,
-                packageDependency.Id,
-                packageDependency.VersionRange.OriginalString,
-                itemGroup.ContainingProject.FullPath));
         }
 
         /// <summary>

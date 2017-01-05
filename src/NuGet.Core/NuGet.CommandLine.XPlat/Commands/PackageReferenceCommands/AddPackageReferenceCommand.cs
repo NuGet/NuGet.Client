@@ -16,7 +16,7 @@ namespace NuGet.CommandLine.XPlat
     public static class AddPackageReferenceCommand
     {
         public static void Register(CommandLineApplication app, Func<ILogger> getLogger,
-            Func<IAddPackageReferenceCommandRunner> getCommandRunner)
+            Func<IPackageReferenceCommandRunner> getCommandRunner)
         {
             app.Command("add", addpkg =>
             {
@@ -70,11 +70,12 @@ namespace NuGet.CommandLine.XPlat
 
                 addpkg.OnExecute(() =>
                 {
-                    ValidateArgument(id, id.Template);
-                    ValidateArgument(projectPath, projectPath.Template);
+                    ValidateArgument(id, addpkg.Name);
+                    ValidateArgument(projectPath, addpkg.Name);
+                    ValidateProjectPath(projectPath, addpkg.Name);
                     if (!noRestore.HasValue())
                     {
-                        ValidateArgument(dgFilePath, dgFilePath.Template);
+                        ValidateArgument(dgFilePath, addpkg.Name);
                     }
                     var logger = getLogger();
                     var noVersion = !version.HasValue();
@@ -96,11 +97,24 @@ namespace NuGet.CommandLine.XPlat
             });
         }
 
-        private static void ValidateArgument(CommandOption arg, string argName)
+        private static void ValidateArgument(CommandOption arg, string commandName)
         {
             if (arg.Values.Count < 1)
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.AddPkg_MissingArgument, argName));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PkgMissingArgument,
+                    commandName,
+                    arg.Template));
+            }
+        }
+
+        private static void ValidateProjectPath(CommandOption projectPath, string commandName)
+        {
+            if (!File.Exists(projectPath.Value()) || !projectPath.Value().EndsWith("proj", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Error_PkgMissingOrInvalidProjectFile,
+                    commandName,
+                    projectPath.Value()));
             }
         }
     }
