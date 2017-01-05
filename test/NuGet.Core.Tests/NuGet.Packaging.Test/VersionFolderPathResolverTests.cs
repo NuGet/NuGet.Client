@@ -9,6 +9,17 @@ namespace NuGet.Packaging.Test
 {
     public class VersionFolderPathResolverTests
     {
+        [Fact]
+        public void VersionFolderPathResolver_GetRoot()
+        {
+            // Arrange && Act
+            var resolver = new VersionFolderPathResolver("/tmp/test", isLowercase: false);
+
+            // Assert
+            Assert.Equal("/tmp/test", resolver.RootPath);
+            Assert.False(resolver.IsLowerCase);
+        }
+
         [Theory]
         [InlineData("nuget.packaging", "3.4.3-beta", true)]
         [InlineData("NuGet.Packaging", "3.4.3-Beta", false)]
