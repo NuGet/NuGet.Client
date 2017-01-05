@@ -131,7 +131,13 @@ namespace NuGet.PackageManagement.UI
         protected override void CreateVersions()
         {
             _versions = new List<DisplayVersion>();
-            var allVersions = _allPackageVersions.OrderByDescending(v => v);
+            var allVersions = _allPackageVersions?.OrderByDescending(v => v);
+
+            // allVersions is null if server doesn't return any versions.
+            if (allVersions == null)
+            {
+                return;
+            }
 
             // null, if no version constraint defined in package.config
             var allowedVersions = GetAllowedVersions();
