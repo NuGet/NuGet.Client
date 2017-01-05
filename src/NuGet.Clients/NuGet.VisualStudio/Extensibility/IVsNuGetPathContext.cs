@@ -14,12 +14,13 @@ namespace NuGet.VisualStudio
     public interface IVsNuGetPathContext
     {
         /// <summary>
-        /// User package folder directory.
+        /// User package folder directory. The path returned is an absolute path.
         /// </summary>
         string UserPackageFolder { get; }
 
         /// <summary>
-        /// Fallback package folder locations.
+        /// Fallback package folder locations. The paths (if any) in the returned list are absolute paths. If no
+        /// fallback package folders are configured, an empty list is returned.
         /// </summary>
         IReadOnlyList<string> FallbackPackageFolders { get; }
     }
