@@ -703,3 +703,65 @@ function Test-BatchEventsApi
     Assert-True $result
 }
 
+function Test-CreateVsNuGetPathContextWithConfiguration {
+    param($context)
+
+	# Arrange
+	New-ClassLibrary
+
+	$solutionFile = Get-SolutionFullName
+	$solutionDir = Split-Path $solutionFile -Parent
+
+	$userPackageFolder = Join-Path $solutionDir "userPackageFolder"
+	$fallbackPackageFolderA = Join-Path $solutionDir "fallbackPackageFolderA"
+	$fallbackPackageFolderB = Join-Path $solutionDir "fallbackPackageFolderB"
+
+	$settingFile = Join-Path $solutionDir "nuget.config"
+	$settingFileContent =@"
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <config>
+    <add key="globalPackagesFolder" value="{0}" />
+  </config>
+  <fallbackPackageFolders>
+    <add key="a" value="{1}" />
+	<add key="b" value="{2}" />
+  </fallbackPackageFolders>
+</configuration>
+"@
+
+	$settingFileContent -f $userPackageFolder, $fallbackPackageFolderA, $fallbackPackageFolderB `
+	    | Out-File -Encoding "UTF8" $settingFile
+
+	SaveAs-Solution($solutionFile)
+	Close-Solution
+	Open-Solution $solutionFile
+	
+	$cm = Get-VsComponentModel
+    $service = $cm.GetService([NuGet.VisualStudio.IVsNuGetPathContextFactory])
+
+	# Act
+	$context = $service.CreateAsync([System.Threading.CancellationToken]::None).Result
+
+	# Assert
+	Assert-AreEqual $userPackageFolder $context.UserPackageFolder
+	Assert-AreEqual 2 $context.FallbackPackageFolders.Count
+	Assert-AreEqual $fallbackPackageFolderA $context.FallbackPackageFolders[0]
+	Assert-AreEqual $fallbackPackageFolderB $context.FallbackPackageFolders[1]
+}
+
+function Test-CreateVsNuGetPathContextWithoutConfiguration {
+    param($context)
+
+	# Arrange
+	New-ClassLibrary
+
+	$cm = Get-VsComponentModel
+    $service = $cm.GetService([NuGet.VisualStudio.IVsNuGetPathContextFactory])
+
+	# Act
+	$context = $service.CreateAsync([System.Threading.CancellationToken]::None).Result
+
+	# Assert
+	Assert-NotNull $context.UserPackageFolder
+}

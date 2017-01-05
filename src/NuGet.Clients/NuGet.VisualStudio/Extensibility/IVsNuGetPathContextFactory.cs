@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
+using EnvDTE;
 
 namespace NuGet.VisualStudio
 {
@@ -13,10 +16,10 @@ namespace NuGet.VisualStudio
     public interface IVsNuGetPathContextFactory
     {
         /// <summary>
-        /// Create an <see cref="IVsNuGetPathContext"/> based on the given DTE project.
+        /// Create an <see cref="IVsNuGetPathContext"/> based on the currently open solution.
         /// </summary>
-        /// <param name="project">The DTE project.</param>
+        /// <param name="token">The cancellation token.</param>
         /// <returns>The path context.</returns>
-        IVsNuGetPathContext Create(EnvDTE.Project project);
+        Task<IVsNuGetPathContext> CreateAsync(CancellationToken token);
     }
 }
