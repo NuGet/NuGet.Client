@@ -11,6 +11,7 @@ using NuGet.Packaging;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
+using System.Reflection;
 
 namespace NuGet.Build.Tasks.Pack.Test
 {
@@ -375,7 +376,12 @@ namespace NuGet.Build.Tasks.Pack.Test
                 Directory.CreateDirectory(dllDir);
                 Directory.CreateDirectory(Path.Combine(testDir, "obj"));
                 File.WriteAllBytes(dllPath, new byte[0]);
-                File.Copy("assets/project.assets.json", Path.Combine(testDir, "obj", "project.assets.json"));
+                var path = string.Join(".", typeof(PackTaskLogicTests).Namespace, "compiler.resources", "project.assets.json");
+                using (var reader = new StreamReader(GetType().GetTypeInfo().Assembly.GetManifestResourceStream(path)))
+                {
+                    var contents = reader.ReadToEnd();
+                    File.WriteAllText(Path.Combine(testDir, "obj", "project.assets.json"), contents);
+                }
 
                 TestDir = testDir;
                 Request = new PackTaskRequest
