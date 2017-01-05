@@ -96,6 +96,7 @@ namespace NuGet.Commands
                 localRepositories,
                 assetsFile,
                 graphs,
+                _request.ValidateRuntimeAssets,
                 _logger);
 
             if (checkResults.Any(r => !r.Success))
@@ -288,13 +289,14 @@ namespace NuGet.Commands
             IReadOnlyList<NuGetv3LocalRepository> localRepositories,
             LockFile lockFile,
             IEnumerable<RestoreTargetGraph> graphs,
+            bool validateRuntimeAssets,
             ILogger logger)
         {
             // Scan every graph for compatibility, as long as there were no unresolved packages
             var checkResults = new List<CompatibilityCheckResult>();
             if (graphs.All(g => !g.Unresolved.Any()))
             {
-                var checker = new CompatibilityChecker(localRepositories, lockFile, logger);
+                var checker = new CompatibilityChecker(localRepositories, lockFile, validateRuntimeAssets, logger);
                 foreach (var graph in graphs)
                 {
                     logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_CheckingCompatibility, graph.Name));

@@ -205,6 +205,15 @@ namespace NuGet.Commands
                     result.RestoreMetadata.LegacyPackagesDirectory = IsPropertyTrue(
                         specItem,
                         "RestoreLegacyPackagesDirectory");
+
+                    // ValidateRuntimeAssets compat check
+                    result.RestoreMetadata.ValidateRuntimeAssets = IsPropertyTrue(specItem, "ValidateRuntimeAssets");
+                }
+
+                if (restoreType == ProjectStyle.ProjectJson)
+                {
+                    // Check runtime assets by default for project.json
+                    result.RestoreMetadata.ValidateRuntimeAssets = true;
                 }
 
                 // File assets
