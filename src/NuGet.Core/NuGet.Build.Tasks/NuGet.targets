@@ -41,6 +41,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Recurse by default -->
     <RestoreRecursive Condition=" '$(RestoreRecursive)' == '' ">true</RestoreRecursive>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <!-- RuntimeIdentifier compatibility check -->
+    <ValidateRuntimeIdentifierCompatibility Condition=" '$(ValidateRuntimeIdentifierCompatibility)' == '' ">false</ValidateRuntimeIdentifierCompatibility>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -371,6 +373,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <RuntimeSupports>$(RuntimeSupports)</RuntimeSupports>
         <CrossTargeting>$(_RestoreCrossTargeting)</CrossTargeting>
         <RestoreLegacyPackagesDirectory>$(RestoreLegacyPackagesDirectory)</RestoreLegacyPackagesDirectory>
+        <ValidateRuntimeAssets>$(ValidateRuntimeIdentifierCompatibility)</ValidateRuntimeAssets>
       </_RestoreGraphEntry>
     </ItemGroup>
 

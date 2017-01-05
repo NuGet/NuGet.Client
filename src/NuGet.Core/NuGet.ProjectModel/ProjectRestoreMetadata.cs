@@ -84,6 +84,11 @@ namespace NuGet.ProjectModel
         /// </summary>
         public IList<ProjectRestoreMetadataFile> Files { get; set; } = new List<ProjectRestoreMetadataFile>();
 
+        /// <summary>
+        /// Compatibility check for runtime framework assets.
+        /// </summary>
+        public bool ValidateRuntimeAssets { get; set; }
+
         public override int GetHashCode()
         {
             var hashCode = new HashCodeCombiner();
@@ -102,6 +107,7 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(CrossTargeting);
             hashCode.AddObject(LegacyPackagesDirectory);
             hashCode.AddObject(Files);
+            hashCode.AddObject(ValidateRuntimeAssets);
 
             return hashCode.CombinedHash;
         }
@@ -136,6 +142,7 @@ namespace NuGet.ProjectModel
                    EqualityUtility.SequenceEqualWithNullCheck(OriginalTargetFrameworks, other.OriginalTargetFrameworks) &&
                    CrossTargeting == other.CrossTargeting &&
                    LegacyPackagesDirectory == other.LegacyPackagesDirectory &&
+                   ValidateRuntimeAssets == other.ValidateRuntimeAssets &&
                    EqualityUtility.SequenceEqualWithNullCheck(Files, other.Files);
         }
     }

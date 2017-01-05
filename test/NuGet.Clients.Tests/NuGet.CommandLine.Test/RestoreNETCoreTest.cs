@@ -331,6 +331,149 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public async Task RestoreNetCore_RestoreWithRID_ValidateRID_Failure()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                projectA.Properties.Add("RuntimeIdentifiers", "win7-x86");
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                packageX.AddFile("ref/net45/x.dll");
+                packageX.AddFile("lib/win8/x.dll");
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                projectA.Properties.Add("ValidateRuntimeIdentifierCompatibility", "true");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var r = RestoreSolution(pathContext, exitCode: 1);
+
+                // Assert
+                Assert.True(r.Item1 == 1);
+                Assert.Contains("no run-time assembly compatible", r.Item3);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_RestoreWithRID_ValidateRID_IgnoreFailure()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                projectA.Properties.Add("RuntimeIdentifiers", "win7-x86");
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                packageX.AddFile("ref/net45/x.dll");
+                packageX.AddFile("lib/win8/x.dll");
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var r = RestoreSolution(pathContext);
+
+                // Assert
+                Assert.True(r.Item1 == 0);
+                Assert.DoesNotContain("no run-time assembly compatible", r.Item3);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_RestoreWithRID_ValidateRID_FailureForProjectJson()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectJson = JObject.Parse(@"{
+                                                    'dependencies': {
+                                                        'x': '1.0.0'
+                                                    },
+                                                    'frameworks': {
+                                                        'net45': {
+                                                    }
+                                                  },
+                                                  'runtimes': { 'win7-x86': {} }
+                                               }");
+
+                var projectA = SimpleTestProjectContext.CreateUAP(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"),
+                    projectJson);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                packageX.AddFile("ref/net45/x.dll");
+                packageX.AddFile("lib/win8/x.dll");
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var r = RestoreSolution(pathContext, exitCode: 1);
+
+                // Assert
+                Assert.True(r.Item1 == 1);
+                Assert.Contains("no run-time assembly compatible", r.Item3);
+            }
+        }
+
+        [Fact]
         public async Task RestoreNetCore_RestoreWithRIDSingle()
         {
             // Arrange
