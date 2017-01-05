@@ -13,8 +13,8 @@ namespace NuGet.Protocol
         Task<V2FeedPage> GetPackagesPageAsync(
             string searchTerm,
             SearchFilter filters,
-            int? skip,
-            int? take,
+            int skip,
+            int take,
             ILogger log,
             CancellationToken token);
 

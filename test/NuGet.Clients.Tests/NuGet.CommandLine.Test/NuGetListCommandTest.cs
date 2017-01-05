@@ -265,7 +265,7 @@ namespace NuGet.CommandLine.Test
 
                     // verify that only package id & version is displayed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
-                        "testPackage2 2.1" + Environment.NewLine;
+                        "testPackage2 2.1.0" + Environment.NewLine;
                     Assert.Equal(expectedOutput, result.Item2);
 
                     Assert.Contains("$filter=IsLatestVersion", searchRequest);
@@ -324,7 +324,7 @@ namespace NuGet.CommandLine.Test
 
                     // verify that only testPackage2 is listed since the package testPackage1
                     // is not listed.
-                    var expectedOutput = "testPackage2 2.1" + Environment.NewLine;
+                    var expectedOutput = "testPackage2 2.1.0" + Environment.NewLine;
                     Assert.Equal(expectedOutput, r1.Item2);
 
                     Assert.Contains("$filter=IsLatestVersion", searchRequest);
@@ -387,7 +387,7 @@ namespace NuGet.CommandLine.Test
                     // verify that both testPackage1 and testPackage2 are listed.
                     var expectedOutput =
                         "testPackage1 1.1.0" + Environment.NewLine +
-                        "testPackage2 2.1" + Environment.NewLine;
+                        "testPackage2 2.1.0" + Environment.NewLine;
                     Assert.Equal(expectedOutput, r1.Item2);
 
                     Assert.Contains("$filter=IsLatestVersion", searchRequest);
@@ -501,7 +501,7 @@ namespace NuGet.CommandLine.Test
 
                     // verify that the output is detailed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
-                        "testPackage2 2.1" + Environment.NewLine;
+                        "testPackage2 2.1.0" + Environment.NewLine;
                     Assert.Equal(expectedOutput, r1.Item2);
 
                     Assert.DoesNotContain("$filter", searchRequest);
@@ -559,7 +559,7 @@ namespace NuGet.CommandLine.Test
 
                     // verify that the output is detailed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
-                        "testPackage2 2.1" + Environment.NewLine;
+                        "testPackage2 2.1.0" + Environment.NewLine;
                     Assert.Equal(expectedOutput, r1.Item2);
 
                     Assert.Contains("$filter=IsAbsoluteLatestVersion", searchRequest);
@@ -617,7 +617,7 @@ namespace NuGet.CommandLine.Test
 
                     // verify that the output is detailed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
-                        "testPackage2 2.1" + Environment.NewLine;
+                        "testPackage2 2.1.0" + Environment.NewLine;
                     Assert.Equal(expectedOutput, r1.Item2);
 
                     Assert.DoesNotContain("$filter", searchRequest);
@@ -716,7 +716,7 @@ namespace NuGet.CommandLine.Test
 
                         // verify that only package id & version is displayed
                         var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
-                            "testPackage2 2.1" + Environment.NewLine;
+                            "testPackage2 2.1.0" + Environment.NewLine;
                         Assert.Equal(expectedOutput, result.Item2);
 
                         Assert.Contains("$filter=IsLatestVersion", searchRequest);

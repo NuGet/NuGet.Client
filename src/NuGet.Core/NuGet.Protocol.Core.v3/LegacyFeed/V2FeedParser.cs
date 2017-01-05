@@ -197,8 +197,8 @@ namespace NuGet.Protocol
         public async Task<V2FeedPage> GetPackagesPageAsync(
             string searchTerm,
             SearchFilter filters,
-            int? skip,
-            int? take,
+            int skip,
+            int take,
             ILogger log,
             CancellationToken token)
         {
@@ -211,7 +211,7 @@ namespace NuGet.Protocol
             var page = await QueryV2FeedAsync(
                 uri,
                 id: null,
-                max: -1, // Only get the first page.
+                max: take, // Only get the first page.
                 ignoreNotFounds: false,
                 log: log,
                 token: token);
@@ -236,7 +236,7 @@ namespace NuGet.Protocol
             var page = await QueryV2FeedAsync(
                 uri,
                 id: null,
-                max: -1, // Only get the first page.
+                max: take, // Only get the first page.
                 ignoreNotFounds: false,
                 log: log,
                 token: token);
