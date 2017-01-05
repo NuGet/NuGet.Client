@@ -31,7 +31,7 @@ namespace NuGet.Protocol
                 // which may or may not contain a list endpoint.
                 // Returning null here will result in ListCommandResource
                 // getting returned for this very v3 package source as if it was a v2 package source
-                var baseUrl = serviceIndex[ServiceTypes.LegacyGallery].FirstOrDefault();
+                var baseUrl = serviceIndex.GetServiceEntryUri(ServiceTypes.LegacyGallery);
                 listCommandResource = new ListCommandResource(baseUrl?.AbsoluteUri);
             }
 
