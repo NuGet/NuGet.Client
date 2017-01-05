@@ -16,10 +16,11 @@ namespace NuGet.VisualStudio
     public interface IVsNuGetPathContextFactory
     {
         /// <summary>
-        /// Create an <see cref="IVsNuGetPathContext"/> based on the currently open solution.
+        /// Create an <see cref="IVsNuGetPathContext"/> based on the provided DTE project.
         /// </summary>
+        /// <param name="project">The DTE project.</param>
         /// <param name="token">The cancellation token.</param>
         /// <returns>The path context.</returns>
-        Task<IVsNuGetPathContext> CreateAsync(CancellationToken token);
+        Task<IVsNuGetPathContext> CreateAsync(Project project, CancellationToken token);
     }
 }

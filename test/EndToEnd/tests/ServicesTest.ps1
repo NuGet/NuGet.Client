@@ -707,7 +707,7 @@ function Test-CreateVsNuGetPathContextWithConfiguration {
     param($context)
 
 	# Arrange
-	New-ClassLibrary
+	$p = New-ClassLibrary
 
 	$solutionFile = Get-SolutionFullName
 	$solutionDir = Split-Path $solutionFile -Parent
@@ -736,12 +736,14 @@ function Test-CreateVsNuGetPathContextWithConfiguration {
 	SaveAs-Solution($solutionFile)
 	Close-Solution
 	Open-Solution $solutionFile
+
+	$p = Get-Project
 	
 	$cm = Get-VsComponentModel
     $service = $cm.GetService([NuGet.VisualStudio.IVsNuGetPathContextFactory])
 
 	# Act
-	$context = $service.CreateAsync([System.Threading.CancellationToken]::None).Result
+	$context = [API.Test.InternalAPITestHook]::GetVsNuGetPathContext($p.UniqueName)
 
 	# Assert
 	Assert-AreEqual $userPackageFolder $context.UserPackageFolder
@@ -754,14 +756,55 @@ function Test-CreateVsNuGetPathContextWithoutConfiguration {
     param($context)
 
 	# Arrange
-	New-ClassLibrary
+	$p = New-ClassLibrary
 
 	$cm = Get-VsComponentModel
     $service = $cm.GetService([NuGet.VisualStudio.IVsNuGetPathContextFactory])
 
 	# Act
-	$context = $service.CreateAsync([System.Threading.CancellationToken]::None).Result
+	$context = [API.Test.InternalAPITestHook]::GetVsNuGetPathContext($p.UniqueName)
 
 	# Assert
 	Assert-NotNull $context.UserPackageFolder
+}
+
+function Test-CreateVsNuGetPathContextUsesAssetsFileIfAvailable {
+    param($context)
+
+	# Arrange
+	$p = New-BuildIntegratedProj UAPApp
+
+    Install-Package NuGet.Versioning -ProjectName $p.Name -version 1.0.7
+	
+	$solutionFile = Get-SolutionFullName
+	$solutionDir = Split-Path $solutionFile -Parent
+
+	$userPackageFolder = Join-Path $solutionDir "userPackageFolder"
+
+	$settingFile = Join-Path $solutionDir "nuget.config"
+	$settingFileContent =@"
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <config>
+    <add key="globalPackagesFolder" value="{0}" />
+  </config>
+</configuration>
+"@
+
+	$settingFileContent -f $userPackageFolder | Out-File -Encoding "UTF8" $settingFile
+
+	SaveAs-Solution($solutionFile)
+	Close-Solution
+	Open-Solution $solutionFile
+
+	$p = Get-Project
+
+	$cm = Get-VsComponentModel
+    $service = $cm.GetService([NuGet.VisualStudio.IVsNuGetPathContextFactory])
+	
+	# Act
+	$context = [API.Test.InternalAPITestHook]::GetVsNuGetPathContext($p.UniqueName)
+
+	# Assert
+	Assert-NotEqual $userPackageFolder $context.UserPackageFolder
 }
