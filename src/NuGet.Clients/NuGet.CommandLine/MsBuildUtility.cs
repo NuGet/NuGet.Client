@@ -225,7 +225,7 @@ namespace NuGet.CommandLine
 
                 DependencyGraphSpec spec = null;
 
-                if (File.Exists(resultsPath))
+                if (File.Exists(resultsPath) && new FileInfo(resultsPath).Length != 0)
                 {
                     spec = DependencyGraphSpec.Load(resultsPath);
                     File.Delete(resultsPath);
