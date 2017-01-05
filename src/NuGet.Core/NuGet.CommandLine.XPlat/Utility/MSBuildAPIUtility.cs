@@ -207,11 +207,13 @@ namespace NuGet.CommandLine.XPlat
 
             foreach (var packageReferenceItem in packageReferencesItems)
             {
-                packageReferenceItem.SetMetadataValue(VERSION_TAG, packageDependency.VersionRange.OriginalString);
+                var packageVersion = packageDependency.VersionRange.OriginalString ??
+                    packageDependency.VersionRange.MinVersion.ToString();
+                packageReferenceItem.SetMetadataValue(VERSION_TAG, packageVersion);
                 Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                     Strings.Info_AddPkgUpdated,
                     packageDependency.Id,
-                    packageDependency.VersionRange.OriginalString,
+                    packageVersion,
                     packageReferenceItem.Xml.ContainingProject.FullPath));
             }
         }
@@ -232,7 +234,7 @@ namespace NuGet.CommandLine.XPlat
             Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                 Strings.Info_AddPkgAdded,
                 packageDependency.Id,
-                packageDependency.VersionRange.OriginalString,
+                packageVersion,
                 itemGroup.ContainingProject.FullPath));
         }
 
@@ -241,7 +243,8 @@ namespace NuGet.CommandLine.XPlat
             string operationType)
         {
             var importedPackageReferences = packageReferencesItems
-                .Where(i => i.IsImported);
+                .Where(i => i.IsImported)
+                .ToArray();
 
             // Throw if any of the package references to be updated are imported.
             if (importedPackageReferences.Any())

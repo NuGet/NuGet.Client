@@ -132,7 +132,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Path to the project..
+        ///    Looks up a localized string similar to Path to the project file..
         /// </summary>
         public static string AddPkg_ProjectPathDescription {
             get {
@@ -258,7 +258,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Item &apos;{0}&apos; for &apos;{1}&apos; in Imported file &apos;{2}&apos;.
+        ///    Looks up a localized string similar to Item &apos;{0}&apos; for &apos;{1}&apos; in Imported file &apos;{2}&apos;..
         /// </summary>
         public static string Error_AddPkgErrorStringForImportedEdit {
             get {
@@ -267,7 +267,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Error while performing  &apos;{0}&apos; for package &apos;{1}&apos;. Cannot edit items in imported files - {2}{3}.
+        ///    Looks up a localized string similar to Error while performing {0} for package &apos;{1}&apos;. Cannot edit items in imported files - {2}{3}.
         /// </summary>
         public static string Error_AddPkgFailOnImportEdit {
             get {
@@ -276,7 +276,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Package &apos;{0}&apos; is incompatible with &apos;{1}&apos; frameworks in project &apos;{2}&apos;.
+        ///    Looks up a localized string similar to Package &apos;{0}&apos; is incompatible with &apos;{1}&apos; frameworks in project &apos;{2}&apos;..
         /// </summary>
         public static string Error_AddPkgIncompatibleWithAllFrameworks {
             get {
@@ -312,7 +312,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Unable to &apos;{0}&apos; package Reference, argument &apos;{1}&apos; not provided. Please use -h|--help for help..
+        ///    Looks up a localized string similar to Unable to {0} package. Argument &apos;{1}&apos; not provided..
         /// </summary>
         public static string Error_PkgMissingArgument {
             get {
@@ -321,7 +321,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Unable to &apos;{0}&apos; package. Missing or Invalid project file &apos;{1}&apos;..
+        ///    Looks up a localized string similar to Unable to {0} package. Missing or Invalid project file &apos;{1}&apos;..
         /// </summary>
         public static string Error_PkgMissingOrInvalidProjectFile {
             get {
@@ -330,7 +330,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Project &apos;{0}&apos; does not contain any PackageReference &apos;{1}&apos; to &apos;{2}&apos;.
+        ///    Looks up a localized string similar to Project &apos;{0}&apos; does not contain any PackageReference &apos;{1}&apos; to {2}..
         /// </summary>
         public static string Error_UpdatePkgNoSuchPackage {
             get {
@@ -375,7 +375,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to PackageReference for package &apos;{0}&apos; version &apos;{1}&apos; added to file &apos;{2}&apos;.
+        ///    Looks up a localized string similar to PackageReference for package &apos;{0}&apos; version &apos;{1}&apos; added to file &apos;{2}&apos;..
         /// </summary>
         public static string Info_AddPkgAdded {
             get {
@@ -384,7 +384,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Adding PackageReference for package &apos;{0}&apos; into project &apos;{1}&apos;.
+        ///    Looks up a localized string similar to Adding PackageReference for package &apos;{0}&apos; into project &apos;{1}&apos;..
         /// </summary>
         public static string Info_AddPkgAddingReference {
             get {
@@ -393,7 +393,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Package &apos;{0}&apos; is compatible with all the specified frameworks in project &apos;{1}&apos;.
+        ///    Looks up a localized string similar to Package &apos;{0}&apos; is compatible with all the specified frameworks in project &apos;{1}&apos;..
         /// </summary>
         public static string Info_AddPkgCompatibleWithAllFrameworks {
             get {
@@ -402,7 +402,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Package &apos;{0}&apos; is compatible with a subset of the specified frameworks in project &apos;{1}&apos;.
+        ///    Looks up a localized string similar to Package &apos;{0}&apos; is compatible with a subset of the specified frameworks in project &apos;{1}&apos;..
         /// </summary>
         public static string Info_AddPkgCompatibleWithSubsetFrameworks {
             get {
@@ -411,7 +411,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to PackageReference for package &apos;{0}&apos; version &apos;{1}&apos; updated in file &apos;{2}&apos;.
+        ///    Looks up a localized string similar to PackageReference for package &apos;{0}&apos; version &apos;{1}&apos; updated in file &apos;{2}&apos;..
         /// </summary>
         public static string Info_AddPkgUpdated {
             get {
@@ -420,7 +420,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Removing PackageReference for package &apos;{0}&apos; from project &apos;{1}&apos;.
+        ///    Looks up a localized string similar to Removing PackageReference for package &apos;{0}&apos; from project &apos;{1}&apos;..
         /// </summary>
         public static string Info_RemovePkgRemovingReference {
             get {
@@ -770,7 +770,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Path to the project..
+        ///    Looks up a localized string similar to Path to the project file..
         /// </summary>
         public static string RemovePkg_ProjectPathDescription {
             get {

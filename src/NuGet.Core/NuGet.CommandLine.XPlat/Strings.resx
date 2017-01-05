@@ -342,23 +342,23 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <comment>{0} - Project/csproj path</comment>
   </data>
   <data name="Error_AddPkgIncompatibleWithAllFrameworks" xml:space="preserve">
-    <value>Package '{0}' is incompatible with '{1}' frameworks in project '{2}'</value>
+    <value>Package '{0}' is incompatible with '{1}' frameworks in project '{2}'.</value>
     <comment>{0} - Package Id
 {1} - all / user specified
 {2} - Project Path</comment>
   </data>
   <data name="Info_AddPkgAddingReference" xml:space="preserve">
-    <value>Adding PackageReference for package '{0}' into project '{1}'</value>
+    <value>Adding PackageReference for package '{0}' into project '{1}'.</value>
     <comment>{0} - Package Id
 {1} - Project Path</comment>
   </data>
   <data name="Info_AddPkgCompatibleWithAllFrameworks" xml:space="preserve">
-    <value>Package '{0}' is compatible with all the specified frameworks in project '{1}'</value>
+    <value>Package '{0}' is compatible with all the specified frameworks in project '{1}'.</value>
     <comment>{0} - Package Id
 {1} - Project Path</comment>
   </data>
   <data name="Info_AddPkgCompatibleWithSubsetFrameworks" xml:space="preserve">
-    <value>Package '{0}' is compatible with a subset of the specified frameworks in project '{1}'</value>
+    <value>Package '{0}' is compatible with a subset of the specified frameworks in project '{1}'.</value>
     <comment>{0} - Package Id
 {1} - Project Path</comment>
   </data>
@@ -372,8 +372,8 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>Frameworks for which the package reference should be added.</value>
   </data>
   <data name="Error_PkgMissingArgument" xml:space="preserve">
-    <value>Unable to '{0}' package Reference, argument '{1}' not provided. Please use -h|--help for help.</value>
-    <comment>{0} - operation type
+    <value>Unable to {0} package. Argument '{1}' not provided.</value>
+    <comment>{0} - Operation Name
 {1} - Argument which was not provided</comment>
   </data>
   <data name="AddPkg_NoRestoreDescription" xml:space="preserve">
@@ -389,7 +389,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>Version of the package to be added.</value>
   </data>
   <data name="AddPkg_ProjectPathDescription" xml:space="preserve">
-    <value>Path to the project.</value>
+    <value>Path to the project file.</value>
   </data>
   <data name="AddPkg_SourcesDescription" xml:space="preserve">
     <value>Specifies NuGet package sources to use during the restore.</value>
@@ -401,26 +401,26 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>None or invalid DgSpec was passed to NuGet add package command.</value>
   </data>
   <data name="Error_AddPkgErrorStringForImportedEdit" xml:space="preserve">
-    <value>Item '{0}' for '{1}' in Imported file '{2}'</value>
+    <value>Item '{0}' for '{1}' in Imported file '{2}'.</value>
     <comment>{0} - ItemType
 {1} - Package Id
 {2} - Imported File Path</comment>
   </data>
   <data name="Error_AddPkgFailOnImportEdit" xml:space="preserve">
-    <value>Error while performing  '{0}' for package '{1}'. Cannot edit items in imported files - {2}{3}</value>
+    <value>Error while performing {0} for package '{1}'. Cannot edit items in imported files - {2}{3}</value>
     <comment>{0} - Operation Name
 {1} - packageId
 {2} - New line
 {3} - Error string</comment>
   </data>
   <data name="Info_AddPkgAdded" xml:space="preserve">
-    <value>PackageReference for package '{0}' version '{1}' added to file '{2}'</value>
+    <value>PackageReference for package '{0}' version '{1}' added to file '{2}'.</value>
     <comment>{0} - Package Id
 {1} - package version
 {2} - project file path</comment>
   </data>
   <data name="Info_AddPkgUpdated" xml:space="preserve">
-    <value>PackageReference for package '{0}' version '{1}' updated in file '{2}'</value>
+    <value>PackageReference for package '{0}' version '{1}' updated in file '{2}'.</value>
     <comment>{0} - Package Id
 {1} - package version
 {2} - project file path</comment>
@@ -432,7 +432,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>user specified</value>
   </data>
   <data name="Info_RemovePkgRemovingReference" xml:space="preserve">
-    <value>Removing PackageReference for package '{0}' from project '{1}'</value>
+    <value>Removing PackageReference for package '{0}' from project '{1}'.</value>
     <comment>{0} - Package Id
 {1} - Project Path</comment>
   </data>
@@ -443,16 +443,16 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>Id of the package to be removed.</value>
   </data>
   <data name="RemovePkg_ProjectPathDescription" xml:space="preserve">
-    <value>Path to the project.</value>
+    <value>Path to the project file.</value>
   </data>
   <data name="Error_UpdatePkgNoSuchPackage" xml:space="preserve">
-    <value>Project '{0}' does not contain any PackageReference '{1}' to '{2}'</value>
+    <value>Project '{0}' does not contain any PackageReference '{1}' to {2}.</value>
     <comment>{0} - project path
 {1} - package id
 {2} - operation name</comment>
   </data>
   <data name="Error_PkgMissingOrInvalidProjectFile" xml:space="preserve">
-    <value>Unable to '{0}' package. Missing or Invalid project file '{1}'.</value>
+    <value>Unable to {0} package. Missing or Invalid project file '{1}'.</value>
     <comment>{0} - Operation Name
 {1} - project file path</comment>
   </data>
