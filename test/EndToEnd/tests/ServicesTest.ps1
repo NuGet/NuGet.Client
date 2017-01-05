@@ -806,5 +806,6 @@ function Test-CreateVsNuGetPathContextUsesAssetsFileIfAvailable {
 	$context = [API.Test.InternalAPITestHook]::GetVsNuGetPathContext($p.UniqueName)
 
 	# Assert
+	Assert-NotNull $context.UserPackageFolder
 	Assert-NotEqual $userPackageFolder $context.UserPackageFolder
 }
