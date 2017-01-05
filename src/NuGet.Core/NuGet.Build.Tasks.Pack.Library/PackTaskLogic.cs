@@ -249,10 +249,14 @@ namespace NuGet.Build.Tasks.Pack
 
             packArgs.Arguments = new string[]
             {
-                string.Concat(request.PackItem.GetProperty("FileName"), request.PackItem.GetProperty("Extension"))
+                !string.IsNullOrEmpty(request.NuspecFile)
+                ? request.NuspecFile
+                : string.Concat(request.PackItem.GetProperty("FileName"), request.PackItem.GetProperty("Extension"))
             };
 
-            packArgs.Path = request.PackItem.GetProperty("FullPath");
+            packArgs.Path = !string.IsNullOrEmpty(request.NuspecFile)
+                ? request.NuspecFile
+                : request.PackItem.GetProperty("FullPath");
             packArgs.Exclude = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         }
 

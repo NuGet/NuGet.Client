@@ -30,18 +30,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     <BuildOutputTargetFolder Condition="'$(BuildOutputTargetFolder)' == '' AND '$(IsTool)' == 'true'">tools</BuildOutputTargetFolder>
     <BuildOutputTargetFolder Condition="'$(BuildOutputTargetFolder)' == ''">lib</BuildOutputTargetFolder>
     <ContentTargetFolders Condition="'$(ContentTargetFolders)' == ''">content;contentFiles</ContentTargetFolders>
+    <PackDependsOn>GenerateNuspec; $(PackDependsOn)</PackDependsOn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(NoBuild)' == 'true' ">
     <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(NoBuild)' != 'true' ">
     <GenerateNuspecDependsOn>Build;$(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(NuspecFile)' == ''">
-    <PackDependsOn>GenerateNuspec; $(PackDependsOn)</PackDependsOn>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(NuspecFile)' != ''">
-    <PackDependsOn>PackUsingNuspec; $(PackDependsOn)</PackDependsOn>
   </PropertyGroup>
   <ItemGroup>
     <ProjectCapability Include="Pack"/>
@@ -74,9 +69,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <ContinuePackingAfterGeneratingNuspec>true</ContinuePackingAfterGeneratingNuspec>
     </PropertyGroup>
   </Target>
-  <Target Name="PackUsingNuspec">
-    <PackNuspecTask NuspecFile ="$(NuspecFile)"/>
-  </Target>
   <Target Name="GenerateNuspec" DependsOnTargets="$(GenerateNuspecDependsOn)" Condition="$(IsPackable) == 'true'">
     <PropertyGroup Condition="$(ContinuePackingAfterGeneratingNuspec) == '' ">
       <ContinuePackingAfterGeneratingNuspec>false</ContinuePackingAfterGeneratingNuspec>
@@ -88,6 +80,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     
     <ConvertToAbsolutePath Paths="$(RestoreOutputPath)">
       <Output TaskParameter="AbsolutePaths" PropertyName="RestoreOutputAbsolutePath" />
+    </ConvertToAbsolutePath>
+    <ConvertToAbsolutePath Condition="$(NuspecFile) != ''" Paths="$(NuspecFile)">
+      <Output TaskParameter="AbsolutePaths" PropertyName="NuspecFileAbsolutePath" />
     </ConvertToAbsolutePath>
     
     <!-- Call Pack -->
@@ -120,14 +115,15 @@ Copyright (c) .NET Foundation. All rights reserved.
               NoPackageAnalysis="$(NoPackageAnalysis)"
               MinClientVersion="$(MinClientVersion)"
               Serviceable="$(Serviceable)"
-              VersionSuffix ="$(VersionSuffix)"
+              VersionSuffix= "$(VersionSuffix)"
               AssemblyReferences="@(_References)"
               ContinuePackingAfterGeneratingNuspec="$(ContinuePackingAfterGeneratingNuspec)"
               NuspecOutputPath="$(BaseIntermediateOutputPath)"
               IncludeBuildOutput="$(IncludeBuildOutput)"
               BuildOutputFolder="$(BuildOutputTargetFolder)"
               ContentTargetFolders="$(ContentTargetFolders)"
-              RestoreOutputPath="$(RestoreOutputAbsolutePath)"/>
+              RestoreOutputPath="$(RestoreOutputAbsolutePath)"
+              NuspecFile="$(NuspecFileAbsolutePath)"/>
   </Target>
   <!--
     ============================================================
