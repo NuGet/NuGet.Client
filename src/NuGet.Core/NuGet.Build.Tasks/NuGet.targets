@@ -153,17 +153,35 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
+    _FilterRestoreGraphProjectInputItems"
+    Filter out unsupported project entry points.
+    ============================================================
+  -->
+  <Target Name="_FilterRestoreGraphProjectInputItems" DependsOnTargets="_LoadRestoreGraphEntryPoints">
+    <ItemGroup>
+      <FilteredRestoreGraphProjectInputItems 
+       Include="@(RestoreGraphProjectInputItems)"
+       Condition="'%(RestoreGraphProjectInputItems.Extension)' == '.csproj' Or 
+                  '%(RestoreGraphProjectInputItems.Extension)' == '.vbproj' Or
+                  '%(RestoreGraphProjectInputItems.Extension)' == '.fsproj' Or
+                  '%(RestoreGraphProjectInputItems.Extension)' == '.nuproj' Or
+                  '%(RestoreGraphProjectInputItems.Extension)' == '.vcxproj'"/>
+    </ItemGroup>
+  </Target>
+
+  <!--
+    ============================================================
     _GenerateRestoreGraph
     Entry point for creating the project to project restore graph.
     ============================================================
   -->
-  <Target Name="_GenerateRestoreGraph" DependsOnTargets="_LoadRestoreGraphEntryPoints">
+  <Target Name="_GenerateRestoreGraph" DependsOnTargets="_FilterRestoreGraphProjectInputItems">
     <Message Text="Generating dg file" Importance="low" />
-    <Message Text="%(RestoreGraphProjectInputItems.Identity)" Importance="low" />
+    <Message Text="%(FilteredRestoreGraphProjectInputItems.Identity)" Importance="low" />
 
     <!-- Walk projects -->
     <MsBuild
-        Projects="@(RestoreGraphProjectInputItems)"
+        Projects="@(FilteredRestoreGraphProjectInputItems)"
         Targets="_GenerateRestoreGraphProjectEntry"
         Properties="%(_MSBuildProjectReferenceExistent.SetConfiguration);
                     %(_MSBuildProjectReferenceExistent.SetPlatform);
