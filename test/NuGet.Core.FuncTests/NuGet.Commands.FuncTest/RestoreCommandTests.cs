@@ -1694,57 +1694,6 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_UnmatchedRefAndLibAssemblies()
-        {
-            const string project = @"
-{
-    ""dependencies"": {
-        ""System.Runtime.WindowsRuntime"": ""4.0.11-beta-*"",
-        ""Microsoft.NETCore.Targets"": ""1.0.0-beta-*""
-    },
-    ""frameworks"": {
-        ""dotnet"": {}
-    },
-    ""supports"": {
-        ""dnxcore50.app"": {}
-    }
-}
-";
-
-            // Arrange
-            var sources = new List<PackageSource>();
-
-            sources.Add(new PackageSource("https://nuget.org/api/v2/"));
-
-            using (var packagesDir = TestDirectory.Create())
-            using (var projectDir = TestDirectory.Create())
-            {
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(project, "TestProject", specPath);
-
-                var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var lockFileFormat = new LockFileFormat();
-
-                // Act
-                var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
-                var installed = result.GetAllInstalled();
-                var unresolved = result.GetAllUnresolved();
-                var brokenPackages = result.CompatibilityCheckResults.FirstOrDefault(c =>
-                    c.Graph.Framework == FrameworkConstants.CommonFrameworks.DnxCore50 &&
-                    !string.IsNullOrEmpty(c.Graph.RuntimeIdentifier)).Issues.Where(c => c.Type == CompatibilityIssueType.ReferenceAssemblyNotImplemented).ToArray();
-
-                // Assert
-                Assert.True(brokenPackages.Length >= 1);
-                Assert.True(brokenPackages.Any(c => c.Package.Id.Equals("System.Runtime.WindowsRuntime") && c.AssemblyName.Equals("System.Runtime.WindowsRuntime")));
-            }
-        }
-
-        [Fact]
         public async Task RestoreCommand_LockedLockFileWithOutOfDateProject()
         {
             const string project = @"
