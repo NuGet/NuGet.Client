@@ -348,7 +348,7 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
 {2} - Project Path</comment>
   </data>
   <data name="Info_AddPkgAddingReference" xml:space="preserve">
-    <value>Adding PackageReference for package '{0}', into project '{1}'</value>
+    <value>Adding PackageReference for package '{0}' into project '{1}'</value>
     <comment>{0} - Package Id
 {1} - Project Path</comment>
   </data>
@@ -371,9 +371,10 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
   <data name="AddPkg_FrameworksDescription" xml:space="preserve">
     <value>Frameworks for which the package reference should be added.</value>
   </data>
-  <data name="AddPkg_MissingArgument" xml:space="preserve">
-    <value>Unable to add package Reference, argument '{0}' not provided. Please use -h|--help for help.</value>
-    <comment>{0} - Argument which was not provided</comment>
+  <data name="Error_PkgMissingArgument" xml:space="preserve">
+    <value>Unable to '{0}' package Reference, argument '{1}' not provided. Please use -h|--help for help.</value>
+    <comment>{0} - operation type
+{1} - Argument which was not provided</comment>
   </data>
   <data name="AddPkg_NoRestoreDescription" xml:space="preserve">
     <value>Do not perform restore preview and compatibility check. The added package reference will be unconditional.</value>
@@ -431,21 +432,28 @@ For more information, visit http://docs.nuget.org/docs/reference/command-line-re
     <value>user specified</value>
   </data>
   <data name="Info_RemovePkgRemovingReference" xml:space="preserve">
-    <value>Removing PackageReference for package '{0}', from project '{1}'</value>
+    <value>Removing PackageReference for package '{0}' from project '{1}'</value>
     <comment>{0} - Package Id
 {1} - Project Path</comment>
   </data>
   <data name="RemovePkg_Description" xml:space="preserve">
     <value>Removes a package reference from a project.</value>
   </data>
-  <data name="RemovePkg_MissingArgument" xml:space="preserve">
-    <value>Unable to remove package reference, argument '{0}' not provided. Please use -h|--help for help.</value>
-    <comment>{0} - Argument which was not provided</comment>
-  </data>
   <data name="RemovePkg_PackageIdDescription" xml:space="preserve">
     <value>Id of the package to be removed.</value>
   </data>
   <data name="RemovePkg_ProjectPathDescription" xml:space="preserve">
     <value>Path to the project.</value>
+  </data>
+  <data name="Error_UpdatePkgNoSuchPackage" xml:space="preserve">
+    <value>Project '{0}' does not contain any PackageReference '{1}' to '{2}'</value>
+    <comment>{0} - project path
+{1} - package id
+{2} - operation name</comment>
+  </data>
+  <data name="Error_PkgMissingOrInvalidProjectFile" xml:space="preserve">
+    <value>Unable to '{0}' package. Missing or Invalid project file '{1}'.</value>
+    <comment>{0} - Operation Name
+{1} - project file path</comment>
   </data>
 </root>

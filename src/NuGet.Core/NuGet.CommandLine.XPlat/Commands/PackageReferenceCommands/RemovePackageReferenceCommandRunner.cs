@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace NuGet.CommandLine.XPlat
@@ -19,9 +17,10 @@ namespace NuGet.CommandLine.XPlat
                 packageReferenceArgs.ProjectPath));
 
             // Remove reference from the project
-            msBuild.RemovePackageReference(packageReferenceArgs.ProjectPath, packageReferenceArgs.PackageDependency);
+            var result = msBuild.RemovePackageReference(packageReferenceArgs.ProjectPath,
+                packageReferenceArgs.PackageDependency);
 
-            return Task.FromResult(0);
+            return Task.FromResult(result);
         }
     }
 }

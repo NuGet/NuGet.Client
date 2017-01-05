@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
 
@@ -35,22 +36,36 @@ namespace NuGet.CommandLine.XPlat
 
                 removePkg.OnExecute(() =>
                 {
-                    ValidateArgument(id, id.Template);
-                    ValidateArgument(projectPath, projectPath.Template);
+                    ValidateArgument(id, removePkg.Name);
+                    ValidateArgument(projectPath, removePkg.Name);
+                    ValidateProjectPath(projectPath, removePkg.Name);
                     var logger = getLogger();
                     var packageRefArgs = new PackageReferenceArgs(projectPath.Value(), id.Value(), logger);
-                    var msBuild = new MSBuildAPIUtility();
+                    var msBuild = new MSBuildAPIUtility(logger);
                     var removePackageRefCommandRunner = getCommandRunner();
                     return removePackageRefCommandRunner.ExecuteCommand(packageRefArgs, msBuild);
                 });
             });
         }
 
-        private static void ValidateArgument(CommandOption arg, string argName)
+        private static void ValidateArgument(CommandOption arg, string commandName)
         {
             if (arg.Values.Count < 1)
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.RemovePkg_MissingArgument, argName));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PkgMissingArgument,
+                    commandName,
+                    arg.Template));
+            }
+        }
+
+        private static void ValidateProjectPath(CommandOption projectPath, string commandName)
+        {
+            if (!File.Exists(projectPath.Value()) || !projectPath.Value().EndsWith("proj"))
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Error_PkgMissingOrInvalidProjectFile,
+                    commandName,
+                    projectPath.Value()));
             }
         }
     }

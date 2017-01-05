@@ -10,6 +10,7 @@ using System.Xml.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.CommandLine.XPlat;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
@@ -137,7 +138,7 @@ namespace NuGet.XPlat.FuncTest
                     projectName: projectName,
                     solutionRoot: pathContext.SolutionRoot,
                     isToolingVersion15: true,
-                    frameworks: StringUtility.Split(projectFrameworks));
+                    frameworks: MSBuildStringUtility.Split(projectFrameworks));
 
             if (packageFramework == null)
             {
@@ -159,7 +160,7 @@ namespace NuGet.XPlat.FuncTest
                     projectName: projectName,
                     solutionRoot: pathContext.SolutionRoot,
                     isToolingVersion15: true,
-                    frameworks: StringUtility.Split(projectFrameworks));
+                    frameworks: MSBuildStringUtility.Split(projectFrameworks));
 
             project.Save();
             return project;
@@ -174,7 +175,7 @@ namespace NuGet.XPlat.FuncTest
                 Id = packageId,
                 Version = packageVersion
             };
-            var frameworks = StringUtility.Split(frameworkString);
+            var frameworks = MSBuildStringUtility.Split(frameworkString);
 
             // Make the package Compatible with specific frameworks
             frameworks?
@@ -206,8 +207,8 @@ namespace NuGet.XPlat.FuncTest
             }
             return new PackageReferenceArgs(project.ProjectPath, packageDependency, logger)
             {
-                Frameworks = StringUtility.Split(frameworks),
-                Sources = StringUtility.Split(sources),
+                Frameworks = MSBuildStringUtility.Split(frameworks),
+                Sources = MSBuildStringUtility.Split(sources),
                 PackageDirectory = packageDirectory,
                 NoRestore = noRestore,
                 NoVersion = noVersion,
@@ -308,9 +309,9 @@ namespace NuGet.XPlat.FuncTest
 
         public static string GetCommonFramework(string frameworkStringA, string frameworkStringB, string frameworkStringC)
         {
-            var frameworksA = StringUtility.Split(frameworkStringA);
-            var frameworksB = StringUtility.Split(frameworkStringB);
-            var frameworksC = StringUtility.Split(frameworkStringC);
+            var frameworksA = MSBuildStringUtility.Split(frameworkStringA);
+            var frameworksB = MSBuildStringUtility.Split(frameworkStringB);
+            var frameworksC = MSBuildStringUtility.Split(frameworkStringC);
             return frameworksA.ToList()
                 .Intersect(frameworksB.ToList())
                 .Intersect(frameworksC.ToList())
@@ -319,8 +320,8 @@ namespace NuGet.XPlat.FuncTest
 
         public static string GetCommonFramework(string frameworkStringA, string frameworkStringB)
         {
-            var frameworksA = StringUtility.Split(frameworkStringA);
-            var frameworksB = StringUtility.Split(frameworkStringB);
+            var frameworksA = MSBuildStringUtility.Split(frameworkStringA);
+            var frameworksB = MSBuildStringUtility.Split(frameworkStringB);
             return frameworksA.ToList()
                 .Intersect(frameworksB.ToList())
                 .First();
@@ -334,6 +335,14 @@ namespace NuGet.XPlat.FuncTest
         public static string GetTargetFrameworkCondition(string targetFramework)
         {
             return string.Format("'$(TargetFramework)' == '{0}'", targetFramework);
+        }
+
+        public static void DisposeTemporaryFile(string filePath)
+        {
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
         }
     }
 }

@@ -96,15 +96,6 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Unable to add package Reference, argument &apos;{0}&apos; not provided. Please use -h|--help for help..
-        /// </summary>
-        public static string AddPkg_MissingArgument {
-            get {
-                return ResourceManager.GetString("AddPkg_MissingArgument", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///    Looks up a localized string similar to Do not perform restore preview and compatibility check. The added package reference will be unconditional..
         /// </summary>
         public static string AddPkg_NoRestoreDescription {
@@ -321,6 +312,33 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Unable to &apos;{0}&apos; package Reference, argument &apos;{1}&apos; not provided. Please use -h|--help for help..
+        /// </summary>
+        public static string Error_PkgMissingArgument {
+            get {
+                return ResourceManager.GetString("Error_PkgMissingArgument", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Unable to &apos;{0}&apos; package. Missing or Invalid project file &apos;{1}&apos;..
+        /// </summary>
+        public static string Error_PkgMissingOrInvalidProjectFile {
+            get {
+                return ResourceManager.GetString("Error_PkgMissingOrInvalidProjectFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Project &apos;{0}&apos; does not contain any PackageReference &apos;{1}&apos; to &apos;{2}&apos;.
+        /// </summary>
+        public static string Error_UpdatePkgNoSuchPackage {
+            get {
+                return ResourceManager.GetString("Error_UpdatePkgNoSuchPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Specifies one or more wildcard patterns to exclude when creating a package..
         /// </summary>
         public static string Exclude_Description {
@@ -366,7 +384,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Adding PackageReference for package &apos;{0}&apos;, into project &apos;{1}&apos;.
+        ///    Looks up a localized string similar to Adding PackageReference for package &apos;{0}&apos; into project &apos;{1}&apos;.
         /// </summary>
         public static string Info_AddPkgAddingReference {
             get {
@@ -402,7 +420,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Removing PackageReference for package &apos;{0}&apos;, from project &apos;{1}&apos;.
+        ///    Looks up a localized string similar to Removing PackageReference for package &apos;{0}&apos; from project &apos;{1}&apos;.
         /// </summary>
         public static string Info_RemovePkgRemovingReference {
             get {
@@ -739,15 +757,6 @@ namespace NuGet.CommandLine.XPlat {
         public static string RemovePkg_Description {
             get {
                 return ResourceManager.GetString("RemovePkg_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to Unable to remove package reference, argument &apos;{0}&apos; not provided. Please use -h|--help for help..
-        /// </summary>
-        public static string RemovePkg_MissingArgument {
-            get {
-                return ResourceManager.GetString("RemovePkg_MissingArgument", resourceCulture);
             }
         }
         

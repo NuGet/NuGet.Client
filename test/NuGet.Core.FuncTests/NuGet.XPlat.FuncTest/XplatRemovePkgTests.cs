@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Microsoft.Extensions.CommandLineUtils;
 using Moq;
 using NuGet.CommandLine.XPlat;
@@ -16,22 +17,28 @@ namespace NuGet.XPlat.FuncTest
     {
         private static readonly string projectName = "test_project_removepkg";
 
+        private static MSBuildAPIUtility MsBuild
+        {
+            get { return new MSBuildAPIUtility(new TestCommandOutputLogger()); }
+        }
+
         // Argument parsing related tests
 
         [Theory]
-        [InlineData("--package", "package_foo", "--project", "project_foo")]
-        [InlineData("--package", "package_foo", "-p", "project_foo")]
+        [InlineData("--package", "package_foo", "--project", "project_foo.csproj")]
+        [InlineData("--package", "package_foo", "-p", "project_foo.csproj")]
         public void AddPkg_ArgParsing(string packageOption, string package,
             string projectOption, string project)
         {
             // Arrange
-
+            var projectPath = Path.Combine(Path.GetTempPath(), project);
+            File.Create(projectPath).Dispose();
             var argList = new List<string>() {
                 "remove",
                 packageOption,
                 package,
                 projectOption,
-                project};
+                projectPath};
 
             var logger = new TestCommandOutputLogger();
             var testApp = new CommandLineApplication();
@@ -48,10 +55,12 @@ namespace NuGet.XPlat.FuncTest
             // Act
             var result = testApp.Execute(argList.ToArray());
 
+            XPlatTestUtils.DisposeTemporaryFile(projectPath);
+
             // Assert
             mockCommandRunner.Verify(m => m.ExecuteCommand(It.Is<PackageReferenceArgs>(p =>
             p.PackageDependency.Id == package &&
-            p.ProjectPath == project),
+            p.ProjectPath == projectPath),
             It.IsAny<MSBuildAPIUtility>()));
 
             Assert.Equal(0, result);
@@ -86,12 +95,39 @@ namespace NuGet.XPlat.FuncTest
                 var commandRunner = new RemovePackageReferenceCommandRunner();
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility()).Result;
+                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild).Result;
                 projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
 
                 // Assert
                 Assert.Equal(0, result);
                 Assert.True(XPlatTestUtils.ValidateNoReference(projectXmlRoot, packageX.Id));
+            }
+        }
+
+        [Fact]
+        public void RemovePkg_RemoveInvalidPackage_Failure()
+        {
+            // Arrange
+
+            var unknownPackageId = "package_foo";
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net46");
+
+                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(unknownPackageId, projectA);
+                var commandRunner = new RemovePackageReferenceCommandRunner();
+                var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
+
+                Assert.True(XPlatTestUtils.ValidateNoReference(projectXmlRoot, unknownPackageId));
+                var msBuild = MsBuild;
+
+                // Act
+                var result = commandRunner.ExecuteCommand(packageArgs, msBuild).Result;
+                projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
+
+                // Assert
+                Assert.Equal(1, result);
+                Assert.True(XPlatTestUtils.ValidateNoReference(projectXmlRoot, unknownPackageId));
             }
         }
 
@@ -124,7 +160,7 @@ namespace NuGet.XPlat.FuncTest
                 var commandRunner = new RemovePackageReferenceCommandRunner();
 
                 // Act
-                var result = commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility()).Result;
+                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild).Result;
                 projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
 
                 // Assert
