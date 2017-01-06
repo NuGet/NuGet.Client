@@ -195,4 +195,7 @@
   <data name="CredentialProviderFailed_ImportedProvider" xml:space="preserve">
     <value>Failed to load credential provider from assembly {0}.</value>
   </data>
+  <data name="Finished" xml:space="preserve">
+    <value>========== Finished ==========</value>
+  </data>
 </root>

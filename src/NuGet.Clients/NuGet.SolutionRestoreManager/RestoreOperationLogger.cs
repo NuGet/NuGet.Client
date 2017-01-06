@@ -277,7 +277,6 @@ namespace NuGet.SolutionRestoreManager
                     {
                         case RestoreOperationSource.Implicit:
                             _outputConsole.Activate();
-                            _outputConsole.Clear();
                             WriteLine(VerbosityLevel.Quiet, Resources.RestoringPackages);
                             break;
                         case RestoreOperationSource.OnBuild:
@@ -333,11 +332,12 @@ namespace NuGet.SolutionRestoreManager
 
                 if (_operationSource != RestoreOperationSource.OnBuild && (_hasHeaderBeenShown || forceStatusWrite))
                 {
-                    WriteLine(quietOrMinimal, Resources.Operation_Finished);
                     WriteLine(
                         quietOrMinimal,
                         Resources.Operation_TotalTime,
                         duration);
+                    WriteLine(quietOrMinimal, Resources.Operation_Finished);
+                    WriteLine(quietOrMinimal, string.Empty);
                 }
             });
         }

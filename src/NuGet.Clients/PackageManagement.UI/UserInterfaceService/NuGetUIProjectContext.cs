@@ -9,19 +9,32 @@ using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class NuGetUIProjectContext : INuGetProjectContext
+    public sealed class NuGetUIProjectContext : INuGetProjectContext
     {
-        public FileConflictAction FileConflictAction { get; set; }
-
         private readonly Dispatcher _uiDispatcher;
         private readonly INuGetUILogger _logger;
 
-        public NuGetUIProjectContext(INuGetUILogger logger, ISourceControlManagerProvider sourceControlManagerProvider, ICommonOperations commonOperations)
+        public FileConflictAction FileConflictAction { get; set; }
+
+        public NuGetUIProjectContext(
+            ICommonOperations commonOperations,
+            INuGetUILogger logger,
+            ISourceControlManagerProvider sourceControlManagerProvider)
         {
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            if (sourceControlManagerProvider == null)
+            {
+                throw new ArgumentNullException(nameof(sourceControlManagerProvider));
+            }
+
             _logger = logger;
             _uiDispatcher = Dispatcher.CurrentDispatcher;
             SourceControlManagerProvider = sourceControlManagerProvider;
-            CommonOperations = commonOperations;
+
             if (commonOperations != null)
             {
                 ExecutionContext = new IDEExecutionContext(commonOperations);
@@ -73,22 +86,9 @@ namespace NuGet.PackageManagement.UI
             return FileConflictAction;
         }
 
-        // called when user clicks the action button
-        public void Start()
-        {
-            _logger.Start();
-        }
-
-        internal void End()
-        {
-            _logger.End();
-        }
-
         public PackageExtractionContext PackageExtractionContext { get; set; }
 
         public ISourceControlManagerProvider SourceControlManagerProvider { get; }
-
-        public ICommonOperations CommonOperations { get; }
 
         public ExecutionContext ExecutionContext { get; }
 

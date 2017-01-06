@@ -18,17 +18,22 @@ using NuGet.Resolver;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class NuGetUI : INuGetUI
+    public sealed class NuGetUI : INuGetUI
     {
-        private readonly INuGetUIContext _context;
         public const string LogEntrySource = "NuGet Package Manager";
 
+        private readonly NuGetUIProjectContext _projectContext;
+
         public NuGetUI(
+            ICommonOperations commonOperations,
+            NuGetUIProjectContext projectContext,
             INuGetUIContext context,
-            NuGetUIProjectContext projectContext)
+            INuGetUILogger logger)
         {
-            _context = context;
-            ProgressWindow = projectContext;
+            CommonOperations = commonOperations;
+            _projectContext = projectContext;
+            UIContext = context;
+            UILogger = logger;
 
             // set default values of properties
             FileConflictAction = FileConflictAction.PromptUser;
@@ -51,7 +56,7 @@ namespace NuGet.PackageManagement.UI
 
         private bool WarnAboutDotnetDeprecationImpl(IEnumerable<NuGetProject> projects)
         {
-            var window = new DeprecatedFrameworkWindow(_context)
+            var window = new DeprecatedFrameworkWindow(UIContext)
             {
                 DataContext = DotnetDeprecatedPrompt.GetDeprecatedFrameworkModel(projects)
             };
@@ -93,9 +98,9 @@ namespace NuGet.PackageManagement.UI
 
         public void LaunchNuGetOptionsDialog(OptionsPage optionsPageToOpen)
         {
-            if (_context?.OptionsPageActivator != null)
+            if (UIContext?.OptionsPageActivator != null)
             {
-                UIDispatcher.Invoke(() => { _context.OptionsPageActivator.ActivatePage(optionsPageToOpen, null); });
+                UIDispatcher.Invoke(() => { UIContext.OptionsPageActivator.ActivatePage(optionsPageToOpen, null); });
             }
             else
             {
@@ -111,7 +116,7 @@ namespace NuGet.PackageManagement.UI
             {
                 UIDispatcher.Invoke(() =>
                 {
-                    var w = new PreviewWindow(_context);
+                    var w = new PreviewWindow(UIContext);
                     w.DataContext = new PreviewWindowModel(actions);
 
                     result = w.ShowModal() == true;
@@ -125,21 +130,24 @@ namespace NuGet.PackageManagement.UI
             return result;
         }
 
-        // TODO: rename it to something like Start
-        public void ShowProgressDialog(DependencyObject ownerWindow)
+        public void BeginOperation()
         {
-            ProgressWindow.Start();
-            ProgressWindow.FileConflictAction = FileConflictAction;
+            _projectContext.FileConflictAction = FileConflictAction;
+            UILogger.Start();
         }
 
-        // TODO: rename it to something like End
-        public void CloseProgressDialog()
+        public void EndOperation()
         {
-            ProgressWindow.End();
+            UILogger.End();
         }
 
-        // TODO: rename it
-        public NuGetUIProjectContext ProgressWindow { get; }
+        public ICommonOperations CommonOperations { get; }
+
+        public INuGetUIContext UIContext { get; }
+
+        public INuGetUILogger UILogger { get; }
+
+        public INuGetProjectContext ProjectContext => _projectContext;
 
         public IEnumerable<NuGetProject> Projects
         {
@@ -187,7 +195,7 @@ namespace NuGet.PackageManagement.UI
 
         public void OnActionsExecuted(IEnumerable<ResolvedAction> actions)
         {
-            this._context.SolutionManager.OnActionsExecuted(actions);
+            this.UIContext.SolutionManager.OnActionsExecuted(actions);
         }
 
         public IEnumerable<SourceRepository> ActiveSources
@@ -248,7 +256,7 @@ namespace NuGet.PackageManagement.UI
             {
                 // for exceptions that are known to be normal error cases, just
                 // display the message.
-                ProgressWindow.Log(MessageLevel.Info, ExceptionUtilities.DisplayMessage(ex, indent: true));
+                ProjectContext.Log(MessageLevel.Info, ExceptionUtilities.DisplayMessage(ex, indent: true));
 
                 // write to activity log
                 var activityLogMessage = string.Format(CultureInfo.CurrentCulture, ex.ToString());
@@ -256,10 +264,10 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                ProgressWindow.Log(MessageLevel.Error, ex.ToString());
+                ProjectContext.Log(MessageLevel.Error, ex.ToString());
             }
 
-            ProgressWindow.ReportError(ExceptionUtilities.DisplayMessage(ex, indent: false));
+            UILogger.ReportError(ExceptionUtilities.DisplayMessage(ex, indent: false));
         }
     }
 }

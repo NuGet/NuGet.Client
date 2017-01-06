@@ -8,7 +8,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -60,7 +59,6 @@ namespace NuGet.PackageManagement.UI
         public async Task PerformActionAsync(
             INuGetUI uiService,
             UserAction userAction,
-            DependencyObject windowOwner,
             CancellationToken token)
         {
             var operationType = NuGetOperationType.Install;
@@ -95,14 +93,13 @@ namespace NuGet.PackageManagement.UI
                         uiService.RemoveDependencies,
                         uiService.ForceRemove,
                         resolutionContext,
-                        projectContext: uiService.ProgressWindow,
+                        projectContext: uiService.ProjectContext,
                         token: token);
                 },
                 (actions) =>
                 {
-                    return ExecuteActionsAsync(actions, uiService.ProgressWindow, userAction, token);
+                    return ExecuteActionsAsync(actions, uiService.ProjectContext, uiService.CommonOperations, userAction, token);
                 },
-                windowOwner,
                 operationType,
                 token);
         }
@@ -114,14 +111,13 @@ namespace NuGet.PackageManagement.UI
         public async Task PerformUpdateAsync(
             INuGetUI uiService,
             List<PackageIdentity> packagesToUpdate,
-            DependencyObject windowOwner,
             CancellationToken token)
         {
             await PerformActionImplAsync(
                 uiService,
                 () =>
                 {
-                    return ResolveActionsForUpdate(
+                    return ResolveActionsForUpdateAsync(
                         uiService,
                         packagesToUpdate,
                         token);
@@ -134,10 +130,9 @@ namespace NuGet.PackageManagement.UI
                     await _packageManager.ExecuteNuGetProjectActionsAsync(
                         nugetProjects,
                         nugetActions,
-                        uiService.ProgressWindow,
+                        uiService.ProjectContext,
                         token);
                 },
-                windowOwner,
                 NuGetOperationType.Update,
                 token);
         }
@@ -149,7 +144,7 @@ namespace NuGet.PackageManagement.UI
         /// <param name="packagesToUpdate">The list of packages to update.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>The list of actions.</returns>
-        private async Task<IReadOnlyList<ResolvedAction>> ResolveActionsForUpdate(
+        private async Task<IReadOnlyList<ResolvedAction>> ResolveActionsForUpdateAsync(
             INuGetUI uiService,
             List<PackageIdentity> packagesToUpdate,
             CancellationToken token)
@@ -175,7 +170,7 @@ namespace NuGet.PackageManagement.UI
                 packagesToUpdate,
                 uiService.Projects,
                 resolutionContext,
-                uiService.ProgressWindow,
+                uiService.ProjectContext,
                 uiService.ActiveSources,
                 secondarySources,
                 token);
@@ -197,7 +192,6 @@ namespace NuGet.PackageManagement.UI
             INuGetUI uiService,
             Func<Task<IReadOnlyList<ResolvedAction>>> resolveActionsAsync,
             Func<IReadOnlyList<ResolvedAction>, Task> executeActionsAsync,
-            DependencyObject windowOwner,
             NuGetOperationType operationType,
             CancellationToken token)
         {
@@ -208,13 +202,13 @@ namespace NuGet.PackageManagement.UI
 
             // Enable granular level telemetry events for nuget ui operation
             var telemetryService = new TelemetryServiceHelper();
-            uiService.ProgressWindow.TelemetryService = telemetryService;
+            uiService.ProjectContext.TelemetryService = telemetryService;
 
             var lck = await _lockService.AcquireLockAsync(token);
 
             try
             {
-                uiService.ShowProgressDialog(windowOwner);
+                uiService.BeginOperation();
 
                 TelemetryUtility.StartorResumeTimer();
 
@@ -311,13 +305,14 @@ namespace NuGet.PackageManagement.UI
             {
                 lck.Dispose();
 
-                uiService.CloseProgressDialog();
-
                 TelemetryUtility.StopTimer();
 
                 var duration = TelemetryUtility.GetTimerElapsedTime();
-                uiService.ProgressWindow.Log(MessageLevel.Info,
+
+                uiService.ProjectContext.Log(MessageLevel.Info,
                     string.Format(CultureInfo.CurrentCulture, Resources.Operation_TotalTime, duration));
+
+                uiService.EndOperation();
 
                 var actionTelemetryEvent = TelemetryUtility.GetActionTelemetryEvent(
                     uiService.Projects,
@@ -393,14 +388,18 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Execute the installs/uninstalls
         /// </summary>
-        private async Task ExecuteActionsAsync(IEnumerable<ResolvedAction> actions,
-            NuGetUIProjectContext projectContext, UserAction userAction, CancellationToken token)
+        private async Task ExecuteActionsAsync(
+            IEnumerable<ResolvedAction> actions,
+            INuGetProjectContext projectContext, 
+            ICommonOperations commonOperations,
+            UserAction userAction, 
+            CancellationToken token)
         {
             var processedDirectInstalls = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
             foreach (var projectActions in actions.GroupBy(e => e.Project))
             {
                 var nuGetProjectActions = projectActions.Select(e => e.Action);
-                var directInstall = GetDirectInstall(nuGetProjectActions, userAction, projectContext.CommonOperations);
+                var directInstall = GetDirectInstall(nuGetProjectActions, userAction, commonOperations);
                 if (directInstall != null
                     && !processedDirectInstalls.Contains(directInstall))
                 {
@@ -619,7 +618,7 @@ namespace NuGet.PackageManagement.UI
         private void LogError(Task task, INuGetUI uiService)
         {
             var exception = ExceptionUtilities.Unwrap(task.Exception);
-            uiService.ProgressWindow.Log(MessageLevel.Error, exception.Message);
+            uiService.ProjectContext.Log(MessageLevel.Error, exception.Message);
         }
 
         private static async Task<IPackageSearchMetadata> GetPackageMetadataAsync(

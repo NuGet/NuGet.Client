@@ -52,6 +52,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConsoleInitializer.cs" />
+    <Compile Include="OutputConsole\BuildOutputConsole.cs" />
+    <Compile Include="OutputConsole\OutputConsole.cs" />
+    <Compile Include="OutputConsole\OutputConsoleProvider.cs" />
+    <Compile Include="ScriptExecutor.cs" />
     <Compile Include="Xamls\ConsoleContainer.xaml.cs">
       <DependentUpon>ConsoleContainer.xaml</DependentUpon>
     </Compile>
@@ -60,10 +64,6 @@
     <Compile Include="IHostInitializer.cs" />
     <Compile Include="IPowerConsoleService.cs" />
     <Compile Include="NativeMethods.cs" />
-    <Compile Include="OutputConsole\BuildOutputConsole.cs" />
-    <Compile Include="OutputConsole\OutputConsole.cs" />
-    <Compile Include="OutputConsole\OutputConsoleLogger.cs" />
-    <Compile Include="OutputConsole\OutputConsoleProvider.cs" />
     <Compile Include="PkgCmdID.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -96,7 +96,6 @@
     </Compile>
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ScriptExecutor.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx">

@@ -400,7 +400,7 @@ namespace NuGet.VisualStudio
 
         internal virtual void ShowWarningMessage(string message)
         {
-            IConsole console = _consoleProvider.CreateOutputConsole(requirePowerShellHost: false);
+            var console = _consoleProvider.CreatePackageManagerConsole();
             console.WriteLine(message);
         }
 

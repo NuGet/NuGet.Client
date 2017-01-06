@@ -990,7 +990,6 @@ namespace NuGet.PackageManagement.UI
                     return Model.Context.UIActionEngine.PerformActionAsync(
                         Model.UIController,
                         action,
-                        this,
                         CancellationToken.None);
                 },
 
@@ -1009,7 +1008,7 @@ namespace NuGet.PackageManagement.UI
             nugetUi.DisplayDeprecatedFrameworkWindow = options.ShowDeprecatedFrameworkWindow;
 
             nugetUi.Projects = Model.Context.Projects;
-            nugetUi.ProgressWindow.ActionType = actionType;
+            nugetUi.ProjectContext.ActionType = actionType;
         }
 
         private void ExecuteInstallPackageCommand(object sender, ExecutedRoutedEventArgs e)
@@ -1029,7 +1028,6 @@ namespace NuGet.PackageManagement.UI
                     return Model.Context.UIActionEngine.PerformActionAsync(
                         Model.UIController,
                         action,
-                        this,
                         CancellationToken.None);
                 },
 
@@ -1053,7 +1051,6 @@ namespace NuGet.PackageManagement.UI
                     return Model.Context.UIActionEngine.PerformUpdateAsync(
                         Model.UIController,
                         packagesToUpdate,
-                        this,
                         CancellationToken.None);
                 },
                nugetUi => SetOptions(nugetUi, NuGetActionType.Update));

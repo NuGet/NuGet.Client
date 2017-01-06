@@ -17,7 +17,6 @@ using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Utilities;
 using NuGet.Common;
 using NuGet.Credentials;
 using NuGet.Options;
@@ -26,7 +25,6 @@ using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
 using NuGetConsole;
 using NuGetConsole.Implementation;
 using ISettings = NuGet.Configuration.ISettings;
@@ -77,8 +75,6 @@ namespace NuGetVSExtension
         private OleMenuCommandService _mcs;
         private bool _powerConsoleCommandExecuting;
 
-        private NuGetUIProjectContext _uiProjectContext;
-
         private readonly HashSet<Uri> _credentialRequested = new HashSet<Uri>();
 
         public NuGetPackage()
@@ -88,6 +84,31 @@ namespace NuGetVSExtension
 #endif
             ServiceLocator.InitializePackageServiceProvider(this);
         }
+
+        [Import]
+        private Lazy<IConsoleStatus> ConsoleStatus { get; set; }
+
+        [Import]
+        private Lazy<IDeleteOnRestartManager> DeleteOnRestartManager { get; set; }
+
+        [Import]
+        private INuGetUILogger OutputConsoleLogger { get; set; }
+
+        [Import]
+        private INuGetProjectContext ProjectContext { get; set; }
+
+        private ProjectRetargetingHandler ProjectRetargetingHandler { get; set; }
+
+        private ProjectUpgradeHandler ProjectUpgradeHandler { get; set; }
+
+        [Import]
+        private Lazy<ISettings> Settings { get; set; }
+
+        [Import]
+        private IVsSolutionManager SolutionManager { get; set; }
+
+        [Import]
+        private SolutionUserOptions SolutionUserOptions { get; set; }
 
         /// <summary>
         /// This initializes the IVSSourceControlTracker, even though SourceControlTracker is unused.
@@ -113,47 +134,7 @@ namespace NuGetVSExtension
         }
 
         [Import]
-        private Lazy<IConsoleStatus> ConsoleStatus { get; set; }
-
-        [Import]
-        private Lazy<ISettings> Settings { get; set; }
-
-        [Import]
-        private SolutionUserOptions SolutionUserOptions { get; set; }
-
-        [Import]
-        private INuGetUILogger OutputConsoleLogger { get; set; }
-
-        [Import]
-        private ISourceControlManagerProvider SourceControlManagerProvider { get; set; }
-
-        [Import]
-        private ICommonOperations CommonOperations { get; set; }
-
-        [Import]
-        private IVsSolutionManager SolutionManager { get; set; }
-
-        [Import]
-        private Lazy<INuGetLockService> LockService { get; set; }
-
-        [Import]
-        private Lazy<ISourceRepositoryProvider> SourceRepositoryProvider { get; set; }
-
-        [ImportMany]
-        private IEnumerable<Lazy<NuGet.VisualStudio.IVsPackageManagerProvider, IOrderable>> PackageManagerProviders { get; set; }
-
-        [Import]
-        private Lazy<IPackageRestoreManager> PackageRestoreManager { get; set; }
-
-        [Import]
-        private Lazy<IOptionsPageActivator> OptionsPageActivator { get; set; }
-
-        [Import]
-        private Lazy<IDeleteOnRestartManager> DeleteOnRestartManager { get; set; }
-
-        private ProjectRetargetingHandler ProjectRetargetingHandler { get; set; }
-
-        private ProjectUpgradeHandler ProjectUpgradeHandler { get; set; }
+        private INuGetUIFactory UIFactory { get; set; }
 
         /// <summary>
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
@@ -172,9 +153,6 @@ namespace NuGetVSExtension
             // Add our command handlers for menu (commands must exist in the .vsct file)
             await AddMenuCommandHandlersAsync();
 
-            // IMPORTANT: Do NOT do anything that can lead to a call to ServiceLocator.GetGlobalService().
-            // Doing so is illegal and may cause VS to hang.
-
             _dte = (DTE)await GetServiceAsync(typeof(SDTE));
 
             _dteEvents = _dte.Events.DTEEvents;
@@ -182,14 +160,9 @@ namespace NuGetVSExtension
 
             SetDefaultCredentialProvider();
 
-            _uiProjectContext = new NuGetUIProjectContext(
-                OutputConsoleLogger,
-                SourceControlManagerProvider,
-                CommonOperations);
-
             if (SolutionManager.NuGetProjectContext == null)
             {
-                SolutionManager.NuGetProjectContext = _uiProjectContext;
+                SolutionManager.NuGetProjectContext = ProjectContext;
             }
 
             // when NuGet loads, if the current solution has some package
@@ -197,7 +170,7 @@ namespace NuGetVSExtension
             // delete them now.
             if (SolutionManager.IsSolutionOpen)
             {
-                DeleteOnRestartManager.Value.DeleteMarkedPackageDirectories(_uiProjectContext);
+                DeleteOnRestartManager.Value.DeleteMarkedPackageDirectories(ProjectContext);
             }
 
             ProjectRetargetingHandler = new ProjectRetargetingHandler(_dte, SolutionManager, this);
@@ -529,14 +502,15 @@ namespace NuGetVSExtension
             // is thrown, an error dialog will pop up and this doc window will not be created.
             var installedPackages = await nugetProject.GetInstalledPackagesAsync(CancellationToken.None);
 
-            var uiContext = CreateUIContext(nugetProject);
+            var uiController = UIFactory.Create(nugetProject);
 
-            var uiFactory = ServiceLocator.GetInstance<INuGetUIFactory>();
-            var uiController = uiFactory.Create(uiContext, _uiProjectContext);
+            var model = new PackageManagerModel(
+                uiController,
+                isSolution: false,
+                editorFactoryGuid: GuidList.guidNuGetEditorType);
 
-            var model = new PackageManagerModel(uiController, uiContext, isSolution: false, editorFactoryGuid: GuidList.guidNuGetEditorType);
-            var vsWindowSearchHostfactory = ServiceLocator.GetGlobalService<SVsWindowSearchHostFactory, IVsWindowSearchHostFactory>();
-            var vsShell = ServiceLocator.GetGlobalService<SVsShell, IVsShell4>();
+            var vsWindowSearchHostfactory = await GetServiceAsync(typeof(SVsWindowSearchHostFactory)) as IVsWindowSearchHostFactory;
+            var vsShell = await GetServiceAsync(typeof(SVsShell)) as IVsShell4;
             var control = new PackageManagerControl(model, Settings.Value, vsWindowSearchHostfactory, vsShell, OutputConsoleLogger);
             var windowPane = new PackageManagerWindowPane(control);
             var guidEditorType = GuidList.guidNuGetEditorType;
@@ -588,40 +562,6 @@ namespace NuGetVSExtension
 
             ErrorHandler.ThrowOnFailure(hr);
             return windowFrame;
-        }
-
-        private INuGetUIContext CreateUIContext(params NuGetProject[] projects)
-        {
-            var packageManager = new NuGetPackageManager(
-                SourceRepositoryProvider.Value,
-                Settings.Value,
-                SolutionManager,
-                DeleteOnRestartManager.Value);
-
-            var actionEngine = new UIActionEngine(
-                SourceRepositoryProvider.Value,
-                packageManager,
-                LockService.Value);
-
-            // only pick up at most three integrated package managers
-            const int MaxPackageManager = 3;
-            var packageManagerProviders = PackageManagerProviderUtility.Sort(
-                PackageManagerProviders, MaxPackageManager);
-
-            var context = new NuGetUIContext(
-                SourceRepositoryProvider.Value,
-                SolutionManager,
-                packageManager,
-                actionEngine,
-                PackageRestoreManager.Value,
-                OptionsPageActivator.Value,
-                SolutionUserOptions,
-                packageManagerProviders)
-            {
-                Projects = projects
-            };
-
-            return context;
         }
 
         private void ShowManageLibraryPackageDialog(object sender, EventArgs e)
@@ -754,16 +694,20 @@ namespace NuGetVSExtension
                 await project.GetInstalledPackagesAsync(CancellationToken.None);
             }
 
-            var uiContext = CreateUIContext(projects.ToArray());
-
-            var uiFactory = ServiceLocator.GetInstance<INuGetUIFactory>();
-            var uiController = uiFactory.Create(uiContext, _uiProjectContext);
+            var uiController = UIFactory.Create(projects.ToArray());
 
             var solutionName = (string)_dte.Solution.Properties.Item("Name").Value;
-            var model = new PackageManagerModel(uiController, uiContext, isSolution: true, editorFactoryGuid: GuidList.guidNuGetEditorType);
-            model.SolutionName = solutionName;
-            var vsWindowSearchHostfactory = ServiceLocator.GetGlobalService<SVsWindowSearchHostFactory, IVsWindowSearchHostFactory>();
-            var vsShell = ServiceLocator.GetGlobalService<SVsShell, IVsShell4>();
+
+            var model = new PackageManagerModel(
+                uiController,
+                isSolution: true,
+                editorFactoryGuid: GuidList.guidNuGetEditorType)
+            {
+                SolutionName = solutionName
+            };
+
+            var vsWindowSearchHostfactory = await GetServiceAsync(typeof(SVsWindowSearchHostFactory)) as IVsWindowSearchHostFactory;
+            var vsShell = await GetServiceAsync(typeof(SVsShell)) as IVsShell4;
             var control = new PackageManagerControl(model, Settings.Value, vsWindowSearchHostfactory, vsShell, OutputConsoleLogger);
             var windowPane = new PackageManagerWindowPane(control);
             var guidEditorType = GuidList.guidNuGetEditorType;

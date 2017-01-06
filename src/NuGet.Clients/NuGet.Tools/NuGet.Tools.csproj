@@ -43,6 +43,8 @@
     <Compile Include="FontAndColorsRegistrationAttribute.cs" />
     <Compile Include="Guids.cs" />
     <Compile Include="NuGetSettings.cs" />
+    <Compile Include="NuGetUIFactory.cs" />
+    <Compile Include="OutputConsoleLogger.cs" />
     <Compile Include="SolutionUserOptions.cs" />
     <Compile Include="VsCredentialProviderImporter.cs" />
     <Compile Include="InteractiveLoginProvider.cs" />

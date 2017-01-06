@@ -5,12 +5,12 @@ using System;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
+using NuGetConsole;
 
-namespace NuGetConsole
+namespace NuGetVSExtension
 {
     [Export(typeof(INuGetUILogger))]
     [PartCreationPolicy(CreationPolicy.Shared)]
@@ -86,6 +86,7 @@ namespace NuGetConsole
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 OutputConsole.WriteLine(Resources.Finished);
+                OutputConsole.WriteLine(string.Empty);
 
                 if (ErrorListProvider.Tasks.Count > 0)
                 {
@@ -111,17 +112,6 @@ namespace NuGetConsole
             }
         }
 
-        private void ActivateOutputWindow()
-        {
-            var uiShell = ServiceLocator.GetGlobalService<SVsUIShell, IVsUIShell>();
-            if (uiShell != null)
-            {
-                IVsWindowFrame toolWindow = null;
-                uiShell.FindToolWindow(0, ref GuidList.guidVsWindowKindOutput, out toolWindow);
-                toolWindow?.Show();
-            }
-        }
-
         private int GetMSBuildVerbosityLevel()
         {
             var properties = _dte.get_Properties(DTEEnvironmentCategory, DTEProjectPage);
@@ -140,9 +130,10 @@ namespace NuGetConsole
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                ActivateOutputWindow();
                 _verbosityLevel = GetMSBuildVerbosityLevel();
                 ErrorListProvider.Tasks.Clear();
+
+                OutputConsole.Activate();
                 OutputConsole.Clear();
             });
         }
