@@ -703,3 +703,100 @@ function Test-BatchEventsApi
     Assert-True $result
 }
 
+function Test-CreateVsPathContextWithConfiguration {
+    param($context)
+
+	# Arrange
+	$p = New-ClassLibrary
+
+	$solutionFile = Get-SolutionFullName
+	$solutionDir = Split-Path $solutionFile -Parent
+
+	$userPackageFolder = Join-Path $solutionDir "userPackageFolder"
+	$fallbackPackageFolderA = Join-Path $solutionDir "fallbackPackageFolderA"
+	$fallbackPackageFolderB = Join-Path $solutionDir "fallbackPackageFolderB"
+
+	$settingFile = Join-Path $solutionDir "nuget.config"
+	$settingFileContent =@"
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <config>
+    <add key="globalPackagesFolder" value="{0}" />
+  </config>
+  <fallbackPackageFolders>
+    <add key="a" value="{1}" />
+	<add key="b" value="{2}" />
+  </fallbackPackageFolders>
+</configuration>
+"@
+
+	$settingFileContent -f $userPackageFolder, $fallbackPackageFolderA, $fallbackPackageFolderB `
+	    | Out-File -Encoding "UTF8" $settingFile
+
+	SaveAs-Solution($solutionFile)
+	Close-Solution
+	Open-Solution $solutionFile
+
+	$p = Get-Project
+
+	# Act
+	$context = [API.Test.InternalAPITestHook]::GetVsPathContext($p.UniqueName)
+
+	# Assert
+	Assert-AreEqual $userPackageFolder $context.UserPackageFolder
+	Assert-AreEqual 2 $context.FallbackPackageFolders.Count
+	Assert-AreEqual $fallbackPackageFolderA $context.FallbackPackageFolders[0]
+	Assert-AreEqual $fallbackPackageFolderB $context.FallbackPackageFolders[1]
+}
+
+function Test-CreateVsPathContextWithoutConfiguration {
+    param($context)
+
+	# Arrange
+	$p = New-ClassLibrary
+
+	# Act
+	$context = [API.Test.InternalAPITestHook]::GetVsPathContext($p.UniqueName)
+
+	# Assert
+	Assert-NotNull $context.UserPackageFolder
+}
+
+function Test-CreateVsPathContextUsesAssetsFileIfAvailable {
+    param($context)
+
+	# Arrange
+	$p = New-BuildIntegratedProj UAPApp
+
+    Install-Package NuGet.Versioning -ProjectName $p.Name -version 1.0.7
+	
+	$solutionFile = Get-SolutionFullName
+	$solutionDir = Split-Path $solutionFile -Parent
+
+	$userPackageFolder = Join-Path $solutionDir "userPackageFolder"
+
+	$settingFile = Join-Path $solutionDir "nuget.config"
+	$settingFileContent =@"
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <config>
+    <add key="globalPackagesFolder" value="{0}" />
+  </config>
+</configuration>
+"@
+
+	$settingFileContent -f $userPackageFolder | Out-File -Encoding "UTF8" $settingFile
+
+	SaveAs-Solution($solutionFile)
+	Close-Solution
+	Open-Solution $solutionFile
+
+	$p = Get-Project
+	
+	# Act
+	$context = [API.Test.InternalAPITestHook]::GetVsPathContext($p.UniqueName)
+
+	# Assert
+	Assert-NotNull $context.UserPackageFolder
+	Assert-NotEqual $userPackageFolder $context.UserPackageFolder
+}
