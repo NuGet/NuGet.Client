@@ -103,7 +103,7 @@ namespace NuGet.PackageManagement.UI
 
         private bool PromptForPackageManagementFormatImpl(PackageManagementFormat selectedFormat)
         {
-            var packageFormatWindow = new PackageManagementFormatWindow(_context);
+            var packageFormatWindow = new PackageManagementFormatWindow(UIContext);
             packageFormatWindow.DataContext = selectedFormat;
             var dialogResult = packageFormatWindow.ShowModal();
             return dialogResult ?? false;
@@ -115,7 +115,7 @@ namespace NuGet.PackageManagement.UI
 
             foreach (var project in msBuildProjects)
             {
-                var newProject = await this._context.SolutionManager.UpdateNuGetProjectToPackageRef(project);
+                var newProject = await UIContext.SolutionManager.UpdateNuGetProjectToPackageRef(project);
 
                 if (newProject != null)
                 {
