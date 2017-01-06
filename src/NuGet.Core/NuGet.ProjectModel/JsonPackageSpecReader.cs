@@ -211,6 +211,7 @@ namespace NuGet.ProjectModel
             msbuildMetadata.CrossTargeting = rawMSBuildMetadata.GetValue<bool>("crossTargeting");
             msbuildMetadata.LegacyPackagesDirectory = rawMSBuildMetadata.GetValue<bool>("legacyPackagesDirectory");
             msbuildMetadata.ValidateRuntimeAssets = rawMSBuildMetadata.GetValue<bool>("validateRuntimeAssets");
+            msbuildMetadata.SkipContentFileWrite = rawMSBuildMetadata.GetValue<bool>("skipContentFileWrite");
 
             msbuildMetadata.Sources = new List<PackageSource>();
 

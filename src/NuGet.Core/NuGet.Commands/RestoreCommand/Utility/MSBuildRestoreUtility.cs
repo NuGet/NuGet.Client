@@ -208,6 +208,9 @@ namespace NuGet.Commands
 
                     // ValidateRuntimeAssets compat check
                     result.RestoreMetadata.ValidateRuntimeAssets = IsPropertyTrue(specItem, "ValidateRuntimeAssets");
+
+                    // True for .NETCore projects.
+                    result.RestoreMetadata.SkipContentFileWrite = IsPropertyTrue(specItem, "SkipContentFileWrite");
                 }
 
                 if (restoreType == ProjectStyle.ProjectJson)
