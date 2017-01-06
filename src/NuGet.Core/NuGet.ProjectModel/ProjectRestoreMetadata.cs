@@ -89,6 +89,11 @@ namespace NuGet.ProjectModel
         /// </summary>
         public bool ValidateRuntimeAssets { get; set; }
 
+        /// <summary>
+        /// True if this is an XPlat PackageReference project.
+        /// </summary>
+        public bool SkipContentFileWrite { get; set; }
+
         public override int GetHashCode()
         {
             var hashCode = new HashCodeCombiner();
@@ -108,6 +113,7 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(LegacyPackagesDirectory);
             hashCode.AddObject(Files);
             hashCode.AddObject(ValidateRuntimeAssets);
+            hashCode.AddObject(SkipContentFileWrite);
 
             return hashCode.CombinedHash;
         }
@@ -143,6 +149,7 @@ namespace NuGet.ProjectModel
                    CrossTargeting == other.CrossTargeting &&
                    LegacyPackagesDirectory == other.LegacyPackagesDirectory &&
                    ValidateRuntimeAssets == other.ValidateRuntimeAssets &&
+                   SkipContentFileWrite == other.SkipContentFileWrite &&
                    EqualityUtility.SequenceEqualWithNullCheck(Files, other.Files);
         }
     }

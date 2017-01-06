@@ -517,9 +517,9 @@ namespace NuGet.Commands
                     props.AddRange(GenerateGroupsWithConditions(buildCrossPropsGroup, isMultiTargeting, CrossTargetingCondition));
                 }
 
-                // ContentFiles are read by the build task, not by NuGet
-                // for UAP with project.json.
-                if (request.ProjectStyle != ProjectStyle.ProjectJson)
+                // Write out contentFiles only for XPlat PackageReference projects.
+                if (request.ProjectStyle != ProjectStyle.ProjectJson
+                    && request.Project.RestoreMetadata?.SkipContentFileWrite != true)
                 {
                     // Create a group for every package, with the nearest from each of allLanguages
                     props.AddRange(sortedPackages.Select(pkg =>

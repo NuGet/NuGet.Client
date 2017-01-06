@@ -144,6 +144,14 @@ namespace NuGet.ProjectModel
                     msbuildMetadata.ValidateRuntimeAssets.ToString());
             }
 
+            if (msbuildMetadata.SkipContentFileWrite)
+            {
+                SetValue(
+                    writer,
+                    "skipContentFileWrite",
+                    msbuildMetadata.SkipContentFileWrite.ToString());
+            }
+
             SetArrayValue(writer, "fallbackFolders", msbuildMetadata.FallbackFolders);
             SetArrayValue(writer, "originalTargetFrameworks", msbuildMetadata.OriginalTargetFrameworks);
 

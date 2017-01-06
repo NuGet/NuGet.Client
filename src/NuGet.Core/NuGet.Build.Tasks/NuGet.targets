@@ -400,7 +400,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' AND '$(TargetFrameworks)' != '' ">
       <_RestoreCrossTargeting>true</_RestoreCrossTargeting>
     </PropertyGroup>
-
+    
+    <!-- Determine if ContentFiles should be written by NuGet -->
+    <PropertyGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' AND '$(_RestoreSkipContentFileWrite)' == '' ">
+      <_RestoreSkipContentFileWrite Condition=" '$(TargetFrameworks)' == '' AND '$(TargetFramework)' == '' ">true</_RestoreSkipContentFileWrite>
+    </PropertyGroup>
+    
     <!-- Write properties for the top level entry point -->
     <ItemGroup Condition=" '$(RestoreProjectStyle)' == 'PackageReference' ">
       <_RestoreGraphEntry Include="$([System.Guid]::NewGuid())">
@@ -420,6 +425,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <CrossTargeting>$(_RestoreCrossTargeting)</CrossTargeting>
         <RestoreLegacyPackagesDirectory>$(RestoreLegacyPackagesDirectory)</RestoreLegacyPackagesDirectory>
         <ValidateRuntimeAssets>$(ValidateRuntimeIdentifierCompatibility)</ValidateRuntimeAssets>
+        <SkipContentFileWrite>$(_RestoreSkipContentFileWrite)</SkipContentFileWrite>
       </_RestoreGraphEntry>
     </ItemGroup>
 
