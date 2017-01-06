@@ -43,6 +43,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <!-- RuntimeIdentifier compatibility check -->
     <ValidateRuntimeIdentifierCompatibility Condition=" '$(ValidateRuntimeIdentifierCompatibility)' == '' ">false</ValidateRuntimeIdentifierCompatibility>
+    <!-- Error handling while walking projects -->
+    <RestoreContinueOnError Condition=" '$(RestoreContinueOnError)' == '' ">WarnAndContinue</RestoreContinueOnError>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -128,13 +130,14 @@ Copyright (c) .NET Foundation. All rights reserved.
       RestoreRecursive="$(RestoreRecursive)" />
   </Target>
 
-  <!--
+<!--
     ============================================================
     _LoadRestoreGraphEntryPoints
     Find project entry points and load them into items.
     ============================================================
   -->
-  <Target Name="_LoadRestoreGraphEntryPoints">
+  <Target Name="_LoadRestoreGraphEntryPoints" Returns="@(RestoreGraphProjectInputItems)">
+
     <!-- Allow overriding items with RestoreGraphProjectInput -->
     <ItemGroup Condition=" @(RestoreGraphProjectInputItems) == '' ">
       <RestoreGraphProjectInputItems Include="$(RestoreGraphProjectInput)" />
@@ -157,15 +160,29 @@ Copyright (c) .NET Foundation. All rights reserved.
     Filter out unsupported project entry points.
     ============================================================
   -->
-  <Target Name="_FilterRestoreGraphProjectInputItems" DependsOnTargets="_LoadRestoreGraphEntryPoints">
-    <ItemGroup>
+  <Target Name="_FilterRestoreGraphProjectInputItems" DependsOnTargets="_LoadRestoreGraphEntryPoints"
+    Returns="@(FilteredRestoreGraphProjectInputItems)">
+
+    <!-- Filter to a list of known supported types -->
+    <ItemGroup Condition=" '$(FilterRestoreProjectsInputs)' == 'strict' ">
       <FilteredRestoreGraphProjectInputItems 
        Include="@(RestoreGraphProjectInputItems)"
-       Condition="'%(RestoreGraphProjectInputItems.Extension)' == '.csproj' Or 
-                  '%(RestoreGraphProjectInputItems.Extension)' == '.vbproj' Or
-                  '%(RestoreGraphProjectInputItems.Extension)' == '.fsproj' Or
-                  '%(RestoreGraphProjectInputItems.Extension)' == '.nuproj' Or
-                  '%(RestoreGraphProjectInputItems.Extension)' == '.vcxproj'"/>
+       Condition=" '%(RestoreGraphProjectInputItems.Extension)' == '.csproj' Or
+                   '%(RestoreGraphProjectInputItems.Extension)' == '.vbproj' Or
+                   '%(RestoreGraphProjectInputItems.Extension)' == '.fsproj' Or
+                   '%(RestoreGraphProjectInputItems.Extension)' == '.nuproj' Or
+                   '%(RestoreGraphProjectInputItems.Extension)' == '.msbuildproj' Or
+                   '%(RestoreGraphProjectInputItems.Extension)' == '.vcxproj' " />
+    </ItemGroup>
+
+    <!-- Filter out disallowed types -->
+    <ItemGroup Condition=" '$(FilterRestoreProjectsInputs)' != 'strict' ">
+      <FilteredRestoreGraphProjectInputItems 
+       Include="@(RestoreGraphProjectInputItems)"
+       Condition=" '%(RestoreGraphProjectInputItems.Extension)' != '.metaproj' 
+                   AND '%(RestoreGraphProjectInputItems.Extension)' != '.shproj'
+                   AND '%(RestoreGraphProjectInputItems.Extension)' != '.vcxitems'
+                   AND '%(RestoreGraphProjectInputItems.Extension)' != '' " />
     </ItemGroup>
   </Target>
 
@@ -175,7 +192,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Entry point for creating the project to project restore graph.
     ============================================================
   -->
-  <Target Name="_GenerateRestoreGraph" DependsOnTargets="_FilterRestoreGraphProjectInputItems">
+<Target Name="_GenerateRestoreGraph" DependsOnTargets="_FilterRestoreGraphProjectInputItems">
     <Message Text="Generating dg file" Importance="low" />
     <Message Text="%(FilteredRestoreGraphProjectInputItems.Identity)" Importance="low" />
 
@@ -183,6 +200,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MsBuild
         Projects="@(FilteredRestoreGraphProjectInputItems)"
         Targets="_GenerateRestoreGraphProjectEntry"
+        ContinueOnError="$(RestoreContinueOnError)"
         Properties="%(_MSBuildProjectReferenceExistent.SetConfiguration);
                     %(_MSBuildProjectReferenceExistent.SetPlatform);
                     $(_GenerateRestoreGraphProjectEntryInputProperties)"
@@ -439,6 +457,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GenerateRestoreGraphWalkPerFramework"
+      ContinueOnError="$(RestoreContinueOnError)"
       Properties="TargetFramework=%(_RestoreTargetFrameworksOutputFiltered.Identity);
                   %(_MSBuildProjectReferenceExistent.SetConfiguration);
                   %(_MSBuildProjectReferenceExistent.SetPlatform);
@@ -465,6 +484,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GenerateRestoreProjectReferencePaths"
+      ContinueOnError="$(RestoreContinueOnError)"
       Properties="TargetFramework=%(_RestoreTargetFrameworksOutputFiltered.Identity);
                   %(_MSBuildProjectReferenceExistent.SetConfiguration);
                   %(_MSBuildProjectReferenceExistent.SetPlatform);
@@ -491,6 +511,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MSBuild
       Projects="@(RestoreGraphProjectFullPathForOutput)"
       Targets="_GenerateRestoreGraphWalk"
+      ContinueOnError="$(RestoreContinueOnError)"
       Properties="%(_MSBuildProjectReferenceExistent.SetConfiguration);
                   %(_MSBuildProjectReferenceExistent.SetPlatform);
                   $(_GenerateRestoreGraphProjectEntryInputProperties)"
