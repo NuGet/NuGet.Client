@@ -32,7 +32,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 
             var target = new VsPathContextProvider(
                 settings.Object,
-                solutionManager.Object);
+                solutionManager.Object,
+                getLockFileOrNullAsync: null);
 
             // Act
             var actual = await target.CreateAsync(project: Mock.Of<Project>(), token: CancellationToken.None);
@@ -56,7 +57,10 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 });
             var solutionManager = new Mock<IVsSolutionManager>();
 
-            var target = new VsPathContextProvider(settings.Object, solutionManager.Object);
+            var target = new VsPathContextProvider(
+                settings.Object,
+                solutionManager.Object,
+                getLockFileOrNullAsync: null);
 
             // Act
             var actual = await target.CreateAsync(project: Mock.Of<Project>(), token: CancellationToken.None);
@@ -86,7 +90,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             var target = new VsPathContextProvider(
                 settings.Object,
                 solutionManager.Object,
-                project =>
+                getLockFileOrNullAsync: project =>
                 {
                     var lockFile = new LockFile();
                     lockFile.PackageFolders = new List<LockFileItem>

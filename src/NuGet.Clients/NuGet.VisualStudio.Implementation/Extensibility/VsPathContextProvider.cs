@@ -48,7 +48,7 @@ namespace NuGet.VisualStudio
         public VsPathContextProvider(
             ISettings settings,
             IVsSolutionManager solutionManager,
-            Func<BuildIntegratedNuGetProject, Task<LockFile>> getLockFileOrNullAsync = null)
+            Func<BuildIntegratedNuGetProject, Task<LockFile>> getLockFileOrNullAsync)
         {
             if (settings == null)
             {
