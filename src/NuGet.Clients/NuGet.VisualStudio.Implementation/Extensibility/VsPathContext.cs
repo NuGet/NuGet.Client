@@ -19,7 +19,7 @@ namespace NuGet.VisualStudio
 
             if (fallbackPackageFolders == null)
             {
-                throw new ArgumentNullException(nameof(FallbackPackageFolders));
+                throw new ArgumentNullException(nameof(fallbackPackageFolders));
             }
 
             UserPackageFolder = userPackageFolder;
