@@ -48,7 +48,7 @@ namespace NuGet.Client.Test
             });
 
             // Act
-            var groups = collection.FindItemGroups(conventions.Patterns.CompileAssemblies)
+            var groups = collection.FindItemGroups(conventions.Patterns.CompileRefAssemblies)
                 .OrderBy(group => ((NuGetFramework)group.Properties["tfm"]).GetShortFolderName())
                 .ToList();
 
