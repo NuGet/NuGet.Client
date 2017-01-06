@@ -73,7 +73,7 @@ namespace NuGet.VisualStudio
             }
 
             // Try to read the path context from the assets file.
-            var outputPathContext = await GetPathContextFromAssetsFile(project);
+            var outputPathContext = await GetPathContextFromAssetsFileAsync(project);
 
             // Fallback to reading the path context from the solution's settings. Note that project level settings in
             // VS are not currently supported.
@@ -89,7 +89,7 @@ namespace NuGet.VisualStudio
             return outputPathContext;
         }
 
-        private async Task<IVsPathContext> GetPathContextFromAssetsFile(Project project)
+        private async Task<IVsPathContext> GetPathContextFromAssetsFileAsync(Project project)
         {
             var nuGetProject = await _solutionManager.Value.GetOrCreateProjectAsync(
                 project,
