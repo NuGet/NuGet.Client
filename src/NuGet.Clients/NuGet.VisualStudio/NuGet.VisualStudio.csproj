@@ -65,8 +65,8 @@
     <Compile Include="Extensibility\IVsFrameworkParser.cs" />
     <Compile Include="Extensibility\IVsGlobalPackagesInitScriptExecutor.cs" />
     <Compile Include="Extensibility\IVsFrameworkCompatibility.cs" />
-    <Compile Include="Extensibility\IVsNuGetPathContext.cs" />
-    <Compile Include="Extensibility\IVsNuGetPathContextFactory.cs" />
+    <Compile Include="Extensibility\IVsPathContext.cs" />
+    <Compile Include="Extensibility\IVsPathContextFactory.cs" />
     <Compile Include="Extensibility\IVsPackageInstaller2.cs" />
     <Compile Include="Extensibility\IVsPackageInstallerProjectEvents.cs" />
     <Compile Include="Extensibility\IVsPackageSourceProvider.cs" />

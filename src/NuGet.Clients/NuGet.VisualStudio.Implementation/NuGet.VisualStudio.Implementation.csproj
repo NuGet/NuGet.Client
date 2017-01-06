@@ -49,8 +49,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommonResources.cs" />
-    <Compile Include="Extensibility\VsNuGetPathContext.cs" />
-    <Compile Include="Extensibility\VsNuGetPathContextFactory.cs" />
+    <Compile Include="Extensibility\VsPathContext.cs" />
+    <Compile Include="Extensibility\VsPathContextProvider.cs" />
     <Compile Include="Extensibility\VsPackageInstallerProjectEvents.cs" />
     <Compile Include="Extensibility\VsPackageProjectMetadata.cs" />
     <Compile Include="Extensibility\VsSemanticVersionComparer.cs" />

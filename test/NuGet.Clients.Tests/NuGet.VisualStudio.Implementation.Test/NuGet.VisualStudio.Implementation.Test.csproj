@@ -47,7 +47,7 @@
     <Compile Include="Extensibility\VsFrameworkCompatibilityTests.cs" />
     <Compile Include="Extensibility\VsFrameworkParserTests.cs" />
     <Compile Include="Extensibility\VsGlobalPackagesInitScriptExecutorTests.cs" />
-    <Compile Include="Extensibility\VsNuGetPathContextFactoryTest.cs" />
+    <Compile Include="Extensibility\VsPathContextProviderTests.cs" />
     <Compile Include="Extensibility\VsSemanticVersionComparerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

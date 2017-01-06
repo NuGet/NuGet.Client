@@ -77,10 +77,10 @@ namespace API.Test
             }
         }
 
-        public static IVsNuGetPathContext GetVsNuGetPathContext(string projectUniqueName)
+        public static IVsPathContext GetVsPathContext(string projectUniqueName)
         {
             var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
-            var factory = ServiceLocator.GetInstance<IVsNuGetPathContextFactory>();
+            var factory = ServiceLocator.GetInstance<IVsPathContextProvider>();
 
             foreach (EnvDTE.Project project in dte.Solution.Projects)
             {

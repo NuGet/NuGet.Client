@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
@@ -16,7 +17,7 @@ using Xunit;
 
 namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 {
-    public class VsNuGetPathContextFactoryTest
+    public class VsPathContextProviderTests
     {
         [Fact]
         public async Task CreateAsync_UsesConfiguredUserPackageFolder()
@@ -29,7 +30,9 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 .Returns(() => "solution/packages");
             var solutionManager = new Mock<IVsSolutionManager>();
 
-            var target = new VsNuGetPathContextFactory(settings.Object, solutionManager.Object);
+            var target = new VsPathContextProvider(
+                settings.Object,
+                solutionManager.Object);
 
             // Act
             var actual = await target.CreateAsync(project: Mock.Of<Project>(), token: CancellationToken.None);
@@ -53,15 +56,16 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 });
             var solutionManager = new Mock<IVsSolutionManager>();
 
-            var target = new VsNuGetPathContextFactory(settings.Object, solutionManager.Object);
+            var target = new VsPathContextProvider(settings.Object, solutionManager.Object);
 
             // Act
             var actual = await target.CreateAsync(project: Mock.Of<Project>(), token: CancellationToken.None);
 
             // Assert
-            Assert.Equal(2, actual.FallbackPackageFolders.Count);
-            Assert.Equal(Path.Combine(currentDirectory, "solution", "packagesA"), actual.FallbackPackageFolders[0]);
-            Assert.Equal(Path.Combine(currentDirectory, "solution", "packagesB"), actual.FallbackPackageFolders[1]);
+            var actualFallback = actual.FallbackPackageFolders.Cast<string>().ToList();
+            Assert.Equal(2, actualFallback.Count);
+            Assert.Equal(Path.Combine(currentDirectory, "solution", "packagesA"), actualFallback[0]);
+            Assert.Equal(Path.Combine(currentDirectory, "solution", "packagesB"), actualFallback[1]);
         }
 
         [Fact]
@@ -79,28 +83,31 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             var fallbackA = Path.GetFullPath("packagesB");
             var fallbackB = Path.GetFullPath("packagesC");
 
-            var target = new VsNuGetPathContextFactory(settings.Object, solutionManager.Object);
-            target.GetLockFileOrNullAsync = project =>
-            {
-                var lockFile = new LockFile();
-                lockFile.PackageFolders = new List<LockFileItem>
+            var target = new VsPathContextProvider(
+                settings.Object,
+                solutionManager.Object,
+                project =>
+                {
+                    var lockFile = new LockFile();
+                    lockFile.PackageFolders = new List<LockFileItem>
                 {
                     new LockFileItem(userPackageFolder),
                     new LockFileItem(fallbackA),
                     new LockFileItem(fallbackB),
                 };
 
-                return Task.FromResult(lockFile);
-            };
+                    return Task.FromResult(lockFile);
+                });
 
             // Act
             var actual = await target.CreateAsync(project: Mock.Of<Project>(), token: CancellationToken.None);
 
             // Assert
+            var actualFallback = actual.FallbackPackageFolders.Cast<string>().ToList();
             Assert.Equal(userPackageFolder, actual.UserPackageFolder);
-            Assert.Equal(2, actual.FallbackPackageFolders.Count);
-            Assert.Equal(fallbackA, actual.FallbackPackageFolders[0]);
-            Assert.Equal(fallbackB, actual.FallbackPackageFolders[1]);
+            Assert.Equal(2, actualFallback.Count);
+            Assert.Equal(fallbackA, actualFallback[0]);
+            Assert.Equal(fallbackB, actualFallback[1]);
         }
     }
 }

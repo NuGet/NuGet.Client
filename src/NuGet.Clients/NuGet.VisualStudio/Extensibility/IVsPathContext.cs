@@ -1,7 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
+using System.Collections;
 using System.Runtime.InteropServices;
 
 namespace NuGet.VisualStudio
@@ -11,7 +11,7 @@ namespace NuGet.VisualStudio
     /// </summary>
     [ComImport]
     [Guid("24A1A187-75EE-4296-A8B3-59F0E0707119")]
-    public interface IVsNuGetPathContext
+    public interface IVsPathContext
     {
         /// <summary>
         /// User package folder directory. The path returned is an absolute path.
@@ -20,8 +20,9 @@ namespace NuGet.VisualStudio
 
         /// <summary>
         /// Fallback package folder locations. The paths (if any) in the returned list are absolute paths. If no
-        /// fallback package folders are configured, an empty list is returned.
+        /// fallback package folders are configured, an empty list is returned. The item type of this sequence is
+        /// <see cref="string"/>.
         /// </summary>
-        IReadOnlyList<string> FallbackPackageFolders { get; }
+        IEnumerable FallbackPackageFolders { get; }
     }
 }

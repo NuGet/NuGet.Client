@@ -15,25 +15,57 @@ using NuGet.ProjectModel;
 
 namespace NuGet.VisualStudio
 {
-    [Export(typeof(IVsNuGetPathContextFactory))]
-    public class VsNuGetPathContextFactory : IVsNuGetPathContextFactory
+    [Export(typeof(IVsPathContextProvider))]
+    public sealed class VsPathContextProvider : IVsPathContextProvider
     {
-        private readonly ISettings _settings;
-        private readonly IVsSolutionManager _solutionManager;
+        private readonly Lazy<ISettings> _settings;
+        private readonly Lazy<IVsSolutionManager> _solutionManager;
+        private readonly Func<BuildIntegratedNuGetProject, Task<LockFile>> _getLockFileOrNullAsync;
 
         [ImportingConstructor]
-        public VsNuGetPathContextFactory(ISettings settings, IVsSolutionManager solutionManager)
+        public VsPathContextProvider(
+            Lazy<ISettings> settings,
+            Lazy<IVsSolutionManager> solutionManager)
         {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
+            if (solutionManager == null)
+            {
+                throw new ArgumentNullException(nameof(solutionManager));
+            }
+
             _settings = settings;
             _solutionManager = solutionManager;
+            _getLockFileOrNullAsync = BuildIntegratedProjectUtility.GetLockFileOrNull;
         }
 
         /// <summary>
-        /// This property is used only for testing.
+        /// This constructor is just used for testing.
         /// </summary>
-        public Func<BuildIntegratedNuGetProject, Task<LockFile>> GetLockFileOrNullAsync { get; set; }
+        public VsPathContextProvider(
+            ISettings settings,
+            IVsSolutionManager solutionManager,
+            Func<BuildIntegratedNuGetProject, Task<LockFile>> getLockFileOrNullAsync = null)
+        {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
 
-        public async Task<IVsNuGetPathContext> CreateAsync(Project project, CancellationToken token)
+            if (solutionManager == null)
+            {
+                throw new ArgumentNullException(nameof(solutionManager));
+            }
+
+            _settings = new Lazy<ISettings>(() => settings);
+            _solutionManager = new Lazy<IVsSolutionManager>(() => solutionManager);
+            _getLockFileOrNullAsync = getLockFileOrNullAsync ?? BuildIntegratedProjectUtility.GetLockFileOrNull;
+        }
+
+        public async Task<IVsPathContext> CreateAsync(Project project, CancellationToken token)
         {
             if (project == null)
             {
@@ -47,9 +79,9 @@ namespace NuGet.VisualStudio
             // VS are not currently supported.
             if (outputPathContext == null)
             {
-                var internalPathContext = NuGetPathContext.Create(_settings);
+                var internalPathContext = NuGetPathContext.Create(_settings.Value);
 
-                outputPathContext = new VsNuGetPathContext(
+                outputPathContext = new VsPathContext(
                     internalPathContext.UserPackageFolder,
                     internalPathContext.FallbackPackageFolders);
             }
@@ -57,9 +89,9 @@ namespace NuGet.VisualStudio
             return outputPathContext;
         }
 
-        private async Task<IVsNuGetPathContext> GetPathContextFromAssetsFile(Project project)
+        private async Task<IVsPathContext> GetPathContextFromAssetsFile(Project project)
         {
-            var nuGetProject = await _solutionManager.GetOrCreateProjectAsync(
+            var nuGetProject = await _solutionManager.Value.GetOrCreateProjectAsync(
                 project,
                 new VSAPIProjectContext());
 
@@ -79,8 +111,7 @@ namespace NuGet.VisualStudio
 
             // It's possible the lock file doesn't exist or it's an older format that doesn't have the package folders
             // property persisted.
-            var getLockFileOrNullAsync = GetLockFileOrNullAsync ?? BuildIntegratedProjectUtility.GetLockFileOrNull;
-            var lockFile = await getLockFileOrNullAsync(buildIntegratedProject);
+            var lockFile = await _getLockFileOrNullAsync(buildIntegratedProject);
             if (lockFile == null ||
                 lockFile.PackageFolders == null ||
                 lockFile.PackageFolders.Count == 0)
@@ -98,7 +129,7 @@ namespace NuGet.VisualStudio
             var userPackageFolder = packageFolders[0];
             var fallbackPackageFolders = packageFolders.Skip(1);
 
-            return new VsNuGetPathContext(userPackageFolder, fallbackPackageFolders);
+            return new VsPathContext(userPackageFolder, fallbackPackageFolders);
         }
     }
 }

@@ -703,7 +703,7 @@ function Test-BatchEventsApi
     Assert-True $result
 }
 
-function Test-CreateVsNuGetPathContextWithConfiguration {
+function Test-CreateVsPathContextWithConfiguration {
     param($context)
 
 	# Arrange
@@ -738,12 +738,9 @@ function Test-CreateVsNuGetPathContextWithConfiguration {
 	Open-Solution $solutionFile
 
 	$p = Get-Project
-	
-	$cm = Get-VsComponentModel
-    $service = $cm.GetService([NuGet.VisualStudio.IVsNuGetPathContextFactory])
 
 	# Act
-	$context = [API.Test.InternalAPITestHook]::GetVsNuGetPathContext($p.UniqueName)
+	$context = [API.Test.InternalAPITestHook]::GetVsPathContext($p.UniqueName)
 
 	# Assert
 	Assert-AreEqual $userPackageFolder $context.UserPackageFolder
@@ -752,23 +749,20 @@ function Test-CreateVsNuGetPathContextWithConfiguration {
 	Assert-AreEqual $fallbackPackageFolderB $context.FallbackPackageFolders[1]
 }
 
-function Test-CreateVsNuGetPathContextWithoutConfiguration {
+function Test-CreateVsPathContextWithoutConfiguration {
     param($context)
 
 	# Arrange
 	$p = New-ClassLibrary
 
-	$cm = Get-VsComponentModel
-    $service = $cm.GetService([NuGet.VisualStudio.IVsNuGetPathContextFactory])
-
 	# Act
-	$context = [API.Test.InternalAPITestHook]::GetVsNuGetPathContext($p.UniqueName)
+	$context = [API.Test.InternalAPITestHook]::GetVsPathContext($p.UniqueName)
 
 	# Assert
 	Assert-NotNull $context.UserPackageFolder
 }
 
-function Test-CreateVsNuGetPathContextUsesAssetsFileIfAvailable {
+function Test-CreateVsPathContextUsesAssetsFileIfAvailable {
     param($context)
 
 	# Arrange
@@ -798,12 +792,9 @@ function Test-CreateVsNuGetPathContextUsesAssetsFileIfAvailable {
 	Open-Solution $solutionFile
 
 	$p = Get-Project
-
-	$cm = Get-VsComponentModel
-    $service = $cm.GetService([NuGet.VisualStudio.IVsNuGetPathContextFactory])
 	
 	# Act
-	$context = [API.Test.InternalAPITestHook]::GetVsNuGetPathContext($p.UniqueName)
+	$context = [API.Test.InternalAPITestHook]::GetVsPathContext($p.UniqueName)
 
 	# Assert
 	Assert-NotNull $context.UserPackageFolder
