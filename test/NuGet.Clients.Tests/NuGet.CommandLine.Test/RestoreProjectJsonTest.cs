@@ -838,7 +838,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
-                Assert.True(test1Lock.Exists);
+                Assert.False(test1Lock.Exists);
             }
         }
 
@@ -943,7 +943,7 @@ namespace NuGet.CommandLine.Test
                 var test2Lock = new FileInfo(Path.Combine(projectDir2, "project.lock.json"));
 
                 Assert.True(test1Lock.Exists);
-                Assert.True(test2Lock.Exists);
+                Assert.False(test2Lock.Exists);
             }
         }
 

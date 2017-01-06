@@ -143,6 +143,9 @@ namespace NuGet.CommandLine
                 // Add all depenencies as top level restore projects if recursive is set
                 argumentBuilder.Append($" /p:RestoreRecursive={recursive} ");
 
+                // Filter out unknown project types and avoid errors from projects that do not support CustomAfterTargets
+                argumentBuilder.Append($" /p:FilterRestoreProjectsInputs=strict /p:RestoreContinueOnError=WarnAndContinue ");
+
                 // Projects to restore
                 bool isMono = RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows;
 
@@ -225,7 +228,7 @@ namespace NuGet.CommandLine
 
                 DependencyGraphSpec spec = null;
 
-                if (File.Exists(resultsPath))
+                if (File.Exists(resultsPath) && new FileInfo(resultsPath).Length != 0)
                 {
                     spec = DependencyGraphSpec.Load(resultsPath);
                     File.Delete(resultsPath);
