@@ -2,9 +2,7 @@
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props')" />
   <Import Project="..\..\..\build\common.props" />
-  <Import Condition="'$(VisualStudioVersion)' == '15.0'" Project="$(VSSDKRoot)\build\Microsoft.VSSDK.BuildTools.props" />
-  <Import Condition="'$(VisualStudioVersion)' == '14.0'" Project="$(VSSDKRoot)\build\Microsoft.VisualStudio.Sdk.BuildTasks.14.0.props" />
-
+  <Import Project="$(VSSDKRoot)\build\Microsoft.VSSDK.BuildTools.props" />
   <PropertyGroup>
     <NuGetPackageImportStamp>d386b432</NuGetPackageImportStamp>
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
@@ -310,9 +308,7 @@
   <Import Project="$(EnlistmentRoot)\build\common.targets" />
   <Import Project="$(EnlistmentRoot)\build\sign.targets" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" />
-  <Import Condition="'$(VisualStudioVersion)' == '15.0'" Project="$(VSSDKRoot)\build\Microsoft.VSSDK.BuildTools.targets" />
-  <Import Condition="'$(VisualStudioVersion)' == '14.0'" Project="$(VSSDKRoot)\build\Microsoft.VisualStudio.Sdk.BuildTasks.14.0.targets" />
-
+  <Import Project="$(VSSDKRoot)\build\Microsoft.VSSDK.BuildTools.targets" />
   <Target Name="FindSourceVsixManifest">
     <ItemGroup Condition="'$(VisualStudioVersion)' == '14.0'">
       <SourceVsixManifest Include="source.extension.vs14.vsixmanifest" />

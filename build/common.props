@@ -57,7 +57,7 @@
   <PropertyGroup Condition="'$(VisualStudioVersion)' == '14.0'">
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
     <DefineConstants>$(DefineConstants);VS14</DefineConstants>
-    <VSSDKRoot>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.Sdk.BuildTasks.14.0.14.0.12-pre</VSSDKRoot>
+    <VSSDKRoot>$(EnlistmentRoot)\packages\Microsoft.VSSDK.BuildTools.14.3.25420</VSSDKRoot>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(VSSDKRoot)\tools</VSToolsPath>
   </PropertyGroup>
 
