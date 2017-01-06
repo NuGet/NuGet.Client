@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.LocalRepositories;
 
-namespace NuGet.Protocol.LegacyFeed
+namespace NuGet.Protocol
 {
     public class V2FeedListResourceProvider : ResourceProvider
     {

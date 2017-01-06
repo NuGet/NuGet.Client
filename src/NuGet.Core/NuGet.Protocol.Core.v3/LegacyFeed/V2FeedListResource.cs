@@ -9,9 +9,8 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.LegacyFeed;
 
-namespace NuGet.Protocol.LegacyFeed
+namespace NuGet.Protocol
 {
     public class V2FeedListResource : ListResource
     {
@@ -110,7 +109,7 @@ namespace NuGet.Protocol.LegacyFeed
     }
 }
 
-class EnumerableAsync<T> : IEnumerableAsync<T>
+internal class EnumerableAsync<T> : IEnumerableAsync<T>
 {
     private readonly SearchFilter _filter;
     private readonly ILogger _logger;

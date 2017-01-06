@@ -6,9 +6,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.CommandLine;
-using NuGet.Commands;
-using NuGet.Commands.ListCommand;
 using NuGet.Protocol.Core.Types;
+using NuGet.Commands;
 
 namespace NuGet.CommandLine
 {

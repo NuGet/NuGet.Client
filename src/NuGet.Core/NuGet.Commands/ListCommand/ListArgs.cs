@@ -7,7 +7,7 @@ using System.Threading;
 using NuGet.Common;
 using NuGet.Configuration;
 
-namespace NuGet.Commands.ListCommand
+namespace NuGet.Commands
 {
     public class ListArgs
     {

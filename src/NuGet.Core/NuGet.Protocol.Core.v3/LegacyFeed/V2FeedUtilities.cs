@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
-namespace NuGet.Protocol.LegacyFeed
+namespace NuGet.Protocol
 {
     public class V2FeedUtilities
     {

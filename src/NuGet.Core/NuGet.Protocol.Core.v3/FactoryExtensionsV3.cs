@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.LegacyFeed;
 using NuGet.Protocol.LocalRepositories;
 
 namespace NuGet.Protocol
