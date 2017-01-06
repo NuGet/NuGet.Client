@@ -210,6 +210,12 @@ namespace NuGet.PackageManagement.UI
             {
                 uiService.BeginOperation();
 
+                var acceptedFormat = await CheckPackageManagementFormat(uiService, token);
+                if (!acceptedFormat)
+                {
+                    return;
+                }
+
                 TelemetryUtility.StartorResumeTimer();
 
                 var actions = await resolveActionsAsync();
@@ -325,6 +331,57 @@ namespace NuGet.PackageManagement.UI
 
                 ActionsTelemetryService.Instance.EmitActionEvent(actionTelemetryEvent, telemetryService.TelemetryEvents);
             }
+        }
+
+        private async Task<bool> CheckPackageManagementFormat(INuGetUI uiService, CancellationToken token)
+        {
+#if VS14
+            // don't show this dialog for VS 2015
+            return await Task.FromResult(true);
+#else
+            var newProjectNames = new List<string>();
+            var msBuildProjects = uiService.Projects.Where(project => project is MSBuildNuGetProject);
+
+            // get all packages.config based projects with no installed packages
+            foreach (var project in msBuildProjects)
+            {
+                if (!(await project.GetInstalledPackagesAsync(token)).Any())
+                {
+                    newProjectNames.Add(project.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+                }
+            }
+
+            // only show this dialog if there are any new project(s) with no installed packages.
+            if (newProjectNames.Count > 0)
+            {
+                var packageManagementFormat = new PackageManagementFormat(uiService.Settings);
+                if (packageManagementFormat.IsDisabled)
+                {
+                    // user disabled this prompt either through Tools->options or previous interaction of this dialog.
+                    // now check for default package format, if its set to PackageReference then update the project.
+                    if (packageManagementFormat.SelectedPackageManagementFormat == 1)
+                    {
+                        await uiService.UpdateNuGetProjectToPackageRef(msBuildProjects);
+                    }
+
+                    return true;
+                }
+
+                packageManagementFormat.ProjectNames = newProjectNames.OrderBy(name => name, StringComparer.OrdinalIgnoreCase).ToList();
+
+                // show dialog for package format selector
+                var result = uiService.PromptForPackageManagementFormat(packageManagementFormat);
+
+                // update nuget projects if user selected PackageReference option
+                if (result && packageManagementFormat.SelectedPackageManagementFormat == 1)
+                {
+                    await uiService.UpdateNuGetProjectToPackageRef(msBuildProjects);
+                }
+                return result;
+            }
+
+            return true;
+#endif
         }
 
         // Returns false if user doesn't accept license agreements.

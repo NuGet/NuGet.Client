@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Windows;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
@@ -16,6 +18,10 @@ namespace NuGet.PackageManagement.UI
     /// <remarks>This is not expected to be thread safe.</remarks>
     public interface INuGetUI
     {
+        bool PromptForPackageManagementFormat(PackageManagementFormat selectedFormat);
+
+        Task UpdateNuGetProjectToPackageRef(IEnumerable<NuGetProject> msBuildProjects);
+
         bool WarnAboutDotnetDeprecation(IEnumerable<NuGetProject> projects);
 
         bool PromptForLicenseAcceptance(IEnumerable<PackageLicenseInfo> packages);
@@ -97,5 +103,7 @@ namespace NuGet.PackageManagement.UI
         bool ForceRemove { get; }
 
         DependencyBehavior DependencyBehavior { get; }
+
+        Configuration.ISettings Settings { get; }
     }
 }

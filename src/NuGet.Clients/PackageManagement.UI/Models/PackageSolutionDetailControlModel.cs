@@ -222,6 +222,7 @@ namespace NuGet.PackageManagement.UI
             _solutionManager = solutionManager;
             _solutionManager.NuGetProjectAdded += SolutionProjectChanged;
             _solutionManager.NuGetProjectRemoved += SolutionProjectChanged;
+            _solutionManager.NuGetProjectUpdated += SolutionProjectChanged;
             _solutionManager.NuGetProjectRenamed += SolutionProjectChanged;
 
             // when the SelectedVersion is changed, we need to update CanInstall
@@ -258,6 +259,7 @@ namespace NuGet.PackageManagement.UI
             _solutionManager.NuGetProjectAdded -= SolutionProjectChanged;
             _solutionManager.NuGetProjectRemoved -= SolutionProjectChanged;
             _solutionManager.NuGetProjectRenamed -= SolutionProjectChanged;
+            _solutionManager.NuGetProjectUpdated -= SolutionProjectChanged;
 
             Options.SelectedChanged -= DependencyBehavior_SelectedChanged;
 

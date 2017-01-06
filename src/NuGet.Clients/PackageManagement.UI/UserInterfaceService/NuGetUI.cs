@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.VisualStudio.Shell;
@@ -89,6 +90,41 @@ namespace NuGet.PackageManagement.UI
                 var dialogResult = licenseWindow.ShowModal();
                 return dialogResult ?? false;
             }
+        }
+
+        public bool PromptForPackageManagementFormat(PackageManagementFormat selectedFormat)
+        {
+            var result = false;
+
+            UIDispatcher.Invoke(() => { result = PromptForPackageManagementFormatImpl(selectedFormat); });
+
+            return result;
+        }
+
+        private bool PromptForPackageManagementFormatImpl(PackageManagementFormat selectedFormat)
+        {
+            var packageFormatWindow = new PackageManagementFormatWindow(_context);
+            packageFormatWindow.DataContext = selectedFormat;
+            var dialogResult = packageFormatWindow.ShowModal();
+            return dialogResult ?? false;
+        }
+
+        public async System.Threading.Tasks.Task UpdateNuGetProjectToPackageRef(IEnumerable<NuGetProject> msBuildProjects)
+        {
+            var projects = Projects.ToList();
+
+            foreach (var project in msBuildProjects)
+            {
+                var newProject = await this._context.SolutionManager.UpdateNuGetProjectToPackageRef(project);
+
+                if (newProject != null)
+                {
+                    projects.Remove(project);
+                    projects.Add(newProject);
+                }
+            }
+
+            Projects = projects;
         }
 
         public void LaunchExternalLink(Uri url)
@@ -210,6 +246,21 @@ namespace NuGet.PackageManagement.UI
                 }
 
                 return sources;
+            }
+        }
+
+        public Configuration.ISettings Settings
+        {
+            get
+            {
+                Configuration.ISettings settings = null;
+
+                if (PackageManagerControl != null)
+                {
+                    UIDispatcher.Invoke(() => { settings = PackageManagerControl.Settings; });
+                }
+
+                return settings;
             }
         }
 

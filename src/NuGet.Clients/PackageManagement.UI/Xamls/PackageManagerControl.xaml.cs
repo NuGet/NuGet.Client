@@ -53,6 +53,8 @@ namespace NuGet.PackageManagement.UI
 
         public PackageManagerModel Model { get; }
 
+        public Configuration.ISettings Settings { get; }
+
         private PackageSourceMoniker SelectedSource
         {
             get
@@ -81,9 +83,10 @@ namespace NuGet.PackageManagement.UI
             _uiDispatcher = Dispatcher.CurrentDispatcher;
             _uiLogger = uiLogger;
             Model = model;
+            Settings = nugetSettings;
             if (!Model.IsSolution)
             {
-                _detailModel = new PackageDetailControlModel(Model.Context.Projects);
+                _detailModel = new PackageDetailControlModel(Model.Context.SolutionManager, Model.Context.Projects);
             }
             else
             {
@@ -140,6 +143,7 @@ namespace NuGet.PackageManagement.UI
             var solutionManager = Model.Context.SolutionManager;
             solutionManager.NuGetProjectAdded += SolutionManager_ProjectsChanged;
             solutionManager.NuGetProjectRemoved += SolutionManager_ProjectsChanged;
+            solutionManager.NuGetProjectUpdated += SolutionManager_ProjectsUpdated;
             solutionManager.NuGetProjectRenamed += SolutionManager_ProjectRenamed;
             solutionManager.ActionsExecuted += SolutionManager_ActionsExecuted;
 
@@ -151,6 +155,11 @@ namespace NuGet.PackageManagement.UI
             }
 
             _missingPackageStatus = false;
+        }
+
+        private void SolutionManager_ProjectsUpdated(object sender, NuGetProjectEventArgs e)
+        {
+            Model.Context.Projects = _detailModel.NuGetProjects;
         }
 
         private void SolutionManager_ProjectRenamed(object sender, NuGetProjectEventArgs e)
@@ -911,6 +920,7 @@ namespace NuGet.PackageManagement.UI
             var solutionManager = Model.Context.SolutionManager;
             solutionManager.NuGetProjectAdded -= SolutionManager_ProjectsChanged;
             solutionManager.NuGetProjectRemoved -= SolutionManager_ProjectsChanged;
+            solutionManager.NuGetProjectUpdated -= SolutionManager_ProjectsChanged;
             solutionManager.NuGetProjectRenamed -= SolutionManager_ProjectRenamed;
             solutionManager.ActionsExecuted -= SolutionManager_ActionsExecuted;
 

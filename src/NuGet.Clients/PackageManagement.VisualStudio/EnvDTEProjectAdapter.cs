@@ -305,11 +305,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public IEnumerable<LegacyCSProjProjectReference> GetLegacyCSProjProjectReferences(Array desiredMetadata)
         {
-            if (!IsLegacyCSProjPackageReferenceProject)
-            {
-                throw new InvalidOperationException("Project reference call made on a non-legacy CSProj project");
-            }
-
             ThreadHelper.ThrowIfNotOnUIThread();
 
             foreach (Reference6 reference in AsVSProject4.References)
@@ -330,11 +325,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public IEnumerable<LegacyCSProjPackageReference> GetLegacyCSProjPackageReferences(Array desiredMetadata)
         {
-            if (!IsLegacyCSProjPackageReferenceProject)
-            {
-                throw new InvalidOperationException("Package reference call made on a non-legacy CSProj project");
-            }
-
             ThreadHelper.ThrowIfNotOnUIThread();
 
             var installedPackages = AsVSProject4.PackageReferences.InstalledPackages;
@@ -362,11 +352,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public void AddOrUpdateLegacyCSProjPackage(string packageName, string packageVersion, string[] metadataElements, string[] metadataValues)
         {
-            if (!IsLegacyCSProjPackageReferenceProject || AsVSProject4 == null)
-            {
-                throw new InvalidOperationException("Cannot add packages to a project which is not a legacy CSProj package reference project");
-            }
-
             ThreadHelper.ThrowIfNotOnUIThread();
 
             // Note that API behavior is:
@@ -378,11 +363,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public void RemoveLegacyCSProjPackage(string packageName)
         {
-            if (!IsLegacyCSProjPackageReferenceProject || AsVSProject4 == null)
-            {
-                throw new InvalidOperationException("Cannot remove packages from a project which is not a legacy CSProj package reference project");
-            }
-
             ThreadHelper.ThrowIfNotOnUIThread();
 
             AsVSProject4.PackageReferences.Remove(packageName);

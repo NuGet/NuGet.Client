@@ -16,11 +16,17 @@ namespace NuGet.PackageManagement.UI
     // used to manage packages in one project.
     public class PackageDetailControlModel : DetailControlModel
     {
+        private readonly ISolutionManager _solutionManager;
+
         public PackageDetailControlModel(
+            ISolutionManager solutionManager,
             IEnumerable<NuGetProject> nugetProjects)
             : base(nugetProjects)
         {
             Debug.Assert(nugetProjects.Count() == 1);
+
+            _solutionManager = solutionManager;
+            _solutionManager.NuGetProjectUpdated += NuGetProjectChanged;
         }
 
         public async override Task SetCurrentPackage(
@@ -38,6 +44,12 @@ namespace NuGet.PackageManagement.UI
         public override bool IsSolution
         {
             get { return false; }
+        }
+
+        private void NuGetProjectChanged(object sender, NuGetProjectEventArgs e)
+        {
+            _nugetProjects = _solutionManager.GetNuGetProjects();
+            UpdateInstalledVersion();
         }
 
         private void UpdateInstalledVersion()
@@ -67,6 +79,14 @@ namespace NuGet.PackageManagement.UI
         {
             return packages.Any(p =>
                 StringComparer.OrdinalIgnoreCase.Equals(p.Id, id));
+        }
+
+        public override void CleanUp()
+        {
+            // unhook event handlers
+            _solutionManager.NuGetProjectUpdated -= NuGetProjectChanged;
+
+            Options.SelectedChanged -= DependencyBehavior_SelectedChanged;
         }
 
         protected override void CreateVersions()
