@@ -52,6 +52,18 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!--
     ============================================================
     Pack
+    Post Build Target
+    ============================================================
+  -->
+  <Target Name="_PackAsBuildAfterTarget"
+          AfterTargets="Build" 
+          Condition="'$(GeneratePackageOnBuild)' == 'true'"
+          DependsOnTargets="Pack">
+  </Target>
+
+  <!--
+    ============================================================
+    Pack
     Main entry point for packing packages
     ============================================================
   -->
