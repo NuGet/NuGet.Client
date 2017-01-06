@@ -39,6 +39,7 @@ namespace NuGet.Build.Tasks.Pack
         public string RepositoryType { get; set; }
         public ITaskItem[] SourceFiles { get; set; }
         public bool NoPackageAnalysis { get; set; }
+        public string NuspecFile { get; set; }
         public string MinClientVersion { get; set; }
         public bool Serviceable { get; set; }
         public string VersionSuffix { get; set; }
@@ -113,6 +114,7 @@ namespace NuGet.Build.Tasks.Pack
                 Logger = Logger,
                 MinClientVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(MinClientVersion),
                 NoPackageAnalysis = NoPackageAnalysis,
+                NuspecFile = MSBuildStringUtility.TrimAndGetNullForEmpty(NuspecFile),
                 NuspecOutputPath = MSBuildStringUtility.TrimAndGetNullForEmpty(NuspecOutputPath),
                 PackageFiles = MSBuildUtility.WrapMSBuildItem(PackageFiles),
                 PackageFilesToExclude = MSBuildUtility.WrapMSBuildItem(PackageFilesToExclude),

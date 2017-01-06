@@ -25,6 +25,7 @@ namespace NuGet.Build.Tasks.Pack
         public ILogger Logger { get; set; }
         public string MinClientVersion { get; set; }
         public bool NoPackageAnalysis { get; set; }
+        public string NuspecFile { get; set; }
         public string NuspecOutputPath { get; set; }
         public IMSBuildItem[] PackageFiles { get; set; }
         public IMSBuildItem[] PackageFilesToExclude { get; set; }
