@@ -19,7 +19,7 @@ namespace NuGet.SolutionRestoreManager
     /// <summary>
     /// Aggregates logging and UI services consumed by the <see cref="SolutionRestoreJob"/>.
     /// </summary>
-    [Export(typeof(RestoreOperationLogger))]
+    [Export]
     [PartCreationPolicy(CreationPolicy.NonShared)]
     internal sealed class RestoreOperationLogger : ILogger
     {

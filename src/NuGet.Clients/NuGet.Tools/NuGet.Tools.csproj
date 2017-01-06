@@ -42,13 +42,13 @@
     <Compile Include="DataStreamFromComStream.cs" />
     <Compile Include="FontAndColorsRegistrationAttribute.cs" />
     <Compile Include="Guids.cs" />
+    <Compile Include="NuGetSettings.cs" />
+    <Compile Include="SolutionUserOptions.cs" />
     <Compile Include="VsCredentialProviderImporter.cs" />
     <Compile Include="InteractiveLoginProvider.cs" />
-    <Compile Include="INuGetUIContextFactory.cs" />
     <Compile Include="IInteractiveLoginProvider.cs" />
     <Compile Include="NuGetSearchProvider.cs" />
     <Compile Include="NuGetSearchTask.cs" />
-    <Compile Include="NuGetSettings.cs" />
     <Compile Include="NuGetStaticSearchResult.cs" />
     <Compile Include="PackageManagerWindowPane.cs" />
     <Compile Include="PkgCmdID.cs" />
@@ -64,8 +64,6 @@
     <Compile Include="Commands\ShowErrorsCommand.cs" />
     <Compile Include="VisualStudioAccountProvider.cs" />
     <Compile Include="VisualStudioCredentialProvider.cs" />
-    <Compile Include="VisualStudioUIContext.cs" />
-    <Compile Include="VisualStudioUIContextFactory.cs" />
     <Compile Include="VsCredentialProviderAdapter.cs" />
     <Compile Include="Handlers\ProjectRetargetingHandler.cs" />
     <Compile Include="Handlers\ProjectUpgradeHandler.cs" />

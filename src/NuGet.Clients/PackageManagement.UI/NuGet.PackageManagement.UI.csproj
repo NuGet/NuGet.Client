@@ -46,7 +46,9 @@
   <ItemGroup>
     <Compile Include="Actions\UIActionEngine.cs" />
     <Compile Include="Actions\UpdatePreviewResult.cs" />
+    <Compile Include="Common\AsyncLockAwaiter.cs" />
     <Compile Include="Common\ErrorFloodGate.cs" />
+    <Compile Include="Common\IAsyncLockAwaitable.cs" />
     <Compile Include="Common\IOptionsPageActivator.cs" />
     <Compile Include="Common\NuGetEvent.cs" />
     <Compile Include="Common\NuGetEventTrigger.cs" />
@@ -67,6 +69,9 @@
     <Compile Include="Resources\Resources.xaml.cs">
       <DependentUpon>Resources.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Common\AsyncLockReleaser.cs" />
+    <Compile Include="Services\INuGetLockService.cs" />
+    <Compile Include="Services\NuGetLockService.cs" />
     <Compile Include="Telemetry\ActionEventBase.cs" />
     <Compile Include="Telemetry\ActionsTelemetryBase.cs" />
     <Compile Include="Telemetry\ActionsTelemetryEvent.cs" />
@@ -75,6 +80,7 @@
     <Compile Include="Telemetry\RestoreOperationSource.cs" />
     <Compile Include="Telemetry\RestoreTelemetryEvent.cs" />
     <Compile Include="Telemetry\RestoreTelemetryService.cs" />
+    <Compile Include="UserInterfaceService\IUserSettingsManager.cs" />
     <Compile Include="Utility\TelemetryUtility.cs" />
     <Compile Include="Xamls\DeprecatedFrameworkWindow.xaml.cs">
       <DependentUpon>DeprecatedFrameworkWindow.xaml</DependentUpon>

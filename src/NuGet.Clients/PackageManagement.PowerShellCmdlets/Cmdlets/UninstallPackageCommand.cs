@@ -16,12 +16,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
     [Cmdlet(VerbsLifecycle.Uninstall, "Package")]
     public class UninstallPackageCommand : NuGetPowerShellBaseCommand
     {
+        private readonly IDeleteOnRestartManager _deleteOnRestartManager;
+        private readonly INuGetLockService _lockService;
+
         private UninstallationContext _context;
-        private IDeleteOnRestartManager _deleteOnRestartManager;
 
         public UninstallPackageCommand()
         {
             _deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
+            _lockService = ServiceLocator.GetInstance<INuGetLockService>();
         }
 
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0)]
@@ -61,12 +64,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             TelemetryService = new TelemetryServiceHelper();
             TelemetryUtility.StartorResumeTimer();
 
-            Preprocess();
+            using (var lck = _lockService.AcquireLock())
+            {
+                Preprocess();
 
-            SubscribeToProgressEvents();
-            Task.Run(() => UnInstallPackage());
-            WaitAndLogPackageActions();
-            UnsubscribeFromProgressEvents();
+                SubscribeToProgressEvents();
+                Task.Run(UninstallPackageAsync);
+                WaitAndLogPackageActions();
+                UnsubscribeFromProgressEvents();
+            }
 
             TelemetryUtility.StopTimer();
             var actionTelemetryEvent = TelemetryUtility.GetActionTelemetryEvent(
@@ -100,7 +106,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Async call for uninstall a package from the current project
         /// </summary>
-        private async Task UnInstallPackage()
+        private async Task UninstallPackageAsync()
         {
             try
             {

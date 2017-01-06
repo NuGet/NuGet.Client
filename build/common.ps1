@@ -9,6 +9,7 @@ $PackageReleaseVersion = "4.0.0"
 
 $NuGetClientRoot = Split-Path -Path $PSScriptRoot -Parent
 $CLIRoot = Join-Path $NuGetClientRoot cli
+$CLIRootTest = Join-Path $NuGetClientRoot cli_test
 $Nupkgs = Join-Path $NuGetClientRoot nupkgs
 $Artifacts = Join-Path $NuGetClientRoot artifacts
 $ReleaseNupkgs = Join-Path $Artifacts ReleaseNupkgs
@@ -16,6 +17,7 @@ $ConfigureJson = Join-Path $Artifacts configure.json
 $ILMergeOutputDir = Join-Path $Artifacts "VS14"
 
 $DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
+$DotNetExeTest = Join-Path $CLIRootTest 'dotnet.exe'
 $NuGetExe = Join-Path $NuGetClientRoot '.nuget\nuget.exe'
 $XunitConsole = Join-Path $NuGetClientRoot 'packages\xunit.runner.console.2.1.0\tools\xunit.console.exe'
 $ILMerge = Join-Path $NuGetClientRoot 'packages\ILMerge.2.14.1208\tools\ILMerge.exe'
@@ -189,31 +191,49 @@ Function Install-NuGet {
 Function Install-DotnetCLI {
     [CmdletBinding()]
     param(
+        [switch]$Test,
         [switch]$Force
     )
-    $env:DOTNET_HOME=$CLIRoot
-    $env:DOTNET_INSTALL_DIR=$NuGetClientRoot
 
-    if ($Force -or -not (Test-Path $DotNetExe)) {
-        Trace-Log 'Downloading .NET CLI'
-
-        New-Item -ItemType Directory -Force -Path $CLIRoot | Out-Null
-
-        $installDotnet = Join-Path $CLIRoot "dotnet-install.ps1"
-
-        wget 'https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0-preview2/scripts/obtain/dotnet-install.ps1' -OutFile $installDotnet
-
-        & $installDotnet -Channel preview -i $CLIRoot -Version 1.0.0-preview2-003131
+    $cli = if (-not $Test) {
+        @{
+            Root = $CLIRoot
+            DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
+            DotNetInstallUrl = 'https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0-preview2/scripts/obtain/dotnet-install.ps1'
+            Version = '1.0.0-preview2-003131'
+        }
+    }
+    else {
+        @{
+            Root = $CLIRootTest
+            DotNetExe = Join-Path $CLIRootTest 'dotnet.exe'
+            DotNetInstallUrl = 'https://raw.githubusercontent.com/dotnet/cli/58b0566d9ac399f5fa973315c6827a040b7aae1f/scripts/obtain/dotnet-install.ps1'
+            Version = '1.0.0-preview5-004275'
+        }
     }
 
-    if (-not (Test-Path $DotNetExe)) {
+    $env:DOTNET_HOME=$cli.Root
+    $env:DOTNET_INSTALL_DIR=$NuGetClientRoot
+
+    if ($Force -or -not (Test-Path $cli.DotNetExe)) {
+        Trace-Log 'Downloading .NET CLI'
+
+        New-Item -ItemType Directory -Force -Path $cli.Root | Out-Null
+
+        $DotNetInstall = Join-Path $cli.Root 'dotnet-install.ps1'
+
+        Invoke-WebRequest $cli.DotNetInstallUrl -OutFile $DotNetInstall
+
+        & $DotNetInstall -Channel preview -i $cli.Root -Version $cli.Version
+    }
+
+    if (-not (Test-Path $cli.DotNetExe)) {
         Error-Log "Unable to find dotnet.exe. The CLI install may have failed." -Fatal
     }
 
     # Display build info
-    & $DotNetExe --info
+    & $cli.DotNetExe --info
 }
-
 
 Function Get-MSBuildRoot {
     param(

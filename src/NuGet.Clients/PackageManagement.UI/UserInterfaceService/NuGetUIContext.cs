@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.ProjectManagement;
@@ -12,18 +13,18 @@ namespace NuGet.PackageManagement.UI
     /// <summary>
     /// Context of a PackageManagement UI window
     /// </summary>
-    public abstract class NuGetUIContextBase : INuGetUIContext
+    public sealed class NuGetUIContext : INuGetUIContext
     {
         private NuGetProject[] _projects;
 
-        protected NuGetUIContextBase(
+        public NuGetUIContext(
             ISourceRepositoryProvider sourceProvider,
             ISolutionManager solutionManager,
             NuGetPackageManager packageManager,
             UIActionEngine uiActionEngine,
             IPackageRestoreManager packageRestoreManager,
             IOptionsPageActivator optionsPageActivator,
-            IEnumerable<NuGetProject> projects,
+            IUserSettingsManager userSettingsManager,
             IEnumerable<IVsPackageManagerProvider> packageManagerProviders)
         {
             SourceProvider = sourceProvider;
@@ -33,7 +34,7 @@ namespace NuGet.PackageManagement.UI
             PackageManager = packageManager;
             PackageRestoreManager = packageRestoreManager;
             OptionsPageActivator = optionsPageActivator;
-            _projects = projects.ToArray();
+            UserSettingsManager = userSettingsManager;
             PackageManagerProviders = packageManagerProviders;
         }
 
@@ -54,19 +55,16 @@ namespace NuGet.PackageManagement.UI
             get { return _projects; }
             set
             {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
                 _projects = value.ToArray();
             }
         }
 
-        public abstract void AddSettings(string key, UserSettings settings);
-
-        public abstract UserSettings GetSettings(string key);
-
-        public abstract void PersistSettings();
-
-        public abstract void ApplyShowPreviewSetting(bool show);
-
-        public abstract void ApplyShowDeprecatedFrameworkSetting(bool show);
+        public IUserSettingsManager UserSettingsManager { get; }
 
         public IEnumerable<IVsPackageManagerProvider> PackageManagerProviders { get; }
     }

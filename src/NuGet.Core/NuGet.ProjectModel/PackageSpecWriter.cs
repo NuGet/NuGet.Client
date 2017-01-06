@@ -136,6 +136,14 @@ namespace NuGet.ProjectModel
                     msbuildMetadata.LegacyPackagesDirectory.ToString());
             }
 
+            if (msbuildMetadata.ValidateRuntimeAssets)
+            {
+                SetValue(
+                    writer,
+                    "validateRuntimeAssets",
+                    msbuildMetadata.ValidateRuntimeAssets.ToString());
+            }
+
             SetArrayValue(writer, "fallbackFolders", msbuildMetadata.FallbackFolders);
             SetArrayValue(writer, "originalTargetFrameworks", msbuildMetadata.OriginalTargetFrameworks);
 

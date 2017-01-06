@@ -80,7 +80,13 @@ namespace NuGet.PackageManagement.UI
             // installVersion is null if the package is not installed
             var installedVersion = installedDependency?.VersionRange?.MinVersion;
 
-            var allVersions = _allPackageVersions.OrderByDescending(v => v).ToArray();
+            var allVersions = _allPackageVersions?.OrderByDescending(v => v).ToArray();
+
+            // allVersions is null if server doesn't return any versions.
+            if (allVersions == null)
+            {
+                return;
+            }
 
             // null, if no version constraint defined in package.config
             var allowedVersions = _projectVersionRangeDict.Select(kvp => kvp.Value).FirstOrDefault() ?? VersionRange.All;

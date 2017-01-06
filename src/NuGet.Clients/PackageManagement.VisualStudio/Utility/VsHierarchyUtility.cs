@@ -37,28 +37,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return hierarchy;
         }
 
-        public static VsHierarchyItem GetHierarchyItemForProject(Project project)
-        {
-            Debug.Assert(ThreadHelper.CheckAccess());
-
-            return new VsHierarchyItem(ToVsHierarchy(project));
-        }
-
-        public static string GetProjectId(Project project)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            var hierarchyItem = GetHierarchyItemForProject(project);
-
-            Guid id;
-            if (!hierarchyItem.TryGetProjectId(out id))
-            {
-                id = Guid.Empty;
-            }
-
-            return id.ToString();
-        }
-
         public static string GetMSBuildProperty(IVsHierarchy pHierarchy, string name)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -81,6 +59,28 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return output;
+        }
+
+public static VsHierarchyItem GetHierarchyItemForProject(Project project)
+        {
+            Debug.Assert(ThreadHelper.CheckAccess());
+
+            return new VsHierarchyItem(ToVsHierarchy(project));
+        }
+
+        public static string GetProjectId(Project project)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var hierarchyItem = GetHierarchyItemForProject(project);
+
+            Guid id;
+            if (!hierarchyItem.TryGetProjectId(out id))
+            {
+                id = Guid.Empty;
+            }
+
+            return id.ToString();
         }
 
         public static string[] GetProjectTypeGuids(Project project)

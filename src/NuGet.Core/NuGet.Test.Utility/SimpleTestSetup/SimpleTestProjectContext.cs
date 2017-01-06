@@ -44,6 +44,11 @@ namespace NuGet.Test.Utility
         public Guid ProjectGuid { get; set; } = Guid.NewGuid();
 
         /// <summary>
+        /// True for non-xplat.
+        /// </summary>
+        public bool IsLegacyPackageReference { get; set; }
+
+        /// <summary>
         /// MSBuild project name
         /// </summary>
         public string ProjectName { get; set; }
@@ -221,6 +226,14 @@ namespace NuGet.Test.Utility
             }
         }
 
+        public void AddPackageToFramework(string packageFramework, params SimpleTestPackageContext[] packages)
+        {
+            var framework = Frameworks
+                .Where(f => f.Framework == NuGetFramework.Parse(packageFramework))
+                .First();
+            framework.PackageReferences.AddRange(packages);
+        }
+
         public void AddProjectToAllFrameworks(params SimpleTestProjectContext[] projects)
         {
             foreach (var framework in Frameworks)
@@ -273,6 +286,20 @@ namespace NuGet.Test.Utility
 
                 File.WriteAllText(jsonPath, ProjectJson.ToString());
             }
+        }
+
+        /// <summary>
+        /// Create a UAP package reference project. Framework is only used internally.
+        /// </summary>
+        public static SimpleTestProjectContext CreateLegacyPackageReference(
+            string projectName,
+            string solutionRoot,
+            NuGetFramework framework)
+        {
+            var context = new SimpleTestProjectContext(projectName, ProjectStyle.PackageReference, solutionRoot);
+            context.Frameworks.Add(new SimpleTestProjectFrameworkContext(framework));
+            context.IsLegacyPackageReference = true;
+            return context;
         }
 
         public static SimpleTestProjectContext CreateNETCore(
@@ -355,9 +382,16 @@ namespace NuGet.Test.Utility
                 AddProperties(xml, new Dictionary<string, string>()
                 {
                     { "Version", Version },
-                    { "DebugType", "portable" },
-                    { "TargetFrameworks", string.Join(";", Frameworks.Select(f => f.Framework.GetShortFolderName())) },
+                    { "DebugType", "portable" }
                 });
+
+                if (!IsLegacyPackageReference)
+                {
+                    AddProperties(xml, new Dictionary<string, string>()
+                    {
+                        { "TargetFrameworks", string.Join(";", Frameworks.Select(f => f.Framework.GetShortFolderName())) },
+                    });
+                }
 
                 var addedToAll = new HashSet<SimpleTestProjectContext>();
 
@@ -524,7 +558,7 @@ namespace NuGet.Test.Utility
 
             if (framework?.IsSpecificFramework == true)
             {
-                entry.Add(new XAttribute(XName.Get("Condition"), $" '$(TargetFramework)' == '{framework.GetShortFolderName()}' "));
+                itemGroup.Add(new XAttribute(XName.Get("Condition"), $" '$(TargetFramework)' == '{framework.GetShortFolderName()}' "));
             }
 
             foreach (var pair in properties)

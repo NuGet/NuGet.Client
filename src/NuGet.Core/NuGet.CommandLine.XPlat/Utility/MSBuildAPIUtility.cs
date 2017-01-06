@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using NuGet.Commands;
@@ -19,13 +20,26 @@ namespace NuGet.CommandLine.XPlat
         private const string VERSION_TAG = "Version";
         private const string FRAMEWORK_TAG = "TargetFramework";
         private const string FRAMEWORKS_TAG = "TargetFrameworks";
+        private const string UPDATE_OPERATION = "Update";
+        private const string REMOVE_OPERATION = "Remove";
+
+        public ILogger Logger { get; }
+
+        public MSBuildAPIUtility(ILogger logger)
+        {
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+            Logger = logger;
+        }
 
         /// <summary>
         /// Opens an MSBuild.Evaluation.Project type from a csproj file.
         /// </summary>
         /// <param name="projectCSProjPath">CSProj file which needs to be evaluated</param>
         /// <returns>MSBuild.Evaluation.Project</returns>
-        private Project GetProject(string projectCSProjPath)
+        private static Project GetProject(string projectCSProjPath)
         {
             var projectRootElement = TryOpenProjectRootElement(projectCSProjPath);
             if (projectCSProjPath == null)
@@ -41,7 +55,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="projectCSProjPath">CSProj file which needs to be evaluated</param>
         /// <param name="globalProperties">Global properties that should be used to evaluate the project while opening.</param>
         /// <returns>MSBuild.Evaluation.Project</returns>
-        private Project GetProject(string projectCSProjPath, IDictionary<string, string> globalProperties)
+        private static Project GetProject(string projectCSProjPath, IDictionary<string, string> globalProperties)
         {
             var projectRootElement = TryOpenProjectRootElement(projectCSProjPath);
             if (projectCSProjPath == null)
@@ -49,6 +63,44 @@ namespace NuGet.CommandLine.XPlat
                 throw new Exception(Strings.Error_MsBuildUnableToOpenProject);
             }
             return new Project(projectRootElement, globalProperties, toolsVersion: null);
+        }
+
+        /// <summary>
+        /// Remove all package references to the project.
+        /// </summary>
+        /// <param name="projectPath">Path to the csproj file of the project.</param>
+        /// <param name="packageDependency">Package Dependency of the package to be removed.</param>
+        public int RemovePackageReference(string projectPath, PackageDependency packageDependency)
+        {
+            var project = GetProject(projectPath);
+
+            var existingPackageReferences = project.ItemsIgnoringCondition
+                .Where(item => item.ItemType.Equals(PACKAGE_REFERENCE_TYPE_TAG, StringComparison.OrdinalIgnoreCase) &&
+                               item.EvaluatedInclude.Equals(packageDependency.Id, StringComparison.OrdinalIgnoreCase));
+
+            if (existingPackageReferences.Any())
+            {
+                // We validate that the operation does not remove any imported items
+                // If it does then we throw a user friendly exception without making any changes
+                ValidateNoImportedItemsAreUpdated(existingPackageReferences, packageDependency, REMOVE_OPERATION);
+
+                project.RemoveItems(existingPackageReferences);
+                project.Save();
+                ProjectCollection.GlobalProjectCollection.UnloadProject(project);
+
+                return 0;
+            }
+            else
+            {
+                Logger.LogError(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Error_UpdatePkgNoSuchPackage,
+                    project.FullPath,
+                    packageDependency.Id,
+                    REMOVE_OPERATION));
+                ProjectCollection.GlobalProjectCollection.UnloadProject(project);
+
+                return 1;
+            }
         }
 
         /// <summary>
@@ -88,7 +140,8 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        private void AddPackageReference(Project project, PackageDependency packageDependency,
+        private void AddPackageReference(Project project,
+            PackageDependency packageDependency,
             IEnumerable<ProjectItem> existingPackageReferences,
             string framework = null)
         {
@@ -108,10 +161,11 @@ namespace NuGet.CommandLine.XPlat
             project.Save();
         }
 
-        private IEnumerable<ProjectItemGroupElement> GetItemGroups(Project project)
+        private static IEnumerable<ProjectItemGroupElement> GetItemGroups(Project project)
         {
             return project
                 .Items
+                .Where(i => !i.IsImported)
                 .Select(item => item.Xml.Parent as ProjectItemGroupElement)
                 .Distinct();
         }
@@ -123,7 +177,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="itemGroups">List of all item groups in the project</param>
         /// <param name="itemType">An item type tag that must be in the item group. It if PackageReference in this case.</param>
         /// <returns>An ItemGroup, which could be null.</returns>
-        private ProjectItemGroupElement GetItemGroup(Project project, IEnumerable<ProjectItemGroupElement> itemGroups,
+        private static ProjectItemGroupElement GetItemGroup(Project project, IEnumerable<ProjectItemGroupElement> itemGroups,
             string itemType)
         {
             var itemGroup = itemGroups?
@@ -133,7 +187,7 @@ namespace NuGet.CommandLine.XPlat
             return itemGroup;
         }
 
-        private ProjectItemGroupElement CreateItemGroup(Project project, string framework = null)
+        private static ProjectItemGroupElement CreateItemGroup(Project project, string framework = null)
         {
             // Create a new item group and add a condition if given
             var itemGroup = project.Xml.AddItemGroup();
@@ -147,33 +201,70 @@ namespace NuGet.CommandLine.XPlat
         private void UpdatePackageReferenceItems(IEnumerable<ProjectItem> packageReferencesItems,
             PackageDependency packageDependency)
         {
+            // We validate that the operation does not update any imported items
+            // If it does then we throw a user friendly exception without making any changes
+            ValidateNoImportedItemsAreUpdated(packageReferencesItems, packageDependency, UPDATE_OPERATION);
+
             foreach (var packageReferenceItem in packageReferencesItems)
             {
-                var versionMetadata = packageReferenceItem
-                    .Metadata
-                    .Where(m => m.Name.Equals(VERSION_TAG, StringComparison.OrdinalIgnoreCase))
-                    .FirstOrDefault();
-                if (versionMetadata == null)
-                {
-                    packageReferenceItem.SetMetadataValue(VERSION_TAG, packageDependency.VersionRange.OriginalString);
-                }
-                else
-                {
-                    versionMetadata.UnevaluatedValue = packageDependency.VersionRange.OriginalString;
-                }
+                var packageVersion = packageDependency.VersionRange.OriginalString ??
+                    packageDependency.VersionRange.MinVersion.ToString();
+                packageReferenceItem.SetMetadataValue(VERSION_TAG, packageVersion);
+                Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Info_AddPkgUpdated,
+                    packageDependency.Id,
+                    packageVersion,
+                    packageReferenceItem.Xml.ContainingProject.FullPath));
             }
         }
 
-        private void AddPackageReferenceIntoItemGroup(ProjectItemGroupElement itemGroup, PackageDependency packageDependency)
+        private void AddPackageReferenceIntoItemGroup(ProjectItemGroupElement itemGroup,
+            PackageDependency packageDependency)
         {
+            var packageVersion = packageDependency.VersionRange.OriginalString ??
+                packageDependency.VersionRange.MinVersion.ToString();
             var packageMetadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            { { VERSION_TAG, packageDependency.VersionRange.OriginalString } };
+            { { VERSION_TAG, packageVersion } };
 
             // Currently metadata is added as a metadata. As opposed to an attribute
             // Due to https://github.com/Microsoft/msbuild/issues/1393
 
             itemGroup.AddItem(PACKAGE_REFERENCE_TYPE_TAG, packageDependency.Id, packageMetadata);
             itemGroup.ContainingProject.Save();
+            Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                Strings.Info_AddPkgAdded,
+                packageDependency.Id,
+                packageVersion,
+                itemGroup.ContainingProject.FullPath));
+        }
+
+        private static void ValidateNoImportedItemsAreUpdated(IEnumerable<ProjectItem> packageReferencesItems,
+            PackageDependency packageDependency,
+            string operationType)
+        {
+            var importedPackageReferences = packageReferencesItems
+                .Where(i => i.IsImported)
+                .ToArray();
+
+            // Throw if any of the package references to be updated are imported.
+            if (importedPackageReferences.Any())
+            {
+                var errors = new StringBuilder();
+                foreach (var importedPackageReference in importedPackageReferences)
+                {
+                    errors.AppendLine(string.Format(CultureInfo.CurrentCulture,
+                        "\t " + Strings.Error_AddPkgErrorStringForImportedEdit,
+                        importedPackageReference.ItemType,
+                        importedPackageReference.UnevaluatedInclude,
+                        importedPackageReference.Xml.ContainingProject.FullPath));
+                }
+                throw new Exception(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Error_AddPkgFailOnImportEdit,
+                    operationType,
+                    packageDependency.Id,
+                    Environment.NewLine,
+                    errors));
+            }
         }
 
         /// <summary>
@@ -184,7 +275,7 @@ namespace NuGet.CommandLine.XPlat
         /// The project should have the global property set to have a specific framework</param>
         /// <param name="packageDependency">Dependency of the package.</param>
         /// <returns>List of Items containing the package reference for the package.</returns>
-        private IEnumerable<ProjectItem> GetPackageReferences(Project project, PackageDependency packageDependency)
+        private static IEnumerable<ProjectItem> GetPackageReferences(Project project, PackageDependency packageDependency)
         {
             return project.AllEvaluatedItems
                 .Where(item => item.ItemType.Equals(PACKAGE_REFERENCE_TYPE_TAG, StringComparison.OrdinalIgnoreCase) &&
@@ -200,7 +291,7 @@ namespace NuGet.CommandLine.XPlat
         /// The project should have the global property set to have a specific framework</param>
         /// <param name="packageDependency">Dependency of the package.</param>
         /// <returns>List of Items containing the package reference for the package.</returns>
-        private IEnumerable<ProjectItem> GetPackageReferencesForAllFrameworks(Project project,
+        private static IEnumerable<ProjectItem> GetPackageReferencesForAllFrameworks(Project project,
             PackageDependency packageDependency)
         {
             var frameworks = GetProjectFrameworks(project);
@@ -211,15 +302,13 @@ namespace NuGet.CommandLine.XPlat
                 { { "TargetFramework", framework } };
                 var projectPerFramework = GetProject(project.FullPath, globalProperties);
 
-                mergedPackageReferences.AddRange(projectPerFramework.AllEvaluatedItems
-                .Where(item => item.ItemType.Equals(PACKAGE_REFERENCE_TYPE_TAG, StringComparison.OrdinalIgnoreCase) &&
-                               item.EvaluatedInclude.Equals(packageDependency.Id, StringComparison.OrdinalIgnoreCase)));
+                mergedPackageReferences.AddRange(GetPackageReferences(projectPerFramework, packageDependency));
                 ProjectCollection.GlobalProjectCollection.UnloadProject(projectPerFramework);
             }
             return mergedPackageReferences;
         }
 
-        private IEnumerable<string> GetProjectFrameworks(Project project)
+        private static IEnumerable<string> GetProjectFrameworks(Project project)
         {
             var frameworks = project
                 .AllEvaluatedProperties
@@ -238,7 +327,7 @@ namespace NuGet.CommandLine.XPlat
             return frameworks;
         }
 
-        private ProjectRootElement TryOpenProjectRootElement(string filename)
+        private static ProjectRootElement TryOpenProjectRootElement(string filename)
         {
             try
             {
@@ -252,7 +341,7 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        private string GetTargetFrameworkCondition(string targetFramework)
+        private static string GetTargetFrameworkCondition(string targetFramework)
         {
             return string.Format("'$(TargetFramework)' == '{0}'", targetFramework);
         }

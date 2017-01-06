@@ -37,16 +37,15 @@ namespace NuGet.Build.Tasks.Pack
         TItem[] PackageFilesToExclude { get; }
         string PackageId { get; }
         string PackageOutputPath { get; }
-        TItem[] PackageReferences { get; }
         string[] PackageTypes { get; }
         string PackageVersion { get; }
         TItem PackItem { get; }
-        TItem[] ProjectReferences { get; }
         string ProjectUrl { get; }
         string ReleaseNotes { get; }
         string RepositoryType { get; }
         string RepositoryUrl { get; }
         bool RequireLicenseAcceptance { get; }
+        string RestoreOutputPath { get; }
         bool Serviceable { get; }
         TItem[] SourceFiles { get; }
         string[] Tags { get; }

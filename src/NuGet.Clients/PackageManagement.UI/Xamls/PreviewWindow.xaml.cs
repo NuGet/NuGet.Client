@@ -55,7 +55,7 @@ namespace NuGet.PackageManagement.UI
 
         private void SaveDoNotShowPreviewWindowSetting(bool doNotshow)
         {
-            _uiContext.ApplyShowPreviewSetting(!doNotshow);
+            _uiContext.UserSettingsManager.ApplyShowPreviewSetting(!doNotshow);
             RegistrySettingUtility.SetBooleanSetting(
                 Constants.DoNotShowPreviewWindowRegistryName,
                 doNotshow);

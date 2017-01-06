@@ -3,7 +3,6 @@
 
 using Microsoft.Build.Framework;
 using NuGet.Commands;
-using NuGet.Common;
 using ILogger = NuGet.Common.ILogger;
 
 namespace NuGet.Build.Tasks.Pack
@@ -23,6 +22,7 @@ namespace NuGet.Build.Tasks.Pack
         public string Description { get; set; }
         public string Copyright { get; set; }
         public bool RequireLicenseAcceptance { get; set; }
+        public string RestoreOutputPath { get; set; }
         public string LicenseUrl { get; set; }
         public string ProjectUrl { get; set; }
         public string IconUrl { get; set; }
@@ -43,8 +43,6 @@ namespace NuGet.Build.Tasks.Pack
         public bool Serviceable { get; set; }
         public string VersionSuffix { get; set; }
         public ITaskItem[] AssemblyReferences { get; set; }
-        public ITaskItem[] PackageReferences { get; set; }
-        public ITaskItem[] ProjectReferences { get; set; }
         public bool ContinuePackingAfterGeneratingNuspec { get; set; }
         public string NuspecOutputPath { get; set; }
         public bool IncludeBuildOutput { get; set; }
@@ -120,16 +118,15 @@ namespace NuGet.Build.Tasks.Pack
                 PackageFilesToExclude = MSBuildUtility.WrapMSBuildItem(PackageFilesToExclude),
                 PackageId = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageId),
                 PackageOutputPath = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageOutputPath),
-                PackageReferences = MSBuildUtility.WrapMSBuildItem(PackageReferences),
                 PackageTypes = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(PackageTypes),
                 PackageVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageVersion),
                 PackItem = MSBuildUtility.WrapMSBuildItem(PackItem),
-                ProjectReferences = MSBuildUtility.WrapMSBuildItem(ProjectReferences),
                 ProjectUrl = MSBuildStringUtility.TrimAndGetNullForEmpty(ProjectUrl),
                 ReleaseNotes = MSBuildStringUtility.TrimAndGetNullForEmpty(ReleaseNotes),
                 RepositoryType = MSBuildStringUtility.TrimAndGetNullForEmpty(RepositoryType),
                 RepositoryUrl = MSBuildStringUtility.TrimAndGetNullForEmpty(RepositoryUrl),
                 RequireLicenseAcceptance = RequireLicenseAcceptance,
+                RestoreOutputPath = MSBuildStringUtility.TrimAndGetNullForEmpty(RestoreOutputPath),
                 Serviceable = Serviceable,
                 SourceFiles = MSBuildUtility.WrapMSBuildItem(SourceFiles),
                 Tags = MSBuildStringUtility.TrimAndExcludeNullOrEmpty(Tags),

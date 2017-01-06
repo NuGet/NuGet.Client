@@ -155,5 +155,9 @@ namespace NuGet.Commands
         /// </summary>
         public string RestoreOutputPath { get; set; }
 
+        /// <summary>
+        /// Compatibility options
+        /// </summary>
+        public bool ValidateRuntimeAssets { get; set; } = true;
     }
 }

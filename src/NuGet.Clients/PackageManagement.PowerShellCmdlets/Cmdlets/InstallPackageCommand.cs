@@ -57,22 +57,25 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             // start timer for telemetry event
             TelemetryUtility.StartorResumeTimer();
 
-            Preprocess();
+            using (var lck = _lockService.AcquireLock())
+            {
+                Preprocess();
 
-            SubscribeToProgressEvents();
-            if (!_readFromPackagesConfig
-                && !_readFromDirectPackagePath
-                && _nugetVersion == null)
-            {
-                Task.Run(() => InstallPackageById());
+                SubscribeToProgressEvents();
+                if (!_readFromPackagesConfig
+                    && !_readFromDirectPackagePath
+                    && _nugetVersion == null)
+                {
+                    Task.Run(InstallPackageByIdAsync);
+                }
+                else
+                {
+                    var identities = GetPackageIdentities();
+                    Task.Run(() => InstallPackagesAsync(identities));
+                }
+                WaitAndLogPackageActions();
+                UnsubscribeFromProgressEvents();
             }
-            else
-            {
-                IEnumerable<PackageIdentity> identities = GetPackageIdentities();
-                Task.Run(() => InstallPackages(identities));
-            }
-            WaitAndLogPackageActions();
-            UnsubscribeFromProgressEvents();
 
             // stop timer for telemetry event and create action telemetry event instance
             TelemetryUtility.StopTimer();
@@ -93,7 +96,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// Async call for install packages from the list of identities.
         /// </summary>
         /// <param name="identities"></param>
-        private async Task InstallPackages(IEnumerable<PackageIdentity> identities)
+        private async Task InstallPackagesAsync(IEnumerable<PackageIdentity> identities)
         {
             try
             {
@@ -118,7 +121,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// Async call for install a package by Id.
         /// </summary>
         /// <param name="identities"></param>
-        private async Task InstallPackageById()
+        private async Task InstallPackageByIdAsync()
         {
             try
             {

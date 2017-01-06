@@ -30,6 +30,7 @@ namespace NuGet.SolutionRestoreManager
         private readonly IServiceProvider _serviceProvider;
         private readonly AsyncLazy<ErrorListProvider> _errorListProvider;
         private readonly Lazy<IVsSolutionManager> _solutionManager;
+        private readonly Lazy<INuGetLockService> _lockService;
         private readonly Lazy<Common.ILogger> _logger;
         private readonly AsyncLazy<IComponentModel> _componentModel;
 
@@ -57,6 +58,7 @@ namespace NuGet.SolutionRestoreManager
             [Import(typeof(SVsServiceProvider))]
             IServiceProvider serviceProvider,
             Lazy<IVsSolutionManager> solutionManager,
+            Lazy<INuGetLockService> lockService,
             [Import(typeof(VisualStudioActivityLogger))]
             Lazy<Common.ILogger> logger)
         {
@@ -70,6 +72,11 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentNullException(nameof(solutionManager));
             }
 
+            if (lockService == null)
+            {
+                throw new ArgumentNullException(nameof(lockService));
+            }
+
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
@@ -77,6 +84,7 @@ namespace NuGet.SolutionRestoreManager
 
             _serviceProvider = serviceProvider;
             _solutionManager = solutionManager;
+            _lockService = lockService;
             _logger = logger;
 
             var joinableTaskContextNode = new JoinableTaskContextNode(ThreadHelper.JoinableTaskContext);
@@ -347,10 +355,11 @@ namespace NuGet.SolutionRestoreManager
         {
             await TaskScheduler.Default;
 
-            var componentModel = await _componentModel.GetValueAsync();
-
             using (var jobCts = CancellationTokenSource.CreateLinkedTokenSource(token))
+            using (var lck = await _lockService.Value.AcquireLockAsync(jobCts.Token))
             {
+                var componentModel = await _componentModel.GetValueAsync(jobCts.Token);
+
                 var logger = componentModel.GetService<RestoreOperationLogger>();
                 await logger.StartAsync(
                     request.RestoreSource,

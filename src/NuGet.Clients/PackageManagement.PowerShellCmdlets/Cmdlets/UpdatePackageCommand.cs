@@ -106,11 +106,14 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             // start timer for telemetry event
             TelemetryUtility.StartorResumeTimer();
 
-            Preprocess();
+            using (var lck = _lockService.AcquireLock())
+            {
+                Preprocess();
 
-            SubscribeToProgressEvents();
-            PerformPackageUpdatesOrReinstalls();
-            UnsubscribeFromProgressEvents();
+                SubscribeToProgressEvents();
+                PerformPackageUpdatesOrReinstalls();
+                UnsubscribeFromProgressEvents();
+            }
 
             // stop timer for telemetry event and create action telemetry event instance
             TelemetryUtility.StopTimer();
@@ -135,12 +138,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             // Update-Package without ID specified
             if (!_idSpecified)
             {
-                Task.Run(() => UpdateOrReinstallAllPackages());
+                Task.Run(UpdateOrReinstallAllPackagesAsync);
             }
             // Update-Package with Id specified
             else
             {
-                Task.Run(() => UpdateOrReinstallSinglePackage());
+                Task.Run(UpdateOrReinstallSinglePackageAsync);
             }
             WaitAndLogPackageActions();
         }
@@ -149,7 +152,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// Update or reinstall all packages installed to a solution. For Update-Package or Update-Package -Reinstall.
         /// </summary>
         /// <returns></returns>
-        private async Task UpdateOrReinstallAllPackages()
+        private async Task UpdateOrReinstallAllPackagesAsync()
         {
             try
             {
@@ -189,7 +192,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// -Reinstall.
         /// </summary>
         /// <returns></returns>
-        private async Task UpdateOrReinstallSinglePackage()
+        private async Task UpdateOrReinstallSinglePackageAsync()
         {
             try
             {

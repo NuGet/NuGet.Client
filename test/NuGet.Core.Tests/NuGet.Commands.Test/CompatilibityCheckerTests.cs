@@ -457,6 +457,74 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
+        public async Task CompatilibityChecker_MissingRuntimeAssembly_Ignore()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+
+            var project1Json = @"
+            {
+              ""version"": ""1.0.0"",
+              ""description"": """",
+              ""authors"": [ ""author"" ],
+              ""tags"": [ """" ],
+              ""projectUrl"": """",
+              ""licenseUrl"": """",
+              ""frameworks"": {
+                ""netstandardapp1.5"": {
+                    ""dependencies"": {
+                        ""packageA"": {
+                            ""version"": ""1.0.0""
+                        }
+                    }
+                }
+              }
+            }";
+
+            using (var workingDir = TestDirectory.Create())
+            {
+                var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
+                var project1 = new DirectoryInfo(Path.Combine(workingDir, "projects", "project1"));
+                packagesDir.Create();
+                packageSource.Create();
+                project1.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
+
+                var specPath1 = Path.Combine(project1.FullName, "project.json");
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+
+                var logger = new TestLogger();
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger);
+
+                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+                request.RequestedRuntimes.Add("win7-x86");
+                request.ValidateRuntimeAssets = false;
+
+                var packageA = new SimpleTestPackageContext("packageA");
+                packageA.AddFile("ref/netstandard1.3/a.dll");
+
+                SimpleTestPackageUtility.CreatePackages(packageSource.FullName, packageA);
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                var failures = result.CompatibilityCheckResults.Where(r => !r.Success).Count();
+
+                // Assert
+                Assert.True(result.Success, logger.ShowErrors());
+
+                // Verify both libraries were installed
+                Assert.Equal(1, result.LockFile.Libraries.Count);
+                Assert.Equal(0, failures);
+            }
+        }
+
+        [Fact]
         public async Task CompatilibityChecker_RuntimeFoundInAnotherPackage_Success()
         {
             // Arrange

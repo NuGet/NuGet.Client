@@ -25,7 +25,7 @@ namespace NuGet.Protocol
 
             if (serviceIndex != null)
             {
-                var baseUrl = serviceIndex[ServiceTypes.RegistrationsBaseUrl].FirstOrDefault();
+                var baseUrl = serviceIndex.GetServiceEntryUri(ServiceTypes.RegistrationsBaseUrl);
 
                 var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
 
