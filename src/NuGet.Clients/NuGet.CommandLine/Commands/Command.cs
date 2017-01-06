@@ -165,7 +165,7 @@ namespace NuGet.CommandLine
 
             HttpHandlerResourceV3.CredentialService = CredentialService;
 
-            HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>//
+            HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>
             {
                 // v2 stack credentials update
                 CoreV2.NuGet.CredentialStore.Instance.Add(uri, credentials);

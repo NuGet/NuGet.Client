@@ -46,7 +46,8 @@ namespace NuGet.CommandLine
         public string SolutionDirectory { get; set; }
 
         [ImportingConstructor]
-        protected internal InstallCommand(){
+        protected internal InstallCommand()
+        {
             // On mono, parallel builds are broken for some reason. See https://gist.github.com/4201936 for the errors
             // That are thrown.
             DisableParallelProcessing = RuntimeEnvironmentHelper.IsMono;
