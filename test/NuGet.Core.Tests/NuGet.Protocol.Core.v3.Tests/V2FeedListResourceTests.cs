@@ -138,7 +138,6 @@ namespace NuGet.Protocol.Tests
             var enumerable = await resource.ListAsync(searchTerm: "Windows.AzureStorage",
                 prerelease: true, allVersions: false, includeDelisted: true, logger: NullLogger.Instance, token: CancellationToken.None);
 
-            //Only 2 packages are listed in this resource
             int ExpectedCount = 2;
             int ActualCount = 0;
             var enumerator = enumerable.GetEnumeratorAsync();
@@ -280,7 +279,6 @@ namespace NuGet.Protocol.Tests
             var enumerable = await resource.ListAsync(searchTerm: "Windows.AzureStorage",
                 prerelease: false, allVersions: true, includeDelisted: false, logger: NullLogger.Instance, token: CancellationToken.None);
 
-            //Only 2 packages are listed in this resource
             int ExpectedCount = 44;
             int ActualCount = 0;
             var enumerator = enumerable.GetEnumeratorAsync();
