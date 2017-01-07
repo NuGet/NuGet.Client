@@ -59,8 +59,10 @@ namespace NuGet.SolutionRestoreManager
             IPackageRestoreManager packageRestoreManager,
             IVsSolutionManager solutionManager,
             ISourceRepositoryProvider sourceRepositoryProvider,
-            ISettings settings,
-            IDeferredProjectWorkspaceService deferredWorkspaceService)
+#if !VS14
+            IDeferredProjectWorkspaceService deferredWorkspaceService,
+#endif
+            ISettings settings)
         {
             if (serviceProvider == null)
             {
@@ -92,7 +94,11 @@ namespace NuGet.SolutionRestoreManager
             _solutionManager = solutionManager;
             _sourceRepositoryProvider = sourceRepositoryProvider;
             _settings = settings;
-			_deferredWorkspaceService = deferredWorkspaceService;
+#if VS14
+            _deferredWorkspaceService = null;
+#else
+            _deferredWorkspaceService = deferredWorkspaceService
+#endif
         }
 
         /// <summary>
