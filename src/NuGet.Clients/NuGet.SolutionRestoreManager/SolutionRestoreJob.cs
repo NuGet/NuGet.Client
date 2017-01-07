@@ -97,7 +97,7 @@ namespace NuGet.SolutionRestoreManager
 #if VS14
             _deferredWorkspaceService = null;
 #else
-            _deferredWorkspaceService = deferredWorkspaceService
+            _deferredWorkspaceService = deferredWorkspaceService;
 #endif
         }
 
