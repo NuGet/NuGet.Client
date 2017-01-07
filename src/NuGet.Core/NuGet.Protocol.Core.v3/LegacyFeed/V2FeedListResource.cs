@@ -47,13 +47,11 @@ namespace NuGet.Protocol
                         OrderBy = SearchOrderBy.Id,
                         IncludeDelisted = includeDelisted
                     };
-
                 }
                 else
                 {
                     var supportsIsAbsoluteLatestVersion =
                         await _feedCapabilities.SupportsIsAbsoluteLatestVersionAsync(logger, token);
-
                     if (prerelease && supportsIsAbsoluteLatestVersion)
                     {
                         filter = new SearchFilter(includePrerelease: true, filter: SearchFilterType.IsAbsoluteLatestVersion)
@@ -84,7 +82,6 @@ namespace NuGet.Protocol
                 {
                     var supportsIsAbsoluteLatestVersion =
                         await _feedCapabilities.SupportsIsAbsoluteLatestVersionAsync(logger, token);
-
                     if (prerelease && supportsIsAbsoluteLatestVersion)
                     {
                         filter = new SearchFilter(includePrerelease: true,

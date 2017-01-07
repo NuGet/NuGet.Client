@@ -44,7 +44,8 @@ namespace NuGet.Protocol
             {
                 filter = new SearchFilter(includePrerelease: false, filter: SearchFilterType.IsLatestVersion)
                 {
-                    OrderBy = SearchOrderBy.Id
+                    OrderBy = SearchOrderBy.Id,
+                    IncludeDelisted = includeDelisted
                 };
             }
             IEnumerableAsync<IPackageSearchMetadata> enumerable = new EnumerableAsync<IPackageSearchMetadata>(_localPackageSearchResource, searchTerm, filter,
