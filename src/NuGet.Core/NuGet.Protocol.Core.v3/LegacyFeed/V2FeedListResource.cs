@@ -103,7 +103,7 @@ namespace NuGet.Protocol
                 }
 
             }
-            return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTerm, filter, 0, Take, isSearchSupported,
+            return new EnumerableAsync<IPackageSearchMetadata>(_feedParser, searchTerm, filter, 0, Take, isSearchSupported, allVersions,
                         logger, token);
         }
     }
@@ -119,9 +119,10 @@ internal class EnumerableAsync<T> : IEnumerableAsync<T>
     private readonly CancellationToken _token;
     private readonly IV2FeedParser _feedParser;
     private readonly bool _isSearchAvailable;
+    private readonly bool _allVersions;
 
 
-    public EnumerableAsync(IV2FeedParser feedParser, string searchTerm, SearchFilter filter, int skip, int take, bool isSearchAvailable, ILogger logger, CancellationToken token)
+    public EnumerableAsync(IV2FeedParser feedParser, string searchTerm, SearchFilter filter, int skip, int take, bool isSearchAvailable,bool allVersions, ILogger logger, CancellationToken token)
     {
         _feedParser = feedParser;
         _searchTerm = searchTerm;
@@ -129,13 +130,14 @@ internal class EnumerableAsync<T> : IEnumerableAsync<T>
         _skip = skip;
         _take = take;
         _isSearchAvailable = isSearchAvailable;
+        _allVersions = allVersions;
         _logger = logger;
         _token = token;
     }
 
     public IEnumeratorAsync<T> GetEnumeratorAsync()
     {
-        return (IEnumeratorAsync<T>)new EnumeratorAsync(_feedParser, _searchTerm, _filter, _skip, _take, _isSearchAvailable, _logger, _token);
+        return (IEnumeratorAsync<T>)new EnumeratorAsync(_feedParser, _searchTerm, _filter, _skip, _take, _isSearchAvailable,_allVersions, _logger, _token);
     }
 }
 
@@ -149,12 +151,13 @@ internal class EnumeratorAsync : IEnumeratorAsync<IPackageSearchMetadata>
     private readonly CancellationToken _token;
     private readonly IV2FeedParser _feedParser;
     private readonly bool _isSearchAvailable;
+    private readonly bool _allVersions;
 
 
     private IEnumerator<IPackageSearchMetadata> _currentEnumerator;
     private V2FeedPage _currentPage;
 
-    public EnumeratorAsync(IV2FeedParser feedParser, string searchTerm, SearchFilter filter, int skip, int take, bool isSearchAvailable,
+    public EnumeratorAsync(IV2FeedParser feedParser, string searchTerm, SearchFilter filter, int skip, int take, bool isSearchAvailable, bool allVersions,
         ILogger logger, CancellationToken token)
     {
         _feedParser = feedParser;
@@ -163,6 +166,7 @@ internal class EnumeratorAsync : IEnumeratorAsync<IPackageSearchMetadata>
         _skip = skip;
         _take = take;
         _isSearchAvailable = isSearchAvailable;
+        _allVersions = allVersions;
         _logger = logger;
         _token = token;
     }
@@ -184,12 +188,24 @@ internal class EnumeratorAsync : IEnumeratorAsync<IPackageSearchMetadata>
             _currentPage = _isSearchAvailable
                 ? await _feedParser.GetSearchPageAsync(_searchTerm, _filter, _skip, _take, _logger, _token)
                 : await _feedParser.GetPackagesPageAsync(_searchTerm, _filter, _skip, _take, _logger, _token);
-            var results = _currentPage.Items.GroupBy(p => p.Id)
-                .Select(group => group.OrderByDescending(p => p.Version).First())
-                .Select(
-                    package =>
-                        V2FeedUtilities.CreatePackageSearchResult(package, _filter,
-                            (V2FeedParser)_feedParser, _logger, _token)).Where(p => _filter.IncludeDelisted || p.IsListed);
+
+            
+            var results = _allVersions?
+                _currentPage.Items.GroupBy(p => p.Id)
+                 .Select(group => group.OrderByDescending(p => p.Version)).SelectMany(pg => pg)
+                 .Select(
+                     package =>
+                         V2FeedUtilities.CreatePackageSearchResult(package, _filter,
+                             (V2FeedParser)_feedParser, _logger, _token)).Where(p => _filter.IncludeDelisted || p.IsListed)
+            :
+            _currentPage.Items.GroupBy(p => p.Id)
+                 .Select(group => group.OrderByDescending(p => p.Version).First())
+                 .Select(
+                     package =>
+                         V2FeedUtilities.CreatePackageSearchResult(package, _filter,
+                             (V2FeedParser)_feedParser, _logger, _token)).Where(p => _filter.IncludeDelisted || p.IsListed);
+
+
             var enumerator = results.GetEnumerator();
             _currentEnumerator = enumerator;
             return _currentEnumerator.MoveNext();
@@ -206,12 +222,22 @@ internal class EnumeratorAsync : IEnumeratorAsync<IPackageSearchMetadata>
                 _currentPage = _isSearchAvailable
                                     ? await _feedParser.GetSearchPageAsync(_searchTerm, _filter, _skip, _take, _logger, _token)
                                     : await _feedParser.GetPackagesPageAsync(_searchTerm, _filter, _skip, _take, _logger, _token);
-                var results = _currentPage.Items.GroupBy(p => p.Id)
-                    .Select(group => group.OrderByDescending(p => p.Version).First())
-                    .Select(
-                        package =>
-                            V2FeedUtilities.CreatePackageSearchResult(package, _filter,
-                                (V2FeedParser)_feedParser, _logger, _token)).Where(p => _filter.IncludeDelisted || p.IsListed);
+
+                var results = _allVersions ?
+               _currentPage.Items.GroupBy(p => p.Id)
+                .Select(group => group.OrderByDescending(p => p.Version)).SelectMany(pg => pg)
+                .Select(
+                    package =>
+                        V2FeedUtilities.CreatePackageSearchResult(package, _filter,
+                            (V2FeedParser)_feedParser, _logger, _token)).Where(p => _filter.IncludeDelisted || p.IsListed)
+                :
+                _currentPage.Items.GroupBy(p => p.Id)
+                 .Select(group => group.OrderByDescending(p => p.Version).First())
+                 .Select(
+                     package =>
+                         V2FeedUtilities.CreatePackageSearchResult(package, _filter,
+                             (V2FeedParser)_feedParser, _logger, _token)).Where(p => _filter.IncludeDelisted || p.IsListed);
+
                 var enumerator = results.GetEnumerator();
                 _currentEnumerator = enumerator;
                 return _currentEnumerator.MoveNext();
