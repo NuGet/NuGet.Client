@@ -16,7 +16,6 @@
     "Microsoft.VisualStudio.Threading": "15.0.20-pre",
     "Microsoft.VSSDK.BuildTools": "15.0.25604-Preview4",
     "Microsoft.VisualStudio.Telemetry": "15.0.691-master31907920",
-    "Microsoft.VisualStudio.Workspace.VSIntegration": "15.0.171-pre",
     "Newtonsoft.Json": "6.0.4"
   },
   "frameworks": {
