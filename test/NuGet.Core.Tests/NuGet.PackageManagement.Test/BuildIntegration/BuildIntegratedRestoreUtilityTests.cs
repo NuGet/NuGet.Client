@@ -246,7 +246,7 @@ namespace NuGet.Test
                 var metadata = new ProjectRestoreMetadata();
                 packageSpec.RestoreMetadata = metadata;
 
-                metadata.OutputType = RestoreOutputType.UAP;
+                metadata.ProjectStyle = ProjectStyle.ProjectJson;
                 metadata.ProjectPath = projectPath;
                 metadata.ProjectJsonPath = packageSpec.FilePath;
                 metadata.ProjectName = packageSpec.Name;
@@ -311,7 +311,7 @@ namespace NuGet.Test
                 var metadata = new ProjectRestoreMetadata();
                 packageSpec.RestoreMetadata = metadata;
 
-                metadata.OutputType = RestoreOutputType.UAP;
+                metadata.ProjectStyle = ProjectStyle.ProjectJson;
                 metadata.ProjectPath = projectPath;
                 metadata.ProjectJsonPath = packageSpec.FilePath;
                 metadata.ProjectName = packageSpec.Name;
