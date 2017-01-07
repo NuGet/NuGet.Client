@@ -284,7 +284,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return new PackageSpec(tfis)
             {
                 Name = _projectName ?? _projectUniqueName,
-                Version = new NuGetVersion(1, 0, 0, 0, (string)null, string.Empty),
+                Version = new NuGetVersion(_project.Version),
                 Authors = new string[] { },
                 Owners = new string[] { },
                 Tags = new string[] { },

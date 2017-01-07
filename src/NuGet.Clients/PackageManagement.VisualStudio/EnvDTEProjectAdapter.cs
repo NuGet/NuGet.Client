@@ -98,6 +98,28 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        public string Version
+        {
+            get
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
+                var packageVersion = GetMSBuildProperty(AsIVsBuildPropertyStorage, "PackageVersion");
+
+                if (string.IsNullOrEmpty(packageVersion))
+                {
+                    packageVersion = GetMSBuildProperty(AsIVsBuildPropertyStorage, "Version");
+
+                    if (string.IsNullOrEmpty(packageVersion))
+                    {
+                        packageVersion = "1.0.0";
+                    }
+                }
+
+                return packageVersion;
+            }
+        }
+
         public string BaseIntermediateOutputPath
         {
             get
