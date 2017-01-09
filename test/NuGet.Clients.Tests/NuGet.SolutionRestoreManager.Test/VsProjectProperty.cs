@@ -5,13 +5,13 @@ using System;
 
 namespace NuGet.SolutionRestoreManager.Test
 {
-    internal class VsReferenceProperty : IVsReferenceProperty
+    internal class VsProjectProperty : IVsProjectProperty
     {
         public string Name { get; }
 
         public string Value { get; }
 
-        public VsReferenceProperty(string name, string value)
+        public VsProjectProperty(string name, string value)
         {
             if (string.IsNullOrEmpty(name))
             {

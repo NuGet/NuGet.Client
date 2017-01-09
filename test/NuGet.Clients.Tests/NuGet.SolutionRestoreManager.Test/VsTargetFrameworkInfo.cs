@@ -18,26 +18,33 @@ namespace NuGet.SolutionRestoreManager.Test
         public VsTargetFrameworkInfo(
             string targetFrameworkMoniker,
             IVsReferenceItems packageReferences,
-            IVsReferenceItems projectReferences)
+            IVsReferenceItems projectReferences,
+            IVsProjectProperties projectProperties)
         {
             if (string.IsNullOrEmpty(targetFrameworkMoniker))
             {
                 throw new ArgumentException(ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(targetFrameworkMoniker));
             }
 
-            if(packageReferences == null)
+            if (packageReferences == null)
             {
                 throw new ArgumentNullException(nameof(packageReferences));
             }
 
-            if(projectReferences == null)
+            if (projectReferences == null)
             {
                 throw new ArgumentNullException(nameof(projectReferences));
+            }
+
+            if (projectProperties == null)
+            {
+                throw new ArgumentNullException(nameof(projectProperties));
             }
 
             TargetFrameworkMoniker = targetFrameworkMoniker;
             PackageReferences = packageReferences;
             ProjectReferences = projectReferences;
+            Properties = projectProperties;
         }
     }
 }
