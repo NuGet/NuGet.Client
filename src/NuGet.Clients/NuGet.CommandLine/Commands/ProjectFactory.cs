@@ -1366,7 +1366,7 @@ namespace NuGet.CommandLine
             {
                 Path = file.Path + ".transform";
                 _streamFactory = new Lazy<Func<Stream>>(() => ReverseTransform(file, transforms), isThreadSafe: false);
-                TargetFramework = CoreV2.NuGet.VersionUtility.ParseFrameworkNameFromFilePath(Path, out _effectivePath);
+                TargetFramework = FrameworkNameUtility.ParseFrameworkNameFromFilePath(Path, out _effectivePath);
             }
 
             public string Path

@@ -128,7 +128,7 @@ namespace NuGet.Commands
                     {
                         var p = asyncEnumerator.Current;
                         listArgs.PrintJustified(0, p.Identity.Id);
-                        listArgs.PrintJustified(1, p.Identity.Version.ToString());
+                        listArgs.PrintJustified(1, p.Identity.Version.ToFullString());
                         listArgs.PrintJustified(1, p.Description);
                         if (!string.IsNullOrEmpty(p.LicenseUrl?.OriginalString))
                         {
