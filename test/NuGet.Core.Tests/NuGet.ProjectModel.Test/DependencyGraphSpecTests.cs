@@ -107,7 +107,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal("c:\\x\\x.csproj", msbuildMetadata.ProjectPath);
             Assert.Equal("x", msbuildMetadata.ProjectName);
             Assert.Equal("c:\\x\\project.json", msbuildMetadata.ProjectJsonPath);
-            Assert.Equal(RestoreOutputType.NETCore, msbuildMetadata.OutputType);
+            Assert.Equal(ProjectStyle.PackageReference, msbuildMetadata.ProjectStyle);
             Assert.Equal("c:\\packages", msbuildMetadata.PackagesPath);
             Assert.Equal("https://api.nuget.org/v3/index.json", string.Join("|", msbuildMetadata.Sources.Select(s => s.Source)));
             Assert.Equal("c:\\fallback1|c:\\fallback2", string.Join("|", msbuildMetadata.FallbackFolders));
@@ -132,7 +132,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal("c:\\x\\x.csproj", msbuildMetadata.ProjectPath);
             Assert.Equal("x", msbuildMetadata.ProjectName);
             Assert.Equal("c:\\x\\project.json", msbuildMetadata.ProjectJsonPath);
-            Assert.Equal(RestoreOutputType.NETCore, msbuildMetadata.OutputType);
+            Assert.Equal(ProjectStyle.PackageReference, msbuildMetadata.ProjectStyle);
             Assert.Equal("c:\\packages", msbuildMetadata.PackagesPath);
             Assert.Equal("https://api.nuget.org/v3/index.json", string.Join("|", msbuildMetadata.Sources.Select(s => s.Source)));
             Assert.Equal("c:\\fallback1|c:\\fallback2", string.Join("|", msbuildMetadata.FallbackFolders));
@@ -151,7 +151,7 @@ namespace NuGet.ProjectModel.Test
             msbuildMetadata.ProjectPath = "c:\\x\\x.csproj";
             msbuildMetadata.ProjectName = "x";
             msbuildMetadata.ProjectJsonPath = "c:\\x\\project.json";
-            msbuildMetadata.OutputType = RestoreOutputType.NETCore;
+            msbuildMetadata.ProjectStyle = ProjectStyle.PackageReference;
             msbuildMetadata.PackagesPath = "c:\\packages";
             msbuildMetadata.Sources = new[] { new PackageSource("https://api.nuget.org/v3/index.json") };
 
@@ -180,7 +180,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal("c:\\x\\x.csproj", msbuildMetadata.ProjectPath);
             Assert.Equal("x", msbuildMetadata.ProjectName);
             Assert.Equal("c:\\x\\project.json", msbuildMetadata.ProjectJsonPath);
-            Assert.Equal(RestoreOutputType.NETCore, msbuildMetadata.OutputType);
+            Assert.Equal(ProjectStyle.PackageReference, msbuildMetadata.ProjectStyle);
             Assert.Equal("c:\\packages", msbuildMetadata.PackagesPath);
             Assert.Equal("https://api.nuget.org/v3/index.json", string.Join("|", msbuildMetadata.Sources.Select(s => s.Source)));
             Assert.Equal("c:\\fallback1|c:\\fallback2", string.Join("|", msbuildMetadata.FallbackFolders));
@@ -206,7 +206,7 @@ namespace NuGet.ProjectModel.Test
             msbuildMetadata.ProjectPath = "c:\\x\\x.csproj";
             msbuildMetadata.ProjectName = "x";
             msbuildMetadata.ProjectJsonPath = "c:\\x\\project.json";
-            msbuildMetadata.OutputType = RestoreOutputType.NETCore;
+            msbuildMetadata.ProjectStyle = ProjectStyle.PackageReference;
             msbuildMetadata.PackagesPath = "c:\\packages";
             msbuildMetadata.Sources = new[] { new PackageSource("https://api.nuget.org/v3/index.json") };
 
@@ -244,7 +244,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal("c:\\x\\x.csproj", msbuildMetadata2.ProjectPath);
             Assert.Equal("x", msbuildMetadata2.ProjectName);
             Assert.Equal("c:\\x\\project.json", msbuildMetadata2.ProjectJsonPath);
-            Assert.Equal(RestoreOutputType.NETCore, msbuildMetadata2.OutputType);
+            Assert.Equal(ProjectStyle.PackageReference, msbuildMetadata2.ProjectStyle);
             Assert.Equal("c:\\packages", msbuildMetadata2.PackagesPath);
             Assert.Equal("https://api.nuget.org/v3/index.json", string.Join("|", msbuildMetadata.Sources.Select(s => s.Source)));
             Assert.Equal("c:\\fallback1|c:\\fallback2", string.Join("|", msbuildMetadata2.FallbackFolders));
@@ -273,7 +273,7 @@ namespace NuGet.ProjectModel.Test
             msbuildMetadata.ProjectUniqueName = "A55205E7-4D08-4672-8011-0925467CC45F";
             msbuildMetadata.ProjectPath = "c:\\x\\x.csproj";
             msbuildMetadata.ProjectName = "x";
-            msbuildMetadata.OutputType = RestoreOutputType.NETCore;
+            msbuildMetadata.ProjectStyle = ProjectStyle.PackageReference;
 
             var tfmGroup = new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.Parse("net45"));
             var tfmGroup2 = new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.Parse("netstandard1.3"));

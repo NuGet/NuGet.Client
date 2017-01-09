@@ -605,6 +605,13 @@ namespace NuGet.ProjectManagement
                 throw new ArgumentNullException(nameof(context));
             }
 
+            // Some projects like website project don't have project file.
+            // Return empty list for this case.
+            if (String.IsNullOrEmpty(MSBuildNuGetProjectSystem.ProjectFileFullPath))
+            {
+                return new List<PackageSpec>();
+            }
+
             PackageSpec packageSpec = null;
             if (!context.PackageSpecCache.TryGetValue(MSBuildNuGetProjectSystem.ProjectFileFullPath, out packageSpec))
             {
@@ -624,7 +631,7 @@ namespace NuGet.ProjectManagement
                 var metadata = new ProjectRestoreMetadata();
                 packageSpec.RestoreMetadata = metadata;
 
-                metadata.OutputType = RestoreOutputType.Unknown;
+                metadata.ProjectStyle = ProjectStyle.Unknown;
                 metadata.ProjectPath = MSBuildNuGetProjectSystem.ProjectFileFullPath;
                 metadata.ProjectName = MSBuildNuGetProjectSystem.ProjectName;
                 metadata.ProjectUniqueName = MSBuildNuGetProjectSystem.ProjectFileFullPath;

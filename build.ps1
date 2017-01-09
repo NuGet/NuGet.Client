@@ -53,7 +53,7 @@ param (
     [ValidateSet("debug", "release")]
     [Alias('c')]
     [string]$Configuration,
-    [ValidateSet("release","rtm", "rc", "rc1", "rc2", "beta", "beta1", "beta2", "final", "xprivate", "zlocal")]
+    [ValidateSet("release","rtm", "rc", "rc1", "rc2", "rc3", "beta", "beta1", "beta2", "final", "xprivate", "zlocal")]
     [Alias('l')]
     [string]$ReleaseLabel = 'zlocal',
     [Alias('n')]

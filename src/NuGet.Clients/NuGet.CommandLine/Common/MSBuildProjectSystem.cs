@@ -1,11 +1,16 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using NuGet.Commands;
 using NuGet.Frameworks;
+using NuGet.PackageManagement;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 
@@ -43,64 +48,40 @@ namespace NuGet.Common
 
         public string ProjectFileFullPath { get; }
 
+        private NuGetFramework _targetFramework;
+
         public NuGetFramework TargetFramework
         {
             get
             {
-                // this is required to get the right TFM for native or js projects since TargetFrameworkMoniker
-                // property won't give the accurate value for these kind of projects
-                var moniker = GetTargetFrameworkString();
-
-                if (String.IsNullOrEmpty(moniker))
+                if (_targetFramework == null)
                 {
-                    return null;
+                    var frameworkStrings = MSBuildProjectFrameworkUtility.GetProjectFrameworkStrings(
+                        projectFilePath: ProjectFileFullPath,
+                        targetFrameworks: GetPropertyValue("TargetFrameworks"),
+                        targetFramework: GetPropertyValue("TargetFramework"),
+                        targetFrameworkMoniker: GetPropertyValue("TargetFrameworkMoniker"),
+                        targetPlatformIdentifier: GetPropertyValue("TargetPlatformIdentifier"),
+                        targetPlatformVersion: GetPropertyValue("TargetPlatformVersion"));
+
+                    // Parse the framework of the project or return unsupported.
+                    var frameworks = MSBuildProjectFrameworkUtility.GetProjectFrameworks(frameworkStrings).ToArray();
+
+                    if (frameworks.Length > 0)
+                    {
+                        _targetFramework = frameworks[0];
+                    }
+                    else
+                    {
+                        _targetFramework = NuGetFramework.UnsupportedFramework;
+                    }
                 }
 
-                var framework = NuGetFramework.Parse(moniker);
-
-                // further parse framework for .net core 4.5.1 or 4.5 and get compatible framework instance
-                return MSBuildNuGetProjectSystemUtility.GetProjectFrameworkReplacement(framework);
+                return _targetFramework;
             }
         }
 
         private dynamic Project { get; }
-
-        private string GetTargetFrameworkString()
-        {
-            var extension = GetPropertyValue(ProjectManagement.Constants.ProjectExt);
-
-            // Check for JS project
-            if (StringComparer.OrdinalIgnoreCase.Equals(ProjectManagement.Constants.JSProjectExt, extension))
-            {
-                // JavaScript apps do not have a TargetFrameworkMoniker property set.
-                // We read the TargetPlatformIdentifier and TargetPlatformVersion instead
-                var platformIdentifier = GetPropertyValue(ProjectManagement.Constants.TargetPlatformIdentifier);
-                var platformVersion = GetPropertyValue(ProjectManagement.Constants.TargetPlatformVersion);
-
-                // use the default values for JS if they were not given
-                if (string.IsNullOrEmpty(platformVersion))
-                {
-                    platformVersion = "0.0";
-                }
-
-                if (string.IsNullOrEmpty(platformIdentifier))
-                {
-                    platformIdentifier = "Windows";
-                }
-
-                return string.Format(CultureInfo.InvariantCulture, "{0}, Version={1}", platformIdentifier, platformVersion);
-            }
-
-            // Check for C++ project
-            if (StringComparer.OrdinalIgnoreCase.Equals(ProjectManagement.Constants.VCXProjextExt, extension))
-            {
-                // The C++ project does not have a TargetFrameworkMoniker property set. 
-                // We hard-code the return value to Native.
-                return ProjectManagement.Constants.NativeTFM;
-            }
-
-            return GetPropertyValue(ProjectManagement.Constants.TargetFrameworkMoniker);
-        }
 
         public void AddBindingRedirects()
         {
@@ -129,7 +110,7 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(targetFullPath));
             }
 
-            var targetRelativePath = NuGet.PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(ProjectFullPath), targetFullPath);
+            var targetRelativePath = NuGet.Commands.PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(ProjectFullPath), targetFullPath);
             var imports = Project.Xml.Imports;
             bool notImported = true;
             if (imports != null)
@@ -169,8 +150,8 @@ namespace NuGet.Common
 
         public void AddReference(string referencePath)
         {
-            string fullPath = NuGet.PathUtility.GetAbsolutePath(ProjectFullPath, referencePath);
-            string relativePath = NuGet.PathUtility.GetRelativePath(Project.FullPath, fullPath);
+            string fullPath = NuGet.Commands.PathUtility.GetAbsolutePath(ProjectFullPath, referencePath);
+            string relativePath = NuGet.Commands.PathUtility.GetRelativePath(Project.FullPath, fullPath);
             string assemblyFileName = Path.GetFileNameWithoutExtension(fullPath);
 
             try
@@ -291,7 +272,7 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(targetFullPath));
             }
 
-            var targetRelativePath = NuGet.PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(ProjectFullPath), targetFullPath);
+            var targetRelativePath = NuGet.Commands.PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(ProjectFullPath), targetFullPath);
             if (Project.Xml.Imports != null)
             {
                 // search for this import statement and remove it
@@ -437,6 +418,7 @@ namespace NuGet.Common
 
         private dynamic GetProject(string projectFile)
         {
+            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(AssemblyResolve);
             dynamic globalProjectCollection = _projectCollectionType
                 .GetProperty("GlobalProjectCollection")
                 .GetMethod

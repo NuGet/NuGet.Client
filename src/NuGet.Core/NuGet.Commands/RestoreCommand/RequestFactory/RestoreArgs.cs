@@ -60,6 +60,8 @@ namespace NuGet.Commands
 
         public int? LockFileVersion { get; set; }
 
+        public bool? ValidateRuntimeAssets { get; set; }
+
         // Cache directory -> ISettings
         private ConcurrentDictionary<string, ISettings> _settingsCache
             = new ConcurrentDictionary<string, ISettings>(StringComparer.Ordinal);
@@ -166,12 +168,12 @@ namespace NuGet.Commands
         {
             request.PackageSaveMode = PackageSaveMode;
 
-            if (request.RestoreOutputType == RestoreOutputType.NETCore
-                || request.RestoreOutputType == RestoreOutputType.Standalone)
+            if (request.ProjectStyle == ProjectStyle.PackageReference
+                || request.ProjectStyle == ProjectStyle.Standalone)
             {
                 request.LockFilePath = Path.Combine(request.RestoreOutputPath, LockFileFormat.AssetsFileName);
             }
-            else if (request.RestoreOutputType != RestoreOutputType.DotnetCliTool)
+            else if (request.ProjectStyle != ProjectStyle.DotnetCliTool)
             {
                 request.LockFilePath = ProjectJsonPathUtilities.GetLockFilePath(request.Project.FilePath);
             }
@@ -190,6 +192,24 @@ namespace NuGet.Commands
             if (LockFileVersion.HasValue && LockFileVersion.Value > 0)
             {
                 request.LockFileVersion = LockFileVersion.Value;
+            }
+
+            // Run runtime asset checks for project.json, and for other types if enabled.
+            if (ValidateRuntimeAssets == null)
+            {
+                if (request.ProjectStyle == ProjectStyle.ProjectJson
+                    || request.Project.RestoreMetadata == null)
+                {
+                    request.ValidateRuntimeAssets = request.ProjectStyle == ProjectStyle.ProjectJson;
+                }
+                else
+                {
+                    request.ValidateRuntimeAssets = request.Project.RestoreMetadata.ValidateRuntimeAssets;
+                }
+            }
+            else
+            {
+                request.ValidateRuntimeAssets = ValidateRuntimeAssets.Value;
             }
         }
     }

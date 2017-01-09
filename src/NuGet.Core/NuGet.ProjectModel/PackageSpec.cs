@@ -19,6 +19,7 @@ namespace NuGet.ProjectModel
     public class PackageSpec
     {
         public static readonly string PackageSpecFileName = "project.json";
+        public static readonly NuGetVersion DefaultVersion = new NuGetVersion(1, 0, 0);
 
         public PackageSpec(IList<TargetFrameworkInformation> frameworks)
         {
@@ -40,7 +41,7 @@ namespace NuGet.ProjectModel
 
         public string Title { get; set; }
 
-        private NuGetVersion _version;
+        private NuGetVersion _version = DefaultVersion;
         public NuGetVersion Version
         {
             get
@@ -53,7 +54,7 @@ namespace NuGet.ProjectModel
                 this.IsDefaultVersion = false;
             }
         }
-        public bool IsDefaultVersion { get; set; }
+        public bool IsDefaultVersion { get; set; } = true;
 
         public bool HasVersionSnapshot { get; set; }
 

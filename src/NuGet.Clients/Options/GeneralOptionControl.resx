@@ -301,7 +301,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;localsCommandButton.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>9</value>
   </data>
   <data name="localsCommandStatusText.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -331,7 +331,127 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;localsCommandStatusText.ZOrder" xml:space="preserve">
+    <value>10</value>
+  </data>
+  <data name="PackageManagementHeader.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="PackageManagementHeader.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 8.25pt, style=Bold</value>
+  </data>
+  <data name="PackageManagementHeader.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="PackageManagementHeader.Location" type="System.Drawing.Point, System.Drawing">
+    <value>2, 151</value>
+  </data>
+  <data name="PackageManagementHeader.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 0, 2, 0</value>
+  </data>
+  <data name="PackageManagementHeader.Size" type="System.Drawing.Size, System.Drawing">
+    <value>133, 13</value>
+  </data>
+  <data name="PackageManagementHeader.TabIndex" type="System.Int32, mscorlib">
+    <value>19</value>
+  </data>
+  <data name="PackageManagementHeader.Text" xml:space="preserve">
+    <value>Package Management</value>
+  </data>
+  <data name="&gt;&gt;PackageManagementHeader.Name" xml:space="preserve">
+    <value>PackageManagementHeader</value>
+  </data>
+  <data name="&gt;&gt;PackageManagementHeader.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;PackageManagementHeader.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;PackageManagementHeader.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="defaultPackageManagementFormatLabel.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="defaultPackageManagementFormatLabel.Location" type="System.Drawing.Point, System.Drawing">
+    <value>16, 178</value>
+  </data>
+  <data name="defaultPackageManagementFormatLabel.Size" type="System.Drawing.Size, System.Drawing">
+    <value>185, 13</value>
+  </data>
+  <data name="defaultPackageManagementFormatLabel.TabIndex" type="System.Int32, mscorlib">
+    <value>21</value>
+  </data>
+  <data name="defaultPackageManagementFormatLabel.Text" xml:space="preserve">
+    <value>&amp;Default package management format:</value>
+  </data>
+  <data name="&gt;&gt;defaultPackageManagementFormatLabel.Name" xml:space="preserve">
+    <value>defaultPackageManagementFormatLabel</value>
+  </data>
+  <data name="&gt;&gt;defaultPackageManagementFormatLabel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;defaultPackageManagementFormatLabel.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;defaultPackageManagementFormatLabel.ZOrder" xml:space="preserve">
     <value>6</value>
+  </data>
+  <data name="showPackageManagementChooser.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="showPackageManagementChooser.Location" type="System.Drawing.Point, System.Drawing">
+    <value>19, 206</value>
+  </data>
+  <data name="showPackageManagementChooser.Size" type="System.Drawing.Size, System.Drawing">
+    <value>315, 17</value>
+  </data>
+  <data name="showPackageManagementChooser.TabIndex" type="System.Int32, mscorlib">
+    <value>22</value>
+  </data>
+  <data name="showPackageManagementChooser.Text" xml:space="preserve">
+    <value>Do not &amp;show the format selector dialog on first package install</value>
+  </data>
+  <data name="&gt;&gt;showPackageManagementChooser.Name" xml:space="preserve">
+    <value>showPackageManagementChooser</value>
+  </data>
+  <data name="&gt;&gt;showPackageManagementChooser.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;showPackageManagementChooser.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;showPackageManagementChooser.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <metadata name="defaultPackageManagementFormatItems.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <data name="defaultPackageManagementFormatItems.Items" xml:space="preserve">
+    <value>Packages.config</value>
+  </data>
+  <data name="defaultPackageManagementFormatItems.Items1" xml:space="preserve">
+    <value>PackageReference</value>
+  </data>
+  <data name="defaultPackageManagementFormatItems.Location" type="System.Drawing.Point, System.Drawing">
+    <value>204, 173</value>
+  </data>
+  <data name="defaultPackageManagementFormatItems.Size" type="System.Drawing.Size, System.Drawing">
+    <value>121, 21</value>
+  </data>
+  <data name="defaultPackageManagementFormatItems.TabIndex" type="System.Int32, mscorlib">
+    <value>23</value>
+  </data>
+  <data name="&gt;&gt;defaultPackageManagementFormatItems.Name" xml:space="preserve">
+    <value>defaultPackageManagementFormatItems</value>
+  </data>
+  <data name="&gt;&gt;defaultPackageManagementFormatItems.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;defaultPackageManagementFormatItems.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;defaultPackageManagementFormatItems.ZOrder" xml:space="preserve">
+    <value>8</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>

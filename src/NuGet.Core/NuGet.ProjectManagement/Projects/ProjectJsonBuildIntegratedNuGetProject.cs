@@ -198,7 +198,7 @@ namespace NuGet.ProjectManagement.Projects
                 var metadata = new ProjectRestoreMetadata();
                 packageSpec.RestoreMetadata = metadata;
 
-                metadata.OutputType = RestoreOutputType.UAP;
+                metadata.ProjectStyle = ProjectStyle.ProjectJson;
                 metadata.ProjectPath = MSBuildProjectPath;
                 metadata.ProjectJsonPath = packageSpec.FilePath;
                 metadata.ProjectName = packageSpec.Name;

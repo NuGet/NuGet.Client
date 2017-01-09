@@ -27,9 +27,8 @@ namespace NuGet.Protocol.Tests
 
             var packageSearchResource = await repo.GetResourceAsync<PackageSearchResource>();
 
-            var searchFilter = new SearchFilter()
+            var searchFilter = new SearchFilter(includePrerelease: false)
             {
-                IncludePrerelease = false,
                 SupportedFrameworks = new string[] { "net40-Client" }
             };
 
@@ -71,9 +70,8 @@ namespace NuGet.Protocol.Tests
 
             var packageSearchResource = await repo.GetResourceAsync<PackageSearchResource>();
 
-            var searchFilter = new SearchFilter()
+            var searchFilter = new SearchFilter(includePrerelease: false)
             {
-                IncludePrerelease = false,
                 SupportedFrameworks = new string[] { "net40-Client" }
             };
 

@@ -18,10 +18,6 @@ namespace NuGet.PackageManagement.UI
             InitializeComponent();
             _doNotShowCheckBox.IsChecked = DotnetDeprecatedPrompt.GetDoNotShowPromptState();
 
-            if (StandaloneSwitch.IsRunningStandalone)
-            {
-                Background = SystemColors.WindowBrush;
-            }
             _initialized = true;
         }
 
@@ -68,7 +64,7 @@ namespace NuGet.PackageManagement.UI
 
         private void SaveDoNotShowPreviewWindowSetting(bool doNotshow)
         {
-            _uiContext.ApplyShowDeprecatedFrameworkSetting(!doNotshow);
+            _uiContext.UserSettingsManager.ApplyShowDeprecatedFrameworkSetting(!doNotshow);
 
             DotnetDeprecatedPrompt.SaveDoNotShowPromptState(doNotshow);
         }

@@ -12,6 +12,7 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using NuGet.Common;
 
 namespace NuGet.CommandLine.Test
 {
@@ -320,6 +321,7 @@ namespace NuGet.CommandLine.Test
             const int ERROR_OPERATION_ABORTED = 995;
             const int ERROR_INVALID_HANDLE = 6;
             const int ERROR_INVALID_FUNCTION = 1;
+            const int ERROR_OPERATION_ABORTED_MONO = 500;
 
             while (true)
             {
@@ -336,7 +338,8 @@ namespace NuGet.CommandLine.Test
                 {
                     if (ex.ErrorCode == ERROR_OPERATION_ABORTED ||
                         ex.ErrorCode == ERROR_INVALID_HANDLE ||
-                        ex.ErrorCode == ERROR_INVALID_FUNCTION)
+                        ex.ErrorCode == ERROR_INVALID_FUNCTION ||
+                        RuntimeEnvironmentHelper.IsMono && ex.ErrorCode == ERROR_OPERATION_ABORTED_MONO)
                     {
                         return;
                     }
@@ -403,7 +406,8 @@ namespace NuGet.CommandLine.Test
                     new XElement(nsDataService + "PackageHash", package.GetHash("SHA512")),
                     new XElement(nsDataService + "PackageHashAlgorithm", "SHA512"),
                     new XElement(nsDataService + "Description", package.Description),
-                    new XElement(nsDataService + "Listed", package.Listed)));
+                    new XElement(nsDataService + "Listed", package.Listed),
+                    new XElement(nsDataService + "Published",package.Published)));
             return entry;
         }
 

@@ -148,12 +148,16 @@ namespace NuGet.Commands
         /// <summary>
         /// Defines the paths and behavior for outputs
         /// </summary>
-        public RestoreOutputType RestoreOutputType { get; set; } = RestoreOutputType.Unknown;
+        public ProjectStyle ProjectStyle { get; set; } = ProjectStyle.Unknown;
 
         /// <summary>
         /// Restore output path
         /// </summary>
         public string RestoreOutputPath { get; set; }
 
+        /// <summary>
+        /// Compatibility options
+        /// </summary>
+        public bool ValidateRuntimeAssets { get; set; } = true;
     }
 }

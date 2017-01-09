@@ -1,5 +1,9 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
+using System.Threading;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
@@ -71,6 +75,22 @@ namespace API.Test
                 restorer.RestorePackages(project);
                 return;
             }
+        }
+
+        public static IVsPathContext GetVsPathContext(string projectUniqueName)
+        {
+            var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+            var factory = ServiceLocator.GetInstance<IVsPathContextProvider>();
+
+            foreach (EnvDTE.Project project in dte.Solution.Projects)
+            {
+                if (project.UniqueName == projectUniqueName)
+                {
+                    return factory.CreateAsync(project, CancellationToken.None).Result;
+                }
+            }
+
+            return null;
         }
 
         public static bool ExecuteInitScript(string id, string version)

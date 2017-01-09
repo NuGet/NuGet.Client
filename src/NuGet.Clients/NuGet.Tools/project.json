@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "Lucene.Net": "3.0.3",
+    "NuGet.Commands": "4.0.0-rc3-*",
+    "NuGet.Indexing": "4.0.0-rc3-*"
+  },
+  "frameworks": {
+    "net46": {}
+  },
+  "runtimes": {
+    "win-anycpu": {},
+    "win": {}
+  }
+}

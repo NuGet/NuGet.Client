@@ -41,7 +41,7 @@ namespace NuGet.Commands
 
             var previousLibraries = previousLockFile?.Libraries.ToDictionary(l => Tuple.Create(l.Name, l.Version));
 
-            if (project.RestoreMetadata?.OutputType == RestoreOutputType.NETCore)
+            if (project.RestoreMetadata?.ProjectStyle == ProjectStyle.PackageReference)
             {
                 AddProjectFileDependenciesForNETCore(project, lockFile, targetGraphs);
             }
@@ -156,6 +156,8 @@ namespace NuGet.Commands
             var warnForImports = project.TargetFrameworks.Any(framework => framework.Warn);
             var librariesWithWarnings = new HashSet<LibraryIdentity>();
 
+            var rootProjectStyle = project.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
+
             // Add the targets
             foreach (var targetGraph in targetGraphs
                 .OrderBy(graph => graph.Framework.ToString(), StringComparer.Ordinal)
@@ -174,6 +176,13 @@ namespace NuGet.Commands
                 {
                     var library = graphItem.Key;
 
+                    // include flags
+                    LibraryIncludeFlags includeFlags;
+                    if (!flattenedFlags.TryGetValue(library.Name, out includeFlags))
+                    {
+                        includeFlags = ~LibraryIncludeFlags.ContentFiles;
+                    }
+
                     if (library.Type == LibraryType.Project || library.Type == LibraryType.ExternalProject)
                     {
                         if (project.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase))
@@ -182,64 +191,14 @@ namespace NuGet.Commands
                             continue;
                         }
 
-                        var localMatch = (LocalMatch)graphItem.Data.Match;
+                        var projectLib = LockFileUtils.CreateLockFileTargetProject(
+                            graphItem,
+                            library,
+                            includeFlags,
+                            targetGraph,
+                            rootProjectStyle);
 
-                        // Target framework information is optional and may not exist for csproj projects
-                        // that do not have a project.json file.
-                        string projectFramework = null;
-                        object frameworkInfoObject;
-                        if (localMatch.LocalLibrary.Items.TryGetValue(
-                            KnownLibraryProperties.TargetFrameworkInformation,
-                            out frameworkInfoObject))
-                        {
-                            // Retrieve the resolved framework name, if this is null it means that the
-                            // project is incompatible. This is marked as Unsupported.
-                            var targetFrameworkInformation = (TargetFrameworkInformation)frameworkInfoObject;
-                            projectFramework = targetFrameworkInformation.FrameworkName?.DotNetFrameworkName
-                                ?? NuGetFramework.UnsupportedFramework.DotNetFrameworkName;
-                        }
-
-                        // Create the target entry
-                        var lib = new LockFileTargetLibrary()
-                        {
-                            Name = library.Name,
-                            Version = library.Version,
-                            Type = LibraryType.Project,
-                            Framework = projectFramework,
-
-                            // Find all dependencies which would be in the nuspec
-                            // Include dependencies with no constraints, or package/project/external
-                            // Exclude suppressed dependencies, the top level project is not written 
-                            // as a target so the node depth does not matter.
-                            Dependencies = graphItem.Data.Dependencies
-                                .Where(
-                                    d => (d.LibraryRange.TypeConstraintAllowsAnyOf(
-                                        LibraryDependencyTarget.PackageProjectExternal))
-                                         && d.SuppressParent != LibraryIncludeFlags.All)
-                                .Select(d => GetDependencyVersionRange(d))
-                                .ToList()
-                        };
-
-                        object compileAssetObject;
-                        if (localMatch.LocalLibrary.Items.TryGetValue(
-                            KnownLibraryProperties.CompileAsset,
-                            out compileAssetObject))
-                        {
-                            var item = new LockFileItem((string)compileAssetObject);
-                            lib.CompileTimeAssemblies.Add(item);
-                            lib.RuntimeAssemblies.Add(item);
-                        }
-
-                        // Add frameworkAssemblies for projects
-                        object frameworkAssembliesObject;
-                        if (localMatch.LocalLibrary.Items.TryGetValue(
-                            KnownLibraryProperties.FrameworkAssemblies,
-                            out frameworkAssembliesObject))
-                        {
-                            lib.FrameworkAssemblies.AddRange((List<string>)frameworkAssembliesObject);
-                        }
-
-                        target.Libraries.Add(lib);
+                        target.Libraries.Add(projectLib);
                         continue;
                     }
                     else if (library.Type == LibraryType.Package)
@@ -252,13 +211,6 @@ namespace NuGet.Commands
                         }
 
                         var package = packageInfo.Package;
-
-                        // include flags
-                        LibraryIncludeFlags includeFlags;
-                        if (!flattenedFlags.TryGetValue(library.Name, out includeFlags))
-                        {
-                            includeFlags = ~LibraryIncludeFlags.ContentFiles;
-                        }
 
                         var targetLibrary = LockFileUtils.CreateLockFileTargetLibrary(
                             libraries[Tuple.Create(library.Name, library.Version)],
@@ -431,26 +383,6 @@ namespace NuGet.Commands
             }
 
             return true;
-        }
-
-        private static PackageDependency GetDependencyVersionRange(LibraryDependency dependency)
-        {
-            var range = dependency.LibraryRange.VersionRange ?? VersionRange.All;
-
-            if (VersionRange.All.Equals(range)
-                && (dependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.ExternalProject)))
-            {
-                // For csproj -> csproj type references where there is no range, use 1.0.0
-                range = VersionRange.Parse("1.0.0");
-            }
-            else
-            {
-                // For project dependencies drop the snapshot version.
-                // Ex: 1.0.0-* -> 1.0.0
-                range = range.ToNonSnapshotRange();
-            }
-
-            return new PackageDependency(dependency.Name, range);
         }
     }
 }

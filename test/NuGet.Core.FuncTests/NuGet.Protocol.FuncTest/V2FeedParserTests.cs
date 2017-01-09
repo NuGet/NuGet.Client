@@ -172,9 +172,8 @@ namespace NuGet.Protocol.FuncTest
 
             V2FeedParser parser = new V2FeedParser(httpSource, packageSource);
 
-            var searchFilter = new SearchFilter()
+            var searchFilter = new SearchFilter(includePrerelease: false)
             {
-                IncludePrerelease = false,
                 SupportedFrameworks = new string[] { "portable-net45+win8" }
             };
 
@@ -200,9 +199,8 @@ namespace NuGet.Protocol.FuncTest
 
             V2FeedParser parser = new V2FeedParser(httpSource, packageSource);
 
-            var searchFilter = new SearchFilter()
+            var searchFilter = new SearchFilter(includePrerelease: false)
             {
-                IncludePrerelease = false,
                 SupportedFrameworks = new string[] { "net45" }
             };
 
@@ -228,9 +226,8 @@ namespace NuGet.Protocol.FuncTest
 
             V2FeedParser parser = new V2FeedParser(httpSource, packageSource);
 
-            var searchFilter = new SearchFilter()
+            var searchFilter = new SearchFilter(includePrerelease: true)
             {
-                IncludePrerelease = true,
                 SupportedFrameworks = new string[] { "net" }
             };
 
@@ -316,9 +313,8 @@ namespace NuGet.Protocol.FuncTest
 
             V2FeedParser parser = new V2FeedParser(httpSource, packageSource);
 
-            var searchFilter = new SearchFilter()
+            var searchFilter = new SearchFilter(includePrerelease: false)
             {
-                IncludePrerelease = false,
                 SupportedFrameworks = new string[] { "portable-net45+win8" }
             };
 
@@ -346,9 +342,8 @@ namespace NuGet.Protocol.FuncTest
 
             V2FeedParser parser = new V2FeedParser(httpSource, packageSource);
 
-            var searchFilter = new SearchFilter()
+            var searchFilter = new SearchFilter(includePrerelease: false)
             {
-                IncludePrerelease = false,
                 SupportedFrameworks = new string[] { "net45" }
             };
 
@@ -376,9 +371,8 @@ namespace NuGet.Protocol.FuncTest
 
             V2FeedParser parser = new V2FeedParser(httpSource, packageSource);
 
-            var searchFilter = new SearchFilter()
+            var searchFilter = new SearchFilter(includePrerelease: true)
             {
-                IncludePrerelease = true,
                 SupportedFrameworks = new string[] { "net" }
             };
 

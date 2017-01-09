@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.PackageManagement;
@@ -164,12 +165,20 @@ namespace Test.Utility
             // do nothing
         }
 
+        public Task<NuGetProject> UpdateNuGetProjectToPackageRef(NuGetProject oldProject)
+        {
+            // do nothing
+            return null;
+        }
+
 #pragma warning disable 0067
         public event EventHandler<NuGetProjectEventArgs> NuGetProjectAdded;
 
         public event EventHandler<NuGetProjectEventArgs> NuGetProjectRemoved;
 
         public event EventHandler<NuGetProjectEventArgs> NuGetProjectRenamed;
+
+        public event EventHandler<NuGetProjectEventArgs> NuGetProjectUpdated;
 
         public event EventHandler<NuGetProjectEventArgs> AfterNuGetProjectRenamed;
 

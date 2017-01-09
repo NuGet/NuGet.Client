@@ -105,7 +105,7 @@ namespace NuGet.Commands
             }
 
             // Add content files if there are any. They could come from a project or nuspec file
-            AddContentFiles();
+            AddContentFiles(builder);
             
             // Add sources if this is a symbol package
             if (IncludeSymbols)
@@ -205,14 +205,14 @@ namespace NuGet.Commands
             }
         }
 
-        private void AddContentFiles()
+        private void AddContentFiles(PackageBuilder builder)
         {
             foreach (var sourcePath in PackTargetArgs.ContentFiles.Keys)
             {
-                var listOfTargetPaths = PackTargetArgs.ContentFiles[sourcePath];
-                foreach (var targetPath in listOfTargetPaths)
+                var listOfContentMetadata = PackTargetArgs.ContentFiles[sourcePath];
+                foreach (var contentMetadata in listOfContentMetadata)
                 {
-                    string target = targetPath;
+                    string target = contentMetadata.Target;
                     var packageFile = new ManifestFile()
                     {
                         Source = sourcePath,
@@ -221,6 +221,27 @@ namespace NuGet.Commands
                         : target
                     };
                     AddFileToBuilder(packageFile);
+
+                    // Add contentFiles entry to the nuspec if applicable
+                    if (IsContentFile(contentMetadata.Target))
+                    {
+                        var includePath = PathUtility.GetRelativePath("contentFiles" + Path.DirectorySeparatorChar, packageFile.Target, '/');
+                        // This is just a check to see if the filename has already been appended to the target path. 
+                        // We do this by comparing extensions of the file
+                        if (!Path.GetExtension(includePath)
+                                .Equals(Path.GetExtension(sourcePath), StringComparison.OrdinalIgnoreCase))
+                        {
+                            includePath = Path.Combine(includePath, Path.GetFileName(sourcePath));
+                        }
+
+                        var manifestContentFile = new ManifestContentFiles()
+                        {
+                            BuildAction = contentMetadata.BuildAction,
+                            Include = includePath,
+                        };
+                        
+                        builder.ContentFiles.Add(manifestContentFile);
+                    }
                 }
             }
         }
@@ -256,6 +277,11 @@ namespace NuGet.Commands
                 };
                 AddFileToBuilder(packageFile);
             }
+        }
+
+        private static bool IsContentFile(string contentFileTargetPath)
+        {
+            return contentFileTargetPath != null && contentFileTargetPath.StartsWith("contentFiles", StringComparison.Ordinal);
         }
     }
 }

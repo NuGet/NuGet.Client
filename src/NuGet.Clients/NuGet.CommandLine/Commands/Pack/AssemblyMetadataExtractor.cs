@@ -8,12 +8,16 @@ using System.Reflection;
 
 namespace NuGet.CommandLine
 {
-    using NuGet.Packaging;
-    using NuGet.Runtime;
-    using NuGet.Versioning;
+    using Packaging;
+    using Versioning;
 
     public static class AssemblyMetadataExtractor
     {
+        private static T CreateInstance<T>(this AppDomain domain)
+        {
+            return (T)domain.CreateInstanceAndUnwrap(typeof(T).Assembly.FullName, typeof(T).FullName);
+        }
+
         public static AssemblyMetadata GetMetadata(string assemblyPath)
         {
             var setup = new AppDomainSetup

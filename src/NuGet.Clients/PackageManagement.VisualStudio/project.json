@@ -1,16 +1,9 @@
 {
   "dependencies": {
-    "NuGet.PackageManagement": "4.0.0-*",
-    "NuGet.Protocol.VisualStudio": "4.0.0-*",
-    "NuGet.Common": "4.0.0-*",
-    "NuGet.Build.Tasks": "4.0.0-*",
-    "Microsoft.VisualStudio.Shell.Interop": "7.10.6071",
-    "Microsoft.VisualStudio.Shell.Interop.10.0": "10.0.30319",
-    "Microsoft.VisualStudio.Shell.Interop.11.0": "11.0.61030",
-    "Microsoft.VisualStudio.Shell.Interop.12.0": "12.0.30110",
-    "Microsoft.VisualStudio.Shell.Interop.8.0": "8.0.50727",
-    "Microsoft.VisualStudio.Shell.Interop.9.0": "9.0.30729",
-    "Microsoft.VisualStudio.OLE.Interop": "7.10.6070"
+    "NuGet.PackageManagement": "4.0.0-rc3-*",
+    "NuGet.Protocol.VisualStudio": "4.0.0-rc3-*",
+    "NuGet.Build.Tasks": "4.0.0-rc3-*",
+    "Microsoft.VisualStudio.Workspace.VSIntegration": "15.0.171-pre"
   },
   "frameworks": {
     "net46": {}

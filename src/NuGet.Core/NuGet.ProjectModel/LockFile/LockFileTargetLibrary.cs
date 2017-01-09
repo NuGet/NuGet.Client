@@ -32,6 +32,10 @@ namespace NuGet.ProjectModel
 
         public IList<LockFileItem> NativeLibraries { get; set; } = new List<LockFileItem>();
 
+        public IList<LockFileItem> Build { get; set; } = new List<LockFileItem>();
+
+        public IList<LockFileItem> BuildMultiTargeting { get; set; } = new List<LockFileItem>();
+
         public IList<LockFileContentFile> ContentFiles { get; set; } = new List<LockFileContentFile>();
 
         public IList<LockFileRuntimeTarget> RuntimeTargets { get; set; } = new List<LockFileRuntimeTarget>();
@@ -59,7 +63,9 @@ namespace NuGet.ProjectModel
                 && CompileTimeAssemblies.OrderedEquals(other.CompileTimeAssemblies, item => item.Path, StringComparer.OrdinalIgnoreCase)
                 && NativeLibraries.OrderedEquals(other.NativeLibraries, item => item.Path, StringComparer.OrdinalIgnoreCase)
                 && ContentFiles.OrderedEquals(other.ContentFiles, item => item.Path, StringComparer.OrdinalIgnoreCase)
-                && RuntimeTargets.OrderedEquals(other.RuntimeTargets, item => item.Path, StringComparer.OrdinalIgnoreCase);
+                && RuntimeTargets.OrderedEquals(other.RuntimeTargets, item => item.Path, StringComparer.OrdinalIgnoreCase)
+                && Build.OrderedEquals(other.Build, item => item.Path, StringComparer.OrdinalIgnoreCase)
+                && BuildMultiTargeting.OrderedEquals(other.BuildMultiTargeting, item => item.Path, StringComparer.OrdinalIgnoreCase);
         }
 
         public override bool Equals(object obj)
@@ -112,6 +118,16 @@ namespace NuGet.ProjectModel
             }
 
             foreach (var item in RuntimeTargets.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase))
+            {
+                combiner.AddObject(item);
+            }
+
+            foreach (var item in Build.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase))
+            {
+                combiner.AddObject(item);
+            }
+
+            foreach (var item in BuildMultiTargeting.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase))
             {
                 combiner.AddObject(item);
             }

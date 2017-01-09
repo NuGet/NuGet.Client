@@ -18,39 +18,18 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public bool ForceRestore { get; }
 
-        /// <summary>
-        /// Should opt-out message be logged.
-        /// </summary>
-        public bool ShowOptOutMessage { get; }
-
-        /// <summary>
-        /// Should log the exception to the console and activity log
-        /// </summary>
-        public bool LogError { get; }
-
-        /// <summary>
-        /// Should the operation summary be logged even in case of no-op restore.
-        /// </summary>
-        public bool ForceStatusWrite { get; }
-
         public RestoreOperationSource RestoreSource { get; }
 
         public SolutionRestoreRequest(
-            bool forceRestore, 
-            bool showOptOutMessage,
-            bool logError,
-            bool forceStatusWrite,
+            bool forceRestore,
             RestoreOperationSource restoreSource)
         {
             ForceRestore = forceRestore;
-            ShowOptOutMessage = showOptOutMessage;
-            LogError = logError;
-            ForceStatusWrite = forceStatusWrite;
             RestoreSource = restoreSource;
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="SolutionRestoreRequest"/> with flags typical to 
+        /// Creates an instance of <see cref="SolutionRestoreRequest"/> with flags typical to
         /// on-build restore.
         /// </summary>
         /// <param name="forceRestore">Force restore if re-build is requested.</param>
@@ -58,40 +37,31 @@ namespace NuGet.PackageManagement.VisualStudio
         public static SolutionRestoreRequest OnBuild(bool forceRestore)
         {
             return new SolutionRestoreRequest(
-                forceRestore: forceRestore, 
-                showOptOutMessage: true,
-                logError: false,
-                forceStatusWrite: false,
+                forceRestore: forceRestore,
                 restoreSource: RestoreOperationSource.OnBuild);
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="SolutionRestoreRequest"/> with flags typical to 
+        /// Creates an instance of <see cref="SolutionRestoreRequest"/> with flags typical to
         /// on-demand restore as requested by an user via Visual Studio UI.
         /// </summary>
         /// <returns>New instance of <see cref="SolutionRestoreRequest"/></returns>
         public static SolutionRestoreRequest ByMenu()
         {
             return new SolutionRestoreRequest(
-                forceRestore: true, 
-                showOptOutMessage: false,
-                logError: true,
-                forceStatusWrite: true,
+                forceRestore: true,
                 restoreSource: RestoreOperationSource.Explicit);
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="SolutionRestoreRequest"/> with flags typical to 
+        /// Creates an instance of <see cref="SolutionRestoreRequest"/> with flags typical to
         /// background restore.
         /// </summary>
         /// <returns>New instance of <see cref="SolutionRestoreRequest"/></returns>
         public static SolutionRestoreRequest OnUpdate()
         {
             return new SolutionRestoreRequest(
-                forceRestore: false, 
-                showOptOutMessage: false,
-                logError: false,
-                forceStatusWrite: false,
+                forceRestore: false,
                 restoreSource: RestoreOperationSource.Implicit);
         }
     }

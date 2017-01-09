@@ -69,10 +69,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 var localResource = new FindLocalPackagesResourceV2(root);
                 var resource = new LocalPackageSearchResource(localResource);
 
-                var filter = new SearchFilter()
-                {
-                    IncludePrerelease = true
-                };
+                var filter = new SearchFilter(includePrerelease: true);
 
                 // Act
                 var packages = (await resource.SearchAsync(
@@ -105,10 +102,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 var localResource = new FindLocalPackagesResourceV2(source);
                 var resource = new LocalPackageSearchResource(localResource);
 
-                var filter = new SearchFilter()
-                {
-                    IncludePrerelease = true
-                };
+                var filter = new SearchFilter(includePrerelease: true);
 
                 // Act & Assert
                 var actual = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -178,10 +172,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 var localResource = new FindLocalPackagesResourceV2(root);
                 var resource = new LocalPackageSearchResource(localResource);
 
-                var filter = new SearchFilter()
-                {
-                    IncludePrerelease = true
-                };
+                var filter = new SearchFilter(includePrerelease: true);
 
                 // Act
                 var packages = (await resource.SearchAsync(
@@ -256,10 +247,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 var localResource = new FindLocalPackagesResourceV2(root);
                 var resource = new LocalPackageSearchResource(localResource);
 
-                var filter = new SearchFilter()
-                {
-                    IncludePrerelease = true
-                };
+                var filter = new SearchFilter(includePrerelease: true);
 
                 // Act
                 var packages = (await resource.SearchAsync(
@@ -316,10 +304,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 var localResource = new FindLocalPackagesResourceV2(root);
                 var resource = new LocalPackageSearchResource(localResource);
 
-                var filter = new SearchFilter()
-                {
-                    IncludePrerelease = true
-                };
+                var filter = new SearchFilter(includePrerelease: true);
 
                 // Act
                 var packages = (await resource.SearchAsync(
@@ -376,10 +361,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 var localResource = new FindLocalPackagesResourceV2(root);
                 var resource = new LocalPackageSearchResource(localResource);
 
-                var filter = new SearchFilter()
-                {
-                    IncludePrerelease = true
-                };
+                var filter = new SearchFilter(includePrerelease: true);
 
                 // Act
                 var packages = (await resource.SearchAsync(
@@ -432,10 +414,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 var localResource = new FindLocalPackagesResourceV2(root);
                 var resource = new LocalPackageSearchResource(localResource);
 
-                var filter = new SearchFilter()
-                {
-                    IncludePrerelease = false
-                };
+                var filter = new SearchFilter(includePrerelease: false);
 
                 // Act
                 var packages = (await resource.SearchAsync(
@@ -506,10 +485,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 var localResource = new FindLocalPackagesResourceV2(root);
                 var resource = new LocalPackageSearchResource(localResource);
 
-                var filter = new SearchFilter()
-                {
-                    IncludePrerelease = false
-                };
+                var filter = new SearchFilter(includePrerelease: false);
 
                 // Act
                 var packages = (await resource.SearchAsync(
@@ -586,10 +562,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 var localResource = new FindLocalPackagesResourceV2(fileUrl);
                 var resource = new LocalPackageSearchResource(localResource);
 
-                var filter = new SearchFilter()
-                {
-                    IncludePrerelease = true
-                };
+                var filter = new SearchFilter(includePrerelease: true);
 
                 // Act
                 var packages = (await resource.SearchAsync(

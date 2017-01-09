@@ -1,17 +1,14 @@
-{
+﻿{
   "dependencies": {
+    "Microsoft.VisualStudio.Shell.Immutable.14.0": "14.3.25407",
     "Moq": "4.2.1507.118",
+    "Newtonsoft.Json": "6.0.4",
     "Test.Utility": "4.0.0-*",
     "xunit": "2.1.0",
-    "xunit.runner.visualstudio": "2.1.0",
-    "Newtonsoft.Json": "6.0.4"
+    "xunit.runner.visualstudio": "2.1.0"
   },
   "frameworks": {
-    "net46": {
-      "frameworkAssemblies": {
-        "System.ComponentModel.DataAnnotations": "4.0.0.0"
-      }
-    }
+    "net46": {}
   },
   "runtimes": {
     "win-anycpu": {},

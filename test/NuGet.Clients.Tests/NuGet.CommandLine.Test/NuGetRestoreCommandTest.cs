@@ -343,8 +343,6 @@ namespace NuGet.CommandLine.Test
                 var packageFileB = Path.Combine(workingPath, @"packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
-
-                Assert.Contains("Error reading msbuild project information", r.Item2);
             }
         }
 
@@ -403,7 +401,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.True(0 == r.Item1, r.Item2 + "" + r.Item3);
                 Assert.True(string.IsNullOrEmpty(r.Item3)); // No error
 
                 if (string.IsNullOrEmpty(proj1ConfigFileName) && string.IsNullOrEmpty(proj2ConfigFileName))
@@ -482,10 +480,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 
 
             var msbuildPath = Util.GetMsbuildPathOnWindows();
-            var os = Environment.GetEnvironmentVariable("OSTYPE");
-            if (RuntimeEnvironmentHelper.IsMono && os != null && os.StartsWith("darwin"))
+            if (RuntimeEnvironmentHelper.IsMono && Util.IsRunningOnMac())
             {
-                msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/14.1/bin/";
+                msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
             }
 
             using (var workingPath = TestDirectory.Create())
@@ -514,7 +511,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
-            var msbuildPath = @"\\not exist path";
+            var msbuildPath = @"not exist path";
 
             using (var workingPath = TestDirectory.Create())
             {
@@ -541,10 +538,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 
 
             var msbuildPath = Util.GetMsbuildPathOnWindows();
-            var os = Environment.GetEnvironmentVariable("OSTYPE");
-            if (RuntimeEnvironmentHelper.IsMono && os != null && os.StartsWith("darwin"))
+            if (RuntimeEnvironmentHelper.IsMono && Util.IsRunningOnMac())
             {
-                msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/14.1/bin/";
+                msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
             }
 
             using (var workingPath = TestDirectory.Create())
@@ -669,8 +665,8 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
-                var packageFileA = Path.Combine(workingPath, @"packages2", "packageA.1.1.0", "packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(workingPath, @"packages2", "packageB.2.2.0", "packageB.2.2.0.nupkg");
+                var packageFileA = Path.Combine(workingPath, @"Packages2", "packageA.1.1.0", "packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(workingPath, @"Packages2", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
@@ -2009,7 +2005,7 @@ EndProject");
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
                 var bProjectLockJsonFile = Path.Combine(basePath, "B", "project.lock.json");
                 Assert.True(File.Exists(bProjectLockJsonFile));
                 var bProjectLockJson = new LockFileFormat().Read(bProjectLockJsonFile);

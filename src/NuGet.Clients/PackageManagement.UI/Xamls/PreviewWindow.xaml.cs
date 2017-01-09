@@ -20,10 +20,6 @@ namespace NuGet.PackageManagement.UI
             InitializeComponent();
             _doNotShowCheckBox.IsChecked = IsDoNotShowPreviewWindowEnabled();
 
-            if (StandaloneSwitch.IsRunningStandalone)
-            {
-                Background = SystemColors.WindowBrush;
-            }
             _initialized = true;
         }
 
@@ -59,7 +55,7 @@ namespace NuGet.PackageManagement.UI
 
         private void SaveDoNotShowPreviewWindowSetting(bool doNotshow)
         {
-            _uiContext.ApplyShowPreviewSetting(!doNotshow);
+            _uiContext.UserSettingsManager.ApplyShowPreviewSetting(!doNotshow);
             RegistrySettingUtility.SetBooleanSetting(
                 Constants.DoNotShowPreviewWindowRegistryName,
                 doNotshow);

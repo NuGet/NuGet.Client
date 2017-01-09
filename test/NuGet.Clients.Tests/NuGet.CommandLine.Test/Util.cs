@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml.Linq;
 using Moq;
@@ -21,6 +22,9 @@ namespace NuGet.CommandLine.Test
     public static class Util
     {
         private static readonly string NupkgFileFormat = "{0}.{1}.nupkg";
+
+        [DllImport("libc")]
+        static extern int uname(IntPtr buf);
 
         public static string CreateTestPackage(
             string packageId,
@@ -171,7 +175,7 @@ namespace NuGet.CommandLine.Test
 
             if (contentFiles == null || contentFiles.Length == 0)
             {
-                packageBuilder.Files.Add(CreatePackageFile(@"content\test1.txt"));
+                packageBuilder.Files.Add(CreatePackageFile(Path.Combine("content","test1.txt")));
             }
             else
             {
@@ -397,7 +401,7 @@ namespace NuGet.CommandLine.Test
         public static string GetNuGetExePath()
         {
             var targetDir = ConfigurationManager.AppSettings["TestTargetDir"] ?? Directory.GetCurrentDirectory();
-            var nugetexe = Path.Combine(targetDir, "nuget.exe");
+            var nugetexe = Path.Combine(targetDir, "NuGet.exe");
             return nugetexe;
         }
 
@@ -701,6 +705,9 @@ namespace NuGet.CommandLine.Test
                         contentFiles.Select(c => new XElement(msbuild + "Content", new XAttribute("Include", c)))));
             }
 
+            project.Add(new XElement(msbuild + "ItemGroup",
+                new XElement(msbuild + "Compile", new XAttribute("Include", "Source.cs"))));
+
             project.Add(new XElement(msbuild + "Import",
                 new XAttribute("Project", @"$(MSBuildToolsPath)\Microsoft.CSharp.targets")));
 
@@ -748,7 +755,7 @@ EndProject";
             string packagesDirectory)
         {
             string normalizedId = packageIdentity.Id.ToLowerInvariant();
-            string normalizedVersion = packageIdentity.Version.ToNormalizedString();
+            string normalizedVersion = packageIdentity.Version.ToNormalizedString().ToLowerInvariant();
 
             var packageIdDirectory = Path.Combine(packagesDirectory, normalizedId);
             Assert.True(Directory.Exists(packageIdDirectory));
@@ -1076,6 +1083,52 @@ EndProject");
             }
 
             return msbuildPath;
+        }
+
+        public static string GetHintPath(string path)
+        {
+            return @"<HintPath>.." + Path.DirectorySeparatorChar + path + @"</HintPath>";
+        }
+
+        public static bool IsRunningOnMac()
+        {
+
+            IntPtr buf = IntPtr.Zero;
+
+            try
+            {
+
+                buf = Marshal.AllocHGlobal(8192);
+
+                // This is a hacktastic way of getting sysname from uname ()
+
+                if (uname(buf) == 0)
+                {
+
+                    string os = Marshal.PtrToStringAnsi(buf);
+
+                    if (os == "Darwin")
+
+                        return true;
+
+                }
+
+            }
+            catch
+            {
+
+            }
+            finally
+            {
+
+                if (buf != IntPtr.Zero)
+
+                    Marshal.FreeHGlobal(buf);
+
+            }
+
+            return false;
+
         }
 
         private static bool IsProjectJson(string configFileName)

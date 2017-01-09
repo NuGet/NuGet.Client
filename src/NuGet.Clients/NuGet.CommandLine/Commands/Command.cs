@@ -1,5 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+extern alias CoreV2;
 
 using System;
 using System.Collections.Generic;
@@ -74,7 +75,7 @@ namespace NuGet.CommandLine
 
         protected internal Configuration.IPackageSourceProvider SourceProvider { get; set; }
 
-        protected internal IPackageRepositoryFactory RepositoryFactory { get; set; }
+        protected internal CoreV2.NuGet.IPackageRepositoryFactory RepositoryFactory { get; set; }
 
         public CommandAttribute CommandAttribute
         {
@@ -160,14 +161,14 @@ namespace NuGet.CommandLine
         {
             CredentialService = new CredentialService(GetCredentialProviders(), NonInteractive);
 
-            HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(CredentialService);
+            CoreV2.NuGet.HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(CredentialService);
 
             HttpHandlerResourceV3.CredentialService = CredentialService;
 
             HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>
             {
                 // v2 stack credentials update
-                NuGet.CredentialStore.Instance.Add(uri, credentials);
+                CoreV2.NuGet.CredentialStore.Instance.Add(uri, credentials);
             };
         }
 
@@ -179,7 +180,7 @@ namespace NuGet.CommandLine
                 .BuildAll(Verbosity.ToString())
                 .ToList();
 
-            providers.Add(new CredentialProviderAdapter(new SettingsCredentialProvider(SourceProvider, Console)));
+            providers.Add(new CredentialProviderAdapter(new SettingsCredentialProvider(SourceProvider, Console))); 
             if (pluginProviders.Any())
             {
                 providers.AddRange(pluginProviders);

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\..\..\Build\Common.props" Condition="Exists('..\..\..\..\Build\Common.props')" />
   <PropertyGroup>
@@ -19,11 +19,6 @@
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.IO.Compression" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Security" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
@@ -43,6 +38,8 @@
     <Compile Include="IHostMetadata.cs" />
     <Compile Include="IHostProvider.cs" />
     <Compile Include="IConsoleStatus.cs" />
+    <Compile Include="IOutputConsole.cs" />
+    <Compile Include="IOutputConsoleProvider.cs" />
     <Compile Include="IPathExpansion.cs" />
     <Compile Include="IPowerConsoleWindow.cs" />
     <Compile Include="ITabExpansion.cs" />

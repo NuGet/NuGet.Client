@@ -364,5 +364,13 @@ namespace NuGet.PackageManagement.UI
                 OnPropertyChanged(nameof(Options));
             }
         }
+
+        public IEnumerable<NuGetProject> NuGetProjects
+        {
+            get
+            {
+                return _nugetProjects;
+            }
+        }
     }
 }

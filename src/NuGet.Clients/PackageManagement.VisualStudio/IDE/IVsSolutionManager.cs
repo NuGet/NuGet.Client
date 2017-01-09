@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using NuGet.ProjectManagement;
@@ -13,17 +14,6 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public interface IVsSolutionManager : ISolutionManager
     {
-        /// <summary>
-        /// Associates instance with loaded VS extension package.
-        /// Needed mostly to perform initialization actions when environment is fully
-        /// loaded. As a MEF constructor might be called with partially incomplete components.
-        /// For instance, UI thread bound actions can't be invoked in a constructor due to high
-        /// risk of a deadlock.
-        /// </summary>
-        /// <param name="site">VS extension package. Provides async access to VS services.</param>
-        /// <returns>Asyncronous operation.</returns>
-        Task InitializeAsync(IAsyncServiceProvider site);
-
         /// <summary>
         /// Retrieves <see cref="NuGetProject"/> instance associated with VS project.
         /// Creates new instance if not found in project system cache.
@@ -44,5 +34,17 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Return true if all projects in the solution have been loaded in background.
         /// </summary>
         bool IsSolutionFullyLoaded { get; }
+
+        /// <summary>
+        /// Returns true if solution has any project in deferred state.
+        /// </summary>
+        /// <returns>Deferred projects state.</returns>
+        Task<bool> SolutionHasDeferredProjectsAsync();
+
+        /// <summary>
+        /// Retrieves deferred projects file path from current solution.
+        /// </summary>
+        /// <returns>Deferred prokects file path.</returns>
+        Task<IEnumerable<string>> GetDeferredProjectsFilePathAsync();
     }
 }

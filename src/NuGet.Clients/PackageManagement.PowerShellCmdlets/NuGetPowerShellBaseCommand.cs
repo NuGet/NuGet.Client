@@ -46,9 +46,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private readonly ICommonOperations _commonOperations;
         private readonly IDeleteOnRestartManager _deleteOnRestartManager;
 
-        // TODO: Hook up DownloadResource.Progress event
-        private readonly IHttpClientEvents _httpClientEvents;
-
         protected int _packageCount;
         protected NuGetOperationStatus _status = NuGetOperationStatus.Succeeded;
 
@@ -616,13 +613,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             bool includePrerelease,
             Action<string> handleError)
         {
-            var searchFilter = new SearchFilter
-            {
-                IncludePrerelease = includePrerelease,
-                SupportedFrameworks = Enumerable.Empty<string>(),
-                IncludeDelisted = false
-            };
-
+            var searchFilter = new SearchFilter(includePrerelease: includePrerelease);
+            searchFilter.IncludeDelisted = false;
             var packageFeed = new MultiSourcePackageFeed(PrimarySourceRepositories, logger: null); 
             var searchTask = packageFeed.SearchAsync(searchString, searchFilter, Token);
 
@@ -710,10 +702,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected override void BeginProcessing()
         {
             IsExecuting = true;
-            if (_httpClientEvents != null)
-            {
-                _httpClientEvents.SendingRequest += OnSendingRequest;
-            }
         }
 
         protected override void EndProcessing()
@@ -725,37 +713,18 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected void UnsubscribeEvents()
         {
-            if (_httpClientEvents != null)
-            {
-                _httpClientEvents.SendingRequest -= OnSendingRequest;
-            }
         }
 
         protected virtual void OnSendingRequest(object sender, WebRequestEventArgs e)
         {
-            //HttpUtility.SetUserAgent(e.Request, _psCommandsUserAgent.Value);
-        }
-
-        private void OnProgressAvailable(object sender, ProgressEventArgs e)
-        {
-            WriteProgress(ProgressActivityIds.DownloadPackageId, e.Operation, e.PercentComplete);
         }
 
         protected void SubscribeToProgressEvents()
         {
-            if (!IsSyncMode
-                && _httpClientEvents != null)
-            {
-                _httpClientEvents.ProgressAvailable += OnProgressAvailable;
-            }
         }
 
         protected void UnsubscribeFromProgressEvents()
         {
-            if (_httpClientEvents != null)
-            {
-                _httpClientEvents.ProgressAvailable -= OnProgressAvailable;
-            }
         }
 
         private ProgressRecordCollection ProgressRecordCache

@@ -18,6 +18,7 @@ using Microsoft.CSharp.RuntimeBinder;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectManagement;
@@ -341,11 +342,13 @@ namespace NuGet.PackageManagement.VisualStudio
                 EnvDTEProperty property = envDTEProject.Properties.Item(propertyName);
                 if (property != null)
                 {
-                    // REVIEW: Should this cast or convert?
                     return (T)property.Value;
                 }
             }
             catch (ArgumentException)
+            {
+            }
+            catch (InvalidCastException)
             {
             }
             return default(T);
@@ -599,18 +602,19 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            string targetFrameworkMoniker = GetTargetFrameworkString(envDTEProject);
-            if (!String.IsNullOrEmpty(targetFrameworkMoniker))
-            {
-                var framework = NuGetFramework.Parse(targetFrameworkMoniker);
+            var targetFrameworkMoniker = GetTargetFrameworkString(envDTEProject);
 
-                // further parse framework for .net core 4.5.1 or 4.5 and get compatible framework instance
-               return MSBuildNuGetProjectSystemUtility.GetProjectFrameworkReplacement(framework);
+            if (!string.IsNullOrEmpty(targetFrameworkMoniker))
+            {
+                return NuGetFramework.Parse(targetFrameworkMoniker);
             }
 
             return NuGetFramework.UnsupportedFramework;
         }
 
+        /// <summary>
+        /// Determine the project framework string based on the project properties.
+        /// </summary>
         public static string GetTargetFrameworkString(EnvDTEProject envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -620,54 +624,26 @@ namespace NuGet.PackageManagement.VisualStudio
                 return null;
             }
 
-            if (IsJavaScriptProject(envDTEProject))
-            {
-                // JavaScript apps do not have a TargetFrameworkMoniker property set.
-                // We read the TargetPlatformIdentifier and TargetPlatformVersion instead
+            var projectPath = GetFullProjectPath(envDTEProject);
+            var platformIdentifier = GetPropertyValue<string>(envDTEProject, "TargetPlatformIdentifier");
+            var platformVersion = GetPropertyValue<string>(envDTEProject, "TargetPlatformVersion");
+            var targetFrameworkMoniker = GetPropertyValue<string>(envDTEProject, "TargetFrameworkMoniker");
+            var isManagementPackProject = IsManagementPackProject(envDTEProject);
+            var isXnaWindowsPhoneProject = IsXnaWindowsPhoneProject(envDTEProject);
 
-                string platformIdentifier = GetPropertyValue<string>(envDTEProject, "TargetPlatformIdentifier");
-                string platformVersion = GetPropertyValue<string>(envDTEProject, "TargetPlatformVersion");
+            // Projects supporting TargetFramework and TargetFrameworks are detected before
+            // this check. The values can be passed as null here.
+            var frameworkStrings = MSBuildProjectFrameworkUtility.GetProjectFrameworkStrings(
+                projectFilePath: projectPath,
+                targetFrameworks: null,
+                targetFramework: null,
+                targetFrameworkMoniker: targetFrameworkMoniker,
+                targetPlatformIdentifier: platformIdentifier,
+                targetPlatformVersion: platformVersion,
+                isManagementPackProject: isManagementPackProject,
+                isXnaWindowsPhoneProject: isXnaWindowsPhoneProject);
 
-                // use the default values for JS if they were not given
-                if (String.IsNullOrEmpty(platformVersion))
-                {
-                    platformVersion = "0.0";
-                }
-
-                if (String.IsNullOrEmpty(platformIdentifier))
-                {
-                    platformIdentifier = "Windows";
-                }
-
-                return String.Format(CultureInfo.InvariantCulture, "{0}, Version={1}", platformIdentifier, platformVersion);
-            }
-
-            if (IsManagementPackProject(envDTEProject))
-            {
-                // The MP project does not have a TargetFrameworkMoniker property set. 
-                // We hard-code the return value to SCMPInfra.
-                return "SCMPInfra, Version=0.0";
-            }
-
-            if (IsNativeProject(envDTEProject))
-            {
-                // The C++ project does not have a TargetFrameworkMoniker property set. 
-                // We hard-code the return value to Native.
-                return Constants.NativeTFM;
-            }
-
-            string targetFramework = GetPropertyValue<string>(envDTEProject, "TargetFrameworkMoniker");
-
-            // XNA project lies about its true identity, reporting itself as a normal .NET 4.0 project.
-            // We detect it and changes its target framework to Silverlight4-WindowsPhone71
-            if (".NETFramework,Version=v4.0".Equals(targetFramework, StringComparison.OrdinalIgnoreCase)
-                &&
-                IsXnaWindowsPhoneProject(envDTEProject))
-            {
-                return "Silverlight,Version=v4.0,Profile=WindowsPhone71";
-            }
-
-            return targetFramework;
+            return frameworkStrings.FirstOrDefault();
         }
 
         internal static async Task<bool> ContainsFile(EnvDTEProject envDTEProject, string path)

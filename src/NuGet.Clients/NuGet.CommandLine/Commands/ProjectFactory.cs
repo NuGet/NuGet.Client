@@ -1,4 +1,6 @@
-﻿using System;
+﻿extern alias CoreV2; 
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics.CodeAnalysis;
@@ -16,15 +18,18 @@ using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using PathUtility = NuGet.Commands.PathUtility;
+using XElementExtensions = NuGet.Packaging.XElementExtensions;
 
 namespace NuGet.CommandLine
 {
 
     [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
-    public class ProjectFactory : MSBuildUser, IProjectFactory, IPropertyProvider
+    public class ProjectFactory : MSBuildUser, IProjectFactory, CoreV2.NuGet.IPropertyProvider 
     {
         // Its type is Microsoft.Build.Evaluation.Project
         private dynamic _project;
@@ -77,7 +82,8 @@ namespace NuGet.CommandLine
         {
             LoadAssemblies(msbuildDirectory);
 
-            // create project
+            // Create project, allowing for assembly load failures
+            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(AssemblyResolve);
             var project = Activator.CreateInstance(
                 _projectType,
                 path,
@@ -229,6 +235,15 @@ namespace NuGet.CommandLine
 
             var projectAuthor = InitializeProperties(builder);
 
+            // Set version based on version argument from console?
+            if (version != null)
+            {
+                // make sure the $version$ placeholder gets populated correctly
+                _properties["version"] = version.ToFullString();
+
+                builder.Version = version;
+            }
+
             // Only override properties from assembly extracted metadata if they haven't 
             // been specified also at construction time for the factory (that is, 
             // console properties always take precedence.
@@ -364,7 +379,7 @@ namespace NuGet.CommandLine
             return value;
         }
 
-        dynamic IPropertyProvider.GetPropertyValue(string propertyName)
+        dynamic CoreV2.NuGet.IPropertyProvider.GetPropertyValue(string propertyName) // used in tests
         {
             return GetPropertyValue(propertyName);
         }
@@ -408,7 +423,7 @@ namespace NuGet.CommandLine
 
             int result = MsBuildUtility.Build(_msbuildDirectory, $"\"{_project.FullPath}\" {properties} /toolsversion:{_project.ToolsVersion}");
 
-            if ((int)Microsoft.Build.Execution.BuildResultCode.Failure == result)
+            if (0 != result) // 0 is msbuild.exe success code
             {
                 // If the build fails, report the error
                 throw new CommandLineException(LocalizedResourceManager.GetString("FailedToBuildProject"), Path.GetFileName(_project.FullPath));
@@ -1312,7 +1327,7 @@ namespace NuGet.CommandLine
             using (var dependencyFileStream = File.OpenRead(targetFile))
             using (var fileContentStream = File.OpenRead(fullPath))
             {
-                isEqual = dependencyFileStream.ContentEquals(fileContentStream);
+                isEqual = StreamUtility.ContentEquals(dependencyFileStream, fileContentStream);
             }
             return isEqual;
         }
@@ -1351,7 +1366,7 @@ namespace NuGet.CommandLine
             {
                 Path = file.Path + ".transform";
                 _streamFactory = new Lazy<Func<Stream>>(() => ReverseTransform(file, transforms), isThreadSafe: false);
-                TargetFramework = VersionUtility.ParseFrameworkNameFromFilePath(Path, out _effectivePath);
+                TargetFramework = FrameworkNameUtility.ParseFrameworkNameFromFilePath(Path, out _effectivePath);
             }
 
             public string Path
@@ -1382,7 +1397,7 @@ namespace NuGet.CommandLine
                 // Remove all the transforms
                 foreach (var transformFile in transforms)
                 {
-                    element.Except(GetElement(transformFile));
+                    XElementExtensions.Except(element, GetElement(transformFile));
                 }
 
                 // Create the stream with the transformed content

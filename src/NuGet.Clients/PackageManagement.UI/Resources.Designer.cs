@@ -268,6 +268,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Make this package manager format the default and do not show this dialog again..
+        /// </summary>
+        public static string CheckBox_DefaultPackageFormat {
+            get {
+                return ResourceManager.GetString("CheckBox_DefaultPackageFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Force uninstall, even if there are dependencies on it.
         /// </summary>
         public static string Checkbox_ForceRemove {
@@ -882,6 +891,24 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to PackageReference in project file.
+        /// </summary>
+        public static string RadioBtn_PackageRef {
+            get {
+                return ResourceManager.GetString("RadioBtn_PackageRef", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Packages.config.
+        /// </summary>
+        public static string RadioBtn_PackagesConfig {
+            get {
+                return ResourceManager.GetString("RadioBtn_PackagesConfig", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Multiple packages failed to uninstall. Restart Visual Studio to finish the process..
         /// </summary>
         public static string RequestRestartToCompleteUninstallMultiplePackages {
@@ -1062,6 +1089,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You can manage these settings in .
+        /// </summary>
+        public static string Text_ManageSettings {
+            get {
+                return ResourceManager.GetString("Text_ManageSettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to multiple versions installed.
         /// </summary>
         public static string Text_MultipleVersionsInstalled {
@@ -1112,6 +1148,60 @@ namespace NuGet.PackageManagement.UI {
         public static string Text_NotInstalled {
             get {
                 return ResourceManager.GetString("Text_NotInstalled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NuGet Settings.
+        /// </summary>
+        public static string Text_NuGetSettings {
+            get {
+                return ResourceManager.GetString("Text_NuGetSettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The package manager format will apply to the following projects in this Solution.
+        /// </summary>
+        public static string Text_PackageFormatApply {
+            get {
+                return ResourceManager.GetString("Text_PackageFormatApply", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select the NuGet package manager format for {0}.
+        /// </summary>
+        public static string Text_PackageFormatSelection {
+            get {
+                return ResourceManager.GetString("Text_PackageFormatSelection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select the NuGet package manager format for this Solution.
+        /// </summary>
+        public static string Text_PackageFormatSelection_Solution {
+            get {
+                return ResourceManager.GetString("Text_PackageFormatSelection_Solution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Projects with PackageReference are not supported in Visual Studio 2015 and earlier..
+        /// </summary>
+        public static string Text_PackageRefSupport {
+            get {
+                return ResourceManager.GetString("Text_PackageRefSupport", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Learn more about package reference.
+        /// </summary>
+        public static string Text_PackageRefSupport_DocumentLink {
+            get {
+                return ResourceManager.GetString("Text_PackageRefSupport_DocumentLink", resourceCulture);
             }
         }
         
@@ -1409,6 +1499,15 @@ namespace NuGet.PackageManagement.UI {
         public static string WindowTitle_LicenseAcceptance {
             get {
                 return ResourceManager.GetString("WindowTitle_LicenseAcceptance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Choose NuGet Package Manager Format.
+        /// </summary>
+        public static string WindowTitle_PackageFormatSelector {
+            get {
+                return ResourceManager.GetString("WindowTitle_PackageFormatSelector", resourceCulture);
             }
         }
         

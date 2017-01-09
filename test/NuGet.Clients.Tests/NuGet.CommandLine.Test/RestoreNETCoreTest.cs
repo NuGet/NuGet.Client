@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,13 +8,136 @@ using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
 {
     public class RestoreNetCoreTest
     {
+        [Fact]
+        public async Task RestoreNetCore_SetProjectStyleWithProperty_PackageReference()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                // Add a project.json file which will be ignored
+                var projectJson = JObject.Parse(@"{
+                                                    'dependencies': {
+                                                    },
+                                                    'frameworks': {
+                                                        'net45': {
+                                                            'x': '1.0.0'
+                                                    }
+                                                  }
+                                               }");
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                projectA.Properties.Add("RestoreProjectStyle", "PackageReference");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                File.WriteAllText(Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "project.json"), projectJson.ToString());
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var r = RestoreSolution(pathContext);
+
+                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
+                var dgSpec = DependencyGraphSpec.Load(dgPath);
+
+                var propsXML = XDocument.Load(projectA.PropsOutput);
+                var styleNode = propsXML.Root.Elements().First().Elements(XName.Get("NuGetProjectStyle", "http://schemas.microsoft.com/developer/msbuild/2003")).FirstOrDefault();
+
+                // Assert
+                Assert.Equal(ProjectStyle.PackageReference, dgSpec.Projects.Single().RestoreMetadata.ProjectStyle);
+                Assert.Equal("PackageReference", styleNode.Value);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_SetProjectStyleWithProperty_ProjectJson()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                // Create a .NETCore project, but add a project.json file to it.
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var projectJson = JObject.Parse(@"{
+                                                    'dependencies': {
+                                                        'x': '1.0.0'
+                                                    },
+                                                    'frameworks': {
+                                                        'net45': { }                                                            
+                                                    }
+                                                  }");
+
+                // Force this project to ProjectJson
+                projectA.Properties.Add("RestoreProjectStyle", "ProjectJson");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                File.WriteAllText(Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "project.json"), projectJson.ToString());
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                packageX.AddFile("build/net45/x.targets");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                XDocument projectXML = XDocument.Load(projectA.ProjectPath);
+                projectXML.Root.AddFirst(new XElement(XName.Get("Target", "http://schemas.microsoft.com/developer/msbuild/2003"), new XAttribute(XName.Get("Name"), "_SplitProjectReferencesByFileExistence")));
+                projectXML.Save(projectA.ProjectPath);
+
+                // Act
+                var r = RestoreSolution(pathContext);
+
+                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
+                var dgSpec = DependencyGraphSpec.Load(dgPath);
+
+                // Assert
+                Assert.Equal(ProjectStyle.ProjectJson, dgSpec.Projects.Single().RestoreMetadata.ProjectStyle);
+                Assert.True(File.Exists(Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "project.lock.json")));
+            }
+        }
+
         [Fact]
         public void RestoreNetCore_ProjectToProject_Recursive()
         {
@@ -196,13 +320,156 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.Item2);
                 Assert.True(File.Exists(projectA.TargetsOutput), r.Item2);
-                Assert.False(File.Exists(projectA.PropsOutput), r.Item2);
+                Assert.True(File.Exists(projectA.PropsOutput), r.Item2);
 
                 var assetsFile = projectA.AssetsFile;
                 Assert.Equal(2, assetsFile.Targets.Count);
                 Assert.Equal(NuGetFramework.Parse("net45"), assetsFile.Targets.Single(t => string.IsNullOrEmpty(t.RuntimeIdentifier)).TargetFramework);
                 Assert.Equal(NuGetFramework.Parse("net45"), assetsFile.Targets.Single(t => !string.IsNullOrEmpty(t.RuntimeIdentifier)).TargetFramework);
                 Assert.Equal("win7-x86", assetsFile.Targets.Single(t => !string.IsNullOrEmpty(t.RuntimeIdentifier)).RuntimeIdentifier);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_RestoreWithRID_ValidateRID_Failure()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                projectA.Properties.Add("RuntimeIdentifiers", "win7-x86");
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                packageX.AddFile("ref/net45/x.dll");
+                packageX.AddFile("lib/win8/x.dll");
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                projectA.Properties.Add("ValidateRuntimeIdentifierCompatibility", "true");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var r = RestoreSolution(pathContext, exitCode: 1);
+
+                // Assert
+                Assert.True(r.Item1 == 1);
+                Assert.Contains("no run-time assembly compatible", r.Item3);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_RestoreWithRID_ValidateRID_IgnoreFailure()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                projectA.Properties.Add("RuntimeIdentifiers", "win7-x86");
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                packageX.AddFile("ref/net45/x.dll");
+                packageX.AddFile("lib/win8/x.dll");
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var r = RestoreSolution(pathContext);
+
+                // Assert
+                Assert.True(r.Item1 == 0);
+                Assert.DoesNotContain("no run-time assembly compatible", r.Item3);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_RestoreWithRID_ValidateRID_FailureForProjectJson()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectJson = JObject.Parse(@"{
+                                                    'dependencies': {
+                                                        'x': '1.0.0'
+                                                    },
+                                                    'frameworks': {
+                                                        'net45': {
+                                                    }
+                                                  },
+                                                  'runtimes': { 'win7-x86': {} }
+                                               }");
+
+                var projectA = SimpleTestProjectContext.CreateUAP(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"),
+                    projectJson);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                packageX.AddFile("ref/net45/x.dll");
+                packageX.AddFile("lib/win8/x.dll");
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var r = RestoreSolution(pathContext, exitCode: 1);
+
+                // Assert
+                Assert.True(r.Item1 == 1);
+                Assert.Contains("no run-time assembly compatible", r.Item3);
             }
         }
 
@@ -244,7 +511,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.Item2);
                 Assert.True(File.Exists(projectA.TargetsOutput), r.Item2);
-                Assert.False(File.Exists(projectA.PropsOutput), r.Item2);
+                Assert.True(File.Exists(projectA.PropsOutput), r.Item2);
 
                 var assetsFile = projectA.AssetsFile;
                 Assert.Equal(2, assetsFile.Targets.Count);
@@ -293,7 +560,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.Item2);
                 Assert.True(File.Exists(projectA.TargetsOutput), r.Item2);
-                Assert.False(File.Exists(projectA.PropsOutput), r.Item2);
+                Assert.True(File.Exists(projectA.PropsOutput), r.Item2);
 
                 var assetsFile = projectA.AssetsFile;
                 Assert.Equal(2, assetsFile.Targets.Count);
@@ -383,7 +650,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.Item2);
                 Assert.True(File.Exists(projectA.TargetsOutput), r.Item2);
-                Assert.False(File.Exists(projectA.PropsOutput), r.Item2);
+                Assert.True(File.Exists(projectA.PropsOutput), r.Item2);
 
                 var assetsFile = projectA.AssetsFile;
                 Assert.Equal(3, assetsFile.Targets.Count);
@@ -971,9 +1238,12 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var r = RestoreSolution(pathContext);
 
+                var msbuildTargetsItems = TargetsUtility.GetMSBuildPackageImports(projectA.TargetsOutput);
+                var msbuildPropsItems = TargetsUtility.GetMSBuildPackageImports(projectA.PropsOutput);
+
                 // Assert
-                Assert.False(File.Exists(projectA.TargetsOutput), r.Item2);
-                Assert.False(File.Exists(projectA.PropsOutput), r.Item2);
+                Assert.Equal(0, msbuildTargetsItems.Count);
+                Assert.Equal(0, msbuildPropsItems.Count);
             }
         }
 
@@ -1028,9 +1298,12 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var r = RestoreSolution(pathContext);
 
+                var msbuildTargetsItems = TargetsUtility.GetMSBuildPackageImports(projectA.TargetsOutput);
+                var msbuildPropsItems = TargetsUtility.GetMSBuildPackageImports(projectA.PropsOutput);
+
                 // Assert
-                Assert.False(File.Exists(projectA.TargetsOutput), r.Item2);
-                Assert.False(File.Exists(projectA.PropsOutput), r.Item2);
+                Assert.Equal(0, msbuildTargetsItems.Count);
+                Assert.Equal(0, msbuildPropsItems.Count);
             }
         }
 
@@ -1070,11 +1343,26 @@ namespace NuGet.CommandLine.Test
 
                 // Restore one
                 var r = RestoreSolution(pathContext);
+
+                var msbuildTargetsItems = TargetsUtility.GetMSBuildPackageImports(projectA.TargetsOutput);
+                var msbuildPropsItems = TargetsUtility.GetMSBuildPackageImports(projectA.PropsOutput);
+
+                // Assert
                 Assert.True(File.Exists(projectA.TargetsOutput), r.Item2);
+                Assert.Equal(1, msbuildTargetsItems.Count);
+                Assert.Equal(1, msbuildPropsItems.Count);
+
 
                 // Act
                 r = RestoreSolution(pathContext);
                 Assert.True(File.Exists(projectA.TargetsOutput), r.Item2);
+
+                msbuildTargetsItems = TargetsUtility.GetMSBuildPackageImports(projectA.TargetsOutput);
+                msbuildPropsItems = TargetsUtility.GetMSBuildPackageImports(projectA.PropsOutput);
+
+                Assert.Equal(1, msbuildTargetsItems.Count);
+                Assert.Equal(1, msbuildPropsItems.Count);
+
                 Assert.True(r.Item1 == 0);
             }
         }
@@ -1283,7 +1571,7 @@ namespace NuGet.CommandLine.Test
 
                 // This is not populated for unknown project types, but this may change in the future.
                 Assert.Null(targetB.Framework);
-                Assert.Null(libB.Path);
+                Assert.Equal("../b/b.csproj", libB.Path);
 
                 Assert.Equal("1.0.0", libB.Version.ToNormalizedString());
                 Assert.Equal("project", libB.Type);
@@ -1474,7 +1762,7 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal("1.0.0", libB.Version.ToNormalizedString());
                 Assert.Equal("project", libB.Type);
                 Assert.Equal("../b/b.csproj", libB.MSBuildProject);
-                Assert.Null(libB.Path);
+                Assert.Equal("../b/b.csproj", libB.Path);
             }
         }
 
@@ -1563,6 +1851,227 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal("project", libB.Type);
                 Assert.Equal("../b/b.csproj", libB.MSBuildProject);
                 Assert.Equal("../b/project.json", libB.Path);
+            }
+        }
+
+        [Fact]
+        public void RestoreNetCore_ProjectToProject_NETCore_TransitiveForAllEdges()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net462"));
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net462"));
+
+                var projectJson = JObject.Parse(@"{
+                                                    'dependencies': {
+                                                    },
+                                                    'frameworks': {
+                                                        'net462': { }
+                                                  }
+                                               }");
+
+                var projectC = SimpleTestProjectContext.CreateUAP(
+                    "c",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net462"),
+                    projectJson);
+
+                var projectD = SimpleTestProjectContext.CreateNonNuGet(
+                    "d",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net462"));
+
+                var projectE = SimpleTestProjectContext.CreateNETCore(
+                    "e",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net462"));
+
+                // Straight line
+                projectA.AddProjectToAllFrameworks(projectB);
+                projectB.AddProjectToAllFrameworks(projectC);
+                projectC.AddProjectToAllFrameworks(projectD);
+                projectD.AddProjectToAllFrameworks(projectE);
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Projects.Add(projectC);
+                solution.Projects.Add(projectD);
+                solution.Projects.Add(projectE);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var nugetexe = Util.GetNuGetExePath();
+
+                // Store the dg file for debugging
+                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
+                var envVars = new Dictionary<string, string>()
+                {
+                    { "NUGET_PERSIST_DG", "true" },
+                    { "NUGET_PERSIST_DG_PATH", dgPath }
+                };
+
+                string[] args = new string[] {
+                    "restore",
+                    projectA.ProjectPath,
+                    "-Verbosity",
+                    "detailed"
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    pathContext.WorkingDirectory.Path,
+                    string.Join(" ", args),
+                    waitForExit: true,
+                    environmentVariables: envVars);
+
+                // Assert
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var assetsFile = projectA.AssetsFile;
+
+                // Find all non _._ compile assets
+                var flowingCompile = assetsFile.Targets.Single().Libraries
+                    .Where(e => e.Type == "project")
+                    .Where(e => e.CompileTimeAssemblies.Where(f => !f.Path.EndsWith("_._")).Any())
+                    .Select(e => e.Name)
+                    .OrderBy(s => s, StringComparer.OrdinalIgnoreCase);
+
+                Assert.Equal("bcde", string.Join("", flowingCompile));
+
+                // Runtime should always flow
+                var flowingRuntime = assetsFile.Targets.Single().Libraries
+                    .Where(e => e.Type == "project")
+                    .Where(e => e.RuntimeAssemblies.Where(f => !f.Path.EndsWith("_._")).Any())
+                    .Select(e => e.Name)
+                    .OrderBy(s => s, StringComparer.OrdinalIgnoreCase);
+
+                Assert.Equal("bcde", string.Join("", flowingRuntime));
+            }
+        }
+
+        [Fact]
+        public void RestoreNetCore_ProjectToProject_NETCore_TransitiveOffForAllEdges()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net462"));
+                projectA.PrivateAssets = "compile";
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net462"));
+                projectB.PrivateAssets = "compile";
+
+                var projectJson = JObject.Parse(@"{
+                                                    'dependencies': {
+                                                    },
+                                                    'frameworks': {
+                                                        'net462': { }
+                                                  }
+                                               }");
+
+                var projectC = SimpleTestProjectContext.CreateUAP(
+                    "c",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net462"),
+                    projectJson);
+                projectC.PrivateAssets = "compile";
+
+                var projectD = SimpleTestProjectContext.CreateNonNuGet(
+                    "d",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net462"));
+                projectD.PrivateAssets = "compile";
+
+                var projectE = SimpleTestProjectContext.CreateNETCore(
+                    "e",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net462"));
+                projectE.PrivateAssets = "compile";
+
+                // Straight line
+                projectA.AddProjectToAllFrameworks(projectB);
+                projectB.AddProjectToAllFrameworks(projectC);
+                projectC.AddProjectToAllFrameworks(projectD);
+                projectD.AddProjectToAllFrameworks(projectE);
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Projects.Add(projectC);
+                solution.Projects.Add(projectD);
+                solution.Projects.Add(projectE);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var nugetexe = Util.GetNuGetExePath();
+
+                // Store the dg file for debugging
+                var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
+                var envVars = new Dictionary<string, string>()
+                {
+                    { "NUGET_PERSIST_DG", "true" },
+                    { "NUGET_PERSIST_DG_PATH", dgPath }
+                };
+
+                string[] args = new string[] {
+                    "restore",
+                    projectA.ProjectPath,
+                    "-Verbosity",
+                    "detailed"
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    pathContext.WorkingDirectory.Path,
+                    string.Join(" ", args),
+                    waitForExit: true,
+                    environmentVariables: envVars);
+
+                // Assert
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var assetsFile = projectA.AssetsFile;
+
+                // Find all non _._ compile assets
+                var flowingCompile = assetsFile.Targets.Single().Libraries
+                    .Where(e => e.Type == "project")
+                    .Where(e => e.CompileTimeAssemblies.Where(f => !f.Path.EndsWith("_._")).Any())
+                    .Select(e => e.Name)
+                    .OrderBy(s => s, StringComparer.OrdinalIgnoreCase);
+
+                Assert.Equal("b", string.Join("", flowingCompile));
+
+                // Runtime should always flow
+                var flowingRuntime = assetsFile.Targets.Single().Libraries
+                    .Where(e => e.Type == "project")
+                    .Where(e => e.RuntimeAssemblies.Where(f => !f.Path.EndsWith("_._")).Any())
+                    .Select(e => e.Name)
+                    .OrderBy(s => s, StringComparer.OrdinalIgnoreCase);
+
+                Assert.Equal("bcde", string.Join("", flowingRuntime));
             }
         }
 
@@ -1821,6 +2330,57 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public void RestoreNetCore_VerifyPropsAndTargetsAreWrittenWhenRestoreFails()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    NuGetFramework.Parse("net45"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                packageX.AddFile("build/net45/x.targets");
+
+                var packageY = new SimpleTestPackageContext("y");
+                packageX.Dependencies.Add(packageY);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                var yPath = SimpleTestPackageUtility.CreateFullPackage(pathContext.PackageSource, packageY);
+                SimpleTestPackageUtility.CreateFullPackage(pathContext.PackageSource, packageX);
+
+                // y does not exist
+                yPath.Delete();
+
+                // Act
+                // Verify failure
+                var r = RestoreSolution(pathContext, exitCode: 1);
+
+                var targets = TargetsUtility.GetMSBuildPackageImports(projectA.TargetsOutput);
+
+                // Assert
+                // Verify all files were written
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.Item2);
+                Assert.True(File.Exists(projectA.TargetsOutput), r.Item2);
+                Assert.True(File.Exists(projectA.PropsOutput), r.Item2);
+                Assert.Equal(1, targets.Count);
+            }
+        }
+
+        [Fact]
         public async Task RestoreNetCore_SingleProject()
         {
             // Arrange
@@ -1856,7 +2416,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.Item2);
                 Assert.True(File.Exists(projectA.TargetsOutput), r.Item2);
-                Assert.False(File.Exists(projectA.PropsOutput), r.Item2);
+                Assert.True(File.Exists(projectA.PropsOutput), r.Item2);
             }
         }
 
@@ -1989,7 +2549,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.Item2);
                 Assert.True(File.Exists(projectA.TargetsOutput), r.Item2);
-                Assert.False(File.Exists(projectA.PropsOutput), r.Item2);
+                Assert.True(File.Exists(projectA.PropsOutput), r.Item2);
 
                 Assert.Equal(NuGetFramework.Parse("net45"), projectA.AssetsFile.Targets.Single().TargetFramework);
             }

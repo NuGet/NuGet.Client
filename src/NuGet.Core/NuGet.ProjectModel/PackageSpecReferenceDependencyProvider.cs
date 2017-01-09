@@ -100,8 +100,10 @@ namespace NuGet.ProjectModel
             // create a dictionary of dependencies to make sure that no duplicates exist
             var dependencies = new List<LibraryDependency>();
 
+            var projectStyle = packageSpec?.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
+
             // Read references from external project
-            if (packageSpec?.RestoreMetadata?.OutputType == RestoreOutputType.NETCore)
+            if (projectStyle == ProjectStyle.PackageReference)
             {
                 // NETCore
                 dependencies.AddRange(GetDependenciesFromSpecRestoreMetadata(packageSpec, targetFramework));
@@ -131,29 +133,13 @@ namespace NuGet.ProjectModel
                 Identity = new LibraryIdentity
                 {
                     Name = externalReference?.ProjectName ?? packageSpec.Name,
-                    Version = packageSpec?.Version ?? NuGetVersion.Parse("1.0.0"),
+                    Version = packageSpec?.Version ?? new NuGetVersion(1, 0, 0),
                     Type = LibraryType.Project,
                 },
                 Path = packageSpec?.FilePath,
                 Dependencies = uniqueDependencies,
                 Resolved = true
             };
-
-            if (packageSpec != null)
-            {
-                library[KnownLibraryProperties.PackageSpec] = packageSpec;
-
-                var outputType = packageSpec.RestoreMetadata?.OutputType;
-
-                if (outputType.HasValue)
-                {
-                    library[KnownLibraryProperties.ProjectOutputType] = outputType.Value.ToString();
-                }
-                else
-                {
-                    library[KnownLibraryProperties.ProjectOutputType] = "unknown";
-                }
-            }
 
             // Add msbuild path
             var msbuildPath = externalReference?.MSBuildProjectPath;
@@ -164,23 +150,42 @@ namespace NuGet.ProjectModel
 
             if (packageSpec != null)
             {
-                // Record all frameworks in the project
-                library[KnownLibraryProperties.ProjectFrameworks] = new List<NuGetFramework>(
-                    packageSpec.TargetFrameworks.Select(fw => fw.FrameworkName));
+                // Additional library properties
+                AddLibraryProperties(library, packageSpec, targetFramework, msbuildPath);
             }
-
-            // Additional library properties
-            AddLibraryProperties(library, packageSpec, targetFramework, msbuildPath);
 
             return library;
         }
 
         private static void AddLibraryProperties(Library library, PackageSpec packageSpec, NuGetFramework targetFramework, string msbuildPath)
         {
-            if (packageSpec != null)
-            {
-                var targetFrameworkInfo = packageSpec.GetTargetFramework(targetFramework);
+            var projectStyle = packageSpec.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
 
+            library[KnownLibraryProperties.PackageSpec] = packageSpec;
+            library[KnownLibraryProperties.ProjectStyle] = projectStyle;
+
+            if (packageSpec.RestoreMetadata?.Files != null)
+            {
+                // Record all files that would be in a nupkg
+                library[KnownLibraryProperties.ProjectRestoreMetadataFiles]
+                    = packageSpec.RestoreMetadata.Files.ToList();
+            }
+
+            // Avoid adding these properties for class libraries
+            // and other projects which are not fully able to 
+            // participate in restore.
+            if (packageSpec.RestoreMetadata == null
+                || (projectStyle != ProjectStyle.Unknown
+                    && projectStyle != ProjectStyle.PackagesConfig))
+            {
+                var frameworks = new List<NuGetFramework>(
+                    packageSpec.TargetFrameworks.Select(fw => fw.FrameworkName)
+                    .Where(fw => !fw.IsUnsupported));
+
+                // Record all frameworks in the project
+                library[KnownLibraryProperties.ProjectFrameworks] = frameworks;
+
+                var targetFrameworkInfo = packageSpec.GetTargetFramework(targetFramework);
                 library[KnownLibraryProperties.TargetFrameworkInformation] = targetFrameworkInfo;
 
                 // Add framework references

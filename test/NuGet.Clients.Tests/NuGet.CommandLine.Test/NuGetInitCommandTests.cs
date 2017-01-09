@@ -9,6 +9,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using NuGet.Test.Utility;
+using NuGet.Common;
 using Test.Utility;
 using Xunit;
 
@@ -559,11 +560,17 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 var expectedMessage = string.Format(NuGetResources.Path_Invalid, invalidPath);
+
+                if (RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows)
+                {
+                    // "foo|<>|bar" is a valid directory name in Unix
+                    expectedMessage = string.Format(NuGetResources.InitCommand_FeedIsNotFound, invalidPath);
+                }
                 Util.VerifyResultFailure(result, expectedMessage);
             }
         }
 
-        [Fact]
+        [WindowsNTFact]
         public void InitCommand_Fail_DestinationIsInvalid()
         {
             // Arrange
@@ -580,6 +587,37 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 var expectedMessage = string.Format(NuGetResources.Path_Invalid, invalidPath);
                 Util.VerifyResultFailure(result, expectedMessage);
+            }
+        }
+
+        [UnixMonoFact]
+        public void InitCommand_Success_DestinationInvalidOnWindows()
+        {
+            // Arrange
+            using (var testFolder = TestDirectory.Create())
+            using (var destinationFolder = TestDirectory.Create())
+            using (var testInfo = new TestInfo(testFolder,
+                                               Path.Combine(destinationFolder, "foo|<>|bar")))
+            {
+                var packages = testInfo.AddPackagesToSource();
+
+                var args = new string[]
+                {
+                    "init",
+                    testInfo.SourceFeed,
+                    testInfo.DestinationFeed,
+                };
+
+                // Act
+                var result = CommandRunner.Run(
+                    testInfo.NuGetExePath,
+                    testInfo.WorkingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Util.VerifyResultSuccess(result);
+                Util.VerifyPackagesExist(packages, testInfo.DestinationFeed);
             }
         }
 

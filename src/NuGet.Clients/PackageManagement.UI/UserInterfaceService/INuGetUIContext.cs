@@ -24,28 +24,7 @@ namespace NuGet.PackageManagement.UI
 
         IEnumerable<NuGetProject> Projects { get; set; }
 
-        void AddSettings(string key, UserSettings settings);
-
-        UserSettings GetSettings(string key);
-
-        // Persist settings
-        void PersistSettings();
-
-        /// <summary>
-        /// Apply the setting of whether to show preview window to all existing
-        /// package manager windows after user changes it by checking/unchecking the
-        /// checkbox on the preview window.
-        /// </summary>
-        /// <param name="show">The value of the setting.</param>
-        void ApplyShowPreviewSetting(bool show);
-
-        /// <summary>
-        /// Apply the setting of whether to show the deprecated framework window to all existing
-        /// package manager windows after a user changes it by checking/unchecking the checkbox on
-        /// the deprecated framework window.
-        /// </summary>
-        /// <param name="show">The value of the setting.</param>
-        void ApplyShowDeprecatedFrameworkSetting(bool show);
+        IUserSettingsManager UserSettingsManager { get; }
 
         IEnumerable<IVsPackageManagerProvider> PackageManagerProviders { get; }
     }

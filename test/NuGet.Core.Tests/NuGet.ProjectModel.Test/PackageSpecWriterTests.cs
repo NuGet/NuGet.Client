@@ -195,7 +195,7 @@ namespace NuGet.ProjectModel.Test
                     LegacyPackagesDirectory = false,
                     OriginalTargetFrameworks = unsortedReadOnlyList,
                     OutputPath = "outputPath",
-                    OutputType = RestoreOutputType.NETCore,
+                    ProjectStyle = ProjectStyle.PackageReference,
                     PackagesPath = "packagesPath",
                     ProjectJsonPath = "projectJsonPath",
                     ProjectName = "projectName",

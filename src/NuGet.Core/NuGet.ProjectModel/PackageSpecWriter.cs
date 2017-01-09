@@ -118,9 +118,9 @@ namespace NuGet.ProjectModel
             SetValue(writer, "packagesPath", msbuildMetadata.PackagesPath);
             SetValue(writer, "outputPath", msbuildMetadata.OutputPath);
 
-            if (msbuildMetadata.OutputType != RestoreOutputType.Unknown)
+            if (msbuildMetadata.ProjectStyle != ProjectStyle.Unknown)
             {
-                SetValue(writer, "outputType", msbuildMetadata.OutputType.ToString());
+                SetValue(writer, "projectStyle", msbuildMetadata.ProjectStyle.ToString());
             }
 
             if (msbuildMetadata.CrossTargeting)
@@ -136,6 +136,22 @@ namespace NuGet.ProjectModel
                     msbuildMetadata.LegacyPackagesDirectory.ToString());
             }
 
+            if (msbuildMetadata.ValidateRuntimeAssets)
+            {
+                SetValue(
+                    writer,
+                    "validateRuntimeAssets",
+                    msbuildMetadata.ValidateRuntimeAssets.ToString());
+            }
+
+            if (msbuildMetadata.SkipContentFileWrite)
+            {
+                SetValue(
+                    writer,
+                    "skipContentFileWrite",
+                    msbuildMetadata.SkipContentFileWrite.ToString());
+            }
+
             SetArrayValue(writer, "fallbackFolders", msbuildMetadata.FallbackFolders);
             SetArrayValue(writer, "originalTargetFrameworks", msbuildMetadata.OriginalTargetFrameworks);
 
@@ -148,6 +164,18 @@ namespace NuGet.ProjectModel
                     // "source": {}
                     writer.WriteObjectStart(source.Source);
                     writer.WriteObjectEnd();
+                }
+
+                writer.WriteObjectEnd();
+            }
+
+            if (msbuildMetadata.Files?.Count > 0)
+            {
+                writer.WriteObjectStart("files");
+
+                foreach (var file in msbuildMetadata.Files)
+                {
+                    SetValue(writer, file.PackagePath, file.AbsolutePath);
                 }
 
                 writer.WriteObjectEnd();

@@ -28,7 +28,7 @@ namespace NuGet.Protocol
         {
             _packageSourceProvider = packageSourceProvider;
 
-            _resourceProviders.AddRange(FactoryExtensionsV2.GetCoreV3(Repository.Provider));
+            _resourceProviders.AddRange(Repository.Provider.GetCoreV3());
 
             _repositories = _packageSourceProvider.LoadPackageSources()
                 .Where(s => s.IsEnabled)

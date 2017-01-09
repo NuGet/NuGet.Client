@@ -90,15 +90,17 @@ namespace NuGet.Commands.Test
         public static PackageSpec WithTestRestoreMetadata(this PackageSpec spec)
         {
             var updated = spec.Clone();
+            var projectJsonFile = new FileInfo(spec.FilePath);
+            var projectDir = projectJsonFile.Directory.FullName;
 
-            var projectPath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), spec.Name + ".csproj");
+            var projectPath = Path.Combine(projectDir, spec.Name + ".csproj");
             spec.FilePath = projectPath;
 
             updated.RestoreMetadata = new ProjectRestoreMetadata();
             updated.RestoreMetadata.CrossTargeting = updated.TargetFrameworks.Count > 0;
             updated.RestoreMetadata.OriginalTargetFrameworks = updated.TargetFrameworks.Select(e => e.FrameworkName.GetShortFolderName()).ToList();
-            updated.RestoreMetadata.OutputPath = NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp);
-            updated.RestoreMetadata.OutputType = RestoreOutputType.NETCore;
+            updated.RestoreMetadata.OutputPath = projectDir;
+            updated.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
             updated.RestoreMetadata.ProjectName = spec.Name;
             updated.RestoreMetadata.ProjectUniqueName = spec.Name;
             updated.RestoreMetadata.ProjectPath = projectPath;
