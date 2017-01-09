@@ -59,19 +59,4 @@ namespace NuGet.CommandLine.Test
             Assert.False(File.Exists(fileInTargetDirectory));
         }
     }
-
-    /// <summary>
-    /// This attribute ensures the Fact is only run on Windows.
-    /// </summary>
-    public class WindowsNTFactAttribute
-        : FactAttribute
-    {
-        public WindowsNTFactAttribute()
-        {
-            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
-            {
-                Skip = "Test only runs on Windows NT or later.";
-            }
-        }
-    }
 }

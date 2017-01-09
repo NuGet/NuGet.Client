@@ -24,13 +24,6 @@ namespace NuGet.PackageManagement.VisualStudio
         bool IsBusy { get; }
 
         /// <summary>
-        /// Initializes instance after the hosting package is settled.
-        /// </summary>
-        /// <param name="site">VS extension package hosting the instance.</param>
-        /// <returns>Asyncronous operation task</returns>
-        Task InitializeAsync(IAsyncServiceProvider site);
-
-        /// <summary>
         /// Schedules backgroud restore operation.
         /// </summary>
         /// <param name="request">Restore request.</param>

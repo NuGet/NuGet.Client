@@ -38,7 +38,7 @@ namespace NuGet.Build.Tasks.Pack {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.Build.Tasks.Pack.Strings", typeof(Strings).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.Build.Tasks.Pack.Library.Strings", typeof(Strings).GetTypeInfo().Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -56,6 +56,24 @@ namespace NuGet.Build.Tasks.Pack {
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to The assets file found does not contain a valid package spec. Try restoring the project again. The location of the assets file is {0}..
+        /// </summary>
+        public static string AssetsFileDoesNotHaveValidPackageSpec {
+            get {
+                return ResourceManager.GetString("AssetsFileDoesNotHaveValidPackageSpec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to The assets file produced by restore does not exist. Try restoring the project again. The expected location of the assets file is {0}..
+        /// </summary>
+        public static string AssetsFileNotFound {
+            get {
+                return ResourceManager.GetString("AssetsFileNotFound", resourceCulture);
             }
         }
         

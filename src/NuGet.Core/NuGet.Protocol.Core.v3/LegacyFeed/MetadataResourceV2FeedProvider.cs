@@ -22,7 +22,7 @@ namespace NuGet.Protocol
                 var serviceDocument = await source.GetResourceAsync<ODataServiceDocumentResourceV2>(token);
 
                 var httpSource = await source.GetResourceAsync<HttpSourceResource>(token);
-                var parser = new V2FeedParser(httpSource.HttpSource, serviceDocument.BaseAddress, source.PackageSource);
+                var parser = new V2FeedParser(httpSource.HttpSource, serviceDocument.BaseAddress, source.PackageSource.Source);
 
                 resource = new MetadataResourceV2Feed(parser, source);
             }

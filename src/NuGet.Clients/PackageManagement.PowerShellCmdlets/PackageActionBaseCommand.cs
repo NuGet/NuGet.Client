@@ -10,7 +10,6 @@ using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Text;
 using System.Threading;
-using NuGet.Common;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
@@ -23,11 +22,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 {
     public class PackageActionBaseCommand : NuGetPowerShellBaseCommand
     {
-        private IDeleteOnRestartManager _deleteOnRestartManager;
+        private readonly IDeleteOnRestartManager _deleteOnRestartManager;
+        protected readonly INuGetLockService _lockService;
 
         public PackageActionBaseCommand()
         {
             _deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
+            _lockService = ServiceLocator.GetInstance<INuGetLockService>();
         }
 
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0)]
@@ -85,7 +86,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             UpdateActiveSourceRepository(result.SourceRepository);
             GetNuGetProject(ProjectName);
             DetermineFileConflictAction();
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(CheckMissingPackagesAsync);
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await CheckMissingPackagesAsync();
+                await CheckPackageManagementFormat();
+            });
+
         }
 
         protected override void ProcessRecordCore()
@@ -265,6 +271,26 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     Resources.Cmdlet_RequestRestartToCompleteUninstall,
                     string.Join(", ", packageDirectoriesMarkedForDeletion));
                 WriteWarning(message);
+            }
+        }
+
+        protected async Task CheckPackageManagementFormat()
+        {
+            // check if Project has any packages installed
+            if (!(await Project.GetInstalledPackagesAsync(Token)).Any())
+            {
+                var packageManagementFormat = new PackageManagementFormat(ConfigSettings);
+
+                // if default format is PackageReference then update NuGet Project
+                if (packageManagementFormat.SelectedPackageManagementFormat == 1)
+                {
+                    var newProject = await VsSolutionManager.UpdateNuGetProjectToPackageRef(Project);
+
+                    if (newProject != null)
+                    {
+                        Project = newProject;
+                    }
+                }
             }
         }
 

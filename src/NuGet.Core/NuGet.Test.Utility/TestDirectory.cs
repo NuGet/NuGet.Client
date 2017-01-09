@@ -11,9 +11,11 @@ namespace NuGet.Test.Utility
         private TestDirectory(string path)
         {
             Path = path;
+            Info = new DirectoryInfo(path);
         }
 
         public string Path { get; }
+        public DirectoryInfo Info { get; }
 
         public void Dispose()
         {
@@ -36,7 +38,7 @@ namespace NuGet.Test.Utility
             return new TestDirectory(path);
         }
 
-        public static implicit operator string (TestDirectory directory)
+        public static implicit operator string(TestDirectory directory)
         {
             return directory.Path;
         }

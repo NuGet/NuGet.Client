@@ -209,7 +209,7 @@ namespace NuGet.SolutionRestoreManager
                         Path.Combine(
                             projectDirectory,
                             projectRestoreInfo.BaseIntermediatePath)),
-                    OutputType = RestoreOutputType.NETCore,
+                    ProjectStyle = ProjectStyle.PackageReference,
                     TargetFrameworks = projectRestoreInfo.TargetFrameworks
                         .Cast<IVsTargetFrameworkInfo>()
                         .Select(item => ToProjectRestoreMetadataFrameworkInfo(item, projectDirectory))

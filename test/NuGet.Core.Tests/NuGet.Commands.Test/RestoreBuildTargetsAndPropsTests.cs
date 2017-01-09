@@ -316,8 +316,7 @@ namespace NuGet.Commands.Test
                 Assert.True(success, "Failed: " + messages);
 
                 // Verify the file was not rewritten
-                Assert.Contains("No changes found. Skipping write of imports file to disk", messages);
-                Assert.DoesNotContain("Writing imports file to disk", messages);
+                Assert.DoesNotContain("Generating MSBuild file", messages);
             }
         }
 
@@ -401,7 +400,7 @@ namespace NuGet.Commands.Test
 
             foreach (var spec in specs)
             {
-                var project = new SimpleTestProjectContext(spec.Name, RestoreOutputType.NETCore, pathContext.SolutionRoot);
+                var project = new SimpleTestProjectContext(spec.Name, ProjectStyle.PackageReference, pathContext.SolutionRoot);
 
                 // Set proj properties
                 spec.FilePath = project.ProjectPath;
@@ -455,7 +454,7 @@ namespace NuGet.Commands.Test
             spec.RestoreMetadata = new ProjectRestoreMetadata();
             spec.RestoreMetadata.ProjectUniqueName = $"{projectName}-UNIQUENAME";
             spec.RestoreMetadata.ProjectName = projectName;
-            spec.RestoreMetadata.OutputType = RestoreOutputType.NETCore;
+            spec.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
             spec.Name = projectName;
 
             foreach (var framework in frameworks)

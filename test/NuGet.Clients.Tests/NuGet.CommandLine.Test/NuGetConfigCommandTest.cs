@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using NuGet.Test.Utility;
+using NuGet.Common;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -26,17 +27,18 @@ namespace NuGet.CommandLine.Test
                     "-Set",
                     @"HTTP_PROXY.USER=domain\user"
                 };
+                string root = RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows ? Environment.GetEnvironmentVariable("HOME") : @"c:\";
 
                 // Act
                 // Set the working directory to C:\, otherwise,
                 // the test will change the nuget.config at the code repo's root directory
-                int result = Program.MainCore(@"c:\", args);
+                int result = Program.MainCore(root, args);
 
                 // Assert
                 Assert.Equal(0, result);
 
                 var settings = Configuration.Settings.LoadDefaultSettings(
-                    @"c:\", null, null);
+                    root, null, null);
                 var values = settings.GetSettingValues("config", isPath: false);
                 AssertEqualCollections(values, new[]
                     {

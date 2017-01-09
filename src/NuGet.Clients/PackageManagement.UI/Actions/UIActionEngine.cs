@@ -8,7 +8,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -19,18 +18,38 @@ namespace NuGet.PackageManagement.UI
     /// <summary>
     /// Performs package manager actions and controls the UI to display output while the actions are taking place.
     /// </summary>
-    public class UIActionEngine
+    public sealed class UIActionEngine
     {
         private readonly ISourceRepositoryProvider _sourceProvider;
         private readonly NuGetPackageManager _packageManager;
+        private readonly INuGetLockService _lockService;
 
         /// <summary>
         /// Create a UIActionEngine to perform installs/uninstalls
         /// </summary>
-        public UIActionEngine(ISourceRepositoryProvider sourceProvider, NuGetPackageManager packageManager)
+        public UIActionEngine(
+            ISourceRepositoryProvider sourceProvider, 
+            NuGetPackageManager packageManager,
+            INuGetLockService lockService)
         {
+            if (sourceProvider == null)
+            {
+                throw new ArgumentNullException(nameof(sourceProvider));
+            }
+
+            if (packageManager == null)
+            {
+                throw new ArgumentNullException(nameof(packageManager));
+            }
+
+            if (lockService == null)
+            {
+                throw new ArgumentNullException(nameof(lockService));
+            }
+
             _sourceProvider = sourceProvider;
             _packageManager = packageManager;
+            _lockService = lockService;
         }
 
         /// <summary>
@@ -40,7 +59,6 @@ namespace NuGet.PackageManagement.UI
         public async Task PerformActionAsync(
             INuGetUI uiService,
             UserAction userAction,
-            DependencyObject windowOwner,
             CancellationToken token)
         {
             var operationType = NuGetOperationType.Install;
@@ -75,14 +93,13 @@ namespace NuGet.PackageManagement.UI
                         uiService.RemoveDependencies,
                         uiService.ForceRemove,
                         resolutionContext,
-                        projectContext: uiService.ProgressWindow,
+                        projectContext: uiService.ProjectContext,
                         token: token);
                 },
                 (actions) =>
                 {
-                    return ExecuteActionsAsync(actions, uiService.ProgressWindow, userAction, token);
+                    return ExecuteActionsAsync(actions, uiService.ProjectContext, uiService.CommonOperations, userAction, token);
                 },
-                windowOwner,
                 operationType,
                 token);
         }
@@ -94,14 +111,13 @@ namespace NuGet.PackageManagement.UI
         public async Task PerformUpdateAsync(
             INuGetUI uiService,
             List<PackageIdentity> packagesToUpdate,
-            DependencyObject windowOwner,
             CancellationToken token)
         {
             await PerformActionImplAsync(
                 uiService,
                 () =>
                 {
-                    return ResolveActionsForUpdate(
+                    return ResolveActionsForUpdateAsync(
                         uiService,
                         packagesToUpdate,
                         token);
@@ -114,10 +130,9 @@ namespace NuGet.PackageManagement.UI
                     await _packageManager.ExecuteNuGetProjectActionsAsync(
                         nugetProjects,
                         nugetActions,
-                        uiService.ProgressWindow,
+                        uiService.ProjectContext,
                         token);
                 },
-                windowOwner,
                 NuGetOperationType.Update,
                 token);
         }
@@ -129,7 +144,7 @@ namespace NuGet.PackageManagement.UI
         /// <param name="packagesToUpdate">The list of packages to update.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>The list of actions.</returns>
-        private async Task<IReadOnlyList<ResolvedAction>> ResolveActionsForUpdate(
+        private async Task<IReadOnlyList<ResolvedAction>> ResolveActionsForUpdateAsync(
             INuGetUI uiService,
             List<PackageIdentity> packagesToUpdate,
             CancellationToken token)
@@ -155,7 +170,7 @@ namespace NuGet.PackageManagement.UI
                 packagesToUpdate,
                 uiService.Projects,
                 resolutionContext,
-                uiService.ProgressWindow,
+                uiService.ProjectContext,
                 uiService.ActiveSources,
                 secondarySources,
                 token);
@@ -177,7 +192,6 @@ namespace NuGet.PackageManagement.UI
             INuGetUI uiService,
             Func<Task<IReadOnlyList<ResolvedAction>>> resolveActionsAsync,
             Func<IReadOnlyList<ResolvedAction>, Task> executeActionsAsync,
-            DependencyObject windowOwner,
             NuGetOperationType operationType,
             CancellationToken token)
         {
@@ -188,11 +202,19 @@ namespace NuGet.PackageManagement.UI
 
             // Enable granular level telemetry events for nuget ui operation
             var telemetryService = new TelemetryServiceHelper();
-            uiService.ProgressWindow.TelemetryService = telemetryService;
+            uiService.ProjectContext.TelemetryService = telemetryService;
+
+            var lck = await _lockService.AcquireLockAsync(token);
 
             try
             {
-                uiService.ShowProgressDialog(windowOwner);
+                uiService.BeginOperation();
+
+                var acceptedFormat = await CheckPackageManagementFormat(uiService, token);
+                if (!acceptedFormat)
+                {
+                    return;
+                }
 
                 TelemetryUtility.StartorResumeTimer();
 
@@ -287,13 +309,16 @@ namespace NuGet.PackageManagement.UI
             }
             finally
             {
-                uiService.CloseProgressDialog();
+                lck.Dispose();
 
                 TelemetryUtility.StopTimer();
 
                 var duration = TelemetryUtility.GetTimerElapsedTime();
-                uiService.ProgressWindow.Log(MessageLevel.Info,
+
+                uiService.ProjectContext.Log(MessageLevel.Info,
                     string.Format(CultureInfo.CurrentCulture, Resources.Operation_TotalTime, duration));
+
+                uiService.EndOperation();
 
                 var actionTelemetryEvent = TelemetryUtility.GetActionTelemetryEvent(
                     uiService.Projects,
@@ -306,6 +331,57 @@ namespace NuGet.PackageManagement.UI
 
                 ActionsTelemetryService.Instance.EmitActionEvent(actionTelemetryEvent, telemetryService.TelemetryEvents);
             }
+        }
+
+        private async Task<bool> CheckPackageManagementFormat(INuGetUI uiService, CancellationToken token)
+        {
+#if VS14
+            // don't show this dialog for VS 2015
+            return await Task.FromResult(true);
+#else
+            var newProjectNames = new List<string>();
+            var msBuildProjects = uiService.Projects.Where(project => project is MSBuildNuGetProject);
+
+            // get all packages.config based projects with no installed packages
+            foreach (var project in msBuildProjects)
+            {
+                if (!(await project.GetInstalledPackagesAsync(token)).Any())
+                {
+                    newProjectNames.Add(project.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+                }
+            }
+
+            // only show this dialog if there are any new project(s) with no installed packages.
+            if (newProjectNames.Count > 0)
+            {
+                var packageManagementFormat = new PackageManagementFormat(uiService.Settings);
+                if (packageManagementFormat.IsDisabled)
+                {
+                    // user disabled this prompt either through Tools->options or previous interaction of this dialog.
+                    // now check for default package format, if its set to PackageReference then update the project.
+                    if (packageManagementFormat.SelectedPackageManagementFormat == 1)
+                    {
+                        await uiService.UpdateNuGetProjectToPackageRef(msBuildProjects);
+                    }
+
+                    return true;
+                }
+
+                packageManagementFormat.ProjectNames = newProjectNames.OrderBy(name => name, StringComparer.OrdinalIgnoreCase).ToList();
+
+                // show dialog for package format selector
+                var result = uiService.PromptForPackageManagementFormat(packageManagementFormat);
+
+                // update nuget projects if user selected PackageReference option
+                if (result && packageManagementFormat.SelectedPackageManagementFormat == 1)
+                {
+                    await uiService.UpdateNuGetProjectToPackageRef(msBuildProjects);
+                }
+                return result;
+            }
+
+            return true;
+#endif
         }
 
         // Returns false if user doesn't accept license agreements.
@@ -369,14 +445,18 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Execute the installs/uninstalls
         /// </summary>
-        protected async Task ExecuteActionsAsync(IEnumerable<ResolvedAction> actions,
-            NuGetUIProjectContext projectContext, UserAction userAction, CancellationToken token)
+        private async Task ExecuteActionsAsync(
+            IEnumerable<ResolvedAction> actions,
+            INuGetProjectContext projectContext, 
+            ICommonOperations commonOperations,
+            UserAction userAction, 
+            CancellationToken token)
         {
             var processedDirectInstalls = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
             foreach (var projectActions in actions.GroupBy(e => e.Project))
             {
                 var nuGetProjectActions = projectActions.Select(e => e.Action);
-                var directInstall = GetDirectInstall(nuGetProjectActions, userAction, projectContext.CommonOperations);
+                var directInstall = GetDirectInstall(nuGetProjectActions, userAction, commonOperations);
                 if (directInstall != null
                     && !processedDirectInstalls.Contains(directInstall))
                 {
@@ -406,7 +486,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Return the resolve package actions
         /// </summary>
-        protected async Task<IReadOnlyList<ResolvedAction>> GetActionsAsync(
+        private async Task<IReadOnlyList<ResolvedAction>> GetActionsAsync(
             INuGetUI uiService,
             IEnumerable<NuGetProject> targets,
             UserAction userAction,
@@ -457,7 +537,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Convert NuGetProjectActions into PreviewResult types
         /// </summary>
-        protected static IReadOnlyList<PreviewResult> GetPreviewResults(IEnumerable<ResolvedAction> projectActions)
+        private static IReadOnlyList<PreviewResult> GetPreviewResults(IEnumerable<ResolvedAction> projectActions)
         {
             var results = new List<PreviewResult>();
 
@@ -595,7 +675,7 @@ namespace NuGet.PackageManagement.UI
         private void LogError(Task task, INuGetUI uiService)
         {
             var exception = ExceptionUtilities.Unwrap(task.Exception);
-            uiService.ProgressWindow.Log(MessageLevel.Error, exception.Message);
+            uiService.ProjectContext.Log(MessageLevel.Error, exception.Message);
         }
 
         private static async Task<IPackageSearchMetadata> GetPackageMetadataAsync(

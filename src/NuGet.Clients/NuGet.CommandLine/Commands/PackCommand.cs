@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NuGet.Commands;
+using NuGet.Packaging.Core;
 
 namespace NuGet.CommandLine
 {
@@ -14,7 +15,7 @@ namespace NuGet.CommandLine
             UsageDescriptionResourceName = "PackageCommandUsageDescription", UsageExampleResourceName = "PackCommandUsageExamples")]
     public class PackCommand : Command
     {
-        internal static readonly string SymbolsExtension = ".symbols" + Constants.PackageExtension;
+        internal static readonly string SymbolsExtension = ".symbols" + PackagingCoreConstants.NupkgExtension;
 
         private readonly HashSet<string> _excludes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, string> _properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -89,7 +90,7 @@ namespace NuGet.CommandLine
             packArgs.Arguments = Arguments;
             packArgs.OutputDirectory = OutputDirectory;
             packArgs.BasePath = BasePath;
-            packArgs.MsBuildDirectory = MsBuildUtility.GetMsbuildDirectoryFromMsbuildPath(MSBuildPath, MSBuildVersion, Console);
+            packArgs.MsBuildDirectory = MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(MSBuildPath, MSBuildVersion, Console);
 
             // Get the input file
             packArgs.Path = PackCommandRunner.GetInputFile(packArgs);

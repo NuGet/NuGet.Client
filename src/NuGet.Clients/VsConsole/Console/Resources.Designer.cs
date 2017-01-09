@@ -79,15 +79,6 @@ namespace NuGetConsole {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ========== Finished ==========.
-        /// </summary>
-        public static string Finished {
-            get {
-                return ResourceManager.GetString("Finished", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Package Manager.
         /// </summary>
         public static string OutputConsolePaneName {

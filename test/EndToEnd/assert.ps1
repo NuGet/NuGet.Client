@@ -95,6 +95,20 @@ function Assert-AreEqual {
     }
 }
 
+function Assert-NotEqual {
+    param(
+         [parameter(Mandatory = $true)]
+         $Expected,
+         [parameter(Mandatory = $true)]
+         $Actual,
+         [string]$Message
+    )
+
+    if($Expected -eq $Actual) {
+        Write-Error (Get-AssertError "Expected anything but <$Expected> but got <$Actual>" $Message)
+    }
+}
+
 function Assert-PathExists {
     param(
           [parameter(Mandatory = $true)]

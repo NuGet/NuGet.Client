@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+extern alias CoreV2;
+
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -8,6 +10,10 @@ using System.Linq;
 using System.Reflection;
 using NuGet.Configuration;
 
+using static CoreV2.NuGet.PackageRepositoryExtensions;
+using static CoreV2.NuGet.CustomAttributeProviderExtensions;
+
+//TODO: This can be reworked with V3 APIs - tracked in https://github.com/NuGet/Home/issues/4197
 namespace NuGet.CommandLine
 {
     /// <summary>
@@ -24,9 +30,9 @@ namespace NuGet.CommandLine
             var assembly = typeof(SelfUpdater).Assembly;
             return assembly.Location;
         });
-        private readonly IPackageRepositoryFactory _repositoryFactory;
+        private readonly CoreV2.NuGet.IPackageRepositoryFactory _repositoryFactory;
 
-        public SelfUpdater(IPackageRepositoryFactory repositoryFactory)
+        public SelfUpdater(CoreV2.NuGet.IPackageRepositoryFactory repositoryFactory)
         {
             if (repositoryFactory == null)
             {
@@ -56,24 +62,24 @@ namespace NuGet.CommandLine
         public void UpdateSelf(bool prerelease)
         {
             Assembly assembly = typeof(SelfUpdater).Assembly;
-            var version = GetNuGetVersion(assembly) ?? new SemanticVersion(assembly.GetName().Version);
+            CoreV2.NuGet.SemanticVersion version = GetNuGetVersion(assembly) ?? new CoreV2.NuGet.SemanticVersion(assembly.GetName().Version);
             SelfUpdate(AssemblyLocation, prerelease, version);
         }
 
-        internal void SelfUpdate(string exePath, bool prerelease, SemanticVersion version)
+        internal void SelfUpdate(string exePath, bool prerelease, CoreV2.NuGet.SemanticVersion version)
         {
             Console.WriteLine(LocalizedResourceManager.GetString("UpdateCommandCheckingForUpdates"), NuGetConstants.V2FeedUrl);
 
             // Get the nuget command line package from the specified repository
-            IPackageRepository packageRepository = _repositoryFactory.CreateRepository(NuGetConstants.V2FeedUrl);
-            IPackage package = packageRepository.GetUpdates(
-                new [] { new PackageName(NuGetCommandLinePackageId, version) },
+            CoreV2.NuGet.IPackageRepository packageRepository = _repositoryFactory.CreateRepository(NuGetConstants.V2FeedUrl);
+            CoreV2.NuGet.IPackage package = packageRepository.GetUpdates(
+                new [] { new CoreV2.NuGet.PackageName(NuGetCommandLinePackageId, version) },
                 includePrerelease: prerelease, 
                 includeAllVersions: false, 
                 targetFrameworks: null,
                 versionConstraints: null).FirstOrDefault();
  
-            Console.WriteLine(LocalizedResourceManager.GetString("UpdateCommandCurrentlyRunningNuGetExe"), version);
+            Console.WriteLine(LocalizedResourceManager.GetString("UpdateCommandCurrentlyRunningNuGetExe"), version); // SemanticVersion is the problem
 
             // Check to see if an update is needed
             if (package == null || version >= package.Version)
@@ -85,7 +91,7 @@ namespace NuGet.CommandLine
                 Console.WriteLine(LocalizedResourceManager.GetString("UpdateCommandUpdatingNuGet"), package.Version);
 
                 // Get NuGet.exe file from the package
-                IPackageFile file = package.GetFiles().FirstOrDefault(f => Path.GetFileName(f.Path).Equals(NuGetExe, StringComparison.OrdinalIgnoreCase));
+                CoreV2.NuGet.IPackageFile file = package.GetFiles().FirstOrDefault(f => Path.GetFileName(f.Path).Equals(NuGetExe, StringComparison.OrdinalIgnoreCase));
 
                 // If for some reason this package doesn't have NuGet.exe then we don't want to use it
                 if (file == null)
@@ -106,12 +112,12 @@ namespace NuGet.CommandLine
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want this method to throw.")]
-        internal static SemanticVersion GetNuGetVersion(ICustomAttributeProvider assembly)
+        internal static CoreV2.NuGet.SemanticVersion GetNuGetVersion(ICustomAttributeProvider assembly)
         {
             try
             {
                 var assemblyInformationalVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
-                return new SemanticVersion(assemblyInformationalVersion.InformationalVersion);
+                return new CoreV2.NuGet.SemanticVersion(assemblyInformationalVersion.InformationalVersion);
             }
             catch
             {
@@ -120,7 +126,7 @@ namespace NuGet.CommandLine
             return null;
         }
 
-        protected virtual void UpdateFile(string exePath, IPackageFile file)
+        protected virtual void UpdateFile(string exePath, CoreV2.NuGet.IPackageFile file)
         {
             using (Stream fromStream = file.GetStream(), toStream = File.Create(exePath))
             {

@@ -5936,7 +5936,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Clears or lists local NuGet resources such as http requests cache, packages cache or machine-wide global packages folder..
+        ///   Looks up a localized string similar to Clears or lists local NuGet resources such as http requests cache, temp cache or machine-wide global packages folder..
         /// </summary>
         internal static string LocalsCommandDescription {
             get {
@@ -5949,7 +5949,7 @@ namespace NuGet.CommandLine {
         ///
         ///nuget locals http-cache -clear
         ///
-        ///nuget locals packages-cache -list
+        ///nuget locals temp -list
         ///
         ///nuget locals global-packages -list.
         /// </summary>

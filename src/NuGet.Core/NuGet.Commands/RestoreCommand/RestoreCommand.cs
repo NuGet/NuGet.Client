@@ -77,7 +77,7 @@ namespace NuGet.Commands
                 token);
 
             // Create assets file
-            var lockFile = BuildLockFile(
+            var assetsFile = BuildAssetsFile(
                 _request.ExistingLockFile,
                 _request.Project,
                 graphs,
@@ -94,8 +94,9 @@ namespace NuGet.Commands
                 _request.Project,
                 _includeFlagGraphs,
                 localRepositories,
-                lockFile,
+                assetsFile,
                 graphs,
+                _request.ValidateRuntimeAssets,
                 _logger);
 
             if (checkResults.Any(r => !r.Success))
@@ -103,30 +104,37 @@ namespace NuGet.Commands
                 _success = false;
             }
 
-            // Generate Targets/Props files
-            var msbuild = BuildAssetsUtils.RestoreMSBuildFiles(
-                _request.Project,
-                graphs,
-                localRepositories,
-                contextForProject,
-                _request,
-                _includeFlagGraphs);
-
-            // If the request is for a lower lock file version, downgrade it appropriately
-            DowngradeLockFileIfNeeded(lockFile);
-
-            // Revert to the original case if needed
-            await FixCaseForLegacyReaders(graphs, lockFile, token);
-
             // Determine the lock file output path
-            var projectLockFilePath = GetLockFilePath(lockFile);
+            var assetsFilePath = GetAssetsFilePath(assetsFile);
 
             // Tool restores are unique since the output path is not known until after restore
             if (_request.LockFilePath == null
-                && _request.RestoreOutputType == RestoreOutputType.DotnetCliTool)
+                && _request.ProjectStyle == ProjectStyle.DotnetCliTool)
             {
-                _request.LockFilePath = projectLockFilePath;
+                _request.LockFilePath = assetsFilePath;
             }
+
+            // Generate Targets/Props files
+            var msbuildOutputFiles = Enumerable.Empty<MSBuildOutputFile>();
+
+            if (contextForProject.IsMsBuildBased)
+            {
+                msbuildOutputFiles = BuildAssetsUtils.GetMSBuildOutputFiles(
+                    _request.Project,
+                    assetsFile,
+                    graphs,
+                    localRepositories,
+                    _request,
+                    assetsFilePath,
+                    _success,
+                    _logger);
+            }
+
+            // If the request is for a lower lock file version, downgrade it appropriately
+            DowngradeLockFileIfNeeded(assetsFile);
+
+            // Revert to the original case if needed
+            await FixCaseForLegacyReaders(graphs, assetsFile, token);
 
             restoreTime.Stop();
 
@@ -135,26 +143,26 @@ namespace NuGet.Commands
                 _success,
                 graphs,
                 checkResults,
-                lockFile,
+                msbuildOutputFiles,
+                assetsFile,
                 _request.ExistingLockFile,
-                projectLockFilePath,
-                msbuild,
-                _request.RestoreOutputType,
+                assetsFilePath,
+                _request.ProjectStyle,
                 restoreTime.Elapsed);
         }
 
-        private string GetLockFilePath(LockFile lockFile)
+        private string GetAssetsFilePath(LockFile lockFile)
         {
             var projectLockFilePath = _request.LockFilePath;
 
             if (string.IsNullOrEmpty(projectLockFilePath))
             {
-                if (_request.RestoreOutputType == RestoreOutputType.NETCore
-                    || _request.RestoreOutputType == RestoreOutputType.Standalone)
+                if (_request.ProjectStyle == ProjectStyle.PackageReference
+                    || _request.ProjectStyle == ProjectStyle.Standalone)
                 {
                     projectLockFilePath = Path.Combine(_request.RestoreOutputPath, LockFileFormat.AssetsFileName);
                 }
-                else if (_request.RestoreOutputType == RestoreOutputType.DotnetCliTool)
+                else if (_request.ProjectStyle == ProjectStyle.DotnetCliTool)
                 {
                     var toolName = ToolRestoreUtility.GetToolIdOrNullFromSpec(_request.Project);
                     var lockFileLibrary = ToolRestoreUtility.GetToolTargetLibrary(lockFile, toolName);
@@ -176,7 +184,7 @@ namespace NuGet.Commands
                 }
             }
 
-            return projectLockFilePath;
+            return Path.GetFullPath(projectLockFilePath);
         }
 
         private void DowngradeLockFileIfNeeded(LockFile lockFile)
@@ -212,7 +220,7 @@ namespace NuGet.Commands
             }
         }
 
-        private LockFile BuildLockFile(
+        private LockFile BuildAssetsFile(
             LockFile existingLockFile,
             PackageSpec project,
             IEnumerable<RestoreTargetGraph> graphs,
@@ -281,13 +289,14 @@ namespace NuGet.Commands
             IReadOnlyList<NuGetv3LocalRepository> localRepositories,
             LockFile lockFile,
             IEnumerable<RestoreTargetGraph> graphs,
+            bool validateRuntimeAssets,
             ILogger logger)
         {
             // Scan every graph for compatibility, as long as there were no unresolved packages
             var checkResults = new List<CompatibilityCheckResult>();
             if (graphs.All(g => !g.Unresolved.Any()))
             {
-                var checker = new CompatibilityChecker(localRepositories, lockFile, logger);
+                var checker = new CompatibilityChecker(localRepositories, lockFile, validateRuntimeAssets, logger);
                 foreach (var graph in graphs)
                 {
                     logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_CheckingCompatibility, graph.Name));
@@ -354,7 +363,7 @@ namespace NuGet.Commands
             var updatedExternalProjects = GetProjectReferences(context);
 
             // Determine if the targets and props files should be written out.
-            context.IsMsBuildBased = _request.RestoreOutputType != RestoreOutputType.DotnetCliTool;
+            context.IsMsBuildBased = _request.ProjectStyle != ProjectStyle.DotnetCliTool;
 
             // Load repositories
             // the external project provider is specific to the current restore project

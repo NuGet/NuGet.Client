@@ -83,13 +83,7 @@ namespace NuGet.ProjectModel
             packageSpec.Name = name;
             packageSpec.FilePath = name == null ? null : Path.GetFullPath(packageSpecPath);
 
-            if (version == null)
-            {
-                packageSpec.Version = new NuGetVersion("1.0.0");
-                packageSpec.IsDefaultVersion = true;
-                packageSpec.HasVersionSnapshot = false;
-            }
-            else
+            if (version != null)
             {
                 try
                 {
@@ -201,13 +195,13 @@ namespace NuGet.ProjectModel
             msbuildMetadata.ProjectUniqueName = rawMSBuildMetadata.GetValue<string>("projectUniqueName");
             msbuildMetadata.OutputPath = rawMSBuildMetadata.GetValue<string>("outputPath");
 
-            var outputTypeString = rawMSBuildMetadata.GetValue<string>("outputType");
+            var projectStyleString = rawMSBuildMetadata.GetValue<string>("projectStyle");
 
-            RestoreOutputType outputType;
-            if (!string.IsNullOrEmpty(outputTypeString)
-                && Enum.TryParse<RestoreOutputType>(outputTypeString, ignoreCase: true, result: out outputType))
+            ProjectStyle projectStyle;
+            if (!string.IsNullOrEmpty(projectStyleString)
+                && Enum.TryParse<ProjectStyle>(projectStyleString, ignoreCase: true, result: out projectStyle))
             {
-                msbuildMetadata.OutputType = outputType;
+                msbuildMetadata.ProjectStyle = projectStyle;
             }
 
             msbuildMetadata.PackagesPath = rawMSBuildMetadata.GetValue<string>("packagesPath");
@@ -216,6 +210,8 @@ namespace NuGet.ProjectModel
             msbuildMetadata.ProjectPath = rawMSBuildMetadata.GetValue<string>("projectPath");
             msbuildMetadata.CrossTargeting = rawMSBuildMetadata.GetValue<bool>("crossTargeting");
             msbuildMetadata.LegacyPackagesDirectory = rawMSBuildMetadata.GetValue<bool>("legacyPackagesDirectory");
+            msbuildMetadata.ValidateRuntimeAssets = rawMSBuildMetadata.GetValue<bool>("validateRuntimeAssets");
+            msbuildMetadata.SkipContentFileWrite = rawMSBuildMetadata.GetValue<bool>("skipContentFileWrite");
 
             msbuildMetadata.Sources = new List<PackageSource>();
 
@@ -225,6 +221,15 @@ namespace NuGet.ProjectModel
                 foreach (var prop in sourcesObj.Properties())
                 {
                     msbuildMetadata.Sources.Add(new PackageSource(prop.Name));
+                }
+            }
+
+            var filesObj = rawMSBuildMetadata.GetValue<JObject>("files");
+            if (filesObj != null)
+            {
+                foreach (var prop in filesObj.Properties())
+                {
+                    msbuildMetadata.Files.Add(new ProjectRestoreMetadataFile(prop.Name, prop.Value.ToObject<string>()));
                 }
             }
 

@@ -1,6 +1,6 @@
 ﻿namespace NuGet.ProjectModel
 {
-    public enum RestoreOutputType : ushort
+    public enum ProjectStyle : ushort
     {
         /// <summary>
         /// Unknown
@@ -10,12 +10,12 @@
         /// <summary>
         /// UAP style, project.lock.json is generated next to project.json
         /// </summary>
-        UAP = 1,
+        ProjectJson = 1,
 
         /// <summary>
         /// MSBuild style, project.assets.json is generated in the RestoreOutputPath folder
         /// </summary>
-        NETCore = 2,
+        PackageReference = 2,
 
         /// <summary>
         /// Tool

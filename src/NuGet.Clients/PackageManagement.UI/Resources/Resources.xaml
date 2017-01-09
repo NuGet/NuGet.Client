@@ -47,6 +47,8 @@
     x:Key="ProjectAndSolutionViewMinHeightConverter"/>
   <nuget:IconUrlToImageCacheConverter
     x:Key="IconUrlToImageCacheConverter"/>
+  <nuget:RadioBoolToIntConverter
+    x:Key="RadioBoolToIntConverter" />
 
   <!-- Default styles -->
   <Style

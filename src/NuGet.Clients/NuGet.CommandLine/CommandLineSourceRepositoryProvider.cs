@@ -25,8 +25,7 @@ namespace NuGet.CommandLine
             _packageSourceProvider = packageSourceProvider;
 
             _resourceProviders = new List<Lazy<INuGetResourceProvider>>();
-            _resourceProviders.AddRange(Protocol.Core.v2.FactoryExtensionsV2.GetCoreV2(Repository.Provider));
-            _resourceProviders.AddRange(Protocol.FactoryExtensionsV2.GetCoreV3(Repository.Provider));
+            _resourceProviders.AddRange(FactoryExtensionsV3.GetCoreV3(Repository.Provider));
 
             // Create repositories
             _repositories = _packageSourceProvider.LoadPackageSources()

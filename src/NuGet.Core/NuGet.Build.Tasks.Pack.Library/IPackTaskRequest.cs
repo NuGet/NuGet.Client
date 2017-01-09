@@ -19,6 +19,7 @@ namespace NuGet.Build.Tasks.Pack
         TItem[] AssemblyReferences { get; }
         string[] Authors { get; }
         string BuildOutputFolder { get; }
+        string[] ContentTargetFolders { get; }
         bool ContinuePackingAfterGeneratingNuspec { get; }
         string Copyright { get; }
         string Description { get; }
@@ -31,21 +32,21 @@ namespace NuGet.Build.Tasks.Pack
         ILogger Logger { get; }
         string MinClientVersion { get; }
         bool NoPackageAnalysis { get; }
+        string NuspecFile { get; }
         string NuspecOutputPath { get; }
         TItem[] PackageFiles { get; }
         TItem[] PackageFilesToExclude { get; }
         string PackageId { get; }
         string PackageOutputPath { get; }
-        TItem[] PackageReferences { get; }
         string[] PackageTypes { get; }
         string PackageVersion { get; }
         TItem PackItem { get; }
-        TItem[] ProjectReferences { get; }
         string ProjectUrl { get; }
         string ReleaseNotes { get; }
         string RepositoryType { get; }
         string RepositoryUrl { get; }
         bool RequireLicenseAcceptance { get; }
+        string RestoreOutputPath { get; }
         bool Serviceable { get; }
         TItem[] SourceFiles { get; }
         string[] Tags { get; }

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio;
@@ -25,6 +26,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public static async Task<IReadOnlyList<ProjectRestoreReference>> GetDirectProjectReferences(
             EnvDTEProject project,
+            IEnumerable<string> resolvedProjects,
             ILogger log)
         {
             return await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
@@ -47,7 +49,12 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         var reference3 = childReference as Reference3;
 
-                        if (reference3 != null && !reference3.Resolved)
+                        // this will set a reference to be missing if
+                        // 1. reference is null OR
+                        // 2. reference is not resolved which means project is not loaded or assembly not found. OR
+                        // 3. in DPL case, even deferred projects doesn't have this referenced project.
+                        if (reference3 == null || !reference3.Resolved ||
+                            !resolvedProjects.Any(projectName => StringComparer.OrdinalIgnoreCase.Equals(projectName, reference3.Name)))
                         {
                             // Skip missing references and show a warning
                             hasMissingReferences = true;
@@ -93,16 +100,15 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (hasMissingReferences)
                 {
-                    // Log a warning message once per project
-                    // This warning contains only the names of the root project and the project with the
-                    // broken reference. Attempting to display more details on the actual reference
-                    // that has the problem may lead to another exception being thrown.
-                    var warning = string.Format(
+                    // Log a generic message once per project if any items could not be resolved.
+                    // In most cases this can be ignored, but in the rare case where the unresolved
+                    // item is actually a project the restore result will be incomplete.
+                    var message = string.Format(
                         CultureInfo.CurrentCulture,
-                        Strings.Warning_ErrorDuringProjectClosureWalk,
+                        Strings.UnresolvedItemDuringProjectClosureWalk,
                         EnvDTEProjectUtility.GetUniqueName(project));
 
-                    log.LogWarning(warning);
+                    log.LogVerbose(message);
                 }
 
                 return results;

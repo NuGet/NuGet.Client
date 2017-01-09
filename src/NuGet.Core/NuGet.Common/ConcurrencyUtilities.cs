@@ -189,7 +189,7 @@ namespace NuGet.Common
 
                 _basePath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), "lock");
 
-                Directory.CreateDirectory(_basePath);
+                DirectoryUtility.CreateSharedDirectory(_basePath);
 
                 return _basePath;
             }
@@ -199,7 +199,7 @@ namespace NuGet.Common
         {
             // In case the directory was cleaned up, we can choose to fix it (at a cost of another roundtrip to disk
             // or fail, starting with the more expensive path, and we might have to get rid of it if it becomes too hot.
-            Directory.CreateDirectory(BasePath);
+            DirectoryUtility.CreateSharedDirectory(BasePath);
 
             return Path.Combine(BasePath, FilePathToLockName(filePath));
         }

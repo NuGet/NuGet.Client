@@ -788,12 +788,9 @@ namespace Proj2
             }
         }
 
-        [Fact]
+        [SkipMono]
         public void PackCommand_PclProjectWithProjectJsonAndTargetsNetStandard()
         {
-            // Skip this test on Mono
-            if (RuntimeEnvironmentHelper.IsMono) return;
-
             // This bug tests issue: https://github.com/NuGet/Home/issues/3108
             var nugetexe = Util.GetNuGetExePath();
 
@@ -1491,8 +1488,120 @@ public class B
 
         // Same test as PackCommand_ReferencedProjectWithNuspecFile, but with -MSBuidVersion
         // set to 14
-        [Fact]
+        [WindowsNTFact]
         public void PackCommand_ReferencedProjectWithNuspecFileWithMsbuild14()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+
+                // create test projects. There are 7 projects, with the following
+                // dependency relationships:
+                // proj1 depends on proj2 & proj3
+                // proj2 depends on proj4 & proj5
+                // proj3 depends on proj5 & proj7
+                //
+                // proj2 and proj6 have nuspec files.
+                CreateTestProject(workingDirectory, "proj1",
+                    new string[] {
+                        @"..\proj2\proj2.csproj",
+                        @"..\proj3\proj3.csproj"
+                    });
+                CreateTestProject(workingDirectory, "proj2",
+                    new string[] {
+                        @"..\proj4\proj4.csproj",
+                        @"..\proj5\proj5.csproj"
+                    });
+                CreateTestProject(workingDirectory, "proj3",
+                    new string[] {
+                        @"..\proj6\proj6.csproj",
+                        @"..\proj7\proj7.csproj"
+                    });
+                CreateTestProject(workingDirectory, "proj4", null);
+                CreateTestProject(workingDirectory, "proj5", null);
+                CreateTestProject(workingDirectory, "proj6", null);
+                CreateTestProject(workingDirectory, "proj7", null);
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "proj2"),
+                    "proj2.nuspec",
+@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>proj2</id>
+    <version>1.0.0.0</version>
+    <title>Proj2</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+    <dependencies>
+      <dependency id='p1' version='1.5.11' />
+    </dependencies>
+  </metadata>
+</package>");
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "proj6"),
+                    "proj6.nuspec",
+@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>proj6</id>
+    <version>2.0.0.0</version>
+    <title>Proj6</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+    <dependencies>
+      <dependency id='p2' version='1.5.11' />
+    </dependencies>
+  </metadata>
+</package>");
+                var version = "14";
+                if (RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows)
+                {
+                    version = "15.0";
+                }
+                // Act
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj1Directory,
+                    $@"pack proj1.csproj -build -IncludeReferencedProjects  -MSBuildVersion {version}",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
+                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                Array.Sort(files);
+
+                // proj3 and proj7 are included in the package.
+                Assert.Equal(
+                    new string[]
+                    {
+                        Path.Combine("lib", "net40", "proj1.dll"),
+                        Path.Combine("lib", "net40", "proj3.dll"),
+                        Path.Combine("lib", "net40", "proj7.dll")
+                    },
+                    files);
+
+                // proj2 and proj6 are added as dependencies.
+                var dependencies = package.DependencySets.First().Dependencies.OrderBy(d => d.Id);
+                Assert.Equal(
+                    new PackageDependency[]
+                    {
+                        new PackageDependency("proj2", VersionUtility.ParseVersionSpec("1.0.0")),
+                        new PackageDependency("proj6", VersionUtility.ParseVersionSpec("2.0.0"))
+                    },
+                    dependencies,
+                    new PackageDepencyComparer());
+            }
+        }
+
+        [UnixMonoFact]
+        public void PackCommand_ReferencedProjectWithNuspecFileWithMsbuild15OnMono()
         {
             var nugetexe = Util.GetNuGetExePath();
             using (var workingDirectory = TestDirectory.Create())
@@ -1567,7 +1676,7 @@ public class B
                 var r = CommandRunner.Run(
                     nugetexe,
                     proj1Directory,
-                    @"pack proj1.csproj -build -IncludeReferencedProjects  -MSBuildVersion 14",
+                    $@"pack proj1.csproj -build -IncludeReferencedProjects  -MSBuildVersion 15.0",
                     waitForExit: true);
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
@@ -1601,7 +1710,7 @@ public class B
 
         // Same test as PackCommand_ReferencedProjectWithJsonFile, but with -MSBuidVersion
         // set to 14
-        [Fact]
+        [WindowsNTFact]
         public void PackCommand_ReferencedProjectWithJsonFileWithMsbuild14()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -1673,13 +1782,126 @@ public class B
     }
   }
 }");
-
+                var version = "14";
+                if (RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows)
+                {
+                    version = "15.0";
+                }
                 // Act
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
                 var r = CommandRunner.Run(
                     nugetexe,
                     proj1Directory,
-                    @"pack proj1.csproj -build -IncludeReferencedProjects  -MSBuildVersion 14",
+                    $@"pack proj1.csproj -build -IncludeReferencedProjects  -MSBuildVersion {version}",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
+                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                Array.Sort(files);
+
+                // proj3 and proj7 are included in the package.
+                Assert.Equal(
+                    new string[]
+                    {
+                        Path.Combine("lib", "net40", "proj1.dll"),
+                        Path.Combine("lib", "net40", "proj3.dll"),
+                        Path.Combine("lib", "net40", "proj7.dll")
+                    },
+                    files);
+
+                // proj2 and proj6 are added as dependencies.
+                var dependencies = package.DependencySets.First().Dependencies.OrderBy(d => d.Id);
+                Assert.Equal(
+                    new PackageDependency[]
+                    {
+                        new PackageDependency("proj2", VersionUtility.ParseVersionSpec("1.0.0")),
+                        new PackageDependency("proj6", VersionUtility.ParseVersionSpec("2.0.0"))
+                    },
+                    dependencies,
+                    new PackageDepencyComparer());
+            }
+        }
+
+        [UnixMonoFact]
+        public void PackCommand_ReferencedProjectWithJsonFileWithMsbuild15OnMono()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+
+                // create test projects. There are 7 projects, with the following
+                // dependency relationships:
+                // proj1 depends on proj2 & proj3
+                // proj2 depends on proj4 & proj5
+                // proj3 depends on proj5 & proj7
+                //
+                // proj2 and proj6 have nuspec files.
+                CreateTestProject(workingDirectory, "proj1",
+                    new string[] {
+                        @"..\proj2\proj2.csproj",
+                        @"..\proj3\proj3.csproj"
+                    });
+                CreateTestProject(workingDirectory, "proj2",
+                    new string[] {
+                        @"..\proj4\proj4.csproj",
+                        @"..\proj5\proj5.csproj"
+                    });
+                CreateTestProject(workingDirectory, "proj3",
+                    new string[] {
+                        @"..\proj6\proj6.csproj",
+                        @"..\proj7\proj7.csproj"
+                    });
+                CreateTestProject(workingDirectory, "proj4", null);
+                CreateTestProject(workingDirectory, "proj5", null);
+                CreateTestProject(workingDirectory, "proj6", null);
+                CreateTestProject(workingDirectory, "proj7", null);
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "proj2"),
+                    "project.json",
+                    @"{
+  ""version"": ""1.0.0.0"",
+  ""title"": ""Proj2"",
+  ""authors"": [ ""test"" ],
+  ""description"": ""Description"",
+  ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
+  ""dependencies"": {
+    ""p1"": {
+      ""version"": ""1.5.11""
+    }
+  },
+}");
+                Util.CreateFile(
+                                Path.Combine(workingDirectory, "proj6"),
+                                "project.json",
+                                @"{
+  ""version"": ""2.0.0.0"",
+  ""title"": ""Proj6"",
+  ""authors"": [ ""test"" ],
+  ""description"": ""Description"",
+  ""copyright"": ""Copyright ©  2013"",
+  ""packOptions"": {
+    ""owners"": [ ""test"" ],
+    ""requireLicenseAcceptance"": ""false""
+    },
+  ""dependencies"": {
+    ""p2"": {
+      ""version"": ""1.5.11""
+    }
+  }
+}");
+                // Act
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj1Directory,
+                    $@"pack proj1.csproj -build -IncludeReferencedProjects  -MSBuildVersion 15.0",
                     waitForExit: true);
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
@@ -2937,7 +3159,7 @@ namespace Proj1
 
         // Tests that with -MSBuildVersion set to 14, a projec using C# 6.0 features (nameof in this test)
         // can be built successfully.
-        [Fact]
+        [WindowsNTFact]
         public void PackCommand_WithMsBuild14()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -3034,12 +3256,11 @@ namespace Proj2
         }
     }
 }");
-
                 // Act
                 var r = CommandRunner.Run(
                     nugetexe,
                     proj2Directory,
-                    @"pack proj2.csproj -build -IncludeReferencedProjects -p Config=Release -msbuildversion 14",
+                    $@"pack proj2.csproj -build -IncludeReferencedProjects -p Config=Release -msbuildversion 14",
                     waitForExit: true);
 
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
@@ -3063,9 +3284,134 @@ namespace Proj2
             }
         }
 
-        // Tests that pack works with -MSBuildVersion set to 12
-        [Fact]
-        public void PackCommand_WithMsBuild12()
+        [UnixMonoFact]
+        public void PackCommand_WithMsBuild15OnMono()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+
+            {
+
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+                var proj2Directory = Path.Combine(workingDirectory, "proj2");
+
+                // create project 1
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
+    <OutputPath>debug_out</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" + "\"'$(Config)'=='Release'\"" + @">
+    <OutputPath>release_out</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include='proj1_file1.cs' />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include='proj1_file2.txt' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1_file1.cs",
+@"using System;
+
+namespace Proj1
+{
+    public class Class1
+    {
+        public string F(int a)
+        {
+            return nameof(a);
+        }
+    }
+}");
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1_file2.txt",
+                    "file2");
+
+                // Create project 2, which references project 1
+                Util.CreateFile(
+                    proj2Directory,
+                    "proj2.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
+    <OutputPath>debug_out</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" + "\"'$(Config)'=='Release'\"" + @">
+    <OutputPath>release_out</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include='..\proj1\proj1.csproj' />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include='proj2_file1.cs' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+                Util.CreateFile(
+                    proj2Directory,
+                    "proj2_file1.cs",
+@"using System;
+
+namespace Proj2
+{
+    public class Class1
+    {
+        public string F2(int a)
+        {
+            return nameof(a);
+        }
+    }
+}");
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj2Directory,
+                    $@"pack proj2.csproj -build -IncludeReferencedProjects -p Config=Release -msbuildversion 15.0",
+                    waitForExit: true);
+
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+
+                // Verify that proj1 was not built using the default config "Debug".
+                Assert.False(Directory.Exists(Path.Combine(proj1Directory, "debug_out")));
+
+                var package = new OptimizedZipPackage(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg"));
+                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                Array.Sort(files);
+                Assert.Equal(
+                    new string[]
+                    {
+                        Path.Combine("content", "proj1_file2.txt"),
+                        Path.Combine("lib", "net40", "proj1.dll"),
+                        Path.Combine("lib", "net40", "proj2.dll")
+                    },
+                    files);
+            }
+        }
+
+        // Tests that pack works with -MSBuildVersion set to 15.1
+        [Fact(Skip = "Re-enable this when MSBuild 15.1 is installed on CI machines")]
+        public void PackCommand_WithMsBuild151()
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -3164,7 +3510,7 @@ namespace Proj2
                 var r = CommandRunner.Run(
                     nugetexe,
                     proj2Directory,
-                    @"pack proj2.csproj -build -IncludeReferencedProjects -p Config=Release -MSBuildVersion 12",
+                    @"pack proj2.csproj -build -IncludeReferencedProjects -p Config=Release -MSBuildVersion 15.1",
                     waitForExit: true);
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
@@ -3283,10 +3629,9 @@ namespace Proj2
     }
 }");
                 var msbuildPath = Util.GetMsbuildPathOnWindows();
-                var os = Environment.GetEnvironmentVariable("OSTYPE");
-                if (RuntimeEnvironmentHelper.IsMono && os != null && os.StartsWith("darwin"))
+                if (RuntimeEnvironmentHelper.IsMono && Util.IsRunningOnMac())
                 {
-                    msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/14.1/bin/";
+                    msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
                 }
 
                 // Act
@@ -3413,10 +3758,9 @@ namespace Proj2
     }
 }");
                 var msbuildPath = Util.GetMsbuildPathOnWindows();
-                var os = Environment.GetEnvironmentVariable("OSTYPE");
-                if (RuntimeEnvironmentHelper.IsMono && os != null && os.StartsWith("darwin"))
+                if (RuntimeEnvironmentHelper.IsMono && Util.IsRunningOnMac())
                 {
-                    msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/14.1/bin/";
+                    msbuildPath = @"/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/msbuild/15.0/bin/";
                 }
 
                 // Act
@@ -3543,7 +3887,7 @@ namespace Proj2
         }
     }
 }");
-                var msbuildPath = @"\\not exist path";
+                var msbuildPath = @"not exist path";
 
                 // Act
                 var r = CommandRunner.Run(
@@ -3873,7 +4217,8 @@ stuff \n <<".Replace("\r\n", "\n");
             }
         }
 
-        [Fact]
+        // Skip this test on mono: https://github.com/NuGet/Home/issues/3522
+        [WindowsNTFact]
         public void PackCommand_JsonPackOptionsFiles()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -4123,12 +4468,9 @@ stuff \n <<".Replace("\r\n", "\n");
             }
         }
 
-        [Fact]
+        [SkipMono]
         public void PackCommand_PackJsonCorrectLibPathInNupkg()
         {
-            // Skip this test on Mono
-            if (RuntimeEnvironmentHelper.IsMono) return;
-
             var nugetexe = Util.GetNuGetExePath();
 
             using (var workingDirectory = TestDirectory.Create())
@@ -4244,18 +4586,22 @@ stuff \n <<".Replace("\r\n", "\n");
                 Assert.Equal(1, r.Item1);
 
                 // Assert
-                Assert.Contains("Unable to find 'doesNotExist.1.1.0.nupkg'.", r.Item3);
+                if (RuntimeEnvironmentHelper.IsMono && !RuntimeEnvironmentHelper.IsWindows)
+                {
+                    Assert.Contains("Failed to build 'proj1.csproj'.", r.Item3);
+                }
+                else
+                {
+                    Assert.Contains("Unable to find 'doesNotExist.1.1.0.nupkg'.", r.Item3);
+                }
             }
         }
 
-        [Theory]
+        [SkipMonoTheory]
         [InlineData(".dll")]
         [InlineData(".exe")]
         public void PackCommand_PackJsonCorrectLibPathInNupkgWithOutputName(string extension)
         {
-            // Skip this test on Mono
-            if (RuntimeEnvironmentHelper.IsMono) return;
-
             var nugetexe = Util.GetNuGetExePath();
 
             using (var testFolder = TestDirectory.Create())
@@ -4436,12 +4782,9 @@ stuff \n <<".Replace("\r\n", "\n");
             }
         }
 
-        [Fact]
+        [SkipMono]
         public void PackCommand_BuildProjectJsonWithFullBasePath()
         {
-            // Skip this test on Mono
-            if (RuntimeEnvironmentHelper.IsMono) return;
-
             var nugetexe = Util.GetNuGetExePath();
 
             using (var workingDirectory = TestDirectory.Create())
@@ -4503,12 +4846,9 @@ stuff \n <<".Replace("\r\n", "\n");
             }
         }
 
-        [Fact]
+        [SkipMono]
         public void PackCommand_BuildProjectJsonWithRelativeBasePath()
         {
-            // Skip this test on Mono
-            if (RuntimeEnvironmentHelper.IsMono) return;
-
             var nugetexe = Util.GetNuGetExePath();
 
             using (var workingDirectory = TestDirectory.Create())
@@ -4688,8 +5028,8 @@ namespace Proj1
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 // Assert
-                Assert.True(Directory.Exists(Path.Combine(proj1ProjectDirectory, "out\\Release")));
-                Assert.True(File.Exists(Path.Combine(proj1ProjectDirectory, "out\\Release\\proj1.dll")));
+                Assert.True(Directory.Exists(Path.Combine(proj1ProjectDirectory, "out", "Release")));
+                Assert.True(File.Exists(Path.Combine(proj1ProjectDirectory, "out", "Release", "proj1.dll")));
                 var package = new OptimizedZipPackage(Path.Combine(proj1ProjectDirectory, "proj1.0.0.0.nupkg"));
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);

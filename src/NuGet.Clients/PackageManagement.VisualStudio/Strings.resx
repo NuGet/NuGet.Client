@@ -177,11 +177,8 @@
   <data name="Warning_FailedToMarkPackageDirectoryForDeletion" xml:space="preserve">
     <value>Failed to mark package directory '{0}' for deletion on Visual Studio restart: {1}</value>
   </data>
-  <data name="Warning_ErrorDuringProjectClosureWalk" xml:space="preserve">
-    <value>Failed to resolve all project references. The package restore result for '{0}' or a dependant project may be incomplete.</value>
-  </data>
-  <data name="RelativeGlobalPackagesFolder" xml:space="preserve">
-    <value>'globalPackagesFolder' from nuget.config file or the environment variable is '{0}', a relative path and the solution is not saved. Please save your solution or configure a 'globalPackagesFolder' which is a full path.</value>
+  <data name="UnresolvedItemDuringProjectClosureWalk" xml:space="preserve">
+    <value>Failed to resolve all items referenced by '{0}'. This message can typically be ignored. The issue may be resolved by fully restoring and building the solution. If the unresolved item is a project reference this can lead to an incomplete NuGet restore result and missing package references. To ensure that restore is able to find all projects verify that all projects are referenced correctly and exist on disk.</value>
   </data>
   <data name="SolutionIsNotSaved" xml:space="preserve">
     <value>Solution is not saved. Please save your solution before managing NuGet packages.</value>
@@ -194,45 +191,6 @@
   </data>
   <data name="ConfigErrorDialogBoxTitle" xml:space="preserve">
     <value>NuGet operation failed</value>
-  </data>
-  <data name="ErrorOccurredRestoringPackages" xml:space="preserve">
-    <value>Error occurred while restoring NuGet packages: {0}</value>
-  </data>
-  <data name="NothingToRestore" xml:space="preserve">
-    <value>All packages are already installed and there is nothing to restore.</value>
-  </data>
-  <data name="PackageRestoreCanceled" xml:space="preserve">
-    <value>NuGet package restore canceled.</value>
-  </data>
-  <data name="PackageRestoreFailedForProject" xml:space="preserve">
-    <value>NuGet Package restore failed for project {0}: {1}.</value>
-  </data>
-  <data name="PackageRestoreFinished" xml:space="preserve">
-    <value>NuGet package restore finished.</value>
-  </data>
-  <data name="PackageRestoreFinishedForProject" xml:space="preserve">
-    <value>NuGet Package restore finished for project '{0}'.</value>
-  </data>
-  <data name="PackageRestoreFinishedWithError" xml:space="preserve">
-    <value>NuGet package restore failed.</value>
-  </data>
-  <data name="PackageRestoreOptOutMessage" xml:space="preserve">
-    <value>Restoring NuGet packages...
-To prevent NuGet from restoring packages during build, open the Visual Studio Options dialog, click on the Package Manager node and uncheck 'Allow NuGet to download missing packages during build.'</value>
-  </data>
-  <data name="DialogTitle" xml:space="preserve">
-    <value>NuGet Package Manager</value>
-  </data>
-  <data name="PackageNotRestoredBecauseOfNoConsent" xml:space="preserve">
-    <value>One or more NuGet packages need to be restored but couldn't be because consent has not been granted. To give consent, open the Visual Studio Options dialog, click on the Package Manager node and check 'Allow NuGet to download missing packages during build.' You can also give consent by setting the environment variable 'EnableNuGetPackageRestore' to 'true'.
-
-Missing packages: {0}</value>
-  </data>
-  <data name="RestoredPackage" xml:space="preserve">
-    <value>Restored NuGet package {0}.</value>
-  </data>
-  <data name="RestoringPackages" xml:space="preserve">
-    <value>Restoring NuGet packages...</value>
   </data>
   <data name="FailedToAddFacadeReference" xml:space="preserve">
     <value>Failed to add reference to '{0}'. The package '{1}' tried to add a framework reference to '{0}'. This reference is not required to be explicitly added by a package.</value>

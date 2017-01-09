@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.ProjectSystem.Properties;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Utilities;
 using NuGet.ProjectManagement;
+using NuGet.ProjectModel;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -56,8 +57,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 return false;
             }
 
-            if (!hierarchy.IsCapabilityMatch("CPS") ||
-                !hierarchy.IsCapabilityMatch("PackageReferences"))
+            // check for RestoreProjectStyle property and if set to PackageReference and project also has CPS 
+            // capability then only mark it as CPS based project.
+            if (!string.IsNullOrEmpty(context.NuGetProjectStyle) &&
+                !context.NuGetProjectStyle.Equals(ProjectStyle.PackageReference.ToString(), StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+            else if (!hierarchy.IsCapabilityMatch("CPS"))
             {
                 return false;
             }

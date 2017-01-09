@@ -32,9 +32,8 @@ namespace NuGet.Protocol.Tests
 
             var searchResource = new RawSearchResourceV3(httpSource, new Uri[] { new Uri(serviceAddress) } );
 
-            var searchFilter = new SearchFilter()
+            var searchFilter = new SearchFilter(includePrerelease: false)
             {
-                IncludePrerelease = false,
                 SupportedFrameworks = new string[] { ".NETFramework,Version=v4.5" }
             };
 

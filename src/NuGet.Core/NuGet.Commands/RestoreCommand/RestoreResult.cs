@@ -17,8 +17,6 @@ namespace NuGet.Commands
     {
         public bool Success { get; }
 
-        public MSBuildRestoreResult MSBuild { get; }
-
         /// <summary>
         /// Gets the path that the lock file will be written to.
         /// </summary>
@@ -31,7 +29,15 @@ namespace NuGet.Commands
 
         public IEnumerable<CompatibilityCheckResult> CompatibilityCheckResults { get; }
 
-        public RestoreOutputType OutputType { get; }
+        /// <summary>
+        /// Props and targets files to be written to disk.
+        /// </summary>
+        public IEnumerable<MSBuildOutputFile> MSBuildOutputFiles { get; }
+
+        /// <summary>
+        /// Restore type.
+        /// </summary>
+        public ProjectStyle ProjectStyle { get; }
 
         /// <summary>
         /// Gets the lock file that was generated during the restore or, in the case of a locked lock file,
@@ -53,21 +59,21 @@ namespace NuGet.Commands
             bool success,
             IEnumerable<RestoreTargetGraph> restoreGraphs,
             IEnumerable<CompatibilityCheckResult> compatibilityCheckResults,
+            IEnumerable<MSBuildOutputFile> msbuildFiles,
             LockFile lockFile,
             LockFile previousLockFile,
             string lockFilePath,
-            MSBuildRestoreResult msbuild,
-            RestoreOutputType outputType,
+            ProjectStyle projectStyle,
             TimeSpan elapsedTime)
         {
             Success = success;
             RestoreGraphs = restoreGraphs;
             CompatibilityCheckResults = compatibilityCheckResults;
+            MSBuildOutputFiles = msbuildFiles;
             LockFile = lockFile;
             LockFilePath = lockFilePath;
-            MSBuild = msbuild;
             PreviousLockFile = previousLockFile;
-            OutputType = outputType;
+            ProjectStyle = projectStyle;
             ElapsedTime = elapsedTime;
         }
 
@@ -118,12 +124,7 @@ namespace NuGet.Commands
             // Write the lock file
             var lockFileFormat = new LockFileFormat();
 
-            var isTool = OutputType == RestoreOutputType.DotnetCliTool;
-
-            // Commit targets/props to disk before the assets file.
-            // Visual Studio typically watches the assets file for changes
-            // and begins a reload when that file changes.
-            MSBuild.Commit(log);
+            var isTool = ProjectStyle == ProjectStyle.DotnetCliTool;
 
             // Commit the assets file to disk.
             await CommitAsync(
@@ -143,6 +144,14 @@ namespace NuGet.Commands
             bool toolCommit,
             CancellationToken token)
         {
+            // Commit targets/props to disk before the assets file.
+            // Visual Studio typically watches the assets file for changes
+            // and begins a reload when that file changes.
+            var buildFilesToWrite = result.MSBuildOutputFiles
+                    .Where(e => forceWrite || BuildAssetsUtils.HasChanges(e.Content, e.Path, log));
+
+            BuildAssetsUtils.WriteFiles(buildFilesToWrite, log);
+
             // Avoid writing out the lock file if it is the same to avoid triggering an intellisense
             // update on a restore with no actual changes.
             if (forceWrite

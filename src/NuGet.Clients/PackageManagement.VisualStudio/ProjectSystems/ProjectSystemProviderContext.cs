@@ -15,9 +15,12 @@ namespace NuGet.PackageManagement.VisualStudio
         public INuGetProjectContext ProjectContext { get; }
         public Func<string> PackagesPathFactory { get; }
 
+        public string NuGetProjectStyle { get; }
+
         public ProjectSystemProviderContext(
             INuGetProjectContext projectContext,
-            Func<string> packagesPathFactory)
+            Func<string> packagesPathFactory,
+            string nuGetProjectStyle)
         {
             if (projectContext == null)
             {
@@ -31,6 +34,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             ProjectContext = projectContext;
             PackagesPathFactory = packagesPathFactory;
+            NuGetProjectStyle = nuGetProjectStyle;
         }
     }
 }

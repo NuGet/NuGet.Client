@@ -79,5 +79,7 @@ namespace NuGet.Protocol
 
             return fullUri;
         }
+
+        public bool IsListed => true;
     }
 }

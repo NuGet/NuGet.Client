@@ -5,15 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Text;
 using NuGet.Test.Utility;
 using Xunit;
+using System.Text;
+using NuGet.Common;
 
 namespace NuGet.CommandLine.Test
 {
     public class NuGetListCommandTest
     {
-        [Theory]
+        [SkipMonoTheory]
         [InlineData("https://www.ssllabs.com:10200/index.json", false)] // SSLv2.0
         [InlineData("https://www.ssllabs.com:10300/index.json", false)] // SSLv3.0
         [InlineData("https://www.ssllabs.com:10301/index.json", true)]  // TLSv1.0
@@ -60,10 +61,12 @@ namespace NuGet.CommandLine.Test
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
             var hostName = Guid.NewGuid().ToString();
-            var expected = "System.AggregateException: One or more errors occurred. ---> " + 
-                           "System.Net.WebException: The remote name could not be resolved: " +
-                           $"'{hostName}'";
-            var args = new[] { "list", "-Source", "https://" + hostName + "/" };
+            var fullHostName = "https://" + hostName + "/";
+            var expected = "System.AggregateException: One or more errors occurred. ---> " +
+                           "NuGet.Protocol.Core.Types.FatalProtocolException: Unable to load the service index for source " +
+                           $"{fullHostName}";
+
+            var args = new[] { "list", "-Source", fullHostName };
 
             // Act
             var result = CommandRunner.Run(
@@ -88,6 +91,11 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
             var hostName = Guid.NewGuid().ToString();
             var expected = $"The remote name could not be resolved: '{hostName}'";
+
+            if (RuntimeEnvironmentHelper.IsMono)
+            {
+                expected = "NameResolutionFailure";
+            }
             var args = new[] { "list", "-Source", "https://" + hostName + "/" };
 
             // Act
@@ -129,7 +137,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(0, result.Item1);
                 var output = result.Item2;
-                Assert.Equal("testPackage1 1.1.0\r\ntestPackage2 2.0.0\r\n", output);
+                Assert.Equal($"testPackage1 1.1.0{Environment.NewLine}testPackage2 2.0.0{Environment.NewLine}", output);
             }
         }
 
@@ -206,7 +214,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(0, result.Item1);
                 var output = result.Item2;
-                Assert.Equal("testPackage1 1.1.0\r\ntestPackage2 2.0.0\r\n", output);
+                Assert.Equal($"testPackage1 1.1.0{Environment.NewLine}testPackage2 2.0.0{Environment.NewLine}", output);
             }
         }
 
@@ -257,7 +265,7 @@ namespace NuGet.CommandLine.Test
 
                     // verify that only package id & version is displayed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
-                        "testPackage2 2.1" + Environment.NewLine;
+                        "testPackage2 2.1.0" + Environment.NewLine;
                     Assert.Equal(expectedOutput, result.Item2);
 
                     Assert.Contains("$filter=IsLatestVersion", searchRequest);
@@ -281,6 +289,7 @@ namespace NuGet.CommandLine.Test
                 var packageFileName2 = Util.CreateTestPackage("testPackage2", "2.1", packageDirectory);
                 var package1 = new ZipPackage(packageFileName1);
                 var package2 = new ZipPackage(packageFileName2);
+                package1.Published = new DateTimeOffset?(new DateTime(1800, 1, 1));
                 package1.Listed = false;
 
                 using (var server = new MockServer())
@@ -315,7 +324,7 @@ namespace NuGet.CommandLine.Test
 
                     // verify that only testPackage2 is listed since the package testPackage1
                     // is not listed.
-                    var expectedOutput = "testPackage2 2.1" + Environment.NewLine;
+                    var expectedOutput = "testPackage2 2.1.0" + Environment.NewLine;
                     Assert.Equal(expectedOutput, r1.Item2);
 
                     Assert.Contains("$filter=IsLatestVersion", searchRequest);
@@ -378,7 +387,7 @@ namespace NuGet.CommandLine.Test
                     // verify that both testPackage1 and testPackage2 are listed.
                     var expectedOutput =
                         "testPackage1 1.1.0" + Environment.NewLine +
-                        "testPackage2 2.1" + Environment.NewLine;
+                        "testPackage2 2.1.0" + Environment.NewLine;
                     Assert.Equal(expectedOutput, r1.Item2);
 
                     Assert.Contains("$filter=IsLatestVersion", searchRequest);
@@ -492,7 +501,7 @@ namespace NuGet.CommandLine.Test
 
                     // verify that the output is detailed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
-                        "testPackage2 2.1" + Environment.NewLine;
+                        "testPackage2 2.1.0" + Environment.NewLine;
                     Assert.Equal(expectedOutput, r1.Item2);
 
                     Assert.DoesNotContain("$filter", searchRequest);
@@ -550,7 +559,7 @@ namespace NuGet.CommandLine.Test
 
                     // verify that the output is detailed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
-                        "testPackage2 2.1" + Environment.NewLine;
+                        "testPackage2 2.1.0" + Environment.NewLine;
                     Assert.Equal(expectedOutput, r1.Item2);
 
                     Assert.Contains("$filter=IsAbsoluteLatestVersion", searchRequest);
@@ -608,7 +617,7 @@ namespace NuGet.CommandLine.Test
 
                     // verify that the output is detailed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
-                        "testPackage2 2.1" + Environment.NewLine;
+                        "testPackage2 2.1.0" + Environment.NewLine;
                     Assert.Equal(expectedOutput, r1.Item2);
 
                     Assert.DoesNotContain("$filter", searchRequest);
@@ -707,7 +716,7 @@ namespace NuGet.CommandLine.Test
 
                         // verify that only package id & version is displayed
                         var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
-                            "testPackage2 2.1" + Environment.NewLine;
+                            "testPackage2 2.1.0" + Environment.NewLine;
                         Assert.Equal(expectedOutput, result.Item2);
 
                         Assert.Contains("$filter=IsLatestVersion", searchRequest);
@@ -821,7 +830,7 @@ namespace NuGet.CommandLine.Test
                     Assert.True(result.Item1 != 0, result.Item2 + " " + result.Item3);
 
                     Assert.True(
-                        result.Item3.Contains("Response status code does not indicate success: 404 (Not Found)."),
+                        result.Item3.Contains("404 (Not Found)"),
                         "Expected error message not found in " + result.Item3
                         );
                 }
@@ -881,11 +890,22 @@ namespace NuGet.CommandLine.Test
                 result.Item1 != 0,
                 "The run did not fail as desired. Simply got this output:" + result.Item2);
 
-            Assert.True(
-                result.Item3.Contains(
-                    "The remote name could not be resolved: 'invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org'"),
-                "Expected error message not found in " + result.Item3
-                );
+            if (RuntimeEnvironmentHelper.IsMono)
+            {
+                Assert.True(
+               result.Item3.Contains(
+                   "NameResolutionFailure"),
+               "Expected error message not found in " + result.Item3
+               );
+            }
+            else
+            {
+                Assert.True(
+                    result.Item3.Contains(
+                        $"Unable to load the service index for source {invalidInput}."),
+                    "Expected error message not found in " + result.Item3
+                    );
+            }
         }
 
         [Theory]
@@ -910,8 +930,8 @@ namespace NuGet.CommandLine.Test
 
             Assert.True(
                 result.Item3.Contains(
-                    "The remote server returned an error: (404) Not Found."),
-                "Expected error message not found in " + result.Item3
+                    "returned an unexpected status code '404 Not Found'."),
+                "Expected error message not found in:\n " + result.Item3
                 );
         }
 
@@ -937,7 +957,7 @@ namespace NuGet.CommandLine.Test
                 "The run did not fail as desired. Simply got this output:" + result.Item2);
 
             Assert.True(
-                result.Item3.Contains("An error occurred while sending the request."),
+                result.Item3.Contains($"Unable to load the service index for source {invalidInput}."),
                 "Expected error message not found in " + result.Item3
                 );
         }
@@ -964,7 +984,7 @@ namespace NuGet.CommandLine.Test
                 "The run did not fail as desired. Simply got this output:" + result.Item2);
 
             Assert.True(
-                result.Item3.Contains("Response status code does not indicate success: 400 (Bad Request)."),
+                result.Item3.Contains("400 (Bad Request)"),
                 "Expected error message not found in " + result.Item3
                 );
         }
@@ -1038,18 +1058,17 @@ namespace NuGet.CommandLine.Test
                     });
 
                     var config = $@"<?xml version='1.0' encoding='utf-8'?>
-<configuration>
-  <packageSources>
-    <add key='vsts' value='{serverV3.Uri}index.json' protocolVersion='3' />
-  </packageSources>
-  <packageSourceCredentials>
-    <vsts>
-      <add key='Username' value='user' />
-      <add key='ClearTextPassword' value='password' />
-    </vsts>
-  </packageSourceCredentials>
- </configuration>";
-
+                                <configuration>
+                                  <packageSources>
+                                    <add key='vsts' value='{serverV3.Uri}index.json' protocolVersion='3' />
+                                  </packageSources>
+                                  <packageSourceCredentials>
+                                    <vsts>
+                                      <add key='Username' value='user' />
+                                      <add key='ClearTextPassword' value='password' />
+                                    </vsts>
+                                  </packageSourceCredentials>
+                                 </configuration>";
                     var configFileName = Path.Combine(randomTestFolder, "nuget.config");
                     File.WriteAllText(configFileName, config);
 
@@ -1060,6 +1079,109 @@ namespace NuGet.CommandLine.Test
                         Util.GetNuGetExePath(),
                         Directory.GetCurrentDirectory(),
                         $"list test -source {serverV3.Uri}index.json -configfile {configFileName} -verbosity detailed -noninteractive",
+                        waitForExit: true);
+
+                    serverV3.Stop();
+                    // Assert
+                    Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
+                    Assert.Contains("Using credentials from config. UserName: user", result.Item2);
+                    Assert.Contains($"GET {serverV3.Uri}{listEndpoint}/Search()", result.Item2);
+                    // verify that only package id & version is displayed
+                    Assert.Matches(@"(?m)testPackage1\s+1\.1\.0", result.Item2);
+
+                }
+            }
+        }
+        [Fact]
+        public void ListCommand_WithAuthenticatedSourceV2_AppliesCredentialsFromSettings()
+        {
+            Util.ClearWebCache();
+            var expectedAuthHeader = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes("user:password"));
+            var listEndpoint = "api/v2";
+
+            using (var randomTestFolder = TestDirectory.Create())
+            {
+                // Arrange
+                var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", randomTestFolder);
+                var package1 = new ZipPackage(packageFileName1);
+
+                // Server setup
+                using (var serverV3 = new MockServer())
+                {
+                    //var indexJson = Util.CreateIndexJson();
+                    //Util.AddFlatContainerResource(indexJson, serverV3);
+                    //Util.AddLegacyGalleryResource(indexJson, serverV3, listEndpoint);
+
+                    serverV3.Get.Add("/", r =>
+                    {
+                        var h = r.Headers["Authorization"];
+                        if (h == null)
+                        {
+                            return new Action<HttpListenerResponse>(response =>
+                            {
+                                response.StatusCode = 401;
+                                response.AddHeader("WWW-Authenticate", @"Basic realm=""Test""");
+                                MockServer.SetResponseContent(response, "401 Unauthenticated");
+                            });
+                        }
+
+                        if (expectedAuthHeader != h)
+                        {
+                            return HttpStatusCode.Forbidden;
+                        }
+
+                        var path = serverV3.GetRequestUrlAbsolutePath(r);
+
+                        //if (path == "/index.json")
+                        //{
+                        //    return new Action<HttpListenerResponse>(response =>
+                        //    {
+                        //        response.StatusCode = 200;
+                        //        response.ContentType = "text/javascript";
+                        //        MockServer.SetResponseContent(response, indexJson.ToString());
+                        //    });
+                        //}
+
+                        if (path == $"/{listEndpoint}/$metadata")
+                        {
+                            return MockServerResource.NuGetV2APIMetadata;
+                        }
+
+                        if (path == $"/{listEndpoint}/Search()")
+                        {
+                            return new Action<HttpListenerResponse>(response =>
+                            {
+                                response.ContentType = "application/atom+xml;type=feed;charset=utf-8";
+                                var feed = serverV3.ToODataFeed(new[] { package1 }, "Search");
+                                MockServer.SetResponseContent(response, feed);
+                            });
+                        }
+
+                        return "OK";
+                    });
+
+                    var config = $@"<?xml version='1.0' encoding='utf-8'?>
+                    <configuration>
+                      <packageSources>
+                        <add key='vsts' value='{serverV3.Uri}api/v2' protocolVersion='2' />
+                      </packageSources>
+                      <packageSourceCredentials>
+                        <vsts>
+                          <add key='Username' value='user' />
+                          <add key='ClearTextPassword' value='password' />
+                        </vsts>
+                      </packageSourceCredentials>
+                     </configuration>";
+                    var configFileName = Path.Combine(randomTestFolder, "nuget.config");
+                    File.WriteAllText(configFileName, config);
+
+                    serverV3.Start();
+
+                    // Act
+                    var result = CommandRunner.Run(
+                        Util.GetNuGetExePath(),
+                        Directory.GetCurrentDirectory(),
+                        $"list test -source {serverV3.Uri}api/v2 -configfile {configFileName} -verbosity detailed -noninteractive",
                         waitForExit: true);
 
                     serverV3.Stop();

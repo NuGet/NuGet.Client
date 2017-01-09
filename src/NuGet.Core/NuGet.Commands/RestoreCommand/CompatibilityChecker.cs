@@ -21,12 +21,14 @@ namespace NuGet.Commands
         private readonly IReadOnlyList<NuGetv3LocalRepository> _localRepositories;
         private readonly LockFile _lockFile;
         private readonly ILogger _log;
+        private readonly bool _validateRuntimeAssets;
 
-        public CompatibilityChecker(IReadOnlyList<NuGetv3LocalRepository> localRepositories, LockFile lockFile, ILogger log)
+        public CompatibilityChecker(IReadOnlyList<NuGetv3LocalRepository> localRepositories, LockFile lockFile, bool validateRuntimeAssets, ILogger log)
         {
             _localRepositories = localRepositories;
             _lockFile = lockFile;
             _log = log;
+            _validateRuntimeAssets = validateRuntimeAssets;
         }
 
         internal CompatibilityCheckResult Check(
@@ -58,6 +60,8 @@ namespace NuGet.Commands
             var runtimeAssemblies = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var compileAssemblies = new Dictionary<string, LibraryIdentity>(StringComparer.OrdinalIgnoreCase);
             var issues = new List<CompatibilityIssue>();
+
+            // Verify framework assets also as part of runtime assets validation.
             foreach (var node in graph.Flattened)
             {
                 _log.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.Log_CheckingPackageCompatibility, node.Key.Name, node.Key.Version, graph.Name));
@@ -131,7 +135,7 @@ namespace NuGet.Commands
 
                 // Check for matching ref/libs if we're checking a runtime-specific graph
                 var targetLibrary = compatibilityData.TargetLibrary;
-                if (!string.IsNullOrEmpty(graph.RuntimeIdentifier))
+                if (_validateRuntimeAssets  && !string.IsNullOrEmpty(graph.RuntimeIdentifier))
                 {
                     // Skip runtime checks for packages that have runtime references excluded,
                     // this allows compile only packages that do not have runtimes for the 
@@ -188,7 +192,7 @@ namespace NuGet.Commands
             }
 
             // Generate errors for un-matched reference assemblies, if we're checking a runtime-specific graph
-            if (!string.IsNullOrEmpty(graph.RuntimeIdentifier))
+            if (_validateRuntimeAssets && !string.IsNullOrEmpty(graph.RuntimeIdentifier))
             {
                 foreach (var compile in compileAssemblies)
                 {
@@ -290,6 +294,8 @@ namespace NuGet.Commands
                 compatibilityData.TargetLibrary.FrameworkAssemblies.Count > 0 ||                        // Framework Assemblies, or
                 compatibilityData.TargetLibrary.ContentFiles.Count > 0 ||                               // Shared content
                 compatibilityData.TargetLibrary.ResourceAssemblies.Count > 0 ||                         // Resources (satellite package)
+                compatibilityData.TargetLibrary.Build.Count > 0 ||                                      // Build
+                compatibilityData.TargetLibrary.BuildMultiTargeting.Count > 0 ||                        // Cross targeting build
                 !compatibilityData.Files.Any(p =>
                     p.StartsWith("ref/", StringComparison.OrdinalIgnoreCase)
                     || p.StartsWith("lib/", StringComparison.OrdinalIgnoreCase));                       // No assemblies at all (for any TxM)

@@ -13,7 +13,7 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// Restore behavior type.
         /// </summary>
-        public RestoreOutputType OutputType { get; set; } = RestoreOutputType.Unknown;
+        public ProjectStyle ProjectStyle { get; set; } = ProjectStyle.Unknown;
 
         /// <summary>
         /// MSBuild project file path.
@@ -78,11 +78,27 @@ namespace NuGet.ProjectModel
         /// </summary>
         public bool LegacyPackagesDirectory { get; set; }
 
+        /// <summary>
+        /// Asset files. These should be equivalent to the files that would be
+        /// in the nupkg after packing the project.
+        /// </summary>
+        public IList<ProjectRestoreMetadataFile> Files { get; set; } = new List<ProjectRestoreMetadataFile>();
+
+        /// <summary>
+        /// Compatibility check for runtime framework assets.
+        /// </summary>
+        public bool ValidateRuntimeAssets { get; set; }
+
+        /// <summary>
+        /// True if this is an XPlat PackageReference project.
+        /// </summary>
+        public bool SkipContentFileWrite { get; set; }
+
         public override int GetHashCode()
         {
             var hashCode = new HashCodeCombiner();
 
-            hashCode.AddObject(OutputType);
+            hashCode.AddObject(ProjectStyle);
             hashCode.AddObject(ProjectPath);
             hashCode.AddObject(ProjectJsonPath);
             hashCode.AddObject(OutputPath);
@@ -95,6 +111,9 @@ namespace NuGet.ProjectModel
             hashCode.AddSequence(OriginalTargetFrameworks);
             hashCode.AddObject(CrossTargeting);
             hashCode.AddObject(LegacyPackagesDirectory);
+            hashCode.AddObject(Files);
+            hashCode.AddObject(ValidateRuntimeAssets);
+            hashCode.AddObject(SkipContentFileWrite);
 
             return hashCode.CombinedHash;
         }
@@ -116,7 +135,7 @@ namespace NuGet.ProjectModel
                 return true;
             }
 
-            return OutputType == other.OutputType &&
+            return ProjectStyle == other.ProjectStyle &&
                    ProjectPath == other.ProjectPath &&
                    ProjectJsonPath == other.ProjectJsonPath &&
                    OutputPath == other.OutputPath &&
@@ -128,7 +147,10 @@ namespace NuGet.ProjectModel
                    EqualityUtility.SequenceEqualWithNullCheck(TargetFrameworks, other.TargetFrameworks) &&
                    EqualityUtility.SequenceEqualWithNullCheck(OriginalTargetFrameworks, other.OriginalTargetFrameworks) &&
                    CrossTargeting == other.CrossTargeting &&
-                   LegacyPackagesDirectory == other.LegacyPackagesDirectory;
+                   LegacyPackagesDirectory == other.LegacyPackagesDirectory &&
+                   ValidateRuntimeAssets == other.ValidateRuntimeAssets &&
+                   SkipContentFileWrite == other.SkipContentFileWrite &&
+                   EqualityUtility.SequenceEqualWithNullCheck(Files, other.Files);
         }
     }
 }

@@ -42,25 +42,4 @@ namespace NuGet.PackageManagement.UI
 
         public double Duration { get; }
     }
-
-    /// <summary>
-    /// Define different states for nuget operation status.
-    /// </summary>
-    public enum NuGetOperationStatus
-    {
-        /// <summary>
-        /// no operation performed.
-        /// </summary>
-        NoOp = 0,
-
-        /// <summary>
-        /// operation was successful.
-        /// </summary>
-        Succeeded = 1,
-
-        /// <summary>
-        /// operation failed.
-        /// </summary>
-        Failed = 2,
-    }
 }
